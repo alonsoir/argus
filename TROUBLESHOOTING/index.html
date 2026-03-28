@@ -1,0 +1,1868 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source embedded-ML NDR for hospitals and schools">
+      
+      
+        <meta name="author" content="Alonso Isidoro Roman">
+      
+      
+        <link rel="canonical" href="https://alonsoir.github.io/argus/TROUBLESHOOTING/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>🛡️ ML Defender - Troubleshooting Guide - ML Defender (aRGus NDR)</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#ml-defender-troubleshooting-guide" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="ML Defender (aRGus NDR)" class="md-header__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ML Defender (aRGus NDR)
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              🛡️ ML Defender - Troubleshooting Guide
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../README.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../docs/ARCHITECTURE.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../docs/BACKLOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Backlog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../docs/SECURITY_MODEL.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Security Model
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../docs/adr/ADR-013 seed distribution component authentication.md" class="md-tabs__link">
+          
+  
+  
+  ADRs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../docs/contracts/Protobuf contracts.md" class="md-tabs__link">
+          
+  
+  
+  Contracts
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="ML Defender (aRGus NDR)" class="md-nav__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ML Defender (aRGus NDR)
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../README.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/ARCHITECTURE.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/BACKLOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/SECURITY_MODEL.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADRs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ADRs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/adr/ADR-013 seed distribution component authentication.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013 Seed Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/adr/ADR-021-deployment-topology-seed-families.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-021 Topology SSOT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/adr/ADR-022-threat-model-opcion2-descartada.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-022 Threat Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/contracts/Protobuf contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protobuf
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/contracts/JSON contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JSON
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/contracts/Rag security commands.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#indice" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🔍 Índice
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#build-issues" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Build Issues
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Build Issues">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#error-libbpf-dev-not-found" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ❌ Error: libbpf-dev not found
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#error-llama_integration_realcpp-compilation-fails" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ❌ Error: llama_integration_real.cpp compilation fails
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#error-missing-nlohmannjson" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ❌ Error: Missing nlohmann/json
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#error-protobuf-compilation-fails" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ❌ Error: Protobuf compilation fails
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#runtime-issues" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Runtime Issues
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Runtime Issues">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#error-kv-cache-inconsistency-en-rag-system" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ❌ Error: "KV Cache Inconsistency" en RAG System
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#error-ml-detector-no-recibe-datos" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ❌ Error: ML Detector no recibe datos
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#error-alto-uso-de-memoria" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ❌ Error: Alto uso de memoria
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#error-rag-system-no-responde" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ❌ Error: RAG System no responde
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#ebpfxdp-issues" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        eBPF/XDP Issues
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="eBPF/XDP Issues">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#error-failed-to-load-ebpf-program" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ❌ Error: "Failed to load eBPF program"
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#error-no-se-capturan-paquetes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ❌ Error: No se capturan paquetes
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#zmq-communication-issues" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ZMQ Communication Issues
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="ZMQ Communication Issues">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#error-address-already-in-use" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ❌ Error: "Address already in use"
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#error-detector-no-recibe-mensajes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ❌ Error: Detector no recibe mensajes
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#ml-detector-issues" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ML Detector Issues
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="ML Detector Issues">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#error-modelos-no-cargan" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ❌ Error: Modelos no cargan
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#error-baja-precision-en-detecciones" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ❌ Error: Baja precisión en detecciones
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#rag-system-issues" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        RAG System Issues
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="RAG System Issues">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#error-llama-model-failed-to-load" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ❌ Error: "LLAMA model failed to load"
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#error-respuestas-incoherentes-del-llama" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ❌ Error: Respuestas incoherentes del LLAMA
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#error-timeout-en-consultas-rag" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ❌ Error: Timeout en consultas RAG
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#vagrantvm-issues" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Vagrant/VM Issues
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Vagrant/VM Issues">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#error-vm-no-arranca" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ❌ Error: VM no arranca
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#error-shared-folder-no-montado" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ❌ Error: Shared folder no montado
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#debug-tools" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Debug Tools
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Debug Tools">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#health-check-integral" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Health Check Integral
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#monitoreo-de-rendimiento" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Monitoreo de Rendimiento
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#verificacion-bpfebpf" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Verificación BPF/eBPF
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#test-de-comunicacion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Test de Comunicación
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#emergency-recovery" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Emergency Recovery
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Emergency Recovery">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#reset-completo-del-sistema" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reset Completo del Sistema
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#nuclear-option-reinstalacion-completa" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Nuclear Option: Reinstalación Completa
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#common-patterns-solutions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Common Patterns &amp; Solutions
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Common Patterns &amp; Solutions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#pattern-funcionaba-y-dejo-de-funcionar" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Pattern: "Funcionaba y dejó de funcionar"
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pattern-alta-latencia-en-rag" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Pattern: Alta latencia en RAG
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pattern-falsos-positivos-en-ml" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Pattern: Falsos positivos en ML
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#getting-help" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Getting Help
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="ml-defender-troubleshooting-guide">🛡️ ML Defender - Troubleshooting Guide</h1>
+<p>Guía completa de resolución de problemas para ML Defender Platform con RAG + 4 detectores ML.</p>
+<hr />
+<h2 id="indice">🔍 Índice</h2>
+<ul>
+<li><a href="#build-issues">Build Issues</a></li>
+<li><a href="#runtime-issues">Runtime Issues</a></li>
+<li><a href="#ebpfxdp-issues">eBPF/XDP Issues</a></li>
+<li><a href="#zmq-communication-issues">ZMQ Communication Issues</a></li>
+<li><a href="#ml-detector-issues">ML Detector Issues</a></li>
+<li><a href="#rag-system-issues">RAG System Issues</a></li>
+<li><a href="#vagrantvm-issues">Vagrant/VM Issues</a></li>
+<li><a href="#debug-tools">Debug Tools</a></li>
+<li><a href="#emergency-recovery">Emergency Recovery</a></li>
+</ul>
+<hr />
+<h2 id="build-issues">Build Issues</h2>
+<h3 id="error-libbpf-dev-not-found">❌ Error: <code>libbpf-dev</code> not found</h3>
+<p><strong>Síntoma:</strong></p>
+<pre><code>E: Package 'libbpf-dev' has no installation candidate
+</code></pre>
+<p><strong>Solución:</strong></p>
+<pre><code class="language-bash"># Dentro de la VM
+sudo apt-get update
+sudo apt-get install -y libbpf-dev
+
+# Verificar instalación
+dpkg -l | grep libbpf
+</code></pre>
+<hr />
+<h3 id="error-llama_integration_realcpp-compilation-fails">❌ Error: <code>llama_integration_real.cpp</code> compilation fails</h3>
+<p><strong>Síntoma:</strong></p>
+<pre><code>error: ‘llama_kv_cache_clear’ was not declared in this scope
+</code></pre>
+<p><strong>Causa:</strong> Función no disponible en nuestra versión de llama.cpp.</p>
+<p><strong>Solución:</strong> Usar workaround implementado:</p>
+<pre><code class="language-cpp">// En llama_integration_real.cpp, usar:
+void clear_kv_cache() {
+    llama_batch batch = llama_batch_init(1, 0, 1);
+    batch.n_tokens = 0;
+    llama_decode(ctx, batch);
+    llama_batch_free(batch);
+}
+</code></pre>
+<hr />
+<h3 id="error-missing-nlohmannjson">❌ Error: Missing nlohmann/json</h3>
+<p><strong>Síntoma:</strong></p>
+<pre><code>fatal error: nlohmann/json.hpp: No such file or directory
+</code></pre>
+<p><strong>Solución:</strong></p>
+<pre><code class="language-bash">sudo apt-get install -y nlohmann-json3-dev
+</code></pre>
+<hr />
+<h3 id="error-protobuf-compilation-fails">❌ Error: Protobuf compilation fails</h3>
+<p><strong>Síntoma:</strong></p>
+<pre><code>protoc: command not found
+</code></pre>
+<p><strong>Solución:</strong></p>
+<pre><code class="language-bash">sudo apt-get install -y \
+    protobuf-compiler \
+    libprotobuf-dev \
+    libprotobuf32
+
+# Verificar
+protoc --version  # Debe mostrar: libprotoc 3.21.12
+</code></pre>
+<hr />
+<h2 id="runtime-issues">Runtime Issues</h2>
+<h3 id="error-kv-cache-inconsistency-en-rag-system">❌ Error: "KV Cache Inconsistency" en RAG System</h3>
+<p><strong>Síntoma:</strong></p>
+<pre><code>init: the tokens of sequence 0 in the input batch have inconsistent sequence positions:
+ - the last position stored in the memory module of the context (i.e. the KV cache) for sequence 0 is X = 213
+ - the tokens for sequence 0 in the input batch have a starting position of Y = 0
+</code></pre>
+<p><strong>Estado:</strong> 🔄 WORKAROUND IMPLEMENTADO</p>
+<p><strong>Solución:</strong></p>
+<pre><code class="language-bash"># Reiniciar servicio RAG (workaround temporal)
+sudo systemctl restart ml-defender-rag
+
+# Verificar que el workaround está en el código
+grep &quot;clear_kv_cache&quot; /opt/rag-security/src/llama_integration_real.cpp
+</code></pre>
+<hr />
+<h3 id="error-ml-detector-no-recibe-datos">❌ Error: ML Detector no recibe datos</h3>
+<p><strong>Síntoma:</strong> No hay inferencias en los logs del ml-detector.</p>
+<p><strong>Diagnóstico:</strong></p>
+<pre><code class="language-bash"># Verificar conectividad ZMQ
+sudo netstat -tlnp | grep 5571
+sudo netstat -tlnp | grep 5572
+
+# Verificar que sniffer está enviando
+sudo tail -f /var/log/ml-defender/sniffer-stdout.log | grep &quot;ZMQ&quot;
+
+# Verificar que detector está escuchando
+sudo tail -f /var/log/ml-defender/detector-stdout.log | grep &quot;Received&quot;
+</code></pre>
+<p><strong>Solución:</strong></p>
+<pre><code class="language-bash"># Reiniciar servicios en orden
+sudo systemctl restart ml-defender-sniffer
+sudo systemctl restart ml-defender-detector
+
+# Verificar configuración de endpoints
+grep -A 5 &quot;zmq&quot; /etc/sniffer/sniffer.json
+grep -A 5 &quot;zmq&quot; /etc/ml-detector/ml_detector_config.json
+</code></pre>
+<hr />
+<h3 id="error-alto-uso-de-memoria">❌ Error: Alto uso de memoria</h3>
+<p><strong>Síntoma:</strong> Uso de memoria &gt;4 GB en Raspberry Pi.</p>
+<p><strong>Diagnóstico:</strong></p>
+<pre><code class="language-bash"># Identificar componente que usa más memoria
+ps aux --sort=-%mem | grep -E &quot;(sniffer|ml-detector|rag)&quot; | head -5
+
+# Monitorear crecimiento
+watch -n 5 'ps aux | grep -E &quot;(sniffer|ml-detector|rag)&quot; | grep -v grep'
+</code></pre>
+<p><strong>Soluciones:</strong></p>
+<ol>
+<li><strong>Reducir contexto RAG:</strong></li>
+</ol>
+<pre><code class="language-json">// En /etc/rag-security/system_config.json
+{
+  &quot;llama&quot;: {
+    &quot;context_size&quot;: 512  // Reducir de 1024
+  }
+}
+</code></pre>
+<ol>
+<li><strong>Reiniciar servicio RAG:</strong></li>
+</ol>
+<pre><code class="language-bash">sudo systemctl restart ml-defender-rag
+</code></pre>
+<ol>
+<li><strong>Verificar memory leaks:</strong></li>
+</ol>
+<pre><code class="language-bash"># Ejecutar health check
+/usr/local/bin/ml-defender-health-check
+</code></pre>
+<hr />
+<h3 id="error-rag-system-no-responde">❌ Error: RAG System no responde</h3>
+<p><strong>Síntoma:</strong> Comandos <code>rag ask_llm</code> no retornan respuesta.</p>
+<p><strong>Diagnóstico:</strong></p>
+<pre><code class="language-bash"># Verificar que el servicio está activo
+sudo systemctl status ml-defender-rag
+
+# Verificar logs de error
+sudo tail -f /var/log/ml-defender/rag-stderr.log
+
+# Probar conectividad al puerto
+telnet localhost 9090
+</code></pre>
+<p><strong>Soluciones:</strong></p>
+<ol>
+<li><strong>Verificar modelo LLAMA:</strong></li>
+</ol>
+<pre><code class="language-bash"># Verificar que el modelo existe
+ls -lh /opt/rag-security/models/tinyllama-1.1b-chat-v1.0.Q4_0.gguf
+
+# Verificar permisos
+sudo chmod 644 /opt/rag-security/models/*.gguf
+</code></pre>
+<ol>
+<li><strong>Reiniciar servicio:</strong></li>
+</ol>
+<pre><code class="language-bash">sudo systemctl restart ml-defender-rag
+</code></pre>
+<ol>
+<li><strong>Ejecutar en modo debug:</strong></li>
+</ol>
+<pre><code class="language-bash">cd /opt/rag-security/build
+./rag-security --config /etc/rag-security/system_config.json --debug
+</code></pre>
+<hr />
+<h2 id="ebpfxdp-issues">eBPF/XDP Issues</h2>
+<h3 id="error-failed-to-load-ebpf-program">❌ Error: "Failed to load eBPF program"</h3>
+<p><strong>Síntoma:</strong></p>
+<pre><code>[ERROR] Failed to load eBPF object from sniffer.bpf.o
+</code></pre>
+<p><strong>Diagnóstico:</strong></p>
+<pre><code class="language-bash"># Verificar kernel support
+ls -l /sys/kernel/btf/vmlinux
+
+# Verificar que el archivo existe
+ls -lh /usr/local/lib/sniffer/sniffer.bpf.o
+
+# Verificar permisos
+sudo chmod 644 /usr/local/lib/sniffer/sniffer.bpf.o
+</code></pre>
+<p><strong>Soluciones:</strong></p>
+<ol>
+<li><strong>Recompilar programa eBPF:</strong></li>
+</ol>
+<pre><code class="language-bash">cd /opt/ml-defender/sniffer/build
+make clean &amp;&amp; make -j$(nproc)
+sudo cp sniffer.bpf.o /usr/local/lib/sniffer/
+</code></pre>
+<ol>
+<li><strong>Verificar versión del kernel:</strong></li>
+</ol>
+<pre><code class="language-bash">uname -r  # Debe ser &gt;= 6.1
+</code></pre>
+<hr />
+<h3 id="error-no-se-capturan-paquetes">❌ Error: No se capturan paquetes</h3>
+<p><strong>Síntoma:</strong> Sniffer arranca pero no procesa eventos.</p>
+<p><strong>Diagnóstico:</strong></p>
+<pre><code class="language-bash"># Verificar programa eBPF cargado
+sudo bpftool prog show | grep sniffer
+
+# Verificar adjunto a interfaz
+ip link show eth0 | grep xdp
+
+# Generar tráfico de prueba
+ping -c 5 8.8.8.8
+
+# Ver logs del sniffer
+sudo tail -f /var/log/ml-defender/sniffer-stdout.log
+</code></pre>
+<p><strong>Soluciones:</strong></p>
+<ol>
+<li><strong>Verificar interfaz:</strong></li>
+</ol>
+<pre><code class="language-json">// En /etc/sniffer/sniffer.json
+{
+  &quot;interface&quot;: &quot;eth0&quot;  // ← Debe coincidir con tu interfaz
+}
+</code></pre>
+<ol>
+<li><strong>Desactivar filtros temporalmente:</strong></li>
+</ol>
+<pre><code class="language-json">{
+  &quot;filter&quot;: {
+    &quot;mode&quot;: &quot;passthrough&quot;
+  }
+}
+</code></pre>
+<hr />
+<h2 id="zmq-communication-issues">ZMQ Communication Issues</h2>
+<h3 id="error-address-already-in-use">❌ Error: "Address already in use"</h3>
+<p><strong>Síntoma:</strong></p>
+<pre><code>Address already in use (zmq_bind)
+</code></pre>
+<p><strong>Solución:</strong></p>
+<pre><code class="language-bash"># Ver qué está usando los puertos
+sudo netstat -tlnp | grep -E &quot;(5571|5572|9090)&quot;
+
+# Matar procesos anteriores
+sudo pkill -f &quot;sniffer\|ml-detector\|rag-security&quot;
+
+# Reiniciar servicios
+sudo systemctl restart ml-defender-sniffer
+sudo systemctl restart ml-defender-detector
+sudo systemctl restart ml-defender-rag
+</code></pre>
+<hr />
+<h3 id="error-detector-no-recibe-mensajes">❌ Error: Detector no recibe mensajes</h3>
+<p><strong>Síntoma:</strong> Sniffer envía pero detector no procesa.</p>
+<p><strong>Verificación de endpoints:</strong></p>
+<pre><code class="language-bash"># Sniffer debe enviar a 5571
+grep &quot;output_endpoint&quot; /etc/sniffer/sniffer.json
+
+# Detector debe recibir de 5571 y enviar a 5572  
+grep -A 3 &quot;zmq&quot; /etc/ml-detector/ml_detector_config.json
+</code></pre>
+<p><strong>Solución:</strong></p>
+<pre><code class="language-json">// En /etc/sniffer/sniffer.json
+{
+  &quot;zmq&quot;: {
+    &quot;output_endpoint&quot;: &quot;tcp://127.0.0.1:5571&quot;
+  }
+}
+
+// En /etc/ml-detector/ml_detector_config.json
+{
+  &quot;zmq&quot;: {
+    &quot;input_endpoint&quot;: &quot;tcp://127.0.0.1:5571&quot;,
+    &quot;output_endpoint&quot;: &quot;tcp://127.0.0.1:5572&quot;
+  }
+}
+</code></pre>
+<hr />
+<h2 id="ml-detector-issues">ML Detector Issues</h2>
+<h3 id="error-modelos-no-cargan">❌ Error: Modelos no cargan</h3>
+<p><strong>Síntoma:</strong></p>
+<pre><code>[ERROR] Failed to load ML model
+</code></pre>
+<p><strong>Solución:</strong></p>
+<pre><code class="language-bash"># Verificar que los modelos existen
+ls -lh /opt/ml-defender/models/
+
+# Verificar configuración
+grep &quot;model_path&quot; /etc/ml-detector/ml_detector_config.json
+
+# Verificar permisos
+sudo chmod 644 /opt/ml-defender/models/*.bin
+</code></pre>
+<hr />
+<h3 id="error-baja-precision-en-detecciones">❌ Error: Baja precisión en detecciones</h3>
+<p><strong>Síntoma:</strong> Falsos positivos o negativos altos.</p>
+<p><strong>Solución:</strong> Ajustar thresholds en configuración:</p>
+<pre><code class="language-json">{
+  &quot;ml_defender&quot;: {
+    &quot;thresholds&quot;: {
+      &quot;ddos&quot;: 0.90,        // Aumentar para menos falsos positivos
+      &quot;ransomware&quot;: 0.95,  // Aumentar para ransomware
+      &quot;traffic&quot;: 0.75,     // Disminuir para más sensibilidad
+      &quot;internal&quot;: 0.80     // Ajustar según red interna
+    }
+  }
+}
+</code></pre>
+<hr />
+<h2 id="rag-system-issues">RAG System Issues</h2>
+<h3 id="error-llama-model-failed-to-load">❌ Error: "LLAMA model failed to load"</h3>
+<p><strong>Síntoma:</strong></p>
+<pre><code>[ERROR] Failed to load LLAMA model
+</code></pre>
+<p><strong>Diagnóstico:</strong></p>
+<pre><code class="language-bash"># Verificar que el modelo existe
+ls -lh /opt/rag-security/models/tinyllama-1.1b-chat-v1.0.Q4_0.gguf
+
+# Verificar tamaño (debe ser ~1.5GB)
+du -h /opt/rag-security/models/tinyllama-1.1b-chat-v1.0.Q4_0.gguf
+
+# Verificar configuración
+grep &quot;model_path&quot; /etc/rag-security/system_config.json
+</code></pre>
+<p><strong>Solución:</strong></p>
+<pre><code class="language-bash"># Re-descargar modelo si está corrupto
+cd /opt/rag-security/models
+rm tinyllama-1.1b-chat-v1.0.Q4_0.gguf
+wget https://huggingface.co/TheBloke/TinyLlama-1.1B-Chat-v1.0-GGUF/resolve/main/tinyllama-1.1b-chat-v1.0.Q4_0.gguf
+</code></pre>
+<hr />
+<h3 id="error-respuestas-incoherentes-del-llama">❌ Error: Respuestas incoherentes del LLAMA</h3>
+<p><strong>Síntoma:</strong> El modelo genera respuestas sin sentido.</p>
+<p><strong>Solución:</strong> Mejorar el prompt de sistema:</p>
+<pre><code class="language-cpp">// En llama_integration_real.cpp, verificar:
+std::string enhanced_prompt =
+    &quot;&lt;|system|&gt;\n&quot;
+    &quot;Eres un asistente especializado en seguridad informática...\n&quot;
+    &quot;&lt;|user|&gt;\n&quot; + prompt + &quot;\n&quot;
+    &quot;&lt;|assistant|&gt;\n&quot;;
+</code></pre>
+<hr />
+<h3 id="error-timeout-en-consultas-rag">❌ Error: Timeout en consultas RAG</h3>
+<p><strong>Síntoma:</strong> Las consultas tardan demasiado o timeout.</p>
+<p><strong>Solución:</strong></p>
+<pre><code class="language-json">// En /etc/rag-security/system_config.json
+{
+  &quot;llama&quot;: {
+    &quot;max_tokens&quot;: 128,  // Reducir longitud máxima
+    &quot;temperature&quot;: 0.3  // Reducir para respuestas más concisas
+  },
+  &quot;security&quot;: {
+    &quot;request_timeout_sec&quot;: 60  // Aumentar timeout
+  }
+}
+</code></pre>
+<hr />
+<h2 id="vagrantvm-issues">Vagrant/VM Issues</h2>
+<h3 id="error-vm-no-arranca">❌ Error: VM no arranca</h3>
+<p><strong>Síntoma:</strong></p>
+<pre><code>VBoxManage: error: Failed to create the host-only adapter
+</code></pre>
+<p><strong>Solución:</strong></p>
+<pre><code class="language-bash"># En host, recrear VM
+cd /vagrant
+vagrant destroy -f
+vagrant up
+
+# Verificar recursos asignados
+# Mínimo: 4GB RAM, 4 CPUs, 10GB disco
+</code></pre>
+<hr />
+<h3 id="error-shared-folder-no-montado">❌ Error: Shared folder no montado</h3>
+<p><strong>Síntoma:</strong></p>
+<pre><code>/vagrant: No such file or directory
+</code></pre>
+<p><strong>Solución:</strong></p>
+<pre><code class="language-bash"># Reinstalar Guest Additions
+vagrant plugin install vagrant-vbguest
+vagrant reload
+
+# Verificar
+vagrant ssh -c &quot;ls /vagrant&quot;
+</code></pre>
+<hr />
+<h2 id="debug-tools">Debug Tools</h2>
+<h3 id="health-check-integral">Health Check Integral</h3>
+<pre><code class="language-bash"># Ejecutar health check completo
+/usr/local/bin/ml-defender-health-check
+
+# Verificar estado individual de componentes
+sudo systemctl status ml-defender-sniffer
+sudo systemctl status ml-defender-detector  
+sudo systemctl status ml-defender-rag
+
+# Ver logs en tiempo real
+sudo journalctl -u ml-defender-sniffer -f
+sudo tail -f /var/log/ml-defender/rag-stdout.log
+</code></pre>
+<h3 id="monitoreo-de-rendimiento">Monitoreo de Rendimiento</h3>
+<pre><code class="language-bash"># Ver uso de recursos
+/usr/local/bin/ml-defender-monitor
+
+# Ver procesos específicos
+ps aux | grep -E &quot;(sniffer|ml-detector|rag)&quot; | grep -v grep
+
+# Ver memoria detallada
+cat /proc/$(pgrep rag-security)/status | grep -E &quot;VmSize|VmRSS&quot;
+</code></pre>
+<h3 id="verificacion-bpfebpf">Verificación BPF/eBPF</h3>
+<pre><code class="language-bash"># Ver programas eBPF cargados
+sudo bpftool prog show | grep sniffer
+
+# Ver maps eBPF
+sudo bpftool map list | grep sniffer
+
+# Ver estadísticas
+sudo bpftool prog show id $(sudo bpftool prog show | grep sniffer | head -1 | awk '{print $1}')
+</code></pre>
+<h3 id="test-de-comunicacion">Test de Comunicación</h3>
+<pre><code class="language-bash"># Test ZMQ endpoints
+nc -zv 127.0.0.1 5571
+nc -zv 127.0.0.1 5572  
+nc -zv 127.0.0.1 9090
+
+# Test RAG system interactivo
+telnet localhost 9090
+# Luego ejecutar: rag show_config
+</code></pre>
+<hr />
+<h2 id="emergency-recovery">Emergency Recovery</h2>
+<h3 id="reset-completo-del-sistema">Reset Completo del Sistema</h3>
+<pre><code class="language-bash"># Parar todos los servicios
+sudo systemctl stop ml-defender-rag
+sudo systemctl stop ml-defender-detector
+sudo systemctl stop ml-defender-sniffer
+
+# Limpiar procesos residuales
+sudo pkill -f &quot;sniffer\|ml-detector\|rag-security&quot;
+
+# Limpiar logs
+sudo rm -f /var/log/ml-defender/*.log
+
+# Reiniciar servicios en orden
+sudo systemctl start ml-defender-sniffer
+sudo systemctl start ml-defender-detector
+sudo systemctl start ml-defender-rag
+
+# Verificar estado
+/usr/local/bin/ml-defender-health-check
+</code></pre>
+<h3 id="nuclear-option-reinstalacion-completa">Nuclear Option: Reinstalación Completa</h3>
+<pre><code class="language-bash"># En host
+cd /vagrant
+vagrant destroy -f
+vagrant up
+
+# Reinstalar ML Defender
+/vagrant/scripts/install-ml-defender.sh
+</code></pre>
+<hr />
+<h2 id="common-patterns-solutions">Common Patterns &amp; Solutions</h2>
+<h3 id="pattern-funcionaba-y-dejo-de-funcionar">Pattern: "Funcionaba y dejó de funcionar"</h3>
+<p><strong>Checklist:</strong>
+1. ✅ Verificar recursos: <code>free -h &amp;&amp; df -h</code>
+2. ✅ Reiniciar servicios: <code>sudo systemctl restart ml-defender-*</code>
+3. ✅ Verificar logs: <code>sudo journalctl -u ml-defender-rag --since "1 hour ago"</code>
+4. ✅ Health check: <code>/usr/local/bin/ml-defender-health-check</code></p>
+<h3 id="pattern-alta-latencia-en-rag">Pattern: Alta latencia en RAG</h3>
+<p><strong>Soluciones:</strong>
+1. Reducir <code>max_tokens</code> en configuración RAG
+2. Reducir <code>context_size</code> si no se necesita contexto largo
+3. Verificar que no hay múltiples instancias ejecutándose</p>
+<h3 id="pattern-falsos-positivos-en-ml">Pattern: Falsos positivos en ML</h3>
+<p><strong>Ajustes recomendados:</strong></p>
+<pre><code class="language-json">{
+  &quot;thresholds&quot;: {
+    &quot;ddos&quot;: 0.90,
+    &quot;ransomware&quot;: 0.95, 
+    &quot;traffic&quot;: 0.85,
+    &quot;internal&quot;: 0.88
+  }
+}
+</code></pre>
+<hr />
+<h2 id="getting-help">Getting Help</h2>
+<p>Si los problemas persisten:</p>
+<ol>
+<li><strong>Recolectar información de debug:</strong></li>
+</ol>
+<pre><code class="language-bash">cd /opt/ml-defender
+./scripts/collect_debug_info.sh &gt; ml_defender_debug_$(date +%Y%m%d).txt
+</code></pre>
+<ol>
+<li><strong>Verificar documentación:</strong></li>
+<li><code>README.md</code> - Visión general del sistema</li>
+<li><code>ARCHITECTURE.md</code> - Diseño arquitectónico</li>
+<li><code>DEPLOYMENT.md</code> - Guía de despliegue</li>
+<li>
+<p><code>AUTHORS.md</code> - Equipo de desarrollo</p>
+</li>
+<li>
+<p><strong>Reportar issues:</strong></p>
+</li>
+<li>Incluir salida del health check</li>
+<li>Incluir logs relevantes</li>
+<li>Describir pasos para reproducir</li>
+</ol>
+<hr />
+<div align="center">
+
+**🛡️ ML Defender Troubleshooting Guide 🛡️**
+
+*Sistema RAG + 4 Detectores ML • Actualizado: Noviembre 20, 2025*
+
+**¡Base sólida establecida! Próximo objetivo: Estabilidad 100% 🚀**
+
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.tabs", "navigation.top", "search.highlight"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

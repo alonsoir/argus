@@ -1,0 +1,2313 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source embedded-ML NDR for hospitals and schools">
+      
+      
+        <meta name="author" content="Alonso Isidoro Roman">
+      
+      
+        <link rel="canonical" href="https://alonsoir.github.io/argus/contracts/JSON%20contracts/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>JSON Contracts — Configuración de Componentes - ML Defender (aRGus NDR)</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#json-contracts-configuracion-de-componentes" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-header__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ML Defender (aRGus NDR)
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              JSON Contracts — Configuración de Componentes
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../README.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/BACKLOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Backlog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Security Model
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-tabs__link">
+          
+  
+  
+  ADRs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/contracts/Protobuf contracts.md" class="md-tabs__link">
+          
+  
+  
+  Contracts
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-nav__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ML Defender (aRGus NDR)
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../README.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/BACKLOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADRs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ADRs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013 Seed Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-021-deployment-topology-seed-families.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-021 Topology SSOT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-022-threat-model-opcion2-descartada.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-022 Threat Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Protobuf contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protobuf
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/JSON contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JSON
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Rag security commands.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#indice" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Índice
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#snifferjson" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        sniffer.json
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="sniffer.json">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#deployment-modos-de-operacion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Deployment — modos de operación
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#profiles" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Profiles
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#captura-seccion-capture" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Captura (sección capture)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#kernel-space-features-extraidas-en-ebpf" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Kernel space — features extraídas en eBPF
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#transporte" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Transporte
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fast-detector-thresholds-externalizados-day-12" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fast Detector — thresholds externalizados (DAY 12)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ml-defender-thresholds-de-deteccion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ML Defender — thresholds de detección
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#buffers-y-ventanas-temporales" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Buffers y ventanas temporales
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#logging" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Logging
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#ml_detector_configjson" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ml_detector_config.json
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="ml_detector_config.json">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#arquitectura-tricapa" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Arquitectura tricapa
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#sockets-zmq" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Sockets ZMQ
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#modelos-nivel-1-onnx" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Modelos Nivel 1 (ONNX)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#modelos-nivel-2-c20-embebidos" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Modelos Nivel 2 (C++20 embebidos)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#modelos-nivel-3-c20-embebidos" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Modelos Nivel 3 (C++20 embebidos)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#scoring-y-divergencia" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Scoring y divergencia
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#csv-writer-eventos-para-rag" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CSV writer (eventos para RAG)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#logging_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Logging
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#firewalljson" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        firewall.json
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="firewall.json">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#rol-en-el-pipeline" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Rol en el pipeline
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#socket-zmq" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Socket ZMQ
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipsets" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        IPSets
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#validacion-de-ips" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Validación de IPs
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#procesamiento-en-batch" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Procesamiento en batch
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#csv-batch-logger-para-rag" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CSV batch logger (para RAG)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#logging_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Logging
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#rag-ingesterjson" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        rag-ingester.json
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="rag-ingester.json">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#rol-en-el-pipeline_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Rol en el pipeline
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fuentes-de-datos" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fuentes de datos
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#embedders-modelos-onnx" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Embedders (modelos ONNX)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pca-reduccion-de-dimensionalidad-anti-curse" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        PCA — reducción de dimensionalidad (anti-curse)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#faiss" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        FAISS
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#health-monitoring" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Health monitoring
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#rag-configjson" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        rag-config.json
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="rag-config.json">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#modelo-llm" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Modelo LLM
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dimensiones-faiss-deben-coincidir-con-rag-ingester-tras-pca" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Dimensiones FAISS (deben coincidir con rag-ingester tras PCA)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#capacidades-habilitadas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Capacidades habilitadas
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#transporte_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Transporte
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#logging_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Logging
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#convenciones-comunes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Convenciones comunes
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Convenciones comunes">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#puertos-zmq-del-pipeline" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Puertos ZMQ del pipeline
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#etcd-paths-de-configuracion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Etcd — paths de configuración
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#sentinel-value" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Sentinel value
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#schema-version" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Schema version
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rotacion-de-logs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Rotación de logs
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#flujo-de-datos-entre-componentes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Flujo de datos entre componentes
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="json-contracts-configuracion-de-componentes">JSON Contracts — Configuración de Componentes</h1>
+<blockquote>
+<p><strong>Principio:</strong> <code>JSON is the law</code> — toda configuración operacional vive en JSON, nunca en código hardcodeado.
+<strong>Última revisión:</strong> DAY 92 — 20 marzo 2026</p>
+</blockquote>
+<hr />
+<h2 id="indice">Índice</h2>
+<ol>
+<li><a href="#snifferjson">sniffer.json</a></li>
+<li><a href="#ml_detector_configjson">ml_detector_config.json</a></li>
+<li><a href="#firewalljson">firewall.json</a></li>
+<li><a href="#rag-ingesterjson">rag-ingester.json</a></li>
+<li><a href="#rag-configjson">rag-config.json</a></li>
+<li><a href="#convenciones-comunes">Convenciones comunes</a></li>
+<li><a href="#flujo-de-datos-entre-componentes">Flujo de datos entre componentes</a></li>
+</ol>
+<hr />
+<h2 id="snifferjson">sniffer.json</h2>
+<p><strong>Path:</strong> <code>sniffer/config/sniffer.json</code>
+<strong>Versión actual:</strong> <code>3.3.3</code>
+<strong>Componente:</strong> <code>cpp_evolutionary_sniffer</code></p>
+<h3 id="deployment-modos-de-operacion">Deployment — modos de operación</h3>
+<p>El sniffer soporta 4 modos de despliegue:</p>
+<table>
+<thead>
+<tr>
+<th>Modo</th>
+<th>Descripción</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>host-only</code></td>
+<td>NIC única — protege solo el host (defensa bastión)</td>
+</tr>
+<tr>
+<td><code>gateway-only</code></td>
+<td>NIC única — inspecciona tráfico en tránsito (modo router)</td>
+</tr>
+<tr>
+<td><code>dual</code></td>
+<td>Dual NIC — protección de host + inspección gateway simultánea</td>
+</tr>
+<tr>
+<td><code>validation</code></td>
+<td>Testing — soporte de replay libpcap para validación con PCAPs</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Configuración activa:</strong> <code>dual</code></p>
+<p><strong>Interfaces Vagrant (entorno lab):</strong></p>
+<table>
+<thead>
+<tr>
+<th>Interfaz</th>
+<th>Rol</th>
+<th>IP</th>
+<th>Comportamiento</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>eth0</code></td>
+<td>NAT</td>
+<td>—</td>
+<td>Administración Vagrant</td>
+</tr>
+<tr>
+<td><code>eth1</code></td>
+<td>WAN / host-based</td>
+<td><code>192.168.56.20</code></td>
+<td>Captura ingress only — <code>interface_mode=1</code></td>
+</tr>
+<tr>
+<td><code>eth2</code></td>
+<td>LAN / gateway</td>
+<td><code>192.168.100.1</code></td>
+<td>Captura bidireccional — <code>interface_mode=2</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="profiles">Profiles</h3>
+<table>
+<thead>
+<tr>
+<th>Profile</th>
+<th>Worker threads</th>
+<th>Compresión</th>
+<th>Uso</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>lab</code></td>
+<td>2</td>
+<td>nivel 1</td>
+<td>Entorno Vagrant/VirtualBox</td>
+</tr>
+<tr>
+<td><code>cloud</code></td>
+<td>8</td>
+<td>nivel 3</td>
+<td>Instancias cloud</td>
+</tr>
+<tr>
+<td><code>bare_metal</code></td>
+<td>16</td>
+<td>nivel 1</td>
+<td>Hardware dedicado</td>
+</tr>
+<tr>
+<td><code>dual_nic</code></td>
+<td>6</td>
+<td>nivel 1</td>
+<td>Dual-NIC lab (activo)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Profile activo:</strong> <code>dual_nic</code></p>
+<h3 id="captura-seccion-capture">Captura (sección <code>capture</code>)</h3>
+<table>
+<thead>
+<tr>
+<th>Parámetro</th>
+<th>Valor</th>
+<th>Descripción</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>mode</code></td>
+<td><code>ebpf_skb</code></td>
+<td>Modo eBPF SKB (compatible VirtualBox)</td>
+</tr>
+<tr>
+<td><code>xdp_mode</code></td>
+<td><code>skb</code></td>
+<td>XDP genérico</td>
+</tr>
+<tr>
+<td><code>excluded_ports</code></td>
+<td><code>[22]</code></td>
+<td>SSH excluido siempre</td>
+</tr>
+<tr>
+<td><code>default_action</code></td>
+<td><code>capture</code></td>
+<td>Capturar todo lo no excluido</td>
+</tr>
+<tr>
+<td><code>included_protocols</code></td>
+<td><code>tcp, udp, icmp</code></td>
+<td>Protocolos capturados</td>
+</tr>
+<tr>
+<td><code>buffer_size</code></td>
+<td>65536</td>
+<td>Tamaño del buffer de captura</td>
+</tr>
+</tbody>
+</table>
+<h3 id="kernel-space-features-extraidas-en-ebpf">Kernel space — features extraídas en eBPF</h3>
+<pre><code>source_ip, destination_ip, source_port, destination_port,
+protocol_number, total_forward_packets, total_backward_packets,
+total_forward_bytes, total_backward_bytes,
+fin_flag_count, syn_flag_count, rst_flag_count,
+psh_flag_count, ack_flag_count, urg_flag_count
+</code></pre>
+<h3 id="transporte">Transporte</h3>
+<table>
+<thead>
+<tr>
+<th>Parámetro</th>
+<th>Valor</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>compression.algorithm</code></td>
+<td><code>lz4</code> (nivel 1)</td>
+</tr>
+<tr>
+<td><code>encryption.algorithm</code></td>
+<td><code>chacha20-poly1305</code></td>
+</tr>
+<tr>
+<td><code>encryption.key_rotation_hours</code></td>
+<td>24</td>
+</tr>
+<tr>
+<td><code>zmq_curve_enabled</code></td>
+<td><code>true</code></td>
+</tr>
+<tr>
+<td><code>output_socket</code></td>
+<td><code>127.0.0.1:5571</code> (PUSH)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="fast-detector-thresholds-externalizados-day-12">Fast Detector — thresholds externalizados (DAY 12)</h3>
+<blockquote>
+<p>Principio Via Appia Quality: sin thresholds hardcodeados, el JSON manda.</p>
+</blockquote>
+<p><strong>Activación (cualquier condición activa el detector):</strong></p>
+<table>
+<thead>
+<tr>
+<th>Condición</th>
+<th>Umbral</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>external_ips_30s</code></td>
+<td>&gt; 15 IPs en 30s</td>
+</tr>
+<tr>
+<td><code>smb_diversity</code></td>
+<td>&gt; 10 conexiones SMB distintas</td>
+</tr>
+<tr>
+<td><code>dns_entropy</code></td>
+<td>&gt; 2.5 bits</td>
+</tr>
+<tr>
+<td><code>failed_dns_ratio</code></td>
+<td>&gt; 0.30</td>
+</tr>
+<tr>
+<td><code>upload_download_ratio</code></td>
+<td>&gt; 3.0</td>
+</tr>
+<tr>
+<td><code>burst_connections</code></td>
+<td>&gt; 50 conexiones en burst</td>
+</tr>
+<tr>
+<td><code>unique_destinations_30s</code></td>
+<td>&gt; 30 destinos únicos en 30s</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Scores:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Nivel</th>
+<th>Score</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>high_threat</code></td>
+<td>0.95</td>
+</tr>
+<tr>
+<td><code>suspicious</code></td>
+<td>0.70</td>
+</tr>
+<tr>
+<td><code>alert</code></td>
+<td>0.75</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Clasificación:</strong>
+- <code>high_threat</code> si: <code>external_ips_30s &gt; umbral</code> OR <code>smb_diversity &gt; umbral</code>
+- <code>suspicious</code> si: <code>dns_entropy &gt; umbral</code> OR <code>burst_connections &gt; umbral</code></p>
+<h3 id="ml-defender-thresholds-de-deteccion">ML Defender — thresholds de detección</h3>
+<table>
+<thead>
+<tr>
+<th>Detector</th>
+<th>Umbral</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>ddos</code></td>
+<td>0.85</td>
+</tr>
+<tr>
+<td><code>ransomware</code></td>
+<td>0.90</td>
+</tr>
+<tr>
+<td><code>traffic</code></td>
+<td>0.80</td>
+</tr>
+<tr>
+<td><code>internal</code></td>
+<td>0.85</td>
+</tr>
+</tbody>
+</table>
+<p>Rango válido: <code>[0.5, 0.99]</code>. Fallback: <code>0.75</code>.</p>
+<h3 id="buffers-y-ventanas-temporales">Buffers y ventanas temporales</h3>
+<table>
+<thead>
+<tr>
+<th>Parámetro</th>
+<th>Valor</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>flow_tracking_window_seconds</code></td>
+<td>300</td>
+</tr>
+<tr>
+<td><code>feature_aggregation_window_seconds</code></td>
+<td>30</td>
+</tr>
+<tr>
+<td><code>max_flows_per_window</code></td>
+<td>100.000</td>
+</tr>
+<tr>
+<td><code>flow_state_buffer_entries</code></td>
+<td>500.000</td>
+</tr>
+<tr>
+<td><code>ring_buffer_entries</code></td>
+<td>65.536</td>
+</tr>
+</tbody>
+</table>
+<h3 id="logging">Logging</h3>
+<ul>
+<li><strong>Path:</strong> <code>/vagrant/logs/lab/sniffer.log</code></li>
+<li><strong>Level:</strong> <code>INFO</code></li>
+<li><strong>Rotación:</strong> 10 ficheros × 200 MB</li>
+</ul>
+<hr />
+<h2 id="ml_detector_configjson">ml_detector_config.json</h2>
+<p><strong>Path:</strong> <code>ml-detector/config/ml_detector_config.json</code>
+<strong>Versión actual:</strong> <code>1.0.0</code>
+<strong>Componente:</strong> <code>cpp_ml_detector_tricapa</code></p>
+<h3 id="arquitectura-tricapa">Arquitectura tricapa</h3>
+<pre><code>Nivel 1 — Detección general
+    └── Random Forest, 23 features, ONNX (level1_attack_detector.onnx)
+         threshold: 0.65
+
+Nivel 2 — Clasificadores especializados (embebidos C++20)
+    ├── DDoS Binary Detector    — 10 features, &lt; 50μs, threshold: 0.70
+    └── Ransomware Detector     — 10 features, &lt; 55μs, threshold: 0.75
+
+Nivel 3 — Especialización avanzada (embebidos C++20)
+    ├── Traffic Classifier      — 10 features, &lt; 50μs, threshold: 0.60
+    └── Internal Anomaly        — 10 features, &lt; 48μs, threshold: 0.65
+</code></pre>
+<h3 id="sockets-zmq">Sockets ZMQ</h3>
+<table>
+<thead>
+<tr>
+<th>Socket</th>
+<th>Endpoint</th>
+<th>Tipo</th>
+<th>Rol</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Input</td>
+<td><code>tcp://127.0.0.1:5571</code></td>
+<td>PULL</td>
+<td>Recibe de sniffer</td>
+</tr>
+<tr>
+<td>Output</td>
+<td><code>tcp://0.0.0.0:5572</code></td>
+<td>PUB</td>
+<td>Publica a firewall y RAG</td>
+</tr>
+</tbody>
+</table>
+<h3 id="modelos-nivel-1-onnx">Modelos Nivel 1 (ONNX)</h3>
+<table>
+<thead>
+<tr>
+<th>Parámetro</th>
+<th>Valor</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>model_file</code></td>
+<td><code>models/production/level1/level1_attack_detector.onnx</code></td>
+</tr>
+<tr>
+<td><code>scaler_file</code></td>
+<td><code>models/production/level1/scaler.json</code></td>
+</tr>
+<tr>
+<td><code>features_count</code></td>
+<td>23</td>
+</tr>
+<tr>
+<td><code>requires_scaling</code></td>
+<td><code>true</code></td>
+</tr>
+<tr>
+<td><code>timeout_ms</code></td>
+<td>10</td>
+</tr>
+</tbody>
+</table>
+<h3 id="modelos-nivel-2-c20-embebidos">Modelos Nivel 2 (C++20 embebidos)</h3>
+<p><strong>DDoS Binary Detector:</strong></p>
+<p>Features: <code>syn_ack_ratio</code>, <code>packet_symmetry</code>, <code>source_ip_dispersion</code>, <code>protocol_anomaly_score</code>, <code>packet_size_entropy</code>, <code>traffic_amplification_factor</code>, <code>flow_completion_rate</code>, <code>geographical_concentration</code>, <code>traffic_escalation_rate</code>, <code>resource_saturation_score</code></p>
+<p><strong>Ransomware Detector Embedded:</strong></p>
+<p>Features: <code>io_intensity</code>, <code>entropy</code>, <code>resource_usage</code>, <code>network_activity</code>, <code>file_operations</code>, <code>process_anomaly</code>, <code>temporal_pattern</code>, <code>access_frequency</code>, <code>data_volume</code>, <code>behavior_consistency</code></p>
+<h3 id="modelos-nivel-3-c20-embebidos">Modelos Nivel 3 (C++20 embebidos)</h3>
+<p><strong>Traffic Classifier:</strong> <code>packet_rate</code>, <code>connection_rate</code>, <code>tcp_udp_ratio</code>, <code>avg_packet_size</code>, <code>port_entropy</code>, <code>flow_duration_std</code>, <code>src_ip_entropy</code>, <code>dst_ip_concentration</code>, <code>protocol_variety</code>, <code>temporal_consistency</code></p>
+<p><strong>Internal Anomaly Detector:</strong> <code>internal_connection_rate</code>, <code>service_port_consistency</code>, <code>protocol_regularity</code>, <code>packet_size_consistency</code>, <code>connection_duration_std</code>, <code>lateral_movement_score</code>, <code>service_discovery_patterns</code>, <code>data_exfiltration_indicators</code>, <code>temporal_anomaly_score</code>, <code>access_pattern_entropy</code></p>
+<h3 id="scoring-y-divergencia">Scoring y divergencia</h3>
+<table>
+<thead>
+<tr>
+<th>Parámetro</th>
+<th>Valor</th>
+<th>Significado</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>divergence_warn_threshold</code></td>
+<td>0.30</td>
+<td>Divergencia fast/ML que genera warning</td>
+</tr>
+<tr>
+<td><code>divergence_high_threshold</code></td>
+<td>0.40</td>
+<td>Divergencia alta — análisis RAG</td>
+</tr>
+<tr>
+<td><code>malicious_threshold</code></td>
+<td>0.70</td>
+<td>Score mínimo para clasificar MALICIOUS</td>
+</tr>
+<tr>
+<td><code>requires_rag_threshold</code></td>
+<td>0.85</td>
+<td>Score que dispara análisis RAG</td>
+</tr>
+</tbody>
+</table>
+<h3 id="csv-writer-eventos-para-rag">CSV writer (eventos para RAG)</h3>
+<table>
+<thead>
+<tr>
+<th>Parámetro</th>
+<th>Valor</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>base_dir</code></td>
+<td><code>/vagrant/logs/ml-detector/events/</code></td>
+</tr>
+<tr>
+<td><code>min_score_threshold</code></td>
+<td>0.50</td>
+</tr>
+<tr>
+<td><code>max_events_per_file</code></td>
+<td>10.000</td>
+</tr>
+</tbody>
+</table>
+<h3 id="logging_1">Logging</h3>
+<ul>
+<li><strong>Path:</strong> <code>/vagrant/logs/lab/detector.log</code></li>
+<li><strong>Level:</strong> <code>INFO</code></li>
+<li><strong>Rotación:</strong> 10 ficheros × 200 MB</li>
+</ul>
+<hr />
+<h2 id="firewalljson">firewall.json</h2>
+<p><strong>Path:</strong> <code>firewall-acl-agent/config/firewall.json</code>
+<strong>Versión actual:</strong> <code>1.2.1</code>
+<strong>Componente:</strong> <code>firewall-acl-agent</code></p>
+<h3 id="rol-en-el-pipeline">Rol en el pipeline</h3>
+<p>El firewall-acl-agent es el <strong>endpoint final</strong> del pipeline. Solo <strong>descifra</strong> y <strong>descomprime</strong> — no cifra ni comprime salidas (no tiene downstream).</p>
+<p><strong>Flujo de procesamiento:</strong></p>
+<pre><code>1. Recibir mensaje ZMQ de ml-detector (cifrado + comprimido)  → puerto 5572
+2. Descifrar con ChaCha20-Poly1305 (token desde etcd)
+3. Descomprimir con LZ4
+4. Parsear Protobuf (Detection/DetectionBatch)
+5. Aplicar reglas IPTables / IPSet
+</code></pre>
+<h3 id="socket-zmq">Socket ZMQ</h3>
+<table>
+<thead>
+<tr>
+<th>Parámetro</th>
+<th>Valor</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>endpoint</code></td>
+<td><code>tcp://localhost:5572</code></td>
+</tr>
+<tr>
+<td><code>socket_type</code></td>
+<td>SUB</td>
+</tr>
+<tr>
+<td><code>recv_timeout_ms</code></td>
+<td>1000</td>
+</tr>
+</tbody>
+</table>
+<h3 id="ipsets">IPSets</h3>
+<table>
+<thead>
+<tr>
+<th>Set</th>
+<th>Nombre</th>
+<th>Max elementos</th>
+<th>Timeout</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Blacklist</td>
+<td><code>ml_defender_blacklist_test</code></td>
+<td>1000</td>
+<td>3600s</td>
+</tr>
+<tr>
+<td>Whitelist</td>
+<td><code>ml_defender_whitelist</code></td>
+<td>500</td>
+<td>0 (permanente)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>IPTables:</strong> cadena <code>ML_DEFENDER_TEST</code>, política default <code>ACCEPT</code>.</p>
+<pre><code>iptables -A INPUT -m set --match-set ml_defender_blacklist_test src -j DROP
+</code></pre>
+<h3 id="validacion-de-ips">Validación de IPs</h3>
+<p>Rangos permitidos para bloqueo:</p>
+<pre><code>192.168.0.0/16
+10.0.0.0/8
+172.16.0.0/12
+</code></pre>
+<p><code>block_localhost: false</code> — nunca bloquear localhost.</p>
+<h3 id="procesamiento-en-batch">Procesamiento en batch</h3>
+<table>
+<thead>
+<tr>
+<th>Parámetro</th>
+<th>Valor</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>batch_size_threshold</code></td>
+<td>10</td>
+</tr>
+<tr>
+<td><code>batch_time_threshold_ms</code></td>
+<td>1000</td>
+</tr>
+<tr>
+<td><code>min_confidence</code></td>
+<td>0.50</td>
+</tr>
+</tbody>
+</table>
+<h3 id="csv-batch-logger-para-rag">CSV batch logger (para RAG)</h3>
+<ul>
+<li><strong>Output:</strong> <code>/vagrant/logs/firewall_logs/</code></li>
+<li><strong>Batch size:</strong> 100 eventos</li>
+<li><strong>Batch timeout:</strong> 5s</li>
+<li>Las CSVs incluyen firma HMAC para detección de manipulación</li>
+</ul>
+<h3 id="logging_2">Logging</h3>
+<ul>
+<li><strong>Path:</strong> <code>/vagrant/logs/lab/firewall-agent.log</code></li>
+<li><strong>Level:</strong> <code>debug</code></li>
+<li><strong>Rotación:</strong> 5 ficheros × 10 MB</li>
+</ul>
+<hr />
+<h2 id="rag-ingesterjson">rag-ingester.json</h2>
+<p><strong>Path:</strong> <code>rag-ingester/config/rag-ingester.json</code>
+<strong>Versión actual:</strong> <code>0.1.0</code>
+<strong>Componente:</strong> <code>rag-ingester</code></p>
+<h3 id="rol-en-el-pipeline_1">Rol en el pipeline</h3>
+<p>Consume eventos de dos fuentes CSV (ml-detector + firewall), genera embeddings y los indexa en FAISS para consultas del rag-security.</p>
+<h3 id="fuentes-de-datos">Fuentes de datos</h3>
+<table>
+<thead>
+<tr>
+<th>Fuente</th>
+<th>Path</th>
+<th>HMAC</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>ML Detector events</td>
+<td><code>/vagrant/logs/ml-detector/events/</code></td>
+<td>clave en <code>csv_ml_detector_hmac_key_hex</code></td>
+</tr>
+<tr>
+<td>Firewall blocks</td>
+<td><code>/vagrant/logs/firewall_logs/firewall_blocks.csv</code></td>
+<td>clave en <code>csv_firewall_hmac_key_hex</code></td>
+</tr>
+</tbody>
+</table>
+<p>Parámetro <code>replay_on_start: true</code> — re-procesa CSVs existentes al arrancar.</p>
+<h3 id="embedders-modelos-onnx">Embedders (modelos ONNX)</h3>
+<table>
+<thead>
+<tr>
+<th>Embedder</th>
+<th>Modelo ONNX</th>
+<th>Input dim</th>
+<th>Output dim</th>
+<th>Uso</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>chronos</code></td>
+<td><code>chronos.onnx</code></td>
+<td>83</td>
+<td>512</td>
+<td>Patrones temporales</td>
+</tr>
+<tr>
+<td><code>sbert</code></td>
+<td><code>sbert.onnx</code></td>
+<td>83</td>
+<td>384</td>
+<td>Semántica de seguridad</td>
+</tr>
+<tr>
+<td><code>attack</code></td>
+<td><code>attack.onnx</code></td>
+<td>83</td>
+<td>256</td>
+<td>Clasificación de ataques</td>
+</tr>
+</tbody>
+</table>
+<p><code>attack</code> tiene <code>benign_sample_rate: 0.1</code> — submuestreo de tráfico benigno.</p>
+<h3 id="pca-reduccion-de-dimensionalidad-anti-curse">PCA — reducción de dimensionalidad (anti-curse)</h3>
+<table>
+<thead>
+<tr>
+<th>Embedder</th>
+<th>Modelo PCA</th>
+<th>Dim entrada</th>
+<th>Dim salida</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>chronos</td>
+<td><code>chronos_512_128.faiss</code></td>
+<td>512</td>
+<td>128</td>
+</tr>
+<tr>
+<td>sbert</td>
+<td><code>sbert_384_96.faiss</code></td>
+<td>384</td>
+<td>96</td>
+</tr>
+<tr>
+<td>attack</td>
+<td><code>attack_256_64.faiss</code></td>
+<td>256</td>
+<td>64</td>
+</tr>
+</tbody>
+</table>
+<h3 id="faiss">FAISS</h3>
+<table>
+<thead>
+<tr>
+<th>Parámetro</th>
+<th>Valor</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>index_type</code></td>
+<td><code>Flat</code></td>
+</tr>
+<tr>
+<td><code>metric</code></td>
+<td><code>L2</code></td>
+</tr>
+<tr>
+<td><code>persist_path</code></td>
+<td><code>/shared/faiss_indexes</code></td>
+</tr>
+<tr>
+<td><code>checkpoint_interval_events</code></td>
+<td>1000</td>
+</tr>
+</tbody>
+</table>
+<h3 id="health-monitoring">Health monitoring</h3>
+<table>
+<thead>
+<tr>
+<th>Threshold</th>
+<th>Valor</th>
+<th>Acción</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>cv_warning_threshold</code></td>
+<td>0.20</td>
+<td>Warning en logs</td>
+</tr>
+<tr>
+<td><code>cv_critical_threshold</code></td>
+<td>0.15</td>
+<td>Alerta crítica a etcd</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="rag-configjson">rag-config.json</h2>
+<p><strong>Path:</strong> <code>rag/config/rag-config.json</code>
+<strong>Componente:</strong> <code>rag-security</code></p>
+<h3 id="modelo-llm">Modelo LLM</h3>
+<table>
+<thead>
+<tr>
+<th>Parámetro</th>
+<th>Valor</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>model_name</code></td>
+<td><code>tinyllama-1.1b-chat-v1.0.Q4_0.gguf</code></td>
+</tr>
+<tr>
+<td><code>embedding_dimension</code></td>
+<td>512</td>
+</tr>
+<tr>
+<td><code>context_size</code></td>
+<td>2048</td>
+</tr>
+<tr>
+<td><code>gpu_layers</code></td>
+<td>0 (CPU only)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="dimensiones-faiss-deben-coincidir-con-rag-ingester-tras-pca">Dimensiones FAISS (deben coincidir con rag-ingester tras PCA)</h3>
+<table>
+<thead>
+<tr>
+<th>Índice</th>
+<th>Dimensión</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>chronos_dim</code></td>
+<td>128</td>
+</tr>
+<tr>
+<td><code>sbert_dim</code></td>
+<td>96</td>
+</tr>
+<tr>
+<td><code>attack_dim</code></td>
+<td>64</td>
+</tr>
+</tbody>
+</table>
+<h3 id="capacidades-habilitadas">Capacidades habilitadas</h3>
+<pre><code>component_management  — gestión del ciclo de vida de componentes
+config_validation     — validación de configuración JSON
+pipeline_control      — control del pipeline completo
+embedder_system       — gestión del sistema de embeddings
+faiss_search          — consultas FAISS
+</code></pre>
+<h3 id="transporte_1">Transporte</h3>
+<table>
+<thead>
+<tr>
+<th>Parámetro</th>
+<th>Valor</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>compression</code></td>
+<td><code>lz4</code></td>
+</tr>
+<tr>
+<td><code>encryption</code></td>
+<td><code>AES-256-CBC</code></td>
+</tr>
+<tr>
+<td><code>requires_encryption</code></td>
+<td><code>true</code></td>
+</tr>
+<tr>
+<td><code>security_level</code></td>
+<td>3</td>
+</tr>
+</tbody>
+</table>
+<h3 id="logging_3">Logging</h3>
+<ul>
+<li><strong>Path:</strong> <code>/vagrant/logs/rag.log</code></li>
+<li><strong>Level:</strong> <code>info</code></li>
+<li><strong>Mode:</strong> append</li>
+</ul>
+<hr />
+<h2 id="convenciones-comunes">Convenciones comunes</h2>
+<h3 id="puertos-zmq-del-pipeline">Puertos ZMQ del pipeline</h3>
+<pre><code>sniffer  →[5571 PUSH/PULL]→  ml-detector  →[5572 PUB/SUB]→  firewall-acl-agent
+                                                          └→  rag-security (subscriber)
+</code></pre>
+<h3 id="etcd-paths-de-configuracion">Etcd — paths de configuración</h3>
+<table>
+<thead>
+<tr>
+<th>Componente</th>
+<th>Config path</th>
+<th>Crypto token path</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>sniffer</td>
+<td><code>/config/sniffer</code></td>
+<td><code>/crypto/sniffer/tokens</code></td>
+</tr>
+<tr>
+<td>ml-detector</td>
+<td><code>/config/ml-detector</code></td>
+<td><code>/crypto/ml-detector/tokens</code></td>
+</tr>
+<tr>
+<td>firewall</td>
+<td><code>/config/firewall</code></td>
+<td><code>/crypto/firewall/tokens</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="sentinel-value">Sentinel value</h3>
+<p><code>MISSING_FEATURE_SENTINEL = -9999.0f</code> — valor matemáticamente inalcanzable que indica feature ausente. Nunca usar <code>0.0f</code> ni <code>0.5f</code> para indicar ausencia.</p>
+<h3 id="schema-version">Schema version</h3>
+<p><code>schema_version = 31</code> en protobuf equivale a <code>v3.1.0</code> semántico. Todos los componentes deben validar esta versión al procesar eventos.</p>
+<h3 id="rotacion-de-logs">Rotación de logs</h3>
+<p>Todos los componentes siguen el patrón:
+- Path: <code>/vagrant/logs/lab/&lt;componente&gt;.log</code>
+- Tamaño máximo: 200 MB (10 MB en firewall)
+- Backup count: 10 (5 en firewall)</p>
+<hr />
+<h2 id="flujo-de-datos-entre-componentes">Flujo de datos entre componentes</h2>
+<pre><code>┌─────────────────────────────────────────────────────────────┐
+│                    ML DEFENDER PIPELINE                      │
+│                                                             │
+│  ┌──────────┐   proto+lz4     ┌─────────────┐              │
+│  │  sniffer  │ ──[5571 PUSH]──▶ ml-detector  │              │
+│  │  eth1/2   │  +chacha20     │  3 niveles   │              │
+│  └──────────┘                 └──────┬───────┘              │
+│                                      │ proto+lz4+chacha20   │
+│                                      │ [5572 PUB]           │
+│                           ┌──────────┴──────────┐           │
+│                           ▼                     ▼           │
+│                  ┌──────────────┐      ┌─────────────────┐  │
+│                  │  firewall-   │      │  rag-security   │  │
+│                  │  acl-agent   │      │  (subscriber)   │  │
+│                  │  iptables/   │      │  TinyLlama      │  │
+│                  │  ipset       │      └────────┬────────┘  │
+│                  └──────────────┘               │           │
+│                         │ CSV+HMAC              │ FAISS     │
+│                         ▼                       ▼           │
+│                  ┌──────────────────────────────────────┐   │
+│                  │           rag-ingester               │   │
+│                  │  chronos + sbert + attack embedders  │   │
+│                  └──────────────────────────────────────┘   │
+│                                                             │
+│  ┌──────────────┐                                           │
+│  │  etcd-server │ ← coordinación, crypto tokens, heartbeat  │
+│  └──────────────┘                                           │
+└─────────────────────────────────────────────────────────────┘
+</code></pre>
+<hr />
+<p><em>Co-authored-by: Alonso Isidoro Román + Claude (Anthropic)</em>
+<em>DAY 92 — 20 marzo 2026</em></p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.top", "search.highlight"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

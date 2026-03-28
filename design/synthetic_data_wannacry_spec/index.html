@@ -1,0 +1,2124 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source embedded-ML NDR for hospitals and schools">
+      
+      
+        <meta name="author" content="Alonso Isidoro Roman">
+      
+      
+        <link rel="canonical" href="https://alonsoir.github.io/argus/design/synthetic_data_wannacry_spec/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>Synthetic Data Generation Spec — WannaCry / NotPetya SMB Traffic - ML Defender (aRGus NDR)</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#synthetic-data-generation-spec-wannacry-notpetya-smb-traffic" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-header__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ML Defender (aRGus NDR)
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Synthetic Data Generation Spec — WannaCry / NotPetya SMB Traffic
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../README.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/BACKLOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Backlog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Security Model
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-tabs__link">
+          
+  
+  
+  ADRs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/contracts/Protobuf contracts.md" class="md-tabs__link">
+          
+  
+  
+  Contracts
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-nav__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ML Defender (aRGus NDR)
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../README.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/BACKLOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADRs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ADRs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013 Seed Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-021-deployment-topology-seed-families.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-021 Topology SSOT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-022-threat-model-opcion2-descartada.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-022 Threat Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Protobuf contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protobuf
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/JSON contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JSON
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Rag security commands.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#table-of-contents" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Table of Contents
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1-motivation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Motivation
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-scope-and-non-scope" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Scope and Non-Scope
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2. Scope and Non-Scope">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#in-scope" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        In scope
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#explicitly-out-of-scope" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Explicitly out of scope
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-attack-profile-wannacry" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Attack Profile — WannaCry
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. Attack Profile — WannaCry">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#31-behavioral-description" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.1 Behavioral Description
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#32-flow-characteristics" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.2 Flow Characteristics
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#33-within-subnet-signature-10s-window" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.3 Within-Subnet Signature (10s window)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-attack-profile-notpetya" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Attack Profile — NotPetya
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4. Attack Profile — NotPetya">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#41-behavioral-description" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.1 Behavioral Description
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#42-flow-characteristics" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.2 Flow Characteristics
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#43-feat-window-2-rationale" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.3 FEAT-WINDOW-2 Rationale
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-feature-targets-quantitative" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Feature Targets (Quantitative)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5. Feature Targets (Quantitative)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#51-malicious-class-wannacry" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.1 Malicious Class — WannaCry
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#52-malicious-class-notpetya" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.2 Malicious Class — NotPetya
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#53-summary-discriminator-table" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.3 Summary Discriminator Table
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-control-negative-legitimate-windows-smb-traffic" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Control Negative — Legitimate Windows SMB Traffic
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="6. Control Negative — Legitimate Windows SMB Traffic">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#61-legitimate-smb-sources" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.1 Legitimate SMB Sources
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#62-hard-rule-for-control-negative" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.2 Hard Rule for Control Negative
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#63-why-this-matters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.3 Why This Matters
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-dataset-composition" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Dataset Composition
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="7. Dataset Composition">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#71-target-split" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.1 Target Split
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#72-feature-coverage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.2 Feature Coverage
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#73-label-schema" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.3 Label Schema
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-generation-methodology" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. Generation Methodology
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="8. Generation Methodology">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#81-options-evaluated" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.1 Options Evaluated
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#82-recommended-pipeline" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.2 Recommended Pipeline
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#83-correlation-constraints" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.3 Correlation Constraints
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#9-validation-criteria" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9. Validation Criteria
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="9. Validation Criteria">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#91-statistical-validity" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9.1 Statistical Validity
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#92-classifier-sanity-check" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9.2 Classifier Sanity Check
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#93-pipeline-integration-test" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9.3 Pipeline Integration Test
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#10-known-constraints-and-honest-limitations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10. Known Constraints and Honest Limitations
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#11-implementation-backlog" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        11. Implementation Backlog
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#references" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        References
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="synthetic-data-generation-spec-wannacry-notpetya-smb-traffic">Synthetic Data Generation Spec — WannaCry / NotPetya SMB Traffic</h1>
+<blockquote>
+<p><strong>Path:</strong> <code>docs/design/synthetic_data_wannacry_spec.md</code>
+<strong>Status:</strong> DRAFT — DAY 91 (19 marzo 2026)
+<strong>Origin:</strong> Consejo de Sabios — Consulta #1 (DAY 90)
+<strong>Authors:</strong> Alonso Isidoro Román + Claude (Anthropic)
+<strong>Purpose:</strong> Define the ground truth for synthetic SMB ransomware traffic generation,
+enabling <code>rst_ratio</code> / <code>syn_ack_ratio</code> feature validation and model retraining.</p>
+</blockquote>
+<hr />
+<h2 id="table-of-contents">Table of Contents</h2>
+<ol>
+<li><a href="#1-motivation">Motivation</a></li>
+<li><a href="#2-scope-and-non-scope">Scope and Non-Scope</a></li>
+<li><a href="#3-attack-profile--wannacry">Attack Profile — WannaCry</a></li>
+<li><a href="#4-attack-profile--notpetya">Attack Profile — NotPetya</a></li>
+<li><a href="#5-feature-targets-quantitative">Feature Targets (Quantitative)</a></li>
+<li><a href="#6-control-negative--legitimate-windows-smb-traffic">Control Negative — Legitimate Windows SMB Traffic</a></li>
+<li><a href="#7-dataset-composition">Dataset Composition</a></li>
+<li><a href="#8-generation-methodology">Generation Methodology</a></li>
+<li><a href="#9-validation-criteria">Validation Criteria</a></li>
+<li><a href="#10-known-constraints-and-honest-limitations">Known Constraints and Honest Limitations</a></li>
+<li><a href="#11-implementation-backlog">Implementation Backlog</a></li>
+</ol>
+<hr />
+<h2 id="1-motivation">1. Motivation</h2>
+<p>The current ML Defender model (Random Forest, CTU-13 Neris baseline) achieves <strong>F1 = 0.9985</strong> on IRC botnet C2 traffic. However, as established by the Consejo de Sabios in Consulta #1 (DAY 90), the model's estimated recall against SMB-based ransomware (WannaCry, NotPetya) <strong>without retraining</strong> is:</p>
+<blockquote>
+<p><strong>Recall ≈ 0.70–0.85</strong></p>
+</blockquote>
+<p>This gap exists for two reasons:</p>
+<ol>
+<li>
+<p><strong>Missing features:</strong> <code>rst_ratio</code> and <code>syn_ack_ratio</code> — the primary discriminators for SMB scanning behavior — are currently sentinel-valued (<code>-9999.0f</code>) for all flows. The model has never seen real values for these features.</p>
+</li>
+<li>
+<p><strong>Training distribution mismatch:</strong> CTU-13 Neris captures IRC C2 traffic. WannaCry/NotPetya propagation via SMB port 445 produces a fundamentally different flow signature.</p>
+</li>
+</ol>
+<p>This document specifies the <strong>ground truth</strong> for synthetic data generation that will:
+- Provide realistic <code>rst_ratio</code> / <code>syn_ack_ratio</code> values for feature validation
+- Enable retraining of the Random Forest with SMB ransomware examples
+- Establish a labeled control negative set (legitimate Windows SMB traffic) for FPR calibration</p>
+<hr />
+<h2 id="2-scope-and-non-scope">2. Scope and Non-Scope</h2>
+<h3 id="in-scope">In scope</h3>
+<ul>
+<li>Layer 3/4 flow statistics (packet rates, byte rates, TCP flag ratios, connection counts)</li>
+<li>Port 445 (SMB) traffic patterns for WannaCry and NotPetya propagation phases</li>
+<li>Lateral movement within a /24 subnet (typical organizational network)</li>
+<li>Legitimate Windows administrative traffic as control negatives</li>
+</ul>
+<h3 id="explicitly-out-of-scope">Explicitly out of scope</h3>
+<blockquote>
+<p><strong>Killswitch DNS domain lookup (WannaCry):</strong>
+The WannaCry killswitch mechanism — a DNS query to a specific domain before payload execution — is <strong>not included</strong> as a detection signal.</p>
+<p><strong>Rationale (Consejo unanimous):</strong>
+- ML Defender operates at Layer 3/4 only. DNS content (the queried domain name) requires DPI.
+- The DNS→SMB composite signature was analyzed and discarded: the pattern (DNS query followed by SMB activity) appears in <strong>legitimate Windows traffic</strong> (WSUS updates, domain controller lookups) at an FPR that makes the signal unreliable.
+- WannaCry's propagation via SMB scanning <strong>already produces a strong signal</strong> through <code>rst_ratio</code> alone. The killswitch lookup adds no discriminative value for a layer 3/4 detector.</p>
+<p><strong>Consequence:</strong> A host that has already checked the killswitch domain and is now propagating is indistinguishable at layer 3/4 from a host that never checked. Both produce the same SMB scan signature. This is an explicit, honest limitation — see §10.</p>
+</blockquote>
+<hr />
+<h2 id="3-attack-profile-wannacry">3. Attack Profile — WannaCry</h2>
+<h3 id="31-behavioral-description">3.1 Behavioral Description</h3>
+<p>WannaCry's propagation mechanism is a <strong>mass-scanning SMB worm</strong> exploiting EternalBlue (MS17-010). An infected host:</p>
+<ol>
+<li>Generates TCP SYN packets to random IPs on port 445 at high rate</li>
+<li>Receives RST from most targets (hosts down, filtered, or not vulnerable)</li>
+<li>Completes TCP handshake only with vulnerable hosts</li>
+<li>Exploits the vulnerability and installs the payload</li>
+<li>The newly infected host immediately begins scanning</li>
+</ol>
+<p>The key flow-level observable: <strong>massive RST flood from non-responsive targets</strong>, producing an extremely high <code>rst_ratio</code> and extremely low <code>syn_ack_ratio</code>.</p>
+<h3 id="32-flow-characteristics">3.2 Flow Characteristics</h3>
+<table>
+<thead>
+<tr>
+<th>Characteristic</th>
+<th>WannaCry Value</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Target port</td>
+<td>445 (TCP)</td>
+<td>SMB — occasionally also 139</td>
+</tr>
+<tr>
+<td>Scan strategy</td>
+<td>Pseudo-random IP generation</td>
+<td>Biased toward /8 subnets of the infected host</td>
+</tr>
+<tr>
+<td>Connection rate</td>
+<td><strong>100–200 SYN/s per infected host</strong></td>
+<td>Peak during active propagation</td>
+</tr>
+<tr>
+<td>RST ratio</td>
+<td><strong>&gt; 0.7</strong> (often 0.85–0.95)</td>
+<td>Most targets do not respond or actively reset</td>
+</tr>
+<tr>
+<td>SYN/ACK ratio</td>
+<td><strong>&lt; 0.1</strong></td>
+<td>Only vulnerable hosts complete the handshake</td>
+</tr>
+<tr>
+<td>Unique dst IPs</td>
+<td><strong>Hundreds to thousands / 10s window</strong></td>
+<td>True mass scanning</td>
+</tr>
+<tr>
+<td>Bytes per flow</td>
+<td>Very low for failed connections (SYN only)</td>
+<td>High for successful exploitation</td>
+</tr>
+<tr>
+<td>Flow duration</td>
+<td>Bimodal: &lt; 50ms (failed) / seconds (exploited)</td>
+<td></td>
+</tr>
+<tr>
+<td>Inter-arrival time</td>
+<td>Very low (&lt; 10ms between SYNs)</td>
+<td>High-rate scanning</td>
+</tr>
+</tbody>
+</table>
+<h3 id="33-within-subnet-signature-10s-window">3.3 Within-Subnet Signature (10s window)</h3>
+<p>During active propagation within a /24:</p>
+<pre><code>source_ip:     single infected host
+dst_port:      445 (constant)
+unique_dst_ips: 50–254 (scanning entire /24)
+syn_count:     500–2000
+ack_count:     &lt; 50
+rst_count:     400–1800
+rst_ratio:     &gt; 0.80
+syn_ack_ratio: &lt; 0.05
+connection_rate: &gt; 100/s
+dst_port_445_ratio: ~1.0
+</code></pre>
+<hr />
+<h2 id="4-attack-profile-notpetya">4. Attack Profile — NotPetya</h2>
+<h3 id="41-behavioral-description">4.1 Behavioral Description</h3>
+<p>NotPetya is a <strong>destructive wiper</strong> (not ransomware in the strict sense) that spreads via multiple mechanisms:
+- EternalBlue (same as WannaCry, port 445)
+- WMIC (Windows Management Instrumentation — WMI) lateral movement
+- PsExec-based credential reuse
+- Mimikatz-based credential extraction (memory-only, not observable at L3/4)</p>
+<p>The SMB scanning phase is similar to WannaCry but <strong>more targeted</strong>: NotPetya prioritized internal network ranges rather than random internet IPs.</p>
+<h3 id="42-flow-characteristics">4.2 Flow Characteristics</h3>
+<table>
+<thead>
+<tr>
+<th>Characteristic</th>
+<th>NotPetya Value</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Target port</td>
+<td>445 (TCP), 135 (WMI/RPC), 139</td>
+<td>More protocol diversity than WannaCry</td>
+</tr>
+<tr>
+<td>Scan strategy</td>
+<td>Internal subnet priority, then random external</td>
+<td>Explains the catastrophic internal spread</td>
+</tr>
+<tr>
+<td>Connection rate</td>
+<td><strong>50–150 SYN/s</strong></td>
+<td>Slightly lower than WannaCry per host</td>
+</tr>
+<tr>
+<td>RST ratio</td>
+<td><strong>&gt; 0.5</strong> (0.6–0.85)</td>
+<td>Lower than WannaCry — more hosts respond internally</td>
+</tr>
+<tr>
+<td>SYN/ACK ratio</td>
+<td><strong>&lt; 0.2</strong></td>
+<td>More completions than WannaCry (internal hosts more likely up)</td>
+</tr>
+<tr>
+<td>Unique dst IPs</td>
+<td><strong>Tens to hundreds / 10s window</strong></td>
+<td>Internal /16 scope</td>
+</tr>
+<tr>
+<td>Protocol diversity</td>
+<td>Higher (SMB + WMI + RPC)</td>
+<td><code>port_diversity_ratio</code> P2 feature is relevant here</td>
+</tr>
+<tr>
+<td>Temporal pattern</td>
+<td><strong>Sustained over minutes</strong></td>
+<td>10s window may miss early phase — FEAT-WINDOW-2 motivation</td>
+</tr>
+</tbody>
+</table>
+<h3 id="43-feat-window-2-rationale">4.3 FEAT-WINDOW-2 Rationale</h3>
+<p>NotPetya's internal scan rate is lower than WannaCry. In a 10-second window, an early-phase NotPetya infection may produce only <strong>20–50 SYN packets</strong> to port 445 — insufficient to trigger <code>rst_ratio</code> thresholds calibrated for WannaCry's 100+/s rate.</p>
+<p>A <strong>60-second secondary aggregation window</strong> (FEAT-WINDOW-2, P2 backlog) would accumulate 120–300 SYNs, making the pattern unambiguous.</p>
+<p><strong>Decision (Consejo):</strong> Maintain the 10s window as primary (sufficient for WannaCry). Add FEAT-WINDOW-2 as P2 to cover NotPetya's slower ramp.</p>
+<hr />
+<h2 id="5-feature-targets-quantitative">5. Feature Targets (Quantitative)</h2>
+<p>These are the <strong>ground truth values</strong> the synthetic dataset must reproduce. The synthetic generator must produce flows where these features fall within the specified ranges.</p>
+<h3 id="51-malicious-class-wannacry">5.1 Malicious Class — WannaCry</h3>
+<table>
+<thead>
+<tr>
+<th>Feature</th>
+<th>Column Name</th>
+<th>Target Range</th>
+<th>Hard Threshold</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>RST ratio</td>
+<td><code>rst_ratio</code></td>
+<td>0.70 – 0.95</td>
+<td>&gt; 0.50 (P1 Fast Detector)</td>
+</tr>
+<tr>
+<td>SYN/ACK ratio</td>
+<td><code>syn_ack_ratio</code></td>
+<td>0.02 – 0.10</td>
+<td>&lt; 0.15 (P1 Fast Detector)</td>
+</tr>
+<tr>
+<td>Connection rate</td>
+<td><code>connection_rate</code></td>
+<td>100 – 200 /s</td>
+<td>&gt; 100/s</td>
+</tr>
+<tr>
+<td>Unique dst IPs</td>
+<td><code>unique_dst_ips_count</code></td>
+<td>50 – 2000 / 10s</td>
+<td>&gt; 20</td>
+</tr>
+<tr>
+<td>DST port 445 ratio</td>
+<td><code>dst_port_445_ratio</code></td>
+<td>0.90 – 1.00</td>
+<td>&gt; 0.80 (P2)</td>
+</tr>
+<tr>
+<td>Port diversity ratio</td>
+<td><code>port_diversity_ratio</code></td>
+<td>0.01 – 0.05</td>
+<td>Low (P2)</td>
+</tr>
+<tr>
+<td>Flow duration (failed)</td>
+<td><code>flow_duration_ms</code></td>
+<td>10 – 100 ms</td>
+<td>—</td>
+</tr>
+<tr>
+<td><strong>Min flow duration</strong></td>
+<td><strong><code>flow_duration_min</code></strong></td>
+<td><strong>&lt; 50 ms</strong></td>
+<td><strong>P2 — aporte DeepSeek DAY 91; legítimos &gt; 200ms</strong></td>
+</tr>
+<tr>
+<td>Bytes per packet</td>
+<td><code>bytes_per_packet</code></td>
+<td>60 – 80 bytes</td>
+<td>— (SYN-only)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="52-malicious-class-notpetya">5.2 Malicious Class — NotPetya</h3>
+<table>
+<thead>
+<tr>
+<th>Feature</th>
+<th>Column Name</th>
+<th>Target Range</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>RST ratio</td>
+<td><code>rst_ratio</code></td>
+<td>0.50 – 0.85</td>
+<td>Lower — more internal hosts respond</td>
+</tr>
+<tr>
+<td>SYN/ACK ratio</td>
+<td><code>syn_ack_ratio</code></td>
+<td>0.05 – 0.20</td>
+<td>More completions</td>
+</tr>
+<tr>
+<td>Connection rate</td>
+<td><code>connection_rate</code></td>
+<td>50 – 150 /s</td>
+<td>Slower than WannaCry</td>
+</tr>
+<tr>
+<td>Unique dst IPs</td>
+<td><code>unique_dst_ips_count</code></td>
+<td>20 – 500 / 10s</td>
+<td>Internal /16 focus</td>
+</tr>
+<tr>
+<td>DST port 445 ratio</td>
+<td><code>dst_port_445_ratio</code></td>
+<td>0.60 – 0.85</td>
+<td>Mixed with WMI/RPC</td>
+</tr>
+<tr>
+<td>Port diversity ratio</td>
+<td><code>port_diversity_ratio</code></td>
+<td>0.05 – 0.20</td>
+<td>Higher — WMI/RPC ports</td>
+</tr>
+<tr>
+<td>Protocol mix</td>
+<td>445 + 135 + 139</td>
+<td>—</td>
+<td><code>dst_port_445_ratio</code> &lt; 1.0</td>
+</tr>
+</tbody>
+</table>
+<h3 id="53-summary-discriminator-table">5.3 Summary Discriminator Table</h3>
+<table>
+<thead>
+<tr>
+<th>Feature</th>
+<th>WannaCry</th>
+<th>NotPetya</th>
+<th>Legitimate Windows</th>
+<th>Discriminative?</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>rst_ratio</code></td>
+<td><strong>&gt; 0.70</strong></td>
+<td><strong>&gt; 0.50</strong></td>
+<td>&lt; 0.10</td>
+<td><strong>YES — P1</strong></td>
+</tr>
+<tr>
+<td><code>syn_ack_ratio</code></td>
+<td><strong>&lt; 0.10</strong></td>
+<td><strong>&lt; 0.20</strong></td>
+<td>&gt; 0.70</td>
+<td><strong>YES — P1</strong></td>
+</tr>
+<tr>
+<td><code>connection_rate</code></td>
+<td>&gt; 100/s</td>
+<td>&gt; 50/s</td>
+<td>&lt; 10/s</td>
+<td>YES</td>
+</tr>
+<tr>
+<td><code>unique_dst_ips_count</code></td>
+<td>Hundreds</td>
+<td>Tens–hundreds</td>
+<td>2–10</td>
+<td>YES</td>
+</tr>
+<tr>
+<td><code>flow_duration_min</code></td>
+<td><strong>&lt; 50 ms</strong></td>
+<td><strong>&lt; 100 ms</strong></td>
+<td>&gt; 200 ms</td>
+<td><strong>P2 — aporte DeepSeek DAY 91</strong></td>
+</tr>
+<tr>
+<td><code>dst_port_445_ratio</code></td>
+<td>~1.0</td>
+<td>0.60–0.85</td>
+<td>0.10–0.40</td>
+<td>P2</td>
+</tr>
+<tr>
+<td><code>port_diversity_ratio</code></td>
+<td>Very low</td>
+<td>Low–medium</td>
+<td>Medium</td>
+<td>P2</td>
+</tr>
+<tr>
+<td><code>dns_query_count</code></td>
+<td>(not used)</td>
+<td>(not used)</td>
+<td>Variable</td>
+<td><strong>NOT USED — P3</strong></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="6-control-negative-legitimate-windows-smb-traffic">6. Control Negative — Legitimate Windows SMB Traffic</h2>
+<p>The control negative set must represent <strong>normal Windows administrative traffic</strong> that:
+- Uses port 445 legitimately (file shares, printer discovery, DC authentication)
+- Generates SYN/RST traffic at low rates (host discovery, timeout retries)
+- Would produce <strong>false positives</strong> if the detector is poorly calibrated</p>
+<h3 id="61-legitimate-smb-sources">6.1 Legitimate SMB Sources</h3>
+<table>
+<thead>
+<tr>
+<th>Traffic Type</th>
+<th>Port(s)</th>
+<th>Expected <code>rst_ratio</code></th>
+<th>Expected <code>syn_ack_ratio</code></th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Windows file share access</td>
+<td>445</td>
+<td>&lt; 0.05</td>
+<td>&gt; 0.85</td>
+<td>Most connections complete</td>
+</tr>
+<tr>
+<td>Network printer discovery</td>
+<td>445, 139</td>
+<td>0.10 – 0.30</td>
+<td>0.60 – 0.85</td>
+<td>Some hosts don't respond</td>
+</tr>
+<tr>
+<td>Domain controller auth</td>
+<td>445, 88, 389</td>
+<td>&lt; 0.05</td>
+<td>&gt; 0.90</td>
+<td>Highly reliable connections</td>
+</tr>
+<tr>
+<td>WSUS update distribution</td>
+<td>445, 8530</td>
+<td>&lt; 0.10</td>
+<td>&gt; 0.80</td>
+<td>Controlled client list</td>
+</tr>
+<tr>
+<td>SCCM / Endpoint Manager</td>
+<td>445, 135, 445</td>
+<td>0.05 – 0.20</td>
+<td>0.70 – 0.90</td>
+<td>Mixed protocol</td>
+</tr>
+<tr>
+<td>Backup agents (Veeam etc.)</td>
+<td>445</td>
+<td>&lt; 0.05</td>
+<td>&gt; 0.90</td>
+<td>Long-duration, high-byte flows</td>
+</tr>
+<tr>
+<td>NetBIOS name resolution</td>
+<td>137, 138 (UDP)</td>
+<td>N/A</td>
+<td>N/A</td>
+<td>UDP — separate handling</td>
+</tr>
+</tbody>
+</table>
+<h3 id="62-hard-rule-for-control-negative">6.2 Hard Rule for Control Negative</h3>
+<p>A control negative flow is valid <strong>only if</strong> all of the following hold:</p>
+<pre><code>rst_ratio       &lt; 0.30    (not a scanning pattern)
+syn_ack_ratio   &gt; 0.50    (majority of connections complete)
+connection_rate &lt; 20/s    (not a burst)
+unique_dst_ips  &lt; 15      (not scanning a subnet)
+dst_port_445_ratio &lt; 0.70 (mixed protocol use expected in admin traffic)
+</code></pre>
+<p>Any synthetic flow violating these bounds should be reclassified as suspicious and excluded from the control negative set.</p>
+<h3 id="63-why-this-matters">6.3 Why This Matters</h3>
+<p>The Consejo confirmed (Consulta #1) that <code>rst_ratio</code> alone is a <strong>high-signal feature</strong> for WannaCry/NotPetya. However, without a realistic control negative set, the model may learn:</p>
+<blockquote>
+<p>"High <code>rst_ratio</code> AND port 445 → malicious"</p>
+</blockquote>
+<p>...and fail on legitimate network environments where port 445 RSTs are common (e.g., a hospital network with many dormant workstations responding with RST to file share discovery).</p>
+<p>The control negative set prevents this overfitting.</p>
+<hr />
+<h2 id="7-dataset-composition">7. Dataset Composition</h2>
+<h3 id="71-target-split">7.1 Target Split</h3>
+<table>
+<thead>
+<tr>
+<th>Class</th>
+<th>Count (flows)</th>
+<th>Ratio</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>WannaCry (malicious)</td>
+<td>5,000</td>
+<td>25%</td>
+<td>10s windows per infected host</td>
+</tr>
+<tr>
+<td>NotPetya (malicious)</td>
+<td>3,000</td>
+<td>15%</td>
+<td>10s and 60s windows</td>
+</tr>
+<tr>
+<td>Legitimate Windows SMB</td>
+<td>8,000</td>
+<td>40%</td>
+<td>Control negative</td>
+</tr>
+<tr>
+<td>Benign general traffic</td>
+<td>4,000</td>
+<td>20%</td>
+<td>From CTU-13 background flows</td>
+</tr>
+<tr>
+<td><strong>Total</strong></td>
+<td><strong>20,000</strong></td>
+<td>100%</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Rationale for balance:</strong> The CTU-13 Neris training set had ~98% malicious traffic, which introduced dataset bias. This synthetic set targets a realistic 40% malicious / 60% benign split.</p>
+<h3 id="72-feature-coverage">7.2 Feature Coverage</h3>
+<p>All 127 features in the <code>FlowRecord</code> schema must be populated. Features not relevant to SMB scanning (e.g., ICMP-specific fields) should receive <strong>realistic benign values</strong> from the CTU-13 background distribution, not sentinel values.</p>
+<p>Only features for which no ground truth exists (non-computable for a given flow type) should use <code>MISSING_FEATURE_SENTINEL = -9999.0f</code>.</p>
+<h3 id="73-label-schema">7.3 Label Schema</h3>
+<pre><code class="language-csv">flow_id, label, attack_family, window_seconds, rst_ratio, syn_ack_ratio, 
+connection_rate, unique_dst_ips_count, dst_port_445_ratio, ...
+</code></pre>
+<ul>
+<li><code>label</code>: 0 (benign) / 1 (malicious)</li>
+<li><code>attack_family</code>: "wannacry" / "notpetya" / "benign_smb" / "benign_general"</li>
+<li><code>window_seconds</code>: 10 or 60</li>
+</ul>
+<hr />
+<h2 id="8-generation-methodology">8. Generation Methodology</h2>
+<h3 id="81-options-evaluated">8.1 Options Evaluated</h3>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Pros</th>
+<th>Cons</th>
+<th>Decision</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>tcpreplay of real captures</strong></td>
+<td>Highest fidelity</td>
+<td>Legal/ethical issues distributing WannaCry pcaps; VirtualBox NIC bottleneck</td>
+<td>Use for reference only</td>
+</tr>
+<tr>
+<td><strong>Scapy / libpcap packet crafting</strong></td>
+<td>Full control; no legal issues</td>
+<td>Complex; must validate statistical properties</td>
+<td><strong>Primary method</strong></td>
+</tr>
+<tr>
+<td><strong>Statistical sampling from distributions</strong></td>
+<td>Fast; controllable</td>
+<td>No packet-level fidelity; risk of unrealistic correlations</td>
+<td>Use for augmentation</td>
+</tr>
+<tr>
+<td><strong>GAN-based generation</strong></td>
+<td>Could learn complex correlations</td>
+<td>Overkill for L3/4 features; training cost</td>
+<td>Future / P3</td>
+</tr>
+</tbody>
+</table>
+<h3 id="82-recommended-pipeline">8.2 Recommended Pipeline</h3>
+<pre><code>Step 1 — Define per-class parameter distributions
+   For each attack class: sample rst_ratio, syn_ack_ratio, 
+   connection_rate from the ranges in §5.
+   Use truncated normal distributions, not uniform 
+   (real traffic is not uniform within a range).
+
+Step 2 — Generate individual flow records
+   For each synthetic flow:
+   a. Sample class-appropriate feature values
+   b. Derive correlated features consistently
+      (e.g., if rst_ratio=0.85, then ack_count ≈ 0.15 * syn_count)
+   c. Add realistic noise (±5–10%) to avoid artificially sharp boundaries
+   d. Populate non-SMB features from CTU-13 background distribution
+
+Step 3 — Validate against §9 criteria
+   Reject any flow that violates label consistency rules.
+
+Step 4 — Export to CSV with HMAC-SHA256 per row
+   Use the same format as ml-detector's daily CSV output.
+   This enables direct ingestion by rag-ingester for validation.
+
+Step 5 — Replay via tcpreplay (optional)
+   If packet-level validation is needed, generate .pcap from
+   the synthetic flows using Scapy and replay through the
+   sniffer in the Vagrant lab.
+</code></pre>
+<h3 id="83-correlation-constraints">8.3 Correlation Constraints</h3>
+<p>The following inter-feature correlations must be enforced to avoid unrealistic flows:</p>
+<pre><code class="language-python"># WannaCry example — must hold simultaneously:
+assert rst_count ≈ rst_ratio * total_packets
+assert syn_count ≈ connection_rate * window_seconds
+assert ack_count ≈ syn_ack_ratio * syn_count
+assert unique_dst_ips_count &lt;= connection_rate * window_seconds
+assert dst_port_445_ratio &gt; 0.85
+# Bytes: SYN-only flows are 60-80 bytes; completed flows are larger
+assert bytes_per_packet &lt; 100 if syn_ack_ratio &lt; 0.1 else bytes_per_packet &gt; 200
+</code></pre>
+<hr />
+<h2 id="9-validation-criteria">9. Validation Criteria</h2>
+<p>A synthetic dataset batch is <strong>accepted</strong> if and only if:</p>
+<h3 id="91-statistical-validity">9.1 Statistical Validity</h3>
+<table>
+<thead>
+<tr>
+<th>Check</th>
+<th>Method</th>
+<th>Pass Criterion</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>rst_ratio</code> distribution (WannaCry)</td>
+<td>KS test vs. target range</td>
+<td>p &gt; 0.05, mean &gt; 0.70</td>
+</tr>
+<tr>
+<td><code>syn_ack_ratio</code> distribution (WannaCry)</td>
+<td>KS test vs. target range</td>
+<td>p &gt; 0.05, mean &lt; 0.10</td>
+</tr>
+<tr>
+<td>Control negative <code>rst_ratio</code></td>
+<td>Max check</td>
+<td>No flow &gt; 0.30</td>
+</tr>
+<tr>
+<td>Feature correlation consistency</td>
+<td>Pearson r</td>
+<td><code>rst_ratio</code> ↔ <code>syn_ack_ratio</code> r &lt; -0.70</td>
+</tr>
+<tr>
+<td>Sentinel value rate</td>
+<td>Count</td>
+<td>&lt; 5% of non-DNS fields are sentinel</td>
+</tr>
+</tbody>
+</table>
+<h3 id="92-classifier-sanity-check">9.2 Classifier Sanity Check</h3>
+<p>Train a separate hold-out Random Forest on the <strong>synthetic dataset only</strong> and verify:</p>
+<table>
+<thead>
+<tr>
+<th>Metric</th>
+<th>Minimum Acceptable</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>F1 (synthetic WannaCry)</td>
+<td>&gt; 0.85</td>
+</tr>
+<tr>
+<td>F1 (synthetic NotPetya)</td>
+<td>&gt; 0.80</td>
+</tr>
+<tr>
+<td>FPR on control negative</td>
+<td>&lt; 0.15</td>
+</tr>
+<tr>
+<td>FPR on benign general</td>
+<td>&lt; 0.10</td>
+</tr>
+</tbody>
+</table>
+<p>If these thresholds are not met, the generator parameters must be revised before the dataset is used for production retraining.</p>
+<h3 id="93-pipeline-integration-test">9.3 Pipeline Integration Test</h3>
+<p>The synthetic CSV must pass through the existing ml-detector pipeline without errors:
+- HMAC verification: 0 failures
+- Sentinel routing: correct for all flows with missing features
+- No <code>MISSING_FEATURE_SENTINEL</code> propagation to features that should have real values</p>
+<hr />
+<h2 id="10-known-constraints-and-honest-limitations">10. Known Constraints and Honest Limitations</h2>
+<p>These limitations are explicitly acknowledged and must be included in any paper or report using this dataset.</p>
+<ol>
+<li>
+<p><strong>No real WannaCry/NotPetya captures used.</strong> The synthetic dataset is generated from behavioral descriptions and published research, not from actual malware execution. Distribution tails (extreme cases, unusual variants) may be underrepresented.</p>
+</li>
+<li>
+<p><strong>Killswitch DNS not detectable.</strong> The WannaCry DNS killswitch lookup is excluded by design. A host that queries the killswitch domain and then starts scanning produces the same layer 3/4 flow signature as one that does not. See §2 for full rationale.</p>
+</li>
+<li>
+<p><strong>10s window underrepresents early NotPetya.</strong> The primary 10s aggregation window may miss early-phase NotPetya infections with slow scan rates (&lt; 20 SYN/s). FEAT-WINDOW-2 (60s window) is required for full coverage.</p>
+</li>
+<li>
+<p><strong>No SMB variant coverage.</strong> EternalBlue variants (EternalRomance, EternalSynergy) and newer SMB exploits (PrintNightmare, ZeroLogon) are not modeled. The synthetic data targets MS17-010 behavior specifically.</p>
+</li>
+<li>
+<p><strong>No encrypted SMB (SMB3).</strong> Modern Windows environments use SMB3 with encryption. Encrypted SMB traffic renders payload-based features meaningless, but <strong>flow-level statistics remain observable</strong> — <code>rst_ratio</code> and <code>syn_ack_ratio</code> are payload-agnostic and remain valid signals.</p>
+</li>
+<li>
+<p><strong>Generalization to other worms not validated.</strong> The feature ranges defined here are specific to WannaCry/NotPetya. Other scanning worms (Mirai, Blaster) may produce different <code>rst_ratio</code> / <code>syn_ack_ratio</code> profiles and are not covered.</p>
+</li>
+</ol>
+<hr />
+<h2 id="11-implementation-backlog">11. Implementation Backlog</h2>
+<p>Tasks required to execute this spec:</p>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Task</th>
+<th>Priority</th>
+<th>Dependency</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>SYN-1</td>
+<td>Implement <code>rst_ratio</code> feature extractor in sniffer</td>
+<td><strong>P1</strong></td>
+<td>None</td>
+</tr>
+<tr>
+<td>SYN-2</td>
+<td>Implement <code>syn_ack_ratio</code> feature extractor in sniffer</td>
+<td><strong>P1</strong></td>
+<td>None</td>
+</tr>
+<tr>
+<td>SYN-3</td>
+<td>Write synthetic flow generator (Python/Scapy)</td>
+<td>P1</td>
+<td>SYN-1, SYN-2</td>
+</tr>
+<tr>
+<td>SYN-4</td>
+<td>Validate generated CSV against §9 criteria</td>
+<td>P1</td>
+<td>SYN-3</td>
+</tr>
+<tr>
+<td>SYN-5</td>
+<td>Retrain Random Forest with synthetic + CTU-13 data</td>
+<td>P1</td>
+<td>SYN-4</td>
+</tr>
+<tr>
+<td>SYN-6</td>
+<td>Validate retrained model on held-out CTU-13 Neris</td>
+<td>P1</td>
+<td>SYN-5</td>
+</tr>
+<tr>
+<td>SYN-7</td>
+<td>Update F1 log (<code>docs/experiments/f1_replay_log.csv</code>)</td>
+<td>P1</td>
+<td>SYN-6</td>
+</tr>
+<tr>
+<td>SYN-8</td>
+<td>Implement <code>dst_port_445_ratio</code> extractor</td>
+<td>P2</td>
+<td>None</td>
+</tr>
+<tr>
+<td>SYN-8b</td>
+<td>Implement <code>flow_duration_min</code> extractor (aporte DeepSeek DAY 91)</td>
+<td>P2</td>
+<td>None</td>
+</tr>
+<tr>
+<td>SYN-9</td>
+<td>Implement <code>port_diversity_ratio</code> extractor</td>
+<td>P2</td>
+<td>None</td>
+</tr>
+<tr>
+<td>SYN-10</td>
+<td>Implement FEAT-WINDOW-2 (60s secondary window)</td>
+<td>P2</td>
+<td>SYN-1, SYN-2</td>
+</tr>
+<tr>
+<td>SYN-11</td>
+<td>NotPetya-specific validation with 60s window</td>
+<td>P2</td>
+<td>SYN-10</td>
+</tr>
+<tr>
+<td>SYN-12</td>
+<td>GAN-based augmentation (optional)</td>
+<td>P3</td>
+<td>SYN-5</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Critical path:</strong> SYN-1 → SYN-2 → SYN-3 → SYN-4 → SYN-5 → SYN-6 → SYN-7</p>
+<p>The first milestone is <strong>rst_ratio + syn_ack_ratio implementation</strong> in the sniffer (DAY 91–92, next VM session).</p>
+<hr />
+<h2 id="references">References</h2>
+<ul>
+<li>CTU-13 Dataset: Garcia et al., "An empirical comparison of botnet detection methods" (2014)</li>
+<li>WannaCry technical analysis: NHS Digital Incident Report (2017); Check Point Research (2017)</li>
+<li>NotPetya technical analysis: ESET "Industroyer" report; Talos Intelligence (2017)</li>
+<li>EternalBlue (MS17-010): Microsoft Security Bulletin MS17-010</li>
+<li>Consejo de Sabios — Consulta #1 decisiones finales: <code>docs/consejo/consejo_consulta_1_decisiones_finales.md</code></li>
+<li>ADR-007 (AND-consensus scoring): <code>docs/adr/ADR-007-consensus-scoring-firewall.md</code></li>
+<li>ADR-008 (flow graphs and forensic retraining): <code>docs/adr/ADR-008-flow-graphs-reentrenamiento-forense.md</code></li>
+</ul>
+<hr />
+<p><em>Co-authored-by: Alonso Isidoro Román + Claude (Anthropic)</em>
+<em>Consejo de Sabios — ML Defender (aRGus EDR)</em>
+<em>DAY 91 — 19 marzo 2026</em></p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.top", "search.highlight"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

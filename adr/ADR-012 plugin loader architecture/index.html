@@ -1,0 +1,1456 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source embedded-ML NDR for hospitals and schools">
+      
+      
+        <meta name="author" content="Alonso Isidoro Roman">
+      
+      
+        <link rel="canonical" href="https://alonsoir.github.io/argus/adr/ADR-012%20plugin%20loader%20architecture/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>ADR-012: Plugin Loader Architecture - ML Defender (aRGus NDR)</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#adr-012-plugin-loader-architecture" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-header__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ML Defender (aRGus NDR)
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              ADR-012: Plugin Loader Architecture
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../README.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/BACKLOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Backlog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Security Model
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-tabs__link">
+          
+  
+  
+  ADRs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/contracts/Protobuf contracts.md" class="md-tabs__link">
+          
+  
+  
+  Contracts
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-nav__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ML Defender (aRGus NDR)
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../README.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/BACKLOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADRs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ADRs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013 Seed Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-021-deployment-topology-seed-families.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-021 Topology SSOT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-022-threat-model-opcion2-descartada.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-022 Threat Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Protobuf contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protobuf
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/JSON contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JSON
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Rag security commands.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#contexto" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Contexto
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#linea-divisoria-core-open-source-vs-plugin" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Línea divisoria: core open source vs plugin
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Línea divisoria: core open source vs plugin">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#core-open-source-estadisticas-universales-de-flujo-tcpip" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Core open source — estadísticas universales de flujo TCP/IP
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#plugin-conocimiento-especifico-de-amenaza" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Plugin — conocimiento específico de amenaza
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#decision" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Decisión
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#estructura-del-proyecto" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Estructura del proyecto
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#contrato-del-plugin-plugin_apih" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Contrato del plugin — plugin_api.h
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#interfaz-del-loader-plugin_loaderhpp" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Interfaz del loader — plugin_loader.hpp
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#configuracion-json-seccion-estandar" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Configuración JSON (sección estándar)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#integracion-en-un-componente-existente-ejemplo-sniffer" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Integración en un componente existente (ejemplo: sniffer)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#plugin-hello-world-validacion-del-mecanismo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Plugin Hello World — validación del mecanismo
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#control-de-rendimiento" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Control de rendimiento
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#plugins-que-usaran-este-mecanismo-roadmap" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Plugins que usarán este mecanismo (roadmap)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#consecuencias" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Consecuencias
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#alternativas-consideradas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Alternativas consideradas
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#referencias" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Referencias
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="adr-012-plugin-loader-architecture">ADR-012: Plugin Loader Architecture</h1>
+<p><strong>Estado:</strong> PROPOSED<br />
+<strong>Fecha:</strong> 2026-03-19 (DAY 88) — actualizado DAY 91<br />
+<strong>Autor:</strong> Alonso + Consejo de Sabios<br />
+<strong>Componente:</strong> <code>libs/plugin-loader</code> (nueva shared library interna)</p>
+<hr />
+<h2 id="contexto">Contexto</h2>
+<p>ML Defender tiene un pipeline de 6 componentes con rendimiento validado en entornos
+resource-constrained (hospitales, escuelas, pymes). El roadmap contempla nuevas
+capacidades: JA4 fingerprinting (FEAT-TLS-1), DNS/DGA detection (FEAT-NET-1),
+HTTP payload inspection (FEAT-WAF-1), y otras futuras.</p>
+<p>Añadir estas features directamente al core de cada componente comprometería:</p>
+<ul>
+<li><strong>Rendimiento base</strong> — organizaciones con hardware limitado no deben pagar el coste
+  de features que no necesitan</li>
+<li><strong>Mantenibilidad</strong> — el core se volvería monolítico e impredecible</li>
+<li><strong>Extensibilidad</strong> — terceros no pueden contribuir features sin tocar el core</li>
+</ul>
+<p>El patrón ya establecido en el proyecto con <code>crypto-transport</code> como shared library
+interna demuestra que la extracción de responsabilidades funciona bien en esta base
+de código.</p>
+<hr />
+<h2 id="linea-divisoria-core-open-source-vs-plugin">Línea divisoria: core open source vs plugin</h2>
+<p>Esta distinción es <strong>arquitectónicamente crítica</strong> y debe respetarse en cualquier
+decisión de implementación presente o futura.</p>
+<h3 id="core-open-source-estadisticas-universales-de-flujo-tcpip">Core open source — estadísticas universales de flujo TCP/IP</h3>
+<p>Pertenecen al core <strong>todas las features que son estadísticas observables universalmente
+en cualquier flujo de red</strong>, independientemente de la familia de amenaza:</p>
+<table>
+<thead>
+<tr>
+<th>Feature</th>
+<th>Razón</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>rst_ratio</code></td>
+<td>Ratio TCP RST/SYN — observable en cualquier flujo</td>
+</tr>
+<tr>
+<td><code>syn_ack_ratio</code></td>
+<td>Ratio handshakes completados — ídem</td>
+</tr>
+<tr>
+<td><code>flow_duration_min</code></td>
+<td>Duración mínima de flujos — ídem</td>
+</tr>
+<tr>
+<td><code>dst_port_445_ratio</code></td>
+<td>Proporción de tráfico a un puerto — ídem</td>
+</tr>
+<tr>
+<td><code>port_diversity_ratio</code></td>
+<td>Diversidad de puertos destino — ídem</td>
+</tr>
+<tr>
+<td><code>connection_rate</code></td>
+<td>Tasa de conexiones por segundo — ídem</td>
+</tr>
+<tr>
+<td><code>unique_dst_ips_count</code></td>
+<td>Cardinalidad de IPs destino — ídem</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>Principio:</strong> El Random Forest embebido no detecta "WannaCry". Detecta
+<strong>escaneo TCP masivo con handshakes fallidos</strong> — una clase de comportamiento.
+Que WannaCry, NotPetya, u otro worm produzcan ese comportamiento es una
+consecuencia, no el objeto de detección. Esto hace el sistema más robusto
+(generaliza a variantes desconocidas) y más honesto científicamente.</p>
+<p>Meterlas en un plugin sería añadir complejidad sin ningún beneficio —
+equivale a tratar <code>packet_rate</code> como un plugin porque los DDoS son rápidos.</p>
+</blockquote>
+<h3 id="plugin-conocimiento-especifico-de-amenaza">Plugin — conocimiento específico de amenaza</h3>
+<p>Son candidatos a plugin <strong>la lógica que depende de conocimiento específico de una
+familia o campaña concreta y que puede quedar obsoleta</strong>:</p>
+<table>
+<thead>
+<tr>
+<th>Candidato a plugin</th>
+<th>Razón</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Modelos especializados por familia (SMB-RF, DNS-RF...)</td>
+<td>Entrenados con datos propietarios; se actualizan sin recompilar</td>
+</tr>
+<tr>
+<td>Threat intelligence feeds con IOCs (FEAT-NET-2)</td>
+<td>Listas de IPs/dominios maliciosos que cambian continuamente</td>
+</tr>
+<tr>
+<td>Reglas de correlación multi-evento</td>
+<td>Firmas compuestas específicas de campaña</td>
+</tr>
+<tr>
+<td>JA4 TLS fingerprinting (FEAT-TLS-1)</td>
+<td>Requiere DPI — fuera del hot path genérico</td>
+</tr>
+<tr>
+<td>HTTP payload inspection (FEAT-WAF-1)</td>
+<td>Ídem</td>
+</tr>
+<tr>
+<td>DNS/DGA detection (FEAT-NET-1)</td>
+<td>Requiere análisis de nombres de dominio — DPI</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>Regla práctica:</strong> Si una feature puede quedar obsoleta cuando el atacante
+cambia su TTPs, es un plugin. Si seguirá siendo válida en 10 años para cualquier
+ataque de escaneo masivo, es core.</p>
+</blockquote>
+<hr />
+<h2 id="decision">Decisión</h2>
+<p>Implementar un mecanismo unificado de plugins como <strong>shared library interna</strong>
+<code>libs/plugin-loader</code>, siguiendo el mismo patrón que <code>libs/crypto-transport</code>.</p>
+<p>Cualquier componente que quiera soporte de plugins añade una línea en su
+<code>CMakeLists.txt</code> y una sección <code>plugins</code> en su JSON de configuración. El
+mecanismo de carga, ciclo de vida, y control de rendimiento son responsabilidad
+exclusiva del loader — el componente host no reimplementa nada.</p>
+<hr />
+<h2 id="estructura-del-proyecto">Estructura del proyecto</h2>
+<pre><code>libs/
+    crypto-transport/          ← existente
+    plugin-loader/             ← nuevo
+        include/
+            plugin_api.h       ← contrato C puro (ABI estable)
+            plugin_loader.hpp  ← interfaz C++ del loader
+        src/
+            plugin_loader.cpp
+        CMakeLists.txt
+</code></pre>
+<hr />
+<h2 id="contrato-del-plugin-plugin_apih">Contrato del plugin — <code>plugin_api.h</code></h2>
+<p>API C pura para evitar ABI hell entre compilaciones de C++:</p>
+<pre><code class="language-c">#pragma once
+#ifdef __cplusplus
+extern &quot;C&quot; {
+#endif
+
+#define PLUGIN_API_VERSION 1
+
+typedef struct PluginConfig {
+    const char* name;
+    const char* config_json;  // sección JSON del plugin, ya parseada como string
+} PluginConfig;
+
+typedef struct PacketContext {
+    /* Read-only: datos del paquete */
+    const uint8_t* raw_bytes;
+    size_t         length;
+    uint32_t       src_ip;
+    uint32_t       dst_ip;
+    uint16_t       src_port;
+    uint16_t       dst_port;
+    uint8_t        protocol;
+
+    /* Write: el plugin puede enriquecer features y emitir alertas */
+    void*          features;     /* puntero opaco a FlowFeatures del componente host */
+    void*          alert_queue;  /* puntero opaco a AlertQueue del componente host */
+    int            threat_hint;  /* 0=benign, 1=suspicious, 2=malicious */
+} PacketContext;
+
+typedef enum {
+    PLUGIN_OK    = 0,
+    PLUGIN_ERROR = 1,
+    PLUGIN_SKIP  = 2   /* plugin decide no procesar este paquete */
+} PluginResult;
+
+/* Símbolos que todo plugin DEBE exportar */
+const char*  plugin_name();
+const char*  plugin_version();
+int          plugin_api_version();   /* debe retornar PLUGIN_API_VERSION */
+PluginResult plugin_init(const PluginConfig* config);
+PluginResult plugin_process_packet(PacketContext* ctx);
+void         plugin_shutdown();
+
+#ifdef __cplusplus
+}
+#endif
+</code></pre>
+<hr />
+<h2 id="interfaz-del-loader-plugin_loaderhpp">Interfaz del loader — <code>plugin_loader.hpp</code></h2>
+<pre><code class="language-cpp">#pragma once
+#include &lt;string&gt;
+#include &lt;vector&gt;
+#include &lt;memory&gt;
+#include &quot;plugin_api.h&quot;
+
+struct PluginStats {
+    std::string name;
+    uint64_t    invocations   = 0;
+    uint64_t    budget_overruns = 0;
+    uint64_t    errors        = 0;
+};
+
+class PluginLoader {
+public:
+    explicit PluginLoader(const std::string&amp; config_json_path);
+
+    /* Carga todos los plugins habilitados en el JSON.
+       Llama a plugin_init() en cada uno. */
+    void load_plugins();
+
+    /* Invoca plugin_process_packet() en todos los plugins cargados.
+       Mide latencia. Si supera budget_us, incrementa overrun counter. */
+    void invoke_all(PacketContext&amp; ctx);
+
+    /* Llama a plugin_shutdown() y hace dlclose en todos. */
+    void shutdown();
+
+    const std::vector&lt;PluginStats&gt;&amp; stats() const;
+
+private:
+    struct LoadedPlugin;
+    std::vector&lt;std::shared_ptr&lt;LoadedPlugin&gt;&gt; plugins_;
+    std::vector&lt;PluginStats&gt; stats_;
+    std::string config_path_;
+    uint32_t budget_us_ = 100; /* default: 100 microsegundos por plugin */
+};
+</code></pre>
+<hr />
+<h2 id="configuracion-json-seccion-estandar">Configuración JSON (sección estándar)</h2>
+<p>Cada componente que use el loader añade esta sección a su JSON:</p>
+<pre><code class="language-json">{
+  &quot;plugins&quot;: {
+    &quot;directory&quot;: &quot;/usr/lib/ml-defender/plugins&quot;,
+    &quot;budget_us&quot;: 100,
+    &quot;enabled&quot;: [&quot;hello&quot;, &quot;ja4&quot;],
+    &quot;hello&quot;: {},
+    &quot;ja4&quot;: {
+      &quot;blacklist_path&quot;: &quot;/etc/ml-defender/ja4_blacklist.txt&quot;,
+      &quot;slow_path_features&quot;: true
+    }
+  }
+}
+</code></pre>
+<ul>
+<li>Si <code>plugins.enabled</code> está vacío o ausente, no se carga ningún plugin.</li>
+<li>Si un <code>.so</code> listado en <code>enabled</code> no existe en <code>directory</code>, se loguea warning y se continúa — <strong>nunca se aborta el arranque del componente</strong>.</li>
+<li>Si <code>plugin_api_version()</code> del <code>.so</code> no coincide con <code>PLUGIN_API_VERSION</code>, se rechaza con warning.</li>
+</ul>
+<hr />
+<h2 id="integracion-en-un-componente-existente-ejemplo-sniffer">Integración en un componente existente (ejemplo: sniffer)</h2>
+<p><strong>CMakeLists.txt:</strong></p>
+<pre><code class="language-cmake">target_link_libraries(sniffer PRIVATE plugin-loader crypto-transport)
+</code></pre>
+<p><strong>Código del sniffer (mínimo cambio):</strong></p>
+<pre><code class="language-cpp">#include &quot;plugin_loader.hpp&quot;
+
+// En inicialización:
+PluginLoader plugin_loader_(&quot;config/sniffer.json&quot;);
+plugin_loader_.load_plugins();
+
+// En el packet handler, después del fast path:
+PacketContext ctx{};
+ctx.raw_bytes  = packet_data;
+ctx.length     = packet_len;
+ctx.src_ip     = flow.src_ip;
+// ...
+plugin_loader_.invoke_all(ctx);
+
+// En shutdown:
+plugin_loader_.shutdown();
+</code></pre>
+<hr />
+<h2 id="plugin-hello-world-validacion-del-mecanismo">Plugin Hello World — validación del mecanismo</h2>
+<p>El primer plugin a implementar es <code>libplugin_hello.so</code>. No tiene lógica de seguridad.
+Su único propósito es validar el contrato end-to-end:</p>
+<pre><code class="language-cpp">// plugins/hello/hello_plugin.cpp
+#include &quot;plugin_api.h&quot;
+#include &lt;spdlog/spdlog.h&gt;
+
+extern &quot;C&quot; {
+
+const char* plugin_name()        { return &quot;hello&quot;; }
+const char* plugin_version()     { return &quot;0.1.0&quot;; }
+int         plugin_api_version() { return PLUGIN_API_VERSION; }
+
+PluginResult plugin_init(const PluginConfig* config) {
+    spdlog::info(&quot;[plugin:hello] init OK — config: {}&quot;, config-&gt;config_json);
+    return PLUGIN_OK;
+}
+
+PluginResult plugin_process_packet(PacketContext* ctx) {
+    spdlog::debug(&quot;[plugin:hello] paquete recibido src={}:{} dst={}:{}&quot;,
+        ctx-&gt;src_ip, ctx-&gt;src_port, ctx-&gt;dst_ip, ctx-&gt;dst_port);
+    return PLUGIN_OK;
+}
+
+void plugin_shutdown() {
+    spdlog::info(&quot;[plugin:hello] shutdown OK&quot;);
+}
+
+} // extern &quot;C&quot;
+</code></pre>
+<p><strong>Criterios de éxito del hello world:</strong>
+- [ ] <code>dlopen</code> / <code>dlsym</code> funcionan correctamente
+- [ ] <code>plugin_init()</code> recibe la config JSON parseada
+- [ ] <code>plugin_process_packet()</code> se invoca en cada paquete
+- [ ] <code>plugin_shutdown()</code> se llama limpiamente al cerrar el sniffer
+- [ ] Si se elimina el <code>.so</code>, el sniffer arranca sin errores
+- [ ] Si <code>budget_us</code> se excede, aparece warning en el log</p>
+<hr />
+<h2 id="control-de-rendimiento">Control de rendimiento</h2>
+<pre><code class="language-cpp">// Dentro de PluginLoader::invoke_all()
+auto t0 = std::chrono::steady_clock::now();
+plugin-&gt;process_packet(ctx);
+auto elapsed_us = std::chrono::duration_cast&lt;std::chrono::microseconds&gt;(
+    std::chrono::steady_clock::now() - t0).count();
+
+stats_[i].invocations++;
+if (elapsed_us &gt; budget_us_) {
+    stats_[i].budget_overruns++;
+    spdlog::warn(&quot;[plugin-loader] plugin '{}' overrun: {}us &gt; {}us budget&quot;,
+        plugin-&gt;name(), elapsed_us, budget_us_);
+}
+</code></pre>
+<p>Los stats son accesibles para el componente host, que puede exponerlos
+vía HTTP health endpoint o loguearlos periódicamente.</p>
+<hr />
+<h2 id="plugins-que-usaran-este-mecanismo-roadmap">Plugins que usarán este mecanismo (roadmap)</h2>
+<blockquote>
+<p><strong>Nota:</strong> <code>rst_ratio</code>, <code>syn_ack_ratio</code>, <code>flow_duration_min</code> y otras estadísticas
+de flujo TCP/IP <strong>no son plugins</strong> — pertenecen al core open source. Ver sección
+"Línea divisoria" más arriba.</p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th>Plugin</th>
+<th>Feature</th>
+<th>Componente host</th>
+<th>Prioridad</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>libplugin_hello</code></td>
+<td>Validación mecanismo</td>
+<td>sniffer</td>
+<td>P0 — primero</td>
+</tr>
+<tr>
+<td><code>libplugin_ja4</code></td>
+<td>JA4 TLS fingerprinting</td>
+<td>sniffer</td>
+<td>P1</td>
+</tr>
+<tr>
+<td><code>libplugin_dns_dga</code></td>
+<td>DNS/DGA detection</td>
+<td>sniffer</td>
+<td>P1</td>
+</tr>
+<tr>
+<td><code>libplugin_http_inspect</code></td>
+<td>HTTP payload WAF</td>
+<td>sniffer</td>
+<td>P2</td>
+</tr>
+<tr>
+<td><code>libplugin_threat_intel</code></td>
+<td>Threat intelligence feeds (FEAT-NET-2)</td>
+<td>ml-detector</td>
+<td>P2</td>
+</tr>
+<tr>
+<td><code>libplugin_smb_specialist</code></td>
+<td>Modelo RF especializado SMB (enterprise)</td>
+<td>ml-detector</td>
+<td>P3</td>
+</tr>
+<tr>
+<td><code>libplugin_ebpf_tls</code></td>
+<td>eBPF uprobes OpenSSL</td>
+<td>sniffer</td>
+<td>P3</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="consecuencias">Consecuencias</h2>
+<p><strong>Positivas:</strong>
+- El core de cada componente no crece con cada nueva feature
+- Organizaciones resource-constrained solo cargan lo que necesitan
+- Terceros pueden contribuir plugins sin tocar el core
+- Rendimiento base siempre predecible y medible
+- Extensible a cualquier componente del pipeline con mínimo esfuerzo
+- La línea divisoria core/plugin protege la integridad científica del paper:
+  el sistema detecta clases de comportamiento, no firmas de malware concreto</p>
+<p><strong>Negativas / riesgos:</strong>
+- Un plugin mal escrito puede causar crash del proceso host (mitigado parcialmente
+  con el budget monitor; mitigación completa requeriría sandbox de proceso separado,
+  fuera de alcance por ahora)
+- El <code>PacketContext</code> con punteros opacos requiere disciplina — el plugin no debe
+  castear <code>features</code> sin conocer la versión del host</p>
+<hr />
+<h2 id="alternativas-consideradas">Alternativas consideradas</h2>
+<ul>
+<li><strong>Feature flags en el core</strong>: descartado — el core crece indefinidamente y el
+  rendimiento base se vuelve impredecible</li>
+<li><strong>Procesos separados con IPC</strong>: descartado — latencia inaceptable en el hot path</li>
+<li><strong>eBPF programs dinámicos</strong>: interesante a largo plazo pero complejidad muy alta;
+  reservado para FEAT-EDR-1</li>
+<li><strong>Detección por familia como plugin</strong> (e.g., <code>libplugin_wannacry</code>): descartado —
+  <code>rst_ratio</code> y <code>syn_ack_ratio</code> son estadísticas universales de flujo TCP, no
+  firmas de WannaCry. Ver sección "Línea divisoria".</li>
+</ul>
+<hr />
+<h2 id="referencias">Referencias</h2>
+<ul>
+<li><code>libs/crypto-transport</code> — patrón de shared library interna ya establecido</li>
+<li>FEAT-TLS-1: JA4 TLS Fingerprinting (primer plugin real, post-ADR-012)</li>
+<li>FEAT-NET-1: DNS/DGA Detection</li>
+<li>FEAT-NET-2: Threat Intelligence Feeds</li>
+<li>FEAT-WAF-1: HTTP Payload Inspection</li>
+<li><code>docs/design/synthetic_data_wannacry_spec.md</code> — spec de datos sintéticos SMB</li>
+<li>Conversación de diseño: sesión DAY 87-88 (2026-03-18/19), actualizado DAY 91</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.top", "search.highlight"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

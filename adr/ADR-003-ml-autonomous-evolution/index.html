@@ -1,0 +1,1267 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source embedded-ML NDR for hospitals and schools">
+      
+      
+        <meta name="author" content="Alonso Isidoro Roman">
+      
+      
+        <link rel="canonical" href="https://alonsoir.github.io/argus/adr/ADR-003-ml-autonomous-evolution/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>ADR-003: ML Autonomous Evolution System - ML Defender (aRGus NDR)</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#adr-003-ml-autonomous-evolution-system" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-header__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ML Defender (aRGus NDR)
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              ADR-003: ML Autonomous Evolution System
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../README.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/BACKLOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Backlog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Security Model
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-tabs__link">
+          
+  
+  
+  ADRs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/contracts/Protobuf contracts.md" class="md-tabs__link">
+          
+  
+  
+  Contracts
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-nav__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ML Defender (aRGus NDR)
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../README.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/BACKLOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADRs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ADRs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013 Seed Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-021-deployment-topology-seed-families.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-021 Topology SSOT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-022-threat-model-opcion2-descartada.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-022 Threat Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Protobuf contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protobuf
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/JSON contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JSON
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Rag security commands.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#context" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Context
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#decision-drivers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Decision Drivers
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#decisions-made" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Decisions Made
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Decisions Made">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-plugin-based-model-deployment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Plugin-based Model Deployment
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-folder-watching-architecture-sin-cambios" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Folder Watching Architecture ✅ (sin cambios)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-model-specialization-over-replacement-sin-cambios" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Model Specialization Over Replacement ✅ (sin cambios)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-phased-autonomy-approach-sin-cambios-estructurales" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Phased Autonomy Approach ✅ (sin cambios estructurales)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5-modular-validation-pipeline-sin-cambios-fuera-de-scope-adr-017" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Modular Validation Pipeline ✅ (sin cambios — fuera de scope ADR-017)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#6-etcd-as-orchestration-brain-actualizado-adr-013" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. etcd as Orchestration Brain ✅ (actualizado — ADR-013)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#7-watchdog-for-automatic-rollback-sin-cambios-estructurales" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Watchdog for Automatic Rollback ✅ (sin cambios estructurales)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#8-xgboost-json-format-strategy-actualizado-day-94" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. XGBoost JSON Format Strategy (actualizado DAY 94)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#9-ethical-foundation-sin-cambios-permanente" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9. Ethical Foundation ✅ (sin cambios — permanente)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#validation-estado-actualizado-day-94" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Validation — estado actualizado DAY 94
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#open-questions-estado-actualizado-day-94" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Open Questions — estado actualizado DAY 94
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#references" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        References
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#sign-off" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Sign-off
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="adr-003-ml-autonomous-evolution-system">ADR-003: ML Autonomous Evolution System</h1>
+<p><strong>Date:</strong> November 6, 2025
+<strong>Status:</strong> ✅ APPROVED — actualizado DAY 94 (22 marzo 2026)
+<strong>Participants:</strong> Alonso (Human/Vision), Claude (AI/Implementation), DeepSeek (AI/Prototyping)</p>
+<blockquote>
+<p><strong>Nota de actualización DAY 94:</strong>
+Este ADR ha sido actualizado para incorporar las decisiones de ADR-017
+(Plugin Interface Hierarchy). Los nuevos modelos RF reentrenados se
+despliegan como plugins <code>InferencePlugin</code> (<code>libmodel_*.so</code>), no como
+ficheros <code>.hpp</code> compilados en el core. El core legacy (modelos RF
+embebidos actuales) permanece FROZEN — Strangler Fig Pattern.
+Los validadores de ADR-003 (verify_A..F) son herramientas de CI,
+<strong>no plugins de producción</strong> — fuera del scope de ADR-017.</p>
+</blockquote>
+<hr />
+<h2 id="context">Context</h2>
+<p>We have successfully implemented a synthetic data retraining pipeline that
+demonstrates measurable improvement (F1: 0.98 → 1.00). Now we need to design
+the system for autonomous model evolution — how new models are discovered,
+validated, and deployed to production.</p>
+<hr />
+<h2 id="decision-drivers">Decision Drivers</h2>
+<ol>
+<li><strong>Life-Critical Infrastructure:</strong> System protects healthcare and critical
+   systems where false negatives are unacceptable</li>
+<li><strong>Scientific Method:</strong> Embrace experimentation, document failures, learn iteratively</li>
+<li><strong>Human-AI Collaboration:</strong> Balance autonomy with human oversight</li>
+<li><strong>Open Source Legacy:</strong> Build for future generations to improve upon</li>
+<li><strong>Pragmatic Implementation:</strong> See it work first (Phase 0), then make it safe (Phase 1+)</li>
+</ol>
+<hr />
+<h2 id="decisions-made">Decisions Made</h2>
+<h3 id="1-plugin-based-model-deployment">1. Plugin-based Model Deployment</h3>
+<blockquote>
+<p><strong>Nota crítica DAY 94 — sin recompilación para nuevos modelos:</strong>
+Añadir <code>libmodel_neris_v2.so</code> a ml-detector <strong>no requiere recompilar
+ml-detector</strong>. El binario del componente no cambia. Solo se actualiza
+<code>ml_detector_config.json</code> con el nuevo plugin en <code>plugins.enabled</code>
+y se reprovisiona el par ml-detector↔plugin_nuevo. El canal ZeroMQ
+sniffer↔ml-detector no se ve afectado. Esto es exactamente el valor
+de ADR-017: el sistema crece sin recompilar el core.</p>
+</blockquote>
+<p>✅ (actualizado DAY 94)</p>
+<p><strong>Decisión original (DAY 1–88):</strong> Los modelos reentrenados se compilaban
+como ficheros <code>model_*.hpp</code> integrados en el binario de <code>ml-detector</code>.</p>
+<p><strong>Decisión actualizada (DAY 94, ADR-017):</strong> Los nuevos modelos RF reentrenados
+se despliegan como plugins <code>InferencePlugin</code> siguiendo ADR-017:</p>
+<pre><code>libmodel_neris_v1.so      ← primer modelo reentrenado (post SYN-5)
+libmodel_neris_v2.so      ← iteración siguiente
+libmodel_wannacry_v1.so   ← tras FEAT-RANSOM-1
+libmodel_ryuk_v1.so       ← tras FEAT-RANSOM-4
+</code></pre>
+<p><strong>Invariante:</strong> El core legacy (modelos RF embebidos actuales) es <strong>FROZEN</strong>.
+No se migra. No se toca. Los nuevos modelos extienden el sistema via plugins.
+Strangler Fig Pattern.</p>
+<p><strong>Contrato del plugin de modelo (ADR-017):</strong></p>
+<pre><code class="language-c">// plugin_component_type() = &quot;ml-detector&quot;
+// plugin_subtype()        = &quot;inference&quot;
+
+PluginResult plugin_predict(MlDetectorContext* ctx);
+// ctx-&gt;features    = vector 40 floats
+// ctx-&gt;scores_out  = vector M scores por clase (write)
+// ctx-&gt;n_classes   = número de clases
+</code></pre>
+<p>El plugin predice. El core del ml-detector decide qué hacer con los scores
+según ADR-007 (AND-consensus). Un plugin nunca bloquea directamente.</p>
+<p><strong>JSON is the law — también para plugins de modelo:</strong>
+Cada <code>libmodel_*.so</code> tiene su fichero JSON de contrato. Si falta cualquier
+clave requerida, el plugin falla en carga con error explícito. Sin valores
+por defecto silenciosos.</p>
+<hr />
+<h3 id="2-folder-watching-architecture-sin-cambios">2. Folder Watching Architecture ✅ (sin cambios)</h3>
+<p><strong>Decision:</strong> Use external drop folders (outside build) with file system
+watching, rather than hardcoded model paths.</p>
+<p><strong>Actualización DAY 94:</strong> Los drop folders ahora contienen <code>.so</code> y sus
+ficheros JSON de contrato, no <code>.hpp</code> ni <code>.json</code> de XGBoost.</p>
+<pre><code>/usr/lib/ml-defender/plugins/
+├── libmodel_neris_v1.so
+├── libmodel_neris_v1.json       ← contrato JSON del plugin
+├── libmodel_wannacry_v1.so
+├── libmodel_wannacry_v1.json
+└── ...
+</code></pre>
+<p><code>ModelWatcher</code> detecta nuevos <code>.so</code> en el directorio. Los carga solo si:
+1. El fichero JSON de contrato existe y está completo
+2. El HMAC del <code>.so</code> es válido (ADR-013, DAY 95-96)
+3. El plugin está listado en <code>ml_detector_config.json</code> → <code>plugins.enabled</code></p>
+<hr />
+<h3 id="3-model-specialization-over-replacement-sin-cambios">3. Model Specialization Over Replacement ✅ (sin cambios)</h3>
+<p><strong>Decision:</strong> Maintain multiple models in ensemble with specialization roles,
+rather than replacing old models with new ones.</p>
+<p><strong>Actualización DAY 94:</strong> El ensemble ahora combina:
+- Core legacy (FROZEN): RF embebidos compilados — siempre activos
+- Plugins (nuevos): <code>libmodel_*.so</code> — opcionales, declarados en JSON</p>
+<p>El core siempre vota. Los plugins añaden votos adicionales. La lógica
+AND-consensus de ADR-007 aplica sobre todos los votos combinados.</p>
+<hr />
+<h3 id="4-phased-autonomy-approach-sin-cambios-estructurales">4. Phased Autonomy Approach ✅ (sin cambios estructurales)</h3>
+<p><strong>Phases:</strong></p>
+<pre><code>Phase 0 (DAY 1–88):  Modelos .hpp compilados en core — validado ✅
+Phase 1 (DAY 94+):   Modelos como plugins .so — human-approved promotion
+Phase 2 (Q3 2026):   Watchdog + automatic rollback
+Phase 3 (Q4 2026):   Advanced validation pipeline
+Phase 4 (2027):      Full autonomy
+</code></pre>
+<p><strong>Actualización:</strong> Phase 0 está completa. Phase 1 arranca con ADR-017
+implementado — los primeros modelos como plugins serán los reentrenados
+tras SYN-5 (FEAT-RANSOM-1, post bare-metal stress test).</p>
+<hr />
+<h3 id="5-modular-validation-pipeline-sin-cambios-fuera-de-scope-adr-017">5. Modular Validation Pipeline ✅ (sin cambios — fuera de scope ADR-017)</h3>
+<p><strong>Decision:</strong> Validation as pluggable components (verify_A..F).</p>
+<p><strong>Aclaración DAY 94 (ADR-017):</strong> Los validadores verify_A..F son
+<strong>herramientas de CI/CD</strong>, no plugins de producción en el sentido de
+ADR-017. Se ejecutan en el pipeline de CI antes de promover un modelo.
+No se cargan vía <code>dlopen</code> en producción. No tienen keypairs ni HMAC de
+autenticación de plugin.</p>
+<pre><code>Pipeline de validación (CI):
+    retrain → verify_A → verify_B → verify_C → verify_D → verify_E → promote
+
+Promotion = copiar libmodel_*.so a /usr/lib/ml-defender/plugins/
+            + actualizar plugins.enabled en ml_detector_config.json
+            + re-provisioning de keypairs (ADR-013)
+</code></pre>
+<hr />
+<h3 id="6-etcd-as-orchestration-brain-actualizado-adr-013">6. etcd as Orchestration Brain ✅ (actualizado — ADR-013)</h3>
+<p><strong>Actualización DAY 94:</strong> etcd-server tiene <strong>responsabilidad única</strong> tras
+ADR-013 — gestión del ciclo de vida de componentes y configuración en runtime.
+La distribución de seeds criptográficos fue eliminada de etcd-server en ADR-013.</p>
+<p>La metadata de modelos (especialización, versión activa, performance) sigue
+en etcd, pero las claves criptográficas de los plugins no:</p>
+<pre><code class="language-yaml"># etcd — modelo metadata (sin claves criptográficas)
+/ml/models/ml-detector/inference/neris_v1/metadata:
+  version: &quot;1.0.0&quot;
+  plugin_path: &quot;/usr/lib/ml-defender/plugins/libmodel_neris_v1.so&quot;
+  f1_score: 0.9985
+  trained_on: &quot;CTU-13 Neris DAY 86&quot;
+  status: &quot;active&quot;
+
+# etcd — ensemble config
+/ml/ensemble/ml-detector/config:
+  active_plugins: [&quot;libmodel_neris_v1.so&quot;]
+  voting_strategy: &quot;AND_consensus&quot;    # ADR-007
+</code></pre>
+<hr />
+<h3 id="7-watchdog-for-automatic-rollback-sin-cambios-estructurales">7. Watchdog for Automatic Rollback ✅ (sin cambios estructurales)</h3>
+<p><strong>Actualización DAY 94:</strong> El watchdog opera sobre los plugins cargados.
+Un rollback consiste en:
+1. Desactivar el plugin degradado en <code>plugins.enabled</code>
+2. Hacer <code>dlclose</code> del <code>.so</code>
+3. Activar la versión anterior (<code>libmodel_neris_v1.so</code> si falló <code>_v2.so</code>)
+4. No se requiere recompilación — es un cambio de configuración JSON</p>
+<hr />
+<h3 id="8-xgboost-json-format-strategy-actualizado-day-94">8. XGBoost JSON Format Strategy (actualizado DAY 94)</h3>
+<p><strong>Decisión original:</strong> Soporte para ONNX y XGBoost JSON en producción.</p>
+<p><strong>Actualización DAY 94:</strong> Los nuevos modelos se despliegan como plugins <code>.so</code>
+que internamente pueden usar cualquier formato de modelo (ONNX, XGBoost JSON,
+sklearn serializado). El formato interno del modelo es un detalle de
+implementación del plugin — el contrato externo es siempre:</p>
+<pre><code class="language-c">PluginResult plugin_predict(MlDetectorContext* ctx);
+</code></pre>
+<p>El <code>ml-detector</code> core no necesita saber si el plugin usa ONNX o XGBoost
+internamente. Esta separación elimina la dependencia de versiones específicas
+de librerías de ML en el core del pipeline.</p>
+<hr />
+<h3 id="9-ethical-foundation-sin-cambios-permanente">9. Ethical Foundation ✅ (sin cambios — permanente)</h3>
+<p><strong>Decision:</strong> Design system with explicit ethical considerations for
+life-critical infrastructure.</p>
+<p>Este principio es inmutable. Ninguna decisión de ADR posterior puede
+comprometer la seguridad de los usuarios finales (pacientes de hospital,
+alumnos, empleados de pymes) en nombre de la conveniencia técnica.</p>
+<p><strong>Manifestación en ADR-017/018/019:</strong>
+- Type-safety en el hot path (ADR-017) — previene SIGSEGV que tumba el NDR
+- AppArmor por plugin (ADR-019) — un plugin comprometido no puede escalar
+- Fallo explícito si falta configuración (ADR-017) — sin comportamientos
+  silenciosos que comprometan la detección</p>
+<hr />
+<h2 id="validation-estado-actualizado-day-94">Validation — estado actualizado DAY 94</h2>
+<p><strong>Phase 0 (DAY 1–88) — COMPLETADA ✅</strong>
+- Modelo RF embebido → pipeline → clasificación de tráfico ✅
+- F1=0.9985, Recall=1.0000 en CTU-13 Neris ✅</p>
+<p><strong>Phase 1 (DAY 94+) — EN CURSO</strong>
+- [ ] ADR-017 plugin interface hierarchy — DONE DAY 94
+- [ ] Primer plugin de modelo: <code>libmodel_neris_v2.so</code> (post SYN-5)
+- [ ] Human-approved promotion pipeline</p>
+<p><strong>Phase 2 (Q3 2026) — PENDIENTE</strong>
+- [ ] Watchdog + rollback automático sobre plugins
+- [ ] Shadow mode testing de nuevos modelos</p>
+<hr />
+<h2 id="open-questions-estado-actualizado-day-94">Open Questions — estado actualizado DAY 94</h2>
+<ol>
+<li><strong>¿Cuánto tiempo en shadow mode antes de promover a activo?</strong></li>
+<li>
+<p>Pendiente: depende de los datos de SYN-3/SYN-4 — respuesta empírica</p>
+</li>
+<li>
+<p><strong>¿Cómo detectar modelos maliciosos en un plugin?</strong></p>
+</li>
+<li>Parcialmente resuelto: HMAC + keypairs (ADR-013) + AppArmor (ADR-019)</li>
+<li>
+<p>Pendiente: análisis comportamental en shadow mode (verify_D)</p>
+</li>
+<li>
+<p><strong>¿Cómo explicar decisiones del ensemble cuando votan core + plugins?</strong></p>
+</li>
+<li>ADR-002 (DetectionProvenance) — cada engine vota con su engine_name</li>
+<li>
+<p><code>libmodel_neris_v1</code> aparece como <code>engine_name</code> en el protobuf</p>
+</li>
+<li>
+<p><strong>¿Proporciones correctas en el ensemble multi-familia?</strong></p>
+</li>
+<li>Consulta pendiente al Consejo antes de ENT-MODEL-1</li>
+</ol>
+<hr />
+<h2 id="references">References</h2>
+<ul>
+<li>ADR-002: Multi-Engine Provenance — DetectionProvenance para plugins</li>
+<li>ADR-007: AND-consensus scoring — aplica a votos de plugins</li>
+<li>ADR-013: Seed Distribution — autenticación de plugins .so</li>
+<li>ADR-017: Plugin Interface Hierarchy — contrato InferencePlugin</li>
+<li>ADR-018: eBPF Kernel Plugin Loader — plugins de kernel-telemetry</li>
+<li>ADR-019: OS Hardening — AppArmor por plugin</li>
+<li><code>docs/experiments/f1_replay_log.csv</code> — source of truth de métricas</li>
+<li><code>docs/design/synthetic_data_wannacry_spec.md</code> — spec SYN-3</li>
+</ul>
+<hr />
+<h2 id="sign-off">Sign-off</h2>
+<p><strong>Alonso (Human):</strong> ✅ Approved
+<strong>Claude (AI):</strong> ✅ Updated DAY 94
+<strong>DeepSeek (AI):</strong> ✅ Original prototyping</p>
+<p><strong>Status:</strong> APPROVED — Phase 1 in progress (plugin-based model deployment)</p>
+<p><strong>Last Review:</strong> DAY 94 — 22 marzo 2026</p>
+<hr />
+<p><em>Co-authored-by: Alonso Isidoro Román + Claude (Anthropic)</em>
+<em>Consejo de Sabios — ML Defender (aRGus NDR)</em>
+<em>Original: November 6, 2025 — Actualizado: DAY 94, 22 marzo 2026</em></p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.top", "search.highlight"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

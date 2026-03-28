@@ -1,0 +1,1148 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source embedded-ML NDR for hospitals and schools">
+      
+      
+        <meta name="author" content="Alonso Isidoro Roman">
+      
+      
+        <link rel="canonical" href="https://alonsoir.github.io/argus/engineering_decisions/Consejo%20consulta%201%20wannacry%20features_respuesta_global_a_pregunta_inicial_chatgpt5/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>Consejo consulta 1 wannacry features respuesta global a pregunta inicial chatgpt5 - ML Defender (aRGus NDR)</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#consenso-real-del-consejo-no-opiniones-individuales" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-header__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ML Defender (aRGus NDR)
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Consejo consulta 1 wannacry features respuesta global a pregunta inicial chatgpt5
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../README.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/BACKLOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Backlog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Security Model
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-tabs__link">
+          
+  
+  
+  ADRs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/contracts/Protobuf contracts.md" class="md-tabs__link">
+          
+  
+  
+  Contracts
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-nav__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ML Defender (aRGus NDR)
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../README.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/BACKLOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADRs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ADRs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013 Seed Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-021-deployment-topology-seed-families.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-021 Topology SSOT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-022-threat-model-opcion2-descartada.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-022 Threat Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Protobuf contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protobuf
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/JSON contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JSON
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Rag security commands.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-senal-dominante-de-wannacry-consenso-fuerte" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Señal dominante de WannaCry (consenso fuerte)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1. Señal dominante de WannaCry (consenso fuerte)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#firma-canonica-emergente" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Firma canónica emergente:
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-gap-estructural-detectado-el-mas-importante" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Gap estructural detectado (el más importante)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2. Gap estructural detectado (el más importante)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#por-que-es-critico" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Por qué es crítico
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<p>Lo que tienes aquí es bastante potente: hay <strong>convergencia clara entre modelos</strong> en los puntos realmente importantes. Eso es justo lo que quieres antes de tomar decisiones de arquitectura.</p>
+<p>Voy directo a lo útil: síntesis técnica + decisiones accionables.</p>
+<hr />
+<h1 id="consenso-real-del-consejo-no-opiniones-individuales">🧠 Consenso real del Consejo (no opiniones individuales)</h1>
+<h2 id="1-senal-dominante-de-wannacry-consenso-fuerte">1. Señal dominante de WannaCry (consenso fuerte)</h2>
+<p>Todos coinciden en que WannaCry no es “C2-like”, es <strong>propagación tipo worm</strong>.
+La señal clave no es contenido, es <strong>estructura de conexiones fallidas</strong>:</p>
+<h3 id="firma-canonica-emergente">Firma canónica emergente:</h3>
+<ul>
+<li>MANY SYN</li>
+<li>MANY RST</li>
+<li>VERY FEW SYN-ACK</li>
+<li>MANY dst IPs</li>
+<li>SAME dst port (445)</li>
+</ul>
+<p>👉 Traducido a features:</p>
+<ul>
+<li><code>unique_dst_ips_count</code> ✅ (ya lo tienes)</li>
+<li><code>connection_rate</code> ✅</li>
+<li><code>syn_flag_count</code> ✅</li>
+<li><code>rst_flag_count</code> ✅</li>
+<li>❗ <strong>FALTA LA NORMALIZACIÓN (ratios)</strong></li>
+</ul>
+<hr />
+<h2 id="2-gap-estructural-detectado-el-mas-importante">2. Gap estructural detectado (el más importante)</h2>
+<p>Todos, sin excepción, convergen en esto:</p>
+<blockquote>
+<p>❗ <strong>Los contadores absolutos no bastan.</strong>
+Necesitas <strong>ratios</strong> para separar señal real de ruido.</p>
+</blockquote>
+<h3 id="por-que-es-critico">Por qué es crítico</h3>
+<ul>
+<li>100 RST pueden ser normales en una red grande</li>
+<li>
+<p>Pero:</p>
+<ul>
+<li><code>RST / SYN ≈ 1</code> → scanning</li>
+<li><code>RST / SYN ≈ 0</code> → tráfico legítimo</li>
+</ul>
+</li>
+</ul>
+<p>👉 Sin ratios, el modelo:</p>
+<ul>
+<li>depende del volumen</li>
+<li>no del comportamiento</li>
+</ul>
+<hr />
+<h1 id="decision-mas-importante-del-documento">🔥 Decisión más importante del documento</h1>
+<h2 id="rst_ratio-es-la-feature-mas-valiosa-de-todo-el-sistema-ahora-mismo">→ <code>rst_ratio</code> es la feature más valiosa de todo el sistema ahora mismo</h2>
+<p>No es “una más”. Es:</p>
+<blockquote>
+<p><strong>La feature con mayor poder discriminatorio para worms de red</strong></p>
+</blockquote>
+<p>Todos los modelos:</p>
+<ul>
+<li>ChatGPT → P1</li>
+<li>Claude → P1 absoluto</li>
+<li>DeepSeek → CRÍTICO</li>
+<li>Gemini → P1</li>
+<li>Grok → P1</li>
+<li>Qwen → P1</li>
+</ul>
+<p>👉 Esto no pasa por casualidad.</p>
+<hr />
+<h1 id="segunda-capa-de-consenso-muy-relevante">🧩 Segunda capa de consenso (muy relevante)</h1>
+<h2 id="3-deteccion-propagacion-no-payload">3. Detección = propagación, no payload</h2>
+<p>Todos aceptan implícitamente:</p>
+<blockquote>
+<p>Tu sistema <strong>sí puede detectar WannaCry sin DPI</strong></p>
+</blockquote>
+<p>Porque:</p>
+<ul>
+<li>no necesitas el exploit (EternalBlue)</li>
+<li>necesitas el patrón de propagación</li>
+</ul>
+<p>👉 Esto valida completamente tu arquitectura L3/L4</p>
+<hr />
+<h1 id="limitacion-estructural-tambien-consenso-total">⚠️ Limitación estructural (también consenso total)</h1>
+<h2 id="killswitch-dns">Killswitch DNS</h2>
+<p>Todos coinciden:</p>
+<blockquote>
+<p>❌ <strong>No detectable sin DPI</strong></p>
+</blockquote>
+<p>Matices:</p>
+<ul>
+<li>Gemini/Grok sugieren correlaciones débiles</li>
+<li>Pero el consenso real es:</li>
+</ul>
+<p>👉 <strong>No es una señal fiable</strong></p>
+<p>✔️ Esto es importante para el paper:</p>
+<ul>
+<li>no es una debilidad</li>
+<li>es una <strong>limitación explícita del modelo de observación</strong></li>
+</ul>
+<hr />
+<h1 id="generalizacion-otro-consenso-fuerte">🧪 Generalización (otro consenso fuerte)</h1>
+<h2 id="no-generaliza-bien-desde-ctu-13-neris">→ NO generaliza bien desde CTU-13 Neris</h2>
+<p>Todos dicen lo mismo, con distintas palabras:</p>
+<ul>
+<li>IRC botnet → comunicación</li>
+<li>WannaCry → propagación</li>
+</ul>
+<p>👉 Espacios de features distintos</p>
+<h3 id="conclusion-solida">Conclusión sólida:</h3>
+<ul>
+<li>Detectará anomalía extrema (WannaCry)</li>
+<li>
+<p>Fallará en:</p>
+<ul>
+<li>NotPetya</li>
+<li>tráfico legítimo intenso</li>
+</ul>
+</li>
+</ul>
+<p>✔️ Reentrenamiento = obligatorio para F1 &gt; 0.90</p>
+<hr />
+<h1 id="lo-mas-interesante-nivel-arquitectura">🧠 Lo más interesante (nivel arquitectura)</h1>
+<p>Aquí está el insight más valioso del Consejo:</p>
+<h2 id="hay-dos-tipos-de-features-emergentes">Hay dos tipos de features emergentes</h2>
+<h3 id="1-features-de-fracaso">1. Features de “fracaso”</h3>
+<ul>
+<li><code>rst_ratio</code></li>
+<li><code>syn_ack_ratio</code></li>
+<li><code>failed_connection_ratio</code></li>
+</ul>
+<p>👉 Detectan <strong>intentos fallidos</strong></p>
+<hr />
+<h3 id="2-features-de-propagacion">2. Features de “propagación”</h3>
+<ul>
+<li><code>unique_dst_ips_count</code></li>
+<li><code>new_dst_ip_rate</code></li>
+<li><code>connection_rate</code></li>
+</ul>
+<p>👉 Detectan <strong>expansión lateral</strong></p>
+<hr />
+<h2 id="insight-clave">🔥 Insight clave</h2>
+<blockquote>
+<p>WannaCry = combinación de ambas cosas</p>
+</blockquote>
+<pre><code>propagación alta
++
+fracaso alto
+=
+worm SMB
+</code></pre>
+<p>👉 Esto es prácticamente una <strong>firma matemática</strong></p>
+<hr />
+<h1 id="decisiones-de-diseno-respuesta-consolidada">🧱 Decisiones de diseño (respuesta consolidada)</h1>
+<h2 id="1-rst_ratio-syn_ack_ratio">1. rst_ratio / syn_ack_ratio</h2>
+<p>👉 <strong>P1 ABSOLUTO (no discutible)</strong></p>
+<ul>
+<li>coste: trivial</li>
+<li>impacto: máximo</li>
+<li>consenso: total</li>
+</ul>
+<p>✔️ Implementar ANTES de generar datasets</p>
+<hr />
+<h2 id="2-ventana-10s">2. Ventana 10s</h2>
+<p>👉 <strong>Correcta, pero incompleta</strong></p>
+<p>Consenso real:</p>
+<ul>
+<li>WannaCry → ✅ suficiente</li>
+<li>NotPetya → ⚠️ corta</li>
+</ul>
+<h3 id="mejor-interpretacion">Mejor interpretación:</h3>
+<p>No cambies la ventana.</p>
+<p>👉 Añade features independientes del tamaño de ventana:</p>
+<ul>
+<li><code>new_dst_ip_rate</code></li>
+<li>burst metrics</li>
+</ul>
+<hr />
+<h2 id="3-dns_query_count">3. dns_query_count</h2>
+<p>👉 <strong>P2 / señal auxiliar</strong></p>
+<ul>
+<li>útil solo en correlación</li>
+<li>nunca primaria</li>
+</ul>
+<p>✔️ Implementable, pero no bloqueante</p>
+<hr />
+<h2 id="4-killswitch-dns">4. Killswitch DNS</h2>
+<p>👉 <strong>NO detectable (decisión final)</strong></p>
+<p>✔️ Documentar en el paper
+✔️ No intentar “forzar” detección</p>
+<hr />
+<h1 id="top-real-de-features-con-consenso-cruzado">🧪 Top real de features (con consenso cruzado)</h1>
+<p>Si reduces todo el consejo a lo esencial:</p>
+<h2 id="tier-1-obligatorio">🥇 Tier 1 (obligatorio)</h2>
+<ol>
+<li><code>rst_ratio</code></li>
+<li><code>syn_ack_ratio</code></li>
+</ol>
+<hr />
+<h2 id="tier-2-muy-alto-impacto">🥈 Tier 2 (muy alto impacto)</h2>
+<ol>
+<li><code>new_dst_ip_rate</code></li>
+<li><code>failed_connection_ratio</code></li>
+</ol>
+<hr />
+<h2 id="tier-3-especializacion-smb">🥉 Tier 3 (especialización SMB)</h2>
+<ol>
+<li><code>dst_port_445_ratio</code></li>
+<li><code>port_diversity_ratio</code></li>
+</ol>
+<hr />
+<h1 id="recomendacion-final-estrategica">🚀 Recomendación final (estratégica)</h1>
+<p>Si tuviera que decirte qué hacer mañana:</p>
+<h2 id="paso-1-inmediato">Paso 1 (inmediato)</h2>
+<p>Implementa:</p>
+<ul>
+<li><code>rst_ratio</code></li>
+<li><code>syn_ack_ratio</code></li>
+</ul>
+<p>👉 Esto solo ya cambia el sistema</p>
+<hr />
+<h2 id="paso-2-antes-de-phase2-dataset">Paso 2 (antes de PHASE2 dataset)</h2>
+<p>Añade:</p>
+<ul>
+<li><code>new_dst_ip_rate</code></li>
+</ul>
+<hr />
+<h2 id="paso-3-reentrenamiento">Paso 3 (reentrenamiento)</h2>
+<p>Genera dataset con:</p>
+<ul>
+<li>scanning SMB sintético</li>
+<li>tráfico lateral legítimo</li>
+</ul>
+<hr />
+<h1 id="conclusion-clara">🧭 Conclusión clara</h1>
+<ul>
+<li>Tu sistema <strong>ya tiene la base correcta</strong></li>
+<li>No estás lejos — estás en el <strong>último 10–15% crítico</strong></li>
+</ul>
+<p>Y ese 10% no es infraestructura, es:</p>
+<blockquote>
+<p><strong>modelado correcto del comportamiento (ratios + propagación)</strong></p>
+</blockquote>
+<hr />
+<p>Si quieres, en el siguiente paso puedo:</p>
+<ul>
+<li>Bajarte esto a <strong>implementación concreta en C++ (eBPF + aggregator)</strong></li>
+<li>O definirte el <strong>schema final de features PHASE2 listo para código</strong></li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.top", "search.highlight"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

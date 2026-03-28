@@ -1,0 +1,2026 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source embedded-ML NDR for hospitals and schools">
+      
+      
+        <meta name="author" content="Alonso Isidoro Roman">
+      
+      
+        <link rel="canonical" href="https://alonsoir.github.io/argus/DEPLOYMENT/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>📦 DEPLOYMENT.md - ML Defender Platform Deployment Guide - ML Defender (aRGus NDR)</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#deploymentmd-ml-defender-platform-deployment-guide" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="ML Defender (aRGus NDR)" class="md-header__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ML Defender (aRGus NDR)
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              📦 DEPLOYMENT.md - ML Defender Platform Deployment Guide
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../README.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../docs/ARCHITECTURE.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../docs/BACKLOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Backlog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../docs/SECURITY_MODEL.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Security Model
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../docs/adr/ADR-013 seed distribution component authentication.md" class="md-tabs__link">
+          
+  
+  
+  ADRs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../docs/contracts/Protobuf contracts.md" class="md-tabs__link">
+          
+  
+  
+  Contracts
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="ML Defender (aRGus NDR)" class="md-nav__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ML Defender (aRGus NDR)
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../README.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/ARCHITECTURE.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/BACKLOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/SECURITY_MODEL.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADRs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ADRs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/adr/ADR-013 seed distribution component authentication.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013 Seed Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/adr/ADR-021-deployment-topology-seed-families.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-021 Topology SSOT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/adr/ADR-022-threat-model-opcion2-descartada.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-022 Threat Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/contracts/Protobuf contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protobuf
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/contracts/JSON contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JSON
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/contracts/Rag security commands.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="deploymentmd-ml-defender-platform-deployment-guide">📦 <strong>DEPLOYMENT.md - ML Defender Platform Deployment Guide</strong></h1>
+<h1 id="deployment-guide-ml-defender-platform">📦 Deployment Guide - ML Defender Platform</h1>
+<p><strong>Version:</strong> 4.0.0<br />
+<strong>Last Updated:</strong> November 20, 2025<br />
+<strong>Target:</strong> Production deployment with RAG + ML detectors on bare metal, VM, or Raspberry Pi</p>
+<hr />
+<h2 id="table-of-contents">📋 Table of Contents</h2>
+<ul>
+<li><a href="#system-overview">System Overview</a></li>
+<li><a href="#system-requirements">System Requirements</a></li>
+<li><a href="#pre-installation-checklist">Pre-Installation Checklist</a></li>
+<li><a href="#complete-installation">Complete Installation</a></li>
+<li><a href="#component-configuration">Component Configuration</a></li>
+<li><a href="#systemd-services-setup">Systemd Services Setup</a></li>
+<li><a href="#verification--testing">Verification &amp; Testing</a></li>
+<li><a href="#monitoring--operations">Monitoring &amp; Operations</a></li>
+<li><a href="#troubleshooting">Troubleshooting</a></li>
+<li><a href="#updates--maintenance">Updates &amp; Maintenance</a></li>
+<li><a href="#production-best-practices">Production Best Practices</a></li>
+</ul>
+<hr />
+<h2 id="system-overview">🎯 System Overview</h2>
+<h3 id="architecture-components">Architecture Components</h3>
+<pre><code>┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
+│  cpp_sniffer    │────▶│  ml-detector    │────▶│  RAG System     │
+│                 │ ZMQ │                 │ ZMQ │                 │
+│  eBPF Capture   │ 5571│  4 ML Models    │ 5572│  TinyLlama-1.1B │
+│  40+ Features   │     │  Sub-microsecond│     │  Security AI    │
+└─────────────────┘     └─────────────────┘     └─────────────────┘
+</code></pre>
+<h3 id="deployment-modes">Deployment Modes</h3>
+<p><strong>1. Single Node (All-in-One)</strong>
+- All components on one machine
+- Ideal for: Home use, small networks, testing</p>
+<p><strong>2. Distributed Deployment</strong>
+- Components across multiple servers
+- Ideal for: Enterprise, high-traffic networks</p>
+<hr />
+<h2 id="system-requirements">💻 System Requirements</h2>
+<h3 id="minimum-requirements-single-node">Minimum Requirements (Single Node)</h3>
+<p><strong>Hardware:</strong></p>
+<pre><code>CPU:        4 cores (x86_64 or ARM64)
+RAM:        4 GB available (2 GB for LLAMA model)
+Storage:    5 GB (1.5 GB for LLAMA + binaries + logs)
+Network:    1 Gbps Ethernet
+</code></pre>
+<p><strong>Software:</strong></p>
+<pre><code>OS:         Linux (Debian 12+, Ubuntu 22.04+)
+Kernel:     6.1+ (eBPF CO-RE support required)
+- BTF enabled (/sys/kernel/btf/vmlinux must exist)
+- eBPF support (CONFIG_BPF=y, CONFIG_BPF_SYSCALL=y)
+</code></pre>
+<h3 id="recommended-production">Recommended (Production)</h3>
+<p><strong>Hardware:</strong></p>
+<pre><code>CPU:        8+ cores (for multi-component processing)
+RAM:        8 GB available (4 GB for LLAMA + ML models)
+Storage:    10 GB (for logs rotation and model storage)
+Network:    10 Gbps (for high-traffic environments)
+</code></pre>
+<h3 id="target-platforms">Target Platforms</h3>
+<ul>
+<li>✅ <strong>Debian 12 (Bookworm)</strong> - Fully tested and validated</li>
+<li>✅ <strong>Ubuntu 22.04 LTS</strong> - Compatible</li>
+<li>✅ <strong>Raspberry Pi 5 (ARM64)</strong> - Primary target for home deployment</li>
+<li>⚠️ <strong>CentOS/RHEL 9+</strong> - Should work (untested)</li>
+<li>⚠️ <strong>Arch Linux</strong> - Should work (untested)</li>
+</ul>
+<h3 id="kernel-compatibility">Kernel Compatibility</h3>
+<p><strong>Validated Kernels:</strong>
+- ✅ <strong>Kernel 6.1.x</strong> (Debian 12) - Fully tested (17h stability)
+- ✅ <strong>Kernel 6.5.x</strong> (Ubuntu 23.10+) - Compatible</p>
+<p><strong>Required Kernel Features:</strong></p>
+<pre><code class="language-bash"># Verify BTF support (required for eBPF CO-RE)
+ls -l /sys/kernel/btf/vmlinux
+
+# Verify eBPF support
+zgrep CONFIG_BPF /proc/config.gz
+# Should show: CONFIG_BPF=y, CONFIG_BPF_SYSCALL=y
+</code></pre>
+<hr />
+<h2 id="pre-installation-checklist">📋 Pre-Installation Checklist</h2>
+<h3 id="1-system-verification">1. System Verification</h3>
+<pre><code class="language-bash"># Check kernel version
+uname -r
+# Required: 6.1 or higher
+
+# Check available resources
+free -h
+# Minimum: 4 GB RAM available
+
+df -h /
+# Minimum: 5 GB free space
+
+# Check CPU architecture
+lscpu | grep Architecture
+# Should be: x86_64 or aarch64 (ARM64)
+</code></pre>
+<h3 id="2-network-interface-verification">2. Network Interface Verification</h3>
+<pre><code class="language-bash"># List available interfaces
+ip link show
+
+# Verify target interface exists and is UP
+ip link show eth0
+# Replace 'eth0' with your monitoring interface
+
+# Check interface capabilities
+ethtool -i eth0
+</code></pre>
+<h3 id="3-permission-requirements">3. Permission Requirements</h3>
+<pre><code class="language-bash"># For eBPF, you need either:
+# Option A: Run as root (simpler)
+sudo -v
+
+# Option B: Grant capabilities (production preferred)
+# We'll set this up during installation
+</code></pre>
+<hr />
+<h2 id="complete-installation">🔧 Complete Installation</h2>
+<h3 id="step-1-install-system-dependencies">Step 1: Install System Dependencies</h3>
+<h4 id="debianubuntu">Debian/Ubuntu</h4>
+<pre><code class="language-bash">sudo apt-get update
+sudo apt-get install -y \
+    build-essential \
+    clang-14 \
+    llvm-14 \
+    libbpf-dev \
+    libelf-dev \
+    cmake \
+    git \
+    pkg-config \
+    libzmq3-dev \
+    protobuf-compiler \
+    libprotobuf-dev \
+    libjsoncpp-dev \
+    liblz4-dev \
+    libzstd-dev \
+    zlib1g-dev \
+    nlohmann-json3-dev
+
+# Verify clang version
+clang --version
+# Need: clang 12+ (clang 14 recommended)
+</code></pre>
+<h4 id="raspberry-pi-os-arm64">Raspberry Pi OS (ARM64)</h4>
+<pre><code class="language-bash"># Same as Debian, all packages available
+sudo apt-get update
+sudo apt-get install -y \
+    build-essential clang-14 llvm-14 libbpf-dev \
+    libelf-dev cmake git pkg-config \
+    libzmq3-dev protobuf-compiler libprotobuf-dev \
+    libjsoncpp-dev liblz4-dev libzstd-dev \
+    nlohmann-json3-dev
+</code></pre>
+<h3 id="step-2-clone-and-setup-repository">Step 2: Clone and Setup Repository</h3>
+<pre><code class="language-bash"># Clone main repository
+cd /opt
+sudo git clone https://github.com/yourusername/ml-defender.git
+sudo chown -R $USER:$USER ml-defender
+cd ml-defender
+
+# Clone RAG subsystem
+cd /opt
+sudo git clone https://github.com/yourusername/rag-security.git
+sudo chown -R $USER:$USER rag-security
+</code></pre>
+<h3 id="step-3-download-llama-model">Step 3: Download LLAMA Model</h3>
+<pre><code class="language-bash"># Create model directory
+sudo mkdir -p /opt/rag-security/models
+sudo chown $USER:$USER /opt/rag-security/models
+
+# Download TinyLlama-1.1B model (1.5 GB)
+cd /opt/rag-security/models
+wget https://huggingface.co/TheBloke/TinyLlama-1.1B-Chat-v1.0-GGUF/resolve/main/tinyllama-1.1b-chat-v1.0.Q4_0.gguf
+
+# Verify download
+ls -lh tinyllama-1.1b-chat-v1.0.Q4_0.gguf
+# Should be ~1.5 GB
+</code></pre>
+<h3 id="step-4-build-all-components">Step 4: Build All Components</h3>
+<h4 id="build-cpp_sniffer">Build cpp_sniffer</h4>
+<pre><code class="language-bash">cd /opt/ml-defender/sniffer
+mkdir -p build
+cd build
+
+# Configure (Release mode for production)
+cmake -DCMAKE_BUILD_TYPE=Release \
+      -DCMAKE_C_COMPILER=clang-14 \
+      -DCMAKE_CXX_COMPILER=clang++-14 \
+      ..
+
+# Build
+make -j$(nproc)
+
+# Verify build
+ls -lh sniffer sniffer.bpf.o
+</code></pre>
+<h4 id="build-ml-detector">Build ml-detector</h4>
+<pre><code class="language-bash">cd /opt/ml-defender/ml-detector
+mkdir -p build
+cd build
+
+cmake -DCMAKE_BUILD_TYPE=Release ..
+make -j$(nproc)
+
+# Verify build
+ls -lh ml-detector
+</code></pre>
+<h4 id="build-rag-security-system">Build RAG Security System</h4>
+<pre><code class="language-bash">cd /opt/rag-security
+mkdir -p build
+cd build
+
+cmake -DCMAKE_BUILD_TYPE=Release ..
+make -j$(nproc)
+
+# Verify build
+ls -lh rag-security
+</code></pre>
+<h3 id="step-5-install-binaries">Step 5: Install Binaries</h3>
+<pre><code class="language-bash"># Install sniffer
+cd /opt/ml-defender/sniffer/build
+sudo make install
+# or manually:
+sudo cp sniffer /usr/local/bin/
+sudo cp sniffer.bpf.o /usr/local/lib/sniffer/
+
+# Install ml-detector
+cd /opt/ml-defender/ml-detector/build
+sudo cp ml-detector /usr/local/bin/
+
+# Install RAG system
+cd /opt/rag-security/build
+sudo cp rag-security /usr/local/bin/
+</code></pre>
+<hr />
+<h2 id="component-configuration">⚙️ Component Configuration</h2>
+<h3 id="1-cpp_sniffer-configuration">1. cpp_sniffer Configuration</h3>
+<pre><code class="language-bash">sudo mkdir -p /etc/sniffer
+sudo tee /etc/sniffer/sniffer.json &gt; /dev/null &lt;&lt; 'EOFCONFIG'
+{
+  &quot;interface&quot;: &quot;eth0&quot;,
+  &quot;profile&quot;: &quot;production&quot;,
+  &quot;node_id&quot;: &quot;ml_defender_node_001&quot;,
+
+  &quot;ml_defender&quot;: {
+    &quot;thresholds&quot;: {
+      &quot;ddos&quot;: 0.85,
+      &quot;ransomware&quot;: 0.90,
+      &quot;traffic&quot;: 0.80,
+      &quot;internal&quot;: 0.85
+    },
+    &quot;validation&quot;: {
+      &quot;min_threshold&quot;: 0.5,
+      &quot;max_threshold&quot;: 0.99,
+      &quot;fallback_threshold&quot;: 0.75
+    }
+  },
+
+  &quot;threading&quot;: {
+    &quot;ring_consumer_threads&quot;: 2,
+    &quot;feature_processor_threads&quot;: 2,
+    &quot;zmq_sender_threads&quot;: 1
+  },
+
+  &quot;zmq&quot;: {
+    &quot;output_endpoint&quot;: &quot;tcp://127.0.0.1:5571&quot;,
+    &quot;socket_type&quot;: &quot;PUSH&quot;
+  },
+
+  &quot;buffers&quot;: {
+    &quot;flow_state_buffer_entries&quot;: 500000
+  },
+
+  &quot;logging&quot;: {
+    &quot;level&quot;: &quot;info&quot;,
+    &quot;file&quot;: &quot;/var/log/ml-defender/sniffer.log&quot;
+  }
+}
+EOFCONFIG
+</code></pre>
+<h3 id="2-ml-detector-configuration">2. ml-detector Configuration</h3>
+<pre><code class="language-bash">sudo mkdir -p /etc/ml-detector
+sudo tee /etc/ml-detector/ml_detector_config.json &gt; /dev/null &lt;&lt; 'EOFMLCONFIG'
+{
+  &quot;zmq&quot;: {
+    &quot;input_endpoint&quot;: &quot;tcp://127.0.0.1:5571&quot;,
+    &quot;output_endpoint&quot;: &quot;tcp://127.0.0.1:5572&quot;,
+    &quot;socket_type&quot;: &quot;PULL&quot;
+  },
+
+  &quot;models&quot;: {
+    &quot;ddos&quot;: {
+      &quot;path&quot;: &quot;/opt/ml-defender/models/ddos_model.bin&quot;,
+      &quot;threshold&quot;: 0.85
+    },
+    &quot;ransomware&quot;: {
+      &quot;path&quot;: &quot;/opt/ml-defender/models/ransomware_model.bin&quot;, 
+      &quot;threshold&quot;: 0.90
+    },
+    &quot;traffic&quot;: {
+      &quot;path&quot;: &quot;/opt/ml-defender/models/traffic_model.bin&quot;,
+      &quot;threshold&quot;: 0.80
+    },
+    &quot;internal&quot;: {
+      &quot;path&quot;: &quot;/opt/ml-defender/models/internal_model.bin&quot;,
+      &quot;threshold&quot;: 0.85
+    }
+  },
+
+  &quot;performance&quot;: {
+    &quot;batch_size&quot;: 32,
+    &quot;max_queue_size&quot;: 1000
+  },
+
+  &quot;logging&quot;: {
+    &quot;level&quot;: &quot;info&quot;,
+    &quot;file&quot;: &quot;/var/log/ml-defender/ml-detector.log&quot;
+  }
+}
+EOFMLCONFIG
+</code></pre>
+<h3 id="3-rag-system-configuration">3. RAG System Configuration</h3>
+<pre><code class="language-bash">sudo mkdir -p /etc/rag-security
+sudo tee /etc/rag-security/system_config.json &gt; /dev/null &lt;&lt; 'EOFRAGCONFIG'
+{
+  &quot;system&quot;: {
+    &quot;name&quot;: &quot;ML Defender RAG Security&quot;,
+    &quot;version&quot;: &quot;4.0.0&quot;,
+    &quot;rag_port&quot;: 9090
+  },
+
+  &quot;llama&quot;: {
+    &quot;model_path&quot;: &quot;/opt/rag-security/models/tinyllama-1.1b-chat-v1.0.Q4_0.gguf&quot;,
+    &quot;max_tokens&quot;: 256,
+    &quot;temperature&quot;: 0.7,
+    &quot;context_size&quot;: 1024
+  },
+
+  &quot;security&quot;: {
+    &quot;whitelist_enabled&quot;: true,
+    &quot;max_connections&quot;: 10,
+    &quot;request_timeout_sec&quot;: 30
+  },
+
+  &quot;logging&quot;: {
+    &quot;level&quot;: &quot;info&quot;,
+    &quot;file&quot;: &quot;/var/log/ml-defender/rag-security.log&quot;
+  }
+}
+EOFRAGCONFIG
+</code></pre>
+<h3 id="4-create-log-directories">4. Create Log Directories</h3>
+<pre><code class="language-bash">sudo mkdir -p /var/log/ml-defender
+sudo chown -R $USER:$USER /var/log/ml-defender
+</code></pre>
+<hr />
+<h2 id="systemd-services-setup">🚀 Systemd Services Setup</h2>
+<h3 id="1-cpp_sniffer-service">1. cpp_sniffer Service</h3>
+<pre><code class="language-bash">sudo tee /etc/systemd/system/ml-defender-sniffer.service &gt; /dev/null &lt;&lt; 'EOFSNIFFER'
+[Unit]
+Description=ML Defender Network Sniffer
+After=network.target
+Wants=network-online.target
+Before=ml-defector.service
+
+[Service]
+Type=simple
+User=root
+Group=root
+
+# Security: Capabilities instead of full root
+CapabilityBoundingSet=CAP_NET_ADMIN CAP_NET_RAW CAP_BPF CAP_PERFMON
+AmbientCapabilities=CAP_NET_ADMIN CAP_NET_RAW CAP_BPF CAP_PERFMON
+
+# Paths
+WorkingDirectory=/usr/local/lib/sniffer
+ExecStart=/usr/local/bin/sniffer -c /etc/sniffer/sniffer.json
+
+# Restart policy
+Restart=on-failure
+RestartSec=5s
+
+# Logging
+StandardOutput=append:/var/log/ml-defender/sniffer-stdout.log
+StandardError=append:/var/log/ml-defender/sniffer-stderr.log
+
+# Resource limits
+LimitNOFILE=65536
+LimitMEMLOCK=infinity
+
+[Install]
+WantedBy=multi-user.target
+EOFSNIFFER
+</code></pre>
+<h3 id="2-ml-detector-service">2. ml-detector Service</h3>
+<pre><code class="language-bash">sudo tee /etc/systemd/system/ml-defender-detector.service &gt; /dev/null &lt;&lt; 'EOFDETECTOR'
+[Unit]
+Description=ML Defender Threat Detector
+After=ml-defender-sniffer.service
+Wants=ml-defender-sniffer.service
+
+[Service]
+Type=simple
+User=root
+Group=root
+
+# Paths
+WorkingDirectory=/opt/ml-defender/ml-detector
+ExecStart=/usr/local/bin/ml-detector --config /etc/ml-detector/ml_detector_config.json
+
+# Restart policy
+Restart=on-failure
+RestartSec=5s
+
+# Logging
+StandardOutput=append:/var/log/ml-defender/detector-stdout.log
+StandardError=append:/var/log/ml-defender/detector-stderr.log
+
+# Resource limits
+LimitNOFILE=65536
+
+[Install]
+WantedBy=multi-user.target
+EOFDETECTOR
+</code></pre>
+<h3 id="3-rag-security-service">3. RAG Security Service</h3>
+<pre><code class="language-bash">sudo tee /etc/systemd/system/ml-defender-rag.service &gt; /dev/null &lt;&lt; 'EOFRAG'
+[Unit]
+Description=ML Defender RAG Security System
+After=network.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=root
+Group=root
+
+# Paths
+WorkingDirectory=/opt/rag-security
+ExecStart=/usr/local/bin/rag-security --config /etc/rag-security/system_config.json
+
+# Restart policy
+Restart=on-failure
+RestartSec=10s
+
+# Logging
+StandardOutput=append:/var/log/ml-defender/rag-stdout.log
+StandardError=append:/var/log/ml-defender/rag-stderr.log
+
+# Resource limits (LLAMA needs more memory)
+LimitNOFILE=65536
+LimitAS=infinity
+
+[Install]
+WantedBy=multi-user.target
+EOFRAG
+</code></pre>
+<h3 id="4-set-capabilities-and-enable-services">4. Set Capabilities and Enable Services</h3>
+<pre><code class="language-bash"># Grant capabilities to sniffer
+sudo setcap cap_net_admin,cap_net_raw,cap_bpf,cap_perfmon=eip /usr/local/bin/sniffer
+
+# Verify capabilities
+getcap /usr/local/bin/sniffer
+
+# Reload systemd and enable services
+sudo systemctl daemon-reload
+
+sudo systemctl enable ml-defender-sniffer
+sudo systemctl enable ml-defender-detector  
+sudo systemctl enable ml-defender-rag
+
+# Start services in order
+sudo systemctl start ml-defender-sniffer
+sudo systemctl start ml-defender-detector
+sudo systemctl start ml-defender-rag
+</code></pre>
+<hr />
+<h2 id="verification-testing">✅ Verification &amp; Testing</h2>
+<h3 id="1-check-service-status">1. Check Service Status</h3>
+<pre><code class="language-bash"># Check all services
+sudo systemctl status ml-defender-sniffer
+sudo systemctl status ml-defender-detector
+sudo systemctl status ml-defender-rag
+
+# All should show: Active: active (running)
+
+# View logs
+sudo journalctl -u ml-defender-sniffer -f
+sudo tail -f /var/log/ml-defender/sniffer-stdout.log
+</code></pre>
+<h3 id="2-verify-ebpf-program-loaded">2. Verify eBPF Program Loaded</h3>
+<pre><code class="language-bash"># Check loaded eBPF programs
+sudo bpftool prog list | grep sniffer
+
+# Check eBPF maps
+sudo bpftool map list | grep sniffer
+</code></pre>
+<h3 id="3-test-ml-detectors">3. Test ML Detectors</h3>
+<pre><code class="language-bash"># Generate test traffic
+curl http://example.com
+ping -c 5 8.8.8.8
+
+# Check ml-detector logs for processing
+tail -f /var/log/ml-defender/detector-stdout.log
+# Should show inference results and threat scores
+</code></pre>
+<h3 id="4-test-rag-system">4. Test RAG System</h3>
+<pre><code class="language-bash"># Connect to RAG system
+telnet localhost 9090
+
+# Test commands (in interactive session)
+SECURITY_SYSTEM&gt; rag show_config
+SECURITY_SYSTEM&gt; rag show_capabilities
+SECURITY_SYSTEM&gt; rag ask_llm &quot;What is a DDoS attack?&quot;
+
+# Expected: Should return coherent security-focused response
+</code></pre>
+<h3 id="5-performance-validation">5. Performance Validation</h3>
+<pre><code class="language-bash"># Monitor resource usage
+watch -n 1 'ps aux | grep -E &quot;(sniffer|ml-detector|rag-security)&quot; | grep -v grep'
+
+# Check for memory leaks (run for several hours)
+watch -n 60 'free -h &amp;&amp; echo &quot;---&quot; &amp;&amp; df -h /'
+
+# Verify no crashes in logs
+grep -i &quot;error\|exception\|segmentation&quot; /var/log/ml-defender/*.log
+</code></pre>
+<hr />
+<h2 id="monitoring-operations">📊 Monitoring &amp; Operations</h2>
+<h3 id="1-health-check-script">1. Health Check Script</h3>
+<pre><code class="language-bash">sudo tee /usr/local/bin/ml-defender-health-check &lt;&lt; 'EOFHEALTH'
+#!/bin/bash
+# ML Defender health check script
+
+COMPONENTS=(&quot;ml-defender-sniffer&quot; &quot;ml-defender-detector&quot; &quot;ml-defender-rag&quot;)
+HEALTHY=true
+
+for component in &quot;${COMPONENTS[@]}&quot;; do
+    STATUS=$(systemctl is-active &quot;$component&quot;)
+    if [ &quot;$STATUS&quot; != &quot;active&quot; ]; then
+        echo &quot;❌ $component not running (status: $STATUS)&quot;
+        HEALTHY=false
+    else
+        echo &quot;✅ $component running&quot;
+    fi
+done
+
+# Check memory usage
+MEM_USAGE=$(ps aux | grep -E &quot;(sniffer|ml-detector|rag-security)&quot; | grep -v grep | awk '{sum += $6} END {print sum}')
+if [ &quot;$MEM_USAGE&quot; -gt 4194304 ]; then  # 4 GB in KB
+    echo &quot;⚠️  High memory usage: $((MEM_USAGE / 1024)) MB&quot;
+    HEALTHY=false
+fi
+
+# Check recent logs for errors
+RECENT_ERRORS=$(find /var/log/ml-defender -name &quot;*.log&quot; -mmin -5 -exec grep -l -i &quot;error\|exception&quot; {} \; | wc -l)
+if [ &quot;$RECENT_ERRORS&quot; -gt 0 ]; then
+    echo &quot;⚠️  Recent errors found in logs&quot;
+    HEALTHY=false
+fi
+
+if [ &quot;$HEALTHY&quot; = true ]; then
+    echo &quot;✅ ML Defender system healthy&quot;
+    exit 0
+else
+    echo &quot;❌ ML Defender system has issues&quot;
+    exit 1
+fi
+EOFHEALTH
+
+sudo chmod +x /usr/local/bin/ml-defender-health-check
+</code></pre>
+<h3 id="2-log-rotation">2. Log Rotation</h3>
+<pre><code class="language-bash">sudo tee /etc/logrotate.d/ml-defender &lt;&lt; 'EOFLOGROTATE'
+/var/log/ml-defender/*.log {
+    daily
+    rotate 7
+    compress
+    delaycompress
+    missingok
+    notifempty
+    create 0644 root root
+    postrotate
+        systemctl reload ml-defender-sniffer &gt; /dev/null 2&gt;&amp;1 || true
+        systemctl reload ml-defender-detector &gt; /dev/null 2&gt;&amp;1 || true  
+        systemctl reload ml-defender-rag &gt; /dev/null 2&gt;&amp;1 || true
+    endscript
+}
+EOFLOGROTATE
+</code></pre>
+<h3 id="3-performance-monitoring">3. Performance Monitoring</h3>
+<pre><code class="language-bash"># Create monitoring script
+sudo tee /usr/local/bin/ml-defender-monitor &lt;&lt; 'EOFMONITOR'
+#!/bin/bash
+echo &quot;=== ML Defender Performance Monitor ===&quot;
+echo &quot;CPU Usage:&quot;
+ps aux | grep -E &quot;(sniffer|ml-detector|rag-security)&quot; | grep -v grep | awk '{print $3 &quot;% &quot; $11}'
+
+echo -e &quot;\nMemory Usage:&quot;
+ps aux | grep -E &quot;(sniffer|ml-detector|rag-security)&quot; | grep -v grep | awk '{print $6/1024 &quot; MB &quot; $11}'
+
+echo -e &quot;\nNetwork Stats:&quot;
+ifconfig eth0 | grep -E &quot;(RX packets|TX packets)&quot;
+
+echo -e &quot;\nRecent Events:&quot;
+tail -5 /var/log/ml-defender/sniffer-stdout.log | grep -E &quot;(processed|alerts)&quot;
+EOFMONITOR
+
+sudo chmod +x /usr/local/bin/ml-defender-monitor
+</code></pre>
+<hr />
+<h2 id="troubleshooting">🐛 Troubleshooting</h2>
+<h3 id="common-issues-and-solutions">Common Issues and Solutions</h3>
+<h4 id="1-rag-system-kv-cache-errors">1. RAG System - KV Cache Errors</h4>
+<p><strong>Problem:</strong> <code>inconsistent sequence positions (X=213, Y=0)</code></p>
+<p><strong>Solution:</strong> This is a known issue with workaround implemented</p>
+<pre><code class="language-bash"># Check RAG logs
+tail -f /var/log/ml-defender/rag-stderr.log
+
+# If persistent, restart RAG service
+sudo systemctl restart ml-defender-rag
+
+# The system includes automatic cache clearing between queries
+</code></pre>
+<h4 id="2-ml-detector-not-receiving-data">2. ML Detector Not Receiving Data</h4>
+<p><strong>Problem:</strong> No inference results in logs</p>
+<p><strong>Solution:</strong></p>
+<pre><code class="language-bash"># Check ZMQ connectivity
+netstat -tlnp | grep 5571
+netstat -tlnp | grep 5572
+
+# Verify sniffer is sending data
+tail -f /var/log/ml-defender/sniffer-stdout.log | grep &quot;ZMQ&quot;
+
+# Restart services in order
+sudo systemctl restart ml-defender-sniffer
+sudo systemctl restart ml-defender-detector
+</code></pre>
+<h4 id="3-high-memory-usage">3. High Memory Usage</h4>
+<p><strong>Problem:</strong> Memory usage &gt;4 GB</p>
+<p><strong>Solution:</strong></p>
+<pre><code class="language-bash"># Identify memory-hungry component
+ps aux | grep -E &quot;(sniffer|ml-detector|rag-security)&quot; | grep -v grep | sort -nk6
+
+# RAG system (LLAMA) typically uses most memory
+# Consider reducing context_size in RAG config if needed
+</code></pre>
+<h4 id="4-ebpf-program-failed-to-load">4. eBPF Program Failed to Load</h4>
+<p><strong>Problem:</strong> Sniffer fails to start</p>
+<p><strong>Solution:</strong></p>
+<pre><code class="language-bash"># Check kernel support
+ls -l /sys/kernel/btf/vmlinux
+
+# Verify interface
+ip link show eth0
+
+# Check existing XDP programs
+sudo bpftool net list
+
+# Remove conflicting programs
+sudo ip link set dev eth0 xdp off
+</code></pre>
+<h3 id="debug-mode">Debug Mode</h3>
+<pre><code class="language-bash"># Run components in foreground for debugging
+sudo /usr/local/bin/sniffer -c /etc/sniffer/sniffer.json -vvv
+sudo /usr/local/bin/ml-detector --config /etc/ml-detector/ml_detector_config.json --verbose
+sudo /usr/local/bin/rag-security --config /etc/rag-security/system_config.json --debug
+</code></pre>
+<hr />
+<h2 id="updates-maintenance">🔄 Updates &amp; Maintenance</h2>
+<h3 id="update-procedure">Update Procedure</h3>
+<pre><code class="language-bash"># 1. Stop services
+sudo systemctl stop ml-defender-rag
+sudo systemctl stop ml-defender-detector
+sudo systemctl stop ml-defender-sniffer
+
+# 2. Backup configurations
+sudo cp -r /etc/sniffer /etc/sniffer.backup
+sudo cp -r /etc/ml-detector /etc/ml-detector.backup
+sudo cp -r /etc/rag-security /etc/rag-security.backup
+
+# 3. Update code
+cd /opt/ml-defender &amp;&amp; git pull
+cd /opt/rag-security &amp;&amp; git pull
+
+# 4. Rebuild components
+cd /opt/ml-defender/sniffer/build &amp;&amp; make clean &amp;&amp; make -j$(nproc)
+cd /opt/ml-defender/ml-detector/build &amp;&amp; make clean &amp;&amp; make -j$(nproc)  
+cd /opt/rag-security/build &amp;&amp; make clean &amp;&amp; make -j$(nproc)
+
+# 5. Reinstall
+sudo cp /opt/ml-defender/sniffer/build/sniffer /usr/local/bin/
+sudo cp /opt/ml-defender/ml-detector/build/ml-detector /usr/local/bin/
+sudo cp /opt/rag-security/build/rag-security /usr/local/bin/
+
+# 6. Restart services
+sudo systemctl start ml-defender-sniffer
+sudo systemctl start ml-defender-detector
+sudo systemctl start ml-defender-rag
+</code></pre>
+<h3 id="backup-strategy">Backup Strategy</h3>
+<pre><code class="language-bash"># Daily backup script
+sudo tee /usr/local/bin/ml-defender-backup &lt;&lt; 'EOFBACKUP'
+#!/bin/bash
+BACKUP_DIR=&quot;/backup/ml-defender-$(date +%Y%m%d)&quot;
+mkdir -p $BACKUP_DIR
+
+# Backup configurations
+cp -r /etc/sniffer $BACKUP_DIR/
+cp -r /etc/ml-detector $BACKUP_DIR/ 
+cp -r /etc/rag-security $BACKUP_DIR/
+
+# Backup logs (last 7 days)
+find /var/log/ml-defender -name &quot;*.log&quot; -mtime -7 -exec cp {} $BACKUP_DIR/ \;
+
+# Create archive
+tar czf $BACKUP_DIR.tar.gz $BACKUP_DIR
+echo &quot;Backup created: $BACKUP_DIR.tar.gz&quot;
+EOFBACKUP
+
+sudo chmod +x /usr/local/bin/ml-defender-backup
+</code></pre>
+<hr />
+<h2 id="production-best-practices">🏆 Production Best Practices</h2>
+<h3 id="security-hardening">Security Hardening</h3>
+<ol>
+<li>
+<p><strong>Network Segmentation</strong>
+   <code>bash
+   # Isolate management interface
+   sudo ufw allow from 192.168.1.0/24 to any port 22
+   sudo ufw allow from 192.168.1.0/24 to any port 9090
+   sudo ufw enable</code></p>
+</li>
+<li>
+<p><strong>Service Isolation</strong>
+   <code>bash
+   # Create dedicated user
+   sudo useradd -r -s /bin/false ml-defender
+   sudo chown -R ml-defender:ml-defender /var/log/ml-defender</code></p>
+</li>
+<li>
+<p><strong>Configuration Security</strong>
+   <code>bash
+   sudo chmod 600 /etc/sniffer/sniffer.json
+   sudo chmod 600 /etc/ml-detector/ml_detector_config.json
+   sudo chmod 600 /etc/rag-security/system_config.json</code></p>
+</li>
+</ol>
+<h3 id="performance-optimization">Performance Optimization</h3>
+<ol>
+<li>
+<p><strong>CPU Affinity</strong> (High-traffic environments)
+   <code>bash
+   # Pin components to specific cores
+   sudo taskset -c 0,1 /usr/local/bin/sniffer
+   sudo taskset -c 2,3 /usr/local/bin/ml-detector
+   sudo taskset -c 4,5 /usr/local/bin/rag-security</code></p>
+</li>
+<li>
+<p><strong>Network Tuning</strong>
+   ```bash
+   # Increase ring buffers for high packet rates
+   sudo ethtool -G eth0 rx 4096 tx 4096</p>
+</li>
+</ol>
+<p># Enable RSS for multi-queue
+   sudo ethtool -L eth0 combined 4
+   ```</p>
+<ol>
+<li><strong>Memory Optimization</strong>
+   <code>bash
+   # Adjust RAG context size if memory constrained
+   # In /etc/rag-security/system_config.json:
+   # "context_size": 512  # Reduce from 1024 if needed</code></li>
+</ol>
+<h3 id="high-availability">High Availability</h3>
+<ol>
+<li>
+<p><strong>Multiple Node Deployment</strong>
+   <code>bash
+   # Deploy on 3+ nodes with load balancing
+   # Each node: sniffer + detector + RAG
+   # Use etcd for coordination (future enhancement)</code></p>
+</li>
+<li>
+<p><strong>Health Monitoring</strong>
+   <code>bash
+   # Add to crontab
+   */5 * * * * /usr/local/bin/ml-defender-health-check || /usr/local/bin/alert-admin.sh</code></p>
+</li>
+<li>
+<p><strong>Auto-Recovery</strong>
+   <code>bash
+   # Systemd already configured with:
+   # Restart=on-failure
+   # RestartSec=5s</code></p>
+</li>
+</ol>
+<h3 id="scaling-strategies">Scaling Strategies</h3>
+<p><strong>Vertical Scaling:</strong>
+- Increase RAM for larger LLAMA models
+- Add CPU cores for more detection threads
+- Use faster storage for model loading</p>
+<p><strong>Horizontal Scaling:</strong>
+- Deploy multiple sniffers on different network segments
+- Centralized ml-detector cluster
+- Distributed RAG systems with load balancing</p>
+<hr />
+<h2 id="support-resources">📞 Support &amp; Resources</h2>
+<h3 id="log-locations">Log Locations</h3>
+<pre><code>/var/log/ml-defender/sniffer-stdout.log
+/var/log/ml-defender/sniffer-stderr.log
+/var/log/ml-defender/detector-stdout.log  
+/var/log/ml-defender/detector-stderr.log
+/var/log/ml-defender/rag-stdout.log
+/var/log/ml-defender/rag-stderr.log
+</code></pre>
+<h3 id="configuration-files">Configuration Files</h3>
+<pre><code>/etc/sniffer/sniffer.json
+/etc/ml-detector/ml_detector_config.json
+/etc/rag-security/system_config.json
+</code></pre>
+<h3 id="documentation">Documentation</h3>
+<ul>
+<li><strong>Architecture</strong>: <code>/opt/ml-defender/docs/ARCHITECTURE.md</code></li>
+<li><strong>Troubleshooting</strong>: <code>/opt/ml-defender/docs/TROUBLESHOOTING.md</code></li>
+<li><strong>API Documentation</strong>: <code>/opt/rag-security/docs/API.md</code></li>
+</ul>
+<h3 id="getting-help">Getting Help</h3>
+<ol>
+<li><strong>Check Logs</strong>: Always start with component logs</li>
+<li><strong>Health Check</strong>: Run <code>ml-defender-health-check</code></li>
+<li><strong>Debug Mode</strong>: Start components with <code>--verbose</code> flag</li>
+<li><strong>Community</strong>: GitHub Issues and Discussions</li>
+</ol>
+<hr />
+<h2 id="quick-reference">🎯 Quick Reference</h2>
+<h3 id="essential-commands">Essential Commands</h3>
+<pre><code class="language-bash"># Start all services
+sudo systemctl start ml-defender-sniffer ml-defender-detector ml-defender-rag
+
+# Stop all services  
+sudo systemctl stop ml-defender-rag ml-defender-detector ml-defender-sniffer
+
+# Check status
+sudo systemctl status ml-defender-*
+
+# View logs
+sudo journalctl -u ml-defender-sniffer -f
+sudo tail -f /var/log/ml-defender/rag-stdout.log
+
+# Health check
+/usr/local/bin/ml-defender-health-check
+
+# Performance monitor
+/usr/local/bin/ml-defender-monitor
+</code></pre>
+<h3 id="key-files-and-directories">Key Files and Directories</h3>
+<pre><code>/usr/local/bin/sniffer              # Network sniffer
+/usr/local/bin/ml-detector          # ML threat detection
+/usr/local/bin/rag-security         # AI security analysis
+
+/etc/sniffer/sniffer.json           # Sniffer configuration
+/etc/ml-detector/ml_detector_config.json # Detector config
+/etc/rag-security/system_config.json     # RAG system config
+
+/var/log/ml-defender/               # All component logs
+/opt/rag-security/models/           # LLAMA model storage
+
+/opt/ml-defender/                   # Source code
+/opt/rag-security/                  # RAG system source
+</code></pre>
+<h3 id="default-ports">Default Ports</h3>
+<ul>
+<li><strong>ZMQ Sniffer Output</strong>: 5571</li>
+<li><strong>ZMQ Detector Output</strong>: 5572</li>
+<li><strong>RAG System Console</strong>: 9090</li>
+</ul>
+<hr />
+<h1 id="ml-defender-deployment-guide">ML Defender - Deployment Guide</h1>
+<h2 id="table-of-contents_1">Table of Contents</h2>
+<ol>
+<li><a href="#hardware-requirements">Hardware Requirements</a></li>
+<li><a href="#deployment-architectures">Deployment Architectures</a></li>
+<li><a href="#configuration">Configuration</a></li>
+<li><a href="#setup-procedures">Setup Procedures</a></li>
+<li><a href="#testing--validation">Testing &amp; Validation</a></li>
+<li><a href="#troubleshooting">Troubleshooting</a></li>
+</ol>
+<hr />
+<h2 id="hardware-requirements">Hardware Requirements</h2>
+<h3 id="minimum-testinglab">Minimum (Testing/Lab)</h3>
+<ul>
+<li><strong>CPU:</strong> 4 cores @ 2.0 GHz (Intel/AMD x86-64)</li>
+<li><strong>RAM:</strong> 8 GB</li>
+<li><strong>Network:</strong> Single 1GbE NIC (Intel i350 recommended)</li>
+<li><strong>OS:</strong> Ubuntu 24.04 LTS, Kernel 6.8+</li>
+<li><strong>Storage:</strong> 20 GB SSD</li>
+<li><strong>Example:</strong> Intel NUC, Raspberry Pi 5 (marginal)</li>
+</ul>
+<h3 id="recommended-production_1">Recommended (Production)</h3>
+<ul>
+<li><strong>CPU:</strong> 8 cores @ 3.0 GHz (Intel Xeon, AMD EPYC)</li>
+<li><strong>RAM:</strong> 16 GB ECC</li>
+<li><strong>Network:</strong> Dual 10GbE NICs (Intel X710, Mellanox ConnectX-5)</li>
+<li><strong>OS:</strong> Ubuntu 24.04 LTS, Kernel 6.8+</li>
+<li><strong>Storage:</strong> 50 GB NVMe SSD</li>
+<li><strong>Example:</strong> Supermicro 1U server, Dell PowerEdge R340</li>
+</ul>
+<h3 id="budget-conscious-smbhome">Budget-Conscious (SMB/Home)</h3>
+<ul>
+<li><strong>Option 1:</strong> x86 N100 Mini PC (~$200)<ul>
+<li>4 cores @ 3.4 GHz</li>
+<li>Dual Intel i226 2.5GbE NICs</li>
+<li>16GB RAM, ~1 Gbps sustained throughput</li>
+</ul>
+</li>
+<li><strong>Option 2:</strong> Raspberry Pi CM4 with dual NIC carrier (~$150)<ul>
+<li>4 cores @ 1.5 GHz</li>
+<li>Dual 1GbE via PCIe</li>
+<li>8GB RAM, ~500 Mbps throughput (marginal)</li>
+</ul>
+</li>
+</ul>
+<hr />
+<h2 id="deployment-architectures">Deployment Architectures</h2>
+<h3 id="1-host-based-ids-single-nic">1. Host-Based IDS (Single NIC)</h3>
+<p><strong>Use Case:</strong> Protect individual servers from incoming attacks</p>
+<pre><code>Internet → Firewall → [Web Server + ML Defender]
+                      eth0: 192.168.1.100
+</code></pre>
+<p><strong>What It Does:</strong>
+- Captures traffic <strong>destined to</strong> the host's IP
+- Detects DDoS, ransomware, port scans targeting the server
+- Zero visibility into lateral traffic</p>
+<p><strong>Example:</strong> Django API server, PostgreSQL database, Nginx reverse proxy</p>
+<p><strong>Configuration:</strong></p>
+<pre><code class="language-json">{
+  &quot;deployment&quot;: {
+    &quot;mode&quot;: &quot;host-only&quot;,
+    &quot;host_interface&quot;: &quot;eth0&quot;
+  },
+  &quot;profiles&quot;: {
+    &quot;default&quot;: {
+      &quot;capture_interface&quot;: &quot;eth0&quot;,
+      &quot;worker_threads&quot;: 4
+    }
+  }
+}
+</code></pre>
+<hr />
+<h3 id="2-gateway-mode-dual-nic">2. Gateway Mode (Dual NIC)</h3>
+<p><strong>Use Case:</strong> Protect entire networks with inline inspection</p>
+<pre><code>Internet → [ML Defender Gateway] → Home/Office Network
+           eth0 (WAN): DHCP       eth1 (LAN): 192.168.1.1
+</code></pre>
+<p><strong>What It Does:</strong>
+- Captures <strong>ALL traffic</strong> passing through the gateway
+- Inspects traffic between Internet and internal devices
+- Acts as transparent security appliance</p>
+<p><strong>Example:</strong> Raspberry Pi router protecting smart home, DMZ monitor for web servers</p>
+<p><strong>Configuration:</strong></p>
+<pre><code class="language-json">{
+  &quot;deployment&quot;: {
+    &quot;mode&quot;: &quot;gateway-only&quot;,
+    &quot;gateway_interface&quot;: &quot;eth1&quot;,
+    &quot;network_settings&quot;: {
+      &quot;enable_ip_forwarding&quot;: true,
+      &quot;enable_nat&quot;: true,
+      &quot;lan_subnet&quot;: &quot;192.168.1.0/24&quot;
+    }
+  }
+}
+</code></pre>
+<p><strong>Network Setup:</strong></p>
+<pre><code class="language-bash"># Enable IP forwarding
+sudo sysctl -w net.ipv4.ip_forward=1
+sudo sysctl -w net.ipv6.conf.all.forwarding=1
+
+# Configure NAT (replace eth0 with WAN interface)
+sudo iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
+sudo iptables -A FORWARD -i eth1 -o eth0 -j ACCEPT
+sudo iptables -A FORWARD -i eth0 -o eth1 -m state --state RELATED,ESTABLISHED -j ACCEPT
+</code></pre>
+<hr />
+<h3 id="3-dual-mode-host-gateway">3. Dual Mode (Host + Gateway)</h3>
+<p><strong>Use Case:</strong> Maximum visibility - protect the gateway AND inspect transit traffic</p>
+<pre><code>Internet → [Bastion + ML Defender] → DMZ (Web Servers)
+           │ eth0: Host-based      eth1: Gateway mode
+           │ (protects bastion)    (inspects DMZ traffic)
+</code></pre>
+<p><strong>What It Does:</strong>
+- eth0: Monitors attacks targeting the bastion host itself
+- eth1: Inspects all traffic flowing to/from DMZ servers
+- Defense-in-depth: Two layers of protection</p>
+<p><strong>Example:</strong> Enterprise jump host, critical infrastructure gateway</p>
+<p><strong>Configuration:</strong></p>
+<pre><code class="language-json">{
+  &quot;deployment&quot;: {
+    &quot;mode&quot;: &quot;dual&quot;,
+    &quot;host_interface&quot;: &quot;eth0&quot;,
+    &quot;gateway_interface&quot;: &quot;eth1&quot;,
+    &quot;network_settings&quot;: {
+      &quot;enable_ip_forwarding&quot;: true,
+      &quot;enable_nat&quot;: false
+    },
+    &quot;performance&quot;: {
+      &quot;expected_throughput_gbps&quot;: 1.0,
+      &quot;max_packets_per_second&quot;: 1000000
+    }
+  },
+  &quot;profiles&quot;: {
+    &quot;dual_nic&quot;: {
+      &quot;worker_threads&quot;: 8,
+      &quot;cpu_affinity_enabled&quot;: true
+    }
+  }
+}
+</code></pre>
+<hr />
+<h2 id="configuration">Configuration</h2>
+<h3 id="full-snifferjson-example-dual-mode">Full sniffer.json Example (Dual Mode)</h3>
+<p>See <code>sniffer/config/sniffer.json</code> for complete schema. Key sections:</p>
+<pre><code class="language-json">{
+  &quot;deployment&quot;: {
+    &quot;mode&quot;: &quot;dual&quot;,
+    &quot;host_interface&quot;: &quot;eth0&quot;,
+    &quot;gateway_interface&quot;: &quot;eth1&quot;,
+    &quot;network_settings&quot;: {
+      &quot;enable_ip_forwarding&quot;: true,
+      &quot;enable_nat&quot;: true,
+      &quot;lan_subnet&quot;: &quot;192.168.1.0/24&quot;
+    },
+    &quot;performance&quot;: {
+      &quot;expected_throughput_gbps&quot;: 1.0,
+      &quot;max_packets_per_second&quot;: 1000000,
+      &quot;ring_buffer_size_mb&quot;: 64
+    },
+    &quot;hardware_requirements&quot;: {
+      &quot;minimum&quot;: {
+        &quot;cpu_cores&quot;: 4,
+        &quot;ram_gb&quot;: 8,
+        &quot;nic_speed_gbps&quot;: 1
+      },
+      &quot;recommended&quot;: {
+        &quot;cpu_cores&quot;: 8,
+        &quot;ram_gb&quot;: 16,
+        &quot;nic_speed_gbps&quot;: 10
+      }
+    }
+  }
+}
+</code></pre>
+<hr />
+<h2 id="setup-procedures">Setup Procedures</h2>
+<h3 id="1-prerequisites">1. Prerequisites</h3>
+<pre><code class="language-bash"># Install dependencies
+sudo apt-get update
+sudo apt-get install -y \
+    build-essential clang llvm \
+    libbpf-dev libelf-dev \
+    libzmq3-dev libprotobuf-dev \
+    protobuf-compiler cmake \
+    linux-headers-$(uname -r)
+
+# Verify kernel version (6.8+ required)
+uname -r  # Should be 6.8.0 or newer
+
+# Check BPF support
+ls /sys/fs/bpf/  # Should exist
+</code></pre>
+<h3 id="2-build-ml-defender">2. Build ML Defender</h3>
+<pre><code class="language-bash">cd /vagrant
+./build.sh
+</code></pre>
+<h3 id="3-configure-deployment">3. Configure Deployment</h3>
+<p>Edit <code>sniffer/config/sniffer.json</code> with your deployment mode and interfaces.</p>
+<h3 id="4-launch-pipeline">4. Launch Pipeline</h3>
+<pre><code class="language-bash"># Terminal 1: Detector
+cd /vagrant/detector
+python3 ml_detector_server.py
+
+# Terminal 2: Firewall
+cd /vagrant/firewall
+sudo python3 firewall_agent.py
+
+# Terminal 3: Sniffer
+cd /vagrant/sniffer/build
+sudo ./sniffer -c ../config/sniffer.json
+</code></pre>
+<hr />
+<h2 id="testing-validation">Testing &amp; Validation</h2>
+<h3 id="host-based-mode-test">Host-Based Mode Test</h3>
+<pre><code class="language-bash"># From external machine (OSX):
+nmap -sS -p 1-1000 192.168.56.20
+hping3 -S -p 80 --flood -c 5000 192.168.56.20
+
+# Check logs:
+tail -f /vagrant/logs/lab/detector.log | grep &quot;Attack detected&quot;
+</code></pre>
+<h3 id="gateway-mode-test">Gateway Mode Test</h3>
+<pre><code class="language-bash"># Configure VM as gateway (eth0=WAN, eth1=LAN)
+# Send traffic through VM to internal network
+# Verify ML Defender captures transit traffic
+
+# Check interface metadata:
+tail -f /vagrant/logs/lab/sniffer.log | grep &quot;interface_mode&quot;
+</code></pre>
+<h3 id="pcap-replay-test">PCAP Replay Test</h3>
+<pre><code class="language-bash"># Use tcpreplay to inject MAWI traffic
+sudo tcpreplay -i eth1 --topspeed /vagrant/datasets/mawi/*.pcap
+
+# Monitor detection rate:
+watch -n1 'tail -20 /vagrant/logs/lab/detector.log'
+</code></pre>
+<hr />
+<h2 id="troubleshooting_1">Troubleshooting</h2>
+<h3 id="issue-interface_configs-map-not-found">Issue: "interface_configs map not found"</h3>
+<p><strong>Cause:</strong> Legacy eBPF binary without dual-NIC support<br />
+<strong>Fix:</strong> Rebuild sniffer: <code>cd /vagrant &amp;&amp; ./build.sh</code></p>
+<h3 id="issue-gateway-mode-not-capturing-transit-traffic">Issue: Gateway mode not capturing transit traffic</h3>
+<p><strong>Cause:</strong> IP forwarding disabled or NAT misconfigured<br />
+<strong>Fix:</strong></p>
+<pre><code class="language-bash">sudo sysctl -w net.ipv4.ip_forward=1
+sudo iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
+</code></pre>
+<h3 id="issue-high-packet-loss-in-gateway-mode">Issue: High packet loss in gateway mode</h3>
+<p><strong>Cause:</strong> Insufficient CPU or ring buffer too small<br />
+<strong>Fix:</strong> Increase <code>worker_threads</code> and <code>ring_buffer_size_mb</code> in config</p>
+<h3 id="issue-compilation-errors-with-dual_nic_managercpp">Issue: Compilation errors with dual_nic_manager.cpp</h3>
+<p><strong>Cause:</strong> jsoncpp version mismatch<br />
+<strong>Fix:</strong> Ensure Ubuntu 24.04 with <code>libjsoncpp-dev</code> installed</p>
+<hr />
+<h2 id="performance-tuning">Performance Tuning</h2>
+<h3 id="cpu-affinity-recommended-for-1gbps">CPU Affinity (Recommended for &gt;1Gbps)</h3>
+<pre><code class="language-json">{
+  &quot;profiles&quot;: {
+    &quot;high_performance&quot;: {
+      &quot;worker_threads&quot;: 8,
+      &quot;cpu_affinity_enabled&quot;: true,
+      &quot;cpu_affinity_cores&quot;: [0, 1, 2, 3, 4, 5, 6, 7]
+    }
+  }
+}
+</code></pre>
+<h3 id="nic-offloading-intel-i350x710">NIC Offloading (Intel i350/X710)</h3>
+<pre><code class="language-bash"># Disable unnecessary offloading for XDP
+sudo ethtool -K eth0 gro off lro off tso off
+
+# Increase RX ring size
+sudo ethtool -G eth0 rx 4096
+</code></pre>
+<h3 id="kernel-tuning">Kernel Tuning</h3>
+<pre><code class="language-bash"># Increase ring buffer memory
+sudo sysctl -w net.core.rmem_max=134217728
+sudo sysctl -w net.core.wmem_max=134217728
+</code></pre>
+<hr />
+<h2 id="production-checklist">Production Checklist</h2>
+<ul>
+<li>[ ] Kernel 6.8+ verified</li>
+<li>[ ] Dual NIC hardware installed (gateway mode)</li>
+<li>[ ] IP forwarding enabled (gateway mode)</li>
+<li>[ ] NAT configured (if needed)</li>
+<li>[ ] ML Defender compiled successfully</li>
+<li>[ ] Configuration tested in lab environment</li>
+<li>[ ] Log rotation configured (<code>/etc/logrotate.d/ml-defender</code>)</li>
+<li>[ ] Systemd services created (sniffer, detector, firewall)</li>
+<li>[ ] Monitoring/alerting configured</li>
+<li>[ ] Backup configuration saved</li>
+</ul>
+<hr />
+<p><strong>Next:</strong> See <a href="README.md">README.md</a> for architecture details and <a href="../DUAL_NIC_TESTING/">DUAL_NIC_TESTING.md</a> for test procedures.</p>
+<p><strong>Deployed with ❤️ and validated on 35,387+ events</strong></p>
+<p><strong>Status:</strong> ✅ Production-Ready with RAG + ML<br />
+<strong>Version:</strong> 4.0.0<br />
+<strong>Architecture:</strong> ML Defender Platform Complete</p>
+<hr />
+<div align="center">
+
+**🛡️ ML Defender - Protecting Critical Infrastructure with Embedded ML and AI**  
+*Zero crashes in 17h stability testing • Sub-microsecond detection latency • Real LLAMA integration*
+
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.tabs", "navigation.top", "search.highlight"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

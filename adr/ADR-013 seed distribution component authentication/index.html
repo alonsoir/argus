@@ -1,0 +1,1443 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source embedded-ML NDR for hospitals and schools">
+      
+      
+        <meta name="author" content="Alonso Isidoro Roman">
+      
+      
+        <link rel="canonical" href="https://alonsoir.github.io/argus/adr/ADR-013%20seed%20distribution%20component%20authentication/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>ADR-013: Seed Distribution and Component Authentication - ML Defender (aRGus NDR)</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#adr-013-seed-distribution-and-component-authentication" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-header__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ML Defender (aRGus NDR)
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              ADR-013: Seed Distribution and Component Authentication
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../README.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/BACKLOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Backlog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Security Model
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-tabs__link">
+          
+  
+  
+  ADRs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/contracts/Protobuf contracts.md" class="md-tabs__link">
+          
+  
+  
+  Contracts
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-nav__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ML Defender (aRGus NDR)
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../README.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/BACKLOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADRs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ADRs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013 Seed Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-021-deployment-topology-seed-families.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-021 Topology SSOT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-022-threat-model-opcion2-descartada.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-022 Threat Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Protobuf contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protobuf
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/JSON contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JSON
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Rag security commands.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#precedencia" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Precedencia
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#contexto" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Contexto
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Contexto">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#situacion-actual-day-91" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Situación actual (DAY 91)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#disenos-descartados-durante-day-91" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Diseños descartados durante DAY 91
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#decision" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Decisión
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Decisión">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#principio-rector-kiss" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Principio rector: KISS
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#arquitectura-resultante" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Arquitectura resultante
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Arquitectura resultante">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#topologia-de-cifrado-por-componente" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Topología de cifrado por componente
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#script-de-instalacion-bash" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Script de instalación bash
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#instalaciones-distribuidas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Instalaciones distribuidas
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#canal-de-transporte-zmq-curve" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Canal de transporte — ZMQ CURVE
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#libsseed-client-nueva-shared-library" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        libs/seed-client — nueva shared library
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#refactorizacion-de-etcd-server-y-etcd-client" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Refactorización de etcd-server y etcd-client
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Refactorización de etcd-server y etcd-client">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#etcd-server-responsabilidad-unica" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        etcd-server — responsabilidad única
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#etcd-client-acoplamiento-reducido" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        etcd-client — acoplamiento reducido
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#rotacion-de-seeds-limitacion-documentada" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Rotación de seeds — limitación documentada
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#relacion-con-otros-adrs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Relación con otros ADRs
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#regla-de-reprovisioning-granular-day-94" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Regla de reprovisioning granular (DAY 94)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#secuencia-de-implementacion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Secuencia de implementación
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#consecuencias" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Consecuencias
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#referencias" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Referencias
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="adr-013-seed-distribution-and-component-authentication">ADR-013: Seed Distribution and Component Authentication</h1>
+<p><strong>Estado:</strong> ACEPTADO<br />
+<strong>Fecha:</strong> 2026-03-19 (DAY 91)<br />
+<strong>Autor:</strong> Alonso Isidoro Román + Claude (Anthropic)<br />
+<strong>Revisado por:</strong> Consejo de Sabios — ML Defender (aRGus EDR)<br />
+<strong>Componentes afectados:</strong> todos (sniffer, ml-detector, firewall-acl-agent, rag-ingester, rag-security, etcd-server, etcd-client)<br />
+<strong>Nueva shared library:</strong> <code>libs/seed-client</code></p>
+<hr />
+<h2 id="precedencia">Precedencia</h2>
+<blockquote>
+<p><strong>Este ADR-013 es la decisión aceptada y consensuada sobre distribución de semillas
+criptográficas y autenticación entre componentes.</strong></p>
+<p>Si existe cualquier otro documento en el repositorio — con formato ADR o sin él —
+que describa un mecanismo distinto para estos mismos conceptos, <strong>ADR-013 tiene
+prioridad sobre él</strong>. Cualquier contradicción debe resolverse a favor de ADR-013.
+Los documentos en conflicto deben ser actualizados para referenciar este ADR.</p>
+</blockquote>
+<hr />
+<h2 id="contexto">Contexto</h2>
+<h3 id="situacion-actual-day-91">Situación actual (DAY 91)</h3>
+<p>El pipeline de ML Defender usa <strong>ChaCha20-Poly1305</strong> para cifrar todo el tráfico
+protobuf entre componentes. La semilla de cifrado (seed) se distribuye actualmente
+a través de <strong>etcd-server</strong>, lo que introduce dos problemas:</p>
+<ol>
+<li><strong>Seguridad:</strong> el seed viaja en HTTP sin cifrar cuando etcd no tiene TLS
+   configurado — material criptográfico sensible expuesto en tránsito.</li>
+<li><strong>Responsabilidad mezclada:</strong> etcd-server gestiona simultáneamente el ciclo de
+   vida de componentes, service discovery, y distribución de material criptográfico.
+   Son tres responsabilidades que no deberían coexistir en el mismo proceso.</li>
+</ol>
+<h3 id="disenos-descartados-durante-day-91">Diseños descartados durante DAY 91</h3>
+<p>Durante la sesión de diseño se evaluaron y descartaron las siguientes alternativas
+antes de llegar a la decisión de este ADR:</p>
+<p><strong>Descartado — seed generado en firewall-acl-agent:</strong>
+Se propuso inicialmente que firewall generara el seed y lo distribuyera a ml-detector
+y sniffer a través de ZMQ CURVE. Descartado porque:
+- Si firewall cae (mantenimiento, bug, regla mal aplicada), todo el pipeline pierde
+  el seed — dependencia inaceptable
+- Mezcla dos responsabilidades ortogonales en firewall: aplicar reglas iptables
+  y ser autoridad de distribución de claves</p>
+<p><strong>Descartado — propagación en cadena firewall → ml-detector → sniffer:</strong>
+Descartado porque crea una dependencia de arranque dura en cadena — si ml-detector
+no ha recibido el seed, sniffer tampoco puede arrancar.</p>
+<p><strong>Descartado — distribución en runtime desde firewall en paralelo:</strong>
+Hubiera requerido un mecanismo de ACK de todos los componentes antes de activar
+el nuevo seed. Correcto en teoría, pero introduce complejidad de coordinación
+distribuida no justificada cuando hay una alternativa más simple.</p>
+<p><strong>Descartado — TLS sobre HTTP para el canal de distribución:</strong>
+Nueva dependencia (OpenSSL, gestión de certificados X.509), modelo mental distinto,
+complejidad de provisioning — todo para hacer lo que ZMQ CURVE ya hace con una
+línea de código.</p>
+<hr />
+<h2 id="decision">Decisión</h2>
+<h3 id="principio-rector-kiss">Principio rector: KISS</h3>
+<p>El seed de cifrado se genera <strong>una única vez en el momento de instalación</strong>, mediante
+un script bash, y se distribuye a los componentes que lo necesitan a través del
+<strong>filesystem local</strong>, cifrado con las claves públicas de cada componente receptor.</p>
+<p>No existe distribución de seeds en runtime en esta fase. La rotación de seeds es
+una limitación documentada, pendiente de un componente tipo Vault (propio o
+Hashicorp) en el futuro.</p>
+<hr />
+<h2 id="arquitectura-resultante">Arquitectura resultante</h2>
+<h3 id="topologia-de-cifrado-por-componente">Topología de cifrado por componente</h3>
+<pre><code>sniffer          →  ml-detector       ZMQ CURVE + ChaCha20 (seed)
+ml-detector      →  firewall-acl-agent ZMQ CURVE + ChaCha20 (seed)
+rag-ingester     →  filesystem CSV     HMAC-SHA256 únicamente (sin seed)
+rag-security     →  filesystem/FAISS   HMAC-SHA256 únicamente (sin seed)
+</code></pre>
+<p>rag-ingester y rag-security <strong>no participan en el canal ChaCha20</strong>. Su garantía de
+integridad es HMAC-SHA256 por fila en los CSVs que producen y consumen — mecanismo
+ya implementado y validado.</p>
+<h3 id="script-de-instalacion-bash">Script de instalación bash</h3>
+<p>El script (nombre propuesto: <code>scripts/provision.sh</code>) es el único lugar donde se
+generan y distribuyen seeds y keypairs. No existe Python, no existe Go, no existe
+ninguna dependencia de runtime adicional. Bash + herramientas estándar disponibles
+en cualquier Linux con kernel ≥ 5.10.</p>
+<p><strong>Responsabilidades del script:</strong></p>
+<pre><code class="language-bash"># Pseudocódigo — implementación real en scripts/provision.sh
+
+1. Generar keypair Ed25519 para cada componente que cifra:
+     sniffer:            sniffer_private.pem, sniffer_public.pem
+     ml-detector:        ml_detector_private.pem, ml_detector_public.pem
+     firewall-acl-agent: firewall_private.pem, firewall_public.pem
+
+2. Generar seed ChaCha20 (32 bytes aleatorios):
+     seed=$(openssl rand -hex 32)
+
+3. Cifrar seed con la clave pública de cada receptor:
+     sniffer/seed.enc     ← cifrado con sniffer_public.pem
+     ml_detector/seed.enc ← cifrado con ml_detector_public.pem
+     firewall/seed.enc    ← cifrado con firewall_public.pem
+
+4. Escribir rutas de claves en el JSON de cada componente:
+     sniffer.json:
+       &quot;crypto&quot;: {
+         &quot;private_key_path&quot;: &quot;/etc/ml-defender/sniffer/sniffer_private.pem&quot;,
+         &quot;peer_public_keys&quot;: {
+           &quot;ml-detector&quot;: &quot;/etc/ml-defender/ml-detector/ml_detector_public.pem&quot;
+         },
+         &quot;seed_path&quot;: &quot;/etc/ml-defender/sniffer/seed.enc&quot;
+       }
+
+5. Establecer permisos:
+     chmod 0600 *_private.pem
+     chmod 0600 seed.enc
+     chmod 0644 *_public.pem
+</code></pre>
+<h3 id="instalaciones-distribuidas">Instalaciones distribuidas</h3>
+<p>En instalaciones donde los componentes corren en máquinas distintas:</p>
+<ul>
+<li>El script se ejecuta en un nodo de administración con acceso SSH a todos los nodos</li>
+<li>Los <code>seed.enc</code> cifrados viajan por SCP/SFTP — están cifrados con la clave pública
+  del receptor, un intermediario no puede descifrarlos</li>
+<li>Las claves privadas <strong>nunca salen de la máquina que las generó</strong></li>
+<li>Las claves públicas pueden copiarse libremente</li>
+</ul>
+<pre><code class="language-bash"># Ejemplo distribución multi-nodo
+scp ml_detector/seed.enc admin@ml-detector-host:/etc/ml-defender/ml-detector/
+scp sniffer/seed.enc admin@sniffer-host:/etc/ml-defender/sniffer/
+</code></pre>
+<h3 id="canal-de-transporte-zmq-curve">Canal de transporte — ZMQ CURVE</h3>
+<p>El canal entre componentes usa <strong>ZMQ CURVE</strong> (Curve25519) para autenticación mutua
+y cifrado del canal de transporte. ZMQ CURVE es distinto del seed ChaCha20:</p>
+<table>
+<thead>
+<tr>
+<th>Mecanismo</th>
+<th>Propósito</th>
+<th>Generado por</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>ZMQ CURVE keypairs</td>
+<td>Autenticación mutua + cifrado canal</td>
+<td><code>provision.sh</code></td>
+</tr>
+<tr>
+<td>ChaCha20 seed</td>
+<td>Cifrado de payload protobuf</td>
+<td><code>provision.sh</code></td>
+</tr>
+<tr>
+<td>HMAC-SHA256</td>
+<td>Integridad de CSVs</td>
+<td>seed (derivado)</td>
+</tr>
+</tbody>
+</table>
+<p>Un componente solo acepta conexiones ZMQ de peers cuya clave pública CURVE esté
+listada en su JSON. Esto reemplaza el mecanismo de autorización actual de etcd.</p>
+<p><strong>No se introduce TLS/HTTP.</strong> ZMQ CURVE cubre el canal de transporte completamente.</p>
+<hr />
+<h2 id="libsseed-client-nueva-shared-library"><code>libs/seed-client</code> — nueva shared library</h2>
+<p>Al estilo de <code>libs/crypto-transport</code>, <code>seed-client</code> es una shared library interna
+que cualquier componente puede enlazar para gestionar su seed local.</p>
+<p><strong>Responsabilidades de seed-client:</strong>
+- Leer <code>seed.enc</code> del path indicado en el JSON del componente
+- Descifrarlo con la clave privada local del componente
+- Exponerlo en memoria como <code>std::array&lt;uint8_t, 32&gt;</code> para uso por crypto-transport
+- En el futuro: detectar rotación de seed en filesystem y recargarlo sin reinicio</p>
+<p><strong>seed-client NO hace:</strong>
+- Comunicación de red de ningún tipo
+- Generación de seeds (responsabilidad del script de instalación)
+- Distribución de seeds a otros componentes</p>
+<pre><code>libs/
+    crypto-transport/    ← existente
+    seed-client/         ← nuevo
+        include/
+            seed_client.hpp
+        src/
+            seed_client.cpp
+        CMakeLists.txt
+</code></pre>
+<pre><code class="language-cpp">// Interfaz mínima — seed_client.hpp
+#pragma once
+#include &lt;array&gt;
+#include &lt;string&gt;
+
+class SeedClient {
+public:
+    explicit SeedClient(const std::string&amp; config_json_path);
+
+    // Lee y descifra seed.enc — lanza excepción si falla
+    void load();
+
+    // Seed listo para uso por crypto-transport
+    const std::array&lt;uint8_t, 32&gt;&amp; seed() const;
+
+    // True si el seed ha cambiado en disco (rotación futura)
+    bool seed_rotated() const;
+
+private:
+    std::string seed_path_;
+    std::string private_key_path_;
+    std::array&lt;uint8_t, 32&gt; seed_;
+    bool loaded_ = false;
+};
+</code></pre>
+<hr />
+<h2 id="refactorizacion-de-etcd-server-y-etcd-client">Refactorización de etcd-server y etcd-client</h2>
+<h3 id="etcd-server-responsabilidad-unica">etcd-server — responsabilidad única</h3>
+<p>Tras este ADR, etcd-server tiene <strong>una única responsabilidad</strong>:</p>
+<blockquote>
+<p>Gestionar el ciclo de vida de los componentes del pipeline y servir como
+interfaz de configuración para que rag-security pueda modificar en runtime
+valores de los JSON de configuración de cualquier componente.</p>
+</blockquote>
+<p>etcd-server <strong>deja de hacer:</strong>
+- Generar o distribuir el seed ChaCha20
+- Actuar como autoridad de claves criptográficas
+- Participar en la autenticación entre componentes</p>
+<h3 id="etcd-client-acoplamiento-reducido">etcd-client — acoplamiento reducido</h3>
+<p>etcd-client, cuando está acoplado a un componente, pasa a:
+- Gestionar el registro y heartbeat del componente en etcd
+- Escuchar cambios de configuración (hot-reload) desde rag-security
+- <strong>No gestionar seeds ni claves</strong> — eso es responsabilidad de seed-client</p>
+<p>Cada componente que necesite ambas funcionalidades enlaza ambas libraries:</p>
+<pre><code class="language-cmake"># Ejemplo: sniffer
+target_link_libraries(sniffer PRIVATE
+    crypto-transport
+    seed-client        # nuevo
+    plugin-loader      # ADR-012
+)
+# etcd-client se gestiona por separado como antes
+</code></pre>
+<hr />
+<h2 id="rotacion-de-seeds-limitacion-documentada">Rotación de seeds — limitación documentada</h2>
+<p><strong>En esta fase (PHASE 1), los seeds no rotan en runtime.</strong></p>
+<p>El seed generado por <code>provision.sh</code> es válido hasta que se ejecuta de nuevo el
+script de provisioning. Esto es una limitación conocida, no un bug.</p>
+<p><strong>Mitigación aceptada:</strong>
+- El canal ZMQ CURVE ya proporciona Perfect Forward Secrecy a nivel de transporte
+- El seed ChaCha20 cifra payloads — su exposición requeriría comprometer tanto
+  el filesystem del componente como el canal CURVE simultáneamente
+- La rotación periódica de keypairs (no de seed) mediante re-provisioning es
+  operacionalmente viable para el target de despliegue (hospitales, escuelas)</p>
+<p><strong>Rotación futura:</strong>
+Cuando se implemente, requerirá un componente dedicado — Vault (Hashicorp) o
+implementación propia — que <strong>no es etcd-server</strong>. ADR-004 (rotación HMAC)
+establece el patrón de cooldown windows y grace periods que se reutilizará.</p>
+<hr />
+<h2 id="relacion-con-otros-adrs">Relación con otros ADRs</h2>
+<table>
+<thead>
+<tr>
+<th>ADR</th>
+<th>Relación</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>ADR-004 (key rotation cooldown)</td>
+<td>El patrón de grace period se reutilizará en la rotación futura de seeds</td>
+</tr>
+<tr>
+<td>ADR-005 (etcd client restoration)</td>
+<td>etcd-client se mantiene pero pierde responsabilidades criptográficas</td>
+</tr>
+<tr>
+<td>ADR-012 (plugin loader)</td>
+<td>plugin-loader se integra en el mismo CMakeLists.txt que seed-client — sin dependencia entre sí</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="regla-de-reprovisioning-granular-day-94">Regla de reprovisioning granular (DAY 94)</h2>
+<p><code>provision.sh</code> es granular — no un big bang que reprovisiona todo el sistema
+por cada cambio pequeño. Vive en <code>tools/provision/</code> junto con los scripts
+de stress test.</p>
+<pre><code>Evento                           → Acción provision
+─────────────────────────────────────────────────────────────
+Nuevo plugin en componente X     → provision_plugin.sh X plugin_nuevo
+Nueva versión plugin Y en X      → provision_plugin.sh X plugin_Y_v_nueva
+Nueva versión binario de X       → provision_component.sh X
+Rotación periódica de seeds      → provision.sh --all
+Verificación estado              → verify_provision.sh
+</code></pre>
+<p><strong>Invariante:</strong> añadir un plugin a un componente NO cambia la keypair del
+componente ni obliga a reprovisionar los canales ZeroMQ entre componentes.
+La semilla ChaCha20 entre componentes es independiente de los plugins que
+cada componente cargue.</p>
+<h2 id="secuencia-de-implementacion">Secuencia de implementación</h2>
+<p>Esta es la secuencia acordada para las próximas sesiones. <strong>El backlog queda
+congelado</strong> — no se añaden nuevos ítems salvo valor extraordinario.</p>
+<pre><code>DAY 92:
+  [ ] Rama nueva desde main
+  [ ] rst_ratio + syn_ack_ratio en sniffer (desbloquea datos sintéticos)
+  [ ] Modificar network_security.proto — nueva estructura para features SMB
+      (rst_ratio, syn_ack_ratio en su propia estructura si no lo están)
+  [ ] Documentar si ya existe estructura apropiada o crearla
+
+DAY 93-94:
+  [ ] plugin-loader minimalista (ADR-012) — SIN seed-client todavía
+      Documentado explícitamente como &quot;sin autenticación hasta seed-client&quot;
+  [ ] Plugin hello world — validar mecanismo end-to-end
+
+DAY 95-96:
+  [ ] scripts/provision.sh — generación de keypairs y seeds en bash
+  [ ] libs/seed-client — mini-componente, interfaz mínima
+  [ ] Integración en sniffer y ml-detector
+
+DAY 97+:
+  [ ] Refactor etcd-server — eliminar responsabilidades criptográficas
+  [ ] Refactor etcd-client — desacoplar de seed
+  [ ] Datos sintéticos WannaCry (SYN-3 en adelante)
+  [ ] Reentrenamiento Random Forest
+</code></pre>
+<hr />
+<h2 id="consecuencias">Consecuencias</h2>
+<p><strong>Positivas:</strong>
+- etcd-server con responsabilidad única — mucho más mantenible
+- El seed nunca viaja sin cifrar — elimina el problema HTTP actual
+- No se introduce ninguna dependencia nueva en producción — bash + openssl
+  ya están en cualquier Linux de producción
+- ZMQ CURVE ya está en el stack — no hay nueva librería
+- seed-client es testeable en aislamiento, al estilo crypto-transport
+- El mecanismo de autorización entre componentes (qué componente puede
+  hablar con qué otro) está declarado explícitamente en los JSONs</p>
+<p><strong>Negativas / limitaciones aceptadas:</strong>
+- Sin rotación de seeds en runtime en PHASE 1 — re-provisioning manual
+- El script bash es la raíz de confianza — quien ejecuta provision.sh
+  tiene acceso temporal a todos los seeds sin cifrar
+- Instalaciones distribuidas requieren disciplina operacional en la
+  distribución de ficheros (SCP, permisos)</p>
+<hr />
+<h2 id="referencias">Referencias</h2>
+<ul>
+<li>ADR-004: HMAC key rotation with cooldown windows</li>
+<li>ADR-005: etcd client restoration</li>
+<li>ADR-012: Plugin loader architecture</li>
+<li><code>libs/crypto-transport</code> — patrón de shared library interna</li>
+<li><code>scripts/provision.sh</code> — a implementar en DAY 95-96</li>
+<li>Conversación de diseño: DAY 91 (2026-03-19)</li>
+</ul>
+<hr />
+<p><em>Co-authored-by: Alonso Isidoro Román + Claude (Anthropic)</em>
+<em>Consejo de Sabios — ML Defender (aRGus EDR)</em>
+<em>DAY 91 — 19 marzo 2026</em></p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.top", "search.highlight"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

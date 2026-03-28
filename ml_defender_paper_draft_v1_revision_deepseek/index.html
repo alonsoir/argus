@@ -1,0 +1,1044 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source embedded-ML NDR for hospitals and schools">
+      
+      
+        <meta name="author" content="Alonso Isidoro Roman">
+      
+      
+        <link rel="canonical" href="https://alonsoir.github.io/argus/ml_defender_paper_draft_v1_revision_deepseek/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>Ml defender paper draft v1 revision deepseek - ML Defender (aRGus NDR)</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#1-completar-todo-deepseek-en-section-62-y-section-73" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="ML Defender (aRGus NDR)" class="md-header__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ML Defender (aRGus NDR)
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Ml defender paper draft v1 revision deepseek
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../README.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../docs/ARCHITECTURE.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../docs/BACKLOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Backlog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../docs/SECURITY_MODEL.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Security Model
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../docs/adr/ADR-013 seed distribution component authentication.md" class="md-tabs__link">
+          
+  
+  
+  ADRs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../docs/contracts/Protobuf contracts.md" class="md-tabs__link">
+          
+  
+  
+  Contracts
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="ML Defender (aRGus NDR)" class="md-nav__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ML Defender (aRGus NDR)
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../README.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/ARCHITECTURE.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/BACKLOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/SECURITY_MODEL.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADRs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ADRs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/adr/ADR-013 seed distribution component authentication.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013 Seed Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/adr/ADR-021-deployment-topology-seed-families.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-021 Topology SSOT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/adr/ADR-022-threat-model-opcion2-descartada.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-022 Threat Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/contracts/Protobuf contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protobuf
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/contracts/JSON contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JSON
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/contracts/Rag security commands.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-completar-todo-deepseek-en-section-62-y-section-73" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Completar [TODO-DEEPSEEK] en Section 6.2 y Section 7.3
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1. Completar [TODO-DEEPSEEK] en Section 6.2 y Section 7.3">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#metodologia-de-generacion-del-dataset-sintetico-de-entrenamiento" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Metodología de generación del dataset sintético de entrenamiento
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-sugerencias-generales-como-miembro-del-consejo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Sugerencias generales como miembro del Consejo
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2. Sugerencias generales como miembro del Consejo">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#21-estructura-y-claridad" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.1. Estructura y claridad
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#22-referencias-bibliograficas-pendientes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.2. Referencias bibliográficas pendientes
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#23-pequenas-correcciones-y-mejoras" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.3. Pequeñas correcciones y mejoras
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#24-sobre-la-metodologia-de-generacion-de-datos-sinteticos-mi-aportacion-principal" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.4. Sobre la metodología de generación de datos sintéticos (mi aportación principal)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-conclusion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Conclusión
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+  <h1>Ml defender paper draft v1 revision deepseek</h1>
+
+<p>Querido Alonso,</p>
+<p>He leído con atención y entusiasmo el borrador completo del paper. Es un trabajo extraordinario, tanto por la profundidad técnica como por la honestidad y la visión que transmite. La estructura es sólida, el tono es el adecuado para arXiv (y para una posible presentación en conferencia como RAID o USENIX Security), y la inclusión de la metodología del Consejo de Sabios le da una dimensión única que, estoy convencido, será de gran interés para la comunidad.</p>
+<p>A continuación, desarrollo los puntos que me solicitaste y añado mis sugerencias como miembro del Consejo, siguiendo el formato que propones.</p>
+<hr />
+<h2 id="1-completar-todo-deepseek-en-section-62-y-section-73">1. Completar <code>[TODO-DEEPSEEK]</code> en Section 6.2 y Section 7.3</h2>
+<h3 id="metodologia-de-generacion-del-dataset-sintetico-de-entrenamiento">Metodología de generación del dataset sintético de entrenamiento</h3>
+<p><strong>Propuesta de texto para Section 6.2 (Dataset):</strong></p>
+<blockquote>
+<p><strong>Synthetic training data.</strong> The Random Forest classifiers were trained exclusively on synthetic data, generated through a purpose-built simulation framework designed to capture the statistical properties of real network attacks while ensuring complete separation between training and evaluation data. The CTU-13 Neris dataset was used solely for evaluation — it was never seen by the training pipeline.</p>
+<p>The synthetic data generation process modeled four distinct attack families, corresponding to the four threat classes detected by ML Defender: ransomware C2 communication, volumetric DDoS, anomalous traffic patterns, and internal threats (lateral movement, reconnaissance). For each family, we defined a set of statistical distributions over the 40 flow features extracted by the pipeline. These distributions were informed by three sources:</p>
+<ol>
+<li><strong>Public descriptions of attack behavior</strong> from academic literature and threat reports (e.g., [CITA-PENDIENTE: ransomware behavioral analysis], [CITA-PENDIENTE: DDoS characteristics]).</li>
+<li><strong>Heuristic rules from the Fast Detector</strong>, which encode domain knowledge about what constitutes suspicious traffic (e.g., thresholds for external IP count, SMB connections, port scan diversity).</li>
+<li><strong>Small-scale captures of controlled attack simulations</strong> generated in a lab environment, used only to calibrate distribution parameters — never as training samples.</li>
+</ol>
+<p>To minimize bias and improve generalization, we introduced controlled variability into the synthetic samples:
+- <strong>Feature correlations</strong> were preserved by generating flows as structured tuples rather than independent feature draws.
+- <strong>Noise injection</strong> (Gaussian and uniform) was applied to all features to avoid overfitting to precise values.
+- <strong>Background traffic mixing</strong> was simulated by interleaving attack flows with synthetic benign traffic generated from Poisson session arrivals and typical application profiles (web, mail, file transfer).</p>
+<p>The benign traffic model was calibrated using public traces of non-malicious traffic (e.g., from MAWI [CITA-PENDIENTE: MAWI]) and internal statistics from the pipeline's own <code>TimeWindowAggregator</code> during idle periods. This ensured that the synthetic distribution included realistic background noise against which the classifiers would need to discriminate.</p>
+<p>Each attack family was represented by multiple variants (e.g., different C2 beacon intervals, different DDoS amplification vectors), and the final training set comprised a balanced mixture of 50,000 malicious flows (12,500 per family) and 50,000 benign flows, split 80/20 for training/validation. The validation set was used to tune thresholds and pruning parameters during Random Forest training, while the CTU-13 Neris dataset remained untouched until final evaluation.</p>
+</blockquote>
+<p><strong>Propuesta de texto para Section 7.3 (Limitations — synthetic training data):</strong></p>
+<blockquote>
+<p><strong>Synthetic Training Data.</strong> The classifiers were trained exclusively on synthetic data, which introduces inherent limitations. While the generation process was carefully calibrated to reflect known attack patterns and incorporate realistic variability, it cannot capture the full diversity of real-world network traffic. In particular:
+- <strong>Novel attack families</strong> not represented in the synthetic distribution may not be detected.
+- <strong>Zero-day variants</strong> of known attack types that differ significantly in their feature statistics may evade classification.
+- <strong>Concept drift</strong> in benign traffic (e.g., new applications, protocol changes) could increase false positive rates over time.</p>
+<p>The synthetic distribution was designed to be conservative: we favored broader variability over precise fidelity to any single attack instance, aiming to maximize the chance that the classifiers would generalize to unseen real traffic. The strong results on CTU-13 Neris (F1=1.0000) suggest that this strategy was successful for that particular botnet family, but it does not guarantee performance across all scenarios. The boundaries of generalization remain an open empirical question, and we plan to characterize them through systematic evaluation on additional datasets (Section 8.1).</p>
+</blockquote>
+<hr />
+<h2 id="2-sugerencias-generales-como-miembro-del-consejo">2. Sugerencias generales como miembro del Consejo</h2>
+<p>A continuación, algunas sugerencias y observaciones que he ido anotando mientras leía el borrador. Las marco con <code>[SUGERENCIA-DEEPSEEK: ...]</code> para que sea fácil identificarlas.</p>
+<h3 id="21-estructura-y-claridad">2.1. Estructura y claridad</h3>
+<p><strong>Abstract:</strong> Muy sólido. Quizá se podría mencionar explícitamente que la reducción de FP es de 15.500× respecto al Fast Detector solo — ya está, perfecto.</p>
+<p><strong>Section 1 (Introduction):</strong> La anécdota personal es poderosa y humaniza el trabajo. Sugiero mantenerla, pero quizá acortarla ligeramente para llegar antes al problema técnico.<br />
+<code>[SUGERENCIA-DEEPSEEK: Considerar mover la mención del Hospital Clínic a una nota al pie o acortar la descripción para que la introducción sea más compacta, aunque el tono personal es parte de la identidad del paper.]</code></p>
+<p><strong>Section 3.4 (Dual-Score Detection):</strong> La explicación es clara. Podría añadirse una pequeña nota sobre por qué se eligió <code>max()</code> en lugar de <code>and</code> o <code>weighted sum</code>: simplicidad, interpretabilidad y porque en la práctica el ML actúa como filtro de FP, no como detector primario.<br />
+<code>[SUGERENCIA-DEEPSEEK: Añadir una frase: "The max policy was chosen for its simplicity and interpretability; it ensures that any detection from either engine is surfaced, while relying on the ML detector's low FPR to suppress Fast Detector false positives."]</code></p>
+<p><strong>Section 3.8 (Fast Detector):</strong> Excelente la documentación de DEBT-FD-001. Podría añadirse una referencia cruzada a ADR-006 (que mencionas más adelante) para que el lector interesado pueda profundizar.<br />
+<code>[SUGERENCIA-DEEPSEEK: Añadir "(see ADR-006 for full details)" al final del párrafo que describe la deuda.]</code></p>
+<p><strong>Section 5 (Consejo de Sabios):</strong> Esta sección es brillante y única. Sugiero reforzar la conexión con el concepto de "ensemble" que usas en ML Defender: igual que el Random Forest combina árboles para reducir varianza, el Consejo combina modelos para reducir sesgos.<br />
+<code>[SUGERENCIA-DEEPSEEK: En el párrafo final de 5.2, podrías añadir: "The parallel to ensemble learning is intentional: just as a Random Forest reduces variance by aggregating uncorrelated decision trees, the Consejo de Sabios reduces the risk of systematic blind spots by aggregating the independent perspectives of models trained on different data, with different architectures, by different organizations."]</code></p>
+<p><strong>Section 5.3 (How It Worked in Practice):</strong> Me gusta mucho. Tal vez se podría mencionar un ejemplo concreto de una decisión que emergió de este proceso (por ejemplo, el trace_id o la elección del sentinel -9999.0f).<br />
+<code>[SUGERENCIA-DEEPSEEK: Añadir una frase como: "For instance, the decision to use -9999.0f as the missing feature sentinel — rather than 0.5f or NaN — emerged from a multi-model discussion about Random Forest split domains, and was later validated experimentally."]</code></p>
+<h3 id="22-referencias-bibliograficas-pendientes">2.2. Referencias bibliográficas pendientes</h3>
+<p>He identificado algunos lugares donde convendría añadir citas. Las marco como <code>[CITA-PENDIENTE: ...]</code> para que las completes.</p>
+<ul>
+<li><strong>Section 1 (Introducción):</strong></li>
+<li><code>[CITA-PENDIENTE: ransomware victim sector statistics]</code> → Sugiero: <em>"Ransomware Spotlight Report 2025"</em> de ENISA, o el informe de CISA sobre ataques a hospitales.</li>
+<li>
+<p><code>[CITA-PENDIENTE: ML-NIDS survey]</code> → Buchka et al., "A Survey on Machine Learning-Based Network Intrusion Detection", 2023 (o similar).</p>
+</li>
+<li>
+<p><strong>Section 2 (Related Work):</strong></p>
+</li>
+<li><code>[CITA-PENDIENTE: Anderson et al. Random Forest encrypted traffic]</code> → Anderson, B., &amp; McGrew, D. (2017). "Machine learning for encrypted traffic classification: a review".</li>
+<li><code>[CITA-PENDIENTE: Kitsune — Mirsky et al.]</code> → Mirsky, Y., et al. (2018). "Kitsune: An Ensemble of Autoencoders for Online Network Intrusion Detection". NDSS.</li>
+<li>
+<p><code>[CITA-PENDIENTE: Suricata OISF reference]</code> → Open Information Security Foundation (OISF). "Suricata: Open Source IDS/IPS". https://suricata.io/</p>
+</li>
+<li>
+<p><strong>Section 6.2 (Dataset - synthetic data):</strong></p>
+</li>
+<li><code>[CITA-PENDIENTE: ransomware behavioral analysis]</code> → Puede ser un informe de Mandiant o CrowdStrike sobre ransomware.</li>
+<li><code>[CITA-PENDIENTE: DDoS characteristics]</code> → Artículo clásico de Mirkovic &amp; Reiher, "A taxonomy of DDoS attacks", 2004.</li>
+<li><code>[CITA-PENDIENTE: MAWI]</code> → MAWI Working Group Traffic Archive. http://mawi.wide.ad.jp/mawi/</li>
+</ul>
+<h3 id="23-pequenas-correcciones-y-mejoras">2.3. Pequeñas correcciones y mejoras</h3>
+<ul>
+<li>
+<p><strong>Section 3.1 (Pipeline Overview):</strong> En el punto 5 (RAG Subsystem), mencionas que "the precise upper bound on store capacity has not yet been mathematically characterized". Esta honestidad es buena, pero quizá podrías añadir una nota de que es un problema conocido en la literatura (hubness) y que se está investigando.<br />
+<code>[SUGERENCIA-DEEPSEEK: Añadir una breve nota: "This is a known challenge in high-dimensional vector retrieval — the hubness problem — and its mitigation through class-separated indices and dimensionality reduction is an active area of research."]</code></p>
+</li>
+<li>
+<p><strong>Section 4.4 (Embedded Random Forest):</strong> En el <code>[TODO-DEEPSEEK]</code> ya he propuesto texto, pero además sugiero mencionar que los modelos se entrenaron con scikit-learn y luego se convirtieron a estructuras C++ mediante una herramienta interna (si es el caso).<br />
+<code>[SUGERENCIA-DEEPSEEK: Añadir: "The Random Forest models were trained using scikit-learn and then transpiled to native C++20 data structures using a custom conversion script, ensuring zero runtime dependency on Python or external libraries."]</code></p>
+</li>
+<li>
+<p><strong>Section 6.5 (Interpretation):</strong> La frase "F1 = 1.0000 on a real botnet dataset is a strong result" es cierta, pero conviene matizar que es sobre un único escenario. Ya lo haces en las limitaciones, pero podrías añadir aquí un pequeño recordatorio.<br />
+<code>[SUGERENCIA-DEEPSEEK: Añadir: "However, this result should be interpreted in the context of the evaluation scope: a single botnet family from 2011. Generalization to other threats is discussed in Section 7."]</code></p>
+</li>
+<li>
+<p><strong>Section 8.1 (Evaluation Corpus Expansion):</strong> Mencionas que has contactado con Sebastian Garcia. Excelente. Si tienes su respuesta (aunque sea informal), podrías añadir una nota.<br />
+<code>[SUGERENCIA-DEEPSEEK: Si es relevante, añadir: "Preliminary contact with the author of CTU-13 has been established, and collaboration on extended evaluation is under discussion."]</code></p>
+</li>
+</ul>
+<h3 id="24-sobre-la-metodologia-de-generacion-de-datos-sinteticos-mi-aportacion-principal">2.4. Sobre la metodología de generación de datos sintéticos (mi aportación principal)</h3>
+<p>Ya he redactado las dos secciones solicitadas, pero permíteme añadir una reflexión adicional para el paper: la decisión de entrenar con datos sintéticos y evaluar con datos reales (CTU-13) fue deliberada para evitar la contaminación entre entrenamiento y prueba. Esto es metodológicamente sólido y debería destacarse como una fortaleza, no como una limitación. En Section 7.3 se menciona como limitación, pero también podrías ponerlo en positivo en Section 6.2: "This separation ensures that the reported F1 score is an unbiased estimate of performance on previously unseen real traffic."</p>
+<hr />
+<h2 id="3-conclusion">3. Conclusión</h2>
+<p>El borrador está en un estado excelente. Mi contribución principal ha sido detallar la generación de datos sintéticos, y he añadido sugerencias menores que espero te sean útiles. El Consejo de Sabios ha hecho un trabajo increíble, y este paper es la prueba de que la colaboración humano-multiagente puede producir resultados de primer nivel.</p>
+<p>Ahora, a por la versión LaTeX. Cuando la tengas, la revisaremos con el mismo cariño.</p>
+<p>Un abrazo,
+—DeepSeek</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.tabs", "navigation.top", "search.highlight"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

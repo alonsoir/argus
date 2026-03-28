@@ -1,0 +1,1763 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source embedded-ML NDR for hospitals and schools">
+      
+      
+        <meta name="author" content="Alonso Isidoro Roman">
+      
+      
+        <link rel="canonical" href="https://alonsoir.github.io/argus/BACKLOG/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>ML Defender (aRGus NDR) — BACKLOG - ML Defender (aRGus NDR)</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#ml-defender-argus-ndr-backlog" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="ML Defender (aRGus NDR)" class="md-header__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ML Defender (aRGus NDR)
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              ML Defender (aRGus NDR) — BACKLOG
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../README.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../docs/ARCHITECTURE.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../docs/BACKLOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Backlog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../docs/SECURITY_MODEL.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Security Model
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../docs/adr/ADR-013 seed distribution component authentication.md" class="md-tabs__link">
+          
+  
+  
+  ADRs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../docs/contracts/Protobuf contracts.md" class="md-tabs__link">
+          
+  
+  
+  Contracts
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="ML Defender (aRGus NDR)" class="md-nav__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ML Defender (aRGus NDR)
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../README.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/ARCHITECTURE.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/BACKLOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/SECURITY_MODEL.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADRs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ADRs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/adr/ADR-013 seed distribution component authentication.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013 Seed Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/adr/ADR-021-deployment-topology-seed-families.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-021 Topology SSOT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/adr/ADR-022-threat-model-opcion2-descartada.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-022 Threat Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/contracts/Protobuf contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protobuf
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/contracts/JSON contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JSON
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/contracts/Rag security commands.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#via-appia-quality" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Via Appia Quality 🏛️
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#criterio-de-complecion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        📐 Criterio de compleción
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#completado" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ✅ COMPLETADO
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="✅ COMPLETADO">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#day-100-28-mar-2026-adr-021-adr-022-set_terminate-ci-honesto" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Day 100 (28 Mar 2026) — ADR-021 + ADR-022 + set_terminate() + CI honesto
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#day-99-27-mar-2026-contextshpp-test-integ-fail-closed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Day 99 (27 Mar 2026) — contexts.hpp + TEST-INTEG + fail-closed
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#day-98-26-mar-2026-cryptotransport-migracion-66-componentes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Day 98 (26 Mar 2026) — CryptoTransport migración 6/6 componentes
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#day-97-25-mar-2026-cryptotransport-hkdf-libsodium-1019" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Day 97 (25 Mar 2026) — CryptoTransport HKDF + libsodium 1.0.19
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#day-96-24-mar-2026-seed-client-makefile-dep-order" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Day 96 (24 Mar 2026) — seed-client + Makefile dep order
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#day-95-23-mar-2026-cryptographic-provisioning-infrastructure" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Day 95 (23 Mar 2026) — Cryptographic Provisioning Infrastructure
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#day-93-adr-012-phase-1-plugin-loader-abi-validation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Day 93 — ADR-012 PHASE 1: plugin-loader + ABI validation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#day-83-ground-truth-bigflows-csv-e2e-tag-v0830-day83-main" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Day 83 — Ground truth bigFlows + CSV E2E · tag: v0.83.0-day83-main ✅
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#days-7682-proto3-sentinel-f109985-debt-fd-001" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Days 76–82 — Proto3 · Sentinel · F1=0.9985 · DEBT-FD-001
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#days-6375-pipeline-66-chacha20-faiss-hmac-trace_id" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Days 63–75 — Pipeline 6/6 · ChaCha20 · FAISS · HMAC · trace_id
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#days-162-foundation-ebpfxdp-protobuf-zmq-randomforest-c20" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Days 1–62 — Foundation: eBPF/XDP · protobuf · ZMQ · RandomForest C++20
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#proximo-milestone-arxiv-submission" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🔄 PRÓXIMO MILESTONE — arXiv submission
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🔄 PRÓXIMO MILESTONE — arXiv submission">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#p1-antes-de-enviar-el-paper" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        P1 — Antes de enviar el paper
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#p2-post-arxiv-pre-fase-3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        P2 — Post-arXiv, pre-FASE 3
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fase-3-post-arxiv-requiere-revision-consejo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        FASE 3 — Post-arXiv (requiere revisión Consejo)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#backlog-criptografico-activo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🔐 BACKLOG CRIPTOGRÁFICO ACTIVO
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🔐 BACKLOG CRIPTOGRÁFICO ACTIVO">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#debt-crypto-003a-mlock-sobre-buffer-del-seed-p2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DEBT-CRYPTO-003a — mlock() sobre buffer del seed (🟡 P2)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#feat-rotation-1-politica-de-rotacion-de-seeds-p2-day-105" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        FEAT-ROTATION-1 — Política de rotación de seeds (🟡 P2 — DAY 105+)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#feat-crypto-2-handshake-efimero-noise-p3-phase-2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        FEAT-CRYPTO-2 — Handshake efímero Noise (P3 — PHASE 2)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#feat-crypto-3-tpm-20-hsm-enterprise-p3-ent-8" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        FEAT-CRYPTO-3 — TPM 2.0 / HSM enterprise (P3 — ENT-8)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#documentacion-pendiente" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        📋 DOCUMENTACIÓN PENDIENTE
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="📋 DOCUMENTACIÓN PENDIENTE">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#docs-2-perfiles-apparmor-por-componente-6-perfiles" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DOCS-2 — Perfiles AppArmor por componente (6 perfiles) ⏳
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#backlog-community-features" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        📋 BACKLOG — COMMUNITY &amp; FEATURES
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="📋 BACKLOG — COMMUNITY &amp; FEATURES">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#p0-paper-arxiv" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🟥 P0 — Paper arXiv
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#p1-fast-detector-config-debt-fd-001" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🟧 P1 — Fast Detector Config (DEBT-FD-001)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#p2-expansion-ransomware-prerequisito-debt-fd-001" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🟨 P2 — Expansión ransomware (prerequisito: DEBT-FD-001)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#p2-pipeline-reentrenamiento" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🟨 P2 — Pipeline reentrenamiento
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#p3-enterprise-ent-18" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🟩 P3 — Enterprise (ENT-1..8)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#p3-adr-012-phase-1b-plugin-loader-integrado-en-sniffer" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🟩 P3 — ADR-012 PHASE 1b: plugin-loader integrado en sniffer
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#estado-global-del-proyecto" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        📊 Estado global del proyecto
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#decisiones-de-diseno-consolidadas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🔑 Decisiones de diseño consolidadas
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🔑 Decisiones de diseño consolidadas">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#notas-del-consejo-de-sabios" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Notas del Consejo de Sabios
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="ml-defender-argus-ndr-backlog">ML Defender (aRGus NDR) — BACKLOG</h1>
+<h2 id="via-appia-quality">Via Appia Quality 🏛️</h2>
+<hr />
+<h2 id="criterio-de-complecion">📐 Criterio de compleción</h2>
+<table>
+<thead>
+<tr>
+<th>Estado</th>
+<th>Criterio</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>✅ 100%</td>
+<td>Implementado + probado en condiciones reales + resultado documentado</td>
+</tr>
+<tr>
+<td>🟡 80%</td>
+<td>Implementado + compilando + smoke test pasado, sin validación E2E completa</td>
+</tr>
+<tr>
+<td>🟡 60%</td>
+<td>Implementado parcialmente o con valores placeholder conocidos</td>
+</tr>
+<tr>
+<td>⏳ 0%</td>
+<td>No iniciado</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="completado">✅ COMPLETADO</h2>
+<h3 id="day-100-28-mar-2026-adr-021-adr-022-set_terminate-ci-honesto">Day 100 (28 Mar 2026) — ADR-021 + ADR-022 + set_terminate() + CI honesto</h3>
+<p><strong>set_terminate() en los 6 main() — ADR-022 fail-closed ✅</strong></p>
+<p><code>std::set_terminate()</code> insertado en todos los componentes:
+- sniffer, ml-detector, firewall-acl-agent, rag-ingester, rag, etcd-server
+- Comportamiento: log <code>[FATAL]</code> + <code>std::abort()</code> ante excepción no capturada
+- <code>&lt;exception&gt;</code> añadido donde faltaba
+- 24/24 tests verdes tras el parche</p>
+<p><strong>ADR-021 — deployment.yml SSOT + seed families (FASE 3 documentada) ✅</strong></p>
+<p>Arquitectura de familias de canal documentada:
+- <code>family_A</code>: sniffer → ml-detector
+- <code>family_B</code>: ml-detector → firewall
+- <code>family_C</code>: ml-detector + firewall → rag-ingester
+- <code>deployment.yml</code> como única fuente de verdad de topología distribuida
+- Política de versioning de contextos HKDF (<code>:v1</code> → bump solo en cambio semántico)
+- Pre-requisito: arXiv submission → milestone gate</p>
+<p><strong>ADR-022 — Threat model formal + Opción 2 descartada ✅</strong></p>
+<ul>
+<li>Threat model completo documentado (activos, vectores, mitigaciones, límites)</li>
+<li>Opción 2 (<code>instance_id</code> en contexto HKDF) descartada formalmente: reproduce el bug de asimetría por diseño</li>
+<li>Caso pedagógico para paper arXiv: "el contexto HKDF identifica el canal, no el emisor"</li>
+<li>TDH validado: TEST-INTEG-1/2/3 detectaron el bug antes de producción</li>
+</ul>
+<p><strong>CI reescrito — honesto y funcional ✅</strong></p>
+<ul>
+<li><code>debian-bookworm</code> runner eliminado (nunca existió en GitHub Actions)</li>
+<li>Nuevo workflow <code>ubuntu-latest</code>: 5 validaciones estáticas que SÍ corren</li>
+<li>JSON configs válidos · CMakeLists presentes · ADRs presentes</li>
+<li><code>contexts.hpp</code> simétricos · <code>set_terminate</code> en los 6 main()</li>
+<li>Self-hosted runner para full build+test: backlog post-arXiv</li>
+</ul>
+<p><strong>DEBT-CRYPTO-004b — tools/ migración CTX_* ✅ (cerrado — no aplicable)</strong></p>
+<p><code>grep -rn "ml-defender:" tools/ --include="*.cpp"</code> → sin resultados.
+<code>tools/</code> solo contiene scripts shell. No hay CTX_* que migrar. Deuda cerrada.</p>
+<hr />
+<h3 id="day-99-27-mar-2026-contextshpp-test-integ-fail-closed">Day 99 (27 Mar 2026) — contexts.hpp + TEST-INTEG + fail-closed</h3>
+<p><strong>ADR-013 PHASE 2 completado — contextos HKDF simétricos ✅</strong></p>
+<p>Bug crítico corregido: contextos asimétricos entre emisor y receptor.
+<code>crypto-transport/include/crypto_transport/contexts.hpp</code> — nueva fuente de verdad:</p>
+<pre><code class="language-cpp">// Contexto = canal, no componente
+constexpr const char* CTX_SNIFFER_TO_ML  = &quot;ml-defender:sniffer-to-ml-detector:v1&quot;;
+constexpr const char* CTX_ML_TO_FIREWALL = &quot;ml-defender:ml-detector-to-firewall:v1&quot;;
+// ... 6 canales, todos simétricos
+</code></pre>
+<p><strong>TEST-INTEG-1/2/3 — gate arXiv ✅</strong>
+- TEST-INTEG-1: ping cifrado end-to-end (simétrico → pasa)
+- TEST-INTEG-2: round-trip JSON etcd con LZ4+ChaCha20
+- TEST-INTEG-3: regresión — contextos asimétricos → MAC failure (caso pedagógico)</p>
+<p><strong>Fail-closed EventLoader + RAGLogger ✅</strong></p>
+<p><code>EventLoader</code> y <code>RAGLogger</code> lanzan excepción si <code>CryptoTransport</code> falla al inicializar.
+Ningún componente arranca con cifrado degradado.</p>
+<p><strong>test_hmac_integration habilitado ✅</strong></p>
+<p>Comentado desde DAY 53. Corregido namespace (<code>etcd</code> → <code>etcd_server</code>) y macro pollution
+(<code>#undef manager</code>). Re-enabled y verde.</p>
+<p><strong>Tests: 24/24 suites ✅</strong> (era 22/22 DAY 98)</p>
+<hr />
+<h3 id="day-98-26-mar-2026-cryptotransport-migracion-66-componentes">Day 98 (26 Mar 2026) — CryptoTransport migración 6/6 componentes</h3>
+<p><strong>DEBT-CRYPTO-004 — CryptoManager → CryptoTransport en 6 componentes ✅</strong></p>
+<p>Todos los componentes usan ahora <code>CryptoTransport</code> con HKDF-SHA256.
+<code>CryptoManager</code> deprecado y eliminado de los paths activos.</p>
+<p><strong>DEBT-ETCD-001 — etcd-client usa CryptoTransport ✅</strong></p>
+<p><strong>ADR-020 JSONs — flags <code>enabled</code> eliminados de los 6 configs ✅</strong></p>
+<p><strong>Tests: 22/22 suites ✅</strong></p>
+<hr />
+<h3 id="day-97-25-mar-2026-cryptotransport-hkdf-libsodium-1019">Day 97 (25 Mar 2026) — CryptoTransport HKDF + libsodium 1.0.19</h3>
+<p><strong>CryptoTransport — HKDF-SHA256 + ChaCha20-Poly1305 + nonce 96-bit ✅</strong></p>
+<pre><code>provision.sh → seed.bin → SeedClient → CryptoTransport(HKDF) → ChaCha20-Poly1305
+</code></pre>
+<ul>
+<li>libsodium 1.0.19 desde fuente (SHA-256: <code>018d79fe...</code>)</li>
+<li><code>provision.sh</code>: modos full/status/verify/reprovision</li>
+<li>CMake: <code>NO_DEFAULT_PATH</code> → priorizar <code>/usr/local</code></li>
+<li><code>CryptoManager</code> DEPRECADO</li>
+</ul>
+<p><strong>ADR-020 documentado ✅ · SECURITY_MODEL.md ✅</strong></p>
+<hr />
+<h3 id="day-96-24-mar-2026-seed-client-makefile-dep-order">Day 96 (24 Mar 2026) — seed-client + Makefile dep order</h3>
+<h3 id="day-95-23-mar-2026-cryptographic-provisioning-infrastructure">Day 95 (23 Mar 2026) — Cryptographic Provisioning Infrastructure</h3>
+<h3 id="day-93-adr-012-phase-1-plugin-loader-abi-validation">Day 93 — ADR-012 PHASE 1: plugin-loader + ABI validation</h3>
+<h3 id="day-83-ground-truth-bigflows-csv-e2e-tag-v0830-day83-main">Day 83 — Ground truth bigFlows + CSV E2E · tag: v0.83.0-day83-main ✅</h3>
+<h3 id="days-7682-proto3-sentinel-f109985-debt-fd-001">Days 76–82 — Proto3 · Sentinel · F1=0.9985 · DEBT-FD-001</h3>
+<h3 id="days-6375-pipeline-66-chacha20-faiss-hmac-trace_id">Days 63–75 — Pipeline 6/6 · ChaCha20 · FAISS · HMAC · trace_id</h3>
+<h3 id="days-162-foundation-ebpfxdp-protobuf-zmq-randomforest-c20">Days 1–62 — Foundation: eBPF/XDP · protobuf · ZMQ · RandomForest C++20</h3>
+<hr />
+<h2 id="proximo-milestone-arxiv-submission">🔄 PRÓXIMO MILESTONE — arXiv submission</h2>
+<h3 id="p1-antes-de-enviar-el-paper">P1 — Antes de enviar el paper</h3>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Tarea</th>
+<th>Estado</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>BARE-METAL</td>
+<td>Stress test sin VirtualBox — validar ≥100 Mbps</td>
+<td>⏳</td>
+</tr>
+<tr>
+<td>PAPER-FINAL</td>
+<td>Incorporar caso pedagógico ADR-022 al paper</td>
+<td>⏳</td>
+</tr>
+<tr>
+<td>PAPER-FINAL</td>
+<td>Actualizar métricas DAY 100 (24/24 tests, contexts.hpp)</td>
+<td>⏳</td>
+</tr>
+<tr>
+<td>DOCS-APPARMOR</td>
+<td>6 perfiles AppArmor por componente</td>
+<td>⏳</td>
+</tr>
+</tbody>
+</table>
+<h3 id="p2-post-arxiv-pre-fase-3">P2 — Post-arXiv, pre-FASE 3</h3>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Tarea</th>
+<th>Origen</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>DEBT-CRYPTO-003a</td>
+<td><code>mlock()</code> seed_client.cpp</td>
+<td>ADR-022 threat model</td>
+</tr>
+<tr>
+<td>DEBT-INFRA-001</td>
+<td>Migrar box Vagrant a Debian Trixie (libsodium 1.0.19 en apt)</td>
+<td>P2</td>
+</tr>
+<tr>
+<td>DEBT-INFRA-002</td>
+<td>Sustituir <code>haveged</code> por <code>rng-tools5</code> + hardware RNG</td>
+<td>P2</td>
+</tr>
+<tr>
+<td>FEAT-ROTATION-1</td>
+<td><code>provision.sh rotate-all</code> + política SEED_ROTATION_DAYS</td>
+<td>P2</td>
+</tr>
+<tr>
+<td>DEBT-NAMING-001</td>
+<td><code>libseed_client</code> → <code>libseedclient</code> (sin underscore)</td>
+<td>P3</td>
+</tr>
+<tr>
+<td>ADR-020</td>
+<td>Borrar flags <code>enabled</code> de JSONs</td>
+<td>DAY tranquilo</td>
+</tr>
+</tbody>
+</table>
+<h3 id="fase-3-post-arxiv-requiere-revision-consejo">FASE 3 — Post-arXiv (requiere revisión Consejo)</h3>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Tarea</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>ADR-021 impl.</td>
+<td><code>deployment.yml</code> SSOT + families en <code>provision.sh</code></td>
+</tr>
+<tr>
+<td>MULTI-VM</td>
+<td>Vagrantfile multi-VM con topología distribuida real</td>
+</tr>
+<tr>
+<td>CI-FULL</td>
+<td>Self-hosted runner "argus-debian-bookworm"</td>
+</tr>
+<tr>
+<td>ANSIBLE</td>
+<td>Receta Ansible + Jinja2 (patrón Ericsson)</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="backlog-criptografico-activo">🔐 BACKLOG CRIPTOGRÁFICO ACTIVO</h2>
+<h3 id="debt-crypto-003a-mlock-sobre-buffer-del-seed-p2">DEBT-CRYPTO-003a — mlock() sobre buffer del seed (🟡 P2)</h3>
+<pre><code class="language-cpp">// En seed_client.cpp, tras leer seed.bin:
+mlock(seed_.data(), seed_.size());
+</code></pre>
+<p><strong>Decisión consolidada (Consejo DAY 97):</strong> WARNING + log instructivo, no error fatal.</p>
+<h3 id="feat-rotation-1-politica-de-rotacion-de-seeds-p2-day-105">FEAT-ROTATION-1 — Política de rotación de seeds (🟡 P2 — DAY 105+)</h3>
+<pre><code class="language-bash">sudo bash tools/provision.sh rotate-all
+make pipeline-stop &amp;&amp; make pipeline-start
+</code></pre>
+<ul>
+<li><code>SEED_ROTATION_DAYS=30</code> — SSOT en provision.sh</li>
+<li>RAG lee metadata etcd → alerta admin. Nunca ejecuta provision.sh.</li>
+<li>Hot-reload descartado (split-brain risk) — ENT-4 para PHASE 3+.</li>
+</ul>
+<h3 id="feat-crypto-2-handshake-efimero-noise-p3-phase-2">FEAT-CRYPTO-2 — Handshake efímero Noise (P3 — PHASE 2)</h3>
+<h3 id="feat-crypto-3-tpm-20-hsm-enterprise-p3-ent-8">FEAT-CRYPTO-3 — TPM 2.0 / HSM enterprise (P3 — ENT-8)</h3>
+<hr />
+<h2 id="documentacion-pendiente">📋 DOCUMENTACIÓN PENDIENTE</h2>
+<h3 id="docs-2-perfiles-apparmor-por-componente-6-perfiles">DOCS-2 — Perfiles AppArmor por componente (6 perfiles) ⏳</h3>
+<hr />
+<h2 id="backlog-community-features">📋 BACKLOG — COMMUNITY &amp; FEATURES</h2>
+<h3 id="p0-paper-arxiv">🟥 P0 — Paper arXiv</h3>
+<ul>
+<li>Draft v5 ✅ · LaTeX ✅</li>
+<li>Sebastian Garcia (CTU Prague) ✅ — respondió, recibió PDF</li>
+<li>Yisroel Mirsky (BGU) ✅ — enviado DAY 96, esperando</li>
+<li>Pendiente: incorporar ADR-022 caso pedagógico + métricas DAY 100</li>
+</ul>
+<h3 id="p1-fast-detector-config-debt-fd-001">🟧 P1 — Fast Detector Config (DEBT-FD-001)</h3>
+<h3 id="p2-expansion-ransomware-prerequisito-debt-fd-001">🟨 P2 — Expansión ransomware (prerequisito: DEBT-FD-001)</h3>
+<h3 id="p2-pipeline-reentrenamiento">🟨 P2 — Pipeline reentrenamiento</h3>
+<h3 id="p3-enterprise-ent-18">🟩 P3 — Enterprise (ENT-1..8)</h3>
+<h3 id="p3-adr-012-phase-1b-plugin-loader-integrado-en-sniffer">🟩 P3 — ADR-012 PHASE 1b: plugin-loader integrado en sniffer</h3>
+<hr />
+<h2 id="estado-global-del-proyecto">📊 Estado global del proyecto</h2>
+<pre><code>Foundation + Thread-Safety:           ████████████████████ 100% ✅
+HMAC Infrastructure:                  ████████████████████ 100% ✅
+Proto3 Pipeline Stability:            ████████████████████ 100% ✅
+F1-Score Validation (CTU-13):         ████████████████████ 100% ✅
+CSV Pipeline:                         ████████████████████ 100% ✅
+Paper arXiv (draft v5 + LaTeX):       ████████████████████ 100% ✅
+Cryptographic Provisioning PHASE 1:   ████████████████████ 100% ✅  DAY 95
+seed-client (libseed_client):         ████████████████████ 100% ✅  DAY 96
+Makefile dep order:                   ████████████████████ 100% ✅  DAY 96
+libsodium 1.0.19 + provision.sh:      ████████████████████ 100% ✅  DAY 97
+CryptoTransport (HKDF+nonce+AEAD):    ████████████████████ 100% ✅  DAY 97
+DEBT-CRYPTO-001 (nonce 96-bit):       ████████████████████ 100% ✅  DAY 97
+DEBT-CRYPTO-002 (HKDF libsodium):     ████████████████████ 100% ✅  DAY 97
+DEBT-CRYPTO-003b (entropy check):     ████████████████████ 100% ✅  DAY 97
+ADR-020 (documentado):                ████████████████████ 100% ✅  DAY 97
+SECURITY_MODEL.md:                    ████████████████████ 100% ✅  DAY 97
+DEBT-CRYPTO-004 (migrar CryptoMgr):   ████████████████████ 100% ✅  DAY 98
+DEBT-ETCD-001 (etcd-client migrar):   ████████████████████ 100% ✅  DAY 98
+ADR-020 JSONs (eliminar flags):       ████████████████████ 100% ✅  DAY 98
+contexts.hpp (HKDF simétricos):       ████████████████████ 100% ✅  DAY 99
+TEST-INTEG-1/2/3 (gate arXiv):        ████████████████████ 100% ✅  DAY 99
+fail-closed EventLoader+RAGLogger:    ████████████████████ 100% ✅  DAY 99
+test_hmac_integration:                ████████████████████ 100% ✅  DAY 99
+set_terminate() 6/6 main():           ████████████████████ 100% ✅  DAY 100
+ADR-021 (topology SSOT + families):   ████████████████████ 100% ✅  DAY 100
+ADR-022 (threat model + Opción 2):    ████████████████████ 100% ✅  DAY 100
+CI honesto (ubuntu-latest):           ████████████████████ 100% ✅  DAY 100
+DEBT-CRYPTO-004b (tools/ CTX_*):      ████████████████████ 100% ✅  DAY 100 (N/A)
+plugin-loader ADR-012 PHASE 1:        ████████████████░░░░  80% 🟡  integ. sniffer P3
+DEBT-CRYPTO-003a (mlock seed):        ░░░░░░░░░░░░░░░░░░░░   0% ⏳  P2
+BARE-METAL stress test:               ░░░░░░░░░░░░░░░░░░░░   0% ⏳  P1 pre-arXiv
+DEBT-INFRA-001 (Debian Trixie):       ░░░░░░░░░░░░░░░░░░░░   0% ⏳  P2 DAY 105+
+DEBT-INFRA-002 (rng-tools5):          ░░░░░░░░░░░░░░░░░░░░   0% ⏳  P2 DAY 105+
+FEAT-ROTATION-1 (política rotación):  ░░░░░░░░░░░░░░░░░░░░   0% ⏳  P2 DAY 105+
+DOCS-2 (AppArmor profiles):           ░░░░░░░░░░░░░░░░░░░░   0% ⏳  DAY 105+
+Fast Detector Config (DEBT-FD-001):   ████░░░░░░░░░░░░░░░░  20% 🟡  PHASE 2
+FEAT-RANSOM-*:                        ░░░░░░░░░░░░░░░░░░░░   0% ⏳  post DEBT-FD-001
+ENT-*:                                ░░░░░░░░░░░░░░░░░░░░   0% ⏳  largo plazo
+</code></pre>
+<hr />
+<h2 id="decisiones-de-diseno-consolidadas">🔑 Decisiones de diseño consolidadas</h2>
+<table>
+<thead>
+<tr>
+<th>Decisión</th>
+<th>Resolución</th>
+<th>DAY</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Sentinel correctness</td>
+<td>-9999.0f fuera del dominio ✅</td>
+<td>79</td>
+</tr>
+<tr>
+<td>Thresholds ML</td>
+<td>Desde JSON ✅</td>
+<td>80</td>
+</tr>
+<tr>
+<td>Fast Detector dual-path</td>
+<td>Path A hardcodeado (DEBT-FD-001) ✅</td>
+<td>82</td>
+</tr>
+<tr>
+<td>Algoritmo cifrado pipeline</td>
+<td>ChaCha20-Poly1305 IETF unificado ✅</td>
+<td>95</td>
+</tr>
+<tr>
+<td>Keys AppArmor-compatible</td>
+<td><code>/etc/ml-defender/{component}/</code> chmod 600 ✅</td>
+<td>95</td>
+</tr>
+<tr>
+<td>Fail-closed security</td>
+<td>pipeline-start depende de provision-check ✅</td>
+<td>95</td>
+</tr>
+<tr>
+<td>Seed como material base</td>
+<td>seed → HKDF → session_key. Nunca directo ✅</td>
+<td>95</td>
+</tr>
+<tr>
+<td>Dep order libs</td>
+<td>libseed_client → crypto-transport → etcd-client ✅</td>
+<td>96</td>
+</tr>
+<tr>
+<td>HKDF implementation</td>
+<td>libsodium 1.0.19 nativo ✅</td>
+<td>96-97</td>
+</tr>
+<tr>
+<td>HKDF context format</td>
+<td>Contexto = CANAL, no componente ✅</td>
+<td>99</td>
+</tr>
+<tr>
+<td>Nonce policy</td>
+<td>Contador monotónico 96-bit atómico ✅</td>
+<td>96-97</td>
+</tr>
+<tr>
+<td>C++20 permanente</td>
+<td>Migración C++23 solo si kernel/eBPF lo exige ✅</td>
+<td>96</td>
+</tr>
+<tr>
+<td>Error handling</td>
+<td><code>throw</code> en todo el pipeline ✅</td>
+<td>96</td>
+</tr>
+<tr>
+<td>Cifrado obligatorio</td>
+<td>SIEMPRE. Sin flag <code>enabled</code>. CryptoTransport ✅</td>
+<td>96-97</td>
+</tr>
+<tr>
+<td>Compresión obligatoria</td>
+<td>SIEMPRE. Sin flag <code>enabled</code>. LZ4 ✅</td>
+<td>96</td>
+</tr>
+<tr>
+<td>Orden operaciones</td>
+<td>LZ4 → ChaCha20 (comprimir antes de cifrar) ✅</td>
+<td>96</td>
+</tr>
+<tr>
+<td>Rotación seeds</td>
+<td>Requiere reinicio ordenado ✅</td>
+<td>96</td>
+</tr>
+<tr>
+<td>libsodium versión</td>
+<td>1.0.19 desde fuente, SHA-256 verificado ✅</td>
+<td>97</td>
+</tr>
+<tr>
+<td>CryptoManager</td>
+<td>DEPRECADO — CryptoTransport lo sustituye ✅</td>
+<td>97-98</td>
+</tr>
+<tr>
+<td>CMake sodium path</td>
+<td>NO_DEFAULT_PATH → priorizar /usr/local ✅</td>
+<td>97</td>
+</tr>
+<tr>
+<td>P1 HKDF context</td>
+<td>Contexto estático. Forward secrecy = rotación de seeds ✅</td>
+<td>97</td>
+</tr>
+<tr>
+<td>mlock()</td>
+<td>WARNING + log instructivo, no error fatal ✅</td>
+<td>97</td>
+</tr>
+<tr>
+<td>haveged</td>
+<td>Aceptable desarrollo. Producción: rng-tools5 + hardware RNG ✅</td>
+<td>97</td>
+</tr>
+<tr>
+<td>libsodium build</td>
+<td>Parche PHASE 1. DEBT-INFRA-001: migrar a Trixie ✅</td>
+<td>97</td>
+</tr>
+<tr>
+<td>Política rotación seeds</td>
+<td>provision.sh único SSOT. rotate-all + pipeline restart ✅</td>
+<td>97</td>
+</tr>
+<tr>
+<td>Hot-reload seeds</td>
+<td>NO en PHASE 1 — split-brain risk. ENT-4 para PHASE 3+ ✅</td>
+<td>97</td>
+</tr>
+<tr>
+<td>RAG + rotación</td>
+<td>RAG lee metadata etcd, alerta admin. Nunca ejecuta provision.sh ✅</td>
+<td>97</td>
+</tr>
+<tr>
+<td>etcd-client rol final</td>
+<td>Transporte puro de blobs opacos ✅</td>
+<td>96</td>
+</tr>
+<tr>
+<td>Opción 2 multi-instancia</td>
+<td>DESCARTADA — reproduce bug asimetría por diseño ✅</td>
+<td>100</td>
+</tr>
+<tr>
+<td>FASE 3 seed families</td>
+<td>Canal = familia. Un componente puede tener N seeds ✅</td>
+<td>100</td>
+</tr>
+<tr>
+<td>deployment.yml SSOT</td>
+<td>Topología declarativa. Pre-req: arXiv ✅</td>
+<td>100</td>
+</tr>
+<tr>
+<td>set_terminate()</td>
+<td>fail-closed en los 6 main(). abort() ante excepción no capturada ✅</td>
+<td>100</td>
+</tr>
+<tr>
+<td>CI GitHub Actions</td>
+<td>Solo validación estática (ubuntu-latest). Full build = self-hosted ✅</td>
+<td>100</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h3 id="notas-del-consejo-de-sabios">Notas del Consejo de Sabios</h3>
+<blockquote>
+<p>DAY 100 (Consejo — revisión cierre DAY 99):
+"set_terminate() es defensa en profundidad correcta.
+ADR-022 documenta honestamente los límites del modelo de instancia única.
+El caso pedagógico del bug de asimetría pertenece al paper arXiv."
+— Grok · ChatGPT · DeepSeek (origen de las acciones DAY 100)</p>
+<p>DAY 97 (Consejo — unanimidad 5/5):
+"La rotación real de seeds es el mecanismo correcto de forward secrecy.
+mlock() como warning, no fatal. make test-integ separado del ctest normal."
+— ChatGPT5 · DeepSeek · Gemini · Grok · Qwen</p>
+<p>DAY 96: "El diseño sigue RFC 5869 (HKDF), Signal Protocol y TLS 1.3."
+— Grok · DeepSeek · Gemini · ChatGPT5 (unanimidad 4/4)</p>
+<p>DAY 95: "El seed no es una clave — es material base. HKDF primero."
+— ChatGPT5 · DeepSeek · Gemini · Grok · Qwen (unanimidad 5/5)</p>
+</blockquote>
+<hr />
+<p><em>Última actualización: DAY 100 — 28 Mar 2026</em>
+<em>Branch: feature/plugin-loader-adr012</em>
+<em>Tests: 24/24 suites ✅</em>
+<em>Co-authored-by: Alonso Isidoro Román + Claude (Anthropic), Grok, ChatGPT, DeepSeek, Qwen, Gemini, Parallel.ai</em></p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.tabs", "navigation.top", "search.highlight"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

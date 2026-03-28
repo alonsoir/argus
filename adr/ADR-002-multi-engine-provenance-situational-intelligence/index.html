@@ -1,0 +1,1274 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source embedded-ML NDR for hospitals and schools">
+      
+      
+        <meta name="author" content="Alonso Isidoro Roman">
+      
+      
+        <link rel="canonical" href="https://alonsoir.github.io/argus/adr/ADR-002-multi-engine-provenance-situational-intelligence/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>ADR 002 multi engine provenance situational intelligence - ML Defender (aRGus NDR)</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#adr-002-multi-engine-provenance-situational-intelligence" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-header__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ML Defender (aRGus NDR)
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              ADR 002 multi engine provenance situational intelligence
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../README.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/BACKLOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Backlog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Security Model
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-tabs__link">
+          
+  
+  
+  ADRs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/contracts/Protobuf contracts.md" class="md-tabs__link">
+          
+  
+  
+  Contracts
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-nav__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ML Defender (aRGus NDR)
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../README.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/BACKLOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADRs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ADRs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013 Seed Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-021-deployment-topology-seed-families.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-021 Topology SSOT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-022-threat-model-opcion2-descartada.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-022 Threat Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Protobuf contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protobuf
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/JSON contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JSON
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Rag security commands.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#adr-002-multi-engine-provenance-situational-intelligence" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🔍 ADR-002: Multi-Engine Provenance &amp; Situational Intelligence
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🔍 ADR-002: Multi-Engine Provenance &amp; Situational Intelligence">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#context" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Context
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#decision" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Decision
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#protobuf-extension" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Protobuf Extension
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#reason-codes-geminis-table" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reason Codes (Gemini's Table)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#implementation-strategy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Implementation Strategy
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#use-cases" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Use Cases
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#benefits" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Benefits
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#risks-mitigations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Risks &amp; Mitigations
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#success-metrics" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Success Metrics
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#implementation-timeline" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Implementation Timeline
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+  <h1>ADR 002 multi engine provenance situational intelligence</h1>
+
+<h2 id="adr-002-multi-engine-provenance-situational-intelligence">🔍 ADR-002: Multi-Engine Provenance &amp; Situational Intelligence</h2>
+<p><strong>Date:</strong> 12 Enero 2026<br />
+<strong>Status:</strong> APPROVED<br />
+<strong>Decision:</strong> Extend protobuf contract to capture multiple engine verdicts<br />
+<strong>Proposer:</strong> Gemini (peer reviewer)<br />
+<strong>Implementation:</strong> Day 37 (before ONNX embedders)</p>
+<hr />
+<h3 id="context">Context</h3>
+<p>Currently, the protobuf contract only stores the <strong>final classification</strong> result. This discards valuable information:</p>
+<ul>
+<li><strong>Sniffer verdict:</strong> Fast-path decision (eBPF/XDP)</li>
+<li><strong>RandomForest verdict:</strong> ML primary classification</li>
+<li><strong>CNN verdict:</strong> ML secondary classification (if enabled)</li>
+</ul>
+<p><strong>The discrepancy between engines IS the signal</strong> for detecting:
+- APTs (Advanced Persistent Threats) camouflaged as benign traffic
+- 0-days (unknown attacks)
+- False positives (industrial equipment with unusual patterns)</p>
+<h3 id="decision">Decision</h3>
+<p>Add <code>DetectionProvenance</code> message to protobuf contract with:
+1. <strong>Array of verdicts</strong> - All engine opinions
+2. <strong>Reason codes</strong> - WHY each engine decided
+3. <strong>Discrepancy score</strong> - Measure of disagreement
+4. <strong>Final decision</strong> - What action was taken</p>
+<h3 id="protobuf-extension">Protobuf Extension</h3>
+<pre><code class="language-protobuf">// network_security.proto
+
+message EngineVerdict {
+  string engine_name = 1;      // &quot;fast-path-sniffer&quot;, &quot;random-forest&quot;, &quot;cnn-secondary&quot;
+  string classification = 2;   // &quot;Benign&quot;, &quot;DDoS&quot;, &quot;Ransomware&quot;, etc.
+  float confidence = 3;        // 0.0 - 1.0
+  string reason_code = 4;      // WHY (see table below)
+  uint64 timestamp_ns = 5;     // When this engine decided
+}
+
+message DetectionProvenance {
+  repeated EngineVerdict verdicts = 1;  // ALL opinions
+  uint64 global_timestamp_ns = 2;       // When event was logged
+  string final_decision = 3;            // &quot;ALLOW&quot;, &quot;DROP&quot;, &quot;ALERT&quot;
+  float discrepancy_score = 4;          // 0.0 (agree) - 1.0 (disagree)
+  string logic_override = 5;            // If human/RAG forced decision
+}
+
+// Add to NetworkSecurityEvent:
+message NetworkSecurityEvent {
+  // ... existing fields (101 features) ...
+
+  DetectionProvenance provenance = 20;  // NEW
+}
+</code></pre>
+<h3 id="reason-codes-geminis-table">Reason Codes (Gemini's Table)</h3>
+<table>
+<thead>
+<tr>
+<th>Code</th>
+<th>Meaning</th>
+<th>Value for RAG/LLM</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>SIG_MATCH</code></td>
+<td>Exact signature match (blacklist)</td>
+<td><strong>Immediate block priority</strong></td>
+</tr>
+<tr>
+<td><code>STAT_ANOMALY</code></td>
+<td>Statistical deviation (Z-score high)</td>
+<td>Unusual behavior, not necessarily malicious</td>
+</tr>
+<tr>
+<td><code>PCA_OUTLIER</code></td>
+<td>Vector outside normal cloud (latent space)</td>
+<td><strong>Critical for 0-day detection</strong> 🎯</td>
+</tr>
+<tr>
+<td><code>PROT_VIOLATION</code></td>
+<td>Protocol malformation (impossible TCP flags)</td>
+<td>Low-level technical attack</td>
+</tr>
+<tr>
+<td><code>ENGINE_CONFLICT</code></td>
+<td>Sniffer vs ML disagree significantly</td>
+<td><strong>High-priority alert for LLM analysis</strong> 🚨</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Implementation:</strong></p>
+<pre><code class="language-cpp">// reason_codes.hpp
+namespace ml_defender {
+
+enum class ReasonCode {
+    SIG_MATCH,         // Signature match
+    STAT_ANOMALY,      // Statistical anomaly
+    PCA_OUTLIER,       // Outside normal latent space
+    PROT_VIOLATION,    // Protocol violation
+    ENGINE_CONFLICT,   // Engines disagree
+    UNKNOWN
+};
+
+const char* to_string(ReasonCode code) {
+    switch(code) {
+        case ReasonCode::SIG_MATCH:       return &quot;SIG_MATCH&quot;;
+        case ReasonCode::STAT_ANOMALY:    return &quot;STAT_ANOMALY&quot;;
+        case ReasonCode::PCA_OUTLIER:     return &quot;PCA_OUTLIER&quot;;
+        case ReasonCode::PROT_VIOLATION:  return &quot;PROT_VIOLATION&quot;;
+        case ReasonCode::ENGINE_CONFLICT: return &quot;ENGINE_CONFLICT&quot;;
+        default:                          return &quot;UNKNOWN&quot;;
+    }
+}
+
+} // namespace ml_defender
+</code></pre>
+<h3 id="implementation-strategy">Implementation Strategy</h3>
+<p><strong>Phase 1: ml-detector (writes provenance)</strong></p>
+<pre><code class="language-cpp">void RAGLogger::log_event(
+    const PacketAnalysis&amp; sniffer_verdict,
+    const RandomForestResult&amp; rf_result,
+    const CNNResult&amp; cnn_result
+) {
+    NetworkSecurityEvent event;
+
+    // ... existing feature extraction ...
+
+    // NEW: Fill provenance
+    auto* prov = event.mutable_provenance();
+
+    // 1. Sniffer verdict
+    auto* v1 = prov-&gt;add_verdicts();
+    v1-&gt;set_engine_name(&quot;fast-path-sniffer&quot;);
+    v1-&gt;set_classification(sniffer_verdict.classification);
+    v1-&gt;set_confidence(sniffer_verdict.confidence);
+    v1-&gt;set_reason_code(to_string(sniffer_verdict.reason));
+    v1-&gt;set_timestamp_ns(sniffer_verdict.timestamp_ns);
+
+    // 2. RandomForest verdict
+    auto* v2 = prov-&gt;add_verdicts();
+    v2-&gt;set_engine_name(&quot;random-forest-primary&quot;);
+    v2-&gt;set_classification(rf_result.classification);
+    v2-&gt;set_confidence(rf_result.confidence);
+    v2-&gt;set_reason_code(to_string(rf_result.reason));
+    v2-&gt;set_timestamp_ns(now_ns());
+
+    // 3. CNN verdict (if enabled)
+    if (cnn_enabled_) {
+        auto* v3 = prov-&gt;add_verdicts();
+        v3-&gt;set_engine_name(&quot;cnn-secondary&quot;);
+        v3-&gt;set_classification(cnn_result.classification);
+        v3-&gt;set_confidence(cnn_result.confidence);
+        v3-&gt;set_reason_code(to_string(cnn_result.reason));
+        v3-&gt;set_timestamp_ns(now_ns());
+    }
+
+    // 4. Calculate discrepancy
+    prov-&gt;set_discrepancy_score(
+        calculate_discrepancy(sniffer_verdict, rf_result, cnn_result)
+    );
+
+    // 5. Final decision
+    prov-&gt;set_final_decision(firewall_action);  // &quot;ALLOW&quot;, &quot;DROP&quot;, &quot;ALERT&quot;
+    prov-&gt;set_global_timestamp_ns(now_ns());
+
+    // Encrypt, compress, write...
+}
+
+float calculate_discrepancy(/* verdicts */) {
+    // Simple: max confidence delta
+    // Example: Sniffer 95% Benign, ML 60% Malicious → 0.85 discrepancy
+    float max_delta = 0.0f;
+    for (auto&amp; v1 : verdicts) {
+        for (auto&amp; v2 : verdicts) {
+            if (v1.classification != v2.classification) {
+                float delta = std::abs(v1.confidence - v2.confidence);
+                max_delta = std::max(max_delta, delta);
+            }
+        }
+    }
+    return max_delta;
+}
+</code></pre>
+<p><strong>Phase 2: rag-ingester (reads provenance)</strong></p>
+<pre><code class="language-cpp">// event_loader.cpp
+Event EventLoader::load(const std::string&amp; filepath) {
+    // Decrypt, decompress, parse protobuf...
+
+    Event event;
+    event.id = proto_event.event_id();
+    event.features = extract_101_features(proto_event);
+
+    // NEW: Parse provenance
+    if (proto_event.has_provenance()) {
+        const auto&amp; prov = proto_event.provenance();
+
+        for (const auto&amp; verdict : prov.verdicts()) {
+            EngineVerdict v;
+            v.engine_name = verdict.engine_name();
+            v.classification = verdict.classification();
+            v.confidence = verdict.confidence();
+            v.reason_code = verdict.reason_code();
+            v.timestamp_ns = verdict.timestamp_ns();
+
+            event.verdicts.push_back(v);
+        }
+
+        event.discrepancy_score = prov.discrepancy_score();
+        event.final_decision = prov.final_decision();
+    }
+
+    return event;
+}
+</code></pre>
+<p><strong>Phase 3: Embedders use discrepancy</strong></p>
+<pre><code class="language-cpp">// chronos_embedder.cpp
+std::vector&lt;float&gt; ChronosEmbedder::embed(const Event&amp; event) {
+    std::vector&lt;float&gt; input = event.features;  // 101 features
+
+    // NEW: Add meta-features
+    input.push_back(event.discrepancy_score);   // Feature 102
+    input.push_back(event.verdicts.size());     // Feature 103 (num engines)
+
+    // ONNX inference: 103 features → 512-d
+    return run_inference(input);
+}
+</code></pre>
+<h3 id="use-cases">Use Cases</h3>
+<p><strong>Case 1: APT Camouflaged</strong></p>
+<pre><code>Sniffer: &quot;Benign&quot; (95%) - reason: SIG_MATCH (whitelist)
+RF:      &quot;Exfiltration&quot; (55%) - reason: STAT_ANOMALY (timing)
+CNN:     &quot;Suspicious&quot; (62%) - reason: PCA_OUTLIER (latent)
+
+→ discrepancy_score: 0.85 (HIGH)
+→ RAG flags for human review
+→ LLM: &quot;Sniffer fooled by TLS, but timing+PCA suspicious&quot;
+→ Action: ALERT + monitor
+</code></pre>
+<p><strong>Case 2: Industrial False Positive</strong></p>
+<pre><code>Sniffer: &quot;Benign&quot; (99%) - reason: SIG_MATCH (known IoT)
+RF:      &quot;Anomaly&quot; (40%) - reason: STAT_ANOMALY (Z-score)
+CNN:     &quot;Benign&quot; (90%) - reason: (normal pattern)
+
+→ discrepancy_score: 0.35 (MEDIUM)
+→ Campus A: LLM learns &quot;RF always alerts on this equipment&quot;
+→ Action: Auto-whitelist campus A, monitor campus B
+</code></pre>
+<p><strong>Case 3: 0-Day Detection</strong></p>
+<pre><code>Sniffer: &quot;Benign&quot; (80%) - reason: (no signature)
+RF:      &quot;Unknown&quot; (50%) - reason: STAT_ANOMALY
+CNN:     &quot;Malicious&quot; (70%) - reason: PCA_OUTLIER (never seen)
+
+→ discrepancy_score: 0.75 (HIGH)
+→ reason_code: PCA_OUTLIER (critical!)
+→ RAG: &quot;No engine is sure, but CNN detects novelty&quot;
+→ Action: Escalate to human (possible 0-day)
+→ If confirmed → Global vaccine
+</code></pre>
+<h3 id="benefits">Benefits</h3>
+<ol>
+<li><strong>Situational Intelligence</strong> - Not just "what" but "why" and "how sure"</li>
+<li><strong>0-day Detection</strong> - PCA_OUTLIER + ENGINE_CONFLICT = red flag</li>
+<li><strong>Adaptive Learning</strong> - LLM learns campus-specific patterns</li>
+<li><strong>Reduced False Positives</strong> - Context helps distinguish noise from threats</li>
+<li><strong>Forensics</strong> - Complete audit trail of all engine decisions</li>
+<li><strong>Vaccine Quality</strong> - Discrepancies help prioritize which events to analyze</li>
+</ol>
+<h3 id="risks-mitigations">Risks &amp; Mitigations</h3>
+<p><strong>Risk 1:</strong> Increased protobuf size
+- <strong>Mitigation:</strong> Compression (LZ4) reduces overhead
+- <strong>Estimate:</strong> +50 bytes per event → &lt;5% increase after compression</p>
+<p><strong>Risk 2:</strong> Processing overhead
+- <strong>Mitigation:</strong> Discrepancy calculation is O(n²) but n≤3 engines
+- <strong>Estimate:</strong> &lt;1ms per event</p>
+<p><strong>Risk 3:</strong> Complexity
+- <strong>Mitigation:</strong> Backward compatible (optional provenance field)
+- <strong>Rollout:</strong> Gradual (ml-detector first, rag-ingester later)</p>
+<h3 id="success-metrics">Success Metrics</h3>
+<ul>
+<li>✅ Reduced false positive rate (target: -20%)</li>
+<li>✅ 0-day detection improved (measure: time to detection)</li>
+<li>✅ LLM can explain decisions (qualitative: operator feedback)</li>
+<li>✅ Vaccine quality improved (measure: global vs local vaccine ratio)</li>
+</ul>
+<h3 id="implementation-timeline">Implementation Timeline</h3>
+<p><strong>Day 37 Morning (2-3 hours):</strong>
+- [ ] Update <code>network_security.proto</code>
+- [ ] Regenerate protobuf (make proto-unified)
+- [ ] Update ml-detector (fill provenance)
+- [ ] Add encryption to ml-detector (BONUS)
+- [ ] Test with synthetic data</p>
+<p><strong>Day 37 Afternoon (3-4 hours):</strong>
+- [ ] Update rag-ingester (parse provenance)
+- [ ] Update embedders (use discrepancy as feature)
+- [ ] Implement ONNX embedders
+- [ ] Test end-to-end</p>
+<hr />
+<p><strong>Status:</strong> APPROVED - Ready for implementation<br />
+<strong>Next Step:</strong> Update protobuf contract<br />
+<strong>Blocking:</strong> None</p>
+<p>🏛️ <strong>Via Appia:</strong> This transforms the system from binary decision to situational intelligence - exactly the kind of architectural decision that builds systems for 2000 years.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.top", "search.highlight"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

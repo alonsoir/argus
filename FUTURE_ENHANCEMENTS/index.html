@@ -1,0 +1,1255 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source embedded-ML NDR for hospitals and schools">
+      
+      
+        <meta name="author" content="Alonso Isidoro Roman">
+      
+      
+        <link rel="canonical" href="https://alonsoir.github.io/argus/FUTURE_ENHANCEMENTS/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>Future Enhancements - Post Integration (Days 35+) - ML Defender (aRGus NDR)</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#future-enhancements-post-integration-days-35" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="ML Defender (aRGus NDR)" class="md-header__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ML Defender (aRGus NDR)
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Future Enhancements - Post Integration (Days 35+)
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../README.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../docs/ARCHITECTURE.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../docs/BACKLOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Backlog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../docs/SECURITY_MODEL.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Security Model
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../docs/adr/ADR-013 seed distribution component authentication.md" class="md-tabs__link">
+          
+  
+  
+  ADRs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../docs/contracts/Protobuf contracts.md" class="md-tabs__link">
+          
+  
+  
+  Contracts
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="ML Defender (aRGus NDR)" class="md-nav__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ML Defender (aRGus NDR)
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../README.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/ARCHITECTURE.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/BACKLOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/SECURITY_MODEL.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADRs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ADRs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/adr/ADR-013 seed distribution component authentication.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013 Seed Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/adr/ADR-021-deployment-topology-seed-families.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-021 Topology SSOT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/adr/ADR-022-threat-model-opcion2-descartada.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-022 Threat Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/contracts/Protobuf contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protobuf
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/contracts/JSON contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JSON
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/contracts/Rag security commands.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#timing-despues-de-crypto-integration-complete" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🎯 TIMING: Después de Crypto Integration Complete
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1-shadow-authority-chatgpt-5-enhancement" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Shadow Authority (ChatGPT-5 Enhancement)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1. Shadow Authority (ChatGPT-5 Enhancement)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#concepto" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Concepto
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#casos-de-uso" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Casos de Uso
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#protobuf-changes-dia-35" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Protobuf Changes (Día 35)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#implementacion-ml-detector" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Implementación ml-detector
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#analisis" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Análisis
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-decision-outcome-ground-truth" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Decision Outcome (Ground Truth)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2. Decision Outcome (Ground Truth)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#concepto_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Concepto
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pipeline" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Pipeline
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#protobuf-changes-dia-40" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Protobuf Changes (Día 40)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#reentrenamiento" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reentrenamiento
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-model-authority-enhancement-dia-28-basico" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Model Authority Enhancement (Día 28 - Básico)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. Model Authority Enhancement (Día 28 - Básico)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#protobuf-changes-sin-romper" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Protobuf Changes (SIN romper)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#implementacion-ml-detector_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Implementación ml-detector
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#roadmap-de-implementacion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🎯 ROADMAP DE IMPLEMENTACIÓN
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#por-que-este-orden" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        💡 POR QUÉ ESTE ORDEN
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#disciplina-de-cambios-protobuf" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🔐 DISCIPLINA DE CAMBIOS PROTOBUF
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#valor-cientifico-papers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        📊 VALOR CIENTÍFICO (Papers)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#conclusion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ✅ CONCLUSIÓN
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="future-enhancements-post-integration-days-35">Future Enhancements - Post Integration (Days 35+)</h1>
+<h2 id="timing-despues-de-crypto-integration-complete">🎯 TIMING: Después de Crypto Integration Complete</h2>
+<p><strong>NO TOCAR AHORA</strong> - En medio de integraciones críticas:
+- Día 27: ml-detector + sniffer crypto-transport
+- Día 28: Model Authority básico
+- Día 29-30: RAG-Master naive</p>
+<p><strong>IMPLEMENTAR DESPUÉS</strong> - Cuando pipeline estable (Día 35+)</p>
+<hr />
+<h2 id="1-shadow-authority-chatgpt-5-enhancement">1. Shadow Authority (ChatGPT-5 Enhancement)</h2>
+<h3 id="concepto">Concepto</h3>
+<pre><code>Authoritative Model → DECIDE (bloquea/permite)
+Shadow Models → OBSERVE (logean, no bloquean)
+</code></pre>
+<h3 id="casos-de-uso">Casos de Uso</h3>
+<ul>
+<li>A/B testing natural en producción</li>
+<li>Detectar ataques legacy (técnicas 2020)</li>
+<li>Regression detection antes de deploy</li>
+<li>Mantener modelos antiguos sin riesgo</li>
+</ul>
+<h3 id="protobuf-changes-dia-35">Protobuf Changes (Día 35)</h3>
+<pre><code class="language-protobuf">message ModelScore {
+    string model_name = 1;
+    float score = 2;
+    bool shadow_mode = 3;  // ← AÑADIR
+}
+
+repeated string shadow_models = 91;  // ← AÑADIR
+</code></pre>
+<h3 id="implementacion-ml-detector">Implementación ml-detector</h3>
+<pre><code class="language-cpp">// Config: models con mode=&quot;shadow&quot;
+if (model.mode == &quot;shadow&quot;) {
+    detect_and_log(event);  // Solo observa
+    return;  // NO envía a firewall
+}
+</code></pre>
+<h3 id="analisis">Análisis</h3>
+<pre><code class="language-python"># Comparar authoritative vs shadow
+shadow_unique = df[df['shadow_models'].str.contains('ddos_v1')]
+auth_only = df[df['authoritative_model'] == 'ddos_v2']
+
+# ¿Qué detecta v1 que v2 no?
+regression_candidates = shadow_unique[~shadow_unique.isin(auth_only)]
+</code></pre>
+<hr />
+<h2 id="2-decision-outcome-ground-truth">2. Decision Outcome (Ground Truth)</h2>
+<h3 id="concepto_1">Concepto</h3>
+<pre><code>Campo: decision_outcome
+Valores: blocked, allowed, false_positive, false_negative, unknown, shadow
+</code></pre>
+<h3 id="pipeline">Pipeline</h3>
+<pre><code>T+0:     Detección → &quot;unknown&quot;
+T+1ms:   Firewall → &quot;blocked&quot; o &quot;allowed&quot;
+T+1day:  Review → &quot;false_positive&quot; o &quot;false_negative&quot;
+</code></pre>
+<h3 id="protobuf-changes-dia-40">Protobuf Changes (Día 40)</h3>
+<pre><code class="language-protobuf">string decision_outcome = 90;  // ← AÑADIR
+// &quot;blocked&quot;, &quot;allowed&quot;, &quot;false_positive&quot;, &quot;false_negative&quot;, &quot;unknown&quot;, &quot;shadow&quot;
+</code></pre>
+<h3 id="reentrenamiento">Reentrenamiento</h3>
+<pre><code class="language-python"># Ground truth validado
+fps = df[df['decision_outcome'] == 'false_positive']  # → benign
+fns = df[df['decision_outcome'] == 'false_negative']  # → malicious
+
+# Reentrenar con errores corregidos
+retrain_dataset = pd.concat([fps, fns])
+</code></pre>
+<hr />
+<h2 id="3-model-authority-enhancement-dia-28-basico">3. Model Authority Enhancement (Día 28 - Básico)</h2>
+<h3 id="protobuf-changes-sin-romper">Protobuf Changes (SIN romper)</h3>
+<pre><code class="language-protobuf">// Añadir a PacketEvent (campos 84-89)
+string authoritative_model = 84;
+float confidence = 85;
+string decision_reason = 86;
+float runner_up_score = 87;
+string runner_up_source = 88;
+repeated ModelScore model_scores = 89;
+</code></pre>
+<h3 id="implementacion-ml-detector_1">Implementación ml-detector</h3>
+<pre><code class="language-cpp">// Identificar mejor modelo
+event.set_authoritative_model(&quot;ddos_v2&quot;);
+event.set_confidence(0.89);
+event.set_decision_reason(&quot;ml won: 0.89 &gt; 0.42&quot;);
+
+// Individual scores
+for (auto&amp; [model, score] : all_scores) {
+    auto* ms = event.add_model_scores();
+    ms-&gt;set_model_name(model);
+    ms-&gt;set_score(score);
+}
+</code></pre>
+<hr />
+<h2 id="roadmap-de-implementacion">🎯 ROADMAP DE IMPLEMENTACIÓN</h2>
+<pre><code>✅ Día 27-28: Crypto Integration (PRIORIDAD)
+   - ml-detector crypto-transport
+   - sniffer crypto-transport
+   - Stress test
+
+✅ Día 28: Model Authority Básico (5 campos, SIN shadow)
+   - Protobuf: campos 84-89
+   - ml-detector: enrichment
+   - Regenerar proto una sola vez
+   - Tests validación
+
+⏳ Día 35: Shadow Authority (después de estabilizar)
+   - Protobuf: campo 91 + ModelScore.shadow_mode
+   - ml-detector: shadow mode execution
+   - Config: model modes
+   - Análisis comparativo
+
+⏳ Día 40: Decision Outcome (después de Shadow)
+   - Protobuf: campo 90
+   - Feedback loop firewall → ml-detector
+   - Manual review interface
+   - Reentrenamiento pipeline
+</code></pre>
+<hr />
+<h2 id="por-que-este-orden">💡 POR QUÉ ESTE ORDEN</h2>
+<p><strong>Día 27-28: Crypto (CRÍTICO)</strong>
+- Bloquea todo desarrollo si no funciona
+- Componentes deben comunicarse cifrados
+- Base para producción</p>
+<p><strong>Día 28: Authority Básico (FUNDACIONAL)</strong>
+- Habilita análisis científico
+- No requiere cambios grandes
+- Una regeneración proto controlada</p>
+<p><strong>Día 35: Shadow (EXPERIMENTAL)</strong>
+- Requiere pipeline estable
+- No crítico para paper
+- Mejora incremental</p>
+<p><strong>Día 40: Outcome (CIENCIA)</strong>
+- Requiere Shadow funcionando
+- Ground truth para reentrenamiento
+- Closed-loop learning</p>
+<hr />
+<h2 id="disciplina-de-cambios-protobuf">🔐 DISCIPLINA DE CAMBIOS PROTOBUF</h2>
+<p><strong>Regla de Oro:</strong></p>
+<blockquote>
+<p>"Cambiar protobuf = recompilar TODO. Hacerlo una sola vez por milestone."</p>
+</blockquote>
+<p><strong>Milestones Protobuf:</strong>
+1. ✅ Día 28: Model Authority (campos 84-89) ← UNA REGENERACIÓN
+2. ⏳ Día 35: Shadow Authority (campo 91) ← UNA REGENERACIÓN
+3. ⏳ Día 40: Decision Outcome (campo 90) ← UNA REGENERACIÓN</p>
+<p><strong>NUNCA:</strong>
+- Cambios protobuf mid-integration
+- Múltiples regeneraciones en un día
+- Sin testing completo después</p>
+<hr />
+<h2 id="valor-cientifico-papers">📊 VALOR CIENTÍFICO (Papers)</h2>
+<p><strong>Paper 1: Dual-Score Architecture</strong>
+- Día 28: authoritative_model data ✅
+- Día 35: shadow models comparison</p>
+<p><strong>Paper 2: Distributed Observatory</strong>
+- Día 29-30: RAG-Master foundation
+- Semana 5: Cross-site analysis</p>
+<p><strong>Paper 3: Closed-Loop Learning</strong>
+- Día 40: decision_outcome
+- Semana 6: Retraining pipeline
+- Semana 7: LLM fine-tuning</p>
+<hr />
+<h2 id="conclusion">✅ CONCLUSIÓN</h2>
+<p><strong>ChatGPT-5 tiene razón en CONCEPTO.</strong>
+<strong>Alonso tiene razón en TIMING.</strong></p>
+<p>Documentar ahora = value capture sin riesgo
+Implementar después = disciplina de ingeniería</p>
+<p>Via Appia Quality: Plan → Execute → Validate</p>
+<p>No volverse loco. Despacio pero bien. 🏛️</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.tabs", "navigation.top", "search.highlight"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

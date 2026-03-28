@@ -1,0 +1,1131 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source embedded-ML NDR for hospitals and schools">
+      
+      
+        <meta name="author" content="Alonso Isidoro Roman">
+      
+      
+        <link rel="canonical" href="https://alonsoir.github.io/argus/Ml%20defender%20paper%20draft%20v4_revision_chatgpt/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>Ml defender paper draft v4 revision chatgpt - ML Defender (aRGus NDR)</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#1-evaluacion-global" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="ML Defender (aRGus NDR)" class="md-header__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ML Defender (aRGus NDR)
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Ml defender paper draft v4 revision chatgpt
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../README.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../docs/ARCHITECTURE.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../docs/BACKLOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Backlog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../docs/SECURITY_MODEL.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Security Model
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../docs/adr/ADR-013 seed distribution component authentication.md" class="md-tabs__link">
+          
+  
+  
+  ADRs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../docs/contracts/Protobuf contracts.md" class="md-tabs__link">
+          
+  
+  
+  Contracts
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="ML Defender (aRGus NDR)" class="md-nav__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ML Defender (aRGus NDR)
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../README.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/ARCHITECTURE.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/BACKLOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/SECURITY_MODEL.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADRs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ADRs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/adr/ADR-013 seed distribution component authentication.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013 Seed Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/adr/ADR-021-deployment-topology-seed-families.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-021 Topology SSOT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/adr/ADR-022-threat-model-opcion2-descartada.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-022 Threat Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/contracts/Protobuf contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protobuf
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/contracts/JSON contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JSON
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/contracts/Rag security commands.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<p>A continuación tienes <strong>feedback honesto, técnico y desde la perspectiva de un reviewer de sistemas / security / NIDS</strong>. El trabajo está <strong>muy por encima de lo que suele ser un preprint individual</strong>, pero también hay algunos puntos que conviene ajustar antes de enviarlo a arXiv o a revisión formal.</p>
+<p>Voy a dividir el análisis en:</p>
+<ol>
+<li>Evaluación global</li>
+<li>Fortalezas reales del paper</li>
+<li>Riesgos para reviewers</li>
+<li>Ajustes técnicos recomendados</li>
+<li>Ajustes narrativos</li>
+<li>Cosas que <strong>no tocaría</strong></li>
+<li>Probabilidad realista de recepción académica</li>
+</ol>
+<hr />
+<h1 id="1-evaluacion-global">1. Evaluación global</h1>
+<p>En términos de <strong>estructura científica</strong>, el paper ya cumple lo esencial:</p>
+<ul>
+<li>problema claro</li>
+<li>arquitectura definida</li>
+<li>modelo formal</li>
+<li>evaluación experimental</li>
+<li>reproducibilidad</li>
+<li>limitaciones explícitas</li>
+</ul>
+<p>Eso <strong>no es común en preprints de sistemas hechos por una sola persona</strong>.</p>
+<p>Además hay tres cosas poco habituales que juegan a favor:</p>
+<ol>
+<li><strong>pipeline real funcionando</strong></li>
+<li><strong>stress test con números</strong></li>
+<li><strong>reproducibilidad completa</strong></li>
+</ol>
+<p>Muchos papers de ML-NIDS <strong>solo publican métricas de dataset</strong>, no sistema.</p>
+<p>Aquí hay <strong>sistema + dataset + performance</strong>.</p>
+<p>Eso es importante.</p>
+<hr />
+<h1 id="2-fortalezas-reales-del-paper">2. Fortalezas reales del paper</h1>
+<p>Estas son las partes que, objetivamente, son <strong>muy fuertes</strong>.</p>
+<h2 id="21-honestidad-metodologica">2.1 Honestidad metodológica</h2>
+<p>Este párrafo del abstract es excelente:</p>
+<blockquote>
+<p>These results demonstrate architectural feasibility rather than universal detection capability.</p>
+</blockquote>
+<p>Muchos papers <strong>inflan resultados</strong>.</p>
+<p>Tú haces lo contrario.</p>
+<p>Eso genera confianza en reviewers.</p>
+<hr />
+<h2 id="22-stress-test-bien-interpretado">2.2 Stress test bien interpretado</h2>
+<p>La sección <strong>8.9</strong> está muy bien escrita.</p>
+<p>Especialmente esto:</p>
+<blockquote>
+<p>The bottleneck is VirtualBox NIC emulation, not pipeline logic.</p>
+</blockquote>
+<p>Eso es exactamente lo que un reviewer quiere ver: <strong>análisis causal</strong>, no solo números.</p>
+<hr />
+<h2 id="23-formal-model">2.3 Formal model</h2>
+<p>La sección 7 ayuda mucho.</p>
+<p>No es imprescindible en papers de sistemas, pero:</p>
+<ul>
+<li>clarifica el pipeline</li>
+<li>evita ambigüedad conceptual</li>
+</ul>
+<p>Muy buena decisión incluirlo.</p>
+<hr />
+<h2 id="24-reproducibilidad">2.4 Reproducibilidad</h2>
+<p>La sección 13 es <strong>excelente</strong>.</p>
+<p>Muchos papers dicen:</p>
+<blockquote>
+<p>experiments available upon request</p>
+</blockquote>
+<p>Tú das <strong>comandos exactos</strong>.</p>
+<p>Eso es ciencia reproducible.</p>
+<hr />
+<h2 id="25-limitations-section">2.5 Limitations section</h2>
+<p>La sección 10 es <strong>muy madura</strong>.</p>
+<p>Especialmente:</p>
+<ul>
+<li>dataset age</li>
+<li>synthetic training</li>
+<li>virtualization ceiling</li>
+</ul>
+<p>Eso protege el paper contra críticas obvias.</p>
+<hr />
+<h1 id="3-riesgos-para-reviewers">3. Riesgos para reviewers</h1>
+<p>Hay <strong>tres cosas que podrían generar rechazo</strong> si no se matizan ligeramente.</p>
+<p>No son problemas graves, pero conviene pulirlos.</p>
+<hr />
+<h1 id="31-el-nombre-edr">3.1 El nombre “EDR”</h1>
+<p>En seguridad:</p>
+<p><strong>EDR = Endpoint Detection and Response</strong></p>
+<p>Tu sistema es realmente:</p>
+<p><strong>NDR / NIDS</strong></p>
+<p>Algunos reviewers podrían señalarlo.</p>
+<p>Recomendación pequeña:</p>
+<p>decir una vez:</p>
+<blockquote>
+<p>network detection and response (NDR)</p>
+</blockquote>
+<p>y dejar claro que el EDR es <strong>branding del proyecto</strong>.</p>
+<hr />
+<h1 id="32-consejo-de-sabios">3.2 Consejo de Sabios</h1>
+<p>Esta sección es interesante, pero <strong>arriesgada en academia</strong>.</p>
+<p>No por el uso de LLMs, sino porque parece casi un <strong>meta-paper dentro del paper</strong>.</p>
+<p>Ahora mismo ocupa mucho peso narrativo.</p>
+<p>Un reviewer podría pensar:</p>
+<blockquote>
+<p>Why is this here?</p>
+</blockquote>
+<p>Solución fácil:</p>
+<p>Reducir ligeramente el protagonismo en el abstract.</p>
+<p>No eliminarlo.</p>
+<p>Solo mover el foco al sistema.</p>
+<hr />
+<h1 id="33-comparacion-con-sota">3.3 Comparación con SOTA</h1>
+<p>La tabla 4 tiene un pequeño problema metodológico:</p>
+<p>Comparas:</p>
+<ul>
+<li>sistemas reales</li>
+<li>papers académicos</li>
+<li>configuraciones diferentes</li>
+</ul>
+<p>Y tú mismo lo dices, lo cual es bueno:</p>
+<blockquote>
+<p>indicative rather than controlled</p>
+</blockquote>
+<p>Pero algunos reviewers <strong>son muy estrictos con comparaciones</strong>.</p>
+<p>No es fatal, pero podrían pedir:</p>
+<ul>
+<li>benchmarks directos</li>
+<li>mismos datasets</li>
+</ul>
+<p>No puedes hacerlo ahora mismo.</p>
+<p>Pero puedes suavizar el framing.</p>
+<hr />
+<h1 id="4-ajustes-tecnicos-recomendados">4. Ajustes técnicos recomendados</h1>
+<p>Estos son los <strong>3 cambios técnicos más útiles</strong> antes de arXiv.</p>
+<hr />
+<h1 id="41-anadir-pps-en-stress-test">4.1 Añadir PPS en stress test</h1>
+<p>Ahora mismo el throughput está en <strong>Mbps</strong>.</p>
+<p>Pero en NIDS lo más informativo es:</p>
+<p><strong>packets per second</strong></p>
+<p>Añadir algo así:</p>
+<pre><code>~33 Mbps corresponds to approximately 9–11k packets/sec
+depending on packet size distribution.
+</code></pre>
+<p>Eso ayuda mucho a reviewers de networking.</p>
+<hr />
+<h1 id="42-clarificar-que-es-un-flow">4.2 Clarificar qué es un "flow"</h1>
+<p>Ahora mismo usas:</p>
+<blockquote>
+<p>flows</p>
+</blockquote>
+<p>Pero no defines explícitamente si el flow es:</p>
+<ul>
+<li>5-tuple</li>
+<li>bidirectional</li>
+<li>timeout</li>
+</ul>
+<p>Sugiero añadir una frase:</p>
+<pre><code>Flows are bidirectional 5-tuple aggregates with a sliding
+window timeout of W seconds.
+</code></pre>
+<p>Es un detalle pequeño, pero importante.</p>
+<hr />
+<h1 id="43-clarificar-que-dispara-el-bloqueo">4.3 Clarificar qué dispara el bloqueo</h1>
+<p>Ahora mismo:</p>
+<pre><code>S(x_f) ≥ θ
+</code></pre>
+<p>Pero no queda 100% claro si el bloqueo es:</p>
+<ul>
+<li>inmediato por flow</li>
+<li>agregado por IP</li>
+<li>TTL</li>
+</ul>
+<p>En producción eso importa.</p>
+<p>Una frase aclaratoria bastaría.</p>
+<hr />
+<h1 id="5-ajustes-narrativos-recomendados">5. Ajustes narrativos recomendados</h1>
+<p>No son técnicos, pero <strong>mejoran mucho la recepción</strong>.</p>
+<hr />
+<h1 id="51-reducir-ligeramente-la-historia-personal">5.1 Reducir ligeramente la historia personal</h1>
+<p>La historia del hospital funciona.</p>
+<p>Pero ahora mismo ocupa bastante.</p>
+<p>En papers de sistemas suele bastar con <strong>1 párrafo</strong>.</p>
+<p>No eliminaría la historia.</p>
+<p>Solo la compactaría un poco.</p>
+<hr />
+<h1 id="52-ajustar-la-frase-del-ml-detector-cpu">5.2 Ajustar la frase del ML detector CPU</h1>
+<p>En el stress test:</p>
+<pre><code>ml-detector consumes ~3.2 cores
+</code></pre>
+<p>Eso podría generar una pregunta:</p>
+<blockquote>
+<p>why so expensive if inference is microseconds?</p>
+</blockquote>
+<p>La explicación implícita es:</p>
+<ul>
+<li>threading</li>
+<li>queue draining</li>
+<li>feature processing</li>
+</ul>
+<p>Quizá añadir una línea aclaratoria.</p>
+<hr />
+<h1 id="6-cosas-que-no-tocaria">6. Cosas que <strong>no tocaría</strong></h1>
+<p>Esto es importante.</p>
+<p>No cambies estas partes.</p>
+<hr />
+<h2 id="61-la-honestidad-del-resultado">6.1 La honestidad del resultado</h2>
+<p>F1 = 0.9985.</p>
+<p>Pero acompañado de:</p>
+<blockquote>
+<p>single scenario from 2011</p>
+</blockquote>
+<p>Eso es exactamente lo que se debe hacer.</p>
+<hr />
+<h2 id="62-el-stress-test">6.2 El stress test</h2>
+<p>Aunque el límite sea VirtualBox.</p>
+<p>Muchos papers <strong>no miden nada real</strong>.</p>
+<p>Esto añade credibilidad.</p>
+<hr />
+<h2 id="63-reproducibility">6.3 Reproducibility</h2>
+<p>Los comandos exactos son oro.</p>
+<p>No los toques.</p>
+<hr />
+<h1 id="7-probabilidad-realista-de-recepcion">7. Probabilidad realista de recepción</h1>
+<p>Opinión honesta.</p>
+<hr />
+<h2 id="arxiv">arXiv</h2>
+<p>Muy probable que se acepte.</p>
+<p>Especialmente en:</p>
+<ul>
+<li>cs.CR</li>
+<li>cs.NI</li>
+<li>cs.SE</li>
+</ul>
+<hr />
+<h2 id="workshop-de-seguridad">Workshop de seguridad</h2>
+<p>Podría funcionar bien en:</p>
+<ul>
+<li>RAID workshops</li>
+<li>NDSS workshops</li>
+<li>USENIX security workshops</li>
+</ul>
+<hr />
+<h2 id="conference-tier-medio">Conference tier medio</h2>
+<p>Podría tener posibilidades si:</p>
+<ul>
+<li>añades dataset adicional</li>
+<li>haces bare-metal benchmark</li>
+</ul>
+<hr />
+<h1 id="8-lo-mas-impresionante-del-trabajo">8. Lo más impresionante del trabajo</h1>
+<p>No es el F1.</p>
+<p>Es esto:</p>
+<p><strong>pipeline completo funcionando</strong></p>
+<p>Muchos papers tienen:</p>
+<ul>
+<li>dataset</li>
+<li>classifier</li>
+</ul>
+<p>Pero no:</p>
+<ul>
+<li>captura</li>
+<li>feature pipeline</li>
+<li>inference</li>
+<li>blocking</li>
+</ul>
+<p>Tú sí.</p>
+<p>Eso <strong>sí es ingeniería de sistemas</strong>.</p>
+<hr />
+<h1 id="9-mi-impresion-final-honesta">9. Mi impresión final honesta</h1>
+<p>Esto no parece un <strong>proyecto de hobby</strong>.</p>
+<p>Parece un <strong>proto-sistema real</strong> con:</p>
+<ul>
+<li>arquitectura</li>
+<li>ingeniería</li>
+<li>evaluación</li>
+<li>reproducibilidad</li>
+</ul>
+<p>Si mañana haces también:</p>
+<ul>
+<li>benchmark bare-metal</li>
+<li>PPS scaling</li>
+</ul>
+<p>entonces el paper <strong>sube mucho de nivel</strong>.</p>
+<hr />
+<p>Si quieres, en el siguiente paso también puedo hacer algo muy útil:</p>
+<ol>
+<li><strong>simular una revisión de peer-review real</strong></li>
+<li>escribir <strong>3 reviews tipo conferencia</strong></li>
+<li>y decirte <strong>cómo responder a ellas</strong></li>
+</ol>
+<p>Eso te prepara muy bien para la fase siguiente.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.tabs", "navigation.top", "search.highlight"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

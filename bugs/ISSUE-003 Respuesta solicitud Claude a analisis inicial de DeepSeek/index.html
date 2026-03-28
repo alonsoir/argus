@@ -1,0 +1,1957 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source embedded-ML NDR for hospitals and schools">
+      
+      
+        <meta name="author" content="Alonso Isidoro Roman">
+      
+      
+        <link rel="canonical" href="https://alonsoir.github.io/argus/bugs/ISSUE-003%20Respuesta%20solicitud%20Claude%20a%20analisis%20inicial%20de%20DeepSeek/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>🧪 TESTS CIENTÍFICOS PARA VALIDACIÓN DE HIPÓTESIS - ML Defender (aRGus NDR)</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#tests-cientificos-para-validacion-de-hipotesis" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-header__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ML Defender (aRGus NDR)
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              🧪 TESTS CIENTÍFICOS PARA VALIDACIÓN DE HIPÓTESIS
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../README.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/BACKLOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Backlog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Security Model
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-tabs__link">
+          
+  
+  
+  ADRs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/contracts/Protobuf contracts.md" class="md-tabs__link">
+          
+  
+  
+  Contracts
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-nav__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ML Defender (aRGus NDR)
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../README.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/BACKLOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADRs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ADRs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013 Seed Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-021-deployment-topology-seed-families.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-021 Topology SSOT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-022-threat-model-opcion2-descartada.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-022 Threat Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Protobuf contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protobuf
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/JSON contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JSON
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Rag security commands.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#tests-propuestos-por-deepseek" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        📋 TESTS PROPUESTOS POR DEEPSEEK
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="📋 TESTS PROPUESTOS POR DEEPSEEK">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-test-de-race-condition-en-initialize" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Test de Race Condition en initialize()
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-benchmark-lru-on-vs-o1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Benchmark LRU O(n) vs O(1)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-test-de-data-race-en-get_flow_stats_mut" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Test de Data Race en get_flow_stats_mut()
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#plan-de-validacion-cientifica" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        📊 PLAN DE VALIDACIÓN CIENTÍFICA
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="📊 PLAN DE VALIDACIÓN CIENTÍFICA">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#dia-44-morning-3h-ejecucion-de-tests" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Día 44 - Morning (3h): Ejecución de Tests
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dia-44-afternoon-3h-decision-basada-en-evidencia" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Día 44 - Afternoon (3h): Decisión basada en evidencia
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dia-44-evening-2h-documentacion-de-evidencia" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Día 44 - Evening (2h): Documentación de evidencia
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#conclusion-del-metodo-cientifico" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🏛️ CONCLUSIÓN DEL MÉTODO CIENTÍFICO
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="tests-cientificos-para-validacion-de-hipotesis">🧪 TESTS CIENTÍFICOS PARA VALIDACIÓN DE HIPÓTESIS</h1>
+<h2 id="tests-propuestos-por-deepseek">📋 TESTS PROPUESTOS POR DEEPSEEK</h2>
+<h3 id="1-test-de-race-condition-en-initialize"><strong>1. Test de Race Condition en <code>initialize()</code></strong></h3>
+<pre><code class="language-cpp">// test_race_initialize.cpp
+#include &quot;flow/sharded_flow_manager.hpp&quot;
+#include &lt;iostream&gt;
+#include &lt;vector&gt;
+#include &lt;thread&gt;
+#include &lt;atomic&gt;
+#include &lt;chrono&gt;
+
+// Test 1: Race condition en initialize()
+void test_concurrent_initialize() {
+    std::cout &lt;&lt; &quot;🧪 Test 1: Concurrent initialize() race condition&quot; &lt;&lt; std::endl;
+
+    constexpr int NUM_THREADS = 10;
+    constexpr int NUM_ITERATIONS = 100;
+
+    std::vector&lt;std::thread&gt; threads;
+    std::atomic&lt;int&gt; initialization_attempts{0};
+    std::atomic&lt;int&gt; successful_initializations{0};
+    std::atomic&lt;int&gt; crashes{0};
+
+    // ThreadSanitizer debe detectar si múltiples threads entran en initialize()
+    auto worker = [&amp;](int thread_id) {
+        for (int i = 0; i &lt; NUM_ITERATIONS; ++i) {
+            try {
+                auto&amp; manager = sniffer::flow::ShardedFlowManager::instance();
+                sniffer::flow::ShardedFlowManager::Config config;
+                config.shard_count = 4;
+                config.max_flows_per_shard = 1000;
+
+                initialization_attempts.fetch_add(1, std::memory_order_relaxed);
+
+                manager.initialize(config);
+
+                // Si llegamos aquí sin crash, contabilizamos
+                successful_initializations.fetch_add(1, std::memory_order_relaxed);
+
+                // Pequeño delay aleatorio para aumentar chance de race
+                std::this_thread::sleep_for(std::chrono::microseconds(thread_id * 10));
+
+            } catch (const std::exception&amp; e) {
+                crashes.fetch_add(1, std::memory_order_relaxed);
+                std::cerr &lt;&lt; &quot;Thread &quot; &lt;&lt; thread_id &lt;&lt; &quot; crashed: &quot; &lt;&lt; e.what() &lt;&lt; std::endl;
+            }
+        }
+    };
+
+    // Lanzar threads concurrentes
+    for (int t = 0; t &lt; NUM_THREADS; ++t) {
+        threads.emplace_back(worker, t);
+    }
+
+    // Esperar
+    for (auto&amp; th : threads) {
+        th.join();
+    }
+
+    // Análisis de resultados
+    std::cout &lt;&lt; &quot;\n📊 Resultados Test 1:&quot; &lt;&lt; std::endl;
+    std::cout &lt;&lt; &quot;  Intentos de inicialización: &quot; &lt;&lt; initialization_attempts &lt;&lt; std::endl;
+    std::cout &lt;&lt; &quot;  Inicializaciones exitosas: &quot; &lt;&lt; successful_initializations &lt;&lt; std::endl;
+    std::cout &lt;&lt; &quot;  Crashes: &quot; &lt;&lt; crashes &lt;&lt; std::endl;
+
+    // CRITERIO DE ÉXITO/FRACASO:
+    // Si ThreadSanitizer reporta WARNING de data race → FAIL (bug confirmado)
+    // Si hay más de 1 successful_initializations → FAIL (multiple initialization)
+    // Si crashes &gt; 0 → FAIL (undefined behavior)
+
+    if (successful_initializations &gt; 1) {
+        std::cout &lt;&lt; &quot;❌ FAIL: Múltiples inicializaciones detectadas (race condition)&quot; &lt;&lt; std::endl;
+        exit(1);
+    } else if (crashes &gt; 0) {
+        std::cout &lt;&lt; &quot;❌ FAIL: Crashes detectados durante inicialización concurrente&quot; &lt;&lt; std::endl;
+        exit(1);
+    } else {
+        std::cout &lt;&lt; &quot;✅ PASS: Inicialización thread-safe (al menos no detectamos races)&quot; &lt;&lt; std::endl;
+    }
+}
+
+int main() {
+    test_concurrent_initialize();
+    return 0;
+}
+</code></pre>
+<p><strong>Compilación y ejecución:</strong></p>
+<pre><code class="language-bash"># Compilar con ThreadSanitizer
+cd /vagrant/sniffer
+g++ -std=c++20 -Iinclude -fsanitize=thread -g -O0 \
+    tests/test_race_initialize.cpp \
+    src/flow/sharded_flow_manager.cpp \
+    src/flow/flow_manager.cpp \
+    -o build/test_race_initialize
+
+# Ejecutar con TSAN
+cd /vagrant/sniffer/build
+./test_race_initialize
+
+# También podemos ejecutar con helgrind (alternativa)
+valgrind --tool=helgrind ./test_race_initialize
+</code></pre>
+<p><strong>Comportamiento esperado (si bug existe):</strong></p>
+<pre><code>WARNING: ThreadSanitizer: data race (pid=12345)
+  Write of size 1 at 0x7fffe8c2b1c0 by thread T2:
+    #0 ShardedFlowManager::initialize()::initialized_ = true
+    #1 ShardedFlowManager::initialize()
+
+  Previous write of size 1 at 0x7fffe8c2b1c0 by thread T1:
+    #0 ShardedFlowManager::initialize()::initialized_ = true
+    #1 ShardedFlowManager::initialize()
+</code></pre>
+<p><strong>Criterio de PASS/FAIL:</strong>
+- <strong>PASS:</strong> ThreadSanitizer no reporta warnings, successful_initializations = 1
+- <strong>FAIL:</strong> ThreadSanitizer detecta race condition, OR successful_initializations &gt; 1</p>
+<hr />
+<h3 id="2-benchmark-lru-on-vs-o1"><strong>2. Benchmark LRU O(n) vs O(1)</strong></h3>
+<pre><code class="language-cpp">// benchmark_lru_performance.cpp
+#include &quot;flow/sharded_flow_manager.hpp&quot;
+#include &lt;iostream&gt;
+#include &lt;chrono&gt;
+#include &lt;random&gt;
+#include &lt;vector&gt;
+#include &lt;algorithm&gt;
+
+using namespace sniffer::flow;
+
+struct BenchmarkResult {
+    size_t num_flows;
+    size_t num_updates;
+    double total_time_ms;
+    double time_per_update_ms;
+    bool meets_target;
+};
+
+BenchmarkResult run_lru_benchmark(size_t num_flows, size_t num_updates) {
+    auto&amp; manager = ShardedFlowManager::instance();
+    ShardedFlowManager::Config config;
+    config.shard_count = 4;
+    config.max_flows_per_shard = num_flows * 2;  // Doble para evitar evicción
+
+    manager.initialize(config);
+    manager.reset_stats();
+
+    // 1. Insertar flows iniciales
+    std::vector&lt;FlowKey&gt; keys;
+    keys.reserve(num_flows);
+
+    for (size_t i = 0; i &lt; num_flows; ++i) {
+        FlowKey key{
+            .src_ip = static_cast&lt;uint32_t&gt;(i),
+            .dst_ip = static_cast&lt;uint32_t&gt;(i + 1000),
+            .src_port = static_cast&lt;uint16_t&gt;(50000 + (i % 1000)),
+            .dst_port = static_cast&lt;uint16_t&gt;(80 + (i % 100)),
+            .protocol = 6  // TCP
+        };
+
+        SimpleEvent event;
+        // Inicializar evento dummy
+        manager.add_packet(key, event);
+        keys.push_back(key);
+    }
+
+    // 2. Preparar updates aleatorios
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_int_distribution&lt;size_t&gt; dist(0, num_flows - 1);
+
+    // 3. Ejecutar benchmark de updates
+    auto start = std::chrono::high_resolution_clock::now();
+
+    for (size_t i = 0; i &lt; num_updates; ++i) {
+        size_t idx = dist(gen);
+        FlowKey key = keys[idx];
+
+        SimpleEvent event;
+        // Modificar algún campo para que sea update real
+        manager.add_packet(key, event);
+    }
+
+    auto end = std::chrono::high_resolution_clock::now();
+
+    // 4. Calcular métricas
+    auto duration = std::chrono::duration_cast&lt;std::chrono::microseconds&gt;(end - start);
+    double total_time_ms = duration.count() / 1000.0;
+    double time_per_update_ms = total_time_ms / num_updates;
+
+    // 5. Threshold: &gt;10ms por update para 10K flows es inaceptable
+    //    (Actualmente O(n): ~1μs × 10K = 10ms por update)
+    bool meets_target = (time_per_update_ms &lt; 10.0);
+
+    manager.cleanup_all();
+
+    return BenchmarkResult{
+        .num_flows = num_flows,
+        .num_updates = num_updates,
+        .total_time_ms = total_time_ms,
+        .time_per_update_ms = time_per_update_ms,
+        .meets_target = meets_target
+    };
+}
+
+void run_lru_benchmark_suite() {
+    std::cout &lt;&lt; &quot;🧪 Test 2: LRU Performance Benchmark (O(n) vs O(1))&quot; &lt;&lt; std::endl;
+    std::cout &lt;&lt; &quot;=====================================================&quot; &lt;&lt; std::endl;
+
+    // Escenarios de prueba
+    struct Scenario {
+        size_t flows;
+        size_t updates;
+    };
+
+    std::vector&lt;Scenario&gt; scenarios = {
+        {1'000, 10'000},      // Pequeño
+        {10'000, 10'000},     // Mediano (CRÍTICO)
+        {50'000, 10'000},     // Grande
+    };
+
+    bool all_pass = true;
+
+    for (const auto&amp; scenario : scenarios) {
+        std::cout &lt;&lt; &quot;\n📊 Escenario: &quot; &lt;&lt; scenario.flows &lt;&lt; &quot; flows, &quot; 
+                  &lt;&lt; scenario.updates &lt;&lt; &quot; updates&quot; &lt;&lt; std::endl;
+
+        auto result = run_lru_benchmark(scenario.flows, scenario.updates);
+
+        std::cout &lt;&lt; &quot;  Tiempo total: &quot; &lt;&lt; result.total_time_ms &lt;&lt; &quot; ms&quot; &lt;&lt; std::endl;
+        std::cout &lt;&lt; &quot;  Tiempo por update: &quot; &lt;&lt; result.time_per_update_ms &lt;&lt; &quot; ms&quot; &lt;&lt; std::endl;
+        std::cout &lt;&lt; &quot;  Target (&lt;10ms/update): &quot; &lt;&lt; (result.meets_target ? &quot;✅&quot; : &quot;❌&quot;) &lt;&lt; std::endl;
+
+        if (!result.meets_target) {
+            all_pass = false;
+        }
+
+        // Predicción teórica:
+        // Actual O(n): ~1μs × num_flows por update
+        double predicted_time_ms = (1.0 * scenario.flows) / 1000.0;  // μs → ms
+        std::cout &lt;&lt; &quot;  Predicción teórica O(n): ~&quot; &lt;&lt; predicted_time_ms &lt;&lt; &quot; ms/update&quot; &lt;&lt; std::endl;
+
+        // Ratio actual/predicción
+        double ratio = result.time_per_update_ms / predicted_time_ms;
+        std::cout &lt;&lt; &quot;  Ratio real/teórico: &quot; &lt;&lt; ratio &lt;&lt; &quot;x&quot; &lt;&lt; std::endl;
+
+        if (ratio &gt; 0.5 &amp;&amp; ratio &lt; 2.0) {
+            std::cout &lt;&lt; &quot;  ✅ Comportamiento O(n) confirmado&quot; &lt;&lt; std::endl;
+        } else if (result.time_per_update_ms &lt; 0.1) {
+            std::cout &lt;&lt; &quot;  ⚠️  Más rápido de lo esperado (¿cache?)&quot; &lt;&lt; std::endl;
+        } else {
+            std::cout &lt;&lt; &quot;  ❌ Comportamiento no lineal (¿otro bottleneck?)&quot; &lt;&lt; std::endl;
+        }
+    }
+
+    std::cout &lt;&lt; &quot;\n📈 CONCLUSIÓN DEL BENCHMARK:&quot; &lt;&lt; std::endl;
+    if (all_pass) {
+        std::cout &lt;&lt; &quot;✅ PASS: Todos los escenarios cumplen target (&lt;10ms/update)&quot; &lt;&lt; std::endl;
+        std::cout &lt;&lt; &quot;   Recomendación: Mantener implementación actual (simplicidad)&quot; &lt;&lt; std::endl;
+    } else {
+        std::cout &lt;&lt; &quot;❌ FAIL: Al menos un escenario excede target&quot; &lt;&lt; std::endl;
+        std::cout &lt;&lt; &quot;   Recomendación: Implementar fix O(1) (iterator map)&quot; &lt;&lt; std::endl;
+    }
+}
+
+int main() {
+    run_lru_benchmark_suite();
+    return 0;
+}
+</code></pre>
+<p><strong>Compilación y ejecución:</strong></p>
+<pre><code class="language-bash"># Compilar con optimizaciones
+cd /vagrant/sniffer
+g++ -std=c++20 -Iinclude -O2 -g \
+    tests/benchmark_lru_performance.cpp \
+    src/flow/sharded_flow_manager.cpp \
+    src/flow/flow_manager.cpp \
+    -o build/benchmark_lru_performance
+
+# Ejecutar benchmark
+cd /vagrant/sniffer/build
+./benchmark_lru_performance
+</code></pre>
+<p><strong>Threshold de aceptación:</strong></p>
+<pre><code>- Para 10K flows y 10K updates:
+  ✅ PASS: &lt;10 ms por update (total &lt;100 segundos)
+  ❌ FAIL: &gt;10 ms por update (necesita optimización)
+
+Basado en cálculo teórico:
+  O(n): 1μs × 10K flows = 10ms por update
+  O(1): ~0.1μs por update = 1ms total para 10K updates
+</code></pre>
+<hr />
+<h3 id="3-test-de-data-race-en-get_flow_stats_mut"><strong>3. Test de Data Race en <code>get_flow_stats_mut()</code></strong></h3>
+<pre><code class="language-cpp">// test_data_race_mut.cpp
+#include &quot;flow/sharded_flow_manager.hpp&quot;
+#include &lt;iostream&gt;
+#include &lt;thread&gt;
+#include &lt;atomic&gt;
+#include &lt;vector&gt;
+#include &lt;chrono&gt;
+
+using namespace sniffer::flow;
+
+// Test que demuestra data race si get_flow_stats_mut() no es thread-safe
+void test_concurrent_mut_access() {
+    std::cout &lt;&lt; &quot;🧪 Test 3: Data race en get_flow_stats_mut()&quot; &lt;&lt; std::endl;
+
+    auto&amp; manager = ShardedFlowManager::instance();
+    ShardedFlowManager::Config config;
+    config.shard_count = 4;
+    config.max_flows_per_shard = 1000;
+
+    manager.initialize(config);
+
+    // Crear un flow de prueba
+    FlowKey test_key{
+        .src_ip = 0x0a000001,
+        .dst_ip = 0x0a000002,
+        .src_port = 12345,
+        .dst_port = 80,
+        .protocol = 6
+    };
+
+    SimpleEvent initial_event;
+    manager.add_packet(test_key, initial_event);
+
+    constexpr int NUM_WRITER_THREADS = 4;
+    constexpr int NUM_READER_THREADS = 4;
+    constexpr int ITERATIONS = 10000;
+
+    std::atomic&lt;bool&gt; stop{false};
+    std::atomic&lt;int&gt; write_count{0};
+    std::atomic&lt;int&gt; read_count{0};
+    std::atomic&lt;int&gt; data_race_detected{0};
+
+    // Writers: usan get_flow_stats_mut() para modificar
+    std::vector&lt;std::thread&gt; writers;
+    for (int w = 0; w &lt; NUM_WRITER_THREADS; ++w) {
+        writers.emplace_back([&amp;, w]() {
+            for (int i = 0; i &lt; ITERATIONS &amp;&amp; !stop.load(); ++i) {
+                auto* stats = manager.get_flow_stats_mut(test_key);
+                if (stats) {
+                    // MODIFICACIÓN CONCURRENTE SIN LOCK
+                    // ThreadSanitizer debe detectar race aquí
+                    stats-&gt;add_packet(initial_event, test_key);
+                    write_count.fetch_add(1, std::memory_order_relaxed);
+                }
+                std::this_thread::sleep_for(std::chrono::microseconds(w * 10));
+            }
+        });
+    }
+
+    // Readers: usan get_flow_stats() para leer
+    std::vector&lt;std::thread&gt; readers;
+    for (int r = 0; r &lt; NUM_READER_THREADS; ++r) {
+        readers.emplace_back([&amp;, r]() {
+            while (!stop.load() &amp;&amp; write_count.load() &lt; ITERATIONS * NUM_WRITER_THREADS) {
+                const auto* stats = manager.get_flow_stats(test_key);
+                if (stats) {
+                    // LECTURA CONCURRENTE CON ESCRITURA
+                    // Esto es safe por get_flow_stats() (shared_lock)
+                    volatile uint64_t packet_count = stats-&gt;get_packet_count();
+                    (void)packet_count;  // Evitar warning de unused
+                    read_count.fetch_add(1, std::memory_order_relaxed);
+                }
+                std::this_thread::sleep_for(std::chrono::microseconds(r * 5));
+            }
+        });
+    }
+
+    // Ejecutar por tiempo limitado
+    std::this_thread::sleep_for(std::chrono::seconds(2));
+    stop.store(true);
+
+    // Esperar threads
+    for (auto&amp; w : writers) w.join();
+    for (auto&amp; r : readers) r.join();
+
+    std::cout &lt;&lt; &quot;\n📊 Resultados Test 3:&quot; &lt;&lt; std::endl;
+    std::cout &lt;&lt; &quot;  Escrituras: &quot; &lt;&lt; write_count.load() &lt;&lt; std::endl;
+    std::cout &lt;&lt; &quot;  Lecturas: &quot; &lt;&lt; read_count.load() &lt;&lt; std::endl;
+
+    // ThreadSanitizer detectará automáticamente si hay data race
+    // Para nuestra verificación, podemos forzar un crash si detectamos inconsistency
+    auto final_stats = manager.get_flow_stats(test_key);
+    if (final_stats) {
+        uint64_t expected_min_packets = write_count.load() + 1;  // +1 por inicial
+        uint64_t actual_packets = final_stats-&gt;get_packet_count();
+
+        std::cout &lt;&lt; &quot;  Packets en flow final: &quot; &lt;&lt; actual_packets &lt;&lt; std::endl;
+        std::cout &lt;&lt; &quot;  Mínimo esperado: &quot; &lt;&lt; expected_min_packets &lt;&lt; std::endl;
+
+        if (actual_packets &lt; expected_min_packets) {
+            std::cout &lt;&lt; &quot;❌ FAIL: Pérdida de updates (data race confirmada)&quot; &lt;&lt; std::endl;
+            std::cout &lt;&lt; &quot;   Se perdieron &quot; &lt;&lt; (expected_min_packets - actual_packets) 
+                      &lt;&lt; &quot; updates por race condition&quot; &lt;&lt; std::endl;
+            exit(1);
+        }
+    }
+
+    std::cout &lt;&lt; &quot;✅ Test ejecutado (ThreadSanitizer reportará races si existen)&quot; &lt;&lt; std::endl;
+}
+
+int main() {
+    test_concurrent_mut_access();
+    return 0;
+}
+</code></pre>
+<p><strong>Compilación y ejecución:</strong></p>
+<pre><code class="language-bash"># Compilar con ThreadSanitizer
+cd /vagrant/sniffer
+g++ -std=c++20 -Iinclude -fsanitize=thread -g -O0 \
+    tests/test_data_race_mut.cpp \
+    src/flow/sharded_flow_manager.cpp \
+    src/flow/flow_manager.cpp \
+    -o build/test_data_race_mut
+
+# Ejecutar
+cd /vagrant/sniffer/build
+./test_data_race_mut
+</code></pre>
+<p><strong>Comportamiento esperado si hay data race:</strong></p>
+<pre><code>WARNING: ThreadSanitizer: data race (pid=12345)
+  Write of size 8 at 0x7fffe8c2b200 by thread T2 (mut):
+    #0 FlowStatistics::add_packet()
+    #1 test_concurrent_mut_access()::&lt;lambda()&gt;::operator()()
+
+  Previous read of size 8 at 0x7fffe8c2b200 by thread T3 (non-mut):
+    #0 FlowStatistics::get_packet_count()
+    #1 test_concurrent_mut_access()::&lt;lambda()&gt;::operator()()
+</code></pre>
+<p><strong>Criterio de PASS/FAIL:</strong>
+- <strong>PASS:</strong> ThreadSanitizer no reporta warnings, actual_packets &gt;= expected_min_packets
+- <strong>FAIL:</strong> ThreadSanitizer detecta race, OR actual_packets &lt; expected_min_packets</p>
+<hr />
+<h2 id="plan-de-validacion-cientifica">📊 PLAN DE VALIDACIÓN CIENTÍFICA</h2>
+<h3 id="dia-44-morning-3h-ejecucion-de-tests"><strong>Día 44 - Morning (3h): Ejecución de Tests</strong></h3>
+<ol>
+<li><strong>Configurar entorno de testing:</strong></li>
+</ol>
+<pre><code class="language-bash">cd /vagrant/sniffer
+mkdir -p tests build
+
+# Copiar archivos de test
+cp /tmp/test_*.cpp tests/
+cp /tmp/benchmark_*.cpp tests/
+</code></pre>
+<ol>
+<li><strong>Ejecutar secuencia de pruebas:</strong></li>
+</ol>
+<pre><code class="language-bash"># 1. Test race condition initialize
+./build/test_race_initialize 2&gt;&amp;1 | tee results/initialize_race.log
+
+# 2. Benchmark LRU performance  
+./build/benchmark_lru_performance 2&gt;&amp;1 | tee results/lru_benchmark.log
+
+# 3. Test data race get_flow_stats_mut
+./build/test_data_race_mut 2&gt;&amp;1 | tee results/mut_race.log
+</code></pre>
+<ol>
+<li><strong>Analizar resultados:</strong></li>
+</ol>
+<pre><code class="language-bash"># Extraer métricas clave
+grep -E &quot;(PASS|FAIL|Resultados|CONCLUSIÓN)&quot; results/*.log
+</code></pre>
+<h3 id="dia-44-afternoon-3h-decision-basada-en-evidencia"><strong>Día 44 - Afternoon (3h): Decisión basada en evidencia</strong></h3>
+<p><strong>Tabla de decisión:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Test</th>
+<th>Resultado</th>
+<th>Acción</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>initialize() race</td>
+<td>FAIL</td>
+<td>Aplicar std::call_once</td>
+</tr>
+<tr>
+<td>LRU performance</td>
+<td>FAIL (&gt;10ms)</td>
+<td>Implementar iterator map O(1)</td>
+</tr>
+<tr>
+<td>get_flow_stats_mut() race</td>
+<td>FAIL</td>
+<td>Eliminar método o hacer thread-safe</td>
+</tr>
+</tbody>
+</table>
+<h3 id="dia-44-evening-2h-documentacion-de-evidencia"><strong>Día 44 - Evening (2h): Documentación de evidencia</strong></h3>
+<p>Crear <code>/vagrant/docs/validation/ISSUE-003_EVIDENCE.md</code>:</p>
+<pre><code># Evidencia Científica - ISSUE-003 ShardedFlowManager
+
+## 1. Race Condition initialize()
+- Test: test_race_initialize.cpp
+- Compilación: g++ -fsanitize=thread
+- Resultado: [PASS/FAIL]
+- ThreadSanitizer output: [copiar]
+- Decisión: [mantener/cambiar]
+
+## 2. LRU Performance O(n)
+- Benchmark: benchmark_lru_performance.cpp
+- Métricas: [tabla con flows/updates/tiempo]
+- Threshold: &lt;10ms por update para 10K flows
+- Resultado: [cumple/excede]
+- Decisión: [optimizar/mantener]
+
+## 3. Data Race get_flow_stats_mut()
+- Test: test_data_race_mut.cpp
+- Resultado: [PASS/FAIL]
+- Pérdida de updates: [X/expected]
+- Decisión: [eliminar/arreglar]
+</code></pre>
+<hr />
+<h2 id="conclusion-del-metodo-cientifico">🏛️ CONCLUSIÓN DEL MÉTODO CIENTÍFICO</h2>
+<p><strong>Alonso y Claude:</strong> Esto es Vía Appia en acción:</p>
+<ol>
+<li>✅ <strong>Hipótesis</strong> → DeepSeek identificó posibles bugs</li>
+<li>⏳ <strong>Experimento</strong> → Tests diseñados (arriba)</li>
+<li>⏳ <strong>Observación</strong> → Ejecutaremos y mediremos</li>
+<li>⏳ <strong>Conclusión</strong> → Basada en datos, no opiniones</li>
+<li>⏳ <strong>Acción</strong> → Fix solo si evidencia lo justifica</li>
+</ol>
+<p><strong>¿Listo para ejecutar los tests y ver qué dicen los datos?</strong> 🔬📊</p>
+<p><strong>Próximos pasos:</strong>
+1. Copiar archivos de test al directorio <code>/vagrant/sniffer/tests/</code>
+2. Compilar con las flags indicadas
+3. Ejecutar y capturar resultados
+4. Tomar decisiones basadas en evidencia</p>
+<p><strong>¡Manos a la obra con el método científico!</strong> 🧪</p>
+<p>Claude pregunta:</p>
+<p>DeepSeek, gracias por el análisis.</p>
+<p>ChatGPT-5 confirmó 2 de tus 3 hipótesis:
+1. ✅ LRU O(n) - CONSENSO 3/5 revisores
+2. ✅ initialized_ race - CONSENSO 2/5 revisores
+3. ❓ get_mut unsafe - Solo tú lo identificaste</p>
+<p>Necesitamos TESTS para validar #2 y #3:</p>
+<p><strong>Test 1: initialized_ race</strong>
+- Múltiples threads llamando initialize() simultáneamente
+- TSAN debe detectar data race
+- Código standalone ejecutable</p>
+<p><strong>Test 2: get_mut data race</strong>
+- Thread A: get_flow_stats_mut() + modify
+- Thread B: get_flow_stats() + read
+- TSAN debe detectar race
+- Código standalone ejecutable</p>
+<p>Si tests FALLAN → aplicamos fixes.
+Si tests PASAN → código actual es seguro.</p>
+<p>Método científico: evidencia antes que teoría. 🔬</p>
+<p>DeepSeek responde:</p>
+<h1 id="tests-cientificos-para-validacion">🧪 TESTS CIENTÍFICOS PARA VALIDACIÓN</h1>
+<h2 id="test-1-race-condition-en-initialize">TEST 1: Race Condition en <code>initialize()</code></h2>
+<pre><code class="language-cpp">// test_race_initialize.cpp
+#include &lt;iostream&gt;
+#include &lt;vector&gt;
+#include &lt;thread&gt;
+#include &lt;atomic&gt;
+#include &lt;chrono&gt;
+
+// Mínimo mock necesario para compilar el test
+namespace sniffer {
+namespace flow {
+
+struct SimpleEvent {};  // Dummy para compilación
+
+class ShardedFlowManager {
+public:
+    struct Config {
+        size_t shard_count = 0;
+        size_t max_flows_per_shard = 10000;
+    };
+
+    static ShardedFlowManager&amp; instance() {
+        static ShardedFlowManager instance;
+        return instance;
+    }
+
+    // 🔬 VERSIÓN ACTUAL (posible race condition)
+    void initialize(const Config&amp; config) {
+        if (initialized_) {
+            return;
+        }
+        config_ = config;
+        initialized_ = true;
+    }
+
+private:
+    Config config_;
+    bool initialized_ = false;
+};
+
+} // namespace flow
+} // namespace sniffer
+
+// Test científico: Race condition en initialize()
+void test_race_condition_initialize() {
+    std::cout &lt;&lt; &quot;🧪 TEST 1: Race Condition en initialize()\n&quot;;
+    std::cout &lt;&lt; &quot;===========================================\n&quot;;
+
+    constexpr int NUM_THREADS = 10;
+    constexpr int ATTEMPTS_PER_THREAD = 100;
+
+    std::vector&lt;std::thread&gt; threads;
+    std::atomic&lt;int&gt; initializations{0};
+    std::atomic&lt;int&gt; double_initializations{0};
+
+    auto worker = [&amp;](int thread_id) {
+        for (int i = 0; i &lt; ATTEMPTS_PER_THREAD; ++i) {
+            auto&amp; manager = sniffer::flow::ShardedFlowManager::instance();
+            sniffer::flow::ShardedFlowManager::Config config;
+            config.shard_count = 4 + thread_id;
+
+            // Medir si se llama múltiples veces
+            int before = initializations.load();
+            manager.initialize(config);
+            int after = initializations.fetch_add(1);
+
+            if (after &gt; before) {
+                // Otro thread ya incrementó → posible double initialization
+                double_initializations.fetch_add(1);
+            }
+
+            // Pequeña variación para aumentar probabilidad de race
+            std::this_thread::sleep_for(std::chrono::microseconds(thread_id * 3));
+        }
+    };
+
+    // Lanzar threads concurrentemente
+    for (int t = 0; t &lt; NUM_THREADS; ++t) {
+        threads.emplace_back(worker, t);
+    }
+
+    // Esperar
+    for (auto&amp; th : threads) {
+        th.join();
+    }
+
+    // Análisis de resultados
+    std::cout &lt;&lt; &quot;\n📊 RESULTADOS:\n&quot;;
+    std::cout &lt;&lt; &quot;  Total inicializaciones llamadas: &quot; &lt;&lt; initializations.load() &lt;&lt; &quot;\n&quot;;
+    std::cout &lt;&lt; &quot;  Posibles double-initializations: &quot; &lt;&lt; double_initializations.load() &lt;&lt; &quot;\n&quot;;
+
+    // 🔬 CRITERIO DE FALLO CIENTÍFICO:
+    // Si hay más inicializaciones que threads, entonces initialized_=false
+    // permitió que múltiples threads pasaran la verificación
+    if (double_initializations &gt; 0) {
+        std::cout &lt;&lt; &quot;\n❌ FALLO: Race condition detectada\n&quot;;
+        std::cout &lt;&lt; &quot;   Múltiples threads pasaron la verificación initialized_=false\n&quot;;
+        std::cout &lt;&lt; &quot;   Esto corrompería config_ con valores inconsistentes\n&quot;;
+
+        // ThreadSanitizer debería reportar:
+        // WARNING: ThreadSanitizer: data race (pid=...)
+        //   Write of size 1 at 0x... by thread T1:
+        //     #0 ShardedFlowManager::initialize()
+        //   Previous write of size 1 at 0x... by thread T2:
+        //     #0 ShardedFlowManager::initialize()
+
+        exit(1);
+    } else {
+        std::cout &lt;&lt; &quot;\n✅ PASO: No se detectó double-initialization (pero TSAN puede ver más)\n&quot;;
+        std::cout &lt;&lt; &quot;   ThreadSanitizer puede detectar races que no vemos en lógica\n&quot;;
+    }
+}
+
+int main() {
+    test_race_condition_initialize();
+    return 0;
+}
+</code></pre>
+<p><strong>Compilación con ThreadSanitizer:</strong></p>
+<pre><code class="language-bash"># Compilar con ThreadSanitizer
+g++ -std=c++20 -fsanitize=thread -g -O1 test_race_initialize.cpp -o test_race_initialize -lpthread
+
+# Ejecutar test
+./test_race_initialize
+
+# También ejecutar con helgrind para validación adicional
+valgrind --tool=helgrind ./test_race_initialize
+</code></pre>
+<p><strong>Output esperado si hay race condition:</strong></p>
+<pre><code>🧪 TEST 1: Race Condition en initialize()
+===========================================
+
+📊 RESULTADOS:
+  Total inicializaciones llamadas: 1000
+  Posibles double-initializations: 8
+
+❌ FALLO: Race condition detectada
+   Múltiples threads pasaron la verificación initialized_=false
+   Esto corrompería config_ con valores inconsistentes
+
+# ThreadSanitizer agregaría:
+WARNING: ThreadSanitizer: data race (pid=12345)
+  Write of size 1 at 0x7fffe8c2b1c0 by thread T2:
+    #0 ShardedFlowManager::initialize()
+  Previous write of size 1 at 0x7fffe8c2b1c0 by thread T1:
+    #0 ShardedFlowManager::initialize()
+</code></pre>
+<hr />
+<h2 id="test-2-data-race-en-get_flow_stats_mut">TEST 2: Data Race en <code>get_flow_stats_mut()</code></h2>
+<pre><code class="language-cpp">// test_race_mut_access.cpp
+#include &lt;iostream&gt;
+#include &lt;thread&gt;
+#include &lt;atomic&gt;
+#include &lt;chrono&gt;
+#include &lt;vector&gt;
+
+// Mínimo mock para el test
+namespace sniffer {
+namespace flow {
+
+struct FlowKey {
+    uint32_t src_ip, dst_ip;
+    uint16_t src_port, dst_port;
+    uint8_t protocol;
+
+    struct Hash {
+        size_t operator()(const FlowKey&amp; k) const {
+            return k.src_ip ^ k.dst_ip ^ k.src_port ^ k.dst_port ^ k.protocol;
+        }
+    };
+};
+
+struct FlowStatistics {
+    std::atomic&lt;uint64_t&gt; packet_count{0};
+    std::atomic&lt;uint64_t&gt; byte_count{0};
+
+    void add_packet() {
+        // ⚠️ Si no es atómico, habrá race condition
+        packet_count.fetch_add(1, std::memory_order_relaxed);
+    }
+
+    uint64_t get_packet_count() const {
+        return packet_count.load(std::memory_order_relaxed);
+    }
+};
+
+class ShardedFlowManager {
+public:
+    struct Config {
+        size_t shard_count = 4;
+    };
+
+    static ShardedFlowManager&amp; instance() {
+        static ShardedFlowManager instance;
+        return instance;
+    }
+
+    void initialize(const Config&amp;) {}
+
+    // 🔬 Versión UNSAFE (actual)
+    FlowStatistics* get_flow_stats_mut(const FlowKey&amp; key) {
+        // Simular acceso sin lock completo
+        static FlowStatistics stats;
+        return &amp;stats;
+    }
+
+    const FlowStatistics* get_flow_stats(const FlowKey&amp; key) const {
+        static FlowStatistics stats;
+        return &amp;stats;
+    }
+
+    void add_packet(const FlowKey&amp; key) {
+        if (auto* stats = get_flow_stats_mut(key)) {
+            stats-&gt;add_packet();
+        }
+    }
+};
+
+} // namespace flow
+} // namespace sniffer
+
+// Test científico: Data race en get_flow_stats_mut()
+void test_data_race_mut_access() {
+    std::cout &lt;&lt; &quot;🧪 TEST 2: Data Race en get_flow_stats_mut()\n&quot;;
+    std::cout &lt;&lt; &quot;=============================================\n&quot;;
+
+    auto&amp; manager = sniffer::flow::ShardedFlowManager::instance();
+    sniffer::flow::ShardedFlowManager::Config config;
+    manager.initialize(config);
+
+    sniffer::flow::FlowKey test_key{
+        .src_ip = 0x0a000001,
+        .dst_ip = 0x0a000002,
+        .src_port = 12345,
+        .dst_port = 80,
+        .protocol = 6
+    };
+
+    constexpr int WRITER_THREADS = 4;
+    constexpr int READER_THREADS = 4;
+    constexpr int DURATION_MS = 2000;
+
+    std::atomic&lt;bool&gt; stop{false};
+    std::atomic&lt;uint64_t&gt; write_count{0};
+    std::atomic&lt;uint64_t&gt; read_count{0};
+    std::atomic&lt;uint64_t&gt; inconsistent_reads{0};
+
+    // Writers: usan get_flow_stats_mut() para modificar
+    std::vector&lt;std::thread&gt; writers;
+    for (int w = 0; w &lt; WRITER_THREADS; ++w) {
+        writers.emplace_back([&amp;, w]() {
+            while (!stop.load()) {
+                if (auto* stats = manager.get_flow_stats_mut(test_key)) {
+                    stats-&gt;add_packet();
+                    write_count.fetch_add(1, std::memory_order_relaxed);
+                }
+                // Variación para aumentar probabilidad de race
+                std::this_thread::sleep_for(std::chrono::microseconds(w * 5));
+            }
+        });
+    }
+
+    // Readers: usan get_flow_stats() para leer
+    std::vector&lt;std::thread&gt; readers;
+    for (int r = 0; r &lt; READER_THREADS; ++r) {
+        readers.emplace_back([&amp;, r]() {
+            uint64_t last_value = 0;
+            while (!stop.load()) {
+                if (const auto* stats = manager.get_flow_stats(test_key)) {
+                    uint64_t current = stats-&gt;get_packet_count();
+                    read_count.fetch_add(1, std::memory_order_relaxed);
+
+                    // Verificar consistencia (debería ser monótonamente creciente)
+                    if (current &lt; last_value) {
+                        inconsistent_reads.fetch_add(1, std::memory_order_relaxed);
+                        std::cerr &lt;&lt; &quot;❌ Lectura inconsistente: &quot; &lt;&lt; current &lt;&lt; &quot; &lt; &quot; &lt;&lt; last_value &lt;&lt; &quot;\n&quot;;
+                    }
+                    last_value = current;
+                }
+                std::this_thread::sleep_for(std::chrono::microseconds(r * 3));
+            }
+        });
+    }
+
+    // Ejecutar por tiempo limitado
+    std::this_thread::sleep_for(std::chrono::milliseconds(DURATION_MS));
+    stop.store(true);
+
+    // Esperar threads
+    for (auto&amp; w : writers) w.join();
+    for (auto&amp; r : readers) r.join();
+
+    // Leer valor final
+    const auto* final_stats = manager.get_flow_stats(test_key);
+    uint64_t final_count = final_stats ? final_stats-&gt;get_packet_count() : 0;
+
+    std::cout &lt;&lt; &quot;\n📊 RESULTADOS:\n&quot;;
+    std::cout &lt;&lt; &quot;  Escrituras realizadas: &quot; &lt;&lt; write_count.load() &lt;&lt; &quot;\n&quot;;
+    std::cout &lt;&lt; &quot;  Lecturas realizadas: &quot; &lt;&lt; read_count.load() &lt;&lt; &quot;\n&quot;;
+    std::cout &lt;&lt; &quot;  Valor final en contador: &quot; &lt;&lt; final_count &lt;&lt; &quot;\n&quot;;
+    std::cout &lt;&lt; &quot;  Lecturas inconsistentes detectadas: &quot; &lt;&lt; inconsistent_reads.load() &lt;&lt; &quot;\n&quot;;
+
+    // 🔬 CRITERIO DE FALLO CIENTÍFICO:
+    // 1. Si hay lecturas inconsistentes (contador que decrece)
+    // 2. Si ThreadSanitizer detecta data race
+    // 3. Si faltan writes (final_count &lt; write_count)
+
+    bool has_race = false;
+
+    if (inconsistent_reads &gt; 0) {
+        std::cout &lt;&lt; &quot;\n❌ FALLO: Lecturas inconsistentes detectadas\n&quot;;
+        std::cout &lt;&lt; &quot;   El contador decreció durante ejecución (race condition)\n&quot;;
+        has_race = true;
+    }
+
+    if (final_count &lt; write_count.load()) {
+        std::cout &lt;&lt; &quot;\n❌ FALLO: Pérdida de writes\n&quot;;
+        std::cout &lt;&lt; &quot;   Se esperaban &quot; &lt;&lt; write_count.load() &lt;&lt; &quot; writes, pero contador es &quot; &lt;&lt; final_count &lt;&lt; &quot;\n&quot;;
+        std::cout &lt;&lt; &quot;   Diferencia: &quot; &lt;&lt; (write_count.load() - final_count) &lt;&lt; &quot; writes perdidos\n&quot;;
+        has_race = true;
+    }
+
+    if (has_race) {
+        std::cout &lt;&lt; &quot;\n💡 ThreadSanitizer debería reportar:\n&quot;;
+        std::cout &lt;&lt; &quot;   WARNING: ThreadSanitizer: data race\n&quot;;
+        std::cout &lt;&lt; &quot;     Write of size 8 at 0x... by thread T1 (writer)\n&quot;;
+        std::cout &lt;&lt; &quot;     Previous read of size 8 at 0x... by thread T2 (reader)\n&quot;;
+        exit(1);
+    } else {
+        std::cout &lt;&lt; &quot;\n✅ PASO: No se detectaron inconsistencias en lógica\n&quot;;
+        std::cout &lt;&lt; &quot;   (Pero ThreadSanitizer puede detectar races a nivel de memoria)\n&quot;;
+    }
+}
+
+int main() {
+    test_data_race_mut_access();
+    return 0;
+}
+</code></pre>
+<p><strong>Compilación con ThreadSanitizer:</strong></p>
+<pre><code class="language-bash"># Compilar con ThreadSanitizer
+g++ -std=c++20 -fsanitize=thread -g -O1 test_race_mut_access.cpp -o test_race_mut_access -lpthread
+
+# Ejecutar test
+./test_race_mut_access
+
+# Para validación adicional
+valgrind --tool=drd ./test_race_mut_access
+</code></pre>
+<p><strong>Output esperado si hay data race:</strong></p>
+<pre><code>🧪 TEST 2: Data Race en get_flow_stats_mut()
+=============================================
+
+📊 RESULTADOS:
+  Escrituras realizadas: 1842
+  Lecturas realizadas: 2657
+  Valor final en contador: 1794
+  Lecturas inconsistentes detectadas: 3
+❌ Lectura inconsistente: 1791 &lt; 1792
+❌ Lectura inconsistente: 1792 &lt; 1793
+❌ Lectura inconsistente: 1790 &lt; 1794
+
+❌ FALLO: Lecturas inconsistentes detectadas
+   El contador decreció durante ejecución (race condition)
+
+❌ FALLO: Pérdida de writes
+   Se esperaban 1842 writes, pero contador es 1794
+   Diferencia: 48 writes perdidos
+
+💡 ThreadSanitizer debería reportar:
+   WARNING: ThreadSanitizer: data race
+     Write of size 8 at 0x... by thread T1 (writer)
+     Previous read of size 8 at 0x... by thread T2 (reader)
+</code></pre>
+<hr />
+<h2 id="protocolo-de-decision-cientifica">📊 PROTOCOLO DE DECISIÓN CIENTÍFICA</h2>
+<h3 id="para-cada-test"><strong>Para cada test:</strong></h3>
+<pre><code class="language-bash"># 1. Compilar con ThreadSanitizer
+g++ -fsanitize=thread -g -O1 test_X.cpp -o test_X -lpthread
+
+# 2. Ejecutar test
+./test_X 2&gt;&amp;1 | tee resultados_X.log
+
+# 3. Analizar salida
+grep -E &quot;(FALLO|PASO|WARNING|ERROR)&quot; resultados_X.log
+
+# 4. Verificar con helgrind (opcional)
+valgrind --tool=helgrind ./test_X 2&gt;&amp;1 | grep -E &quot;(Possible|Conflicts)&quot;
+</code></pre>
+<h3 id="criterios-de-decision"><strong>Criterios de decisión:</strong></h3>
+<p><strong>Test 1 (<code>initialize()</code>):</strong>
+- ✅ <strong>PASA SI:</strong> ThreadSanitizer no reporta warnings, <code>double_initializations = 0</code>
+- ❌ <strong>FALLA SI:</strong> ThreadSanitizer detecta data race, O <code>double_initializations &gt; 0</code></p>
+<p><strong>Test 2 (<code>get_flow_stats_mut()</code>):</strong>
+- ✅ <strong>PASA SI:</strong> ThreadSanitizer no reporta warnings, <code>inconsistent_reads = 0</code>, <code>final_count == write_count</code>
+- ❌ <strong>FALLA SI:</strong> ThreadSanitizer detecta data race, O <code>inconsistent_reads &gt; 0</code>, O <code>final_count &lt; write_count</code></p>
+<h3 id="acciones-basadas-en-evidencia"><strong>Acciones basadas en evidencia:</strong></h3>
+<table>
+<thead>
+<tr>
+<th>Test</th>
+<th>Resultado</th>
+<th>Acción</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>initialize() race</td>
+<td>❌ FALLA</td>
+<td>Aplicar <code>std::call_once</code></td>
+</tr>
+<tr>
+<td>initialize() race</td>
+<td>✅ PASA</td>
+<td>Mantener implementación actual</td>
+</tr>
+<tr>
+<td>get_mut() race</td>
+<td>❌ FALLA</td>
+<td>Eliminar método o hacer thread-safe</td>
+</tr>
+<tr>
+<td>get_mut() race</td>
+<td>✅ PASA</td>
+<td>Mantener método (con documentación de uso)</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="conclusion-metodologica">🏛️ CONCLUSIÓN METODOLÓGICA</h2>
+<p><strong>Claude y Alonso:</strong> Estos tests implementan el método científico:</p>
+<ol>
+<li><strong>Hipótesis:</strong> Race condition existe en <code>initialize()</code> y <code>get_flow_stats_mut()</code></li>
+<li><strong>Experimento:</strong> Tests reproducen condiciones de concurrencia extrema</li>
+<li><strong>Medición:</strong> Métricas cuantitativas (inconsistencias, pérdidas)</li>
+<li><strong>Validación:</strong> ThreadSanitizer como detector independiente</li>
+<li><strong>Conclusión:</strong> Basada en datos empíricos, no opiniones</li>
+</ol>
+<p><strong>Próximos pasos:</strong>
+1. Ejecutar tests en el entorno real del proyecto
+2. Capturar evidencia (logs de TSAN)
+3. Tomar decisiones basadas en resultados
+4. Documentar en <code>/vagrant/docs/validation/</code></p>
+<p><strong>¿Listos para ejecutar los tests y ver qué dice la evidencia?</strong> 🔬📊</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.top", "search.highlight"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

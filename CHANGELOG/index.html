@@ -1,0 +1,1895 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source embedded-ML NDR for hospitals and schools">
+      
+      
+        <meta name="author" content="Alonso Isidoro Roman">
+      
+      
+        <link rel="canonical" href="https://alonsoir.github.io/argus/CHANGELOG/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>Changelog - ML Defender (aRGus NDR)</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#changelog" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="ML Defender (aRGus NDR)" class="md-header__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ML Defender (aRGus NDR)
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Changelog
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../README.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../docs/ARCHITECTURE.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../docs/BACKLOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Backlog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../docs/SECURITY_MODEL.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Security Model
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../docs/adr/ADR-013 seed distribution component authentication.md" class="md-tabs__link">
+          
+  
+  
+  ADRs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../docs/contracts/Protobuf contracts.md" class="md-tabs__link">
+          
+  
+  
+  Contracts
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="ML Defender (aRGus NDR)" class="md-nav__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ML Defender (aRGus NDR)
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../README.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/ARCHITECTURE.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/BACKLOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/SECURITY_MODEL.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADRs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ADRs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/adr/ADR-013 seed distribution component authentication.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013 Seed Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/adr/ADR-021-deployment-topology-seed-families.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-021 Topology SSOT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/adr/ADR-022-threat-model-opcion2-descartada.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-022 Threat Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/contracts/Protobuf contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protobuf
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/contracts/JSON contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JSON
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/contracts/Rag security commands.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#day-53-hmac-infrastructure-2026-02-10" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        [Day 53 - HMAC Infrastructure] - 2026-02-10
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="[Day 53 - HMAC Infrastructure] - 2026-02-10">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added-hmac-log-integrity-system-phases-1-2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ✨ Added - HMAC Log Integrity System (Phases 1-2)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="✨ Added - HMAC Log Integrity System (Phases 1-2)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#fase-1-etcd-server-secretsmanager" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🔐 FASE 1: etcd-server SecretsManager
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fase-2-etcd-client-hmac-utilities" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🛡️ FASE 2: etcd-client HMAC Utilities
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#technical-details" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🔧 Technical Details
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🔧 Technical Details">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#architecture-pattern" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Architecture Pattern
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#files-modifiedcreated-16-total" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Files Modified/Created (16 total)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#testing-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🧪 Testing Summary
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🧪 Testing Summary">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#secretsmanager-tests" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SecretsManager Tests
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#etcd-client-hmac-tests" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        etcd-client HMAC Tests
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#performance-characteristics" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        📊 Performance Characteristics
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#next-steps-fase-3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🗺️ Next Steps (FASE 3)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v400-rag-llama-integration-2025-11-20" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        [v4.0.0-rag-llama-integration] - 2025-11-20
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="[v4.0.0-rag-llama-integration] - 2025-11-20">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#major-release-ml-defender-platform-complete" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🎉 MAJOR RELEASE: ML Defender Platform Complete
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#added" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ✨ Added
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="✨ Added">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#rag-security-system-con-llama-real" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🧠 RAG Security System con LLAMA Real
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-detectores-ml-c20-embebidos-sub-microsegundo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ⚡ 4 Detectores ML C++20 Embebidos (Sub-microsegundo)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#arquitectura-kiss-consolidada" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🏗️ Arquitectura KISS Consolidada
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fixed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🔧 Fixed
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🔧 Fixed">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#kv-cache-inconsistency-workaround" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🐛 KV Cache Inconsistency Workaround
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#sistema-de-configuracion-robusto" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🔄 Sistema de Configuración Robusto
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#performance-validated" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        📊 Performance Validated
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="📊 Performance Validated">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#estabilidad-del-sistema" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Estabilidad del Sistema
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rendimiento-ml-detectores" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Rendimiento ML Detectores
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#testing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🧪 Testing
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🧪 Testing">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#pruebas-rag-system" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Pruebas RAG System
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pruebas-ml-detectors" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Pruebas ML Detectors
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#technical-details_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        📝 Technical Details
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="📝 Technical Details">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#archivos-modificadoscreados" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Archivos Modificados/Creados
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dependencias-nuevas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Dependencias Nuevas
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🚀 Usage
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v321-hybrid-filters-2025-10-25" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        [v3.2.1-hybrid-filters] - 2025-10-25
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="[v3.2.1-hybrid-filters] - 2025-10-25">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ✨ Added
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fixed_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🔧 Fixed
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v320-2025-10-20" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        [v3.2.0] - 2025-10-20
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="[v3.2.0] - 2025-10-20">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ✨ Added
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v310-2025-10-19" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        [v3.1.0] - 2025-10-19
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="[v3.1.0] - 2025-10-19">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#fixed_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🔧 Fixed
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v100-stable-pipeline-2025-10-15" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        [v1.0.0-stable-pipeline] - 2025-10-15
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="[v1.0.0-stable-pipeline] - 2025-10-15">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#initial-release" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ✨ Initial Release
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#known-issues" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🐛 Known Issues
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🐛 Known Issues">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#active" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Active
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Active">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#p0-kv-cache-inconsistency" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        P0 - KV Cache Inconsistency
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#p1-smb-diversity-counter-retorna-0" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        P1 - SMB Diversity Counter Retorna 0
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#resolved" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Resolved
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#roadmap-actualizado" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🗺️ Roadmap Actualizado
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🗺️ Roadmap Actualizado">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#phase-1-completado-20-nov-2025" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 1: ✅ COMPLETADO (20 Nov 2025)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#phase-2-en-progreso-nov-dic-2025" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 2: 🔄 EN PROGRESO (Nov-Dic 2025)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#phase-3-planificado-ene-feb-2026" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 3: 📋 PLANIFICADO (Ene-Feb 2026)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#phase-4-futuro-mar-2026" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 4: 🎯 FUTURO (Mar 2026+)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#contributors" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        👥 Contributors
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="👥 Contributors">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#equipo-central" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Equipo Central
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#colaboradores-ia" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Colaboradores IA
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#license" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        📄 License
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="changelog">Changelog</h1>
+<p>Todos los cambios notables del proyecto están documentados aquí.</p>
+<p>El formato está basado en <a href="https://keepachangelog.com/en/1.0.0/">Keep a Changelog</a>,
+y este proyecto adhiere a <a href="https://semver.org/spec/v2.0.0.html">Semantic Versioning</a>.</p>
+<hr />
+<h2 id="day-53-hmac-infrastructure-2026-02-10">[Day 53 - HMAC Infrastructure] - 2026-02-10</h2>
+<h3 id="added-hmac-log-integrity-system-phases-1-2">✨ <strong>Added - HMAC Log Integrity System (Phases 1-2)</strong></h3>
+<h4 id="fase-1-etcd-server-secretsmanager"><strong>🔐 FASE 1: etcd-server SecretsManager</strong></h4>
+<ul>
+<li><strong>HMAC Key Generation</strong>: SHA256-based keys (32 bytes random + salt)</li>
+<li><strong>Key Rotation</strong>: Timestamp-based rotation con historical tracking</li>
+<li><strong>Key Management</strong>:</li>
+<li><code>generate_hmac_key()</code>: Nueva key generation</li>
+<li><code>rotate_hmac_key()</code>: Safe rotation con backup</li>
+<li><code>get_hmac_key()</code>: Retrieval by timestamp</li>
+<li><code>list_hmac_keys()</code>: Audit trail</li>
+<li><strong>HTTP Endpoints</strong>:</li>
+</ul>
+<pre><code>  GET  /secrets/keys              → List all HMAC keys
+  GET  /secrets/{secret_name}     → Get specific secret
+  POST /secrets/rotate/{component} → Rotate component key
+</code></pre>
+<ul>
+<li><strong>Testing</strong>: 12 unit tests + 4 integration tests (100% pass)</li>
+</ul>
+<h4 id="fase-2-etcd-client-hmac-utilities"><strong>🛡️ FASE 2: etcd-client HMAC Utilities</strong></h4>
+<ul>
+<li><strong>5 Core Methods</strong>:</li>
+</ul>
+<pre><code class="language-cpp">  get_hmac_key(component, timestamp)   → Key retrieval
+  compute_hmac_sha256(data, key)       → HMAC generation
+  validate_hmac_sha256(data, hmac, key)→ HMAC verification
+  bytes_to_hex(bytes)                  → Hex encoding
+  hex_to_bytes(hex)                    → Hex decoding
+</code></pre>
+<ul>
+<li><strong>OpenSSL Integration</strong>: HMAC_SHA256 implementation</li>
+<li><strong>Universal Availability</strong>: All components (ml-detector, sniffer, rag-ingester) inherit HMAC via etcd-client</li>
+<li><strong>Testing</strong>: 12 unit tests + 4 integration tests (100% pass)</li>
+</ul>
+<h3 id="technical-details">🔧 <strong>Technical Details</strong></h3>
+<h4 id="architecture-pattern"><strong>Architecture Pattern</strong></h4>
+<pre><code>etcd-server (SecretsManager)
+    ↓ HTTP API
+etcd-client (HMAC utilities)
+    ↓ Link-time inheritance
+ml-detector, sniffer, rag-ingester (Ready for HMAC)
+</code></pre>
+<h4 id="files-modifiedcreated-16-total"><strong>Files Modified/Created</strong> (16 total)</h4>
+<pre><code>etcd-server/
+├── include/etcd_server/secrets_manager.hpp        # New class
+├── src/secrets_manager.cpp                        # New implementation
+├── src/http_server.cpp                            # 3 new endpoints
+├── tests/test_secrets_manager.cpp                 # 12 unit tests
+├── tests/test_secrets_manager_integration.cpp     # 4 integration tests
+└── CMakeLists.txt                                 # OpenSSL linking
+
+etcd-client/
+├── include/etcd_client/etcd_client.hpp            # 5 new methods
+├── src/etcd_client.cpp                            # HMAC implementation
+├── tests/test_etcd_client_hmac.cpp                # 12 unit tests
+├── tests/test_etcd_client_hmac_integration.cpp    # 4 integration tests
+└── CMakeLists.txt                                 # OpenSSL linking
+</code></pre>
+<h3 id="testing-summary">🧪 <strong>Testing Summary</strong></h3>
+<p><strong>Total Tests</strong>: 32 (24 unit + 8 integration)<br />
+<strong>Pass Rate</strong>: 100%</p>
+<h4 id="secretsmanager-tests"><strong>SecretsManager Tests</strong></h4>
+<ul>
+<li>[x] Key generation randomness</li>
+<li>[x] Key rotation without data loss</li>
+<li>[x] Key retrieval by timestamp</li>
+<li>[x] Historical key tracking</li>
+<li>[x] HTTP endpoint functionality</li>
+<li>[x] Concurrent access safety</li>
+</ul>
+<h4 id="etcd-client-hmac-tests"><strong>etcd-client HMAC Tests</strong></h4>
+<ul>
+<li>[x] HMAC computation correctness</li>
+<li>[x] HMAC validation (valid/invalid cases)</li>
+<li>[x] Hex encoding/decoding roundtrip</li>
+<li>[x] Key retrieval from etcd-server</li>
+<li>[x] Error handling (missing keys, invalid hex)</li>
+<li>[x] Thread safety</li>
+</ul>
+<h3 id="performance-characteristics">📊 <strong>Performance Characteristics</strong></h3>
+<ul>
+<li><strong>Key Generation</strong>: ~1ms (includes RAND_bytes + etcd store)</li>
+<li><strong>HMAC Computation</strong>: ~0.05ms (SHA256 hash)</li>
+<li><strong>Key Retrieval</strong>: ~2ms (HTTP GET from etcd-server)</li>
+<li><strong>Memory Overhead</strong>: +64 bytes per HMAC tag (SHA256)</li>
+</ul>
+<h3 id="next-steps-fase-3">🗺️ <strong>Next Steps (FASE 3)</strong></h3>
+<ul>
+<li>[ ] rag-ingester EventLoader HMAC integration</li>
+<li>[ ] ml-detector log signing (optional P2)</li>
+<li>[ ] Audit trail visualization (P3)</li>
+</ul>
+<hr />
+<h2 id="v400-rag-llama-integration-2025-11-20">[v4.0.0-rag-llama-integration] - 2025-11-20</h2>
+<h3 id="major-release-ml-defender-platform-complete">🎉 <strong>MAJOR RELEASE: ML Defender Platform Complete</strong></h3>
+<p><strong>Estado:</strong> Phase 1 Completa - Sistema RAG + 4 Detectores ML Operativos<br />
+<strong>Arquitectura:</strong> KISS con WhiteListManager como router central</p>
+<h3 id="added">✨ <strong>Added</strong></h3>
+<h4 id="rag-security-system-con-llama-real"><strong>🧠 RAG Security System con LLAMA Real</strong></h4>
+<ul>
+<li><strong>TinyLlama-1.1B Integration</strong>: Modelo real funcionando (<code>/vagrant/rag/models/tinyllama-1.1b-chat-v1.0.Q4_0.gguf</code>)</li>
+<li><strong>Arquitectura KISS</strong>:<ul>
+<li><code>WhiteListManager</code>: Router central + comunicación etcd</li>
+<li><code>RagCommandManager</code>: Lógica RAG + validación</li>
+<li><code>LlamaIntegration</code>: Integración real con llama.cpp</li>
+<li><code>ConfigManager</code>: Persistencia JSON automática</li>
+</ul>
+</li>
+<li><strong>Sistema de Validación Robusta</strong>:<ul>
+<li><code>BaseValidator</code>: Clase base heredable para validación</li>
+<li><code>RagValidator</code>: Reglas específicas para comandos RAG</li>
+</ul>
+</li>
+<li><strong>Comandos Interactivos Completos</strong>:
+  <code>bash
+  SECURITY_SYSTEM&gt; rag show_config
+  SECURITY_SYSTEM&gt; rag ask_llm "¿Qué es un firewall en seguridad informática?"
+  SECURITY_SYSTEM&gt; rag update_setting port 9090
+  SECURITY_SYSTEM&gt; rag show_capabilities
+  SECURITY_SYSTEM&gt; exit</code></li>
+</ul>
+<h4 id="4-detectores-ml-c20-embebidos-sub-microsegundo"><strong>⚡ 4 Detectores ML C++20 Embebidos (Sub-microsegundo)</strong></h4>
+<ul>
+<li><strong>DDoS Detector</strong>: 0.24μs latency (417x mejor que objetivo)</li>
+<li><strong>Ransomware Detector</strong>: 1.06μs latency (94x mejor que objetivo)</li>
+<li><strong>Traffic Classifier</strong>: 0.37μs latency (270x mejor que objetivo)</li>
+<li><strong>Internal Threat Detector</strong>: 0.33μs latency (303x mejor que objetivo)</li>
+</ul>
+<h4 id="arquitectura-kiss-consolidada"><strong>🏗️ Arquitectura KISS Consolidada</strong></h4>
+<pre><code>WhiteListManager (Router Central + Etcd)
+    ├── cpp_sniffer (eBPF/XDP + 40 features)
+    ├── ml-detector (4 modelos C++20 embebidos)
+    └── RagCommandManager (RAG + LLAMA real)
+         ├── RagValidator (Reglas específicas)
+         ├── ConfigManager (JSON Persistencia) 
+         └── LlamaIntegration (TinyLlama-1.1B REAL)
+</code></pre>
+<h3 id="fixed">🔧 <strong>Fixed</strong></h3>
+<h4 id="kv-cache-inconsistency-workaround"><strong>🐛 KV Cache Inconsistency Workaround</strong></h4>
+<ul>
+<li><strong>Problema</strong>: <code>inconsistent sequence positions (X=213, Y=0)</code></li>
+<li><strong>Solución</strong>: Limpieza manual del cache KV entre consultas</li>
+<li><strong>Implementación</strong>:
+  <code>cpp
+  void clear_kv_cache() {
+      llama_batch batch = llama_batch_init(1, 0, 1);
+      batch.n_tokens = 0;  // Batch vacío
+      llama_decode(ctx, batch);  // Resetea estado interno
+      llama_batch_free(batch);
+  }</code></li>
+</ul>
+<h4 id="sistema-de-configuracion-robusto"><strong>🔄 Sistema de Configuración Robusto</strong></h4>
+<ul>
+<li><strong>JSON Single Source of Truth</strong>: Todos los thresholds desde <code>sniffer.json</code></li>
+<li><strong>Validación Automática</strong>: Range checking y fallbacks</li>
+<li><strong>Persistencia</strong>: Configuración sobrevive reinicios</li>
+</ul>
+<h3 id="performance-validated">📊 <strong>Performance Validated</strong></h3>
+<h4 id="estabilidad-del-sistema"><strong>Estabilidad del Sistema</strong></h4>
+<ul>
+<li>✅ <strong>17h prueba de estabilidad</strong>: Memoria estable (+1 MB growth)</li>
+<li>✅ <strong>35,387 eventos procesados</strong>: Zero crashes</li>
+<li>✅ <strong>4 detectores ML</strong>: Funcionando en producción</li>
+<li>✅ <strong>Sistema RAG</strong>: Consultas reales operativas</li>
+</ul>
+<h4 id="rendimiento-ml-detectores"><strong>Rendimiento ML Detectores</strong></h4>
+<pre><code>| Detector          | Latency | Throughput  | vs Target |
+|-------------------|---------|-------------|-----------|
+| DDoS              | 0.24μs  | ~4.1M/sec   | 417x mejor |
+| Ransomware        | 1.06μs  | 944K/sec    | 94x mejor  |
+| Traffic           | 0.37μs  | ~2.7M/sec   | 270x mejor |
+| Internal          | 0.33μs  | ~3.0M/sec   | 303x mejor |
+</code></pre>
+<h3 id="testing">🧪 <strong>Testing</strong></h3>
+<h4 id="pruebas-rag-system"><strong>Pruebas RAG System</strong></h4>
+<ul>
+<li>[x] Múltiples consultas secuenciales</li>
+<li>[x] Consultas de seguridad complejas</li>
+<li>[x] Actualización configuración en caliente</li>
+<li>[x] Integración con comandos existentes</li>
+</ul>
+<h4 id="pruebas-ml-detectors"><strong>Pruebas ML Detectors</strong></h4>
+<ul>
+<li>[x] Rendimiento con tráfico real</li>
+<li>[x] Precisión en escenarios de ataque</li>
+<li>[x] Consumo recursos Raspberry Pi</li>
+<li>[x] Integración end-to-end con sniffer</li>
+</ul>
+<h3 id="technical-details_1">📝 <strong>Technical Details</strong></h3>
+<h4 id="archivos-modificadoscreados"><strong>Archivos Modificados/Creados</strong></h4>
+<pre><code>rag/
+├── src/
+│   ├── main.cpp                          # Inicialización centralizada
+│   ├── whitelist_manager.cpp            # Router + comunicación etcd
+│   ├── rag_command_manager.cpp          # Lógica RAG + validación
+│   ├── llama_integration_real.cpp       # Integración LLAMA real
+│   ├── base_validator.cpp               # Validación centralizada
+│   ├── rag_validator.cpp                # Reglas específicas RAG
+│   └── config_manager.cpp               # Persistencia JSON
+├── include/
+│   └── rag/
+│       ├── whitelist_manager.hpp
+│       ├── rag_command_manager.hpp
+│       ├── llama_integration.hpp
+│       ├── base_validator.hpp
+│       └── config_manager.hpp
+└── config/
+    └── system_config.json               # Configuración del sistema
+</code></pre>
+<h4 id="dependencias-nuevas"><strong>Dependencias Nuevas</strong></h4>
+<ul>
+<li><strong>llama.cpp</strong>: Integración con modelo TinyLlama-1.1B</li>
+<li><strong>etcd-cpp-apiv3</strong>: Comunicación distribuida (preparada)</li>
+<li><strong>nlohmann_json</strong>: Manejo de configuración JSON</li>
+</ul>
+<h3 id="usage">🚀 <strong>Usage</strong></h3>
+<pre><code class="language-bash"># Iniciar sistema RAG Security
+cd /vagrant/rag/build &amp;&amp; ./rag-security
+
+# Comandos de ejemplo
+SECURITY_SYSTEM&gt; rag ask_llm &quot;¿Cómo funciona un firewall de aplicaciones?&quot;
+SECURITY_SYSTEM&gt; rag ask_llm &quot;Explica cómo detectar un ataque DDoS&quot;
+SECURITY_SYSTEM&gt; rag show_config
+SECURITY_SYSTEM&gt; rag update_setting max_tokens 256
+</code></pre>
+<hr />
+<h2 id="v321-hybrid-filters-2025-10-25">[v3.2.1-hybrid-filters] - 2025-10-25</h2>
+<h3 id="added_1">✨ Added</h3>
+<ul>
+<li><strong>FD-based BPF Map Access</strong>: Implementado acceso directo a BPF filter maps mediante File Descriptors</li>
+<li><strong>Hybrid Filtering System</strong>: Sistema de filtrado completo kernel/userspace</li>
+</ul>
+<h3 id="fixed_1">🔧 Fixed</h3>
+<ul>
+<li><strong>BPF Map Accessibility</strong>: Solucionado error "No such file or directory (errno: 2)"</li>
+<li><strong>EbpfLoader Constructor</strong>: Corregido orden de inicialización de miembros</li>
+</ul>
+<hr />
+<h2 id="v320-2025-10-20">[v3.2.0] - 2025-10-20</h2>
+<h3 id="added_2">✨ Added</h3>
+<ul>
+<li><strong>Enhanced Configuration System</strong>: Soporte completo para filtros híbridos en JSON</li>
+<li><strong>BPFMapManager Module</strong>: Nueva clase para gestión centralizada de BPF maps</li>
+</ul>
+<hr />
+<h2 id="v310-2025-10-19">[v3.1.0] - 2025-10-19</h2>
+<h3 id="fixed_2">🔧 Fixed</h3>
+<ul>
+<li><strong>Build System Overhaul</strong>: Build reproducible 100% desde cero</li>
+<li><strong>Dependencies Resolution</strong>: Todas las dependencias en una sola fase</li>
+</ul>
+<hr />
+<h2 id="v100-stable-pipeline-2025-10-15">[v1.0.0-stable-pipeline] - 2025-10-15</h2>
+<h3 id="initial-release">✨ Initial Release</h3>
+<ul>
+<li><strong>Sniffer eBPF v3.1</strong>: XDP program con AF_XDP socket</li>
+<li><strong>ML Detector v1.0</strong>: Level 1 inference (RandomForest)</li>
+<li><strong>Pipeline</strong>: Protobuf schema v3.1.0, ZMQ communication</li>
+</ul>
+<hr />
+<h2 id="known-issues">🐛 <strong>Known Issues</strong></h2>
+<h3 id="active"><strong>Active</strong></h3>
+<h4 id="p0-kv-cache-inconsistency"><strong>P0 - KV Cache Inconsistency</strong></h4>
+<ul>
+<li><strong>Estado</strong>: Workaround implementado, solución definitiva pendiente</li>
+<li><strong>Impacto</strong>: Consultas múltiples requieren limpieza manual del cache</li>
+<li><strong>Plan</strong>: Investigar alternativas en Phase 2</li>
+</ul>
+<h4 id="p1-smb-diversity-counter-retorna-0"><strong>P1 - SMB Diversity Counter Retorna 0</strong></h4>
+<ul>
+<li><strong>Estado</strong>: Pendiente para Phase 2</li>
+<li><strong>Impacto</strong>: Falso negativo en detección lateral movement</li>
+</ul>
+<h3 id="resolved"><strong>Resolved</strong></h3>
+<ul>
+<li>~~<strong>BPF map pinning dependency</strong>~~ → Fixed in v3.2.1</li>
+<li>~~<strong>Build failures desde cero</strong>~~ → Fixed in v3.1.0</li>
+<li>~~<strong>Protobuf generation manual</strong>~~ → Fixed in v3.1.0</li>
+</ul>
+<hr />
+<h2 id="roadmap-actualizado">🗺️ <strong>Roadmap Actualizado</strong></h2>
+<h3 id="phase-1-completado-20-nov-2025"><strong>Phase 1: ✅ COMPLETADO (20 Nov 2025)</strong></h3>
+<ul>
+<li>✅ 4 Detectores ML C++20 embebidos (sub-microsegundo)</li>
+<li>✅ Sistema RAG con LLAMA real integrado</li>
+<li>✅ Arquitectura KISS consolidada</li>
+<li>✅ 17h prueba de estabilidad (+1MB memoria)</li>
+</ul>
+<h3 id="phase-2-en-progreso-nov-dic-2025"><strong>Phase 2: 🔄 EN PROGRESO (Nov-Dic 2025)</strong></h3>
+<ul>
+<li>🔄 Estabilización RAG System (KV Cache fix)</li>
+<li>🔄 firewall-acl-agent development</li>
+<li>🔄 Integración etcd coordinator</li>
+<li>🔄 Resolución ISSUE-003: SMB diversity counter</li>
+</ul>
+<h3 id="phase-3-planificado-ene-feb-2026"><strong>Phase 3: 📋 PLANIFICADO (Ene-Feb 2026)</strong></h3>
+<ul>
+<li>📋 Base de datos vectorial RAG</li>
+<li>📋 Dashboard Grafana/Prometheus</li>
+<li>📋 Hardening de seguridad</li>
+<li>📋 Preparación deployment Raspberry Pi</li>
+</ul>
+<h3 id="phase-4-futuro-mar-2026"><strong>Phase 4: 🎯 FUTURO (Mar 2026+)</strong></h3>
+<ul>
+<li>🎯 Auto-tuning de parámetros ML</li>
+<li>🎯 Model versioning y A/B testing</li>
+<li>🎯 Distributed deployment</li>
+<li>🎯 Physical device manufacturing</li>
+</ul>
+<hr />
+<h2 id="contributors">👥 <strong>Contributors</strong></h2>
+<h3 id="equipo-central"><strong>Equipo Central</strong></h3>
+<ul>
+<li><strong>Alonso</strong> (@alonsoir) - Líder de Investigación &amp; Arquitecto</li>
+<li><strong>Claude</strong> (Anthropic) - Arquitecto Principal &amp; Investigador</li>
+<li><strong>DeepSeek</strong> - Ingeniero de Sistemas &amp; ML</li>
+<li><strong>Qwen</strong> - Ingeniero de Sistemas &amp; ML</li>
+<li><strong>GLM</strong> - Ingeniero de Sistemas &amp; ML</li>
+<li><strong>Parallel.ai</strong> - Ingeniero de Sistemas &amp; ML</li>
+<li></li>
+</ul>
+<h3 id="colaboradores-ia"><strong>Colaboradores IA</strong></h3>
+<ul>
+<li><strong>TinyLlama Project</strong> - Modelo LLM de código abierto</li>
+<li><strong>llama.cpp</strong> - Biblioteca de integración LLM</li>
+</ul>
+<hr />
+<h2 id="license">📄 <strong>License</strong></h2>
+<p>MIT License - See <a href="LICENSE">LICENSE</a> file for details</p>
+<hr />
+<div align="center">
+
+**🏥 ML Defender - Protegiendo Infraestructuras Críticas con ML Embebido e IA**
+
+*Última actualización: Noviembre 20, 2025*  
+**¡Phase 1 Completa! Sistema RAG + 4 Detectores ML Operativos 🎉**
+
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.tabs", "navigation.top", "search.highlight"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

@@ -1,0 +1,1518 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source embedded-ML NDR for hospitals and schools">
+      
+      
+        <meta name="author" content="Alonso Isidoro Roman">
+      
+      
+        <link rel="canonical" href="https://alonsoir.github.io/argus/PCAP%20replay/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>PCAP Replay Testing - Phase 2 Validation - ML Defender (aRGus NDR)</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#pcap-replay-testing-phase-2-validation" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="ML Defender (aRGus NDR)" class="md-header__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ML Defender (aRGus NDR)
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              PCAP Replay Testing - Phase 2 Validation
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../README.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../docs/ARCHITECTURE.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../docs/BACKLOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Backlog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../docs/SECURITY_MODEL.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Security Model
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../docs/adr/ADR-013 seed distribution component authentication.md" class="md-tabs__link">
+          
+  
+  
+  ADRs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../docs/contracts/Protobuf contracts.md" class="md-tabs__link">
+          
+  
+  
+  Contracts
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="ML Defender (aRGus NDR)" class="md-nav__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ML Defender (aRGus NDR)
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../README.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/ARCHITECTURE.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/BACKLOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/SECURITY_MODEL.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADRs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ADRs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/adr/ADR-013 seed distribution component authentication.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013 Seed Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/adr/ADR-021-deployment-topology-seed-families.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-021 Topology SSOT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/adr/ADR-022-threat-model-opcion2-descartada.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-022 Threat Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/contracts/Protobuf contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protobuf
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/contracts/JSON contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JSON
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/contracts/Rag security commands.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#overview" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Overview
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#security-first-hardening-strategy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Security First - Hardening Strategy
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Security First - Hardening Strategy">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-vm-hardening-automatic-in-vagrantfile" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. VM Hardening (Automatic in Vagrantfile)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-mount-pcaps-as-read-only" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Mount PCAPs as Read-Only
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#methodology-complete-workflow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Methodology - Complete Workflow
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Methodology - Complete Workflow">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#phase-1-obtain-real-malware-pcaps-on-host" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 1: Obtain Real Malware PCAPs (On Host)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#phase-2-prepare-pcaps-for-replay" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 2: Prepare PCAPs for Replay
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#phase-3-execute-replay" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 3: Execute Replay
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#phase-4-validate-results" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 4: Validate Results
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#automated-testing-script" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Automated Testing Script
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#interpretation-guide" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Interpretation Guide
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Interpretation Guide">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#expected-outcomes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Expected Outcomes
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#debugging-commands" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Debugging Commands
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#safety-checklist" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Safety Checklist
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#chatgpt-insights-integration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ChatGPT Insights Integration
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#recommended-testing-sequence" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Recommended Testing Sequence
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Recommended Testing Sequence">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#phase-21-initial-validation-week-1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 2.1: Initial Validation (Week 1)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#phase-22-comprehensive-testing-week-2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 2.2: Comprehensive Testing (Week 2)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#phase-23-stress-testing-week-3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 2.3: Stress Testing (Week 3)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#success-metrics" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Success Metrics
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#future-enhancements" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Future Enhancements
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#references" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        References
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="pcap-replay-testing-phase-2-validation">PCAP Replay Testing - Phase 2 Validation</h1>
+<blockquote>
+<p><strong>Status:</strong> Documentation complete, implementation pending Phase 2
+<strong>Priority:</strong> After Phase 1 completion (watcher, vector DB, hardening)
+<strong>Purpose:</strong> Validate ML models against real malware traffic</p>
+</blockquote>
+<hr />
+<h2 id="overview">Overview</h2>
+<p>PCAP replay allows testing the ML Defender pipeline with <strong>real malware traffic</strong> in a safe, controlled, reproducible environment. This is the gold standard for IDS validation.</p>
+<hr />
+<h2 id="security-first-hardening-strategy">Security First - Hardening Strategy</h2>
+<p><strong>Critical:</strong> The VM must be completely isolated BEFORE any malicious traffic replay.</p>
+<h3 id="1-vm-hardening-automatic-in-vagrantfile">1. VM Hardening (Automatic in Vagrantfile)</h3>
+<pre><code class="language-ruby"># Add to Vagrantfile provision (before any PCAP work)
+config.vm.provision &quot;shell&quot;, name: &quot;pcap-hardening&quot;, inline: &lt;&lt;-SHELL
+  # 1. Block all outbound traffic except allowed
+  iptables -P OUTPUT DROP
+  iptables -P FORWARD DROP
+
+  # 2. Allow only internal host↔VM communication
+  iptables -A OUTPUT -d 10.0.2.2 -j ACCEPT      # Host (NAT)
+  iptables -A OUTPUT -d 192.168.56.1 -j ACCEPT  # Host (private)
+  iptables -A OUTPUT -o lo -j ACCEPT            # Loopback
+
+  # 3. Block DNS to external (no data exfiltration)
+  iptables -A OUTPUT -p udp --dport 53 ! -d 10.0.2.2 -j DROP
+  iptables -A OUTPUT -p tcp --dport 53 ! -d 10.0.2.2 -j DROP
+
+  # 4. Log rejected packets (limited)
+  iptables -A OUTPUT -m limit --limit 5/min -j LOG --log-prefix &quot;BLOCKED: &quot;
+
+  # 5. Disable IP forwarding
+  echo 0 &gt; /proc/sys/net/ipv4/ip_forward
+
+  echo &quot;✅ VM hardened for PCAP replay&quot;
+SHELL
+</code></pre>
+<h3 id="2-mount-pcaps-as-read-only">2. Mount PCAPs as Read-Only</h3>
+<pre><code class="language-ruby"># In Vagrantfile
+config.vm.synced_folder &quot;./pcaps&quot;, &quot;/opt/pcaps&quot;, 
+  type: &quot;virtualbox&quot;,
+  mount_options: [&quot;ro&quot;]  # Read-only!
+</code></pre>
+<p><strong>Why this matters:</strong>
+- VM cannot modify or exfiltrate PCAPs
+- Malware cannot write back to host
+- No accidental corruption of test data</p>
+<hr />
+<h2 id="methodology-complete-workflow">Methodology - Complete Workflow</h2>
+<h3 id="phase-1-obtain-real-malware-pcaps-on-host">Phase 1: Obtain Real Malware PCAPs (On Host)</h3>
+<p><strong>Trusted Sources:</strong></p>
+<ol>
+<li>
+<p><strong>Malware-Traffic-Analysis.net</strong> (BEST)</p>
+<ul>
+<li>Ransomware: Locky, WannaCry, Ryuk, Conti</li>
+<li>Banking Trojans: Emotet, Trickbot, Dridex</li>
+<li>Exploit Kits: RIG, Magnitude</li>
+<li>URL: https://www.malware-traffic-analysis.net/</li>
+</ul>
+</li>
+<li>
+<p><strong>StratosphereIPS - CTU-13 Dataset</strong></p>
+<ul>
+<li>13 botnet scenarios (Neris, Rbot, Virut, etc.)</li>
+<li>Well-labeled, peer-reviewed</li>
+<li>URL: https://www.stratosphereips.org/datasets-overview</li>
+</ul>
+</li>
+<li>
+<p><strong>CAIDA DDoS Attack 2007</strong></p>
+<ul>
+<li>Real DDoS against DNS root servers</li>
+<li>URL: https://www.caida.org/catalog/datasets/ddos-20070804_dataset/</li>
+</ul>
+</li>
+<li>
+<p><strong>SecRepo.com</strong></p>
+<ul>
+<li>Various attack types</li>
+<li>URL: http://www.secrepo.com/</li>
+</ul>
+</li>
+</ol>
+<p><strong>Download on host (macOS):</strong></p>
+<pre><code class="language-bash">cd ~/Code/argus/pcaps
+wget https://www.malware-traffic-analysis.net/.../attack.pcap.zip
+unzip -P infected attack.pcap.zip
+</code></pre>
+<h3 id="phase-2-prepare-pcaps-for-replay">Phase 2: Prepare PCAPs for Replay</h3>
+<p><strong>Why rewrite IPs:</strong>
+- Original PCAPs have arbitrary source/dest IPs
+- Need to map to VM's network (10.0.2.0/24, 192.168.100.0/24)
+- Firewall can then block the mapped attacker IP</p>
+<p><strong>Install tools (in VM):</strong></p>
+<pre><code class="language-bash">sudo apt-get install -y tcpreplay tcpdump wireshark-common
+</code></pre>
+<p><strong>Rewrite IPs:</strong></p>
+<pre><code class="language-bash"># Option A: Simple rewrite (all IPs to VM subnet)
+tcprewrite \
+  --infile=/opt/pcaps/original.pcap \
+  --outfile=/tmp/ready.pcap \
+  --pnat=0.0.0.0/0:192.168.100.0/24 \
+  --fixcsum
+
+# Option B: Specific attacker IP (for blacklist testing)
+tcprewrite \
+  --infile=/opt/pcaps/original.pcap \
+  --outfile=/tmp/ready.pcap \
+  --srcipmap=0.0.0.0/0:192.168.100.50/32 \
+  --dstipmap=0.0.0.0/0:10.0.2.15/32 \
+  --fixcsum
+
+# Verify result
+tcpdump -nr /tmp/ready.pcap -c 20
+</code></pre>
+<h3 id="phase-3-execute-replay">Phase 3: Execute Replay</h3>
+<p><strong>Start ML Defender pipeline:</strong></p>
+<pre><code class="language-bash">cd /vagrant
+make run-lab-dev
+</code></pre>
+<p><strong>In another terminal, start monitoring:</strong></p>
+<pre><code class="language-bash"># Terminal 2: Watch detector stats
+watch -n 1 'grep &quot;attacks=&quot; /vagrant/logs/lab/detector.log | tail -1'
+
+# Terminal 3: Watch IPSet blacklist
+watch -n 1 'sudo ipset list ml_defender_blacklist_test'
+
+# Terminal 4: Monitor all logs
+tail -f /vagrant/logs/lab/*.log
+</code></pre>
+<p><strong>Replay the PCAP:</strong></p>
+<pre><code class="language-bash"># Basic replay (original speed)
+sudo tcpreplay --intf1=eth0 /tmp/ready.pcap
+
+# Faster (2x speed, for stress testing)
+sudo tcpreplay --intf1=eth0 --multiplier=2 /tmp/ready.pcap
+
+# Controlled rate (100 Mbps)
+sudo tcpreplay --intf1=eth0 --mbps=100 /tmp/ready.pcap
+
+# Controlled PPS (1000 packets/sec)
+sudo tcpreplay --intf1=eth0 --pps=1000 /tmp/ready.pcap
+
+# Loop 10 times (stress test)
+sudo tcpreplay --intf1=eth0 --loop=10 /tmp/ready.pcap
+
+# With stats every second
+sudo tcpreplay --intf1=eth0 --stats=1 /tmp/ready.pcap
+</code></pre>
+<p><strong>Why control speed:</strong>
+- Too fast → artificial volume spikes (false positives)
+- Too slow → takes forever
+- Realistic rate (100-1000 pps) → best for model validation</p>
+<h3 id="phase-4-validate-results">Phase 4: Validate Results</h3>
+<p><strong>Check if models detected attacks:</strong></p>
+<pre><code class="language-bash"># 1. Check attack counter
+grep &quot;attacks=&quot; /vagrant/logs/lab/detector.log | tail -5
+
+# 2. Check specific detections
+grep -E &quot;DDOS|RANSOMWARE|SUSPICIOUS&quot; /vagrant/logs/lab/detector.log
+
+# 3. Check firewall blocked IPs
+sudo ipset list ml_defender_blacklist_test
+
+# 4. Check IPTables counters
+sudo iptables -L INPUT -n -v --line-numbers | grep ml_defender
+
+# 5. Get final stats
+echo &quot;=== DETECTOR ===&quot;
+grep &quot;Stats:&quot; /vagrant/logs/lab/detector.log | tail -1
+
+echo &quot;=== FIREWALL ===&quot;
+grep &quot;METRICS&quot; /vagrant/logs/lab/firewall.log | tail -1
+
+echo &quot;=== SNIFFER ===&quot;
+grep &quot;Paquetes procesados&quot; /vagrant/logs/lab/sniffer.log | tail -1
+</code></pre>
+<hr />
+<h2 id="automated-testing-script">Automated Testing Script</h2>
+<p><strong>Location:</strong> <code>/vagrant/scripts/testing/pcap_replay_test.sh</code></p>
+<pre><code class="language-bash">#!/bin/bash
+set -euo pipefail
+
+PCAP_DIR=&quot;/opt/pcaps&quot;
+PCAP_FILE=&quot;${1:-}&quot;
+SPEED=&quot;${2:-1}&quot;
+
+if [[ -z &quot;$PCAP_FILE&quot; ]]; then
+    echo &quot;Usage: $0 &lt;pcap_file&gt; [speed_multiplier]&quot;
+    echo &quot;Example: $0 malware.pcap 2&quot;
+    exit 1
+fi
+
+if [[ ! -f &quot;$PCAP_DIR/$PCAP_FILE&quot; ]]; then
+    echo &quot;❌ Error: PCAP not found: $PCAP_DIR/$PCAP_FILE&quot;
+    exit 1
+fi
+
+echo &quot;╔════════════════════════════════════════════════════════════╗&quot;
+echo &quot;║  ML Defender - PCAP Replay Test                           ║&quot;
+echo &quot;╚════════════════════════════════════════════════════════════╝&quot;
+echo &quot;&quot;
+echo &quot;📂 PCAP: $PCAP_FILE&quot;
+echo &quot;⚡ Speed: ${SPEED}x&quot;
+echo &quot;🔒 Hardened: $(iptables -L OUTPUT -n | grep -c DROP || echo 'NO')&quot;
+echo &quot;&quot;
+
+# Baseline stats
+BASELINE_ATTACKS=$(grep &quot;attacks=&quot; /vagrant/logs/lab/detector.log 2&gt;/dev/null | tail -1 | grep -oP 'attacks=\K\d+' || echo 0)
+BASELINE_PROCESSED=$(grep &quot;processed=&quot; /vagrant/logs/lab/detector.log 2&gt;/dev/null | tail -1 | grep -oP 'processed=\K\d+' || echo 0)
+
+echo &quot;📊 Baseline: attacks=$BASELINE_ATTACKS, processed=$BASELINE_PROCESSED&quot;
+echo &quot;&quot;
+echo &quot;⏳ Starting replay in 3 seconds...&quot;
+sleep 3
+
+# Execute replay
+echo &quot;🚀 Replaying PCAP...&quot;
+sudo tcpreplay \
+    --intf1=eth0 \
+    --multiplier=&quot;$SPEED&quot; \
+    --stats=1 \
+    &quot;$PCAP_DIR/$PCAP_FILE&quot;
+
+echo &quot;&quot;
+echo &quot;⏳ Waiting 5 seconds for ML processing...&quot;
+sleep 5
+
+# Final stats
+FINAL_ATTACKS=$(grep &quot;attacks=&quot; /vagrant/logs/lab/detector.log 2&gt;/dev/null | tail -1 | grep -oP 'attacks=\K\d+' || echo 0)
+FINAL_PROCESSED=$(grep &quot;processed=&quot; /vagrant/logs/lab/detector.log 2&gt;/dev/null | tail -1 | grep -oP 'processed=\K\d+' || echo 0)
+
+NEW_ATTACKS=$((FINAL_ATTACKS - BASELINE_ATTACKS))
+NEW_PROCESSED=$((FINAL_PROCESSED - BASELINE_PROCESSED))
+
+echo &quot;&quot;
+echo &quot;╔════════════════════════════════════════════════════════════╗&quot;
+echo &quot;║  RESULTS                                                   ║&quot;
+echo &quot;╚════════════════════════════════════════════════════════════╝&quot;
+echo &quot;📊 Events processed: $NEW_PROCESSED&quot;
+echo &quot;🚨 Attacks detected: $NEW_ATTACKS&quot;
+echo &quot;&quot;
+
+if [[ $NEW_ATTACKS -gt 0 ]]; then
+    echo &quot;🎯 ATTACKS DETECTED! Checking blocked IPs...&quot;
+    echo &quot;&quot;
+    sudo ipset list ml_defender_blacklist_test
+    echo &quot;&quot;
+    echo &quot;✅ Test PASSED - System detected and blocked attacks!&quot;
+else
+    echo &quot;ℹ️  No attacks detected.&quot;
+    echo &quot;&quot;
+    echo &quot;Possible reasons:&quot;
+    echo &quot;  1. PCAP doesn't match model training patterns&quot;
+    echo &quot;  2. Models correctly classified as benign (no false positive)&quot;
+    echo &quot;  3. Thresholds too high (check sniffer.json)&quot;
+    echo &quot;  4. Feature extraction mismatch&quot;
+fi
+
+echo &quot;&quot;
+echo &quot;💡 For debugging:&quot;
+echo &quot;   tail -50 /vagrant/logs/lab/detector.log&quot;
+echo &quot;   grep 'level1_confidence' /vagrant/logs/lab/detector.log&quot;
+echo &quot;&quot;
+</code></pre>
+<p><strong>Usage:</strong></p>
+<pre><code class="language-bash">chmod +x /vagrant/scripts/testing/pcap_replay_test.sh
+/vagrant/scripts/testing/pcap_replay_test.sh ransomware.pcap 1
+</code></pre>
+<hr />
+<h2 id="interpretation-guide">Interpretation Guide</h2>
+<h3 id="expected-outcomes">Expected Outcomes</h3>
+<p><strong>If attacks detected (attacks &gt; 0):</strong>
+✅ Models are working correctly
+✅ Firewall blocked attacker IPs
+✅ IPSet shows blocked entries
+✅ IPTables DROP counter increased</p>
+<p><strong>If NO attacks detected (attacks = 0):</strong></p>
+<p>Could mean:
+1. <strong>Models too strict</strong> (good for production, bad for testing)
+    - Solution: Lower thresholds in <code>sniffer.json</code>
+    - Try: DDoS 0.70, Ransomware 0.75 (from 0.85, 0.90)</p>
+<ol>
+<li>
+<p><strong>PCAP doesn't match training data</strong></p>
+<ul>
+<li>Models trained on specific patterns</li>
+<li>PCAP may use different attack vector</li>
+<li>Solution: Try different PCAP source</li>
+</ul>
+</li>
+<li>
+<p><strong>Feature extraction issue</strong></p>
+<ul>
+<li>Check sniffer logs for feature values</li>
+<li>Compare with training data ranges</li>
+<li>May need feature normalization</li>
+</ul>
+</li>
+<li>
+<p><strong>Models are actually correct</strong></p>
+<ul>
+<li>Some "malware PCAPs" are just C2 beacons</li>
+<li>Low-volume, low-impact traffic</li>
+<li>Not every malware PCAP triggers DDoS/Ransomware patterns</li>
+</ul>
+</li>
+</ol>
+<h3 id="debugging-commands">Debugging Commands</h3>
+<pre><code class="language-bash"># See confidence scores
+grep &quot;confidence&quot; /vagrant/logs/lab/detector.log | tail -20
+
+# Check feature values
+tail -100 /vagrant/logs/lab/sniffer.log | grep &quot;Features:&quot;
+
+# See what was classified
+grep &quot;threat_category&quot; /vagrant/logs/lab/detector.log | tail -20
+
+# IPTables dropped packets
+sudo iptables -L INPUT -n -v | grep DROP
+</code></pre>
+<hr />
+<h2 id="safety-checklist">Safety Checklist</h2>
+<p>Before ANY PCAP replay:</p>
+<ul>
+<li>[ ] VM is hardened (iptables OUTPUT DROP in place)</li>
+<li>[ ] PCAPs mounted as read-only</li>
+<li>[ ] No internet access from VM (test: <code>ping 8.8.8.8</code> should fail)</li>
+<li>[ ] Firewall logs are capturing events</li>
+<li>[ ] Backup of current config exists</li>
+<li>[ ] Know how to kill the lab: <code>make kill-lab</code></li>
+</ul>
+<hr />
+<h2 id="chatgpt-insights-integration">ChatGPT Insights Integration</h2>
+<p><strong>Key points from ChatGPT discussion:</strong></p>
+<ol>
+<li>✅ <strong>Harden FIRST, replay SECOND</strong> - Never reverse this order</li>
+<li>✅ <strong>Download on host</strong> - VM should never touch internet for PCAPs</li>
+<li>✅ <strong>Read-only mount</strong> - Prevents malware from modifying test data</li>
+<li>✅ <strong>Controlled replay rate</strong> - Avoid artificial volume spikes</li>
+<li>✅ <strong>This is the industry standard</strong> - Used by Blue Teams, IDS vendors, CI/CD pipelines</li>
+</ol>
+<p><strong>What NOT to do:</strong>
+- ❌ Don't run actual malware executables
+- ❌ Don't give VM internet access during replay
+- ❌ Don't replay without hardening
+- ❌ Don't trust "cleaned" PCAPs without verification</p>
+<hr />
+<h2 id="recommended-testing-sequence">Recommended Testing Sequence</h2>
+<h3 id="phase-21-initial-validation-week-1">Phase 2.1: Initial Validation (Week 1)</h3>
+<ol>
+<li>Single Locky ransomware PCAP (well-documented)</li>
+<li>Single Emotet banking trojan PCAP</li>
+<li>Verify models detect both</li>
+</ol>
+<h3 id="phase-22-comprehensive-testing-week-2">Phase 2.2: Comprehensive Testing (Week 2)</h3>
+<ol>
+<li>CTU-13 botnet scenarios (all 13)</li>
+<li>Various DDoS types (SYN flood, UDP flood, etc.)</li>
+<li>Mixed traffic (benign + malicious)</li>
+</ol>
+<h3 id="phase-23-stress-testing-week-3">Phase 2.3: Stress Testing (Week 3)</h3>
+<ol>
+<li>Loop replay (10x)</li>
+<li>High-speed replay (10x multiplier)</li>
+<li>Concurrent attacks</li>
+<li>Long-running stability (24h with replays)</li>
+</ol>
+<hr />
+<h2 id="success-metrics">Success Metrics</h2>
+<p><strong>Model Validation:</strong>
+- Detection Rate &gt; 90% on known malware
+- False Positive Rate &lt; 5% on benign traffic
+- Latency &lt; 100μs maintained under load</p>
+<p><strong>System Validation:</strong>
+- No crashes during replay
+- Memory stable (&lt;150MB)
+- All blocked IPs in blacklist
+- IPTables counters match detections</p>
+<hr />
+<h2 id="future-enhancements">Future Enhancements</h2>
+<ol>
+<li><strong>Automated PCAP library</strong> - Download/catalog common attacks</li>
+<li><strong>Confidence threshold tuning</strong> - Automatically find optimal values</li>
+<li><strong>A/B testing</strong> - Compare model versions</li>
+<li><strong>Continuous validation</strong> - CI/CD integration</li>
+<li><strong>Synthetic PCAP generation</strong> - Create custom attack scenarios</li>
+</ol>
+<hr />
+<h2 id="references">References</h2>
+<ul>
+<li>Malware-Traffic-Analysis.net - Brad Duncan's excellent resources</li>
+<li>StratosphereIPS - Academic-quality datasets</li>
+<li>tcpreplay documentation - https://tcpreplay.appneta.com/</li>
+<li>ChatGPT validation discussion (Nov 28, 2025)</li>
+</ul>
+<hr />
+<p><strong>Status:</strong> Ready to implement in Phase 2
+<strong>Estimated effort:</strong> 2-3 days (after watcher system complete)
+<strong>Priority:</strong> Medium (validation, not blocker)</p>
+<hr />
+<p><em>Via Appia Quality: Test with real threats, not assumptions.</em></p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.tabs", "navigation.top", "search.highlight"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

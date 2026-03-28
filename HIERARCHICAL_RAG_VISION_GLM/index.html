@@ -1,0 +1,1047 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source embedded-ML NDR for hospitals and schools">
+      
+      
+        <meta name="author" content="Alonso Isidoro Roman">
+      
+      
+        <link rel="canonical" href="https://alonsoir.github.io/argus/HIERARCHICAL_RAG_VISION_GLM/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>HIERARCHICAL RAG VISION GLM - ML Defender (aRGus NDR)</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#dictamen-del-consejo-de-sabios" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="ML Defender (aRGus NDR)" class="md-header__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ML Defender (aRGus NDR)
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              HIERARCHICAL RAG VISION GLM
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../README.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../docs/ARCHITECTURE.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../docs/BACKLOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Backlog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../docs/SECURITY_MODEL.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Security Model
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../docs/adr/ADR-013 seed distribution component authentication.md" class="md-tabs__link">
+          
+  
+  
+  ADRs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../docs/contracts/Protobuf contracts.md" class="md-tabs__link">
+          
+  
+  
+  Contracts
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="ML Defender (aRGus NDR)" class="md-nav__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ML Defender (aRGus NDR)
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../README.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/ARCHITECTURE.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/BACKLOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/SECURITY_MODEL.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADRs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ADRs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/adr/ADR-013 seed distribution component authentication.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013 Seed Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/adr/ADR-021-deployment-topology-seed-families.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-021 Topology SSOT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/adr/ADR-022-threat-model-opcion2-descartada.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-022 Threat Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/contracts/Protobuf contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protobuf
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/contracts/JSON contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JSON
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/contracts/Rag security commands.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#dictamen-del-consejo-de-sabios" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🏛️ DICTAMEN DEL CONSEJO DE SABIOS
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🏛️ DICTAMEN DEL CONSEJO DE SABIOS">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-tinyllama-capacity-es-suficiente" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. TinyLlama Capacity (¿Es suficiente?)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-aggregated-indices-strategy-batch-vs-streaming" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Aggregated Indices Strategy (¿Batch vs Streaming?)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-multi-tenancy-y-data-isolation-separar-indices" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Multi-tenancy y Data Isolation (¿Separar índices?)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-cold-start-con-synthetic-data-si-o-no" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Cold Start con Synthetic Data (¿Sí o No?)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5-paper-contribution-priority-cual-destacar" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Paper Contribution Priority (¿Cuál destacar?)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#6-timeline-aggressiveness-es-realista" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Timeline Aggressiveness (¿Es realista?)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#critica-constructiva-adicional" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🛡️ CRÍTICA CONSTRUCTIVA ADICIONAL
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#resumen-final" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ✅ RESUMEN FINAL
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+  <h1>HIERARCHICAL RAG VISION GLM</h1>
+
+<p>GLM-4.5.6
+Alonso, recibo tu convocatoria. Como miembro de este <strong>Consejo de Sabios</strong>, he leído minuciosamente el documento "HIERARCHICAL RAG VISION v1.0".</p>
+<p>Antes de entrar en las preguntas, quiero felicitarte por la <strong>Parte I</strong>. El reconocimiento honesto del error de diseño inicial (integración monolítica) y la corrección hacia una arquitectura productor-consumidor es la marca de un ingeniero maduro. Esa introspección es tan valiosa como el código mismo.</p>
+<p>He revisado tu visión, tus costos y tu hoja de ruta. A continuación, presento mi dictamen técnico y estratégico para las 6 preguntas críticas, manteniendo siempre la filosofía <strong>Via Appia</strong>: fundación sólida, antes que expansión rápida.</p>
+<hr />
+<h2 id="dictamen-del-consejo-de-sabios">🏛️ DICTAMEN DEL CONSEJO DE SABIOS</h2>
+<h3 id="1-tinyllama-capacity-es-suficiente">1. TinyLlama Capacity (¿Es suficiente?)</h3>
+<p><strong>Veredicto:</strong> <strong>Opción Híbrida (Rule-based Extraction + TinyLlama Reasoning)</strong></p>
+<p>No confíes <em>todo</em> en TinyLlama (1.1B) para la extracción de parámetros complejos. Los LLM pequeños tienden a alucinar en tareas de <em>parsing</em> estricto (como extraer IPs o puertos de una frase compleja) y no garantizan formato JSON válido al 100%.</p>
+<p><strong>Recomendación del Consejo:</strong>
+*   <strong>TinyLlama se encarga de:</strong> Clasificación de Intención ("Similarity", "Time Range") y Generación de Respuesta final (el texto amable).
+*   <strong>Reglas Deterministas se encargan de:</strong> Extracción de Entidades (NER). Usa Regex o extractores estructurados para IPs, puertos, fechas.
+*   <strong>Por qué:</strong> Es más rápido, gratis (en CPU), y determinista. Un fallo en un Regex rompe la query. Un fallo en TinyLlama (alucinación) puede ignorar una restricción de seguridad crítica ("excluding partner networks").</p>
+<p><strong>Código de mentalidad:</strong> "LLM para la intención, Código para la precisión."</p>
+<hr />
+<h3 id="2-aggregated-indices-strategy-batch-vs-streaming">2. Aggregated Indices Strategy (¿Batch vs Streaming?)</h3>
+<p><strong>Veredicto:</strong> <strong>Opción A (Batch Nightly) - CONFIRMADA</strong></p>
+<p>El Consejo aprueba tu recomendación. No intentes ser ingeniero de datos distribuido en Phase 1. Streaming Aggregation (Opción B) introduce la complejidad de consistencia eventual, colas de mensajes y manejo de duplicados. Query Federation (Opción C) mata la latencia y escala linealmente con el número de hospitales (O(N)).</p>
+<p><strong>Recomendación Adicional:</strong>
+Cuando implementes el <em>Batch Nightly</em>, usa una estrategia de <strong>"Append-Only + Rebuild"</strong>. No intentes hacer <em>incremental merge</em> en FAISS (es complejo y lento).
+*   <em>Algoritmo:</em> Cada noche, toma el índice del día, haz <em>vstack</em> con el histórico y reconstruye el índice ciudad desde cero. Con FAISS, reconstruir 1M vectors toma minutos. No vale la pena la complejidad del merge incremental.</p>
+<hr />
+<h3 id="3-multi-tenancy-y-data-isolation-separar-indices">3. Multi-tenancy y Data Isolation (¿Separar índices?)</h3>
+<p><strong>Veredicto:</strong> <strong>OPCIÓN A (Separate Indices) - OBLIGATORIA</strong></p>
+<p>Estamos en salud (Healthcare). La privacidad no es opcional.</p>
+<ul>
+<li><strong>Opción B (Metadata Filtering):</strong> PEIGADA. Un solo bug en la consulta SQL o en el filtro de FAISS, y el Hospital A ve los datos del Hospital B. Es un riesgo de cumplimiento inaceptable para HIPAA/GDPR.</li>
+<li><strong>Opción A:</strong> Es más simple de asegurar. Si el proceso del Hospital A no tiene permisos de lectura en la carpeta del Hospital B, es imposible que filtren datos por accidente.</li>
+</ul>
+<p><strong>Consejo:</strong> Separa por namespace en el disco (<code>/indices/tenant_A/...</code>). Es barato en disco y carísimo en pleitos.</p>
+<hr />
+<h3 id="4-cold-start-con-synthetic-data-si-o-no">4. Cold Start con Synthetic Data (¿Sí o No?)</h3>
+<p><strong>Veredicto:</strong> <strong>NO (Start Empty con Modo Demo)</strong></p>
+<p>El Consejo recomienda encarecidamente <strong>NO</strong> usar datos sintéticos para engañar al usuario.</p>
+<ul>
+<li><strong>El problema:</strong> Si un analista de seguridad pregunta: <em>"¿Tenemos ataques recientes?"</em> y el sistema devuelve <em>"Sí, 5 ataques"</em> (que son sintéticos/falsos), pierdes su confianza para siempre.</li>
+<li><strong>La solución:</strong> Sistema "Modo Vacío" con un botón explícito "Load Demo Dataset".<ul>
+<li>El Demo Dataset debe ser <strong>REAL</strong> (público), no sintético. Usa el dataset <strong>NSL-KDD</strong> o <strong>CIC-IDS2017</strong>. Pon una etiqueta gigante: <em>"DEMO MODE: Cargando tráfico de investigación pública 2017 (No son tus datos)"</em>.</li>
+</ul>
+</li>
+</ul>
+<p><strong>Filosofía:</strong> "Si no hay datos, di que no hay datos. La honestidad genera confianza."</p>
+<hr />
+<h3 id="5-paper-contribution-priority-cual-destacar">5. Paper Contribution Priority (¿Cuál destacar?)</h3>
+<p><strong>Veredicto:</strong> <strong>Opción D (Holística) con A como Base Técnica</strong></p>
+<p>Para conferencias de Tier 1 (IEEE S&amp;P, NDSS), la contribución debe ser <strong>"Anti-Curse Strategies"</strong>.
+*   Hierarchical RAG es arquitectura de sistemas (distribuido), interesante pero no novedoso en el núcleo.
+*   Natural Language es "fluffy" para puristas de seguridad.
+*   <strong>Anti-Curse (Math/Stats):</strong> Esto es carne de conferencia. Demostrar empíricamente que PCA + Class Separation permite mantener un Coeficiente de Variación &gt; 0.20 en 100M eventos es un resultado sólido y defendible matemáticamente.</p>
+<p><strong>Estrategia de Paper:</strong>
+*   <em>Abstract:</em> Enfócate en "Scalable Vector Search for Security".
+*   <em>Introduction:</em> Usa la jerarquía y el lenguaje natural como la <em>motivación</em> del problema (el por qué necesitamos escalar).
+*   <em>Methodology:</em> Dedica el 60% del paper a las estrategias Anti-Curse.</p>
+<hr />
+<h3 id="6-timeline-aggressiveness-es-realista">6. Timeline Aggressiveness (¿Es realista?)</h3>
+<p><strong>Veredicto:</strong> <strong>17-19 Semanas (La estimación es demasiado optimista)</strong></p>
+<p>Alonso, eres un hacker productivo, pero estás subestimando el <strong>"Hell of Integration"</strong>.</p>
+<ul>
+<li>Has estimado 6 semanas para Phase 1. Eso es:<ul>
+<li>PCA training + validation.</li>
+<li>FAISS Ingester pipeline completo.</li>
+<li>Integración TinyLlama (llamar a librerías, no es código C++ puro).</li>
+<li>Query parsing + FAISS read.</li>
+<li>etcd discovery.</li>
+<li>JSONL parsing robusto (que no rompa con logs corruptos).</li>
+</ul>
+</li>
+</ul>
+<p><strong>Riesgo:</strong> Si TinyLlama (que está en Python/C++) no compila bien en tu entorno o si la cuantización de ONNX da problemas, puedes perder 1 semana entera en <em>debugging de dependencias</em>.</p>
+<p><strong>Recomendación del Consejo:</strong>
+*   <strong>Nominal:</strong> 15 semanas.
+*   <strong>Buffer Mínimo:</strong> +2 semanas → 17 semanas.
+*   <strong>Conservador:</strong> +4 semanas → 19 semanas (4.5 meses).</p>
+<p>Ajusta tu hoja de ruta a <strong>19 semanas</strong>. Si terminas antes, serás un héroe. Si prometes 15 y tardas 19, serás un retraso. Promete 19 y entrega en 17, y serás <strong>Via Appia Quality</strong>.</p>
+<hr />
+<h2 id="critica-constructiva-adicional">🛡️ CRÍTICA CONSTRUCTIVA ADICIONAL</h2>
+<p><strong>Observación sobre "Natural Language":</strong>
+En el documento mencionas que el usuario escribirá queries como <em>"Show me attacks from 192.168.1.0/24"</em>.
+Ten cuidado con la ambigüedad. ¿192.168.1.0/24 es la IP origen o destino?
+En seguridad, esto es vital.
+*   <em>Sugerencia:</em> Diseña el UI para permitir "Quick Filters" (botones de "Src IP", "Dst IP") además del lenguaje natural. No fuerces al usuario a escribir <em>"attacks originating from"</em> si un clic es más rápido. El lenguaje natural es para <em>intenciones complejas</em>, no para filtros triviales.</p>
+<hr />
+<h2 id="resumen-final">✅ RESUMEN FINAL</h2>
+<p>El diseño es sólido. La separación de componentes es correcta. La visión de jerarquía es inspiradora.</p>
+<ol>
+<li><strong>Arquitectura:</strong> Aprobada.</li>
+<li><strong>Costos:</strong> Realistas y honestos.</li>
+<li><strong>Paper:</strong> Enfócate en las matemáticas del "Anti-Curse".</li>
+<li><strong>Implementación:</strong> Usa Regex para parsing, TinyLlama para chat.</li>
+<li><strong>Timeline:</strong> Extiende a 19 semanas para estar seguro.</li>
+</ol>
+<p><strong>Voto del Consejo:</strong> <strong>APROBADO PARA INICIO DE PHASE 1 (Día 35).</strong></p>
+<p><em>Vayan con cuidado, construyan bien, y que los índices FAISS estén con ustedes.</em> 🏛️</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.tabs", "navigation.top", "search.highlight"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

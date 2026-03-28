@@ -1,0 +1,2294 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source embedded-ML NDR for hospitals and schools">
+      
+      
+        <meta name="author" content="Alonso Isidoro Roman">
+      
+      
+        <link rel="canonical" href="https://alonsoir.github.io/argus/ARCHITECTURE/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>ML Defender (aRGus NDR) — Architecture - ML Defender (aRGus NDR)</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#ml-defender-argus-ndr-architecture" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="ML Defender (aRGus NDR)" class="md-header__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ML Defender (aRGus NDR)
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              ML Defender (aRGus NDR) — Architecture
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../README.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../docs/ARCHITECTURE.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../docs/BACKLOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Backlog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../docs/SECURITY_MODEL.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Security Model
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../docs/adr/ADR-013 seed distribution component authentication.md" class="md-tabs__link">
+          
+  
+  
+  ADRs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../docs/contracts/Protobuf contracts.md" class="md-tabs__link">
+          
+  
+  
+  Contracts
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="ML Defender (aRGus NDR)" class="md-nav__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ML Defender (aRGus NDR)
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../README.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/ARCHITECTURE.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/BACKLOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/SECURITY_MODEL.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADRs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ADRs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/adr/ADR-013 seed distribution component authentication.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013 Seed Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/adr/ADR-021-deployment-topology-seed-families.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-021 Topology SSOT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/adr/ADR-022-threat-model-opcion2-descartada.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-022 Threat Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/contracts/Protobuf contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protobuf
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/contracts/JSON contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JSON
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/contracts/Rag security commands.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#table-of-contents" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Table of Contents
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1-vision-and-motivation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Vision and Motivation
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-target-audience" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Target Audience
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-system-overview" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. System Overview
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. System Overview">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#core-properties" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Core properties
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-pipeline-components" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Pipeline Components
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4. Pipeline Components">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#41-etcd-server" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.1 etcd-server
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#42-sniffer" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.2 sniffer
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#43-ml-detector" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.3 ml-detector
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4.3 ml-detector">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#path-a-fast-detector-fastdetectoris_suspicious" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Path A — Fast Detector (FastDetector::is_suspicious())
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#path-b-ml-detector-onnx-runtime" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Path B — ML Detector (ONNX Runtime)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#44-firewall-acl-agent" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.4 firewall-acl-agent
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#45-rag-ingester" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.5 rag-ingester
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#46-rag-security" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.6 rag-security
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-data-flow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Data Flow
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-ascii-pipeline-diagram" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. ASCII Pipeline Diagram
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-technology-stack" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Technology Stack
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-architectural-decision-records" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. Architectural Decision Records
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#9-deployment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9. Deployment
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="9. Deployment">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#91-experimental-vagrant-single-vm-lab" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9.1 Experimental — Vagrant Single-VM Lab
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#92-production-bare-metal-linux" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9.2 Production — Bare-Metal Linux
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#93-deployment-forms-roadmap" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9.3 Deployment Forms (Roadmap)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#94-configuration-json-is-the-law" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9.4 Configuration — "JSON is the law"
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#10-security-design" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10. Security Design
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="10. Security Design">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#101-cryptographic-chain-of-trust" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10.1 Cryptographic Chain of Trust
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#102-hkdf-context-symmetry-adr-013-phase-2-day-99" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10.2 HKDF Context Symmetry (ADR-013 PHASE 2 — DAY 99)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#103-fail-closed-behavior" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10.3 Fail-Closed Behavior
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#104-data-integrity" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10.4 Data Integrity
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#105-llm-confinement-adr-010" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10.5 LLM Confinement (ADR-010)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#106-trace-id-system" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10.6 Trace ID System
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#107-threat-model-summary-adr-022" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10.7 Threat Model Summary (ADR-022)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#11-ml-subsystem" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        11. ML Subsystem
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="11. ML Subsystem">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#111-model-architecture" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        11.1 Model Architecture
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#112-feature-engineering" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        11.2 Feature Engineering
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#113-sentinel-value-taxonomy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        11.3 Sentinel Value Taxonomy
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#114-generalization-limitations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        11.4 Generalization Limitations
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#12-performance-envelope" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        12. Performance Envelope
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="12. Performance Envelope">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#validated-vagrant-virtualbox" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Validated (Vagrant / VirtualBox)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#next-milestone" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Next milestone
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#13-known-limitations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        13. Known Limitations
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#14-roadmap" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        14. Roadmap
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="14. Roadmap">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#phase-1-current-day-100" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        PHASE 1 — Current (DAY 100)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#phase-2-features-post-arxiv" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        PHASE 2 — Features (post-arXiv)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fase-3-distributed-deployment-post-arxiv-consejo-review-required" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        FASE 3 — Distributed deployment (post-arXiv, Consejo review required)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#long-term-gaia-vision" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Long-term — GAIA Vision
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#contributing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Contributing
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="ml-defender-argus-ndr-architecture">ML Defender (aRGus NDR) — Architecture</h1>
+<blockquote>
+<p><strong>Version:</strong> 7.0.0 — DAY 100 (28 marzo 2026)
+<strong>Authors:</strong> Alonso Isidoro Román, with the Consejo de Sabios (Claude, Grok, ChatGPT, DeepSeek, Qwen, Gemini, Parallel.ai)
+<strong>License:</strong> Open Source — see <code>LICENSE</code>
+<strong>Status:</strong> Active research system — arXiv preprint in preparation</p>
+</blockquote>
+<hr />
+<h2 id="table-of-contents">Table of Contents</h2>
+<ol>
+<li><a href="#1-vision-and-motivation">Vision and Motivation</a></li>
+<li><a href="#2-target-audience">Target Audience</a></li>
+<li><a href="#3-system-overview">System Overview</a></li>
+<li><a href="#4-pipeline-components">Pipeline Components</a></li>
+<li><a href="#5-data-flow">Data Flow</a></li>
+<li><a href="#6-ascii-pipeline-diagram">ASCII Pipeline Diagram</a></li>
+<li><a href="#7-technology-stack">Technology Stack</a></li>
+<li><a href="#8-architectural-decision-records">Architectural Decision Records</a></li>
+<li><a href="#9-deployment">Deployment</a></li>
+<li><a href="#10-security-design">Security Design</a></li>
+<li><a href="#11-ml-subsystem">ML Subsystem</a></li>
+<li><a href="#12-performance-envelope">Performance Envelope</a></li>
+<li><a href="#13-known-limitations">Known Limitations</a></li>
+<li><a href="#14-roadmap">Roadmap</a></li>
+</ol>
+<hr />
+<h2 id="1-vision-and-motivation">1. Vision and Motivation</h2>
+<p>ML Defender (internal codename <strong>aRGus NDR</strong>) is an open-source, network-level Intrusion Detection System (IDS) / Network Detection and Response (NDR) system written in <strong>C++20</strong>, designed for <strong>resource-constrained organizations</strong>: hospitals, schools, municipal governments, and small businesses.</p>
+<p>These organizations are the most frequent victims of ransomware (WannaCry, NotPetya, Conti, LockBit) and are simultaneously the least equipped to defend themselves. Commercial NDR solutions require enterprise licensing, dedicated security staff, and cloud connectivity — all of which are out of reach for a rural hospital or a primary school.</p>
+<p>ML Defender is built on a core philosophy:</p>
+<blockquote>
+<p><strong>"Via Appia Quality"</strong> — build for permanence. Systems that will still work in 10 years without a support contract.</p>
+</blockquote>
+<p>The system runs entirely <strong>on-premises</strong>, with no cloud dependency, no telemetry, and no external API calls in its critical path. It is designed to be deployed by a single sysadmin with no security background, yet provide detection capabilities comparable to commercial tools.</p>
+<hr />
+<h2 id="2-target-audience">2. Target Audience</h2>
+<p><strong>For this document:</strong>
+- External contributors evaluating the codebase
+- Security researchers validating the detection methodology
+- Potential adopters assessing deployment feasibility
+- Academic reviewers of the companion arXiv preprint</p>
+<p><strong>For the system itself:</strong>
+- IT staff at resource-constrained organizations
+- Network administrators wanting passive, zero-impact monitoring
+- SOC teams at small-to-medium organizations needing an affordable NDR layer</p>
+<hr />
+<h2 id="3-system-overview">3. System Overview</h2>
+<p>ML Defender operates as a <strong>passive network monitor</strong> combined with an <strong>active response layer</strong>. It captures packets at the kernel level via eBPF/XDP, extracts statistical flow features, classifies traffic using an embedded Random Forest model (ONNX Runtime), and — upon detection of malicious flows — applies firewall rules automatically.</p>
+<p>A secondary <strong>Retrieval-Augmented Generation (RAG)</strong> subsystem indexes historical detection events and makes them queryable via a confined local LLM, enabling forensic analysis without external connectivity.</p>
+<h3 id="core-properties">Core properties</h3>
+<table>
+<thead>
+<tr>
+<th>Property</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Language</td>
+<td>C++20</td>
+</tr>
+<tr>
+<td>Detection latency</td>
+<td>&lt; 1 ms (Fast Detector, Path A)</td>
+</tr>
+<tr>
+<td>ML inference latency</td>
+<td>&lt; 5 ms (ONNX Runtime, Path B)</td>
+</tr>
+<tr>
+<td>Encryption</td>
+<td>ChaCha20-Poly1305 IETF (all inter-component messages)</td>
+</tr>
+<tr>
+<td>Key derivation</td>
+<td>HKDF-SHA256 via libsodium 1.0.19</td>
+</tr>
+<tr>
+<td>Integrity</td>
+<td>HMAC-SHA256 per message and per CSV row</td>
+</tr>
+<tr>
+<td>Compression</td>
+<td>LZ4 (inter-component transport)</td>
+</tr>
+<tr>
+<td>Coordination</td>
+<td>etcd v3 (service discovery, configuration)</td>
+</tr>
+<tr>
+<td>Messaging</td>
+<td>ZeroMQ (PUSH/PULL topology)</td>
+</tr>
+<tr>
+<td>Test coverage</td>
+<td>24/24 CTest suites ✅</td>
+</tr>
+<tr>
+<td>Fail-closed</td>
+<td>set_terminate() + fail-closed EventLoader/RAGLogger</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="4-pipeline-components">4. Pipeline Components</h2>
+<p>The system consists of <strong>6 active components</strong>, each running as an independent process. They communicate exclusively via encrypted ZeroMQ channels, with etcd as the service discovery authority.</p>
+<hr />
+<h3 id="41-etcd-server">4.1 <code>etcd-server</code></h3>
+<p><strong>Role:</strong> Configuration authority and service discovery broker.</p>
+<p>All components register their ZeroMQ endpoint addresses with etcd on startup. No component has a hardcoded peer address — all addresses are resolved dynamically from etcd at connection time.</p>
+<p><strong>Key responsibilities:</strong>
+- Publish resource paths (ZeroMQ endpoints) for all other components
+- Store and distribute the shared HMAC key (with rotation support — ADR-004)
+- Provide a single source of truth for pipeline configuration</p>
+<p><strong>ADR reference:</strong> ADR-005, ADR-004</p>
+<hr />
+<h3 id="42-sniffer">4.2 <code>sniffer</code></h3>
+<p><strong>Role:</strong> Kernel-space packet capture and flow feature extraction.</p>
+<p>The sniffer attaches an <strong>eBPF/XDP</strong> program to the monitored network interface and captures packets at the earliest possible point in the Linux network stack — before the kernel's networking subsystem processes them.</p>
+<p>From raw packets, the sniffer assembles <strong>network flows</strong> (5-tuple) and computes a <strong>127-column feature vector</strong> per flow over a configurable time window (default: 10 seconds).</p>
+<p><strong>Output:</strong> Protobuf-serialized <code>FlowRecord</code> messages, encrypted with <code>CryptoTransport</code> (HKDF context: <code>CTX_SNIFFER_TO_ML</code>), LZ4 compressed, published to <code>ml-detector</code> via ZeroMQ PUSH.</p>
+<p><strong>ADR reference:</strong> ADR-006 (DEBT-FD-001), ADR-009, ADR-013</p>
+<hr />
+<h3 id="43-ml-detector">4.3 <code>ml-detector</code></h3>
+<p><strong>Role:</strong> Dual-path classification engine.</p>
+<h4 id="path-a-fast-detector-fastdetectoris_suspicious">Path A — Fast Detector (<code>FastDetector::is_suspicious()</code>)</h4>
+<p>Handcrafted rule engine with compiled-in thresholds. Operates in <strong>&lt; 1 ms</strong>.</p>
+<blockquote>
+<p>⚠️ <strong>DEBT-FD-001:</strong> Path A currently ignores <code>sniffer.json</code> thresholds (ADR-006, PHASE 2).</p>
+</blockquote>
+<h4 id="path-b-ml-detector-onnx-runtime">Path B — ML Detector (ONNX Runtime)</h4>
+<p>Random Forest classifier trained on CTU-13 Neris. 127-column feature vector. <strong>F1 = 0.9985</strong>.</p>
+<p><strong>Validated performance (CTU-13 Neris, DAY 86):</strong>
+| Metric | Value |
+|---|---|
+| F1 Score | 0.9985 |
+| Recall | 1.0000 |
+| False Positive Rate | 6.61% |
+| True Positives | 646 |</p>
+<p><strong>Scoring (ADR-007):</strong>
+- OR logic → alert
+- AND logic → block (prevents ML score poisoning)</p>
+<p><strong>Output:</strong> Alert messages and block commands to <code>firewall-acl-agent</code> (context: <code>CTX_ML_TO_FIREWALL</code>); flow records to daily CSV consumed by <code>rag-ingester</code> (context: <code>CTX_ML_TO_RAG</code>).</p>
+<p><strong>ADR reference:</strong> ADR-007, ADR-003, ADR-011, ADR-013</p>
+<hr />
+<h3 id="44-firewall-acl-agent">4.4 <code>firewall-acl-agent</code></h3>
+<p><strong>Role:</strong> Automated network response layer.</p>
+<p>Receives block commands from <code>ml-detector</code> via <code>CryptoTransport</code> (context: <code>CTX_ML_TO_FIREWALL</code>) and applies <strong>iptables</strong> rules. Implements grace period and cooldown. Never blocks without ml-detector command.</p>
+<p><strong>ADR reference:</strong> ADR-007</p>
+<hr />
+<h3 id="45-rag-ingester">4.5 <code>rag-ingester</code></h3>
+<p><strong>Role:</strong> Historical event indexer and FAISS index builder.</p>
+<p>Consumes ml-detector daily CSV and firewall audit CSV. Verifies HMAC-SHA256 per row. Builds FAISS indices and SQLite MetadataDB (14-column schema, including <code>trace_id</code>).</p>
+<p><strong>ADR reference:</strong> ADR-002, ADR-008</p>
+<hr />
+<h3 id="46-rag-security">4.6 <code>rag-security</code></h3>
+<p><strong>Role:</strong> Local RAG query interface — confined LLM for forensic analysis.</p>
+<p>TinyLlama running entirely locally. Read-only. Strictly confined via skills registry (ADR-010). No internet access, no external API calls.</p>
+<p><strong>ADR reference:</strong> ADR-010, ADR-002</p>
+<hr />
+<h2 id="5-data-flow">5. Data Flow</h2>
+<pre><code>[Network Interface]
+        │
+        ▼ eBPF/XDP (kernel space)
+[sniffer]
+   • 127-column FlowRecord extraction
+   • 10s aggregation window
+   • Protobuf serialization
+        │ ZeroMQ PUSH
+        │ CryptoTransport(CTX_SNIFFER_TO_ML)
+        │ HKDF-SHA256 + ChaCha20-Poly1305 + LZ4
+        ▼
+[ml-detector]
+   • Path A: FastDetector (&lt; 1ms, hardcoded rules)
+   • Path B: ONNX Runtime RandomForest (&lt; 5ms)
+   • Consensus scoring (ADR-007)
+   • trace_id generation per flow
+        │                         │
+        │ CryptoTransport          │ Daily CSV (HMAC per row)
+        │ (CTX_ML_TO_FIREWALL)     │ CryptoTransport(CTX_ML_TO_RAG)
+        ▼                         ▼
+[firewall-acl-agent]         [rag-ingester]
+   • iptables rules              • FAISS index build
+   • Audit CSV                   • SQLite MetadataDB
+                                      │
+                                      ▼
+                                [rag-security]
+                                • FAISS similarity search
+                                • TinyLlama (local, confined)
+                                • Skills registry (ADR-010)
+
+[etcd-server] ──────────────► all components
+   • ZeroMQ endpoint registry
+   • HMAC key distribution
+   • Pipeline configuration
+</code></pre>
+<hr />
+<h2 id="6-ascii-pipeline-diagram">6. ASCII Pipeline Diagram</h2>
+<pre><code>┌─────────────────────────────────────────────────────────────────────────┐
+│                        ML DEFENDER (aRGus NDR)                          │
+│                      Network Detection and Response                      │
+└─────────────────────────────────────────────────────────────────────────┘
+
+         ┌──────────────┐
+         │  etcd-server │  ◄── Configuration authority
+         │   (port 2379)│      Service discovery
+         └──────┬───────┘      HMAC key distribution
+                │ service discovery (all components)
+                │
+ ┌──────────────┼──────────────────────────────────────────────┐
+ │              │                                              │
+ ▼              ▼              ▼              ▼                ▼
+┌─────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────────┐
+│ sniffer │ │ml-detect │ │ firewall │ │rag-ingest│ │ rag-security │
+│         │ │          │ │-acl-agent│ │          │ │              │
+│ eBPF/   │ │ Path A:  │ │          │ │ FAISS    │ │ TinyLlama    │
+│ XDP     │─►FastDetect│─► iptables │ │ SQLite   │ │ (local only) │
+│         │ │ Path B:  │ │ rules    │ │ MetadataDB│ │ Skills API  │
+│ 127-col │ │ ONNX RF  │ │          │ │          │─► query iface │
+│ features│ │          │ │          │ │          │ │              │
+└─────────┘ └──────────┘ └──────────┘ └──────────┘ └──────────────┘
+     │            │                         ▲
+     │ ZeroMQ     │ ZeroMQ                  │
+     │ PUSH       │ PUSH                    │
+     │ HKDF+      │ CSV                     │
+     │ ChaCha20   │ + HMAC                  │
+     │ + LZ4      │                         │
+     └────────────┘─────────────────────────┘
+
+Legend:
+  ─► ZeroMQ encrypted channel (HKDF-SHA256 + ChaCha20-Poly1305 + LZ4)
+  ──► etcd service discovery (gRPC)
+  CSV files protected with HMAC-SHA256 per row
+  All channels use symmetric HKDF contexts (contexts.hpp)
+</code></pre>
+<hr />
+<h2 id="7-technology-stack">7. Technology Stack</h2>
+<table>
+<thead>
+<tr>
+<th>Layer</th>
+<th>Technology</th>
+<th>Rationale</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Language</td>
+<td>C++20</td>
+<td>Sub-microsecond latency; zero GC pauses; embedded target compatibility</td>
+</tr>
+<tr>
+<td>Packet capture</td>
+<td>eBPF/XDP</td>
+<td>Kernel-bypass; zero-copy; earliest hook point in Linux network stack</td>
+</tr>
+<tr>
+<td>Messaging</td>
+<td>ZeroMQ 4.x</td>
+<td>Battle-tested; PUSH/PULL topology; cross-platform</td>
+</tr>
+<tr>
+<td>Serialization</td>
+<td>Protocol Buffers (proto3)</td>
+<td>Schema-enforced; compact binary; forward-compatible</td>
+</tr>
+<tr>
+<td>Encryption</td>
+<td>ChaCha20-Poly1305 IETF (libsodium 1.0.19)</td>
+<td>AEAD; constant-time; no hardware AES dependency</td>
+</tr>
+<tr>
+<td>Key derivation</td>
+<td>HKDF-SHA256 (libsodium 1.0.19)</td>
+<td>RFC 5869; seed → channel key, never direct use</td>
+</tr>
+<tr>
+<td>Integrity</td>
+<td>HMAC-SHA256</td>
+<td>Per-message and per-CSV-row audit trail</td>
+</tr>
+<tr>
+<td>Compression</td>
+<td>LZ4</td>
+<td>Fastest real-time compression; applied before encryption</td>
+</tr>
+<tr>
+<td>Coordination</td>
+<td>etcd v3</td>
+<td>Distributed KV with watch semantics; gRPC transport</td>
+</tr>
+<tr>
+<td>ML runtime</td>
+<td>ONNX Runtime</td>
+<td>Vendor-neutral; supports RandomForest, future neural models</td>
+</tr>
+<tr>
+<td>Vector search</td>
+<td>FAISS (Facebook AI)</td>
+<td>Approximate nearest-neighbor at scale; CPU-only deployment</td>
+</tr>
+<tr>
+<td>Metadata</td>
+<td>SQLite 3</td>
+<td>Zero-config; embedded; ACID; 14-column MetadataDB schema</td>
+</tr>
+<tr>
+<td>LLM</td>
+<td>TinyLlama (local)</td>
+<td>Fully offline; &lt; 2GB RAM; confined via skills registry</td>
+</tr>
+<tr>
+<td>Build system</td>
+<td>CMake + Conan 2</td>
+<td>Reproducible; cross-platform; <code>NO_DEFAULT_PATH</code> for libsodium</td>
+</tr>
+<tr>
+<td>Test framework</td>
+<td>CTest + custom harnesses</td>
+<td>24/24 passing; crypto, HMAC, ML, RAG, trace_id, INTEG suites</td>
+</tr>
+<tr>
+<td>VM / CI</td>
+<td>Vagrant + VirtualBox</td>
+<td>Multi-VM lab simulation; repeatable dataset replay</td>
+</tr>
+<tr>
+<td>CI (static)</td>
+<td>GitHub Actions ubuntu-latest</td>
+<td>JSON validation, CMakeLists, ADRs, contexts.hpp, set_terminate</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="8-architectural-decision-records">8. Architectural Decision Records</h2>
+<p>All major architectural decisions are documented in <code>docs/adr/</code>.</p>
+<table>
+<thead>
+<tr>
+<th>ADR</th>
+<th>Title</th>
+<th>Status</th>
+<th>Impact</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>ADR-001</td>
+<td>Deployment stack (Vagrant, Docker, bare-metal)</td>
+<td>ACCEPTED</td>
+<td>Deployment model</td>
+</tr>
+<tr>
+<td>ADR-002</td>
+<td>Multi-engine provenance situational intelligence</td>
+<td>ACCEPTED</td>
+<td>RAG architecture</td>
+</tr>
+<tr>
+<td>ADR-003</td>
+<td>ML autonomous evolution</td>
+<td>ACCEPTED</td>
+<td>Retraining pipeline</td>
+</tr>
+<tr>
+<td>ADR-004</td>
+<td>HMAC key rotation with cooldown windows</td>
+<td>ACCEPTED</td>
+<td>Security — key management</td>
+</tr>
+<tr>
+<td>ADR-005</td>
+<td>etcd client restoration</td>
+<td>ACCEPTED</td>
+<td>Resilience</td>
+</tr>
+<tr>
+<td>ADR-006</td>
+<td>Fast Detector hardcoded thresholds (DEBT-FD-001)</td>
+<td>ACCEPTED (debt)</td>
+<td>Path A architecture</td>
+</tr>
+<tr>
+<td>ADR-007</td>
+<td>AND-consensus scoring for firewall blocks</td>
+<td>ACCEPTED</td>
+<td>Detection logic</td>
+</tr>
+<tr>
+<td>ADR-008</td>
+<td>Flow graphs and forensic retraining</td>
+<td>ACCEPTED</td>
+<td>ML evolution</td>
+</tr>
+<tr>
+<td>ADR-009</td>
+<td>Suspicious datagram capture and correlation</td>
+<td>ACCEPTED</td>
+<td>Feature extraction</td>
+</tr>
+<tr>
+<td>ADR-010</td>
+<td>Confined LLM with skills registry (rag-security)</td>
+<td>ACCEPTED</td>
+<td>LLM safety</td>
+</tr>
+<tr>
+<td>ADR-011</td>
+<td>Log unification across 6 components</td>
+<td>ACCEPTED</td>
+<td>Observability</td>
+</tr>
+<tr>
+<td>ADR-012</td>
+<td>Plugin loader architecture</td>
+<td>PROPOSED</td>
+<td>Extensibility</td>
+</tr>
+<tr>
+<td>ADR-013</td>
+<td>Seed distribution and component authentication</td>
+<td>ACCEPTED</td>
+<td>Crypto chain</td>
+</tr>
+<tr>
+<td>ADR-014</td>
+<td>Fuzzing strategy</td>
+<td>ACCEPTED</td>
+<td>Testing</td>
+</tr>
+<tr>
+<td>ADR-015</td>
+<td>eBPF program integrity verification</td>
+<td>PROPOSED (P1)</td>
+<td>Kernel security</td>
+</tr>
+<tr>
+<td>ADR-016</td>
+<td>eBPF runtime kernel telemetry (7th component)</td>
+<td>PROPOSED (P2)</td>
+<td>Observability</td>
+</tr>
+<tr>
+<td>ADR-017</td>
+<td>Plugin interface hierarchy</td>
+<td>ACCEPTED</td>
+<td>Extensibility</td>
+</tr>
+<tr>
+<td>ADR-018</td>
+<td>eBPF kernel plugin loader</td>
+<td>ACCEPTED</td>
+<td>Kernel plugins</td>
+</tr>
+<tr>
+<td>ADR-019</td>
+<td>OS hardening and secure deployment</td>
+<td>ACCEPTED</td>
+<td>Deployment security</td>
+</tr>
+<tr>
+<td>ADR-020</td>
+<td>Crypto and compression mandatory (no flags)</td>
+<td>ACCEPTED</td>
+<td>Transport contract</td>
+</tr>
+<tr>
+<td>ADR-021</td>
+<td>Deployment topology SSOT + seed families</td>
+<td>ACCEPTED (FASE 3)</td>
+<td>Distributed deployment</td>
+</tr>
+<tr>
+<td>ADR-022</td>
+<td>Threat model + Opción 2 discarded</td>
+<td>ACCEPTED</td>
+<td>Security model</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>For contributors:</strong> Before implementing any feature that touches detection logic, read ADR-007. Before modifying the RAG subsystem, read ADR-010. Before touching crypto, read ADR-013 and ADR-022. For all new ADRs, use the template in <code>docs/adr/</code>.</p>
+</blockquote>
+<hr />
+<h2 id="9-deployment">9. Deployment</h2>
+<h3 id="91-experimental-vagrant-single-vm-lab">9.1 Experimental — Vagrant Single-VM Lab</h3>
+<p>Used for all dataset replay experiments, stress testing, and CI validation.</p>
+<pre><code class="language-bash">cd /path/to/argus
+vagrant up
+vagrant ssh -c 'cd /vagrant &amp;&amp; make test'
+# → 24/24 ✅
+</code></pre>
+<p><strong>Provisioning (required before pipeline start):</strong></p>
+<pre><code class="language-bash">vagrant ssh -c 'sudo bash /vagrant/tools/provision.sh full'
+# Generates Ed25519 keypairs + 32-byte seeds for all 6 components
+# Paths: /etc/ml-defender/{component}/seed.bin (chmod 0600)
+</code></pre>
+<p><strong>Validated datasets:</strong>
+- CTU-13 Neris (botnet, DAY 79–87 baseline): F1 = 0.9985
+- CTU-13 bigFlows (mixed traffic, stress testing)</p>
+<p><strong>Stress test results (DAY 87):</strong>
+- VirtualBox NIC bottleneck confirmed at 33–38 Mbps
+- Pipeline itself: 100% of deliverable traffic processed, zero errors
+- Bare-metal testing is the next P1 milestone</p>
+<h3 id="92-production-bare-metal-linux">9.2 Production — Bare-Metal Linux</h3>
+<p><strong>Requirements:</strong>
+- Linux kernel ≥ 5.10 (eBPF/XDP support)
+- NIC with XDP driver support (Intel i40e, Mellanox mlx5)
+- ≥ 4 GB RAM
+- ≥ 2 CPU cores
+- No internet connectivity required (fully air-gapped capable)
+- Capabilities: sniffer needs <code>CAP_NET_RAW + CAP_NET_ADMIN</code>; firewall-acl-agent needs <code>CAP_NET_ADMIN</code>; all others unprivileged</p>
+<blockquote>
+<p>⚠️ <strong>Docker with <code>--privileged</code> is explicitly prohibited.</strong> eBPF/XDP requires direct kernel access. Use bare-metal or VM with full kernel access.</p>
+</blockquote>
+<p><strong>Target hardware:</strong>
+- Intel N100 mini PC (~150€) — primary target
+- Raspberry Pi 5 arm64 (~80€) — secondary target</p>
+<h3 id="93-deployment-forms-roadmap">9.3 Deployment Forms (Roadmap)</h3>
+<table>
+<thead>
+<tr>
+<th>Form</th>
+<th>Description</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Vagrant single-VM</td>
+<td>Lab, development, paper validation</td>
+<td>✅ Active</td>
+</tr>
+<tr>
+<td>Debian "Argus" appliance image</td>
+<td>Hardened Bookworm image, all components selectable</td>
+<td>⏳ Post-arXiv</td>
+</tr>
+<tr>
+<td>Individual Debian packages</td>
+<td>Per-component <code>.deb</code>, advanced operators</td>
+<td>⏳ Post-arXiv</td>
+</tr>
+<tr>
+<td>Ansible recipe (distributed)</td>
+<td>Topology from <code>deployment.yml</code>, Jinja2 JSON generation</td>
+<td>⏳ FASE 3</td>
+</tr>
+<tr>
+<td>RPM packages</td>
+<td>RedHat/CentOS/Fedora</td>
+<td>⏳ If demand</td>
+</tr>
+<tr>
+<td>Windows (firewall-acl-agent only)</td>
+<td>WFP/Npcap alternative to eBPF</td>
+<td>⏳ If demand, I+D required</td>
+</tr>
+</tbody>
+</table>
+<h3 id="94-configuration-json-is-the-law">9.4 Configuration — "JSON is the law"</h3>
+<p>All component configuration lives in JSON files stored in etcd. <strong>No component may hardcode a parameter that belongs in its config JSON.</strong> Components start from etcd, not from local files.</p>
+<p>The <code>deployment.yml</code> (FASE 3) will be the topology SSOT — defining instances, hosts, and seed families for distributed deployments.</p>
+<hr />
+<h2 id="10-security-design">10. Security Design</h2>
+<h3 id="101-cryptographic-chain-of-trust">10.1 Cryptographic Chain of Trust</h3>
+<pre><code>provision.sh → seed.bin (chmod 0600, /etc/ml-defender/{component}/)
+    └► SeedClient (explicit_bzero on unload, validates 0600 perms)
+        └► HKDF-SHA256 (libsodium 1.0.19, RFC 5869)
+            └► CryptoTransport (ChaCha20-Poly1305 IETF)
+                └► ZeroMQ channel (symmetric context per channel)
+</code></pre>
+<h3 id="102-hkdf-context-symmetry-adr-013-phase-2-day-99">10.2 HKDF Context Symmetry (ADR-013 PHASE 2 — DAY 99)</h3>
+<p><strong>Critical design rule:</strong> The HKDF context identifies the <strong>channel</strong>, not the component.
+Defined in <code>crypto-transport/include/crypto_transport/contexts.hpp</code>:</p>
+<pre><code class="language-cpp">// The context belongs to the CHANNEL — not the sender or receiver.
+// Emitter and receiver of the same channel use the same constant
+// → same derived key → no MAC error.
+constexpr const char* CTX_SNIFFER_TO_ML  = &quot;ml-defender:sniffer-to-ml-detector:v1&quot;;
+constexpr const char* CTX_ML_TO_FIREWALL = &quot;ml-defender:ml-detector-to-firewall:v1&quot;;
+// ... (6 channels total)
+</code></pre>
+<p>This rule was validated by catching a real asymmetry bug in DAY 99 (see ADR-022 — pedagogical case for the arXiv paper).</p>
+<h3 id="103-fail-closed-behavior">10.3 Fail-Closed Behavior</h3>
+<ul>
+<li><strong><code>set_terminate()</code></strong> registered in all 6 <code>main()</code> functions: unhandled exceptions → <code>[FATAL]</code> log + <code>std::abort()</code> (DAY 100)</li>
+<li><strong>EventLoader + RAGLogger</strong>: throw on <code>CryptoTransport</code> init failure — no component starts with degraded crypto (DAY 99)</li>
+<li><strong>Pipeline start gate</strong>: <code>provision-check</code> must pass before <code>pipeline-start</code> (DAY 95)</li>
+</ul>
+<h3 id="104-data-integrity">10.4 Data Integrity</h3>
+<p>Every CSV row written by <code>ml-detector</code> and <code>firewall-acl-agent</code> carries an HMAC-SHA256. <code>rag-ingester</code> verifies before indexing. A tampered audit log is detected and rejected.</p>
+<h3 id="105-llm-confinement-adr-010">10.5 LLM Confinement (ADR-010)</h3>
+<p><code>rag-security</code> LLM confined by skills registry. Attackers who control traffic payloads indexed in FAISS cannot use those payloads to exfiltrate data or execute commands.</p>
+<h3 id="106-trace-id-system">10.6 Trace ID System</h3>
+<p>Every flow gets a <code>trace_id</code> derived from the 5-tuple and a timestamp bucket. End-to-end correlation across all 6 components without transmitting the full 5-tuple in every message.</p>
+<h3 id="107-threat-model-summary-adr-022">10.7 Threat Model Summary (ADR-022)</h3>
+<table>
+<thead>
+<tr>
+<th>Threat</th>
+<th>Mitigation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Passive eavesdropping</td>
+<td>ChaCha20-Poly1305 IETF</td>
+</tr>
+<tr>
+<td>Message replay</td>
+<td>96-bit monotonic nonce</td>
+</tr>
+<tr>
+<td>Component impersonation</td>
+<td>seed.bin + HKDF → MAC failure</td>
+</tr>
+<tr>
+<td>seed.bin theft</td>
+<td>chmod 0600, mlock() (P2)</td>
+</tr>
+<tr>
+<td>Config tampering</td>
+<td>OS hardening (ADR-019)</td>
+</tr>
+<tr>
+<td>RAG prompt injection</td>
+<td>TinyLlama confined (ADR-010)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Out of scope (PHASE 1):</strong> kernel-level attacks (ADR-015), PKI compromise (not used — seed-based), multi-instance replay (FASE 3 families).</p>
+<hr />
+<h2 id="11-ml-subsystem">11. ML Subsystem</h2>
+<h3 id="111-model-architecture">11.1 Model Architecture</h3>
+<p>Random Forest, 100 trees, trained on CTU-13 Neris. ONNX export → ONNX Runtime C++ API. Inference &lt; 5ms per flow on single CPU core.</p>
+<h3 id="112-feature-engineering">11.2 Feature Engineering</h3>
+<p>127-column feature vector:
+- Flow-level statistics: duration, packet count, byte count, inter-arrival times
+- TCP flag ratios: SYN, ACK, RST (<code>rst_ratio</code>), FIN
+- Connection quality: <code>syn_ack_ratio</code>, half-open connections
+- Destination diversity: unique dst IPs, unique dst ports
+- Protocol signals: dst port 445 ratio (SMB), DNS query count
+- Temporal patterns: connection rate, burst detection</p>
+<h3 id="113-sentinel-value-taxonomy">11.3 Sentinel Value Taxonomy</h3>
+<table>
+<thead>
+<tr>
+<th>Value</th>
+<th>Name</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>-9999.0f</code></td>
+<td><code>MISSING_FEATURE_SENTINEL</code></td>
+<td>Feature not computable — deterministic routing</td>
+</tr>
+<tr>
+<td>Semantic values</td>
+<td>Various</td>
+<td>Domain-specific defaults (e.g., <code>0.5f</code> for TCP half-open)</td>
+</tr>
+</tbody>
+</table>
+<p><code>-9999.0f</code> is <strong>mathematically unreachable</strong> in real traffic. Embedded in all 40 float fields at initialization, preventing Proto3 default-value-suppression bug (DAY 76–78).</p>
+<h3 id="114-generalization-limitations">11.4 Generalization Limitations</h3>
+<table>
+<thead>
+<tr>
+<th>Attack Type</th>
+<th>Estimated Recall</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Neris IRC botnet</td>
+<td>1.0000</td>
+<td>Training distribution</td>
+</tr>
+<tr>
+<td>Generic port scanning</td>
+<td>~0.85–0.95</td>
+<td>Similar flow statistics</td>
+</tr>
+<tr>
+<td>WannaCry / NotPetya (SMB)</td>
+<td>~0.70–0.85</td>
+<td>Requires <code>rst_ratio</code>, <code>syn_ack_ratio</code> + retraining</td>
+</tr>
+<tr>
+<td>DNS-based C2</td>
+<td>Low</td>
+<td>Layer 3/4 only — DPI required</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="12-performance-envelope">12. Performance Envelope</h2>
+<h3 id="validated-vagrant-virtualbox">Validated (Vagrant / VirtualBox)</h3>
+<table>
+<thead>
+<tr>
+<th>Metric</th>
+<th>Value</th>
+<th>Condition</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Throughput (pipeline)</td>
+<td>100% at ≤ 38 Mbps</td>
+<td>VirtualBox NIC limit</td>
+</tr>
+<tr>
+<td>Detection latency (Path A)</td>
+<td>&lt; 1 ms</td>
+<td>FastDetector rule engine</td>
+</tr>
+<tr>
+<td>Detection latency (Path B)</td>
+<td>&lt; 5 ms</td>
+<td>ONNX Runtime RandomForest</td>
+</tr>
+<tr>
+<td>Crypto errors</td>
+<td>0 / 36,000 events</td>
+<td>DAY 52–62 stress test</td>
+</tr>
+<tr>
+<td>F1 Score</td>
+<td>0.9985</td>
+<td>CTU-13 Neris, DAY 86</td>
+</tr>
+<tr>
+<td>False Negative Rate</td>
+<td>0.00%</td>
+<td>Zero missed malicious flows</td>
+</tr>
+</tbody>
+</table>
+<h3 id="next-milestone">Next milestone</h3>
+<p><strong>Bare-metal stress test</strong> — confirm ≥ 100 Mbps without VirtualBox NIC bottleneck.
+Target hardware: Intel N100 mini PC or equivalent with XDP-capable NIC.</p>
+<hr />
+<h2 id="13-known-limitations">13. Known Limitations</h2>
+<ol>
+<li>
+<p><strong>DEBT-FD-001 — Path A hardcoded thresholds:</strong> Ignores <code>sniffer.json</code>. Resolution in PHASE 2 (ADR-006).</p>
+</li>
+<li>
+<p><strong>Single-instance per role (PHASE 1):</strong> Multi-instance requires FASE 3 seed families (ADR-021). No shortcuts — see ADR-022 for why Opción 2 was discarded.</p>
+</li>
+<li>
+<p><strong>Single-window aggregation:</strong> Fixed 10-second window. NotPetya lateral movement requires 60s+. Mitigation: FEAT-WINDOW-2 (P2).</p>
+</li>
+<li>
+<p><strong>No DPI:</strong> Layer 3/4 only. DNS-based C2 and encrypted C2 not detectable without DPI. Explicit design choice for resource-constrained targets.</p>
+</li>
+<li>
+<p><strong>Dataset bias:</strong> Model trained on 98% malicious CTU-13 Neris. Performance on balanced real-world distributions is estimated but not yet validated at bare-metal scale.</p>
+</li>
+<li>
+<p><strong>libsodium packaging:</strong> 1.0.19 compiled from source (Debian Bookworm caps at 1.0.18). Not managed by apt. Migration to Debian Trixie planned (DEBT-INFRA-001).</p>
+</li>
+<li>
+<p><strong>haveged entropy:</strong> Acceptable for development. Production deployments should use <code>rng-tools5</code> with hardware RNG (DEBT-INFRA-002, ADR-019).</p>
+</li>
+</ol>
+<hr />
+<h2 id="14-roadmap">14. Roadmap</h2>
+<h3 id="phase-1-current-day-100">PHASE 1 — Current (DAY 100)</h3>
+<ul>
+<li>✅ 6/6 pipeline components running end-to-end</li>
+<li>✅ 24/24 CTest suites passing</li>
+<li>✅ F1 = 0.9985 on CTU-13 Neris</li>
+<li>✅ Full cryptographic chain: HKDF-SHA256 + ChaCha20-Poly1305 + symmetric contexts</li>
+<li>✅ Fail-closed: set_terminate() + EventLoader/RAGLogger + provision-check gate</li>
+<li>✅ Full arXiv paper draft (v5 + LaTeX)</li>
+<li>🔄 arXiv submission (endorsers contacted: Sebastian Garcia ✅, Yisroel Mirsky ✅)</li>
+<li>⏳ Bare-metal stress test (P1 pre-arXiv)</li>
+</ul>
+<h3 id="phase-2-features-post-arxiv">PHASE 2 — Features (post-arXiv)</h3>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Feature</th>
+<th>Priority</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>rst_ratio</td>
+<td>RST packet ratio feature</td>
+<td>P1</td>
+</tr>
+<tr>
+<td>syn_ack_ratio</td>
+<td>SYN/ACK ratio feature</td>
+<td>P1</td>
+</tr>
+<tr>
+<td>DEBT-FD-001</td>
+<td>Fix Path A to read sniffer.json</td>
+<td>P1</td>
+</tr>
+<tr>
+<td>FEAT-NET-1</td>
+<td>DNS/DGA detection</td>
+<td>P1</td>
+</tr>
+<tr>
+<td>FEAT-WINDOW-2</td>
+<td>60s secondary aggregation window</td>
+<td>P2</td>
+</tr>
+<tr>
+<td>DEBT-INFRA-001</td>
+<td>Migrate to Debian Trixie</td>
+<td>P2</td>
+</tr>
+<tr>
+<td>DEBT-INFRA-002</td>
+<td>rng-tools5 + hardware RNG</td>
+<td>P2</td>
+</tr>
+<tr>
+<td>FEAT-ROTATION-1</td>
+<td>provision.sh rotate-all policy</td>
+<td>P2</td>
+</tr>
+<tr>
+<td>ADR-012 PHASE 1b</td>
+<td>Plugin loader integrated in sniffer</td>
+<td>P3</td>
+</tr>
+</tbody>
+</table>
+<h3 id="fase-3-distributed-deployment-post-arxiv-consejo-review-required">FASE 3 — Distributed deployment (post-arXiv, Consejo review required)</h3>
+<table>
+<thead>
+<tr>
+<th>Item</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>deployment.yml</td>
+<td>Topology SSOT (ADR-021)</td>
+</tr>
+<tr>
+<td>Seed families</td>
+<td>Channel-scoped seeds for multi-instance</td>
+</tr>
+<tr>
+<td>provision.sh refactor</td>
+<td>Reads deployment.yml, distributes seeds per family</td>
+</tr>
+<tr>
+<td>Ansible recipe</td>
+<td>Jinja2 templating, 3-environment pipeline (test/preprod/prod)</td>
+</tr>
+<tr>
+<td>Self-hosted CI</td>
+<td>argus-debian-bookworm runner for full build+test</td>
+</tr>
+</tbody>
+</table>
+<h3 id="long-term-gaia-vision">Long-term — GAIA Vision</h3>
+<p>ML Defender is designed as the leaf node of a <strong>hierarchical immune network</strong>:
+- <strong>Local RAG-clients</strong> (this system) — per-organization, fully offline
+- <strong>Campus RAG-masters</strong> — aggregate threat intelligence across local nodes
+- <strong>Global RAG-masters</strong> — federated intelligence sharing across organizations</p>
+<hr />
+<h2 id="contributing">Contributing</h2>
+<p>Please read <code>CONTRIBUTING.md</code> before submitting pull requests.</p>
+<p><strong>Methodology:</strong> ML Defender uses <strong>Test Driven Hardening (TDH)</strong> — every new feature is accompanied by:
+1. A failing test that defines the expected behavior
+2. The implementation
+3. A passing test suite (24/24 minimum)
+4. An ADR if the change affects system architecture</p>
+<p><strong>Consejo de Sabios:</strong> Major architectural decisions are reviewed by a panel of 7 AI models (Claude, Grok, ChatGPT, DeepSeek, Qwen, Gemini, Parallel.ai) before acceptance. See <code>docs/consejo/</code> for decision records.</p>
+<p><strong>macOS development note:</strong> Never use <code>sed -i</code> without <code>-e ''</code> on macOS (BSD sed). Use Python3 heredoc scripts or edit inside the Vagrant VM.</p>
+<hr />
+<p><em>Co-authored-by: Alonso Isidoro Román + Claude (Anthropic)</em>
+<em>Consejo de Sabios — ML Defender (aRGus NDR)</em>
+<em>DAY 100 — 28 marzo 2026</em></p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.tabs", "navigation.top", "search.highlight"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

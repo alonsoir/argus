@@ -1,0 +1,55 @@
+# Consejo de Sabios — Sesión DAY 96 — Capa de identidad criptográfica (seed-client)
+
+**Fecha:** 24 de marzo de 2026
+**Tema / Componente:** libs/seed-client — Material base criptográfico y corrección del modelo de amenaza
+**Iteraciones realizadas:** 2 (análisis inicial + feedback ingenieril detallado)
+**Branch:** feature/plugin-loader-adr012 (preparando crypto-transport para DAY 97)
+
+## Pregunta / Hipótesis inicial
+¿Cómo debe diseñarse la nueva librería `libseed_client.so` para que proporcione 32 bytes de material base seguro, evite el error clásico de usar el seed directamente como clave, garantice forward secrecy vía HKDF y permita autorización peer-to-peer de plugins sin depender de etcd en el momento de carga?
+
+## Participantes del Consejo
+Claude (Anthropic), Grok (xAI), ChatGPT5 (OpenAI), DeepSeek, Qwen, Gemini + Alonso Isidoro Román (síntesis humana)
+
+## Resumen de votos y contribuciones clave
+
+| Modelo   | Recomendación principal                              | Argumento clave                                      |
+|----------|------------------------------------------------------|------------------------------------------------------|
+| Grok     | Separación estricta SeedClient ↔ CryptoTransport + contrato explícito en ASCII box | Responsabilidades mínimas, explicit_bzero, HKDF obligatorio, fail-fast |
+| Claude   | Énfasis en forward secrecy y rotación futura        | Sin HKDF el seed compromete todo el tráfico histórico |
+| Otros    | Coincidencia total en no usar seed directamente como clave y en unificar a ChaCha20-Poly1305 | Evitar dead-letter code (AES-256-CBC fantasma)      |
+
+**Convergencia alta:** Todos los modelos coincidieron en los puntos críticos (separación de concerns, uso obligatorio de HKDF con contexto, contrato de uso visible e imposible de ignorar).
+
+## Análisis y síntesis
+- Se identificó y corrigió un error de diseño previo: distribuir el seed vía etcd/HTTP era vulnerable a MITM y rompía la independencia de plugins.
+- Cambio de modelo de amenaza fundamental: el seed pasa de “clave” a “material de entrada”. Con HKDF(context) se logra forward secrecy real y rotación viable.
+- Se reforzó la arquitectura resultante:
+  ```
+  SeedClient        → solo lee seed.bin (0600) + explicit_bzero
+  CryptoTransport   → HKDF + ChaCha20-Poly1305 + LZ4 (comprimir antes de cifrar)
+  etcd-client       → solo blobs opacos ya cifrados
+  ```
+- El contrato en `seed_client.hpp` con el ASCII box fue destacado como excelente práctica de documentación viva.
+
+## Decisión final tomada (por el arquitecto humano)
+- Implementar `libs/seed-client` exactamente como se describió en el acta del DAY 96.
+- Contrato explícito en el header (ASCII box) → obligatorio.
+- SeedClient queda deliberadamente “estúpido” (sin cifrado, sin red, sin HKDF).
+- Todo el pipeline ahora requiere seed válido para arrancar (fail-fast).
+- Preparar DAY 97: refactor de crypto-transport para aceptar SeedClient y aplicar HKDF con contextos estrictos (incluyendo versión/año).
+
+**Estado:** Cerrado e implementado → tests 6/6 ✅
+**Archivos de referencia:**
+- Acta DAY 96 (en el repo principal)
+- Código: `libs/seed-client/`
+- Próximo: crypto-transport (DAY 97)
+
+## Lecciones / Insights extraídos
+- Un cambio de una sola línea (usar HKDF en vez de seed directo) puede transformar completamente el modelo de amenaza.
+- El contrato visible en el header evita errores futuros mejor que cualquier comentario.
+- Documentar inmediatamente las sesiones del Consejo con este formato evita que el conocimiento se pierda entre chats.
+- Mantener SeedClient minimalista facilita auditorías y integración con AppArmor / plugin-loader.
+
+**Próximo paso:** DAY 97 — Implementar CryptoTransport con HKDF y aceptación de SeedClient.
+

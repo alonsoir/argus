@@ -1,0 +1,1410 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source embedded-ML NDR for hospitals and schools">
+      
+      
+        <meta name="author" content="Alonso Isidoro Roman">
+      
+      
+        <link rel="canonical" href="https://alonsoir.github.io/argus/adr/ADR-007-consensus-scoring-firewall/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>ADR-007: Consenso vs Máximo en la Decisión de Bloqueo del Firewall - ML Defender (aRGus NDR)</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#adr-007-consenso-vs-maximo-en-la-decision-de-bloqueo-del-firewall" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-header__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ML Defender (aRGus NDR)
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              ADR-007: Consenso vs Máximo en la Decisión de Bloqueo del Firewall
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../README.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/BACKLOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Backlog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Security Model
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-tabs__link">
+          
+  
+  
+  ADRs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/contracts/Protobuf contracts.md" class="md-tabs__link">
+          
+  
+  
+  Contracts
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-nav__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ML Defender (aRGus NDR)
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../README.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/BACKLOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADRs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ADRs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013 Seed Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-021-deployment-topology-seed-families.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-021 Topology SSOT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-022-threat-model-opcion2-descartada.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-022 Threat Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Protobuf contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protobuf
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/JSON contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JSON
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Rag security commands.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#contexto" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Contexto
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#problema-envenenamiento-del-contexto-temporal" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Problema: Envenenamiento del contexto temporal
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Problema: Envenenamiento del contexto temporal">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#vector-a-inflacion-ml-score-envenenado-hacia-arriba" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Vector A — Inflación (ML score envenenado hacia arriba)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#vector-b-dilucion-ml-score-envenenado-hacia-abajo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Vector B — Dilución (ML score envenenado hacia abajo)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tabla-de-escenarios-completa" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Tabla de escenarios completa
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#decision" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Decisión
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#propiedades-de-la-nueva-arquitectura" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Propiedades de la nueva arquitectura
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Propiedades de la nueva arquitectura">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#resistencia-al-vector-a-ml-inflado" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Resistencia al Vector A (ML inflado)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#resistencia-al-vector-b-ml-diluido" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Resistencia al Vector B (ML diluido)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#comportamiento-ante-adversario-con-acceso-completo-al-pipeline" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Comportamiento ante adversario con acceso completo al pipeline
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#inclusion-del-comportamiento-anterior" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Inclusión del comportamiento anterior
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#threat-model-formal" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Threat model formal
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#implicaciones-para-el-paper" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Implicaciones para el paper
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Implicaciones para el paper">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#seccion-propuesta-adversarial-robustness-of-dual-score-architectures" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Sección propuesta: "Adversarial Robustness of Dual-Score Architectures"
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#relacion-con-el-microscopio" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Relación con el microscopio
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#alternativas-consideradas-y-descartadas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Alternativas consideradas y descartadas
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Alternativas consideradas y descartadas">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#alternativa-1-score-ponderado-weighted-average" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Alternativa 1: Score ponderado (weighted average)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#alternativa-2-votacion-por-mayoria-n-motores-futuros" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Alternativa 2: Votación por mayoría (N motores futuros)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#alternativa-3-mantener-max-con-confidence-intervals" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Alternativa 3: Mantener max() con confidence intervals
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#implementacion-phase2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Implementación (PHASE2)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#estado-de-implementacion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Estado de implementación
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#consecuencias" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Consecuencias
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#nota-de-descubrimiento" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Nota de descubrimiento
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="adr-007-consenso-vs-maximo-en-la-decision-de-bloqueo-del-firewall">ADR-007: Consenso vs Máximo en la Decisión de Bloqueo del Firewall</h1>
+<p><strong>Fecha:</strong> 2026-03-11 (DAY 82 — descubierto durante análisis post-replay)
+<strong>Estado:</strong> ACEPTADO — implementación diferida a PHASE2
+<strong>Autores:</strong> Alonso Isidoro Román + Claude (Anthropic)
+<strong>Relacionado con:</strong> ADR-002 (Multi-Engine Provenance), ADR-006 (Fast Detector thresholds)
+<strong>Formalizado:</strong> DAY 90 — 18 marzo 2026
+<strong>Path:</strong> <code>docs/adr/ADR-007-and-consensus-firewall.md</code></p>
+<hr />
+<h2 id="contexto">Contexto</h2>
+<p>Durante la validación con datasets balanceados (DAY 82), el análisis del comportamiento
+del pipeline bajo volúmenes de tráfico variables reveló una vulnerabilidad teórica
+en la lógica de scoring actual.</p>
+<p>El sistema implementa una arquitectura dual-score (ADR-002): cada evento recibe
+un <code>fast_score</code> (Fast Detector, heurísticas de red) y un <code>ml_score</code> (RandomForest,
+features extraídas del flujo). La decisión final se calcula como:</p>
+<pre><code class="language-cpp">// Implementación actual (zmq_handler.cpp)
+double final_score = std::max(fast_score, ml_score);
+bool should_block = final_score &gt;= config_.scoring.malicious_threshold;
+</code></pre>
+<p>Esta lógica es correcta en el caso nominal, pero presenta una vulnerabilidad
+bajo adversario sofisticado que comprenda la arquitectura del pipeline.</p>
+<hr />
+<h2 id="problema-envenenamiento-del-contexto-temporal">Problema: Envenenamiento del contexto temporal</h2>
+<p>Se identificaron dos vectores de manipulación basados en la observación de que
+el <code>ml_score</code> correlaciona con el volumen y diversidad de tráfico en la ventana
+temporal de inferencia (DAY 82: 0.38 → 0.66 → 0.69 con 1K/19K/40K flows):</p>
+<h3 id="vector-a-inflacion-ml-score-envenenado-hacia-arriba">Vector A — Inflación (ML score envenenado hacia arriba)</h3>
+<p>Un adversario inunda la red con tráfico que activa el RandomForest hacia scores
+altos (tráfico con características de ataque pero sin comportamiento malicioso
+real detectable por heurísticas de red).</p>
+<p>Resultado con lógica <code>max()</code>:</p>
+<pre><code>fast_score = 0.20  (Fast Detector: benigno)
+ml_score   = 0.95  (ML: inflado por envenenamiento)
+final      = 0.95  → BLOQUEO
+</code></pre>
+<p>El firewall bloquea tráfico legítimo. El Fast Detector, que es más difícil de
+engañar (heurísticas de red independientes del historial), dice benigno — pero
+es ignorado por <code>max()</code>.</p>
+<h3 id="vector-b-dilucion-ml-score-envenenado-hacia-abajo">Vector B — Dilución (ML score envenenado hacia abajo)</h3>
+<p>Un adversario precede el ataque real con un flood de tráfico benigno sintético,
+diluyendo el espacio de features hacia scores bajos.</p>
+<p>Resultado con lógica <code>max()</code>:</p>
+<pre><code>fast_score = 0.90  (Fast Detector: ataque real detectado)
+ml_score   = 0.10  (ML: diluido por flood benigno previo)
+final      = 0.90  → BLOQUEO ✅
+</code></pre>
+<p>En este caso <code>max()</code> es correcto — el Fast Detector salva la situación.
+El Vector B es menos peligroso que el Vector A con la arquitectura actual.</p>
+<h3 id="tabla-de-escenarios-completa">Tabla de escenarios completa</h3>
+<table>
+<thead>
+<tr>
+<th>fast_score</th>
+<th>ml_score</th>
+<th>max()</th>
+<th>AND lógico</th>
+<th>Escenario</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0.90</td>
+<td>0.90</td>
+<td>0.90 BLOCK</td>
+<td>BLOCK ✅</td>
+<td>Ataque real, consenso</td>
+</tr>
+<tr>
+<td>0.90</td>
+<td>0.10</td>
+<td>0.90 BLOCK</td>
+<td>ALERT only ⚠️</td>
+<td>Fast solo — ML diluido</td>
+</tr>
+<tr>
+<td>0.20</td>
+<td>0.95</td>
+<td>0.95 BLOCK ❌</td>
+<td>ALERT only ✅</td>
+<td>Vector A — ML inflado</td>
+</tr>
+<tr>
+<td>0.20</td>
+<td>0.20</td>
+<td>0.20 ALLOW</td>
+<td>ALLOW ✅</td>
+<td>Benigno, consenso</td>
+</tr>
+</tbody>
+</table>
+<p>El único escenario donde <code>max()</code> y <code>AND lógico</code> difieren es exactamente
+el Vector A: ML envenenado arrastra bloqueos que Fast Detector nunca autorizaría.</p>
+<hr />
+<h2 id="decision">Decisión</h2>
+<p>Separar la semántica de <strong>alerta</strong> y <strong>bloqueo</strong> mediante criterios distintos:</p>
+<pre><code class="language-cpp">// ADR-007: Consenso para bloqueo, OR para alerta
+bool should_alert =
+    fast_score &gt;= config_.scoring.alert_threshold ||
+    ml_score   &gt;= config_.scoring.alert_threshold;
+
+bool should_block =
+    fast_score &gt;= config_.scoring.malicious_threshold &amp;&amp;
+    ml_score   &gt;= config_.scoring.malicious_threshold;
+</code></pre>
+<p><strong>El Fast Detector actúa como ancla de bloqueo.</strong> Sin su confirmación,
+ningún score ML por sí solo puede forzar un bloqueo en el firewall.</p>
+<hr />
+<h2 id="propiedades-de-la-nueva-arquitectura">Propiedades de la nueva arquitectura</h2>
+<h3 id="resistencia-al-vector-a-ml-inflado">Resistencia al Vector A (ML inflado)</h3>
+<ul>
+<li>ML envenenado ↑ solo → <code>should_alert=true</code>, <code>should_block=false</code></li>
+<li>El firewall no bloquea sin consenso</li>
+<li>El operador recibe alerta y puede investigar</li>
+</ul>
+<h3 id="resistencia-al-vector-b-ml-diluido">Resistencia al Vector B (ML diluido)</h3>
+<ul>
+<li>Fast Detector detecta ataque real → <code>should_alert=true</code></li>
+<li>Sin confirmación ML → <code>should_block=false</code> (más conservador que antes)</li>
+<li><strong>Trade-off explícito:</strong> se pierde capacidad de bloqueo autónomo cuando
+  ML está bajo envenenamiento de dilución. Aceptable: preferimos fallar
+  abiertos (no bloquear) antes que fallar cerrados (bloquear legítimo)
+  en hospitales y escuelas.</li>
+</ul>
+<h3 id="comportamiento-ante-adversario-con-acceso-completo-al-pipeline">Comportamiento ante adversario con acceso completo al pipeline</h3>
+<p>Si el adversario puede manipular simultáneamente el Fast Detector y el ML,
+ninguna arquitectura de scoring resuelve el problema solo con umbrales.
+Este escenario requiere integridad del pipeline (HMAC, ADR-001) y
+detección de anomalías en el propio sistema de scoring — fuera del
+alcance de este ADR.</p>
+<h3 id="inclusion-del-comportamiento-anterior">Inclusión del comportamiento anterior</h3>
+<p>La lógica <code>max()</code> actual es un caso especial donde <code>alert_threshold == malicious_threshold</code>.
+La nueva arquitectura es estrictamente más expresiva — no rompe nada, extiende.</p>
+<hr />
+<h2 id="threat-model-formal">Threat model formal</h2>
+<ul>
+<li>
+<p><strong>Adversario A1:</strong> conoce el threshold de bloqueo, puede generar tráfico
+  con features ML altas pero sin patrones de red detectables por heurísticas.
+  → Mitigado por ADR-007 (AND para bloqueo).</p>
+</li>
+<li>
+<p><strong>Adversario A2:</strong> puede generar flood benigno previo para diluir contexto ML.
+  → Parcialmente mitigado: Fast Detector es independiente del historial ML.
+  → Limitación documentada: ventana temporal del Fast Detector también es
+  manipulable si el adversario conoce <code>WINDOW_NS</code>. Fix: DEBT-FD-001 (ADR-006).</p>
+</li>
+<li>
+<p><strong>Adversario A3:</strong> acceso completo al pipeline, puede manipular ambos detectores.
+  → Fuera del alcance de scoring. Requiere integridad de pipeline (ADR-001 HMAC)
+  y auditoría continua. Documentado como limitación conocida.</p>
+</li>
+</ul>
+<hr />
+<h2 id="implicaciones-para-el-paper">Implicaciones para el paper</h2>
+<h3 id="seccion-propuesta-adversarial-robustness-of-dual-score-architectures">Sección propuesta: "Adversarial Robustness of Dual-Score Architectures"</h3>
+<p>La observación experimental de que <code>ml_score</code> correlaciona con el volumen
+de tráfico en la ventana temporal abre un vector de ataque teórico documentado
+aquí para arquitecturas EDR de doble motor.</p>
+<p><strong>Contribución científica:</strong></p>
+<blockquote>
+<p><em>La lógica <code>max(fast, ml)</code> es segura en el caso nominal pero vulnerable
+bajo adversario con conocimiento del pipeline. La separación semántica
+alerta/bloqueo mediante OR/AND lógico elimina el vector de inflación
+sin sacrificar la sensibilidad del sistema de alertas.</em></p>
+</blockquote>
+<hr />
+<h2 id="relacion-con-el-microscopio">Relación con el microscopio</h2>
+<p>Cuando un ataque supere ambas capas (Fast Detector + ML en consenso), el evento
+quedará registrado con scores completos, trace_id, provenance ADR-002, y features
+de 40 dimensiones. El RAG-security actúa como microscopio forense post-hoc:
+el sistema no previene ese ataque en tiempo real, pero lo documenta con
+resolución suficiente para entender el vector y reentrenar.</p>
+<p>Esta es la filosofía correcta: <strong>no fingir omnisciencia, sino construir
+capacidad de aprendizaje continuo ante ataques desconocidos.</strong></p>
+<hr />
+<h2 id="alternativas-consideradas-y-descartadas">Alternativas consideradas y descartadas</h2>
+<h3 id="alternativa-1-score-ponderado-weighted-average">Alternativa 1: Score ponderado (weighted average)</h3>
+<p><code>final = α·fast_score + (1-α)·ml_score</code></p>
+<p>Descartada: la ponderación es un parámetro adicional sin criterio objetivo de
+calibración, y no elimina el problema de envenenamiento — solo lo atenúa.
+Introduce complejidad sin garantías formales.</p>
+<h3 id="alternativa-2-votacion-por-mayoria-n-motores-futuros">Alternativa 2: Votación por mayoría (N motores futuros)</h3>
+<p>Generalización de AND para sistemas con 3+ motores: bloqueo si mayoría supera threshold.</p>
+<p>No descartada — es la evolución natural de ADR-007 en versión enterprise (ENT-1:
+Federated Threat Intelligence). Anotada para PHASE3.</p>
+<h3 id="alternativa-3-mantener-max-con-confidence-intervals">Alternativa 3: Mantener max() con confidence intervals</h3>
+<p>Añadir incertidumbre estadística al ML score via Platt scaling o isotonic regression.
+Complejidad desproporcionada para el beneficio en la fase actual. Descartada.</p>
+<hr />
+<h2 id="implementacion-phase2">Implementación (PHASE2)</h2>
+<pre><code class="language-cpp">// En zmq_handler.cpp, reemplazar:
+double final_score = std::max(fast_score, ml_score);
+bool should_block = final_score &gt;= config_.scoring.malicious_threshold;
+
+// Por:
+bool should_alert =
+    fast_score &gt;= config_.scoring.alert_threshold ||
+    ml_score   &gt;= config_.scoring.alert_threshold;
+
+bool should_block =
+    fast_score &gt;= config_.scoring.malicious_threshold &amp;&amp;
+    ml_score   &gt;= config_.scoring.malicious_threshold;
+
+double final_score = std::max(fast_score, ml_score); // para trazabilidad
+</code></pre>
+<p>Nuevos campos JSON necesarios en <code>sniffer.json</code>:</p>
+<pre><code class="language-json">&quot;scoring&quot;: {
+    &quot;alert_threshold&quot;: 0.70,
+    &quot;malicious_threshold&quot;: 0.85,
+    &quot;consensus_required_for_block&quot;: true
+}
+</code></pre>
+<p><strong>Sin recompilar:</strong> los thresholds son configurables desde JSON.
+<strong>Sin cambiar el pipeline:</strong> la lógica de routing al firewall
+se actualiza solo en <code>zmq_handler.cpp</code>.</p>
+<hr />
+<h2 id="estado-de-implementacion">Estado de implementación</h2>
+<table>
+<thead>
+<tr>
+<th>Componente</th>
+<th>Estado actual</th>
+<th>Acción PHASE2</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>zmq_handler.cpp</code></td>
+<td><code>max()</code> → bloqueo único</td>
+<td>Separar <code>should_alert</code> / <code>should_block</code></td>
+</tr>
+<tr>
+<td><code>firewall-acl-agent</code></td>
+<td>Recibe decisión binaria</td>
+<td>Sin cambios (recibe flag ya procesado)</td>
+</tr>
+<tr>
+<td><code>sniffer.json</code></td>
+<td><code>malicious_threshold</code> único</td>
+<td>Añadir <code>alert_threshold</code> independiente</td>
+</tr>
+<tr>
+<td>DEBT-FD-001</td>
+<td>Fast Detector ignora JSON</td>
+<td><strong>Prerequisito:</strong> resolver antes de ADR-007</td>
+</tr>
+<tr>
+<td>Tests</td>
+<td>No existen para esta lógica</td>
+<td>Añadir casos: OR-only, AND-consensus, discrepancia</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p>⚠️ <strong>DEBT-FD-001 es prerequisito de ADR-007.</strong> Si el Fast Detector usa constantes
+hardcodeadas ignorando <code>sniffer.json</code>, el threshold de bloqueo AND no puede
+ajustarse en runtime, anulando la flexibilidad de esta arquitectura.</p>
+</blockquote>
+<hr />
+<h2 id="consecuencias">Consecuencias</h2>
+<p><strong>Positivas:</strong>
+- Eliminación del Vector A (ML inflado forzando bloqueos)
+- Fast Detector como ancla de bloqueo — arquitectura más honesta
+- Comportamiento explícito y auditable para cada tipo de acción
+- Threat model formal documentado para el paper
+- Compatible con el comportamiento anterior como caso especial</p>
+<p><strong>Negativas / Trade-offs:</strong>
+- Reducción de bloqueos autónomos cuando Fast Detector no confirma ML
+- En entornos con Fast Detector degradado, el sistema pasa a modo alerta-only
+- Requiere calibración de <code>alert_threshold</code> separada de <code>malicious_threshold</code>
+- No afecta a la detección (alertas) — solo al bloqueo automático</p>
+<hr />
+<h2 id="nota-de-descubrimiento">Nota de descubrimiento</h2>
+<p>Este ADR emergió de una sesión de análisis experimental (DAY 82) sin
+modificar una línea de código — únicamente ejecutando PCAP replays con
+el pipeline en estado actual y observando el comportamiento del scoring
+bajo diferentes volúmenes de tráfico.</p>
+<p>Es un ejemplo de cómo el pipeline como <strong>microscopio</strong> genera conocimiento
+arquitectónico que trasciende la detección de amenazas inmediatas.</p>
+<hr />
+<p><em>Co-authored-by: Alonso Isidoro Román + Claude (Anthropic)</em>
+<em>Descubierto: DAY 82 — 11 marzo 2026</em>
+<em>Formalizado: DAY 90 — 18 marzo 2026</em>
+<em>Consejo de Sabios — ML Defender (aRGus EDR)</em></p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.top", "search.highlight"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

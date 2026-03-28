@@ -1,0 +1,1661 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source embedded-ML NDR for hospitals and schools">
+      
+      
+        <meta name="author" content="Alonso Isidoro Roman">
+      
+      
+        <link rel="canonical" href="https://alonsoir.github.io/argus/adr/ADR-017-plugin-interface-hierarchy/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>ADR-017: Plugin Interface Hierarchy - ML Defender (aRGus NDR)</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#adr-017-plugin-interface-hierarchy" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-header__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ML Defender (aRGus NDR)
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              ADR-017: Plugin Interface Hierarchy
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../README.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/BACKLOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Backlog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Security Model
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-tabs__link">
+          
+  
+  
+  ADRs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/contracts/Protobuf contracts.md" class="md-tabs__link">
+          
+  
+  
+  Contracts
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-nav__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ML Defender (aRGus NDR)
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../README.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/BACKLOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADRs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ADRs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013 Seed Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-021-deployment-topology-seed-families.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-021 Topology SSOT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-022-threat-model-opcion2-descartada.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-022 Threat Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Protobuf contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protobuf
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/JSON contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JSON
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Rag security commands.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#principio-rector-inamovible" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Principio rector — inamovible
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#contexto" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Contexto
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#decisiones-unanimidad-66-del-consejo-de-sabios" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Decisiones — unanimidad 6/6 del Consejo de Sabios
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Decisiones — unanimidad 6/6 del Consejo de Sabios">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#decision-1-contextos-tipados-por-familia-p1-opcion-a" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Decisión 1 — Contextos tipados por familia (P1: Opción A)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#decision-2-funcion-de-entrada-semantica-por-familia-p2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Decisión 2 — Función de entrada semántica por familia (P2)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#decision-3-solo-primero-partido-en-phase-2-p3-opcion-c" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Decisión 3 — Solo primero-partido en PHASE 2 (P3: Opción C)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#decision-4-skills-de-rag-security-no-se-unifican-p4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Decisión 4 — Skills de rag-security NO se unifican (P4)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#decision-5-plugins-ebpf-de-kernel-telemetry-en-adr-018-p5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Decisión 5 — Plugins eBPF de kernel-telemetry en ADR-018 (P5)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#contrato-base-toda-familia-de-plugin" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Contrato base — toda familia de plugin
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#struct-base-compartida-networktuple" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Struct base compartida — NetworkTuple
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#familia-1-snifferplugin" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Familia 1 — SnifferPlugin
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#familia-2-mldetectorplugin" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Familia 2 — MlDetectorPlugin
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#familia-3-ragingesterplugin-futuro" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Familia 3 — RagIngesterPlugin (futuro)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#familias-futuras-identificadas-por-el-consejo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Familias futuras identificadas por el Consejo
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Familias futuras identificadas por el Consejo">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#postprocessorplugin-gemini-grok-qwen" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        PostProcessorPlugin (Gemini, Grok, Qwen)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#flowplugin-chatgpt5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        FlowPlugin (ChatGPT5)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#uprobeplugin-qwen" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        UprobePlugin (Qwen)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#jerarquia-completa-validada" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Jerarquía completa validada
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#naming-convention-ficheros-so" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Naming convention — ficheros .so
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#como-el-loader-valida-el-tipo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cómo el loader valida el tipo
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#restricciones-invariantes-no-negociables" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Restricciones invariantes — no negociables
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#regla-de-reprovisioning-granular-no-big-bang" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Regla de reprovisioning — granular, no big bang
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#consecuencias" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Consecuencias
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#relacion-con-otros-adrs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Relación con otros ADRs
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#secuencia-de-implementacion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Secuencia de implementación
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#acta-del-consejo-de-sabios-day-94" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Acta del Consejo de Sabios — DAY 94
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="adr-017-plugin-interface-hierarchy">ADR-017: Plugin Interface Hierarchy</h1>
+<p><strong>Estado:</strong> ACEPTADO — implementación PHASE 2
+<strong>Fecha:</strong> 2026-03-22 (DAY 94)
+<strong>Autor:</strong> Alonso Isidoro Román + Claude (Anthropic)
+<strong>Revisado por:</strong> Consejo de Sabios — unanimidad 6/6 modelos
+<strong>Componentes afectados:</strong> plugin-loader, sniffer, ml-detector, rag-ingester
+<strong>Depende de:</strong> ADR-012 (plugin-loader PHASE 1), ADR-013 (autenticación, DAY 95-96)
+<strong>Relacionado con:</strong> ADR-003, ADR-008, ADR-010, ADR-014, ADR-015, ADR-016</p>
+<hr />
+<h2 id="principio-rector-inamovible">Principio rector — inamovible</h2>
+<blockquote>
+<p>El core actual — modelos RF embebidos, Fast Detector, pipeline 6/6 — es
+<strong>legacy estable. No se toca.</strong> Todo crecimiento futuro entra por el sistema
+de plugins. La migración del core a plugins es decisión futura, no objetivo
+presente. <strong>Strangler Fig Pattern.</strong></p>
+</blockquote>
+<p>Este principio cierra el debate sobre si migrar los modelos RF existentes a
+plugins (respuesta: no, ahora no). El sistema crece hacia adelante, no
+involuciona para reorganizar lo que ya funciona.</p>
+<hr />
+<h2 id="contexto">Contexto</h2>
+<p>ADR-012 (DAY 93) implementó el mecanismo de carga (<code>libplugin_loader.so</code>,
+<code>dlopen</code>/<code>dlsym</code> lazy, ABI validada). Lo que no resolvió es el <strong>contrato de
+interfaces</strong> — qué funciones expone cada familia de plugin, qué recibe, qué
+devuelve, y cómo el loader verifica que un plugin es del tipo correcto.</p>
+<p>El inventario de los ADR-001 a ADR-016 identificó cinco familias distintas de
+extensión, con inputs y outputs cualitativamente diferentes. Un único
+<code>PacketContext</code> sniffer-centric no sirve para todas ellas.</p>
+<hr />
+<h2 id="decisiones-unanimidad-66-del-consejo-de-sabios">Decisiones — unanimidad 6/6 del Consejo de Sabios</h2>
+<h3 id="decision-1-contextos-tipados-por-familia-p1-opcion-a">Decisión 1 — Contextos tipados por familia (P1: Opción A)</h3>
+<p>Un contexto C por cada familia de componente host. Sin <code>void*</code> opaco.
+El compilador protege contra confusiones entre familias. En el hot path del
+sniffer un cast incorrecto en un plugin buggy es un SIGSEGV que tumba el NDR
+del hospital. No es aceptable.</p>
+<h3 id="decision-2-funcion-de-entrada-semantica-por-familia-p2">Decisión 2 — Función de entrada semántica por familia (P2)</h3>
+<p>Cada familia exporta <strong>su función de entrada específica</strong>. El loader del
+componente sabe qué símbolo resolver según <code>plugin_component_type()</code> +
+<code>plugin_subtype()</code>. Si el símbolo no existe, el plugin se rechaza con warning.</p>
+<h3 id="decision-3-solo-primero-partido-en-phase-2-p3-opcion-c">Decisión 3 — Solo primero-partido en PHASE 2 (P3: Opción C)</h3>
+<p>Diseñar hoy una interfaz "generic" para terceros imaginarios es YAGNI extremo
+y casi siempre termina en una abstracción mediocre que hay que mantener por
+retrocompatibilidad. Los plugins de PHASE 2 los desarrolla el equipo core.
+La experiencia empírica con esos plugins informará el diseño de terceros en
+PHASE 3 (2027+).</p>
+<h3 id="decision-4-skills-de-rag-security-no-se-unifican-p4">Decisión 4 — Skills de rag-security NO se unifican (P4)</h3>
+<p>Las skills (ADR-010) tienen ciclo de vida síncrono con el LLM, siempre JSON
+out, invocación bajo demanda. Los plugins tienen ciclo de vida asíncrono,
+carga al inicio, ejecución en el datapath. Son dominios de falla distintos —
+mantenerlos separados es correcto. La autenticación (ADR-013) puede compartir
+el mismo <code>seed-client</code> sin que los mecanismos de carga se unifiquen.</p>
+<h3 id="decision-5-plugins-ebpf-de-kernel-telemetry-en-adr-018-p5">Decisión 5 — Plugins eBPF de kernel-telemetry en ADR-018 (P5)</h3>
+<p><code>libbpf</code> vs <code>dlopen</code>, attach/detach de interfaces kernel, PIN en filesystem
+BPF, gestión de mapas — son mundos distintos. Mezclarlos en ADR-017 generaría
+un documento Frankenstein. El contrato de identidad (nombre, versión,
+descripción) es común, pero el mecanismo de carga es ortogonal. ADR-018 los
+diseña con la libertad que necesitan.</p>
+<hr />
+<h2 id="contrato-base-toda-familia-de-plugin">Contrato base — toda familia de plugin</h2>
+<p>Todo plugin de toda familia exporta estos símbolos. Son la identidad del plugin
+y la base para autenticación (ADR-013, DAY 95-96).</p>
+<pre><code class="language-c">// plugin_api_base.h
+#pragma once
+#include &lt;stdint.h&gt;
+#include &lt;stddef.h&gt;
+
+#ifdef __cplusplus
+extern &quot;C&quot; {
+#endif
+
+#define PLUGIN_API_VERSION 1
+
+typedef struct PluginConfig {
+    const char* name;
+    const char* config_json;
+} PluginConfig;
+
+typedef enum {
+    PLUGIN_OK    = 0,
+    PLUGIN_ERROR = 1,
+    PLUGIN_SKIP  = 2
+} PluginResult;
+
+// ── Identidad — OBLIGATORIO en TODA familia ──────────────────────────────────
+const char*  plugin_name();
+const char*  plugin_version();
+int          plugin_api_version();      // debe retornar PLUGIN_API_VERSION
+const char*  plugin_component_type();  // &quot;sniffer&quot;|&quot;ml-detector&quot;|&quot;rag-ingester&quot;
+const char*  plugin_subtype();         // ver tabla por familia
+const char*  plugin_description();
+
+// ── Ciclo de vida — OBLIGATORIO en TODA familia ──────────────────────────────
+PluginResult plugin_init(const PluginConfig* config);
+void         plugin_shutdown();
+
+#ifdef __cplusplus
+}
+#endif
+</code></pre>
+<p>El loader valida <code>plugin_component_type()</code> <strong>antes</strong> de cualquier otro símbolo.
+Un plugin con tipo incorrecto para el componente host hace skip silencioso —
+nunca crash, nunca abort del proceso host.</p>
+<hr />
+<h2 id="struct-base-compartida-networktuple">Struct base compartida — NetworkTuple</h2>
+<p>Factorización propuesta por DeepSeek para eliminar duplicación entre contextos:</p>
+<pre><code class="language-c">// plugin_api_base.h (añadir)
+typedef struct NetworkTuple {
+    uint32_t src_ip;
+    uint32_t dst_ip;
+    uint16_t src_port;
+    uint16_t dst_port;
+    uint8_t  protocol;
+} NetworkTuple;
+</code></pre>
+<p>Todos los contextos que lo necesiten incluyen <code>NetworkTuple net</code> como primer
+campo — garantiza que el offset es predecible y permite helpers genéricos.</p>
+<hr />
+<h2 id="familia-1-snifferplugin">Familia 1 — SnifferPlugin</h2>
+<p><strong>Componente host:</strong> sniffer
+<strong>Subtipos:</strong> <code>"packet"</code> (único en PHASE 2)
+<strong>Función de entrada:</strong> <code>plugin_process_packet(SnifferContext*)</code></p>
+<pre><code class="language-c">// plugin_api_sniffer.h
+#pragma once
+#include &quot;plugin_api_base.h&quot;
+
+typedef struct SnifferContext {
+    // ── Identidad de red ─────────────────────────────────────────────────────
+    NetworkTuple   net;           // src/dst ip/port/protocol
+
+    // ── Datos del paquete (read-only) ────────────────────────────────────────
+    const uint8_t* raw_bytes;     // payload completo — para DPI
+    size_t         length;
+
+    // ── Features en construcción (write) ────────────────────────────────────
+    void*          flow_features; // puntero opaco a FlowFeatures del host
+                                  // el plugin puede enriquecer — nunca castear
+                                  // sin conocer la versión del host
+
+    // ── Salida del plugin (write) ────────────────────────────────────────────
+    int            threat_hint;   // 0=benign, 1=suspicious, 2=malicious
+                                  // el host decide si lo considera — NUNCA bloquea solo
+} SnifferContext;
+
+// Función de entrada obligatoria para subtipo &quot;packet&quot;
+PluginResult plugin_process_packet(SnifferContext* ctx);
+</code></pre>
+<p><strong>Plugins PHASE 2 de esta familia:</strong>
+- <code>libplugin_ja4_v1.so</code> — JA4 TLS fingerprinting (FEAT-TLS-1)
+- <code>libplugin_dns_dga_v1.so</code> — DNS/DGA detection (FEAT-NET-1)
+- <code>libplugin_http_inspect_v1.so</code> — HTTP payload WAF (FEAT-WAF-1)</p>
+<p><strong>Caso especial — EbpfUprobePlugin:</strong>
+Los plugins vía eBPF uprobes (ej: <code>libplugin_ebpf_tls</code>) operan sobre
+contexto de proceso+syscall, no de paquete. Su función de entrada es distinta.
+En PHASE 2 no se implementan — se documentan como excepción futura cuando
+haya ≥2 plugins de este tipo que justifiquen subfamilia formal.</p>
+<hr />
+<h2 id="familia-2-mldetectorplugin">Familia 2 — MlDetectorPlugin</h2>
+<p><strong>Componente host:</strong> ml-detector
+<strong>Subtipos:</strong> <code>"inference"</code> | <code>"enrichment"</code>
+<strong>Función de entrada:</strong> depende del subtipo</p>
+<pre><code class="language-c">// plugin_api_ml_detector.h
+#pragma once
+#include &quot;plugin_api_base.h&quot;
+
+typedef struct MlDetectorContext {
+    // ── Identidad de red (para enrichment/lookup) ─────────────────────────
+    NetworkTuple   net;
+
+    // ── Vector de features (read para inference, read para enrichment) ─────
+    const float*   features;      // vector de N floats (N=40 en PHASE 1)
+    int            n_features;
+
+    // ── Salida de inferencia (write — solo subtipo &quot;inference&quot;) ───────────
+    float*         scores_out;    // vector de M scores por clase
+    int            n_classes;
+
+    // ── Contexto textual (para enrichment/IOC lookup) ─────────────────────
+    const char*    domain_str;    // puede ser NULL si no hay DNS en el flujo
+} MlDetectorContext;
+
+// Función de entrada — subtipo &quot;inference&quot;
+// El plugin ejecuta su propio modelo y escribe en scores_out
+PluginResult plugin_predict(MlDetectorContext* ctx);
+
+// Función de entrada — subtipo &quot;enrichment&quot;
+// El plugin enriquece el contexto con información externa (IOC, threat intel)
+// NO escribe en scores_out — puede modificar threat_hint via flow_features opaco
+PluginResult plugin_enrich(MlDetectorContext* ctx);
+</code></pre>
+<p><strong>Plugins PHASE 2 de esta familia:</strong>
+- <code>libmodel_neris_v2.so</code> (inference) — RF reentrenado tras SYN-5
+- <code>libmodel_wannacry_v1.so</code> (inference) — tras FEAT-RANSOM-1
+- <code>libenrich_threat_intel_v1.so</code> (enrichment) — FEAT-NET-2</p>
+<p><strong>Invariante crítico:</strong>
+Un plugin de subtipo <code>"inference"</code> <strong>NUNCA</strong> toma decisiones de bloqueo.
+Escribe scores. El core del ml-detector decide qué hacer con esos scores
+según ADR-007 (AND-consensus). Un plugin que intente modificar directamente
+<code>firewall_action</code> o equivalente viola ADR-012 y se considera malicioso.</p>
+<hr />
+<h2 id="familia-3-ragingesterplugin-futuro">Familia 3 — RagIngesterPlugin (futuro)</h2>
+<p><strong>Componente host:</strong> rag-ingester
+<strong>Subtipos:</strong> <code>"parser"</code> (PHASE 3)
+<strong>Función de entrada:</strong> <code>plugin_process_event(RagIngesterContext*)</code></p>
+<pre><code class="language-c">// plugin_api_rag_ingester.h — esqueleto para PHASE 3
+#pragma once
+#include &quot;plugin_api_base.h&quot;
+
+typedef struct RagIngesterContext {
+    NetworkTuple   net;
+    const char*    raw_event_json;  // evento raw sin parsear
+    char*          enriched_json;   // buffer de salida — el plugin puede enriquecer
+    size_t         enriched_size;
+} RagIngesterContext;
+
+PluginResult plugin_process_event(RagIngesterContext* ctx);
+</code></pre>
+<p>No se implementa en PHASE 2. Se define aquí para reservar el espacio
+en la jerarquía y que ADR-017 sea el documento de referencia completo.</p>
+<hr />
+<h2 id="familias-futuras-identificadas-por-el-consejo">Familias futuras identificadas por el Consejo</h2>
+<p>Documentadas aquí para que no se pierdan. <strong>No implementar en PHASE 2.</strong></p>
+<h3 id="postprocessorplugin-gemini-grok-qwen">PostProcessorPlugin (Gemini, Grok, Qwen)</h3>
+<p>Para plugins que actúan <em>después</em> de la decisión de bloqueo:
+notificaciones SIEM, MITRE ATT&amp;CK tagging, exportación a Splunk/Sentinel.
+<strong>No influyen en la decisión</strong> — solo efectos secundarios auditables.
+<code>plugin_subtype() = "postprocessor"</code></p>
+<h3 id="flowplugin-chatgpt5">FlowPlugin (ChatGPT5)</h3>
+<p>Para detección temporal y correlación multi-paquete. Encaja con ADR-008
+(flow graphs). Recibe <code>FlowContext</code> con ventana temporal agregada, no
+paquete individual. Necesario para Ryuk/Conti (lateral movement lento).
+<code>plugin_subtype() = "flow"</code></p>
+<h3 id="uprobeplugin-qwen">UprobePlugin (Qwen)</h3>
+<p>Para plugins vía eBPF uprobes en espacio de usuario (OpenSSL, glibc).
+Su contexto es <code>ProcessContext</code> (PID, syscall, stack trace), no
+<code>PacketContext</code>. Cuando haya ≥2 plugins reales de este tipo → subfamilia
+formal. Hasta entonces: excepción documentada bajo <code>SnifferPlugin</code>.</p>
+<hr />
+<h2 id="jerarquia-completa-validada">Jerarquía completa validada</h2>
+<pre><code>PluginBase (plugin_api_base.h)
+│   plugin_name(), plugin_version(), plugin_api_version()
+│   plugin_component_type(), plugin_subtype(), plugin_description()
+│   plugin_init(PluginConfig*), plugin_shutdown()
+│
+├── SnifferPlugin (plugin_api_sniffer.h)
+│   │   plugin_process_packet(SnifferContext*)
+│   │   subtype: &quot;packet&quot;
+│   │
+│   ├── PacketPlugin — DPI: ja4, dns_dga, http_inspect       [PHASE 2]
+│   └── [UprobePlugin — eBPF uprobes: ebpf_tls]             [futuro ≥2 plugins]
+│
+├── MlDetectorPlugin (plugin_api_ml_detector.h)
+│   │
+│   ├── InferencePlugin — plugin_predict(MlDetectorContext*) [PHASE 2]
+│   │   subtype: &quot;inference&quot;
+│   │   modelos RF: neris_v2, wannacry_v1, ryuk_v1...
+│   │
+│   └── EnrichmentPlugin — plugin_enrich(MlDetectorContext*) [PHASE 2]
+│       subtype: &quot;enrichment&quot;
+│       threat_intel, IOC feeds
+│
+├── RagIngesterPlugin (plugin_api_rag_ingester.h)
+│   │   plugin_process_event(RagIngesterContext*)
+│   │   subtype: &quot;parser&quot;
+│   └── [futuro — custom parsers, format adapters]           [PHASE 3]
+│
+├── [PostProcessorPlugin] — efectos post-decisión            [futuro PHASE 3]
+├── [FlowPlugin] — correlación temporal multi-paquete        [futuro PHASE 3]
+│
+└── [EbpfKernelPlugin] → ADR-018                             [futuro]
+        loaded via libbpf, not dlopen
+        kprobes, tracepoints, attach/detach kernel interfaces
+</code></pre>
+<hr />
+<h2 id="naming-convention-ficheros-so">Naming convention — ficheros .so</h2>
+<pre><code>lib{familia}_{nombre}_v{N}.so
+
+Familias:
+  plugin_    → SnifferPlugin PacketPlugin (DPI genérico)
+  model_     → MlDetectorPlugin InferencePlugin (modelos RF)
+  enrich_    → MlDetectorPlugin EnrichmentPlugin (IOC, threat intel)
+  ingest_    → RagIngesterPlugin (parsers)
+  post_      → PostProcessorPlugin (futuro)
+
+Ejemplos correctos:
+  libplugin_ja4_v1.so
+  libplugin_dns_dga_v1.so
+  libmodel_neris_v1.so
+  libmodel_neris_v2.so          ← reentrenado — el v1 queda en disco como historia
+  libmodel_wannacry_v1.so
+  libenrich_threat_intel_v1.so
+
+Ejemplos incorrectos (evitar):
+  libja4.so                     ← sin familia ni versión
+  libplugin_neris_model.so      ← familia incorrecta para un modelo RF
+</code></pre>
+<p>El historial de modelos es auditable en el filesystem sin base de datos.
+<code>libmodel_neris_v1.so</code> y <code>libmodel_neris_v2.so</code> coexisten — el operador
+puede hacer rollback cambiando el <code>enabled</code> en el JSON del componente.</p>
+<hr />
+<h2 id="como-el-loader-valida-el-tipo">Cómo el loader valida el tipo</h2>
+<pre><code class="language-cpp">// En PluginLoader::load_plugins() — tras dlopen y resolución de símbolos base
+
+std::string declared_type = plugin-&gt;fn_component_type();
+std::string declared_sub  = plugin-&gt;fn_subtype();
+
+if (declared_type != expected_component_type_) {
+    LOG_WARN(&quot;[plugin-loader] tipo incorrecto: plugin='{}' declara '{}', &quot;
+             &quot;host espera '{}' — skip&quot;,
+             plugin-&gt;fn_name(), declared_type, expected_component_type_);
+    goto skip_plugin;
+}
+
+// Resolver función de entrada según subtipo
+if (declared_type == &quot;sniffer&quot;) {
+    plugin-&gt;fn_process = resolve&lt;PluginResult(*)(SnifferContext*)&gt;(
+        handle, &quot;plugin_process_packet&quot;);
+} else if (declared_type == &quot;ml-detector&quot;) {
+    if (declared_sub == &quot;inference&quot;) {
+        plugin-&gt;fn_predict = resolve&lt;PluginResult(*)(MlDetectorContext*)&gt;(
+            handle, &quot;plugin_predict&quot;);
+    } else if (declared_sub == &quot;enrichment&quot;) {
+        plugin-&gt;fn_enrich = resolve&lt;PluginResult(*)(MlDetectorContext*)&gt;(
+            handle, &quot;plugin_enrich&quot;);
+    }
+}
+// ... etc por familia
+</code></pre>
+<hr />
+<h2 id="restricciones-invariantes-no-negociables">Restricciones invariantes — no negociables</h2>
+<ol>
+<li>
+<p><strong>Plugins: SOLO feature extraction / inference / enrichment.</strong>
+   La decisión de bloqueo pertenece siempre al core (ADR-007 AND-consensus).</p>
+</li>
+<li>
+<p><strong>Un plugin no puede forzar un bloqueo.</strong> <code>threat_hint</code> es una sugerencia
+   que el host puede ignorar. No existe canal de escritura directa a firewall
+   desde un plugin.</p>
+</li>
+<li>
+<p><strong>Un crash en un plugin no puede matar el proceso host.</strong>
+   PHASE 1: budget monitor detecta overruns y loguea.
+   PHASE 2: proceso separado + watchdog (crash isolation).</p>
+</li>
+<li>
+<p><strong>El core legacy (RF embebidos, Fast Detector) es FROZEN.</strong>
+   No se migra a plugins. No se toca para acomodar plugins.</p>
+</li>
+<li>
+<p><strong>Autenticación de plugins:</strong> PHASE 2 (ADR-013, seed-client DAY 95-96).
+   Un plugin sin firma válida no se carga. El mecanismo de firma es ortogonal
+   a este ADR — ADR-017 define contratos, ADR-013 define autenticación.</p>
+</li>
+</ol>
+<hr />
+<h2 id="regla-de-reprovisioning-granular-no-big-bang">Regla de reprovisioning — granular, no big bang</h2>
+<p>Añadir un plugin a un componente <strong>no requiere recompilar el componente</strong>.
+El binario del componente no cambia — solo cambia su JSON de configuración
+y el par de claves componente↔plugin_nuevo.</p>
+<pre><code>Evento                           → Reprovisionar
+─────────────────────────────────────────────────────────────
+Nuevo plugin en componente X     → solo X↔plugin_nuevo
+Nueva versión plugin Y en X      → solo X↔plugin_Y_v_nueva
+Nueva versión binario de X       → X↔todos sus interlocutores
+Rotación periódica de seeds      → todos (mantenimiento)
+</code></pre>
+<p><strong>Por qué añadir un plugin no obliga a reprovisionar los canales ZeroMQ:</strong>
+La semilla ChaCha20 entre sniffer↔ml-detector es independiente del hecho
+de que ml-detector cargue un plugin nuevo. El canal ZeroMQ usa la keypair
+del componente — que no cambia cuando el componente carga un nuevo plugin.
+Solo cambia la relación componente↔plugin_nuevo.</p>
+<p><strong>Implementación en tools/provision:</strong></p>
+<pre><code>tools/
+    provision/
+        provision.sh              ← orquestador principal
+        provision_component.sh    ← un componente individual
+        provision_plugin.sh       ← un plugin userspace individual
+        provision_ebpf_plugin.sh  ← un plugin eBPF individual
+        verify_provision.sh       ← verifica estado del provisioning
+    stress/
+        tcpreplay_neris.sh
+        tcpreplay_bigflows.sh
+        calculate_f1_neris.py
+</code></pre>
+<p><code>verify_provision.sh</code> verifica que todos los pares de claves están en su
+sitio y son coherentes antes de arrancar el pipeline — falla rápido con
+mensaje claro antes de que el runtime falle con un error críptico.</p>
+<h2 id="consecuencias">Consecuencias</h2>
+<p><strong>Positivas:</strong>
+- Type-safety en el hot path — el compilador protege contra confusiones
+  entre familias en el punto más crítico del sistema
+- Semántica correcta por familia — <code>plugin_predict</code> no "procesa paquetes"
+- Extensibilidad controlada — PHASE 3 para terceros, cuando haya empírica
+- Historial de modelos auditable en filesystem — sin base de datos adicional
+- La línea divisoria core/plugin protege la integridad científica del paper:
+  el sistema detecta clases de comportamiento, no firmas de malware concreto</p>
+<p><strong>Negativas / limitaciones:</strong>
+- Más headers que mantener (3 familias activas en PHASE 2)
+- <code>PLUGIN_API_VERSION++</code> necesario si cambia cualquier contexto — breaking change
+  gestionado con versionado semántico del .so
+- Sin extensibilidad de terceros hasta PHASE 3 — contribuidores externos
+  tendrán que esperar</p>
+<hr />
+<h2 id="relacion-con-otros-adrs">Relación con otros ADRs</h2>
+<table>
+<thead>
+<tr>
+<th>ADR</th>
+<th>Relación</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>ADR-003</td>
+<td>Validadores de modelos (verify_A..F) están <strong>fuera</strong> del scope de este ADR — son herramientas CI, no plugins de producción</td>
+</tr>
+<tr>
+<td>ADR-007</td>
+<td>AND-consensus para bloqueo — invariante que ningún plugin puede violar</td>
+</tr>
+<tr>
+<td>ADR-010</td>
+<td>Skills de rag-security — mecanismo separado, no unificado aquí</td>
+</tr>
+<tr>
+<td>ADR-012</td>
+<td>Plugin-loader PHASE 1 — mecanismo de carga implementado, este ADR define los contratos</td>
+</tr>
+<tr>
+<td>ADR-013</td>
+<td>Autenticación de plugins — capa ortogonal, implementada DAY 95-96</td>
+</tr>
+<tr>
+<td>ADR-014</td>
+<td>Plugins de fuzzing para sniffer — familia SnifferPlugin subtipo "packet"</td>
+</tr>
+<tr>
+<td>ADR-015</td>
+<td>Integridad eBPF — el manifiesto de plugins usa el contrato de identidad de este ADR</td>
+</tr>
+<tr>
+<td>ADR-016</td>
+<td>Plugins eBPF de kernel-telemetry — separados en ADR-018</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="secuencia-de-implementacion">Secuencia de implementación</h2>
+<pre><code>DAY 94 (hoy):
+  [ ] Crear plugin_api_base.h (refactor de plugin_api.h existente)
+  [ ] Crear plugin_api_sniffer.h
+  [ ] Crear plugin_api_ml_detector.h (esqueleto)
+  [ ] Actualizar plugin_loader.hpp — añadir validación component_type + subtype
+  [ ] Integrar plugin-loader en sniffer (Tarea A del DAY 94)
+
+DAY 95-96:
+  [ ] ADR-013 seed-client — autenticación de plugins
+  [ ] provision.sh — keypairs y seeds
+
+DAY 97+:
+  [ ] Primer plugin real: libplugin_dns_dga_v1.so (FEAT-NET-1, P1)
+  [ ] libmodel_neris_v2.so tras reentrenamiento (SYN-5)
+</code></pre>
+<hr />
+<h2 id="acta-del-consejo-de-sabios-day-94">Acta del Consejo de Sabios — DAY 94</h2>
+<p><strong>Consulta:</strong> ADR-017 Plugin Interface Hierarchy
+<strong>Modelos participantes:</strong> Claude, ChatGPT5, DeepSeek, Gemini, Grok, Qwen (6/7)
+<strong>Resultado:</strong> Unanimidad en las 5 preguntas</p>
+<table>
+<thead>
+<tr>
+<th>Pregunta</th>
+<th>Decisión</th>
+<th>Votos</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>P1 — Contextos tipados</td>
+<td>Opción A (tipado fuerte por familia)</td>
+<td>6/6</td>
+</tr>
+<tr>
+<td>P2 — Función de entrada</td>
+<td>Separación semántica por familia + subtype</td>
+<td>6/6</td>
+</tr>
+<tr>
+<td>P3 — Plugins futuros</td>
+<td>Opción C (primero-partido PHASE 2, terceros PHASE 3)</td>
+<td>6/6</td>
+</tr>
+<tr>
+<td>P4 — Skills rag-security</td>
+<td>NO unificar — mecanismo separado</td>
+<td>6/6</td>
+</tr>
+<tr>
+<td>P5 — eBPF kernel-telemetry</td>
+<td>ADR-018 separado</td>
+<td>6/6</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Enriquecimientos aprobados por el Consejo:</strong>
+- <code>plugin_subtype()</code> añadido al contrato base (ChatGPT5)
+- <code>NetworkTuple</code> base compartida entre contextos (DeepSeek)
+- <code>EbpfUprobePlugin</code> como excepción documentada, no subfamilia (consenso)
+- Familias futuras documentadas: PostProcessorPlugin, FlowPlugin, UprobePlugin</p>
+<hr />
+<p><em>Co-authored-by: Alonso Isidoro Román + Claude (Anthropic)</em>
+<em>Consejo de Sabios: Claude · ChatGPT5 · DeepSeek · Gemini · Grok · Qwen · Parallel.ai</em>
+<em>DAY 94 — 22 marzo 2026</em>
+<em>ML Defender (aRGus NDR)</em></p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.top", "search.highlight"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

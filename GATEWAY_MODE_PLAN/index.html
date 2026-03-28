@@ -1,0 +1,1508 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source embedded-ML NDR for hospitals and schools">
+      
+      
+        <meta name="author" content="Alonso Isidoro Roman">
+      
+      
+        <link rel="canonical" href="https://alonsoir.github.io/argus/GATEWAY_MODE_PLAN/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>Gateway Mode Implementation Plan - ML Defender (aRGus NDR)</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#gateway-mode-implementation-plan" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="ML Defender (aRGus NDR)" class="md-header__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ML Defender (aRGus NDR)
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Gateway Mode Implementation Plan
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../README.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../docs/ARCHITECTURE.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../docs/BACKLOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Backlog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../docs/SECURITY_MODEL.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Security Model
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../docs/adr/ADR-013 seed distribution component authentication.md" class="md-tabs__link">
+          
+  
+  
+  ADRs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../docs/contracts/Protobuf contracts.md" class="md-tabs__link">
+          
+  
+  
+  Contracts
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="ML Defender (aRGus NDR)" class="md-nav__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ML Defender (aRGus NDR)
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../README.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/ARCHITECTURE.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/BACKLOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/SECURITY_MODEL.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADRs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ADRs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/adr/ADR-013 seed distribution component authentication.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013 Seed Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/adr/ADR-021-deployment-topology-seed-families.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-021 Topology SSOT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/adr/ADR-022-threat-model-opcion2-descartada.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-022 Threat Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/contracts/Protobuf contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protobuf
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/contracts/JSON contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JSON
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/contracts/Rag security commands.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#objective" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🎯 Objective
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#architecture-overview" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        📐 Architecture Overview
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="📐 Architecture Overview">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#current-state-host-based-ids" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Current State (Host-Based IDS)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#target-state-gateway-mode" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Target State (Gateway Mode)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#technical-changes-required" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🔧 Technical Changes Required
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🔧 Technical Changes Required">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-xdpebpf-modifications" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. XDP/eBPF Modifications
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-configuration-changes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Configuration Changes
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-ip-forwarding-support" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. IP Forwarding Support
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-firewall-integration-changes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Firewall Integration Changes
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#testing-plan" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        📊 Testing Plan
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="📊 Testing Plan">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#phase-1-local-testing-vm-as-gateway" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 1: Local Testing (VM as Gateway)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#phase-2-real-malware-validation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 2: Real Malware Validation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#phase-3-performance-benchmarking" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 3: Performance Benchmarking
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#performance-targets" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        📈 Performance Targets
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#implementation-phases" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🚧 Implementation Phases
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🚧 Implementation Phases">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#phase-1-xdp-modifications-2-hours" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 1: XDP Modifications (2 hours)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#phase-2-configuration-scripts-1-hour" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 2: Configuration &amp; Scripts (1 hour)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#phase-3-testing-validation-2-hours" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 3: Testing &amp; Validation (2 hours)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#phase-4-real-malware-testing-3-hours" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 4: Real Malware Testing (3 hours)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#phase-5-documentation-1-hour" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 5: Documentation (1 hour)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#success-criteria" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        📝 Success Criteria
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#rollback-plan" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🔄 Rollback Plan
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#references" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        📚 References
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#next-steps" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🎯 Next Steps
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="gateway-mode-implementation-plan">Gateway Mode Implementation Plan</h1>
+<h2 id="objective">🎯 Objective</h2>
+<p>Transform ML Defender from a <strong>host-based IDS</strong> into a <strong>dual-mode system</strong> supporting both host-based and gateway deployments.</p>
+<h2 id="architecture-overview">📐 Architecture Overview</h2>
+<h3 id="current-state-host-based-ids">Current State (Host-Based IDS)</h3>
+<pre><code>Traffic Flow:
+  Packet → eth1 → XDP hook → Destination check:
+    - dst_ip == VM_ip?  → PROCESS &amp; PASS
+    - dst_ip != VM_ip?  → DROP (ignored)
+
+Result: Only captures traffic TO/FROM this host
+</code></pre>
+<h3 id="target-state-gateway-mode">Target State (Gateway Mode)</h3>
+<pre><code>Traffic Flow:
+  Packet → eth1 → XDP hook → Mode check:
+    - mode == GATEWAY?  → PROCESS ALL &amp; FORWARD
+    - mode == HOST?     → PROCESS LOCAL ONLY &amp; PASS
+
+Result: Captures ALL traffic passing through the system
+</code></pre>
+<h2 id="technical-changes-required">🔧 Technical Changes Required</h2>
+<h3 id="1-xdpebpf-modifications">1. XDP/eBPF Modifications</h3>
+<p><strong>File:</strong> <code>sniffer/src/kernel/sniffer.bpf.c</code></p>
+<p><strong>Current Logic:</strong></p>
+<pre><code class="language-c">SEC(&quot;xdp&quot;)
+int xdp_packet_filter(struct xdp_md *ctx) {
+    // Implicitly filters for local traffic only
+    process_packet(ctx);
+    return XDP_PASS;
+}
+</code></pre>
+<p><strong>New Logic:</strong></p>
+<pre><code class="language-c">// BPF map for deployment mode
+struct {
+    __uint(type, BPF_MAP_TYPE_ARRAY);
+    __uint(max_entries, 1);
+    __type(key, __u32);
+    __type(value, __u32);
+} deployment_mode_map SEC(&quot;.maps&quot;);
+
+#define MODE_HOST    0
+#define MODE_GATEWAY 1
+#define MODE_MONITOR 2
+
+SEC(&quot;xdp&quot;)
+int xdp_packet_filter(struct xdp_md *ctx) {
+    __u32 key = 0;
+    __u32 *mode = bpf_map_lookup_elem(&amp;deployment_mode_map, &amp;key);
+
+    if (!mode) {
+        return XDP_PASS;  // Fallback: pass all
+    }
+
+    // Process packet for ML analysis
+    process_packet(ctx);
+
+    // Action based on deployment mode
+    switch (*mode) {
+        case MODE_GATEWAY:
+            // Gateway: Process ALL packets, forward to stack
+            return XDP_PASS;
+
+        case MODE_HOST:
+            // Host: Process only local traffic
+            if (is_local_traffic(ctx)) {
+                return XDP_PASS;
+            }
+            return XDP_PASS;  // Still pass non-local (just don't process)
+
+        case MODE_MONITOR:
+            // Monitor: Process ALL, but never block
+            return XDP_PASS;
+
+        default:
+            return XDP_PASS;
+    }
+}
+
+static __always_inline bool is_local_traffic(struct xdp_md *ctx) {
+    // Check if packet is destined to/from this host
+    // Implementation: Compare dst_ip with interface IP
+    return true;  // Placeholder
+}
+</code></pre>
+<h3 id="2-configuration-changes">2. Configuration Changes</h3>
+<p><strong>File:</strong> <code>sniffer/config/sniffer.json</code></p>
+<p><strong>Add deployment_mode section:</strong></p>
+<pre><code class="language-json">{
+  &quot;profile&quot;: &quot;lab&quot;,
+  &quot;deployment&quot;: {
+    &quot;mode&quot;: &quot;gateway&quot;,  // &quot;host&quot; | &quot;gateway&quot; | &quot;monitor&quot;
+    &quot;description&quot;: &quot;Gateway mode for network-wide protection&quot;
+  },
+  &quot;capture_interface&quot;: &quot;eth1&quot;,
+  &quot;gateway_settings&quot;: {
+    &quot;enable_ip_forwarding&quot;: true,
+    &quot;bridge_interface&quot;: &quot;eth1&quot;,
+    &quot;forward_action&quot;: &quot;drop_malicious&quot;,  // &quot;drop_malicious&quot; | &quot;alert_only&quot;
+    &quot;iptables_chain&quot;: &quot;FORWARD&quot;  // &quot;INPUT&quot; for host, &quot;FORWARD&quot; for gateway
+  }
+}
+</code></pre>
+<h3 id="3-ip-forwarding-support">3. IP Forwarding Support</h3>
+<p><strong>File:</strong> <code>sniffer/scripts/setup_gateway.sh</code></p>
+<pre><code class="language-bash">#!/bin/bash
+# Setup gateway mode for ML Defender
+
+set -e
+
+echo &quot;🌐 Configuring ML Defender Gateway Mode...&quot;
+
+# Enable IP forwarding
+echo &quot;1. Enabling IP forwarding...&quot;
+sudo sysctl -w net.ipv4.ip_forward=1
+sudo sysctl -w net.ipv6.conf.all.forwarding=1
+
+# Make persistent
+echo &quot;net.ipv4.ip_forward=1&quot; | sudo tee -a /etc/sysctl.conf
+echo &quot;net.ipv6.conf.all.forwarding=1&quot; | sudo tee -a /etc/sysctl.conf
+
+# Configure NAT (if needed)
+echo &quot;2. Configuring NAT...&quot;
+sudo iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
+
+# Allow forwarding from eth1 to eth0
+echo &quot;3. Configuring forwarding rules...&quot;
+sudo iptables -A FORWARD -i eth1 -o eth0 -j ACCEPT
+sudo iptables -A FORWARD -i eth0 -o eth1 -m state --state RELATED,ESTABLISHED -j ACCEPT
+
+# ML Defender will insert rules at position 1 for DROP malicious
+echo &quot;4. Gateway configured successfully ✅&quot;
+echo &quot;&quot;
+echo &quot;ML Defender will now:&quot;
+echo &quot;  - Process ALL traffic passing through&quot;
+echo &quot;  - Drop malicious traffic in FORWARD chain&quot;
+echo &quot;  - Forward benign traffic normally&quot;
+</code></pre>
+<h3 id="4-firewall-integration-changes">4. Firewall Integration Changes</h3>
+<p><strong>File:</strong> <code>firewall-acl-agent/config/firewall.json</code></p>
+<p><strong>Update for gateway mode:</strong></p>
+<pre><code class="language-json">{
+  &quot;deployment&quot;: {
+    &quot;mode&quot;: &quot;gateway&quot;  // &quot;host&quot; | &quot;gateway&quot;
+  },
+  &quot;iptables&quot;: {
+    &quot;chain&quot;: &quot;FORWARD&quot;,  // &quot;INPUT&quot; for host, &quot;FORWARD&quot; for gateway
+    &quot;blacklist_ipset&quot;: &quot;ml_defender_blacklist_test&quot;,
+    &quot;whitelist_ipset&quot;: &quot;ml_defender_whitelist&quot;,
+    &quot;action&quot;: &quot;DROP&quot;  // DROP for gateway, REJECT for host
+  }
+}
+</code></pre>
+<p><strong>File:</strong> <code>firewall-acl-agent/src/iptables_manager.cpp</code></p>
+<p><strong>Update rule generation:</strong></p>
+<pre><code class="language-cpp">void IPTablesManager::setup_rules() {
+    std::string chain = config_.deployment.mode == &quot;gateway&quot; ? &quot;FORWARD&quot; : &quot;INPUT&quot;;
+
+    // Whitelist rule (position 1)
+    std::string cmd_whitelist = &quot;iptables -I &quot; + chain + &quot; 1 &quot;
+        &quot;-m set --match-set &quot; + config_.iptables.whitelist_ipset + &quot; src &quot;
+        &quot;-j ACCEPT &quot;
+        &quot;-m comment --comment 'ML Defender Whitelist'&quot;;
+
+    // Blacklist rule (position 2)
+    std::string cmd_blacklist = &quot;iptables -I &quot; + chain + &quot; 2 &quot;
+        &quot;-m set --match-set &quot; + config_.iptables.blacklist_ipset + &quot; src &quot;
+        &quot;-j &quot; + config_.iptables.action + &quot; &quot;
+        &quot;-m comment --comment 'ML Defender Blacklist'&quot;;
+
+    execute_command(cmd_whitelist);
+    execute_command(cmd_blacklist);
+}
+</code></pre>
+<h2 id="testing-plan">📊 Testing Plan</h2>
+<h3 id="phase-1-local-testing-vm-as-gateway">Phase 1: Local Testing (VM as Gateway)</h3>
+<p><strong>Setup:</strong></p>
+<pre><code class="language-bash"># Configure VM as gateway
+cd /vagrant/sniffer/scripts
+./setup_gateway.sh
+
+# Verify IP forwarding
+sysctl net.ipv4.ip_forward  # Should be 1
+
+# Check NAT rules
+sudo iptables -t nat -L -n -v
+</code></pre>
+<p><strong>Test 1: MAWI Dataset Replay</strong></p>
+<pre><code class="language-bash"># Replay MAWI traffic THROUGH the VM
+sudo tcpreplay --intf1=eth1 --pps=100 /vagrant/mawi/mawi-vm-ready.pcap
+
+# Monitor capture
+tail -f /vagrant/logs/lab/detector.log | grep &quot;received=&quot;
+
+# Expected: Detector sees ALL replayed packets (not just local)
+</code></pre>
+<p><strong>Test 2: Synthetic Traffic Through Gateway</strong></p>
+<pre><code class="language-bash"># From Mac, send traffic to external IP (8.8.8.8)
+# Route through VM as gateway
+
+ping -c 100 8.8.8.8
+
+# Monitor
+tail -f /vagrant/logs/lab/sniffer.log | grep &quot;procesados&quot;
+
+# Expected: Sniffer captures ping traffic (even though dst != VM)
+</code></pre>
+<h3 id="phase-2-real-malware-validation">Phase 2: Real Malware Validation</h3>
+<p><strong>Dataset:</strong> CTU-13 Botnet Traffic</p>
+<pre><code class="language-bash"># Download CTU-13 scenario 1
+wget https://mcfp.felk.cvut.cz/publicDatasets/CTU-13-Dataset/CTU-13/1/capture20110810.pcap.gz
+gunzip capture20110810.pcap.gz
+
+# Rewrite IPs for VM network
+tcprewrite --infile=capture20110810.pcap \
+           --outfile=ctu13-ready.pcap \
+           --pnat=0.0.0.0/0:192.168.56.0/24
+
+# Replay through gateway
+sudo tcpreplay --intf1=eth1 ctu13-ready.pcap
+
+# Analyze detections
+grep &quot;attacks=&quot; /vagrant/logs/lab/detector.log | tail -20
+sudo ipset list ml_defender_blacklist_test
+</code></pre>
+<h3 id="phase-3-performance-benchmarking">Phase 3: Performance Benchmarking</h3>
+<p><strong>Metrics to Measure:</strong>
+- Throughput (pps) in gateway mode
+- Latency added by XDP processing
+- CPU usage under high traffic
+- Memory consumption with 100K+ flows
+- Packet drop rate (if any)</p>
+<p><strong>Tools:</strong>
+- <code>iperf3</code> for bandwidth testing
+- <code>tcpreplay</code> with <code>--pps</code> for controlled rates
+- <code>top</code> / <code>htop</code> for resource monitoring
+- Custom monitoring scripts</p>
+<h2 id="performance-targets">📈 Performance Targets</h2>
+<pre><code>Metric                    Host-Based    Gateway Target
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Throughput                36 pps        10,000+ pps
+Detection Latency         &lt;1.06μs       &lt;1.06μs (same)
+CPU Usage (idle)          &lt;1%           &lt;5%
+CPU Usage (load)          30%           &lt;60%
+Memory (detector)         148MB         &lt;200MB
+Flow Table                10K flows     100K flows
+Packet Loss               0%            &lt;0.1%
+</code></pre>
+<h2 id="implementation-phases">🚧 Implementation Phases</h2>
+<h3 id="phase-1-xdp-modifications-2-hours">Phase 1: XDP Modifications (2 hours)</h3>
+<ul>
+<li>[ ] Add BPF map for deployment mode</li>
+<li>[ ] Implement mode-aware packet filtering</li>
+<li>[ ] Add is_local_traffic() helper</li>
+<li>[ ] Update userspace loader to set mode</li>
+<li>[ ] Compile and test basic functionality</li>
+</ul>
+<h3 id="phase-2-configuration-scripts-1-hour">Phase 2: Configuration &amp; Scripts (1 hour)</h3>
+<ul>
+<li>[ ] Update sniffer.json schema</li>
+<li>[ ] Create setup_gateway.sh script</li>
+<li>[ ] Update firewall.json for gateway mode</li>
+<li>[ ] Update iptables_manager.cpp</li>
+<li>[ ] Document configuration options</li>
+</ul>
+<h3 id="phase-3-testing-validation-2-hours">Phase 3: Testing &amp; Validation (2 hours)</h3>
+<ul>
+<li>[ ] Local VM gateway setup</li>
+<li>[ ] MAWI dataset replay test</li>
+<li>[ ] Synthetic traffic test</li>
+<li>[ ] Performance benchmarking</li>
+<li>[ ] Memory and stability testing</li>
+</ul>
+<h3 id="phase-4-real-malware-testing-3-hours">Phase 4: Real Malware Testing (3 hours)</h3>
+<ul>
+<li>[ ] Download CTU-13 dataset</li>
+<li>[ ] Prepare PCAP files</li>
+<li>[ ] Replay and analyze detections</li>
+<li>[ ] Threshold tuning with evidence</li>
+<li>[ ] Document findings</li>
+</ul>
+<h3 id="phase-5-documentation-1-hour">Phase 5: Documentation (1 hour)</h3>
+<ul>
+<li>[ ] Update README.md</li>
+<li>[ ] Create DEPLOYMENT_MODES.md</li>
+<li>[ ] Write gateway setup guide</li>
+<li>[ ] Performance benchmarks</li>
+<li>[ ] Troubleshooting guide</li>
+</ul>
+<p><strong>Total Estimated Time:</strong> 9 hours</p>
+<h2 id="success-criteria">📝 Success Criteria</h2>
+<p>✅ <strong>Functional:</strong>
+- [ ] XDP processes ALL packets in gateway mode
+- [ ] IP forwarding works correctly
+- [ ] Firewall blocks malicious traffic in FORWARD chain
+- [ ] Benign traffic passes through normally</p>
+<p>✅ <strong>Performance:</strong>
+- [ ] Throughput ≥ 10,000 pps
+- [ ] Detection latency &lt; 1.06μs (maintained)
+- [ ] CPU usage &lt; 60% under load
+- [ ] No packet loss (&lt;0.1%)</p>
+<p>✅ <strong>Validation:</strong>
+- [ ] MAWI dataset fully captured
+- [ ] CTU-13 malware detected
+- [ ] Real attacks blocked in FORWARD chain
+- [ ] Zero false positives maintained</p>
+<p>✅ <strong>Documentation:</strong>
+- [ ] Deployment guide complete
+- [ ] Configuration examples provided
+- [ ] Performance benchmarks published
+- [ ] Troubleshooting documented</p>
+<h2 id="rollback-plan">🔄 Rollback Plan</h2>
+<p>If gateway mode causes issues:</p>
+<ol>
+<li><strong>Immediate rollback:</strong></li>
+</ol>
+<pre><code class="language-bash">   # Switch back to host mode
+   vim /vagrant/sniffer/config/sniffer.json
+   # Change: &quot;mode&quot;: &quot;host&quot;
+
+   # Restart sniffer
+   make kill-sniffer
+   make run-sniffer
+</code></pre>
+<ol>
+<li><strong>Git rollback:</strong></li>
+</ol>
+<pre><code class="language-bash">   git checkout main
+   git branch -D feature/gateway-mode-xdp
+</code></pre>
+<ol>
+<li><strong>System cleanup:</strong></li>
+</ol>
+<pre><code class="language-bash">   # Disable IP forwarding
+   sudo sysctl -w net.ipv4.ip_forward=0
+
+   # Remove NAT rules
+   sudo iptables -t nat -F
+   sudo iptables -F FORWARD
+</code></pre>
+<h2 id="references">📚 References</h2>
+<ul>
+<li><strong>XDP Documentation:</strong> https://www.kernel.org/doc/html/latest/networking/af_xdp.html</li>
+<li><strong>eBPF Examples:</strong> https://github.com/xdp-project/xdp-tutorial</li>
+<li><strong>IP Forwarding:</strong> https://www.kernel.org/doc/Documentation/networking/ip-sysctl.txt</li>
+<li><strong>CTU-13 Dataset:</strong> https://www.stratosphereips.org/datasets-ctu13</li>
+<li><strong>MAWI Archive:</strong> http://mawi.wide.ad.jp/mawi/</li>
+</ul>
+<h2 id="next-steps">🎯 Next Steps</h2>
+<ol>
+<li><strong>Branch Creation:</strong></li>
+</ol>
+<pre><code class="language-bash">   git checkout -b feature/gateway-mode-xdp
+   git push -u origin feature/gateway-mode-xdp
+</code></pre>
+<ol>
+<li><strong>Start Implementation:</strong></li>
+<li>Begin with Phase 1 (XDP modifications)</li>
+<li>Commit frequently with descriptive messages</li>
+<li>
+<p>Test each change before moving to next phase</p>
+</li>
+<li>
+<p><strong>Collaboration:</strong></p>
+</li>
+<li>Document discoveries in this file</li>
+<li>Update plan as needed</li>
+<li>Tag milestones (v0.8.0-gateway-alpha, etc.)</li>
+</ol>
+<hr />
+<p><strong>Via Appia Quality:</strong> Simple, robust, designed to last.</p>
+<p><strong>Philosophy:</strong> Gateway mode is not a workaround - it's the natural evolution of a host-based IDS into a network-wide protection system.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.tabs", "navigation.top", "search.highlight"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

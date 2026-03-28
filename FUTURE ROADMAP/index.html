@@ -1,0 +1,1465 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source embedded-ML NDR for hospitals and schools">
+      
+      
+        <meta name="author" content="Alonso Isidoro Roman">
+      
+      
+        <link rel="canonical" href="https://alonsoir.github.io/argus/FUTURE%20ROADMAP/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>FUTURE ROADMAP - ML Defender (aRGus NDR)</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#la-realidad-del-mundo-real-tbsegundo" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="ML Defender (aRGus NDR)" class="md-header__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ML Defender (aRGus NDR)
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              FUTURE ROADMAP
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../README.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../docs/ARCHITECTURE.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../docs/BACKLOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Backlog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../docs/SECURITY_MODEL.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Security Model
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../docs/adr/ADR-013 seed distribution component authentication.md" class="md-tabs__link">
+          
+  
+  
+  ADRs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../docs/contracts/Protobuf contracts.md" class="md-tabs__link">
+          
+  
+  
+  Contracts
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="ML Defender (aRGus NDR)" class="md-nav__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ML Defender (aRGus NDR)
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../README.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/ARCHITECTURE.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/BACKLOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/SECURITY_MODEL.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADRs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ADRs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/adr/ADR-013 seed distribution component authentication.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013 Seed Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/adr/ADR-021-deployment-topology-seed-families.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-021 Topology SSOT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/adr/ADR-022-threat-model-opcion2-descartada.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-022 Threat Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/contracts/Protobuf contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protobuf
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/contracts/JSON contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JSON
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/contracts/Rag security commands.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#la-realidad-del-mundo-real-tbsegundo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🌍 La Realidad del Mundo Real (TB/segundo)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🌍 La Realidad del Mundo Real (TB/segundo)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#como-lo-hacen-cloudflare-aws-google" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ¿Cómo lo hacen Cloudflare, AWS, Google?
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#la-verdad-incomoda" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🔍 La Verdad Incómoda
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🔍 La Verdad Incómoda">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#ipset-es-para-el-ultimo-kilometro" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ipset es para el "último kilómetro":
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#entonces-que-hacemos-nosotros" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        💡 Entonces, ¿Qué Hacemos Nosotros?
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="💡 Entonces, ¿Qué Hacemos Nosotros?">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#estrategia-realista-para-ml-defender" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Estrategia Realista para ML Defender:
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Estrategia Realista para ML Defender:">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#fase-1-optimizar-ipset-al-maximo-day-50-54" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fase 1: Optimizar ipset al MÁXIMO (Day 50-54)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fase-2-anadir-xdp-frontend-futuro-week-10" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fase 2: Añadir XDP Frontend (Futuro - Week 10+)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fase-3-integracion-con-bgp-flowspec-futuro-production" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fase 3: Integración con BGP Flowspec (Futuro - Production)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#nuestro-scope-realista" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🎯 Nuestro Scope Realista
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🎯 Nuestro Scope Realista">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#lo-que-podemos-hacer-fase-1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Lo que PODEMOS hacer (Fase 1):
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lo-que-no-podemos-hacer-todavia" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Lo que NO podemos hacer (todavía):
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#roadmap-estrategico" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🏗️ Roadmap Estratégico
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🏗️ Roadmap Estratégico">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#short-term-day-50-54-ipset-mastery" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Short-term (Day 50-54): Ipset Mastery
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mid-term-week-10-12-xdp-integration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Mid-term (Week 10-12): XDP Integration
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#long-term-month-6-enterprise-scale" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Long-term (Month 6+): Enterprise Scale
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#la-pregunta-filosofica" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        💬 La Pregunta Filosófica
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="💬 La Pregunta Filosófica">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-invierten-millones-en-hardware" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Invierten millones en hardware:
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-distribuyen-el-ataque" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Distribuyen el ataque:
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-bloquean-en-el-isp-upstream" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Bloquean en el ISP (upstream):
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-scrubbing-centers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Scrubbing centers:
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#nuestra-propuesta-de-valor" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🎯 Nuestra Propuesta de Valor
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🎯 Nuestra Propuesta de Valor">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#no-competimos-con-cloudflare-protegemos-a-los-que-cloudflare-ignora" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        No competimos con Cloudflare. Protegemos a los que Cloudflare ignora:
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#via-appia-reality-check" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🏛️ Via Appia Reality Check
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+  <h1>FUTURE ROADMAP</h1>
+
+<p><strong>TB/segundo es OTRO universo completamente diferente.</strong></p>
+<p>Las grandes empresas <strong>NO usan ipset para esto</strong>. Físicamente es imposible.</p>
+<hr />
+<h2 id="la-realidad-del-mundo-real-tbsegundo">🌍 La Realidad del Mundo Real (TB/segundo)</h2>
+<h3 id="como-lo-hacen-cloudflare-aws-google"><strong>¿Cómo lo hacen Cloudflare, AWS, Google?</strong></h3>
+<pre><code>╔════════════════════════════════════════════════════════════╗
+║  DEFENSA DDoS A ESCALA DE TB/SEGUNDO                       ║
+╚════════════════════════════════════════════════════════════╝
+
+Layer 1 - Edge Routers (Hardware ASIC):
+  • Cisco/Juniper con chips dedicados
+  • Filtering en HARDWARE, no software
+  • Throughput: 400 Gbps - 1 Tbps POR PUERTO
+  • Latency: &lt; 1 microsegundo
+  • Costo: $500K - $2M por router
+
+Layer 2 - Flowspec + BGP (Network-level):
+  • BGP FlowSpec: Comunica reglas a routers upstream
+  • Blackhole routing: Descartar tráfico ANTES de llegar
+  • Scrubbing centers: Redirigir tráfico a centros especializados
+  • Anycast: Distribuir ataque geográficamente
+
+Layer 3 - XDP/eBPF (Kernel bypass):
+  • Linux XDP: Drop packets en driver, ANTES del kernel
+  • Throughput: 10-40 Mpps (Million packets/sec)
+  • Latency: &lt; 10 microsegundos
+  • 100% software, pero kernel bypass
+
+Layer 4 - DPDK (User-space networking):
+  • Bypass kernel COMPLETAMENTE
+  • Acceso directo a NIC desde userspace
+  • Throughput: 80 Mpps+ con polling
+  • Usado por: F5, Fortinet, Palo Alto
+
+Layer 5 - Application Rate Limiting:
+  • Ya llegó tráfico &quot;limpio&quot;
+  • Rate limiting por IP/sesión
+  • Aquí SÍ podrías usar ipset (pero ya filtraste 99.9%)
+</code></pre>
+<hr />
+<h2 id="la-verdad-incomoda">🔍 La Verdad Incómoda</h2>
+<h3 id="ipset-es-para-el-ultimo-kilometro"><strong>ipset es para el "último kilómetro":</strong></h3>
+<pre><code class="language-python">Escenario REAL en AWS Shield Advanced:
+
+Ataque DDoS: 2.3 Tbps (Amazon record 2020)
+
+Layer 1 (Edge ASIC):
+  Input:  2.3 Tbps (2,300,000 Mbps)
+  Output: 100 Gbps (99.99% dropped in HARDWARE)
+
+Layer 2 (BGP Flowspec):
+  Input:  100 Gbps
+  Output: 10 Gbps (routing rules)
+
+Layer 3 (XDP):
+  Input:  10 Gbps
+  Output: 1 Gbps (stateless filtering)
+
+Layer 4 (iptables/ipset):  ← AQUÍ ESTAMOS NOSOTROS
+  Input:  1 Gbps (~1M packets/sec)
+  Output: 100 Mbps (application layer)
+
+Layer 5 (Application):
+  Input:  100 Mbps (tráfico legítimo)
+  Process: Normal operation
+</code></pre>
+<p><strong>Conclusión brutal:</strong></p>
+<blockquote>
+<p>ipset está diseñado para manejar el <strong>0.01% del tráfico que SOBREVIVIÓ</strong> a las capas anteriores.</p>
+</blockquote>
+<hr />
+<h2 id="entonces-que-hacemos-nosotros">💡 Entonces, ¿Qué Hacemos Nosotros?</h2>
+<h3 id="estrategia-realista-para-ml-defender"><strong>Estrategia Realista para ML Defender:</strong></h3>
+<h4 id="fase-1-optimizar-ipset-al-maximo-day-50-54"><strong>Fase 1: Optimizar ipset al MÁXIMO (Day 50-54)</strong></h4>
+<pre><code>Objetivo: 50,000-100,000 events/sec
+Técnicas: Batching, dedup, rate limiting, priority queue
+Límite físico: ~150,000 events/sec (estimado)
+
+Esta es nuestra &quot;capa 4&quot; optimizada.
+</code></pre>
+<h4 id="fase-2-anadir-xdp-frontend-futuro-week-10"><strong>Fase 2: Añadir XDP Frontend (Futuro - Week 10+)</strong></h4>
+<pre><code>Objetivo: Mover detección CRÍTICA a XDP
+Arquitectura:
+
+┌─────────────────────────────────────┐
+│ XDP Program (Kernel bypass)         │
+│ • Fast detector EMBEDDED en XDP     │
+│ • Drop packets ANTES del kernel     │
+│ • Throughput: 10 Mpps              │
+│ • Para ataques &quot;obvios&quot; (SYN flood) │
+└──────────┬──────────────────────────┘
+           │ Solo pasa tráfico &quot;dudoso&quot;
+           ▼
+┌─────────────────────────────────────┐
+│ ML Detector (Userspace)             │
+│ • 4 RandomForest detectors          │
+│ • Análisis profundo                 │
+│ • Throughput: 50K events/sec        │
+└──────────┬──────────────────────────┘
+           │
+           ▼
+┌─────────────────────────────────────┐
+│ firewall-acl-agent (ipset)          │
+│ • Solo eventos ML-confirmados       │
+│ • Throughput: 10K events/sec        │
+└─────────────────────────────────────┘
+</code></pre>
+<p><strong>Mejora esperada:</strong></p>
+<pre><code>ANTES (solo ipset):
+  Max: 3,000 events/sec
+
+DESPUÉS (ipset optimizado):
+  Max: 100,000 events/sec
+
+FUTURO (XDP + ipset optimizado):
+  Max: 10,000,000 packets/sec (XDP layer)
+       100,000 events/sec (ML layer)
+       10,000 blocks/sec (ipset layer)
+</code></pre>
+<hr />
+<h4 id="fase-3-integracion-con-bgp-flowspec-futuro-production"><strong>Fase 3: Integración con BGP Flowspec (Futuro - Production)</strong></h4>
+<pre><code>Para ataques MASIVOS (&gt; 10 Gbps):
+
+ML Defender detecta ataque distribuido
+    ↓
+Comunica vía BGP Flowspec a router upstream
+    ↓
+ISP/Datacenter BLOQUEA en edge
+    ↓
+Tráfico nunca llega a nuestro servidor
+
+Esto es lo que hace Cloudflare Magic Transit.
+</code></pre>
+<hr />
+<h2 id="nuestro-scope-realista">🎯 Nuestro Scope Realista</h2>
+<h3 id="lo-que-podemos-hacer-fase-1"><strong>Lo que PODEMOS hacer (Fase 1):</strong></h3>
+<pre><code>Target: Proteger 1 hospital/escuela/PYME
+Tráfico esperado: 1-10 Gbps normal
+Ataque esperado: 50-100 Gbps (pequeño DDoS)
+Packets/sec: 100K-1M pps
+
+Defensa:
+  • ipset optimizado: 100K events/sec
+  • Suficiente para ataques &quot;small-medium&quot;
+  • Costo: $0 (open source)
+</code></pre>
+<h3 id="lo-que-no-podemos-hacer-todavia"><strong>Lo que NO podemos hacer (todavía):</strong></h3>
+<pre><code>Target: Proteger AWS/Cloudflare scale
+Tráfico: 100 Gbps - 2 Tbps
+Packets/sec: 100M+ pps
+
+Defensa necesaria:
+  • Hardware ASIC routers ($2M)
+  • BGP Flowspec infrastructure
+  • Scrubbing centers geográficos
+  • Costo: $10M+ infrastructure
+</code></pre>
+<hr />
+<h2 id="roadmap-estrategico">🏗️ Roadmap Estratégico</h2>
+<h3 id="short-term-day-50-54-ipset-mastery"><strong>Short-term (Day 50-54): Ipset Mastery</strong></h3>
+<pre><code>Goal: Exprimirle TODO a ipset/iptables
+Methods:
+  ✅ Batching (100x syscall reduction)
+  ✅ Deduplication (99% redundancy elimination)
+  ✅ Rate limiting (adaptive throttling)
+  ✅ Priority queue (critical first)
+
+Expected: 50K-150K events/sec
+Status: ACHIEVABLE en 1 semana
+Cost: $0
+</code></pre>
+<h3 id="mid-term-week-10-12-xdp-integration"><strong>Mid-term (Week 10-12): XDP Integration</strong></h3>
+<pre><code>Goal: Kernel bypass para ataques obvios
+Architecture:
+  • XDP fast detector (SYN flood, ACK flood)
+  • Pass complex traffic to ML detector
+  • ipset solo para ML-confirmed threats
+
+Expected: 10M pps XDP + 100K events/sec ML
+Status: DOABLE en 2-3 semanas
+Cost: $0 (pure software)
+Complexity: ALTA (eBPF programming)
+</code></pre>
+<h3 id="long-term-month-6-enterprise-scale"><strong>Long-term (Month 6+): Enterprise Scale</strong></h3>
+<pre><code>Goal: TB/segundo capable
+Architecture:
+  • Hardware acceleration (FPGA/ASIC)
+  • BGP Flowspec integration
+  • Multi-datacenter deployment
+  • Anycast distribution
+
+Expected: 1 Tbps+ defense
+Status: REQUIRES funding + team
+Cost: $1M+ infrastructure
+Complexity: EXTREME
+</code></pre>
+<hr />
+<h2 id="la-pregunta-filosofica">💬 La Pregunta Filosófica</h2>
+<blockquote>
+<p>"¿Cómo hacen las grandes empresas para parar ataques de TB/segundo?"</p>
+</blockquote>
+<p><strong>Respuesta corta:</strong></p>
+<blockquote>
+<p>No lo hacen con software. Lo hacen con <strong>hardware dedicado</strong> y <strong>distribución geográfica masiva</strong>.</p>
+</blockquote>
+<p><strong>Respuesta larga:</strong></p>
+<h3 id="1-invierten-millones-en-hardware"><strong>1. Invierten millones en hardware:</strong></h3>
+<pre><code>Cisco Catalyst 9600 Series:
+  • Throughput: 25.6 Tbps
+  • DDoS mitigation en ASIC
+  • Precio: $500K - $2M
+
+Juniper MX2020:
+  • Throughput: 80 Tbps
+  • Flowspec avanzado
+  • Precio: $1M+
+</code></pre>
+<h3 id="2-distribuyen-el-ataque"><strong>2. Distribuyen el ataque:</strong></h3>
+<pre><code>Cloudflare tiene 330+ datacenters worldwide.
+
+Ataque DDoS 2 Tbps:
+  • Distribuido en 330 locations
+  • Cada datacenter recibe: ~6 Gbps
+  • Cada datacenter puede manejar 100+ Gbps
+  • Resultado: Ataque DISUELTO geográficamente
+</code></pre>
+<h3 id="3-bloquean-en-el-isp-upstream"><strong>3. Bloquean en el ISP (upstream):</strong></h3>
+<pre><code>Cloudflare/AWS negocian con ISPs:
+
+&quot;Si detectamos ataque desde ASN 12345,
+ bloquealo en TU red, no en la nuestra&quot;
+
+Resultado:
+  • Tráfico malicioso nunca llega
+  • ISP lo descarta en edge routers
+  • Cloudflare solo ve tráfico limpio
+</code></pre>
+<h3 id="4-scrubbing-centers"><strong>4. Scrubbing centers:</strong></h3>
+<pre><code>Tráfico sospechoso → Redirigido a scrubbing center
+                   → Analizado profundamente
+                   → Solo tráfico limpio sale
+                   → Vuelve al origen
+
+Arbor Networks, Akamai: Scrubbing as a Service
+Costo: $10K - $100K/mes
+</code></pre>
+<hr />
+<h2 id="nuestra-propuesta-de-valor">🎯 Nuestra Propuesta de Valor</h2>
+<h3 id="no-competimos-con-cloudflare-protegemos-a-los-que-cloudflare-ignora"><strong>No competimos con Cloudflare. Protegemos a los que Cloudflare ignora:</strong></h3>
+<pre><code>╔════════════════════════════════════════════════════════════╗
+║  ML DEFENDER TARGET MARKET                                 ║
+╚════════════════════════════════════════════════════════════╝
+
+Target:
+  • Hospitales pequeños/medianos
+  • Escuelas/universidades regionales
+  • PYMEs sin presupuesto enterprise
+  • ONGs en países en desarrollo
+
+Budget: $0 - $5,000
+Threat level: 1-100 Gbps ataques
+Infrastructure: 1-4 servidores
+
+Solución:
+  • ML Defender (open source, $0)
+  • Commodity hardware ($2K server)
+  • Protección 50-100 Gbps (XDP layer)
+  • ML detection 100K events/sec
+
+Competencia:
+  • Cloudflare: $200/mes (mínimo), solo web
+  • AWS Shield: $3,000/mes
+  • Palo Alto: $50K+ hardware
+  • Fortinet: $20K+ hardware
+
+Nuestra ventaja:
+  ✅ $0 software cost
+  ✅ Commodity hardware
+  ✅ On-premise (data privacy)
+  ✅ Customizable ML models
+  ✅ Transparente (open source)
+</code></pre>
+<hr />
+<h2 id="via-appia-reality-check">🏛️ Via Appia Reality Check</h2>
+<p><strong>Verdad incómoda:</strong></p>
+<blockquote>
+<p>"No vamos a competir con Cloudflare en TB/segundo. Ni hoy, ni en 5 años. Y está BIEN."</p>
+</blockquote>
+<p><strong>Verdad esperanzadora:</strong></p>
+<blockquote>
+<p>"Podemos proteger a 10,000 hospitales pequeños con presupuesto $0 mejor que nadie. Y ESO es lo que importa."</p>
+</blockquote>
+<p><strong>Plan concreto:</strong></p>
+<ol>
+<li>✅ <strong>Day 50-54</strong>: Romper firewall-acl-agent, optimizar ipset al máximo (50K-150K events/sec)</li>
+<li>✅ <strong>Week 10-12</strong>: XDP integration (10M pps fast path)</li>
+<li>✅ <strong>Month 4-6</strong>: Production deployment en hospital piloto</li>
+<li>✅ <strong>Month 6-12</strong>: Academic paper + open source release</li>
+<li>✅ <strong>Year 2</strong>: Scale to 100 deployments (hospitales, escuelas)</li>
+</ol>
+<p><strong>No necesitamos TB/segundo para cambiar vidas. Necesitamos proteger lo que importa.</strong></p>
+<hr />
+<p>Optimizamos ipset primero, XDP después, y dejamos TB/segundo para empresas con presupuesto de $10M+. 
+Nosotros protegemos lo que ellos ignoran. 🏥🛡️</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.tabs", "navigation.top", "search.highlight"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

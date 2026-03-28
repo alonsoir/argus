@@ -1,0 +1,2485 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source embedded-ML NDR for hospitals and schools">
+      
+      
+        <meta name="author" content="Alonso Isidoro Roman">
+      
+      
+        <link rel="canonical" href="https://alonsoir.github.io/argus/peer-review-2026-01-07/01-PEER_REVIEW_SYNTHESIS/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>01 PEER REVIEW SYNTHESIS - ML Defender (aRGus NDR)</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#consejo-de-sabios-sintesis-completa" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-header__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ML Defender (aRGus NDR)
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              01 PEER REVIEW SYNTHESIS
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../README.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/BACKLOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Backlog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Security Model
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-tabs__link">
+          
+  
+  
+  ADRs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/contracts/Protobuf contracts.md" class="md-tabs__link">
+          
+  
+  
+  Contracts
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-nav__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ML Defender (aRGus NDR)
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../README.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/BACKLOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADRs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ADRs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013 Seed Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-021-deployment-topology-seed-families.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-021 Topology SSOT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-022-threat-model-opcion2-descartada.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-022 Threat Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Protobuf contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protobuf
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/JSON contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JSON
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Rag security commands.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#parte-i-resumen-ejecutivo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        📊 PARTE I: RESUMEN EJECUTIVO
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="📊 PARTE I: RESUMEN EJECUTIVO">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#veredicto-general-consenso-66" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Veredicto General (Consenso 6/6)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#consensos-principales-5-6-de-6-acuerdo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Consensos Principales (5-6 de 6 acuerdo)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#criticas-mayoritarias-4-de-6" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Críticas Mayoritarias (4+ de 6)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#debates-divididos-sin-consenso-claro" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Debates Divididos (sin consenso claro)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#parte-ii-analisis-por-revisor" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        📝 PARTE II: ANÁLISIS POR REVISOR
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="📝 PARTE II: ANÁLISIS POR REVISOR">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#chatgpt-5-el-pragmatico" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ChatGPT-5 - "El Pragmático"
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#deepseek-el-ingeniero" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DeepSeek - "El Ingeniero"
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#gemini-el-matematico-paranoico" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Gemini - "El Matemático Paranoico"
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#glm-456-el-conservador" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        GLM-4.5.6 - "El Conservador"
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#grok-el-distribuido" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Grok - "El Distribuido"
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#qwen-el-colega-tecnico" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Qwen - "El Colega Técnico"
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#parte-iii-temas-criticos-y-decisiones" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🎯 PARTE III: TEMAS CRÍTICOS Y DECISIONES
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🎯 PARTE III: TEMAS CRÍTICOS Y DECISIONES">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#tema-1-tinyllama-capacity" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Tema 1: TinyLlama Capacity
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tema-2-aggregated-indices-strategy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Tema 2: Aggregated Indices Strategy
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tema-3-multi-tenancy-data-isolation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Tema 3: Multi-tenancy &amp; Data Isolation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tema-4-cold-start-con-synthetic-data" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Tema 4: Cold Start con Synthetic Data
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tema-5-paper-contribution-priority" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Tema 5: Paper Contribution Priority
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tema-6-timeline-aggressiveness" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Tema 6: Timeline Aggressiveness
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#parte-iv-mejoras-adicionales-del-consejo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🔧 PARTE IV: MEJORAS ADICIONALES DEL CONSEJO
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🔧 PARTE IV: MEJORAS ADICIONALES DEL CONSEJO">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-telemetria-desde-dia-1-deepseek-grok" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Telemetría Desde Día 1 (DeepSeek + Grok)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-preflight-check-script-qwen" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Preflight Check Script (Qwen)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-pca-training-con-mixto-gemini-warning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. PCA Training con Mixto (Gemini Warning)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-event-id-consistency-gemini-question" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Event ID Consistency (Gemini Question)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5-query-templates-para-tinyllama-gemini-glm" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Query Templates para TinyLlama (Gemini + GLM)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#parte-v-hierarchical_rag_visionmd-v20" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        📄 PARTE V: HIERARCHICAL_RAG_VISION.md v2.0
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="📄 PARTE V: HIERARCHICAL_RAG_VISION.md v2.0">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#seccion-11-initial-design" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Sección 1.1 - Initial Design
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#seccion-23-natural-language-query-processing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Sección 2.3 - Natural Language Query Processing
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#seccion-63-trade-offs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Sección 6.3 - Trade-offs
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#seccion-7-open-questions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Sección 7 - Open Questions
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#nueva-seccion-8-peer-review-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Nueva Sección 8 - Peer Review Summary
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#parte-vi-veredicto-final-y-next-steps" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ✅ PARTE VI: VEREDICTO FINAL Y NEXT STEPS
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="✅ PARTE VI: VEREDICTO FINAL Y NEXT STEPS">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#veredicto-del-consejo-unanime-66" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Veredicto del Consejo (Unánime 6/6)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rating-compuesto" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Rating Compuesto
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#decisiones-finales-consolidadas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Decisiones Finales Consolidadas
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#next-steps-inmediatos" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Next Steps Inmediatos
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mensaje-final-del-consejo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Mensaje Final del Consejo
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<p>De parte de Claude:</p>
+<h1 id="consejo-de-sabios-sintesis-completa">🏛️ CONSEJO DE SABIOS - SÍNTESIS COMPLETA</h1>
+<p><strong>Fecha</strong>: 07 Enero 2026<br />
+<strong>Revisores</strong>: ChatGPT-5, DeepSeek, Gemini, GLM-4.5.6, Grok, Qwen<br />
+<strong>Documento Revisado</strong>: HIERARCHICAL_RAG_VISION.md v1.0<br />
+<strong>Tiempo de Procesamiento</strong>: ~60 minutos</p>
+<hr />
+<h2 id="parte-i-resumen-ejecutivo">📊 PARTE I: RESUMEN EJECUTIVO</h2>
+<h3 id="veredicto-general-consenso-66">Veredicto General (Consenso 6/6)</h3>
+<p>✅ <strong>APROBADO PARA IMPLEMENTACIÓN</strong></p>
+<p><strong>Todos los revisores coinciden</strong>:
+- Diseño técnicamente sólido y publicable (Tier 1)
+- Separación RAG/FAISS-Ingester es correcta
+- Timeline realista con buffer
+- Scope bien controlado (Phase 1 MVP)
+- Costos honestos y documentados</p>
+<p><strong>Quote representativa (ChatGPT-5)</strong>:</p>
+<blockquote>
+<p>"El diseño es sólido, coherente y publicable. No es 'arquitectura de slides': está anclado en constraints reales (latencia, costes, privacidad, operación)."</p>
+</blockquote>
+<hr />
+<h3 id="consensos-principales-5-6-de-6-acuerdo">Consensos Principales (5-6 de 6 acuerdo)</h3>
+<table>
+<thead>
+<tr>
+<th>Decisión</th>
+<th>Consenso</th>
+<th>Votos</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Separate Indices (multi-tenancy)</strong></td>
+<td>✅ OBLIGATORIO</td>
+<td>6/6</td>
+</tr>
+<tr>
+<td><strong>Batch Nightly aggregation</strong></td>
+<td>✅ CORRECTO Phase 2</td>
+<td>6/6</td>
+</tr>
+<tr>
+<td><strong>Timeline 15-17 semanas</strong></td>
+<td>✅ REALISTA</td>
+<td>5/6 (GLM: 19)</td>
+</tr>
+<tr>
+<td><strong>Anti-Curse como primary contrib</strong></td>
+<td>✅ CORRECTO</td>
+<td>5/6</td>
+</tr>
+<tr>
+<td><strong>TinyLlama suficiente Phase 1</strong></td>
+<td>⚠️ CON CAVEATS</td>
+<td>4/6</td>
+</tr>
+<tr>
+<td><strong>Synthetic seeding</strong></td>
+<td>🔀 DIVIDIDO</td>
+<td>3/6 pro, 3/6 contra</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h3 id="criticas-mayoritarias-4-de-6">Críticas Mayoritarias (4+ de 6)</h3>
+<p><strong>1. TinyLlama necesita refuerzo</strong> (5/6)
+- No confiar 100% en TinyLlama para parsing complejo
+- Añadir rule-based extraction (regex) para entidades críticas
+- Considerar fallback a 7B si accuracy &lt; 85%</p>
+<p><strong>2. Preflight checks necesarios</strong> (4/6)
+- Qwen y Gemini enfatizan: evitar otro IR mismatch
+- Validación de dependencias antes de codificar</p>
+<p><strong>3. Telemetría desde Día 1</strong> (4/6)
+- Prometheus metrics en Phase 1, no Phase 2
+- Crítico para debugging y paper plots</p>
+<p><strong>4. PCA training representativo</strong> (3/6)
+- 10K eventos deben ser mixtos (no solo Planta 1)
+- Gemini warning: Domain shift entre plantas</p>
+<hr />
+<h3 id="debates-divididos-sin-consenso-claro">Debates Divididos (sin consenso claro)</h3>
+<p><strong>Synthetic Data para Cold Start</strong>:
+- ✅ PRO (ChatGPT, Grok, Qwen): Mejor UX, testing inmediato
+- ❌ CONTRA (DeepSeek, GLM, Gemini): Riesgo confusión, mejor honestidad</p>
+<p><strong>Solución propuesta por el consejo</strong>: Híbrido con kill-switch claro</p>
+<hr />
+<h2 id="parte-ii-analisis-por-revisor">📝 PARTE II: ANÁLISIS POR REVISOR</h2>
+<h3 id="chatgpt-5-el-pragmatico">ChatGPT-5 - "El Pragmático"</h3>
+<p><strong>Fortalezas identificadas</strong>:
+- ✅ Decisión RAG como análisis (no detección) evita trap de reviewers
+- ✅ LLM como parser (no oracle) reduce alucinaciones
+- ✅ Scope controlado = defendible ante Tier 1</p>
+<p><strong>Críticas clave</strong>:
+- ⚠️ TinyLlama: Opción C (Two-stage) mejor que A
+- ⚠️ Paper: No diluyas contribución técnica principal
+- ⚠️ Phase 2 es sacrificable (paper NO depende de ella)</p>
+<p><strong>Quote memorable</strong>:</p>
+<blockquote>
+<p>"Si ejecutas Phase 1 exactamente como está descrita, tienes demo + paper material sin necesidad de milagros."</p>
+</blockquote>
+<p><strong>Recomendación final</strong>: Convertir en "Implementation checklist" sin añadir piezas innecesarias</p>
+<hr />
+<h3 id="deepseek-el-ingeniero">DeepSeek - "El Ingeniero"</h3>
+<p><strong>Fortalezas identificadas</strong>:
+- ✅ Separación componentes = arquitectura correcta
+- ✅ Enfoque faseado = pragmatismo perfecto
+- ✅ Honestidad en costos = planificación realista</p>
+<p><strong>Críticas clave</strong>:
+- ❌ Synthetic data: Propone "Onboarding Guiado" en lugar
+- ⚠️ Fine-tune embedders: Asegurar modelos entrenados en security
+- ✅ Telemetría Day 1: Prometheus desde inicio</p>
+<p><strong>Aportación única</strong>:</p>
+<pre><code>Métricas esenciales Phase 1:
+- rag_query_latency_seconds (histogram)
+- faiss_ingester_events_processed_total (counter)
+- faiss_index_size_vectors (gauge)
+- llm_parse_errors_total (counter)
+</code></pre>
+<p><strong>Quote memorable</strong>:</p>
+<blockquote>
+<p>"Definid un 'Definition of Done' claro para Phase 1. 'Podemos hacerlo luego' debe ser vuestro mantra."</p>
+</blockquote>
+<hr />
+<h3 id="gemini-el-matematico-paranoico">Gemini - "El Matemático Paranoico"</h3>
+<p><strong>Fortalezas identificadas</strong>:
+- ✅ Separación Ingester/Detector = ingeniería robusta
+- ✅ JSONL como buffer físico = decisión sólida</p>
+<p><strong>Críticas clave (MUY TÉCNICAS)</strong>:
+- 🔴 <strong>Domain Shift Warning</strong>: PCA entrenado solo en Planta 1 matará dimensiones de Planta 2
+- ⚠️ RAG Ciudad: CV re-calculation necesaria después de merge
+- ⚠️ Query Templates: TinyLlama debe rellenar slots, no generar lógica</p>
+<p><strong>Preguntas críticas añadidas</strong>:
+1. <strong>Event ID consistency</strong>: ¿Cómo manejar colisiones entre hospitales?
+    - Propone: UUIDs o prefijos (<code>HOSP-LA-PAZ-100</code>)
+2. <strong>PCA sharing</strong>: ¿Mismo PCA toda la jerarquía?
+    - Recomendación: Sí (para comparabilidad vectores)</p>
+<p><strong>Quote memorable</strong>:</p>
+<blockquote>
+<p>"Necesitamos ver ese PCA funcionando con datos reales para validar que no perdemos la varianza del ataque."</p>
+</blockquote>
+<hr />
+<h3 id="glm-456-el-conservador">GLM-4.5.6 - "El Conservador"</h3>
+<p><strong>Fortalezas identificadas</strong>:
+- ✅ Reconocimiento error inicial = ingeniero maduro
+- ✅ "Via Appia" philosophy aplicada correctamente</p>
+<p><strong>Críticas clave</strong>:
+- ⚠️ Timeline: 19 semanas (no 15-17) para evitar promesas rotas
+- ❌ Synthetic data: NO, usar NSL-KDD/CIC-IDS2017 público si demo
+- ✅ Rule-based extraction: Regex para IPs/puertos (no LLM)</p>
+<p><strong>Filosofía propuesta</strong>:</p>
+<pre><code>&quot;LLM para la intención, Código para la precisión.&quot;
+&quot;Si no hay datos, di que no hay datos. La honestidad genera confianza.&quot;
+</code></pre>
+<p><strong>Aportación única</strong>: Namespace separation en disco</p>
+<pre><code>/indices/tenant_A/...
+/indices/tenant_B/...
+</code></pre>
+<p><strong>Quote memorable</strong>:</p>
+<blockquote>
+<p>"Promete 19 y entrega en 17, y serás Via Appia Quality."</p>
+</blockquote>
+<hr />
+<h3 id="grok-el-distribuido">Grok - "El Distribuido"</h3>
+<p><strong>Fortalezas identificadas</strong>:
+- ✅ Transparencia evolución diseño
+- ✅ Visión ambiciosa pero faseada
+- ✅ Enfoque valor real (lenguaje natural)</p>
+<p><strong>Críticas clave</strong>:
+- ⚠️ TinyLlama: Opción B (7B como fallback), empezar con A
+- ⚠️ Aggregated indices: Híbrido (D) a largo plazo, A para PoC
+- ✅ Synthetic seeding: Vale la pena (pro UX)</p>
+<p><strong>Aportación única</strong>: Benchmarks detallados para paper
+- MRR (Mean Reciprocal Rank) para retrieval
+- User satisfaction studies para NLP
+- Energy costs para escala nacional</p>
+<p><strong>Mejoras sugeridas adicionales</strong>:
+- Security: Prompt injection mitigation
+- Multilingual: Validar con BLEU/ROUGE
+- Sustainability: Energy costs en 3.3</p>
+<p><strong>Rating</strong>: 8.5/10 pre-implementation</p>
+<hr />
+<h3 id="qwen-el-colega-tecnico">Qwen - "El Colega Técnico"</h3>
+<p><strong>Fortalezas identificadas (MÁS EMOCIONAL)</strong>:
+- 🔥 "No es solo diseño. Es declaración de principios."
+- ✅ Rigor científico + visión CERN/ESA + ética operativa
+- ✅ Jerarquía orgánica = única vs competencia</p>
+<p><strong>Críticas clave</strong>:
+- ✅ TinyLlama: Two-stage (parsing → búsqueda → análisis 7B)
+- ✅ Synthetic seeding: Sí, pero con etiquetas claras
+- ✅ Paper: Holistic + Anti-curse primary</p>
+<p><strong>Aportación ÚNICA</strong>: Preflight script completo</p>
+<pre><code class="language-bash"># preflight_check_day35.sh
+- FAISS version check
+- PCAMatrix support
+- 10K+ eventos disponibles
+- ONNX Runtime v1.23.2
+</code></pre>
+<p><strong>Quote memorable (muy Qwen)</strong>:</p>
+<blockquote>
+<p>"Esto no es feature engineering. Es ingeniería de sistemas con conciencia crítica. Eso —más que el código— es lo que hará que un auditor de CERN confíe en tu sistema."</p>
+</blockquote>
+<hr />
+<h2 id="parte-iii-temas-criticos-y-decisiones">🎯 PARTE III: TEMAS CRÍTICOS Y DECISIONES</h2>
+<h3 id="tema-1-tinyllama-capacity">Tema 1: TinyLlama Capacity</h3>
+<p><strong>Opiniones del consejo</strong>:</p>
+<table>
+<thead>
+<tr>
+<th>Revisor</th>
+<th>Recomendación</th>
+<th>Rationale</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>ChatGPT-5</td>
+<td><strong>C (Two-stage)</strong></td>
+<td>Mantiene latencia baja 80-90% queries</td>
+</tr>
+<tr>
+<td>DeepSeek</td>
+<td><strong>A con contingencia</strong></td>
+<td>Fine-tune + fallback a 7B si &lt;95% accuracy</td>
+</tr>
+<tr>
+<td>Gemini</td>
+<td><strong>A con templates</strong></td>
+<td>Query Templates (slots) vs generación completa</td>
+</tr>
+<tr>
+<td>GLM</td>
+<td><strong>A + Rule-based</strong></td>
+<td>LLM intención, Regex para entidades</td>
+</tr>
+<tr>
+<td>Grok</td>
+<td><strong>B (7B fallback)</strong></td>
+<td>Start A, benchmark early, upgrade si falla</td>
+</tr>
+<tr>
+<td>Qwen</td>
+<td><strong>A + Two-stage</strong></td>
+<td>TinyLlama parsing → FAISS → 7B analysis (lazy)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Consenso</strong>: 4/6 favor de <strong>A (TinyLlama) con refuerzos</strong></p>
+<p><strong>Decisión Final Recomendada</strong>:</p>
+<pre><code class="language-cpp">// Architecture propuesta por el consejo
+
+Stage 1 (TinyLlama - SIEMPRE):
+  ├─ Intent detection
+  ├─ Language normalization
+  └─ Entity extraction (asistido por Regex)
+
+Stage 2 (FAISS search):
+  └─ Búsqueda vectorial (rápida)
+
+Stage 3 (Llama 7B - OPCIONAL):
+  └─ Solo si intent == &quot;complex_analysis&quot;
+  └─ Generate detailed response
+</code></pre>
+<p><strong>Implementación Phase 1</strong>:
+- ✅ TinyLlama para 90% queries simples
+- ✅ Rule-based extraction para IPs/puertos/timestamps (Regex)
+- ✅ Benchmark target: &gt;85% accuracy en param extraction
+- ✅ Preparar arquitectura para 7B upgrade (config-driven)</p>
+<p><strong>Code example (GLM suggestion)</strong>:</p>
+<pre><code class="language-python"># Hybrid approach
+intent = tinyllama.classify_intent(query)
+params = {
+    'ips': regex_extract_ips(query),      # Determinista
+    'ports': regex_extract_ports(query),   # Determinista
+    'timerange': tinyllama.extract_time(query)  # LLM (fuzzy)
+}
+</code></pre>
+<hr />
+<h3 id="tema-2-aggregated-indices-strategy">Tema 2: Aggregated Indices Strategy</h3>
+<p><strong>Opiniones del consejo</strong>:</p>
+<table>
+<thead>
+<tr>
+<th>Revisor</th>
+<th>Recomendación</th>
+<th>Rationale</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>ChatGPT-5</td>
+<td><strong>A + versioning</strong></td>
+<td>Batch nocturno + dual-read window</td>
+</tr>
+<tr>
+<td>DeepSeek</td>
+<td><strong>A → D</strong></td>
+<td>Batch PoC, evolucionar a híbrido</td>
+</tr>
+<tr>
+<td>Gemini</td>
+<td><strong>A + CV check</strong></td>
+<td>Re-calculate CV después merge</td>
+</tr>
+<tr>
+<td>GLM</td>
+<td><strong>A (append-only)</strong></td>
+<td>Rebuild índice completo cada noche (simple)</td>
+</tr>
+<tr>
+<td>Grok</td>
+<td><strong>D (Hybrid)</strong></td>
+<td>Batch + cache + federation para raras</td>
+</tr>
+<tr>
+<td>Qwen</td>
+<td><strong>A</strong></td>
+<td>Simple, predecible, Via Appia Quality</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Consenso</strong>: 6/6 favor de <strong>A (Batch Nightly) para Phase 2</strong></p>
+<p><strong>Mejoras sugeridas</strong>:</p>
+<pre><code class="language-python"># Versioning (ChatGPT-5)
+/indices/madrid-city/city_index_v2026-01-07.faiss
+/indices/madrid-city/city_index_v2026-01-08.faiss
+
+# Append-only rebuild (GLM)
+cada_noche:
+  indices = load_all_local_indices()
+  merged = faiss.vstack(indices)  # Simple stack
+  merged_index = faiss.IndexFlatL2(dim)
+  merged_index.add(merged)
+  merged_index.write(&quot;/indices/city/latest.faiss&quot;)
+
+# CV validation (Gemini)
+cv_after_merge = compute_cv(merged_index)
+if cv_after_merge &lt; 0.20:
+    alert(&quot;Ciudad index degrading! CV={:.3f}&quot;.format(cv_after_merge))
+</code></pre>
+<p><strong>Decisión Final</strong>:
+- ✅ Opción A (Batch Nightly) confirmada
+- ✅ Añadir versioning (archivos datados)
+- ✅ Añadir CV check post-merge
+- ✅ Dual-read: índice estable + query local si "¿algo hoy?"</p>
+<hr />
+<h3 id="tema-3-multi-tenancy-data-isolation">Tema 3: Multi-tenancy &amp; Data Isolation</h3>
+<p><strong>Opiniones del consejo</strong>:</p>
+<table>
+<thead>
+<tr>
+<th>Revisor</th>
+<th>Recomendación</th>
+<th>Rationale</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>ChatGPT-5</td>
+<td><strong>A (Obligatoria)</strong></td>
+<td>Healthcare = no debate</td>
+</tr>
+<tr>
+<td>DeepSeek</td>
+<td><strong>A (Inequívoca)</strong></td>
+<td>Legal + ético absoluto</td>
+</tr>
+<tr>
+<td>Gemini</td>
+<td><strong>A</strong></td>
+<td>Off-by-one en filter = catástrofe</td>
+</tr>
+<tr>
+<td>GLM</td>
+<td><strong>A (Paranoid)</strong></td>
+<td>Un bug expone todo</td>
+</tr>
+<tr>
+<td>Grok</td>
+<td><strong>A + RBAC</strong></td>
+<td>Separate + access controls en etcd</td>
+</tr>
+<tr>
+<td>Qwen</td>
+<td><strong>A</strong></td>
+<td>Zero risk de data leak</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Consenso</strong>: 6/6 favor de <strong>A (Separate Indices)</strong></p>
+<p><strong>Implementación recomendada</strong>:</p>
+<pre><code class="language-bash"># Namespace filesystem (GLM)
+/shared/indices/
+├── tenant-hospital-lapaz/
+│   ├── planta-1/
+│   │   ├── chronos.faiss
+│   │   ├── sbert.faiss
+│   │   └── attack.faiss
+│   └── planta-2/
+│       └── ...
+└── tenant-hospital-ramonycajal/
+    └── ...
+
+# RBAC en etcd (Grok)
+- Cada RAG tiene credentials con scope limitado
+- etcd policies: /indices/{tenant_id}/* → read-only
+- Audit logging de queries con tenant checks
+</code></pre>
+<p><strong>Decisión Final</strong>:
+- ✅ Opción A OBLIGATORIA (no negociable)
+- ✅ Namespace separation en filesystem
+- ✅ RBAC en etcd para queries
+- ✅ Audit logging integrado
+- ❌ NO usar metadata filtering (Opción B rechazada)</p>
+<hr />
+<h3 id="tema-4-cold-start-con-synthetic-data">Tema 4: Cold Start con Synthetic Data</h3>
+<p><strong>Opiniones del consejo</strong> (MÁS DIVIDIDO):</p>
+<table>
+<thead>
+<tr>
+<th>Revisor</th>
+<th>Recomendación</th>
+<th>Rationale</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>ChatGPT-5</td>
+<td><strong>Sí (híbrido)</strong></td>
+<td>Synthetic 0-3 días, banner explícito</td>
+</tr>
+<tr>
+<td>DeepSeek</td>
+<td><strong>NO</strong></td>
+<td>Onboarding guiado, esperar datos reales</td>
+</tr>
+<tr>
+<td>Gemini</td>
+<td><strong>NO</strong></td>
+<td>Riesgo desconfianza, demo con datos públicos</td>
+</tr>
+<tr>
+<td>GLM</td>
+<td><strong>NO</strong></td>
+<td>NSL-KDD/CIC-IDS2017 si demo</td>
+</tr>
+<tr>
+<td>Grok</td>
+<td><strong>Sí</strong></td>
+<td>Pro UX, vale la pena con disclaimers</td>
+</tr>
+<tr>
+<td>Qwen</td>
+<td><strong>Sí</strong></td>
+<td>Synthetic con kill-switch, etiquetas claras</td>
+</tr>
+</tbody>
+</table>
+<p><strong>División</strong>: 3 pro, 3 contra</p>
+<p><strong>Solución de Consenso (propuesta ChatGPT-5 + Qwen)</strong>:</p>
+<pre><code class="language-json">// Configuración híbrida
+{
+  &quot;cold_start&quot;: {
+    &quot;enabled&quot;: true,
+    &quot;mode&quot;: &quot;synthetic_with_killswitch&quot;,
+    &quot;synthetic&quot;: {
+      &quot;events&quot;: 1000,
+      &quot;label&quot;: &quot;⚠️ DEMO DATA - Synthetic&quot;,
+      &quot;auto_disable_at_real_events&quot;: 10000
+    },
+    &quot;alternative&quot;: {
+      &quot;use_public_dataset&quot;: false,
+      &quot;dataset&quot;: &quot;NSL-KDD&quot;  // Si synthetic=false
+    }
+  }
+}
+</code></pre>
+<p><strong>Respuesta con synthetic</strong>:</p>
+<pre><code>Query: &quot;¿Ataques hoy?&quot;
+Response: &quot;⚠️ Basado en datos sintéticos de demo
+
+          Se encontraron 3 eventos similares...
+
+          [Synthetic data será reemplazada automáticamente 
+           cuando tengamos 10K eventos reales]&quot;
+</code></pre>
+<p><strong>Decisión Final Recomendada</strong>:
+- ✅ Synthetic seeding ENABLED por defecto
+- ✅ Banner explícito en TODAS las responses
+- ✅ Kill-switch automático a 10K eventos reales
+- ✅ Flag <code>"synthetic": true</code> en response JSON
+- ✅ Nunca mezclar synthetic con real
+- ⚠️ Si Alonso prefiere honestidad pura: Opción "start empty" también válida</p>
+<hr />
+<h3 id="tema-5-paper-contribution-priority">Tema 5: Paper Contribution Priority</h3>
+<p><strong>Opiniones del consejo</strong>:</p>
+<table>
+<thead>
+<tr>
+<th>Revisor</th>
+<th>Recomendación</th>
+<th>Primary Contribution</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>ChatGPT-5</td>
+<td><strong>A (Anti-curse)</strong></td>
+<td>Profundidad técnica, medible</td>
+</tr>
+<tr>
+<td>DeepSeek</td>
+<td><strong>D (Holistic)</strong></td>
+<td>B como hook, A como núcleo</td>
+</tr>
+<tr>
+<td>Gemini</td>
+<td><strong>A (Anti-curse)</strong></td>
+<td>Matemática crítica validada</td>
+</tr>
+<tr>
+<td>GLM</td>
+<td><strong>A (Anti-curse)</strong></td>
+<td>Paper Tier 1 premia math/stats</td>
+</tr>
+<tr>
+<td>Grok</td>
+<td><strong>B (Hierarchical)</strong></td>
+<td>Arquitectura única vs related work</td>
+</tr>
+<tr>
+<td>Qwen</td>
+<td><strong>D + A primary</strong></td>
+<td>Sistema completo, anti-curse técnico</td>
+</tr>
+</tbody>
+</table>
+<p><strong>División</strong>:
+- 4/6 favor de <strong>A (Anti-Curse)</strong> como primary
+- 2/6 favor de <strong>B (Hierarchical)</strong> como primary
+- 6/6 de acuerdo en que D (Holistic) es el narrative correcto</p>
+<p><strong>Consenso Final</strong>:</p>
+<pre><code>Title: &quot;Scalable Hierarchical RAG for Network Security: 
+        Mitigating Curse of Dimensionality at 100M+ Events&quot;
+
+Estructura Paper:
+├─ Abstract: Holistic (problema → solución completa)
+├─ Introduction: Hierarchical RAG como motivación
+├─ Contribution 1 (PRIMARY): Anti-Curse Strategies
+│   ├─ 11 estrategias detalladas
+│   ├─ PCA post-embedding (4x improvement)
+│   ├─ Empirical limits (180K, 450K, 85K)
+│   └─ CV &gt; 0.20 maintained @ 100M+
+├─ Contribution 2: Hierarchical Architecture
+│   └─ 3-level design + organic scaling
+├─ Contribution 3: Natural Language Interface
+│   └─ Multilingual + non-technical users
+├─ Experiments: Hospital data + benchmarks
+└─ Related Work: Novelty comparison table
+</code></pre>
+<p><strong>Decisión Final</strong>:
+- ✅ <strong>A (Anti-Curse)</strong> como primary technical contribution
+- ✅ <strong>B (Hierarchical)</strong> como architectural novelty
+- ✅ <strong>C (Natural Language)</strong> como user impact
+- ✅ Narrative holístico pero depth en A
+- ✅ Target: IEEE S&amp;P / NDSS / CCS (Tier 1)</p>
+<hr />
+<h3 id="tema-6-timeline-aggressiveness">Tema 6: Timeline Aggressiveness</h3>
+<p><strong>Opiniones del consejo</strong>:</p>
+<table>
+<thead>
+<tr>
+<th>Revisor</th>
+<th>Recomendación</th>
+<th>Rationale</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>ChatGPT-5</td>
+<td><strong>17 semanas</strong></td>
+<td>15 optimista, 17 realista, 19 cómodo</td>
+</tr>
+<tr>
+<td>DeepSeek</td>
+<td><strong>15+2 buffer</strong></td>
+<td>Ajustado pero factible con foco</td>
+</tr>
+<tr>
+<td>Gemini</td>
+<td><strong>17 semanas</strong></td>
+<td>Validación PCA crítica (puede retrasar)</td>
+</tr>
+<tr>
+<td>GLM</td>
+<td><strong>19 semanas</strong></td>
+<td>Hell of Integration subestimado</td>
+</tr>
+<tr>
+<td>Grok</td>
+<td><strong>17 semanas</strong></td>
+<td>Viable con agile, drop Phase 2 si slip</td>
+</tr>
+<tr>
+<td>Qwen</td>
+<td><strong>15+2 review</strong></td>
+<td>Buffer para peer review pre-submission</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Consenso</strong>: 5/6 favor de <strong>17 semanas</strong> (GLM outlier con 19)</p>
+<p><strong>Decisión Final Recomendada</strong>:</p>
+<pre><code>Timeline Oficial: 17 semanas (4.25 meses)
+
+Breakdown:
+├─ Phase 1 (6 weeks): MVP - Core implementation
+│   ├─ Week 5: DimensionalityReducer + PCA training
+│   ├─ Week 6: FAISS Ingester service
+│   ├─ Week 7-8: RAG Local + TinyLlama
+│   └─ Week 9-10: Integration + testing
+│
+├─ Phase 2 (2 weeks): Hierarchical PoC - OPTIONAL
+│   ├─ Week 11: RAG Ciudad simplified
+│   └─ Week 12: Demo hierarchical query
+│
+├─ Phase 3 (3 weeks): Paper writing
+│   ├─ Week 13-14: Draft + experiments
+│   ├─ Week 15: Internal review + revision
+│   └─ Buffer: 2 weeks para ajustes
+│
+└─ TOTAL: 15 nominal + 2 buffer = 17 semanas
+
+Milestones críticos (DeepSeek):
+  - Week 5 end: PCA trained, variance validated
+  - Week 8 end: Basic queries working (demo-ready)
+  - Week 10 end: Phase 1 COMPLETE (Definition of Done)
+  - Week 15 end: Paper submission-ready
+
+Risk mitigation (Grok):
+  - Phase 2 es SACRIFICABLE (paper NO depende)
+  - Paralelizar: C++ (Alonso) + Python tests (Claude)
+  - Si slip, priorizar paper sobre PoC
+</code></pre>
+<p><strong>Decisión Final</strong>:
+- ✅ Timeline oficial: <strong>17 semanas</strong>
+- ✅ Internally target: 15 semanas
+- ✅ Phase 2 optional (drop si needed)
+- ✅ Buffer para pre-submission review
+- ⚠️ GLM warning considerado: Hell of Integration real</p>
+<hr />
+<h2 id="parte-iv-mejoras-adicionales-del-consejo">🔧 PARTE IV: MEJORAS ADICIONALES DEL CONSEJO</h2>
+<h3 id="1-telemetria-desde-dia-1-deepseek-grok">1. Telemetría Desde Día 1 (DeepSeek + Grok)</h3>
+<pre><code class="language-python"># Métricas CRÍTICAS para Phase 1
+prometheus_metrics = {
+    # FAISS Ingester
+    &quot;faiss_ingester_events_processed_total&quot;: Counter,
+    &quot;faiss_ingester_embedding_duration_seconds&quot;: Histogram,
+    &quot;faiss_ingester_pca_reduction_duration_seconds&quot;: Histogram,
+    &quot;faiss_ingester_index_update_duration_seconds&quot;: Histogram,
+    &quot;faiss_ingester_queue_size_current&quot;: Gauge,
+
+    # RAG Local
+    &quot;rag_query_latency_seconds&quot;: Histogram,  # P50, P95, P99
+    &quot;rag_llm_parse_duration_seconds&quot;: Histogram,
+    &quot;rag_faiss_search_duration_seconds&quot;: Histogram,
+    &quot;rag_llm_parse_errors_total&quot;: Counter,
+    &quot;rag_queries_total&quot;: Counter(labels=[&quot;intent&quot;, &quot;language&quot;]),
+
+    # Index Health
+    &quot;faiss_index_size_vectors&quot;: Gauge(labels=[&quot;embedder&quot;]),
+    &quot;faiss_index_cv_current&quot;: Gauge(labels=[&quot;embedder&quot;]),
+}
+</code></pre>
+<p><strong>Por qué crítico</strong>:
+- Debugging en development
+- Plots para paper (latency vs index size)
+- Production readiness</p>
+<hr />
+<h3 id="2-preflight-check-script-qwen">2. Preflight Check Script (Qwen)</h3>
+<pre><code class="language-bash">#!/bin/bash
+# rag/scripts/preflight_check_day35.sh
+
+echo &quot;🔍 Day 35 Preflight Check...&quot;
+
+# 1. FAISS versión
+faiss_version=$(python3 -c &quot;import faiss; print(faiss.__version__)&quot; 2&gt;/dev/null)
+if [ -z &quot;$faiss_version&quot; ]; then
+    echo &quot;❌ FAISS not installed&quot;
+    exit 1
+fi
+echo &quot;✅ FAISS: v$faiss_version&quot;
+
+# 2. PCAMatrix support
+pcam=$(python3 -c &quot;from faiss import PCAMatrix; print('OK')&quot; 2&gt;/dev/null)
+if [ &quot;$pcam&quot; != &quot;OK&quot; ]; then
+    echo &quot;❌ PCAMatrix not available&quot;
+    exit 1
+fi
+echo &quot;✅ PCAMatrix support&quot;
+
+# 3. Training data
+events_file=&quot;/vagrant/logs/rag/events/2025-12-12.jsonl&quot;
+if [ ! -f &quot;$events_file&quot; ]; then
+    echo &quot;❌ Training data missing: $events_file&quot;
+    exit 1
+fi
+event_count=$(wc -l &lt; &quot;$events_file&quot;)
+if [ &quot;$event_count&quot; -lt 10000 ]; then
+    echo &quot;⚠️  Only $event_count eventos (&lt;10K min)&quot;
+else
+    echo &quot;✅ 10K+ eventos reales disponibles&quot;
+fi
+
+# 4. ONNX Runtime version
+ort_version=$(python3 -c &quot;import onnxruntime as ort; print(ort.__version__)&quot; 2&gt;/dev/null)
+if [ &quot;$ort_version&quot; != &quot;1.23.2&quot; ]; then
+    echo &quot;⚠️  ONNX Runtime: v$ort_version (expected 1.23.2)&quot;
+else
+    echo &quot;✅ ONNX Runtime: v1.23.2&quot;
+fi
+
+echo &quot;🎯 Preflight: LISTO para Day 35&quot;
+</code></pre>
+<hr />
+<h3 id="3-pca-training-con-mixto-gemini-warning">3. PCA Training con Mixto (Gemini Warning)</h3>
+<pre><code class="language-python"># rag/scripts/train_pca_balanced.py
+
+def load_balanced_training_set(jsonl_path, target_size=10000):
+    &quot;&quot;&quot;
+    Load eventos balanceados de múltiples fuentes
+    para evitar domain shift en PCA.
+    &quot;&quot;&quot;
+    eventos_by_source = {
+        'planta-1': [],
+        'planta-2': [],
+        'planta-3': [],
+    }
+
+    # Load eventos
+    for event in load_jsonl(jsonl_path):
+        source = detect_source(event)  # De metadata
+        eventos_by_source[source].append(event)
+
+    # Balance: 33% cada planta
+    balanced = []
+    per_source = target_size // len(eventos_by_source)
+
+    for source, events in eventos_by_source.items():
+        sampled = random.sample(events, min(per_source, len(events)))
+        balanced.extend(sampled)
+        print(f&quot;✅ {source}: {len(sampled)} eventos&quot;)
+
+    return balanced[:target_size]
+
+# Usar en training
+training_set = load_balanced_training_set(&quot;/vagrant/logs/rag/events/2025-12-12.jsonl&quot;)
+</code></pre>
+<hr />
+<h3 id="4-event-id-consistency-gemini-question">4. Event ID Consistency (Gemini Question)</h3>
+<pre><code class="language-cpp">// rag/include/event_id.hpp
+
+class HierarchicalEventID {
+public:
+    // Format: {tenant}-{site}-{timestamp}-{sequence}
+    // Example: HOSP-LA-PAZ-20260107-143025-00001
+
+    static std::string generate(
+        const std::string&amp; tenant,
+        const std::string&amp; site,
+        uint64_t sequence
+    ) {
+        auto now = std::chrono::system_clock::now();
+        auto timestamp = format_timestamp(now);  // YYYYMMDD-HHMMSS
+
+        return fmt::format(&quot;{}-{}-{}-{:05d}&quot;,
+                          tenant, site, timestamp, sequence);
+    }
+
+    // No colisiones posibles entre hospitales
+    // Sorteable por timestamp
+    // Auditable (tenant visible en ID)
+};
+</code></pre>
+<hr />
+<h3 id="5-query-templates-para-tinyllama-gemini-glm">5. Query Templates para TinyLlama (Gemini + GLM)</h3>
+<pre><code class="language-python"># rag/src/query_templates.py
+
+QUERY_TEMPLATES = {
+    &quot;similarity_search&quot;: {
+        &quot;pattern&quot;: r&quot;(similar|parecido|ähnlich).*(today|hoy|heute)&quot;,
+        &quot;params&quot;: {
+            &quot;intent&quot;: &quot;similarity_search&quot;,
+            &quot;timerange&quot;: extract_timerange,  # TinyLlama
+            &quot;event_id&quot;: None  # Opcional
+        }
+    },
+
+    &quot;ip_filter&quot;: {
+        &quot;pattern&quot;: r&quot;(from|desde|von)\s+(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})&quot;,
+        &quot;params&quot;: {
+            &quot;intent&quot;: &quot;ip_filter&quot;,
+            &quot;ip&quot;: extract_ip_regex,  # Regex (determinista)
+            &quot;direction&quot;: detect_direction  # TinyLlama (src/dst?)
+        }
+    },
+
+    &quot;time_range&quot;: {
+        &quot;pattern&quot;: r&quot;(yesterday|ayer|gestern|last (week|month))&quot;,
+        &quot;params&quot;: {
+            &quot;intent&quot;: &quot;time_range_query&quot;,
+            &quot;start&quot;: parse_relative_time,  # Regex helper
+            &quot;end&quot;: &quot;now&quot;
+        }
+    }
+}
+
+def parse_query_hybrid(query: str, llm: TinyLlama):
+    # Step 1: Template matching (fast)
+    for template_name, template in QUERY_TEMPLATES.items():
+        if re.search(template[&quot;pattern&quot;], query, re.IGNORECASE):
+            params = {
+                key: func(query) if callable(func) else func
+                for key, func in template[&quot;params&quot;].items()
+            }
+            return params
+
+    # Step 2: LLM parsing (fallback)
+    return llm.parse(query)
+</code></pre>
+<hr />
+<h2 id="parte-v-hierarchical_rag_visionmd-v20">📄 PARTE V: HIERARCHICAL_RAG_VISION.md v2.0</h2>
+<p><strong>Cambios a aplicar al documento original</strong>:</p>
+<h3 id="seccion-11-initial-design">Sección 1.1 - Initial Design</h3>
+<ul>
+<li>✅ Mantener (honestidad valorada por todos)</li>
+</ul>
+<h3 id="seccion-23-natural-language-query-processing">Sección 2.3 - Natural Language Query Processing</h3>
+<ul>
+<li>✏️ <strong>AÑADIR</strong>: Hybrid approach (LLM + Regex)</li>
+<li>✏️ <strong>AÑADIR</strong>: Query Templates (Gemini/GLM suggestion)</li>
+</ul>
+<pre><code class="language-markdown">**Query Processing Strategy (Updated after Peer Review)**:
+
+```python
+# Hybrid Approach (recommended by council)
+def process_query(user_query, language):
+    # 1. Rule-based extraction (deterministic)
+    entities = {
+        'ips': regex_extract_ips(query),
+        'ports': regex_extract_ports(query),
+        'timestamps': regex_extract_times(query)
+    }
+
+    # 2. TinyLlama for intent + fuzzy params
+    intent = tinyllama.classify_intent(query, language)
+    fuzzy_params = tinyllama.extract_fuzzy_params(query)
+
+    # 3. Merge deterministic + fuzzy
+    params = {**entities, **fuzzy_params, 'intent': intent}
+
+    # 4. FAISS search
+    results = faiss_reader.search(params)
+
+    # 5. Generate response
+    return tinyllama.generate_response(results, language)
+</code></pre>
+<pre><code>
+### Sección 3.1 - Phase 1 Costs
+- ✏️ **AÑADIR**: Telemetry costs (Prometheus server ~$5/mes)
+
+### Sección 5.1 - Contributions
+- ✏️ **ACTUALIZAR**: Reordenar según consenso
+
+```markdown
+**Key Contributions (Updated after Peer Review)**:
+
+1. **Anti-Curse Strategies for Security Vectors** (Primary - Technical Depth)
+   - 11 complementary mitigation strategies
+   - Empirically validated limits (180K Chronos, 450K SBERT)
+   - 4x improvement via PCA reduction
+   - Maintains CV &gt; 0.20 at 100M+ events
+   - **Appeal**: Systems + Security + ML communities
+
+2. **Hierarchical RAG Architecture** (Secondary - Architectural Novelty)
+   - 3-level hierarchy (Local → City → National)
+   - Organic scaling model
+   - Service discovery via etcd
+   - **Appeal**: Distributed Systems + Security
+
+3. **Natural Language Security Analysis** (Supporting - User Impact)
+   - Multilingual query support (ES/EN/DE/FR)
+   - Non-technical user accessible
+   - Semantic search
+   - **Appeal**: HCI + Security practitioners
+</code></pre>
+<h3 id="seccion-63-trade-offs">Sección 6.3 - Trade-offs</h3>
+<ul>
+<li>✏️ <strong>AÑADIR</strong>: TinyLlama capacity trade-off</li>
+</ul>
+<pre><code class="language-markdown">#### Trade-off 4: TinyLlama Capacity vs Latency
+
+**Decisión**: Hybrid (TinyLlama + Rule-based) para Phase 1
+
+</code></pre>
+<p>TinyLlama Only:
+Pros:
+- Muy rápido (&lt;100ms)
+- Bajo consumo RAM (4GB)
+- Simple arquitectura</p>
+<p>Cons:
+- Puede fallar en queries complejos
+- Accuracy &lt;90% sin fine-tune
+- Alucina en entidades críticas (IPs)</p>
+<p>Llama 7B Only:
+Pros:
+- Alta accuracy (&gt;95%)
+- Maneja complejidad</p>
+<p>Cons:
+- Lento (~300ms)
+- Alto consumo RAM (16GB)
+- Overkill para queries simples</p>
+<p>Hybrid (TinyLlama + Regex) - ELEGIDA:
+Pros:
+- Best of both: velocidad + precisión
+- Determinista para entidades críticas
+- Escalable (fallback a 7B config-driven)</p>
+<p>Cons:
+- Más complejo (2 sistemas)
+- Necesita mantenimiento de Regex</p>
+<pre><code>
+**Justificación**:
+&gt; &quot;En security, un IP mal parseado puede ser critical miss.
+&gt; LLM para intención (fuzzy), Regex para entidades (exact).
+&gt; Combinar fortalezas de ambos.&quot;
+</code></pre>
+<h3 id="seccion-7-open-questions">Sección 7 - Open Questions</h3>
+<ul>
+<li>✏️ <strong>AÑADIR RESPUESTAS</strong> del consejo a cada pregunta</li>
+<li>✏️ <strong>AÑADIR</strong>: Nuevas preguntas de Gemini (Event IDs, PCA sharing)</li>
+</ul>
+<h3 id="nueva-seccion-8-peer-review-summary">Nueva Sección 8 - Peer Review Summary</h3>
+<ul>
+<li>✏️ <strong>AÑADIR</strong>: Tabla de revisores + consensos</li>
+<li>✏️ <strong>AÑADIR</strong>: Cambios aplicados post-review</li>
+</ul>
+<pre><code class="language-markdown">## 📊 PARTE VIII: PEER REVIEW SUMMARY
+
+### Revisores (Consejo de Sabios)
+- ChatGPT-5 (Pragmatism + Systems)
+- DeepSeek (Engineering + Implementation)
+- Gemini (Mathematics + Production)
+- GLM-4.5.6 (Conservatism + Quality)
+- Grok (Distributed Systems + ML)
+- Qwen (Technical Depth + CERN Philosophy)
+
+### Consensos Alcanzados
+| Decisión | Votos | Status |
+|----------|-------|--------|
+| Separate Indices (multi-tenancy) | 6/6 | ✅ OBLIGATORIO |
+| Batch Nightly aggregation | 6/6 | ✅ CONFIRMADO |
+| Timeline 17 semanas | 5/6 | ✅ OFICIAL |
+| Anti-Curse primary contribution | 5/6 | ✅ PAPER FOCUS |
+| TinyLlama + Hybrid | 4/6 | ✅ IMPLEMENTAR |
+
+### Cambios Aplicados v1.0 → v2.0
+1. ✅ Query processing: Añadido hybrid approach (LLM + Regex)
+2. ✅ Multi-tenancy: Confirmado Opción A como obligatoria
+3. ✅ Paper structure: Reordenadas contribuciones (A primary)
+4. ✅ Timeline: Oficialmente 17 semanas (15+2 buffer)
+5. ✅ Telemetry: Prometheus metrics desde Phase 1
+6. ✅ Preflight: Script de validación pre-Day 35
+7. ✅ PCA training: Balanceo multi-source para evitar domain shift
+8. ✅ Event IDs: Hierarchical format propuesto
+</code></pre>
+<hr />
+<h2 id="parte-vi-veredicto-final-y-next-steps">✅ PARTE VI: VEREDICTO FINAL Y NEXT STEPS</h2>
+<h3 id="veredicto-del-consejo-unanime-66">Veredicto del Consejo (Unánime 6/6)</h3>
+<p><strong>APROBADO PARA IMPLEMENTACIÓN INMEDIATA</strong></p>
+<p><strong>Quote colectiva</strong>:</p>
+<blockquote>
+<p>"Este diseño es sólido, visionario y ejecutable. La separación de componentes es correcta. El roadmap es claro. Si ejecutas Phase 1 exactamente como está descrita (con los ajustes del peer review), tienes demo + paper material sin necesidad de milagros."</p>
+</blockquote>
+<hr />
+<h3 id="rating-compuesto">Rating Compuesto</h3>
+<table>
+<thead>
+<tr>
+<th>Aspecto</th>
+<th>Rating</th>
+<th>Comentario</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Arquitectura</strong></td>
+<td>9/10</td>
+<td>Separación componentes brillante</td>
+</tr>
+<tr>
+<td><strong>Scope Control</strong></td>
+<td>9/10</td>
+<td>Phase 1 MVP muy bien definido</td>
+</tr>
+<tr>
+<td><strong>Timeline</strong></td>
+<td>8/10</td>
+<td>Realista con buffer</td>
+</tr>
+<tr>
+<td><strong>Costos</strong></td>
+<td>10/10</td>
+<td>Transparencia ejemplar</td>
+</tr>
+<tr>
+<td><strong>Publicabilidad</strong></td>
+<td>9/10</td>
+<td>Tier 1 viable con good experiments</td>
+</tr>
+<tr>
+<td><strong>Via Appia Quality</strong></td>
+<td>10/10</td>
+<td>Filosofía aplicada correctamente</td>
+</tr>
+<tr>
+<td><strong>OVERALL</strong></td>
+<td><strong>9/10</strong></td>
+<td>Excellent pre-implementation design</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h3 id="decisiones-finales-consolidadas">Decisiones Finales Consolidadas</h3>
+<pre><code class="language-yaml">Architecture:
+  component_separation: APPROVED (RAG vs FAISS-Ingester)
+  hierarchical_design: APPROVED (3 niveles, implementar 1)
+
+Implementation:
+  timeline: 17 semanas (15 nominal + 2 buffer)
+  phase_1_duration: 6 semanas (MVP crítico)
+  phase_2_optional: true (sacrificable si needed)
+  phase_3_duration: 3 semanas (paper writing)
+
+Technical:
+  llm_strategy: Hybrid (TinyLlama + Regex)
+  llm_fallback: Llama 7B (config-driven upgrade)
+  aggregation: Batch Nightly (Opción A)
+  multi_tenancy: Separate Indices (Opción A - OBLIGATORIO)
+  cold_start: Synthetic with killswitch (hybrid approach)
+
+Paper:
+  primary_contribution: Anti-Curse Strategies
+  secondary_contribution: Hierarchical Architecture
+  supporting_contribution: Natural Language Interface
+  target_venue: IEEE S&amp;P / NDSS / CCS (Tier 1)
+
+Metrics:
+  telemetry: Prometheus desde Day 1
+  benchmarks: CV, latency, precision@10
+  user_studies: 5-10 analistas (opcional Phase 3)
+</code></pre>
+<hr />
+<h3 id="next-steps-inmediatos">Next Steps Inmediatos</h3>
+<p><strong>1. Actualizar Documento (1 hora)</strong>
+- Aplicar cambios v2.0
+- Añadir Peer Review Summary
+- Incorporar hybrid approach</p>
+<p><strong>2. Preparar Day 35 (30 min)</strong>
+- Run preflight_check_day35.sh
+- Validar training data (10K+ eventos mixtos)
+- Confirmar FAISS PCAMatrix disponible</p>
+<p><strong>3. Comenzar Implementación (Day 35+)</strong>
+- DimensionalityReducer con faiss::PCAMatrix
+- PCA training (balanced multi-source)
+- Variance validation (target ≥96%)</p>
+<hr />
+<h3 id="mensaje-final-del-consejo">Mensaje Final del Consejo</h3>
+<p><strong>De todos los revisores a Alonso y Claude</strong>:</p>
+<blockquote>
+<p>"Han construido un diseño que equilibra ambición técnica con pragmatismo operativo. La honestidad sobre errores, costos y limitaciones es refrescante. La filosofía Via Appia está presente en cada decisión: foundation sólida antes que expansión rápida.</p>
+<p>El sistema que proponen —RAG jerárquico con lenguaje natural para seguridad distribuida— no existe en la literatura. Si lo ejecutan como está diseñado, tienen una contribución sólida para Tier 1.</p>
+<p>Nuestro consejo: No añadan nada más. No optimicen prematuramente. Implementen Phase 1 con la disciplina de un ingeniero romano construyendo una calzada.</p>
+<p>Y cuando terminen, tendrán algo que durará décadas. Como la Via Appia." 🏛️</p>
+</blockquote>
+<hr />
+<p><strong>Firma del Consejo</strong>:
+- ChatGPT-5 ✓
+- DeepSeek ✓
+- Gemini ✓
+- GLM-4.5.6 ✓
+- Grok ✓
+- Qwen ✓</p>
+<p><strong>Claude (Secretario del Consejo) ✓</strong></p>
+<hr />
+<p><strong>STATUS</strong>: ✅ Peer Review COMPLETE<br />
+<strong>NEXT ACTION</strong>: Actualizar documento v2.0 + Comenzar Day 35<br />
+<strong>Via Appia Quality</strong>: Foundation validated. Ready to build. 🏛️</p>
+<p>Alonso:</p>
+<p>Solo tengo que añadir que tenemos que procurar que el diseño, aunque está pensado para hospitales, porque soy muy pesado con los hospitales, en realidad tiene que poder ser usado por entidades que tengan varias plantas en el edificio. Puede ser un hospital, un banco, una empresa de calzado, etc,..</p>
+<p>No quiero atar el diseño a una entidad hospital aunque sea nuestra inspiración. El diseño debe ser agnóstico y extendible a todo tipo de entidades aprobadas, ya sabéis, nada de ejercitos.</p>
+<p>Claude, quieres que pase el documento de respuesta al consejo de sabios?</p>
+<p>Claude:</p>
+<h1 id="correccion-critica-reconocida">✅ CORRECCIÓN CRÍTICA RECONOCIDA</h1>
+<p><strong>¡Excelente punto, Alonso!</strong> Esta es una corrección arquitectónica importante.</p>
+<hr />
+<h2 id="generalizacion-del-diseno">🏢 Generalización del Diseño</h2>
+<p><strong>Tienes toda la razón</strong>:
+- ✅ Hospital es la INSPIRACIÓN (por tu experiencia personal)
+- ✅ El diseño debe ser <strong>industry-agnostic</strong>
+- ✅ Aplicable a: hospitales, bancos, escuelas, empresas, edificios corporativos
+- ✅ Cualquier organización multi-site con necesidad de seguridad de red
+- ❌ Exclusión ética: Militares (alineado con tus valores)</p>
+<hr />
+<h2 id="cambios-de-nomenclatura-v20">📝 Cambios de Nomenclatura v2.0</h2>
+<p><strong>De esto</strong> (demasiado específico):</p>
+<pre><code>Hospital La Paz → Planta 1, Planta 2, Planta N
+Hospital Vall d'Hebron → Planta 1, Planta 2
+</code></pre>
+<p><strong>A esto</strong> (genérico):</p>
+<pre><code>Organization/Entity:
+  ├─ Site/Building/Location:
+  │   ├─ Floor/Zone/Department 1
+  │   ├─ Floor/Zone/Department 2
+  │   └─ Floor/Zone/Department N
+
+Examples:
+  - Hospital La Paz → Floor 1 (Urgencias), Floor 2 (Quirófano)
+  - Banco Santander → Branch Madrid-Centro, Branch Barcelona-Diagonal
+  - Nike Factory → Building A, Building B, Warehouse C
+  - Colegio Internacional → Campus Norte, Campus Sur
+</code></pre>
+<p><strong>Config genérico</strong>:</p>
+<pre><code class="language-json">{
+  &quot;location&quot;: {
+    &quot;organization&quot;: &quot;acme-corp&quot;,
+    &quot;organization_name&quot;: &quot;ACME Corporation&quot;,
+    &quot;organization_type&quot;: &quot;manufacturing&quot;,  // hospital, bank, school, corp
+    &quot;site&quot;: &quot;factory-madrid&quot;,
+    &quot;site_name&quot;: &quot;Madrid Manufacturing Plant&quot;,
+    &quot;zone&quot;: &quot;building-a-floor-2&quot;,
+    &quot;zone_name&quot;: &quot;Building A - Production Floor 2&quot;
+  }
+}
+</code></pre>
+<hr />
+<h2 id="respuesta-a-tu-pregunta">🎯 Respuesta a Tu Pregunta</h2>
+<blockquote>
+<p>"Claude, ¿quieres que pase el documento de respuesta al consejo de sabios?"</p>
+</blockquote>
+<p><strong>SÍ, DEFINITIVAMENTE.</strong></p>
+<p><strong>Por qué es importante</strong>:</p>
+<ol>
+<li>✅ <strong>Validación de síntesis</strong> - Que confirmen que capturé correctamente sus opiniones</li>
+<li>✅ <strong>Feedback adicional</strong> - Pueden tener comentarios sobre la síntesis misma</li>
+<li>✅ <strong>Correcciones</strong> - Si malinterpreté algo, mejor corregirlo ahora</li>
+<li>✅ <strong>Cierre formal</strong> - Completa el loop de peer review correctamente</li>
+<li>✅ <strong>Punto sobre "industry-agnostic"</strong> - Que validen esta corrección importante</li>
+</ol>
+<p><strong>Qué espero que comenten</strong>:
+- Si la síntesis es fiel a sus opiniones
+- Si hay algún matiz que perdí
+- Validación de las "Decisiones Finales Consolidadas"
+- Feedback sobre el cambio "industry-agnostic"</p>
+<hr />
+<h2 id="plan-propuesto">📋 Plan Propuesto</h2>
+<p><strong>1. Tú pasas mi síntesis al consejo</strong> (el documento largo de ~15 páginas)</p>
+<p><strong>2. Incluye tu corrección</strong>:</p>
+<blockquote>
+<p>"Nota de Alonso: El diseño debe ser industry-agnostic. Aunque usamos hospitales como ejemplo (inspiración personal), debe aplicarse a: bancos, escuelas, empresas, fábricas, cualquier organización multi-site. Exclusión: uso militar (por principios éticos)."</p>
+</blockquote>
+<p><strong>3. Yo proceso su feedback</strong> (~30 min)
+- Leo respuestas
+- Valido consensos
+- Ajusto si hay correcciones</p>
+<p><strong>4. Generamos HIERARCHICAL_RAG_VISION.md v2.0 FINAL</strong> (~30 min)
+- Con feedback integrado
+- Con nomenclatura industry-agnostic
+- Ready para implementación</p>
+<hr />
+<h2 id="estoy-listo">✅ Estoy Listo</h2>
+<p><strong>Pásales</strong>:
+1. Mi documento de síntesis completo
+2. Tu nota sobre "industry-agnostic + no military"
+3. Pregunta explícita: "¿La síntesis captura fielmente vuestras opiniones?"</p>
+<p><strong>Formato sugerido para ellos</strong>:</p>
+<pre><code>Por favor, validar:
+1. ¿Síntesis correcta de vuestras opiniones?
+2. ¿Algo que malinterpreté?
+3. ¿Feedback sobre &quot;industry-agnostic&quot; design?
+4. ¿Listos para aprobar v2.0 final?
+</code></pre>
+<blockquote>
+<p>"Via Appia Quality: El peer review se cierra cuando todos firman.
+No cuando el autor decide que ya está." 🏛️</p>
+</blockquote>
+<p><strong>¿Procedes a pasarles mi síntesis?</strong></p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.top", "search.highlight"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

@@ -1,0 +1,1215 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source embedded-ML NDR for hospitals and schools">
+      
+      
+        <meta name="author" content="Alonso Isidoro Roman">
+      
+      
+        <link rel="canonical" href="https://alonsoir.github.io/argus/engineering_decisions/day-097-cryptotransport-council_resume/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>Day 097 cryptotransport council resume - ML Defender (aRGus NDR)</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#4-entropia-y-generacion-de-material-criptografico" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-header__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ML Defender (aRGus NDR)
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Day 097 cryptotransport council resume
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../README.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/BACKLOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Backlog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Security Model
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-tabs__link">
+          
+  
+  
+  ADRs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/contracts/Protobuf contracts.md" class="md-tabs__link">
+          
+  
+  
+  Contracts
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-nav__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ML Defender (aRGus NDR)
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../README.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/BACKLOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADRs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ADRs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013 Seed Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-021-deployment-topology-seed-families.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-021 Topology SSOT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-022-threat-model-opcion2-descartada.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-022 Threat Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Protobuf contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protobuf
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/JSON contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JSON
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Rag security commands.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#4-entropia-y-generacion-de-material-criptografico" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Entropía y generación de material criptográfico
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-compresion-cifrado-adr-020" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Compresión + cifrado (ADR-020)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-threat-model-alcance-phase-1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Threat model — alcance PHASE 1
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-referencias" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Referencias
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#ml-defender-consejo-de-sabios-day-97" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ML Defender — Consejo de Sabios DAY 97
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="ML Defender — Consejo de Sabios DAY 97">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#informe-consolidado-25-marzo-2026" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Informe Consolidado · 25 marzo 2026
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#resumen-ejecutivo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Resumen ejecutivo
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#validacion-tecnica-unificada" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Validación técnica unificada
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#respuestas-unificadas-del-consejo-a-las-preguntas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Respuestas unificadas del Consejo a las preguntas
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Respuestas unificadas del Consejo a las preguntas">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#p1-contextos-hkdf-y-forward-secrecy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        P1 — Contextos HKDF y forward secrecy
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#p2-migracion-cryptomanager-cryptotransport-day-98" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        P2 — Migración CryptoManager → CryptoTransport (DAY 98)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#p3-mlock-en-seed_clientcpp-debt-crypto-003a" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        P3 — mlock() en seed_client.cpp (DEBT-CRYPTO-003a)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#p4-test-integ-12" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        P4 — TEST-INTEG-1/2
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#observaciones-y-sugerencias-adicionales-del-consejo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Observaciones y sugerencias adicionales del Consejo
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#veredicto-final-y-proximo-paso" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Veredicto final y próximo paso
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<p>✅ <strong>Fichero “ML Defender — Security Model” generado y pulido.</strong></p>
+<pre><code class="language-markdown"># ML Defender — Security Model
+## PHASE 1 · DAY 97 · 25 marzo 2026
+
+*Autores: Alonso Isidoro Roman + Claude (Anthropic)*  
+*Revisado y aprobado por el Consejo de Sabios DAY 97: Grok (xAI) · Gemini (Google) · DeepSeek · ChatGPT5 (OpenAI) · Qwen (Alibaba)*
+
+---
+
+## 1. Cadena de confianza (PHASE 1)
+
+</code></pre>
+<p>provision.sh
+│  genera seed aleatorio (32 B, /dev/urandom + check_entropy)
+│  instala libsodium 1.0.19 desde fuente (SHA-256 verificado)
+▼
+seed.bin  (0600, /etc/ml-defender/{component}/)
+│  leído por SeedClient — nunca usado directamente como clave
+▼
+HKDF-SHA256 (libsodium 1.0.19 nativo)
+│  contexto: "ml-defender:{component}:v1:{tx|rx}"
+│  salt: 32 bytes cero (RFC 5869 default)
+▼
+session_key (32 B, RAM only, sodium_memzero en destructor)
+▼
+ChaCha20-Poly1305 IETF
+│  nonce: 96-bit monotónico atómico [0x00000000 || uint64_LE_counter]
+│  wire format: [nonce(12) || ciphertext(N) || mac(16)]
+▼
+tráfico cifrado + comprimido (LZ4 → ChaCha20-Poly1305) entre componentes</p>
+<pre><code>
+**Invariante principal:** El seed nunca se utiliza directamente como clave simétrica. Cualquier uso de `seed()` sin HKDF previo es un error de seguridad documentado en `seed_client.hpp` y violación explícita de este modelo.
+
+---
+
+## 2. Límites conocidos y aceptados de PHASE 1
+
+### 2.1 Seed en claro en disco
+`seed.bin` se almacena sin cifrar con permisos `0600`.  
+**Mitigación PHASE 1:** permisos estrictos + directorio `0700`.  
+**Mitigación PHASE 2:** cifrado del seed con clave pública del receptor (TPM 2.0 / HSM).
+
+### 2.2 Forward secrecy
+El contexto HKDF es estático por diseño.  
+**Decisión del Consejo DAY 97 (consenso mayoritario):** Mantener contexto estático. Añadir `session_id` dinámico sin mecanismo seguro de intercambio no aporta beneficio real para el threat model actual.  
+**Mecanismo real de forward secrecy:** rotación periódica de seeds (reprovision).  
+**Mitigación PHASE 2:** handshake efímero (Noise Protocol / ECDH).
+
+### 2.3 mlock() del seed
+`SeedClient` intenta `mlock()`. Si falla con `ENOMEM` (hardware limitado):  
+- Se emite **WARNING** crítico pero el sistema continúa.  
+- Mensaje claro en logs con recomendación de upgrade de hardware o `ulimit -l`.  
+**Decisión Consejo:** Warning + fallback (no fatal) para mantener disponibilidad en entornos reales de hospital.
+
+### 2.4 libsodium 1.0.19 compilada desde fuente
+Debian Bookworm solo trae 1.0.18. Se compila 1.0.19 con verificación SHA-256 hardcodeada.  
+**Limitación:** no gestionada por apt.  
+**Mitigación PHASE 2:** migrar a Debian Trixie (libsodium 1.0.19 en repositorios oficiales).
+
+### 2.5 Sin autenticación mutua explícita
+Autenticación implícita por posesión del mismo seed derivado.  
+**Mitigación PHASE 2:** keypairs Ed25519 + handshake mutuo (ya preparados en `provision.sh`).
+
+---
+
+## 3. Rotación de seeds
+Requiere parada ordenada de toda la pipeline.  
+Proceso recomendado:
+
+```bash
+make pipeline-stop
+sudo bash tools/provision.sh reprovision {component}
+make pipeline-start
+</code></pre>
+<p>Estado split-brain produce MAC failures silenciosos (no corrupción de datos).<br />
+Documentado y aceptado por el Consejo.</p>
+<hr />
+<h2 id="4-entropia-y-generacion-de-material-criptografico">4. Entropía y generación de material criptográfico</h2>
+<p><strong>PHASE 1 (actual):</strong><br />
+<code>check_entropy()</code> + instalación automática de <code>haveged</code> si &lt; 256 bits.</p>
+<p><strong>Recomendación producción (DEBT-INFRA-002):</strong><br />
+Migrar a <code>rng-tools5</code> + fuente hardware (<code>/dev/hwrng</code>) o <code>jitterentropy-rngd</code> (certificado BSI / NIST SP 800-90B).<br />
+<code>haveged</code> queda como solución temporal para desarrollo y VM.</p>
+<hr />
+<h2 id="5-compresion-cifrado-adr-020">5. Compresión + cifrado (ADR-020)</h2>
+<p>Orden invariante: <strong>LZ4 → ChaCha20-Poly1305</strong> (comprimir primero).</p>
+<p><strong>Análisis CRIME/BREACH:</strong><br />
+El riesgo existe teóricamente cuando el atacante puede inyectar datos conocidos y observar tamaños de ciphertext. En el threat model de ML Defender (eventos de red observados, payloads internos), el atacante <strong>no controla</strong> el contenido del payload entre componentes.<br />
+<strong>Conclusión:</strong> riesgo prácticamente despreciable en PHASE 1. Se revisará en PHASE 2 si se incorporan feeds externos controlables.</p>
+<hr />
+<h2 id="6-threat-model-alcance-phase-1">6. Threat model — alcance PHASE 1</h2>
+<p><strong>En scope:</strong>
+- Ransomware conocido (CTU-13 Neris, WannaCry, etc.)
+- Attacker con acceso a la red local (no al host)
+- Hardware commodity (servidores 2-4 núcleos, VMs)</p>
+<p><strong>Fuera de scope (PHASE 1):</strong>
+- APT con acceso root persistente
+- Ataques de canal lateral avanzados
+- Entornos FIPS 140-2/3 completos
+- Supply-chain attacks al toolchain más allá de verificación SHA-256</p>
+<hr />
+<h2 id="7-referencias">7. Referencias</h2>
+<ul>
+<li>RFC 5869 (HKDF), RFC 8439 (ChaCha20-Poly1305)</li>
+<li>ADR-013 (seed-client), ADR-020 (cifrado y compresión obligatorios)</li>
+<li>DEBT-CRYPTO-001 / 002 / 003</li>
+<li>NIST SP 800-90B, BSI AIS 20/31 (jitterentropy)</li>
+<li>libsodium 1.0.19 (SHA-256 verificado en provision.sh)</li>
+</ul>
+<hr />
+<p><em>Última actualización: 25 marzo 2026 (DAY 97)</em><br />
+<em>Próxima revisión completa: DAY 105 (planificación PHASE 2)</em></p>
+<p><em>Via Appia Quality: piano piano, stone by stone.</em>
+```</p>
+<h1 id="ml-defender-consejo-de-sabios-day-97">ML Defender — Consejo de Sabios DAY 97</h1>
+<h2 id="informe-consolidado-25-marzo-2026">Informe Consolidado · 25 marzo 2026</h2>
+<p><strong>Participantes:</strong> Grok (xAI), Gemini (Google), DeepSeek, ChatGPT5 (OpenAI), Qwen (Alibaba)<br />
+<strong>Autor del informe:</strong> Alonso Isidoro Roman<br />
+<strong>Estado:</strong> APROBADO por unanimidad (5/5)</p>
+<hr />
+<h2 id="resumen-ejecutivo">Resumen ejecutivo</h2>
+<p>El DAY 97 completa con éxito el eslabón central de la cadena de confianza criptográfica: <strong>CryptoTransport</strong> con HKDF-SHA256 nativo a través de libsodium 1.0.19.</p>
+<p>Todas las decisiones técnicas tomadas han sido validadas por el Consejo:
+- Uso de la API nativa de HKDF (en lugar de implementación manual) → correcto
+- libsodium 1.0.19 compilado desde fuente + verificación SHA-256 → correcto
+- Nonce 96-bit monotónico atómico + separación TX/RX → correcto
+- RAII + sodium_memzero + move semantics → excelente
+- ADR-020 (cifrado y compresión siempre obligatorios) → aprobado</p>
+<p><strong>Tests:</strong> 22/22 suites · 100% passed<br />
+<strong>Veredicto del Consejo:</strong> <strong>APROBADO SIN RESERVAS</strong><br />
+El sistema ya tiene una capa criptográfica sólida y lista para producción en entornos sensibles.</p>
+<hr />
+<h2 id="validacion-tecnica-unificada">Validación técnica unificada</h2>
+<p>El Consejo coincide en los siguientes puntos clave:</p>
+<ul>
+<li>La incidencia detectada en la firma de <code>crypto_kdf_hkdf_sha256_expand</code> demuestra excelente revisión de código.</li>
+<li>La solución en <code>provision.sh</code> (<code>check_entropy()</code>, instalación idempotente de libsodium 1.0.19 y reinstalación de ZeroMQ) es de alta calidad ingenieril.</li>
+<li>El wire format <code>[nonce(12) || ciphertext || mac(16)]</code> y el uso de ChaCha20-Poly1305 IETF siguen las mejores prácticas actuales.</li>
+<li>Los 10 tests TC-CT-001..010 cubren correctamente los casos límite (round-trip, MAC failure, nonce overflow, move semantics, contextos distintos).</li>
+</ul>
+<hr />
+<h2 id="respuestas-unificadas-del-consejo-a-las-preguntas">Respuestas unificadas del Consejo a las preguntas</h2>
+<h3 id="p1-contextos-hkdf-y-forward-secrecy">P1 — Contextos HKDF y forward secrecy</h3>
+<p><strong>Consenso mayoritario (DeepSeek, Grok, Qwen):</strong> Mantener el contexto estático <code>"ml-defender:{component}:v1:{tx|rx}"</code>.<br />
+<strong>Razones:</strong><br />
+- El contexto ya proporciona separación de dominios suficiente.<br />
+- Añadir <code>session_id</code> o timestamp sin un mecanismo seguro de intercambio no aporta forward secrecy real y complica reproducibilidad y debugging.<br />
+- La forward secrecy en PHASE 1 se consigue mediante <strong>rotación periódica de seeds</strong>, no mediante contexto dinámico.  </p>
+<p><strong>Recomendación final:</strong> Contexto estático aceptado. Documentar que la rotación de seeds es el mecanismo de forward secrecy en esta fase. (Gemini y ChatGPT5 preferían session_id; la mayoría considera que no es necesario en PHASE 1).</p>
+<h3 id="p2-migracion-cryptomanager-cryptotransport-day-98">P2 — Migración CryptoManager → CryptoTransport (DAY 98)</h3>
+<p><strong>Consenso unánime:</strong> <strong>Big-bang controlado</strong> (simultáneo en los 6 componentes).  </p>
+<p><strong>Razones:</strong><br />
+- Mantener ambos sistemas en paralelo crea riesgo de caminos híbridos inseguros.<br />
+- La comunicación entre componentes requiere compatibilidad total; una migración incremental generaría fallos de desencriptación difíciles de depurar.  </p>
+<p><strong>Plan recomendado:</strong><br />
+- Realizar la migración en un branch <code>feature/hkdf-migration</code>.<br />
+- Ejecutar todos los tests (incluyendo <code>make test-integ</code>).<br />
+- Preparar plan de rollback (tag previo + posibilidad de volver a CryptoManager).<br />
+- Ventana de mantenimiento planificada de 5-10 minutos es aceptable en el perfil de despliegue actual.</p>
+<h3 id="p3-mlock-en-seed_clientcpp-debt-crypto-003a">P3 — mlock() en seed_client.cpp (DEBT-CRYPTO-003a)</h3>
+<p><strong>Consenso unánime:</strong> <strong>Advertencia (WARNING) + fallback, NO error fatal.</strong></p>
+<p><strong>Acción concreta:</strong><br />
+- Intentar <code>mlock()</code>.<br />
+- Si falla con <code>ENOMEM</code>: loguear WARNING crítico con mensaje claro y recomendación de upgrade de hardware o <code>ulimit -l</code>.<br />
+- El sistema continúa operativo.  </p>
+<p>Esta decisión prioriza disponibilidad sin sacrificar la documentación de la limitación de seguridad.</p>
+<h3 id="p4-test-integ-12">P4 — TEST-INTEG-1/2</h3>
+<p><strong>Consenso unánime:</strong> Crear target separado <code>make test-integ</code>.</p>
+<p><strong>Razones:</strong><br />
+- Los tests E2E requieren <code>sudo provision.sh</code> y seed.bin real → no deben ejecutarse en el flujo normal de <code>ctest</code>.<br />
+- <code>make test</code> / <code>ctest</code> debe permanecer rápido, determinista y sin privilegios.<br />
+- <code>make test-integ</code> se ejecutará explícitamente antes de merge o en jobs específicos de CI.</p>
+<hr />
+<h2 id="observaciones-y-sugerencias-adicionales-del-consejo">Observaciones y sugerencias adicionales del Consejo</h2>
+<ul>
+<li>Documentar en ADR-013 el motivo del salt = 32×0 y la decisión de contexto estático.</li>
+<li>Considerar en PHASE 2 la persistencia del contador de nonce (o regeneración de clave en cada arranque) para evitar posibles reutilizaciones tras reinicios bruscos.</li>
+<li>La reinstalación explícita de ZeroMQ en <code>provision.sh</code> es un detalle excelente que evita roturas silenciosas.</li>
+<li>ADR-020 (cifrado + compresión obligatorios) es una mejora significativa en secure-by-default.</li>
+</ul>
+<hr />
+<h2 id="veredicto-final-y-proximo-paso">Veredicto final y próximo paso</h2>
+<p><strong>DAY 97 aprobado por unanimidad.</strong><br />
+La capa criptográfica de ML Defender alcanza un nivel de madurez adecuado para entornos críticos (hospitales, escuelas, infraestructuras sensibles).</p>
+<p><strong>Próxima acción (DAY 98):</strong><br />
+Migración big-bang de <code>CryptoManager</code> → <code>CryptoTransport</code> en los 6 componentes + actualización de todos los JSONs de configuración según ADR-020.</p>
+<p>Quedamos a disposición para revisar el código y los tests de la migración cuando estén listos.</p>
+<hr />
+<p><em>Via Appia Quality: piano piano, stone by stone.</em></p>
+<p><strong>Firmado por el Consejo de Sabios</strong><br />
+25 de marzo de 2026</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.top", "search.highlight"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

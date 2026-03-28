@@ -1,0 +1,1724 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source embedded-ML NDR for hospitals and schools">
+      
+      
+        <meta name="author" content="Alonso Isidoro Roman">
+      
+      
+        <link rel="canonical" href="https://alonsoir.github.io/argus/Firewall%20integration%20executive%20summary/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>Firewall Integration - Resumen Ejecutivo (Hoy + Mañana) - ML Defender (aRGus NDR)</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#firewall-integration-resumen-ejecutivo-hoy-manana" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="ML Defender (aRGus NDR)" class="md-header__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ML Defender (aRGus NDR)
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Firewall Integration - Resumen Ejecutivo (Hoy + Mañana)
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../README.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../docs/ARCHITECTURE.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../docs/BACKLOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Backlog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../docs/SECURITY_MODEL.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Security Model
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../docs/adr/ADR-013 seed distribution component authentication.md" class="md-tabs__link">
+          
+  
+  
+  ADRs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../docs/contracts/Protobuf contracts.md" class="md-tabs__link">
+          
+  
+  
+  Contracts
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="ML Defender (aRGus NDR)" class="md-nav__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ML Defender (aRGus NDR)
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../README.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/ARCHITECTURE.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/BACKLOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/SECURITY_MODEL.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADRs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ADRs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/adr/ADR-013 seed distribution component authentication.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013 Seed Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/adr/ADR-021-deployment-topology-seed-families.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-021 Topology SSOT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/adr/ADR-022-threat-model-opcion2-descartada.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-022 Threat Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/contracts/Protobuf contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protobuf
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/contracts/JSON contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JSON
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/contracts/Rag security commands.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#filosofia-despacio-y-bien" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🎯 Filosofía: "Despacio y Bien"
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#estado-actual" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        📊 Estado Actual
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="📊 Estado Actual">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#lo-que-funciona-mantener" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ✅ Lo que FUNCIONA (mantener)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lo-que-falta-anadir" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ❌ Lo que FALTA (añadir)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#flujo-actual-vs-objetivo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🔄 Flujo Actual vs Objetivo
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#timeline-relajado-2-3-dias" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        📅 Timeline Relajado (2-3 Días)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="📅 Timeline Relajado (2-3 Días)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#hoy-dia-1-verificacion-y-preparacion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        HOY (Día 1): Verificación y Preparación 🔍
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="HOY (Día 1): Verificación y Preparación 🔍">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#tareas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Tareas:
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#manana-dia-2-implementacion-incremental" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        MAÑANA (Día 2): Implementación Incremental 🔧
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="MAÑANA (Día 2): Implementación Incremental 🔧">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#fase-21-cmakeliststxt-15-min" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fase 2.1: CMakeLists.txt (15 min)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fase-22-headers-15-min" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fase 2.2: Headers (15 min)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fase-23-inicializacion-30-min" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fase 2.3: Inicialización (30 min)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fase-24-helper-functions-45-min" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fase 2.4: Helper functions (45 min)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fase-25-zmq-loop-integration-30-min" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fase 2.5: ZMQ loop integration (30 min)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fase-26-refinamiento-30-min" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fase 2.6: Refinamiento (30 min)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dia-3-cuando-sea-testing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DÍA 3+ (Cuando Sea): Testing 🧪
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="DÍA 3+ (Cuando Sea): Testing 🧪">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#test-incremental" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Test incremental:
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#archivos-entregados" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        📦 Archivos Entregados
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="📦 Archivos Entregados">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#criticos-usar-estos" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🔴 CRÍTICOS (usar estos)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#referencia-si-necesario" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        📚 REFERENCIA (si necesario)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#quick-start-para-hoy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ⚡ Quick Start para HOY
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#quick-start-para-manana" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ⚡ Quick Start para MAÑANA
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#criterios-de-exito" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🎯 Criterios de Éxito
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🎯 Criterios de Éxito">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#minimo-viable-manana" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Mínimo viable (mañana):
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#objetivo-completo-dia-3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Objetivo completo (día 3+):
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#nice-to-have-cuando-sea" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Nice-to-have (cuando sea):
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#filosofia-de-implementacion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        💡 Filosofía de Implementación
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="💡 Filosofía de Implementación">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#hacer" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ✅ Hacer:
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#no-hacer" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ❌ NO hacer:
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#via-appia-quality" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🏛️ Via Appia Quality:
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#si-algo-falla" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🔥 Si Algo Falla
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🔥 Si Algo Falla">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#no-pasa-nada-pasos" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        No pasa nada. Pasos:
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#puntos-de-control" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        📞 Puntos de Control
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="📞 Puntos de Control">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#hoy-dia-1-fin-del-dia" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Hoy (Día 1) - Fin del día:
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#manana-dia-2-medio-dia" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Mañana (Día 2) - Medio día:
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#manana-dia-2-fin-del-dia" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Mañana (Día 2) - Fin del día:
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dia-3-cuando-este" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Día 3+ - Cuando esté:
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#resumen-de-1-linea" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🎊 Resumen de 1 Línea
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#checklist-pre-implementacion-hoy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        📋 Checklist Pre-Implementación (HOY)
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="firewall-integration-resumen-ejecutivo-hoy-manana">Firewall Integration - Resumen Ejecutivo (Hoy + Mañana)</h1>
+<h2 id="filosofia-despacio-y-bien">🎯 Filosofía: "Despacio y Bien"</h2>
+<p><strong>No hay prisa por el stress test.</strong><br />
+<strong>Lo importante es dejarlo predecible y robusto.</strong><br />
+<strong>Via Appia Quality: construido para durar décadas.</strong> 🏛️</p>
+<hr />
+<h2 id="estado-actual">📊 Estado Actual</h2>
+<h3 id="lo-que-funciona-mantener">✅ Lo que FUNCIONA (mantener)</h3>
+<ul>
+<li>ZMQ recepción de ml-detector (puerto 5572)</li>
+<li>Protobuf parsing de PacketEvent</li>
+<li>IPTables/IPSet integration</li>
+<li>JSON config loading</li>
+<li>Logging y métricas</li>
+<li>Batch processing</li>
+<li>Health checks</li>
+</ul>
+<h3 id="lo-que-falta-anadir">❌ Lo que FALTA (añadir)</h3>
+<ul>
+<li>etcd-client integration</li>
+<li>ChaCha20-Poly1305 decryption</li>
+<li>LZ4 decompression</li>
+<li>Transport config reading</li>
+</ul>
+<h3 id="flujo-actual-vs-objetivo">🔄 Flujo Actual vs Objetivo</h3>
+<p><strong>ACTUAL</strong>:</p>
+<pre><code>ml-detector → [Datos cifrados + comprimidos] → firewall
+                                                    ↓
+                                                ❌ Parse falla
+                                                (no puede leer datos cifrados)
+</code></pre>
+<p><strong>OBJETIVO</strong>:</p>
+<pre><code>ml-detector → [Datos cifrados + comprimidos] → firewall
+                                                    ↓
+                                                Descifrar ✅
+                                                    ↓
+                                                Descomprimir ✅
+                                                    ↓
+                                                Parse protobuf ✅
+                                                    ↓
+                                                Aplicar reglas ✅
+</code></pre>
+<hr />
+<h2 id="timeline-relajado-2-3-dias">📅 Timeline Relajado (2-3 Días)</h2>
+<h3 id="hoy-dia-1-verificacion-y-preparacion"><strong>HOY (Día 1)</strong>: Verificación y Preparación 🔍</h3>
+<p><strong>Tiempo</strong>: 1-2 horas<br />
+<strong>Objetivo</strong>: Saber exactamente qué hay que hacer</p>
+<h4 id="tareas">Tareas:</h4>
+<ol>
+<li>
+<p>✅ Ejecutar script de verificación (15 min)
+   <code>bash
+   vagrant ssh
+   cd /vagrant/scripts
+   chmod +x verify_firewall_complete.sh
+   ./verify_firewall_complete.sh</code></p>
+</li>
+<li>
+<p>✅ Hacer backups (5 min)
+   <code>bash
+   cp firewall.json firewall.json.day22_working
+   cp CMakeLists.txt CMakeLists.txt.backup
+   cp src/main.cpp src/main.cpp.backup</code></p>
+</li>
+<li>
+<p>✅ Revisar guía completa (30 min)</p>
+<ul>
+<li>Leer FIREWALL_INTEGRATION_GUIDE.md</li>
+<li>Identificar secciones a modificar</li>
+<li>Preparar plan de mañana</li>
+</ul>
+</li>
+<li>
+<p>✅ Verificar dependencias (15 min)
+   ```bash
+   # etcd-client
+   ls /vagrant/etcd-client/build/libetcd_client.so</p>
+</li>
+</ol>
+<p># LZ4
+   vagrant ssh -c "ldconfig -p | grep lz4"</p>
+<p># OpenSSL
+   vagrant ssh -c "openssl version"
+   ```</p>
+<p><strong>Output hoy</strong>: Plan claro para mañana</p>
+<hr />
+<h3 id="manana-dia-2-implementacion-incremental"><strong>MAÑANA (Día 2)</strong>: Implementación Incremental 🔧</h3>
+<p><strong>Tiempo</strong>: 2-4 horas<br />
+<strong>Objetivo</strong>: Código funcionando end-to-end</p>
+<h4 id="fase-21-cmakeliststxt-15-min">Fase 2.1: CMakeLists.txt (15 min)</h4>
+<ul>
+<li>Añadir etcd-client, LZ4, OpenSSL</li>
+<li>Test: cmake clean build</li>
+</ul>
+<h4 id="fase-22-headers-15-min">Fase 2.2: Headers (15 min)</h4>
+<ul>
+<li>Añadir #include statements</li>
+<li>Definir estructuras</li>
+<li>Test: compile check</li>
+</ul>
+<h4 id="fase-23-inicializacion-30-min">Fase 2.3: Inicialización (30 min)</h4>
+<ul>
+<li>Leer config["transport"]</li>
+<li>Init etcd-client</li>
+<li>Test: startup sin errores</li>
+</ul>
+<h4 id="fase-24-helper-functions-45-min">Fase 2.4: Helper functions (45 min)</h4>
+<ul>
+<li>decrypt_chacha20_poly1305()</li>
+<li>decompress_lz4()</li>
+<li>get_crypto_token_from_etcd()</li>
+</ul>
+<h4 id="fase-25-zmq-loop-integration-30-min">Fase 2.5: ZMQ loop integration (30 min)</h4>
+<ul>
+<li>Modificar receive loop</li>
+<li>Decrypt → decompress → parse</li>
+<li>Test: compile completo</li>
+</ul>
+<h4 id="fase-26-refinamiento-30-min">Fase 2.6: Refinamiento (30 min)</h4>
+<ul>
+<li>Cleanup functions</li>
+<li>Error handling</li>
+<li>Logging</li>
+</ul>
+<p><strong>Output mañana</strong>: Firewall con descifrado/descompresión compilado</p>
+<hr />
+<h3 id="dia-3-cuando-sea-testing"><strong>DÍA 3+ (Cuando Sea)</strong>: Testing 🧪</h3>
+<p><strong>Tiempo</strong>: 1-2 horas<br />
+<strong>Objetivo</strong>: Verificar que funciona end-to-end</p>
+<h4 id="test-incremental">Test incremental:</h4>
+<ol>
+<li>Compilación ✅</li>
+<li>Startup solo ✅</li>
+<li>Con etcd-server ✅</li>
+<li>Pipeline completo ✅</li>
+<li>Stress test (cuando esté listo) ✅</li>
+</ol>
+<p><strong>No hay fecha límite. Cuando funcione, funcione.</strong></p>
+<hr />
+<h2 id="archivos-entregados">📦 Archivos Entregados</h2>
+<h3 id="criticos-usar-estos">🔴 CRÍTICOS (usar estos)</h3>
+<ol>
+<li>
+<p><strong>verify_firewall_complete.sh</strong> ⭐ <strong>EJECUTAR HOY</strong></p>
+<ul>
+<li>Análisis exhaustivo del código actual</li>
+<li>Identifica qué tiene y qué falta</li>
+<li>Output claro: ✅ o ❌</li>
+</ul>
+</li>
+<li>
+<p><strong>firewall_day23_integrated.json</strong> ⭐ <strong>USAR MAÑANA</strong></p>
+<ul>
+<li>Config completa integrada</li>
+<li>Mantiene TODO lo actual que funciona</li>
+<li>Añade secciones "transport" y "etcd" mejorada</li>
+<li>Aplicar cuando código esté listo</li>
+</ul>
+</li>
+<li>
+<p><strong>FIREWALL_INTEGRATION_GUIDE.md</strong> ⭐ <strong>LEER HOY/MAÑANA</strong></p>
+<ul>
+<li>Guía COMPLETA paso a paso</li>
+<li>Código ready-to-copy</li>
+<li>CMakeLists.txt completo</li>
+<li>Todas las funciones helper</li>
+<li>Troubleshooting</li>
+<li>Testing plan</li>
+</ul>
+</li>
+</ol>
+<h3 id="referencia-si-necesario">📚 REFERENCIA (si necesario)</h3>
+<ol>
+<li>
+<p><strong>FIREWALL_ACTION_PLAN.md</strong></p>
+<ul>
+<li>Plan original más urgente</li>
+<li>Útil para referencia</li>
+</ul>
+</li>
+<li>
+<p><strong>PIPELINE_CONFIG_COHERENCE.md</strong></p>
+<ul>
+<li>Análisis del flujo completo</li>
+<li>Comparación de configs</li>
+</ul>
+</li>
+<li>
+<p><strong>check_firewall_capabilities.sh</strong></p>
+<ul>
+<li>Script más básico</li>
+<li>verify_firewall_complete.sh es mejor</li>
+</ul>
+</li>
+</ol>
+<hr />
+<h2 id="quick-start-para-hoy">⚡ Quick Start para HOY</h2>
+<pre><code class="language-bash"># 1. Copiar script de verificación (1 min)
+cp verify_firewall_complete.sh /tu/proyecto/scripts/
+
+# 2. Ejecutar en VM (5 min)
+vagrant ssh
+cd /vagrant/scripts
+chmod +x verify_firewall_complete.sh
+./verify_firewall_complete.sh
+
+# 3. Leer output (5 min)
+# El script te dirá exactamente qué falta
+
+# 4. Leer guía completa (30 min)
+# Abrir FIREWALL_INTEGRATION_GUIDE.md
+# Identificar secciones de código a modificar
+
+# 5. Hacer backups (5 min)
+cd /vagrant/firewall-acl-agent
+cp config/firewall.json config/firewall.json.day22_working
+cp CMakeLists.txt CMakeLists.txt.backup
+cp src/main.cpp src/main.cpp.backup
+
+# TOTAL: ~45 minutos
+</code></pre>
+<p><strong>Output esperado</strong>:
+- ✅ Sabes qué tiene firewall actualmente
+- ✅ Sabes qué falta añadir
+- ✅ Tienes backups de seguridad
+- ✅ Has leído la guía completa
+- ✅ Estás listo para mañana</p>
+<hr />
+<h2 id="quick-start-para-manana">⚡ Quick Start para MAÑANA</h2>
+<pre><code class="language-bash"># 1. Modificar CMakeLists.txt (15 min)
+# Copiar de FIREWALL_INTEGRATION_GUIDE.md (FASE 2.1)
+
+# 2. Test cmake (2 min)
+cd /vagrant/firewall-acl-agent/build
+rm -rf *
+cmake ..
+# Debe encontrar: etcd_client, lz4, OpenSSL
+
+# 3. Añadir headers a main.cpp (5 min)
+# Copiar de FIREWALL_INTEGRATION_GUIDE.md (FASE 2.2)
+
+# 4. Añadir load_transport_config() (10 min)
+# Copiar de FIREWALL_INTEGRATION_GUIDE.md (FASE 2.3)
+
+# 5. Añadir initialize_etcd_client() (10 min)
+# Copiar de FIREWALL_INTEGRATION_GUIDE.md (FASE 2.3)
+
+# 6. Añadir helper functions (45 min)
+# Copiar de FIREWALL_INTEGRATION_GUIDE.md (FASE 2.4)
+# - decrypt_chacha20_poly1305()
+# - decompress_lz4()
+# - get_crypto_token_from_etcd()
+
+# 7. Modificar ZMQ loop (30 min)
+# Copiar de FIREWALL_INTEGRATION_GUIDE.md (FASE 2.5)
+
+# 8. Añadir cleanup (10 min)
+# Copiar de FIREWALL_INTEGRATION_GUIDE.md (FASE 2.6)
+
+# 9. Compilar completo (5 min)
+make
+
+# 10. Test startup (5 min)
+./firewall-acl-agent
+# Debe iniciar sin errores
+# Ctrl+C para salir
+
+# TOTAL: ~2-3 horas
+</code></pre>
+<p><strong>Output esperado</strong>:
+- ✅ Firewall compila sin errores
+- ✅ Inicia y conecta a etcd
+- ✅ Obtiene crypto token
+- ✅ Listo para testing con pipeline</p>
+<hr />
+<h2 id="criterios-de-exito">🎯 Criterios de Éxito</h2>
+<h3 id="minimo-viable-manana">Mínimo viable (mañana):</h3>
+<ul>
+<li>[ ] Firewall compila</li>
+<li>[ ] Inicia sin crashear</li>
+<li>[ ] Conecta a etcd-server</li>
+<li>[ ] Obtiene crypto token</li>
+<li>[ ] Logs muestran config transport cargado</li>
+</ul>
+<h3 id="objetivo-completo-dia-3">Objetivo completo (día 3+):</h3>
+<ul>
+<li>[ ] Pipeline completo funciona</li>
+<li>[ ] Descifrado exitoso (logs: "Decrypted X µs")</li>
+<li>[ ] Descompresión exitosa (logs: "Decompressed X µs")</li>
+<li>[ ] Protobuf parseado (logs: "Parsed PacketEvent")</li>
+<li>[ ] Reglas firewall aplicadas</li>
+</ul>
+<h3 id="nice-to-have-cuando-sea">Nice-to-have (cuando sea):</h3>
+<ul>
+<li>[ ] Stress test completo</li>
+<li>[ ] Métricas de performance</li>
+<li>[ ] Documentación final</li>
+</ul>
+<hr />
+<h2 id="filosofia-de-implementacion">💡 Filosofía de Implementación</h2>
+<h3 id="hacer">✅ Hacer:</h3>
+<ul>
+<li>Paso a paso incremental</li>
+<li>Test después de cada cambio</li>
+<li>Backups antes de modificar</li>
+<li>Logs verbosos durante development</li>
+<li>Parar si algo no funciona</li>
+</ul>
+<h3 id="no-hacer">❌ NO hacer:</h3>
+<ul>
+<li>Modificar todo a la vez</li>
+<li>Compilar sin revisar errores</li>
+<li>Continuar si algo falla</li>
+<li>Tener prisa por stress test</li>
+<li>Saltarse testing</li>
+</ul>
+<h3 id="via-appia-quality">🏛️ Via Appia Quality:</h3>
+<blockquote>
+<p>"Funciona bien ANTES de que funcione rápido."<br />
+"Predecible ANTES que optimizado."<br />
+"Documentado ANTES que terminado."</p>
+</blockquote>
+<hr />
+<h2 id="si-algo-falla">🔥 Si Algo Falla</h2>
+<h3 id="no-pasa-nada-pasos">No pasa nada. Pasos:</h3>
+<ol>
+<li><strong>Parar</strong> - No continuar a ciegas</li>
+<li><strong>Documentar</strong> - Capturar error exacto</li>
+<li><strong>Backup restore</strong> - Volver a estado funcional</li>
+<li><strong>Analizar</strong> - Entender qué pasó</li>
+<li><strong>Preguntar</strong> - Pedir ayuda si necesario</li>
+<li><strong>Reintentar</strong> - Con nuevo enfoque</li>
+</ol>
+<p><strong>Recuerda</strong>: Tener prisa NO ayuda. La calidad importa más que la velocidad.</p>
+<hr />
+<h2 id="puntos-de-control">📞 Puntos de Control</h2>
+<h3 id="hoy-dia-1-fin-del-dia">Hoy (Día 1) - Fin del día:</h3>
+<ul>
+<li>✅ Script de verificación ejecutado</li>
+<li>✅ Guía completa leída</li>
+<li>✅ Backups hechos</li>
+<li>✅ Plan para mañana claro</li>
+</ul>
+<h3 id="manana-dia-2-medio-dia">Mañana (Día 2) - Medio día:</h3>
+<ul>
+<li>✅ CMakeLists.txt modificado</li>
+<li>✅ cmake funciona</li>
+<li>✅ Headers añadidos</li>
+<li>✅ Config loading implementado</li>
+</ul>
+<h3 id="manana-dia-2-fin-del-dia">Mañana (Día 2) - Fin del día:</h3>
+<ul>
+<li>✅ Helper functions implementadas</li>
+<li>✅ ZMQ loop modificado</li>
+<li>✅ Compilación completa exitosa</li>
+<li>✅ Startup test OK</li>
+</ul>
+<h3 id="dia-3-cuando-este">Día 3+ - Cuando esté:</h3>
+<ul>
+<li>✅ Pipeline completo funciona</li>
+<li>✅ Logs muestran descifrado/descompresión</li>
+<li>✅ Stress test (cuando sea)</li>
+</ul>
+<hr />
+<h2 id="resumen-de-1-linea">🎊 Resumen de 1 Línea</h2>
+<p><strong>Hoy verificamos qué falta. Mañana lo implementamos tranquilamente. Día 3+ lo probamos. Sin prisa, con calidad. Via Appia Style.</strong> 🏛️✨</p>
+<hr />
+<h2 id="checklist-pre-implementacion-hoy">📋 Checklist Pre-Implementación (HOY)</h2>
+<p>Antes de empezar a modificar código mañana:</p>
+<ul>
+<li>[ ] verify_firewall_complete.sh ejecutado</li>
+<li>[ ] Output del script guardado/documentado</li>
+<li>[ ] Identificadas líneas exactas a modificar</li>
+<li>[ ] FIREWALL_INTEGRATION_GUIDE.md leído completamente</li>
+<li>[ ] Backups de archivos críticos hechos</li>
+<li>[ ] etcd-client compilado verificado</li>
+<li>[ ] LZ4 disponible verificado</li>
+<li>[ ] OpenSSL disponible verificado</li>
+<li>[ ] Editor preparado con archivos abiertos</li>
+<li>[ ] Terminal con VM conectada</li>
+<li>[ ] Mentalidad: "tranquilo, paso a paso"</li>
+</ul>
+<p><strong>Si todos ✅</strong>: Listo para mañana<br />
+<strong>Si algún ❌</strong>: Resolver antes de continuar</p>
+<hr />
+<p>¡Tranquilo Alonso! Hoy preparamos, mañana implementamos, y cuando funcione, funcione. No hay prisa. Via Appia Quality forever. 😊🏛️</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.tabs", "navigation.top", "search.highlight"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>
