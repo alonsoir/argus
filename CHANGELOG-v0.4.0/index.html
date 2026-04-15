@@ -1,0 +1,1358 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source embedded-ML NDR for hospitals and schools">
+      
+      
+        <meta name="author" content="Alonso Isidoro Roman">
+      
+      
+        <link rel="canonical" href="https://alonsoir.github.io/argus/CHANGELOG-v0.4.0/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>CHANGELOG — v0.4.0-phase3-hardening - ML Defender (aRGus NDR)</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#changelog-v040-phase3-hardening" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="ML Defender (aRGus NDR)" class="md-header__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ML Defender (aRGus NDR)
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              CHANGELOG — v0.4.0-phase3-hardening
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../README.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../docs/ARCHITECTURE.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../docs/BACKLOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Backlog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../docs/SECURITY_MODEL.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Security Model
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../docs/adr/ADR-013 seed distribution component authentication.md" class="md-tabs__link">
+          
+  
+  
+  ADRs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../docs/contracts/Protobuf contracts.md" class="md-tabs__link">
+          
+  
+  
+  Contracts
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="ML Defender (aRGus NDR)" class="md-nav__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ML Defender (aRGus NDR)
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../README.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/ARCHITECTURE.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/BACKLOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/SECURITY_MODEL.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADRs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ADRs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/adr/ADR-013 seed distribution component authentication.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013 Seed Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/adr/ADR-021-deployment-topology-seed-families.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-021 Topology SSOT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/adr/ADR-022-threat-model-opcion2-descartada.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-022 Threat Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/contracts/Protobuf contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protobuf
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/contracts/JSON contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JSON
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/contracts/Rag security commands.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#security" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Security
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Security">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#apparmor-enforce-66-componentes-0-denials" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        AppArmor enforce 6/6 componentes (0 denials)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#adr-025-plugin-integrity-verification-ed25519-toctou-safe-dlopen-completado" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ADR-025 — Plugin Integrity Verification: Ed25519 + TOCTOU-safe dlopen (COMPLETADO)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#invariante-seed-001" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        INVARIANTE-SEED-001
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#noclobber-audit-ficheros-criticos" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        noclobber audit — ficheros críticos
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#operations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Operations
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Operations">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#systemd-units-6-componentes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        systemd units — 6 componentes
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#toolsapparmor-promotesh" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        tools/apparmor-promote.sh
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#backup-policy-bak" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Backup policy — .bak.*
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#recovery-contract-oq-6-adr-024" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Recovery Contract (OQ-6 ADR-024)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#set-build-profilesh" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        set-build-profile.sh
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#tests" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Tests
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Tests">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#test-provision-1-ci-gate-phase-3-88-checks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        TEST-PROVISION-1 — CI Gate PHASE 3 (8/8 checks)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#test-invariant-seed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        TEST-INVARIANT-SEED
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#test-apparmor-enforce" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        TEST-APPARMOR-ENFORCE
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#test-integ-4a4b4c4d4e-test-integ-sign-66-passed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        TEST-INTEG-4a/4b/4c/4d/4e + TEST-INTEG-SIGN (6/6 PASSED)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#make-test-all-resultado-final-day-118" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        make test-all — resultado final DAY 118
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#bug-fixes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Bug Fixes
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Bug Fixes">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#debt-vagrantfile-001" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DEBT-VAGRANTFILE-001
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#debt-seed-perm-001" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DEBT-SEED-PERM-001
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#debt-rag-build-001" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DEBT-RAG-BUILD-001
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#debt-hello-001" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DEBT-HELLO-001
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rec-2-noclobber" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        REC-2 — noclobber
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#debts-no-bloqueantes-trasladados-a-features-futuras" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DEBTs no bloqueantes — trasladados a features futuras
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#roadmap-siguiente-phase-4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Roadmap siguiente — PHASE 4
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="changelog-v040-phase3-hardening">CHANGELOG — v0.4.0-phase3-hardening</h1>
+<p><strong>Fecha de release:</strong> 2026-04-15<br />
+<strong>Rama origen:</strong> <code>feature/phase3-hardening</code><br />
+<strong>Merge:</strong> <code>git merge --no-ff</code> → <code>main</code><br />
+<strong>Tag:</strong> <code>v0.4.0-phase3-hardening</code><br />
+<strong>Paper:</strong> arXiv:2604.04952 (Draft v15)</p>
+<hr />
+<h2 id="security">Security</h2>
+<h3 id="apparmor-enforce-66-componentes-0-denials">AppArmor enforce 6/6 componentes (0 denials)</h3>
+<ul>
+<li>Perfiles MAC activados en modo enforce para todos los componentes del pipeline:
+  <code>etcd-server</code>, <code>rag-security</code>, <code>rag-ingester</code>, <code>ml-detector</code>, <code>firewall-acl-agent</code>, <code>sniffer</code></li>
+<li>ADR-021 addendum: política de AppArmor documentada como invariante de producción</li>
+<li>Herramienta <code>tools/apparmor-promote.sh</code>: promote complain→enforce con monitorización
+  300s y rollback automático ante cualquier denial</li>
+<li>Referencias: ADR-021, DEBT-APPARMOR-ENFORCE, DAY 116–118</li>
+</ul>
+<h3 id="adr-025-plugin-integrity-verification-ed25519-toctou-safe-dlopen-completado">ADR-025 — Plugin Integrity Verification: Ed25519 + TOCTOU-safe dlopen (COMPLETADO)</h3>
+<ul>
+<li>Firma offline Ed25519 de plugins con <code>make sign-plugins</code></li>
+<li>Carga TOCTOU-safe: <code>O_NOFOLLOW</code> + <code>fstat()</code> + <code>dlopen(/proc/self/fd/N)</code></li>
+<li>SHA-256 forensic logging en cada carga de plugin</li>
+<li>Pubkey hardcoded en CMakeLists.txt vía CMake variable</li>
+<li>Fail-closed <code>std::terminate()</code> cuando <code>require_signature: true</code></li>
+<li>Keypair dev rotada tras reset DAY 117:
+  <code>e51a91e91d72f74fe97e8a4eb883c9c6eb41dd2fc994feaf59d5ba2177720f3d</code></li>
+<li>Lección operacional documentada: <code>provision.sh --reset</code> rota keypair;
+  secuencia obligatoria post-reset: <code>make pipeline-build</code> → <code>make sign-plugins</code> → <code>make test-all</code></li>
+<li>Referencias: ADR-025, DEBT-ADR025-D11, DAY 113–117</li>
+</ul>
+<h3 id="invariante-seed-001">INVARIANTE-SEED-001</h3>
+<ul>
+<li>Todos los <code>seed.bin</code> de los 6 componentes deben ser idénticos (SHA-256 igual)</li>
+<li>Seed family post-reset DAY 117:
+  <code>75deaca96768b5d973a4339faf2325c058969bf93c00c0d21eef703a2ab91360</code></li>
+<li>Test automatizado <code>TEST-INVARIANT-SEED</code> integrado en <code>make test-all</code></li>
+<li>Referencias: DEBT-SEED-PERM-001, DAY 117</li>
+</ul>
+<h3 id="noclobber-audit-ficheros-criticos">noclobber audit — ficheros críticos</h3>
+<ul>
+<li>Auditoría de redirects <code>&gt;</code> en <code>tools/provision.sh</code> sobre rutas sensibles:
+  <code>/etc/</code>, <code>.sk</code>, <code>seed.bin</code>, <code>.sig</code>, <code>.pem</code>, <code>.pk</code>, <code>.env</code></li>
+<li>Resultado: cero riesgos de clobber no intencional — audit limpio</li>
+<li>Referencias: REC-2, Consejo DAY 117 Q2, DAY 118</li>
+</ul>
+<hr />
+<h2 id="operations">Operations</h2>
+<h3 id="systemd-units-6-componentes">systemd units — 6 componentes</h3>
+<ul>
+<li>Units instaladas y habilitadas para todos los componentes del pipeline</li>
+<li>Integradas en <code>make pipeline-start</code> / <code>make pipeline-stop</code></li>
+<li>Referencias: DEBT-SIGN-AUTO, DAY 115</li>
+</ul>
+<h3 id="toolsapparmor-promotesh">tools/apparmor-promote.sh</h3>
+<ul>
+<li>Script de promoción complain→enforce con ventana de observación configurable (300s)</li>
+<li>Rollback automático si se detectan denials durante la ventana</li>
+<li>Log estructurado con timestamps</li>
+<li>Referencias: DAY 117</li>
+</ul>
+<h3 id="backup-policy-bak">Backup policy — <code>.bak.*</code></h3>
+<ul>
+<li>Política de backups automáticos para ficheros sensibles modificados por provision.sh</li>
+<li>Formato: <code>&lt;fichero&gt;.bak.&lt;timestamp&gt;</code></li>
+<li>Referencias: DAY 117</li>
+</ul>
+<h3 id="recovery-contract-oq-6-adr-024">Recovery Contract (OQ-6 ADR-024)</h3>
+<ul>
+<li>Documento <code>docs/recovery-contract.md</code> formaliza el procedimiento de recuperación
+  ante reset de keypair o corrupción de seed</li>
+<li>Paso a paso verificable y testeable</li>
+<li>Referencias: ADR-024, DAY 117</li>
+</ul>
+<h3 id="set-build-profilesh">set-build-profile.sh</h3>
+<ul>
+<li>Script centralizado para activar perfiles de build (debug/release/profile)
+  en los 6 componentes simultáneamente</li>
+<li>References: DAY 115–116</li>
+</ul>
+<hr />
+<h2 id="tests">Tests</h2>
+<h3 id="test-provision-1-ci-gate-phase-3-88-checks">TEST-PROVISION-1 — CI Gate PHASE 3 (8/8 checks)</h3>
+<ol>
+<li>Claves criptográficas — integridad 6/6 componentes</li>
+<li>Firmas de plugins (producción) — ADR-025 D1</li>
+<li>Configs de producción sin dev plugins</li>
+<li>build-active symlinks</li>
+<li>systemd units instalados</li>
+<li>Permisos ficheros sensibles</li>
+<li>Consistencia JSONs con plugins reales</li>
+<li>apparmor-utils instalado</li>
+</ol>
+<h3 id="test-invariant-seed">TEST-INVARIANT-SEED</h3>
+<ul>
+<li>Verifica que todos los <code>seed.bin</code> son idénticos (SHA-256)</li>
+<li>Integrado en <code>make test-all</code></li>
+</ul>
+<h3 id="test-apparmor-enforce">TEST-APPARMOR-ENFORCE</h3>
+<ul>
+<li>Verifica 6/6 perfiles en modo enforce via <code>aa-status</code></li>
+<li>Sin denials tras ventana de observación 300s por componente</li>
+</ul>
+<h3 id="test-integ-4a4b4c4d4e-test-integ-sign-66-passed">TEST-INTEG-4a/4b/4c/4d/4e + TEST-INTEG-SIGN (6/6 PASSED)</h3>
+<ul>
+<li>Suite de integración de plugins ADR-025</li>
+<li>Cobertura: carga, firma, verificación, fail-closed, TOCTOU</li>
+</ul>
+<h3 id="make-test-all-resultado-final-day-118">make test-all — resultado final DAY 118</h3>
+<pre><code>🎉 ALL TESTS PASSED
+TEST-PROVISION-1     8/8  ✅
+TEST-INVARIANT-SEED       ✅
+TEST-INTEG-4a             ✅
+TEST-INTEG-4b             ✅
+TEST-INTEG-4c             ✅
+TEST-INTEG-4d             ✅
+TEST-INTEG-4e             ✅
+TEST-INTEG-SIGN           ✅
+AppArmor enforce    6/6   ✅
+</code></pre>
+<hr />
+<h2 id="bug-fixes">Bug Fixes</h2>
+<h3 id="debt-vagrantfile-001">DEBT-VAGRANTFILE-001</h3>
+<ul>
+<li>Vagrantfile corregido: dependencias de provisioning en orden correcto</li>
+<li>Referencias: DAY 117</li>
+</ul>
+<h3 id="debt-seed-perm-001">DEBT-SEED-PERM-001</h3>
+<ul>
+<li>Permisos de <code>seed.bin</code> corregidos: <code>600</code> (solo lectura por owner)</li>
+<li>Verificado en Check 6/8 de TEST-PROVISION-1</li>
+<li>Referencias: DAY 117</li>
+</ul>
+<h3 id="debt-rag-build-001">DEBT-RAG-BUILD-001</h3>
+<ul>
+<li>Pipeline de build de rag-ingester corregido</li>
+<li>Symlink <code>build-active</code> apuntando correctamente tras reset</li>
+<li>Referencias: DAY 117</li>
+</ul>
+<h3 id="debt-hello-001">DEBT-HELLO-001</h3>
+<ul>
+<li>Plugin <code>libplugin_hello.so</code> excluido de configs de producción</li>
+<li>Verificado en Check 3/8 de TEST-PROVISION-1</li>
+<li>Referencias: DAY 115</li>
+</ul>
+<h3 id="rec-2-noclobber">REC-2 — noclobber</h3>
+<ul>
+<li>Redirects peligrosos en provision.sh auditados y documentados</li>
+<li>Referencias: DAY 117–118</li>
+</ul>
+<hr />
+<h2 id="debts-no-bloqueantes-trasladados-a-features-futuras">DEBTs no bloqueantes — trasladados a features futuras</h2>
+<table>
+<thead>
+<tr>
+<th>DEBT</th>
+<th>Feature destino</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>DEBT-CRYPTO-003a</td>
+<td>feature/crypto-hardening</td>
+</tr>
+<tr>
+<td>DEBT-OPS-001/002</td>
+<td>feature/ops-tooling</td>
+</tr>
+<tr>
+<td>DEBT-TOOLS-001</td>
+<td>feature/adr026-xgboost</td>
+</tr>
+<tr>
+<td>DEBT-SNIFFER-SEED</td>
+<td>feature/crypto-hardening</td>
+</tr>
+<tr>
+<td>DEBT-FD-001</td>
+<td>feature/adr026-xgboost</td>
+</tr>
+<tr>
+<td>DEBT-INFRA-001</td>
+<td>feature/bare-metal</td>
+</tr>
+<tr>
+<td>DEBT-CLI-001</td>
+<td>feature/adr032-hsm</td>
+</tr>
+<tr>
+<td>docs/CRYPTO-INVARIANTS.md</td>
+<td>feature/crypto-hardening</td>
+</tr>
+<tr>
+<td>ADR-033 TPM</td>
+<td>post-PHASE 4</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="roadmap-siguiente-phase-4">Roadmap siguiente — PHASE 4</h2>
+<ul>
+<li><strong>feature/adr026-xgboost:</strong> XGBoost/RF como plugins especializados (Track 1, Year 1)
+  Gate de entrada: Precision ≥ 0.99 + F1 ≥ 0.9985 + revisión Consejo</li>
+<li><strong>feature/crypto-hardening:</strong> DEBT-CRYPTO-003a + DEBT-SNIFFER-SEED + CRYPTO-INVARIANTS</li>
+<li><strong>ADR-029:</strong> Variantes hardened — Variant A (Debian+AppArmor+eBPF/XDP),
+  Variant B (Debian+AppArmor+libpcap), Variant C (seL4+libpcap, research)</li>
+<li><strong>ADR-024 Noise_IKpsk3:</strong> Group Key Agreement — implementación post-arXiv</li>
+</ul>
+<hr />
+<p><em>aRGus NDR — "un escudo, nunca una espada"</em><br />
+<em>Via Appia Quality · piano piano · pasito a pasito</em></p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.tabs", "navigation.top", "search.highlight"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

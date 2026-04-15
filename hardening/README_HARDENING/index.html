@@ -1,0 +1,1455 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source embedded-ML NDR for hospitals and schools">
+      
+      
+        <meta name="author" content="Alonso Isidoro Roman">
+      
+      
+        <link rel="canonical" href="https://alonsoir.github.io/argus/hardening/README_HARDENING/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>🛡️ ML Defender - Hardening Phase Guide - ML Defender (aRGus NDR)</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#ml-defender-hardening-phase-guide" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-header__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ML Defender (aRGus NDR)
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              🛡️ ML Defender - Hardening Phase Guide
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../README.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/BACKLOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Backlog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Security Model
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-tabs__link">
+          
+  
+  
+  ADRs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/contracts/Protobuf contracts.md" class="md-tabs__link">
+          
+  
+  
+  Contracts
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-nav__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ML Defender (aRGus NDR)
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../README.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/BACKLOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADRs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ADRs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013 Seed Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-021-deployment-topology-seed-families.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-021 Topology SSOT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-022-threat-model-opcion2-descartada.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-022 Threat Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Protobuf contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protobuf
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/JSON contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JSON
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Rag security commands.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#estado-actual" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        📋 Estado Actual
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="📋 Estado Actual">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#preparado-no-activo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ✅ Preparado (No Activo)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#como-activar-fase-hardening" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🔧 Cómo Activar (Fase Hardening)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🔧 Cómo Activar (Fase Hardening)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#paso-1-verificar-prerequisitos" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Paso 1: Verificar Prerequisitos
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#paso-2-activar-en-sniffer-makefile" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Paso 2: Activar en Sniffer (Makefile)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#paso-3-activar-en-cmake-components" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Paso 3: Activar en CMake Components
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#testing-con-sanitizers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🧪 Testing con Sanitizers
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🧪 Testing con Sanitizers">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#addresssanitizer-memory-errors" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        AddressSanitizer (Memory Errors)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#threadsanitizer-race-conditions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ThreadSanitizer (Race Conditions)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#undefinedbehaviorsanitizer-ub" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        UndefinedBehaviorSanitizer (UB)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#memorysanitizer-uninitialized-reads" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        MemorySanitizer (Uninitialized Reads)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#performance-impact" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        📊 Performance Impact
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#testing-workflow-fase-hardening" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🔍 Testing Workflow (Fase Hardening)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🔍 Testing Workflow (Fase Hardening)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#week-1-basic-security" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Week 1: Basic Security
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#week-2-addresssanitizer" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Week 2: AddressSanitizer
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#week-3-threadsanitizer" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Week 3: ThreadSanitizer
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#week-4-ubsan-msan" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Week 4: UBSan + MSan
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#checklist-de-hardening-completo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        📝 Checklist de Hardening Completo
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#known-issues-registry" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🚨 Known Issues Registry
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#referencias" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        📚 Referencias
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#multi-agent-review-fase-hardening" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🙏 Multi-Agent Review (Fase Hardening)
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="ml-defender-hardening-phase-guide">🛡️ ML Defender - Hardening Phase Guide</h1>
+<p><strong>Status</strong>: Flags preparados, <strong>DESACTIVADOS</strong> por defecto<br />
+<strong>Activar cuando</strong>: Papers enviados + features completas + inicio de fase fixing<br />
+<strong>Última actualización</strong>: Day 11, Dec 7, 2025</p>
+<hr />
+<h2 id="estado-actual">📋 Estado Actual</h2>
+<h3 id="preparado-no-activo">✅ Preparado (No Activo)</h3>
+<table>
+<thead>
+<tr>
+<th>Componente</th>
+<th>Archivo</th>
+<th>Flags Añadidos</th>
+<th>Estado</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>sniffer</strong></td>
+<td><code>Makefile</code></td>
+<td>Basic + Sanitizers</td>
+<td>❌ Comentados</td>
+</tr>
+<tr>
+<td><strong>ml-detector</strong></td>
+<td><code>CMakeLists.txt</code></td>
+<td>Options condicionales</td>
+<td>❌ OFF</td>
+</tr>
+<tr>
+<td><strong>firewall-acl-agent</strong></td>
+<td><code>CMakeLists.txt</code></td>
+<td>Options condicionales</td>
+<td>❌ OFF</td>
+</tr>
+<tr>
+<td><strong>rag-security</strong></td>
+<td><code>CMakeLists.txt</code></td>
+<td>Options condicionales</td>
+<td>❌ OFF</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Comportamiento actual</strong>: Compilación normal, sin overhead, desarrollo rápido</p>
+<hr />
+<h2 id="como-activar-fase-hardening">🔧 Cómo Activar (Fase Hardening)</h2>
+<h3 id="paso-1-verificar-prerequisitos">Paso 1: Verificar Prerequisitos</h3>
+<pre><code class="language-bash"># Confirmar que estamos en fase hardening
+# ✅ Papers enviados a revisión
+# ✅ Todas las features implementadas
+# ✅ Pipeline funcional end-to-end
+# ✅ Listos para fixing exhaustivo
+</code></pre>
+<h3 id="paso-2-activar-en-sniffer-makefile">Paso 2: Activar en Sniffer (Makefile)</h3>
+<pre><code class="language-bash">cd /vagrant/sniffer
+
+# Editar Makefile
+vim Makefile
+
+# Descomentar esta línea (cerca del inicio):
+# HARDENING_ENABLED = 1
+
+# Recompilar
+make clean
+make -j6
+
+# Verificar flags activos
+make -n | grep &quot;stack-protector&quot;
+# Deberías ver: -fstack-protector-strong
+</code></pre>
+<h3 id="paso-3-activar-en-cmake-components">Paso 3: Activar en CMake Components</h3>
+<pre><code class="language-bash"># ml-detector
+cd /vagrant/ml-detector/build
+rm -rf *
+cmake -DENABLE_HARDENING=ON ..
+make -j6
+
+# firewall-acl-agent
+cd /vagrant/firewall-acl-agent/build
+rm -rf *
+cmake -DENABLE_HARDENING=ON ..
+make -j6
+
+# rag-security
+cd /vagrant/rag/build
+rm -rf *
+cmake -DENABLE_HARDENING=ON ..
+make -j6
+</code></pre>
+<hr />
+<h2 id="testing-con-sanitizers">🧪 Testing con Sanitizers</h2>
+<p><strong>IMPORTANTE</strong>: Usar UN sanitizer a la vez. No combinar.</p>
+<h3 id="addresssanitizer-memory-errors">AddressSanitizer (Memory Errors)</h3>
+<p><strong>Detecta</strong>:
+- Buffer overflows
+- Use-after-free
+- Double-free
+- Memory leaks</p>
+<pre><code class="language-bash"># Sniffer (Makefile)
+cd /vagrant/sniffer
+# En Makefile, descomentar:
+# SANITIZER = address
+# CXXFLAGS += -fsanitize=address -fno-omit-frame-pointer
+make clean &amp;&amp; make -j6
+
+# ml-detector (CMake)
+cd /vagrant/ml-detector/build
+rm -rf *
+cmake -DENABLE_HARDENING=ON -DSANITIZER=address ..
+make -j6
+
+# Ejecutar tests
+sudo ./sniffer -c config/sniffer.json
+# Si hay memory errors, ASan imprimirá stack trace
+</code></pre>
+<p><strong>Ejemplo output de error</strong>:</p>
+<pre><code>=================================================================
+==12345==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x...
+    #0 0x... in parse_packet /vagrant/sniffer/src/parser.cpp:123
+    #1 0x... in main /vagrant/sniffer/src/main.cpp:456
+</code></pre>
+<h3 id="threadsanitizer-race-conditions">ThreadSanitizer (Race Conditions)</h3>
+<p><strong>Detecta</strong>:
+- Data races
+- Thread safety issues
+- Lock order inversions</p>
+<pre><code class="language-bash"># ml-detector (tiene threads)
+cd /vagrant/ml-detector/build
+rm -rf *
+cmake -DENABLE_HARDENING=ON -DSANITIZER=thread ..
+make -j6
+
+./ml-detector -c ../config/ml_detector_config.json
+
+# TSan imprimirá si hay races
+</code></pre>
+<p><strong>Ejemplo output de error</strong>:</p>
+<pre><code>==================
+WARNING: ThreadSanitizer: data race (pid=12345)
+  Write of size 4 at 0x... by thread T1:
+    #0 detector_thread /vagrant/ml-detector/src/detector.cpp:234
+  Previous read of size 4 at 0x... by main thread:
+    #0 main_loop /vagrant/ml-detector/src/main.cpp:567
+</code></pre>
+<h3 id="undefinedbehaviorsanitizer-ub">UndefinedBehaviorSanitizer (UB)</h3>
+<p><strong>Detecta</strong>:
+- Integer overflow/underflow
+- Division by zero
+- Null pointer dereference
+- Misaligned access</p>
+<pre><code class="language-bash">cd /vagrant/sniffer
+# Descomentar en Makefile:
+# SANITIZER = undefined
+make clean &amp;&amp; make -j6
+
+sudo ./sniffer -c config/sniffer.json
+</code></pre>
+<p><strong>Ejemplo output de error</strong>:</p>
+<pre><code>runtime error: signed integer overflow: 2147483647 + 1 cannot be represented in type 'int'
+    /vagrant/sniffer/src/features.cpp:89:12
+</code></pre>
+<h3 id="memorysanitizer-uninitialized-reads">MemorySanitizer (Uninitialized Reads)</h3>
+<p><strong>Detecta</strong>:
+- Uninitialized memory reads
+- Use of uninitialized variables</p>
+<pre><code class="language-bash">cd /vagrant/ml-detector/build
+rm -rf *
+cmake -DENABLE_HARDENING=ON -DSANITIZER=memory ..
+make -j6
+
+./ml-detector -c ../config/ml_detector_config.json
+</code></pre>
+<hr />
+<h2 id="performance-impact">📊 Performance Impact</h2>
+<table>
+<thead>
+<tr>
+<th>Configuration</th>
+<th>CPU Overhead</th>
+<th>Memory Overhead</th>
+<th>Use Case</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>No hardening</strong></td>
+<td>0%</td>
+<td>0%</td>
+<td>Development (actual)</td>
+</tr>
+<tr>
+<td><strong>Basic flags</strong></td>
+<td>~5%</td>
+<td>~0%</td>
+<td>Production candidate</td>
+</tr>
+<tr>
+<td><strong>+ ASan</strong></td>
+<td>~100%</td>
+<td>~200%</td>
+<td>Memory debugging</td>
+</tr>
+<tr>
+<td><strong>+ TSan</strong></td>
+<td>~500-1500%</td>
+<td>~900%</td>
+<td>Thread debugging</td>
+</tr>
+<tr>
+<td><strong>+ UBSan</strong></td>
+<td>~20%</td>
+<td>~0%</td>
+<td>UB detection</td>
+</tr>
+<tr>
+<td><strong>+ MSan</strong></td>
+<td>~200%</td>
+<td>~100%</td>
+<td>Uninitialized reads</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Recomendación</strong>: En fase hardening, ejecutar con CADA sanitizer separadamente.</p>
+<hr />
+<h2 id="testing-workflow-fase-hardening">🔍 Testing Workflow (Fase Hardening)</h2>
+<h3 id="week-1-basic-security">Week 1: Basic Security</h3>
+<pre><code class="language-bash"># Día 1-2: Compilar con ENABLE_HARDENING=ON
+# - Corregir warnings de compilación
+# - Todos los componentes limpios
+
+# Día 3-4: Ejecutar test suite completo
+# - Gateway mode validation
+# - Host-based mode validation
+# - PCAP replay (CTU-13, tcpreplay)
+# - Stress tests (chaos_monkey)
+
+# Día 5: Documentar baseline
+# - Performance metrics con hardening básico
+# - Comparar vs sin hardening
+</code></pre>
+<h3 id="week-2-addresssanitizer">Week 2: AddressSanitizer</h3>
+<pre><code class="language-bash"># Día 1-2: Compilar con ASan
+# - Sniffer, detector, firewall, rag
+# - Ejecutar test suite
+
+# Día 3-4: Reproducir y corregir issues
+# - Stack traces de ASan
+# - Memory leaks report
+# - Corregir uno por uno
+
+# Día 5: Re-validar con ASan limpio
+# - 0 errores, 0 leaks
+</code></pre>
+<h3 id="week-3-threadsanitizer">Week 3: ThreadSanitizer</h3>
+<pre><code class="language-bash"># Día 1-2: Compilar con TSan
+# - Solo componentes con threads (ml-detector)
+# - Ejecutar stress tests
+
+# Día 3-4: Corregir data races
+# - Añadir mutexes donde necesario
+# - Verificar lock ordering
+
+# Día 5: Re-validar con TSan limpio
+</code></pre>
+<h3 id="week-4-ubsan-msan">Week 4: UBSan + MSan</h3>
+<pre><code class="language-bash"># Día 1-2: UndefinedBehaviorSanitizer
+# - Compilar, ejecutar, corregir
+
+# Día 3-4: MemorySanitizer
+# - Compilar, ejecutar, corregir
+
+# Día 5: Full re-test con todos los sanitizers
+# - Uno por uno, todos limpios
+# - Documentar en VALIDATION_HARDENING.md
+</code></pre>
+<hr />
+<h2 id="checklist-de-hardening-completo">📝 Checklist de Hardening Completo</h2>
+<pre><code class="language-markdown">### Preparación
+- [ ] Papers enviados a revisión
+- [ ] Todas las features implementadas
+- [ ] Tests end-to-end pasando
+- [ ] Backups de código actual
+
+### Basic Security
+- [ ] Sniffer compilado con HARDENING_ENABLED=1
+- [ ] ml-detector con -DENABLE_HARDENING=ON
+- [ ] firewall con -DENABLE_HARDENING=ON
+- [ ] rag con -DENABLE_HARDENING=ON
+- [ ] 0 compiler warnings
+- [ ] Performance baseline documentado
+
+### AddressSanitizer
+- [ ] Sniffer con ASan: 0 errores, 0 leaks
+- [ ] ml-detector con ASan: 0 errores, 0 leaks
+- [ ] firewall con ASan: 0 errores, 0 leaks
+- [ ] rag con ASan: 0 errores, 0 leaks
+- [ ] Stress tests passed (1 hour runtime)
+
+### ThreadSanitizer
+- [ ] ml-detector con TSan: 0 data races
+- [ ] Stress tests passed (1 hour runtime)
+
+### UndefinedBehaviorSanitizer
+- [ ] Todos los componentes: 0 UB detected
+- [ ] Edge cases tested (div by zero, overflow, etc)
+
+### MemorySanitizer
+- [ ] Todos los componentes: 0 uninitialized reads
+- [ ] Full pipeline tested
+
+### Production Ready
+- [ ] Todos los sanitizers limpios
+- [ ] Performance impact aceptable (&lt;10% con basic flags)
+- [ ] Security audit documentado
+- [ ] VALIDATION_HARDENING.md completo
+- [ ] Code review final (multi-agent)
+</code></pre>
+<hr />
+<h2 id="known-issues-registry">🚨 Known Issues Registry</h2>
+<p><strong>Documentar aquí los issues encontrados durante hardening</strong>:</p>
+<pre><code class="language-markdown">### Issue #1: [Título]
+- **Componente**: sniffer/ml-detector/firewall/rag
+- **Sanitizer**: ASan/TSan/UBSan/MSan
+- **Severidad**: Critical/High/Medium/Low
+- **Descripción**: [Stack trace o descripción]
+- **Fix**: [Qué se hizo para corregir]
+- **Commit**: [SHA del commit con fix]
+- **Validado**: [Fecha]
+
+### Issue #2: ...
+</code></pre>
+<hr />
+<h2 id="referencias">📚 Referencias</h2>
+<ul>
+<li><a href="https://github.com/google/sanitizers/wiki/AddressSanitizer">AddressSanitizer</a></li>
+<li><a href="https://github.com/google/sanitizers/wiki/ThreadSanitizerCppManual">ThreadSanitizer</a></li>
+<li><a href="https://clang.llvm.org/docs/UndefinedBehaviorSanitizer.html">UndefinedBehaviorSanitizer</a></li>
+<li><a href="https://github.com/google/sanitizers/wiki/MemorySanitizer">MemorySanitizer</a></li>
+</ul>
+<hr />
+<h2 id="multi-agent-review-fase-hardening">🙏 Multi-Agent Review (Fase Hardening)</h2>
+<p><strong>Cuando activemos hardening, solicitar review de</strong>:
+- <strong>Grok4</strong>: Kernel/eBPF memory safety
+- <strong>DeepSeek</strong>: Automated testing infrastructure
+- <strong>Qwen</strong>: Production deployment concerns
+- <strong>Claude</strong>: Code review + documentation</p>
+<p><strong>Filosofía</strong>: Via Appia Quality - Build to last, fix thoroughly</p>
+<hr />
+<p><strong>Preparado por</strong>: Claude + Alonso<br />
+<strong>Estado</strong>: Flags preparados, esperando fase hardening<br />
+<strong>Próxima revisión</strong>: Post-papers, pre-production</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.top", "search.highlight"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

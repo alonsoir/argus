@@ -1,0 +1,2958 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source embedded-ML NDR for hospitals and schools">
+      
+      
+        <meta name="author" content="Alonso Isidoro Roman">
+      
+      
+        <link rel="canonical" href="https://alonsoir.github.io/argus/peer-review-2026-01-07/00-HIERARCHICAL_RAG_VISION-v1.0/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>HIERARCHICAL RAG VISION - ML Defender (aRGus NDR)</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#hierarchical-rag-vision" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-header__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ML Defender (aRGus NDR)
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              HIERARCHICAL RAG VISION
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../README.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/BACKLOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Backlog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Security Model
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-tabs__link">
+          
+  
+  
+  ADRs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/contracts/Protobuf contracts.md" class="md-tabs__link">
+          
+  
+  
+  Contracts
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-nav__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ML Defender (aRGus NDR)
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../README.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/BACKLOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADRs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ADRs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013 Seed Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-021-deployment-topology-seed-families.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-021 Topology SSOT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-022-threat-model-opcion2-descartada.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-022 Threat Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Protobuf contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protobuf
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/JSON contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JSON
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Rag security commands.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#ml-defender-distributed-natural-language-security-analysis" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ML Defender - Distributed Natural Language Security Analysis
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#executive-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🎯 Executive Summary
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#parte-i-historia-del-diseno" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        📖 PARTE I: HISTORIA DEL DISEÑO
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="📖 PARTE I: HISTORIA DEL DISEÑO">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#11-initial-design-claudes-first-attempt-incorrect" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.1 Initial Design (Claude's First Attempt - INCORRECT)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#12-corrected-design-after-alonsos-feedback" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.2 Corrected Design (After Alonso's Feedback)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#13-hierarchical-vision-alonsos-proposal" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.3 Hierarchical Vision (Alonso's Proposal)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#parte-ii-arquitectura-propuesta" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        📊 PARTE II: ARQUITECTURA PROPUESTA
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="📊 PARTE II: ARQUITECTURA PROPUESTA">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#21-component-separation-decision-fundamental" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.1 Component Separation - Decisión Fundamental
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#22-hierarchical-architecture-3-niveles" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.2 Hierarchical Architecture (3 Niveles)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2.2 Hierarchical Architecture (3 Niveles)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#nivel-1-rag-local-implementar-ahora-phase-1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        NIVEL 1: RAG Local (IMPLEMENTAR AHORA - Phase 1)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#nivel-2-rag-ciudad-proof-of-concept-phase-3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        NIVEL 2: RAG Ciudad (PROOF-OF-CONCEPT - Phase 3)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#nivel-3-rag-nacional-vision-futura-phase-4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        NIVEL 3: RAG Nacional (VISIÓN FUTURA - Phase 4)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#23-natural-language-query-processing-core-value" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.3 Natural Language Query Processing (CORE VALUE)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#parte-iii-analisis-de-costos" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        💰 PARTE III: ANÁLISIS DE COSTOS
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="💰 PARTE III: ANÁLISIS DE COSTOS">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#31-phase-1-implementacion-real-1-instancia" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.1 Phase 1 - Implementación Real (1 Instancia)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#32-phase-2-3-proof-of-concept-jerarquico-10-instancias" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.2 Phase 2-3 - Proof-of-Concept Jerárquico (10 Instancias)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#33-escala-futura-advertencia-de-costos" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.3 Escala Futura - Advertencia de Costos
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#parte-iv-implementation-roadmap" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🚀 PARTE IV: IMPLEMENTATION ROADMAP
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🚀 PARTE IV: IMPLEMENTATION ROADMAP">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#41-timeline-realista-4-meses-no-un-ano" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.1 Timeline Realista (4 Meses, NO un Año)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#42-minimal-viable-product-mvp-phase-1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.2 Minimal Viable Product (MVP) - Phase 1
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#parte-v-paper-angle" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        📄 PARTE V: PAPER ANGLE
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="📄 PARTE V: PAPER ANGLE">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#51-contributions-y-novelty" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.1 Contributions y Novelty
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#52-target-venues" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.2 Target Venues
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#parte-vi-critical-analysis" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🔍 PARTE VI: CRITICAL ANALYSIS
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🔍 PARTE VI: CRITICAL ANALYSIS">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#61-design-evolution-lecciones-aprendidas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.1 Design Evolution - Lecciones Aprendidas
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#62-risk-assessment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.2 Risk Assessment
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#63-trade-offs-analysis" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.3 Trade-offs Analysis
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="6.3 Trade-offs Analysis">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#trade-off-1-simplicidad-vs-escalabilidad" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Trade-off 1: Simplicidad vs Escalabilidad
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#trade-off-2-performance-vs-consistencia" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Trade-off 2: Performance vs Consistencia
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#trade-off-3-costo-vs-capacidad" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Trade-off 3: Costo vs Capacidad
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#64-alternative-approaches-consideradas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.4 Alternative Approaches Consideradas
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="6.4 Alternative Approaches Consideradas">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#alternativa-1-skip-rag-solo-grafanaprometheus" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Alternativa 1: Skip RAG, Solo Grafana/Prometheus
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#alternativa-2-rag-sin-jerarquia-flat" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Alternativa 2: RAG sin Jerarquía (Flat)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#alternativa-3-cloud-only-no-local" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Alternativa 3: Cloud-Only (No Local)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#parte-vii-open-questions-para-consejo-de-sabios" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ❓ PARTE VII: OPEN QUESTIONS PARA CONSEJO DE SABIOS
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="❓ PARTE VII: OPEN QUESTIONS PARA CONSEJO DE SABIOS">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#pregunta-1-tinyllama-capacity" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Pregunta 1: TinyLlama Capacity
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pregunta-2-aggregated-indices-strategy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Pregunta 2: Aggregated Indices Strategy
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pregunta-3-multi-tenancy-y-data-isolation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Pregunta 3: Multi-tenancy y Data Isolation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pregunta-4-cold-start-con-synthetic-data" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Pregunta 4: Cold Start con Synthetic Data
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pregunta-5-paper-contribution-priority" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Pregunta 5: Paper Contribution Priority
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pregunta-6-timeline-aggressiveness" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Pregunta 6: Timeline Aggressiveness
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#parte-viii-decisiones-finales" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ✅ PARTE VIII: DECISIONES FINALES
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="✅ PARTE VIII: DECISIONES FINALES">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#decision-1-component-separation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Decisión 1: Component Separation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#decision-2-hierarchical-design-con-implementacion-faseada" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Decisión 2: Hierarchical Design con Implementación Faseada
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#decision-3-natural-language-como-core-value" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Decisión 3: Natural Language como Core Value
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#decision-4-timeline-4-meses" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Decisión 4: Timeline 4 Meses
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#decision-5-costos-phase-1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Decisión 5: Costos Phase 1
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#parte-ix-referencias-y-dependencies" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        📚 PARTE IX: REFERENCIAS Y DEPENDENCIES
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="📚 PARTE IX: REFERENCIAS Y DEPENDENCIES">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#prerequisites-tecnicos" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Prerequisites Técnicos
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#related-work" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Related Work
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#conclusion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🎯 CONCLUSIÓN
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🎯 CONCLUSIÓN">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#summary-of-vision" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Summary of Vision
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#next-steps" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Next Steps
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#final-philosophy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Final Philosophy
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="hierarchical-rag-vision">HIERARCHICAL RAG VISION</h1>
+<h2 id="ml-defender-distributed-natural-language-security-analysis">ML Defender - Distributed Natural Language Security Analysis</h2>
+<p><strong>Document Version</strong>: 1.0<br />
+<strong>Date</strong>: 2026-01-07<br />
+<strong>Authors</strong>: Alonso García (Lead Developer) + Claude (Lead Architect)<br />
+<strong>Status</strong>: Design Review - Pre-Implementation<br />
+<strong>Review Process</strong>: Pending Peer Review (Grok, DeepSeek, Qwen, ChatGPT-5)</p>
+<hr />
+<h2 id="executive-summary">🎯 Executive Summary</h2>
+<p>Este documento define la arquitectura completa de <strong>ML Defender's Hierarchical RAG system</strong>, un sistema distribuido de análisis de seguridad mediante lenguaje natural que escala desde instalaciones locales hasta despliegues nacionales/internacionales.</p>
+<p><strong>Core Value Proposition</strong>:</p>
+<blockquote>
+<p>"Permitir que analistas de seguridad hagan preguntas en lenguaje natural multidioma sobre eventos de red en tiempo real, sin importar la escala del despliegue."</p>
+</blockquote>
+<p><strong>Ejemplo de query</strong>:</p>
+<pre><code>Usuario (en español): &quot;¿Este evento es similar a otros ataques que hemos visto hoy?&quot;
+RAG: [Busca en índices FAISS] &quot;Sí, encontré 3 eventos similares en las últimas 
+     6 horas, todos desde la misma subnet. Posible escaneo coordinado.&quot;
+
+Usuario (en inglés): &quot;Show me attacks from Eastern Europe in the last month&quot;
+RAG: [Busca en índices] &quot;Found 47 events, 12 classified as malicious...&quot;
+</code></pre>
+<p><strong>Key Innovations</strong>:
+1. ✅ <strong>Anti-curse strategies</strong> - FAISS escalable a 100M+ eventos
+2. ✅ <strong>Hierarchical architecture</strong> - Local → City → National RAGs
+3. ✅ <strong>Natural language queries</strong> - Multidioma, runtime
+4. ✅ <strong>Component separation</strong> - RAG (consumer) vs FAISS-Ingester (producer)</p>
+<p><strong>Publication Target</strong>: IEEE S&amp;P / NDSS / CCS (Tier 1 Security Conferences)</p>
+<hr />
+<h2 id="parte-i-historia-del-diseno">📖 PARTE I: HISTORIA DEL DISEÑO</h2>
+<h3 id="11-initial-design-claudes-first-attempt-incorrect">1.1 Initial Design (Claude's First Attempt - INCORRECT)</h3>
+<p><strong>Lo que propuse inicialmente</strong> (07 Enero 2026, 08:00 AM):</p>
+<pre><code class="language-cpp">// ❌ DISEÑO INCORRECTO - Integrado en pipeline
+class ChunkCoordinator {
+    void process_chunk() {
+        // 1. Load eventos
+        // 2. Generate embeddings  ← AQUÍ
+        // 3. Apply PCA
+        // 4. Update FAISS indices
+        // 5. Pipeline continúa...
+    }
+};
+</code></pre>
+<p><strong>Por qué estaba MAL</strong>:
+- ❌ Mezcla responsabilidades (detección + ingestion)
+- ❌ Bloquea pipeline principal (latencia crítica)
+- ❌ No escala (embedding generation es pesado)
+- ❌ RAG acoplado a ml-detector (monolito)</p>
+<p><strong>Lección aprendida</strong>:</p>
+<blockquote>
+<p>"Separar PRODUCTOR de datos (FAISS-Ingester) de CONSUMIDOR (RAG).
+El pipeline de detección debe ser ultraligero y no bloqueante."</p>
+</blockquote>
+<hr />
+<h3 id="12-corrected-design-after-alonsos-feedback">1.2 Corrected Design (After Alonso's Feedback)</h3>
+<p><strong>Corrección de Alonso</strong> (07 Enero 2026, 09:30 AM):</p>
+<blockquote>
+<p>"El RAG debe ser ligero, solo para consultar. La ingesta debe ser un servicio
+independiente que procesa logs asíncronamente y construye índices FAISS."</p>
+</blockquote>
+<p><strong>Arquitectura corregida</strong>:</p>
+<pre><code>ml-detector (ultraligero)
+  ↓ escribe
+  JSONL logs (83 features)
+  ↓ consume (asíncrono)
+faiss-ingester (servicio separado)
+  ↓ construye
+  FAISS indices
+  ↓ consulta (read-only)
+RAG (TinyLlama + queries lenguaje natural)
+</code></pre>
+<p><strong>Por qué es MEJOR</strong>:
+- ✅ Separación de concerns (detección vs análisis)
+- ✅ Pipeline no bloqueado
+- ✅ Escalabilidad independiente
+- ✅ RAG ligero (solo consume)</p>
+<p><strong>Decisión arquitectónica clave</strong>:</p>
+<blockquote>
+<p>"Componentes de primera clase, no módulos acoplados."</p>
+</blockquote>
+<hr />
+<h3 id="13-hierarchical-vision-alonsos-proposal">1.3 Hierarchical Vision (Alonso's Proposal)</h3>
+<p><strong>Visión de Alonso</strong> (07 Enero 2026, 10:00 AM):</p>
+<blockquote>
+<p>"Cada planta de hospital tiene su RAG local (su casita). Luego, un RAG ciudad
+puede coordinar múltiples RAG locales. Esto crece orgánicamente: Madrid coordina
+sus hospitales, España coordina sus ciudades. Jerarquía de 3 niveles."</p>
+</blockquote>
+<p><strong>Ejemplo de escala</strong>:</p>
+<pre><code>Hospital La Paz (Madrid):
+├─ Planta 1: RAG Local (TinyLlama)
+├─ Planta 2: RAG Local (TinyLlama)
+└─ Planta N: RAG Local (TinyLlama)
+    ↓ reportan a
+RAG Madrid City (coordina 10-50 hospitales)
+    ↓ reporta a
+RAG España Nacional (coordina todas las ciudades)
+</code></pre>
+<p><strong>Análisis de feasibility</strong>:</p>
+<table>
+<thead>
+<tr>
+<th>Aspecto</th>
+<th>Evaluación</th>
+<th>Notas</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Técnicamente viable</td>
+<td>✅ Sí</td>
+<td>Arquitectura conocida (Kubernetes, microservicios)</td>
+</tr>
+<tr>
+<td>Complejidad</td>
+<td>⚠️ Alta</td>
+<td>Requiere sincronización, discovery, telemetría</td>
+</tr>
+<tr>
+<td>Necesario ahora</td>
+<td>❌ No</td>
+<td>Para proof-of-concept, 1 nivel alcanza</td>
+</tr>
+<tr>
+<td>Necesario futuro</td>
+<td>✅ Sí</td>
+<td>Si deployment masivo (100+ sitios)</td>
+</tr>
+<tr>
+<td>Publicable</td>
+<td>✅ Sí</td>
+<td>Novelty en seguridad distribuida</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Recomendación</strong>:</p>
+<blockquote>
+<p>"Diseñar CON MENTE EN jerarquía (configs modulares, stubs preparados),
+pero implementar SOLO nivel 1 (Local RAG) para demostración.
+Proof-of-concept nivel 2 (City RAG) si tiempo permite."</p>
+</blockquote>
+<hr />
+<h2 id="parte-ii-arquitectura-propuesta">📊 PARTE II: ARQUITECTURA PROPUESTA</h2>
+<h3 id="21-component-separation-decision-fundamental">2.1 Component Separation - Decisión Fundamental</h3>
+<p><strong>Tres componentes independientes</strong>:</p>
+<pre><code>┌─────────────────────────────────────────────────────────────┐
+│ 1. ML-DETECTOR (ya existe - NO modificar)                  │
+├─────────────────────────────────────────────────────────────┤
+│ Responsabilidad: Detección en tiempo real                  │
+│ Output: JSONL files (83 features)                          │
+│ Latencia: &lt;1ms (crítico)                                   │
+│ Registrado en etcd: /services/.../ml-detector             │
+└─────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────┐
+│ 2. FAISS-INGESTER (NUEVO - Phase 1)                        │
+├─────────────────────────────────────────────────────────────┤
+│ Responsabilidad: Construir índices FAISS                   │
+│ Input: JSONL files (asíncrono)                             │
+│ Processing:                                                 │
+│   ├─ Generate embeddings (ONNX Runtime)                    │
+│   ├─ Apply PCA reduction (anti-curse)                      │
+│   ├─ Update FAISS indices                                  │
+│   └─ Store metadata                                        │
+│ Output: FAISS indices + metadata DB                        │
+│ Latencia: No crítica (background processing)               │
+│ Registrado en etcd: /services/.../faiss-ingester          │
+└─────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────┐
+│ 3. RAG (NUEVO - Phase 1)                                   │
+├─────────────────────────────────────────────────────────────┤
+│ Responsabilidad: Queries lenguaje natural                  │
+│ Input: User query (español, inglés, etc)                   │
+│ Processing:                                                 │
+│   ├─ Parse query (TinyLlama)                               │
+│   ├─ Search FAISS indices (read-only)                      │
+│   ├─ Retrieve similar events                               │
+│   └─ Generate natural language response                    │
+│ Output: Natural language answer                            │
+│ Latencia: &lt;500ms (acceptable for analysis)                 │
+│ Registrado en etcd: /services/.../rag                      │
+└─────────────────────────────────────────────────────────────┘
+</code></pre>
+<p><strong>Shared Resources</strong>:</p>
+<pre><code>/vagrant/shared/
+├── models/                  (Modelos compartidos)
+│   ├── embedders/
+│   │   ├── chronos_embedder.onnx
+│   │   ├── sbert_embedder.onnx
+│   │   └── attack_embedder.onnx
+│   ├── pca/
+│   │   ├── chronos_pca_512_128.faiss
+│   │   ├── sbert_pca_384_96.faiss
+│   │   └── attack_pca_256_64.faiss
+│   └── llm/
+│       └── tinyllama/       (1.1B params)
+│
+└── indices/                 (FAISS indices por entidad)
+    └── hospital-lapaz-madrid/
+        ├── planta-1/
+        │   ├── chronos.faiss
+        │   ├── sbert.faiss
+        │   ├── attack.faiss
+        │   └── metadata.db (SQLite)
+        └── planta-2/
+            └── ...
+</code></pre>
+<hr />
+<h3 id="22-hierarchical-architecture-3-niveles">2.2 Hierarchical Architecture (3 Niveles)</h3>
+<h4 id="nivel-1-rag-local-implementar-ahora-phase-1">NIVEL 1: RAG Local (IMPLEMENTAR AHORA - Phase 1)</h4>
+<p><strong>Scope</strong>: Una ubicación física (planta hospital, escuela, etc)</p>
+<pre><code>┌─────────────────────────────────────────────────────────────┐
+│ RAG Local - &quot;Su Casita&quot;                                    │
+├─────────────────────────────────────────────────────────────┤
+│ Instance: hospital-lapaz-madrid-planta-1                   │
+│                                                              │
+│ Components:                                                 │
+│   ├─ TinyLlama 1.1B (LLM ligero)                           │
+│   ├─ FAISS Reader (solo índices locales)                   │
+│   └─ etcd-client (service discovery)                       │
+│                                                              │
+│ Queries soportadas:                                         │
+│   - &quot;¿Eventos similares hoy?&quot;                              │
+│   - &quot;Show attacks from 192.168.1.0/24&quot;                     │
+│   - &quot;¿Qué pasó a las 14:00?&quot;                               │
+│   - &quot;Analyze this suspicious event&quot;                        │
+│                                                              │
+│ Resources:                                                  │
+│   - RAM: ~4GB                                              │
+│   - CPU: 2 cores                                           │
+│   - Storage: ~10GB                                         │
+│   - Cost: ~$50/mes cloud                                   │
+└─────────────────────────────────────────────────────────────┘
+</code></pre>
+<p><strong>Config Example</strong>:</p>
+<pre><code class="language-json">{
+  &quot;service&quot;: {
+    &quot;name&quot;: &quot;ml-defender-rag&quot;,
+    &quot;scope&quot;: &quot;local&quot;,
+    &quot;instance_id&quot;: &quot;hospital-lapaz-madrid-planta-1&quot;
+  },
+
+  &quot;llm&quot;: {
+    &quot;model&quot;: &quot;tinyllama-1.1B&quot;,
+    &quot;path&quot;: &quot;/shared/models/llm/tinyllama&quot;,
+    &quot;languages&quot;: [&quot;es&quot;, &quot;en&quot;, &quot;fr&quot;, &quot;de&quot;]
+  },
+
+  &quot;indices&quot;: {
+    &quot;local_path&quot;: &quot;/shared/indices/hospital-lapaz-madrid/planta-1&quot;,
+    &quot;embedders&quot;: [&quot;chronos&quot;, &quot;sbert&quot;, &quot;attack&quot;]
+  },
+
+  &quot;hierarchy&quot;: {
+    &quot;enabled&quot;: false,
+    &quot;parent_rag&quot;: null,
+    &quot;report_telemetry&quot;: false
+  }
+}
+</code></pre>
+<hr />
+<h4 id="nivel-2-rag-ciudad-proof-of-concept-phase-3">NIVEL 2: RAG Ciudad (PROOF-OF-CONCEPT - Phase 3)</h4>
+<p><strong>Scope</strong>: Una ciudad con múltiples ubicaciones</p>
+<pre><code>┌─────────────────────────────────────────────────────────────┐
+│ RAG Ciudad - Coordinador Regional                          │
+├─────────────────────────────────────────────────────────────┤
+│ Instance: rag-madrid-city                                  │
+│                                                              │
+│ Components:                                                 │
+│   ├─ Llama 7B / Mixtral (LLM más potente)                 │
+│   ├─ FAISS Reader (índices locales + agregados)           │
+│   ├─ Coordinator (descubre RAG locales via etcd)          │
+│   └─ Aggregator (construye índices ciudad)                │
+│                                                              │
+│ Queries soportadas:                                         │
+│   - &quot;¿Ataques similares en otros hospitales Madrid?&quot;      │
+│   - &quot;Compare patterns La Paz vs Ramón y Cajal&quot;            │
+│   - &quot;City-wide anomalies today&quot;                            │
+│   - &quot;Coordinated attacks across sites&quot;                     │
+│                                                              │
+│ Coordina:                                                   │
+│   - Hospital La Paz (10 plantas)                           │
+│   - Hospital Ramón y Cajal (8 plantas)                     │
+│   - Hospital Clínico San Carlos (12 plantas)              │
+│   - Total: ~30 RAG locales                                 │
+│                                                              │
+│ Resources:                                                  │
+│   - RAM: ~16GB                                             │
+│   - CPU: 8 cores                                           │
+│   - Storage: ~100GB                                        │
+│   - Cost: ~$200/mes cloud                                  │
+└─────────────────────────────────────────────────────────────┘
+</code></pre>
+<p><strong>Agregación de Índices</strong> (desafío técnico):</p>
+<pre><code>OPCIÓN A (Batch Aggregation - RECOMENDADA):
+  - Cada noche: Merge índices locales → índice ciudad
+  - Pro: Simple, no afecta performance runtime
+  - Con: Lag de 24h (aceptable para análisis ciudad)
+
+OPCIÓN B (Streaming Aggregation):
+  - Actualización incremental continua
+  - Pro: Near real-time
+  - Con: Complejo, afecta performance
+
+OPCIÓN C (Query Federation):
+  - No agregar, query todos los índices en paralelo
+  - Pro: Siempre fresh
+  - Con: Latencia alta (query 30 índices)
+
+RECOMENDACIÓN: Opción A para Phase 3
+</code></pre>
+<hr />
+<h4 id="nivel-3-rag-nacional-vision-futura-phase-4">NIVEL 3: RAG Nacional (VISIÓN FUTURA - Phase 4)</h4>
+<p><strong>Scope</strong>: País completo o región continental</p>
+<pre><code>┌─────────────────────────────────────────────────────────────┐
+│ RAG Nacional - Vista Estratégica                           │
+├─────────────────────────────────────────────────────────────┤
+│ Instance: rag-spain-national                               │
+│                                                              │
+│ Components:                                                 │
+│   ├─ Llama 70B / GPT-4 (LLM research-grade)               │
+│   ├─ FAISS Distributed Cluster                            │
+│   ├─ Analytics Engine (ML patterns)                       │
+│   └─ Report Generator                                      │
+│                                                              │
+│ Queries soportadas:                                         │
+│   - &quot;National threat trends this quarter&quot;                  │
+│   - &quot;Compare attack patterns Spain vs Europe&quot;              │
+│   - &quot;Predict next week's threats&quot;                          │
+│   - &quot;Generate executive report&quot;                            │
+│                                                              │
+│ Coordina:                                                   │
+│   - Madrid City RAG (30 hospitales)                        │
+│   - Barcelona City RAG (25 hospitales)                     │
+│   - Valencia City RAG (15 hospitales)                      │
+│   - Total: ~100+ hospitales, 1000+ instalaciones          │
+│                                                              │
+│ Resources:                                                  │
+│   - RAM: ~128GB+                                           │
+│   - CPU: 32+ cores                                         │
+│   - Storage: ~1TB+                                         │
+│   - Cost: ~$2K-5K/mes cloud                                │
+│                                                              │
+│ ⚠️ ADVERTENCIA: Requiere fondos institucionales            │
+└─────────────────────────────────────────────────────────────┘
+</code></pre>
+<hr />
+<h3 id="23-natural-language-query-processing-core-value">2.3 Natural Language Query Processing (CORE VALUE)</h3>
+<p><strong>Por qué lenguaje natural es crítico</strong>:</p>
+<pre><code>PROBLEMA CON GRAFANA/PROMETHEUS:
+  Usuario debe saber:
+    - Nombres exactos de métricas
+    - PromQL syntax
+    - Estructura de datos
+    - Grafana query language
+
+  Ejemplo:
+    rate(ml_defender_events_total{
+      classification=&quot;MALICIOUS&quot;,
+      hospital=&quot;la-paz&quot;
+    }[5m])
+
+  ❌ Requiere training técnico
+  ❌ No escalable a usuarios no-técnicos
+  ❌ Un idioma solo (inglés)
+  ❌ No semántico (keywords exactos)
+
+SOLUCIÓN CON RAG:
+  Usuario pregunta naturalmente:
+    &quot;¿Cuántos ataques hemos visto en la última hora?&quot;
+    &quot;Show me suspicious events from building 3&quot;
+    &quot;Was gibt es Verdächtiges heute?&quot; (alemán)
+
+  ✅ Sin training
+  ✅ Multidioma
+  ✅ Semántico (entiende intención)
+  ✅ Escalable a cualquier usuario
+</code></pre>
+<p><strong>Flujo de Query Processing</strong>:</p>
+<pre><code class="language-python"># Ejemplo de query processing
+
+class RAGQueryProcessor:
+    def process_query(self, user_query: str, language: str):
+        # 1. Parse con TinyLlama (entender intención)
+        intent = self.llm.parse_intent(user_query, language)
+
+        # Intent examples:
+        # - &quot;find_similar_events&quot;
+        # - &quot;time_range_query&quot;
+        # - &quot;analyze_specific_event&quot;
+        # - &quot;aggregate_statistics&quot;
+
+        # 2. Extract parameters
+        params = self.llm.extract_parameters(user_query, intent)
+
+        # Example params:
+        # {
+        #   &quot;time_range&quot;: &quot;last_hour&quot;,
+        #   &quot;event_type&quot;: &quot;malicious&quot;,
+        #   &quot;source&quot;: &quot;building_3&quot;
+        # }
+
+        # 3. Query FAISS indices
+        if intent == &quot;find_similar_events&quot;:
+            # Use semantic search
+            results = self.faiss_reader.semantic_search(
+                query_embedding=params[&quot;event_embedding&quot;],
+                k=10
+            )
+        elif intent == &quot;time_range_query&quot;:
+            # Metadata filter + FAISS
+            results = self.faiss_reader.time_range_search(
+                start=params[&quot;start_time&quot;],
+                end=params[&quot;end_time&quot;],
+                filters=params.get(&quot;filters&quot;, {})
+            )
+
+        # 4. Generate natural language response
+        response = self.llm.generate_response(
+            results=results,
+            original_query=user_query,
+            language=language
+        )
+
+        return response
+
+# Example usage:
+rag = RAGQueryProcessor()
+
+# Spanish query
+response_es = rag.process_query(
+    &quot;¿Eventos similares hoy?&quot;,
+    language=&quot;es&quot;
+)
+# → &quot;Encontré 3 eventos similares en las últimas 6 horas...&quot;
+
+# English query
+response_en = rag.process_query(
+    &quot;Show attacks from Eastern Europe&quot;,
+    language=&quot;en&quot;
+)
+# → &quot;Found 47 events from Eastern European IPs...&quot;
+
+# German query
+response_de = rag.process_query(
+    &quot;Zeige mir verdächtige Aktivitäten&quot;,
+    language=&quot;de&quot;
+)
+# → &quot;Ich habe 12 verdächtige Ereignisse gefunden...&quot;
+</code></pre>
+<p><strong>Supported Query Types</strong> (Phase 1):</p>
+<table>
+<thead>
+<tr>
+<th>Query Type</th>
+<th>Example (ES)</th>
+<th>Example (EN)</th>
+<th>FAISS Operation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Similarity</td>
+<td>"¿Eventos similares?"</td>
+<td>"Similar events?"</td>
+<td>k-NN search</td>
+</tr>
+<tr>
+<td>Time Range</td>
+<td>"¿Qué pasó ayer?"</td>
+<td>"What happened yesterday?"</td>
+<td>Metadata filter</td>
+</tr>
+<tr>
+<td>Source IP</td>
+<td>"Eventos desde 10.0.0.1"</td>
+<td>"Events from 10.0.0.1"</td>
+<td>Metadata filter</td>
+</tr>
+<tr>
+<td>Classification</td>
+<td>"Solo ataques"</td>
+<td>"Only malicious"</td>
+<td>Metadata filter</td>
+</tr>
+<tr>
+<td>Aggregate</td>
+<td>"¿Cuántos ataques hoy?"</td>
+<td>"How many attacks today?"</td>
+<td>Count query</td>
+</tr>
+<tr>
+<td>Analysis</td>
+<td>"Analiza este evento"</td>
+<td>"Analyze this event"</td>
+<td>k-NN + LLM</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="parte-iii-analisis-de-costos">💰 PARTE III: ANÁLISIS DE COSTOS</h2>
+<h3 id="31-phase-1-implementacion-real-1-instancia">3.1 Phase 1 - Implementación Real (1 Instancia)</h3>
+<p><strong>Deployment mínimo funcional</strong>:</p>
+<pre><code>COMPONENTES:
+├─ FAISS-Ingester:
+│   ├─ RAM: 8GB
+│   ├─ CPU: 4 cores
+│   ├─ Storage: 50GB SSD
+│   └─ Cost: ~$40/mes (AWS t3.large equivalente)
+│
+├─ RAG Local:
+│   ├─ RAM: 4GB (TinyLlama)
+│   ├─ CPU: 2 cores
+│   ├─ Storage: 10GB
+│   └─ Cost: ~$20/mes (AWS t3.small equivalente)
+│
+├─ etcd-server:
+│   ├─ RAM: 2GB
+│   ├─ CPU: 1 core
+│   ├─ Storage: 10GB
+│   └─ Cost: ~$10/mes (AWS t3.micro)
+│
+└─ TOTAL Phase 1: ~$70/mes
+
+ALTERNATIVA LOCAL (on-premise):
+  - Hardware existente (VM en servidor)
+  - Cost: $0/mes
+  - Solo electricidad (~$5/mes)
+</code></pre>
+<p><strong>Validación</strong>: ✅ <strong>Muy affordable para proof-of-concept</strong></p>
+<hr />
+<h3 id="32-phase-2-3-proof-of-concept-jerarquico-10-instancias">3.2 Phase 2-3 - Proof-of-Concept Jerárquico (10 Instancias)</h3>
+<p><strong>Deployment demostración</strong>:</p>
+<pre><code>ESCENARIO: 1 Ciudad, 10 Hospitales
+
+├─ 10× RAG Local:
+│   └─ Cost: 10 × $20 = $200/mes
+│
+├─ 10× FAISS-Ingester:
+│   └─ Cost: 10 × $40 = $400/mes
+│
+├─ 1× RAG Ciudad:
+│   ├─ RAM: 16GB (Llama 7B)
+│   ├─ CPU: 8 cores
+│   ├─ Storage: 100GB
+│   └─ Cost: ~$100/mes (AWS c5.2xlarge)
+│
+├─ 1× FAISS Cluster (ciudad):
+│   ├─ RAM: 32GB
+│   ├─ CPU: 8 cores
+│   ├─ Storage: 200GB
+│   └─ Cost: ~$150/mes
+│
+└─ TOTAL Phase 2-3: ~$850/mes
+
+NOTA: Solo para demostración, no production
+</code></pre>
+<p><strong>Validación</strong>: ⚠️ <strong>Requiere presupuesto modesto (~$1K/mes)</strong></p>
+<hr />
+<h3 id="33-escala-futura-advertencia-de-costos">3.3 Escala Futura - Advertencia de Costos</h3>
+<p><strong>Deployment nacional (100-1000 instancias)</strong>:</p>
+<pre><code>ESCENARIO CONSERVADOR: 100 Hospitales
+
+├─ 100× RAG Local:
+│   └─ Cost: 100 × $20 = $2,000/mes
+│
+├─ 100× FAISS-Ingester:
+│   └─ Cost: 100 × $40 = $4,000/mes
+│
+├─ 5× RAG Ciudad:
+│   └─ Cost: 5 × $100 = $500/mes
+│
+├─ 1× RAG Nacional:
+│   ├─ RAM: 128GB (Llama 70B)
+│   ├─ CPU: 32 cores
+│   └─ Cost: ~$500/mes
+│
+├─ FAISS Distributed Cluster:
+│   ├─ 5 nodes × 64GB RAM
+│   └─ Cost: ~$1,000/mes
+│
+└─ TOTAL Nacional: ~$8,000/mes ($96K/año)
+
+ESCENARIO AGRESIVO: 1000 Hospitales
+  → $80,000/mes ($960K/año)
+
+⚠️ REQUIERE FONDOS INSTITUCIONALES (gobierno, EU, grants)
+</code></pre>
+<p><strong>Validación</strong>: 🔴 <strong>Escala masiva requiere presupuesto serio</strong></p>
+<p><strong>Recomendación</strong>:</p>
+<blockquote>
+<p>"Phase 1 es muy affordable ($70/mes).
+Phase 2-3 es presupuesto modesto (~$1K/mes).
+Escala nacional requiere fondos institucionales (~$100K/año).
+Diseñar para la visión, implementar según recursos disponibles."</p>
+</blockquote>
+<hr />
+<h2 id="parte-iv-implementation-roadmap">🚀 PARTE IV: IMPLEMENTATION ROADMAP</h2>
+<h3 id="41-timeline-realista-4-meses-no-un-ano">4.1 Timeline Realista (4 Meses, NO un Año)</h3>
+<pre><code>═══════════════════════════════════════════════════════════════
+ PHASE 1: FOUNDATIONAL (Weeks 5-10) - 6 semanas
+═══════════════════════════════════════════════════════════════
+
+Week 5 (Current - Day 35-40):
+  ├─ DimensionalityReducer (PCA training)
+  ├─ Train 3 PCA models (Chronos, SBERT, Attack)
+  ├─ Validate variance preservation (≥95%)
+  └─ C++ implementation + tests
+
+Week 6 (Day 41-45):
+  ├─ Create /faiss-ingester/ structure
+  ├─ Implement core ingestion service
+  ├─ ONNX Runtime integration
+  ├─ PCA reduction pipeline
+  └─ FAISS index building
+
+Week 7 (Day 46-50):
+  ├─ Create /rag/ structure
+  ├─ TinyLlama integration
+  ├─ FAISS reader (read-only)
+  ├─ etcd registration (both services)
+  └─ Basic query processing
+
+Week 8 (Day 51-55):
+  ├─ Natural language query parser
+  ├─ Multi-language support (ES, EN)
+  ├─ Query→FAISS→Response pipeline
+  └─ Integration testing
+
+Week 9 (Day 56-60):
+  ├─ Refinement + bug fixes
+  ├─ Performance optimization
+  ├─ Documentation
+  └─ Demo preparation
+
+Week 10 (Day 61-65):
+  ├─ End-to-end testing
+  ├─ Query examples validation
+  ├─ Anti-curse metrics validation
+  └─ Phase 1 COMPLETE ✅
+
+DELIVERABLE: RAG Local + FAISS Ingester funcionando
+             Queries lenguaje natural (ES/EN) working
+             Demo-ready para stakeholders
+
+═══════════════════════════════════════════════════════════════
+ PHASE 2: HIERARCHICAL PROOF-OF-CONCEPT (Weeks 11-12) - 2 sem
+═══════════════════════════════════════════════════════════════
+
+Week 11:
+  ├─ Implement RAG Ciudad (simplified)
+  ├─ etcd-based service discovery
+  ├─ Telemetry collection (basic)
+  └─ Aggregated indices (batch, nightly)
+
+Week 12:
+  ├─ Demonstrate hierarchical query
+  ├─ Test: Local query vs City query
+  ├─ Performance comparison
+  └─ Proof-of-concept validated ✅
+
+DELIVERABLE: Demostración funcional de jerarquía
+             No production-ready, solo concepto
+
+⚠️ OPCIONAL: Solo si tiempo disponible after Phase 1
+
+═══════════════════════════════════════════════════════════════
+ PHASE 3: PUBLICATION (Weeks 13-15) - 3 semanas
+═══════════════════════════════════════════════════════════════
+
+Week 13-14:
+  ├─ Paper writing (IEEE format)
+  ├─ Contributions section
+  ├─ Experimental results
+  ├─ Related work
+  └─ Conclusion
+
+Week 15:
+  ├─ Internal review
+  ├─ Revision
+  ├─ Submission to conference
+  └─ arXiv preprint
+
+DELIVERABLE: Paper submitted
+             arXiv public
+             Code on GitHub
+
+═══════════════════════════════════════════════════════════════
+ TOTAL TIMELINE: ~15 semanas (4 meses)
+═══════════════════════════════════════════════════════════════
+</code></pre>
+<hr />
+<h3 id="42-minimal-viable-product-mvp-phase-1">4.2 Minimal Viable Product (MVP) - Phase 1</h3>
+<p><strong>Lo que DEBE funcionar</strong>:</p>
+<pre><code>MVP Requirements (Phase 1):
+✅ 1. FAISS Ingester procesando JSONL logs
+✅ 2. Embeddings generation (ONNX Runtime)
+✅ 3. PCA reduction aplicada (anti-curse)
+✅ 4. FAISS indices construidos y actualizados
+✅ 5. RAG Local con TinyLlama
+✅ 6. Queries lenguaje natural (español + inglés)
+✅ 7. etcd registration (ambos servicios)
+✅ 8. Demo queries working:
+      - &quot;¿Eventos similares hoy?&quot;
+      - &quot;Show attacks from subnet X&quot;
+      - &quot;Analyze this event ID&quot;
+✅ 9. Performance: &lt;500ms query latency
+✅ 10. Metrics: CV &gt; 0.20 maintained
+
+Lo que NO es necesario Phase 1:
+❌ RAG Ciudad (Phase 2-3)
+❌ Telemetría jerárquica
+❌ Índices agregados
+❌ Queries complejas multi-nivel
+❌ Production hardening
+</code></pre>
+<hr />
+<h2 id="parte-v-paper-angle">📄 PARTE V: PAPER ANGLE</h2>
+<h3 id="51-contributions-y-novelty">5.1 Contributions y Novelty</h3>
+<p><strong>Title (propuesto)</strong>:</p>
+<blockquote>
+<p><strong>"Hierarchical RAG Architecture for Real-Time Network Security Analysis:
+Mitigating Curse of Dimensionality at Scale with Natural Language Queries"</strong></p>
+</blockquote>
+<p><strong>Abstract (draft)</strong>:</p>
+<blockquote>
+<p>"We present ML Defender, a distributed Retrieval-Augmented Generation (RAG)
+system for real-time network security analysis via natural language queries.
+Our system addresses two critical challenges: (1) the curse of dimensionality
+in high-dimensional vector search at scale (100M+ events), and (2) the need
+for intuitive, multilingual security analysis across distributed deployments.</p>
+<p>We introduce a hierarchical RAG architecture with three levels (Local, City,
+National) that enables organic scaling from single-site installations to
+national deployments. To mitigate the curse of dimensionality, we implement
+11 complementary strategies including post-embedding PCA reduction (4x
+improvement), class-separated indexing, and temporal tiering, enabling FAISS
+indices to maintain CV &gt; 0.20 at 100M+ events.</p>
+<p>Our natural language interface, powered by TinyLlama (1.1B params), supports
+multilingual queries (ES/EN/DE/FR) without requiring technical expertise in
+query languages. We validate our approach with real network traffic from
+hospital deployments, demonstrating sub-500ms query latency and &gt;95%
+precision in threat detection.</p>
+<p>The system is designed for life-critical infrastructure (hospitals, schools)
+where false negatives are intolerable and security analysts require rapid,
+intuitive access to historical attack patterns."</p>
+</blockquote>
+<p><strong>Key Contributions</strong>:</p>
+<ol>
+<li>
+<p><strong>Anti-Curse Strategies for Security Vectors</strong> (Novel)</p>
+<ul>
+<li>11 complementary mitigation strategies</li>
+<li>Empirically validated limits (180K Chronos, 450K SBERT)</li>
+<li>4x improvement via PCA reduction</li>
+<li>Maintains CV &gt; 0.20 at 100M+ events</li>
+</ul>
+</li>
+<li>
+<p><strong>Hierarchical RAG Architecture</strong> (Novel in Security)</p>
+<ul>
+<li>3-level hierarchy (Local → City → National)</li>
+<li>Organic scaling model</li>
+<li>Service discovery via etcd</li>
+<li>Independent component lifecycle</li>
+</ul>
+</li>
+<li>
+<p><strong>Natural Language Security Analysis</strong> (Novel)</p>
+<ul>
+<li>Multilingual query support</li>
+<li>Non-technical user accessible</li>
+<li>Semantic search (not keyword)</li>
+<li>Sub-500ms latency</li>
+</ul>
+</li>
+<li>
+<p><strong>Real-World Validation</strong> (Strong)</p>
+<ul>
+<li>Hospital deployment data</li>
+<li>100+ eventos/día real traffic</li>
+<li>33K+ historical events validated</li>
+<li>Production-ready architecture</li>
+</ul>
+</li>
+</ol>
+<p><strong>Novelty vs Related Work</strong>:</p>
+<table>
+<thead>
+<tr>
+<th>System</th>
+<th>Hierarchical</th>
+<th>Natural Language</th>
+<th>Anti-Curse</th>
+<th>Scale</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Zeek + ELK</td>
+<td>❌</td>
+<td>❌</td>
+<td>❌</td>
+<td>Medium</td>
+</tr>
+<tr>
+<td>Suricata + Splunk</td>
+<td>❌</td>
+<td>⚠️ (limited)</td>
+<td>❌</td>
+<td>Large</td>
+</tr>
+<tr>
+<td><strong>ML Defender</strong></td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>Massive</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h3 id="52-target-venues">5.2 Target Venues</h3>
+<p><strong>Tier 1 (Primary Target)</strong>:
+- IEEE Symposium on Security and Privacy (Oakland)
+- USENIX Security Symposium
+- Network and Distributed System Security (NDSS)
+- ACM Conference on Computer and Communications Security (CCS)</p>
+<p><strong>Tier 2 (Backup)</strong>:
+- ACSAC (Annual Computer Security Applications Conference)
+- RAID (International Symposium on Research in Attacks, Intrusions and Defenses)
+- EuroS&amp;P (IEEE European Symposium on Security and Privacy)</p>
+<p><strong>Timeline</strong>:
+- Week 13-15: Paper writing
+- Week 16: Submission
+- Month 6-9: Review process
+- Month 10: Camera-ready (if accepted)</p>
+<hr />
+<h2 id="parte-vi-critical-analysis">🔍 PARTE VI: CRITICAL ANALYSIS</h2>
+<h3 id="61-design-evolution-lecciones-aprendidas">6.1 Design Evolution - Lecciones Aprendidas</h3>
+<p><strong>Error 1: Integración en Pipeline (Claude)</strong>
+- ❌ Propuse integrar ingestion en ml-detector
+- ✅ Alonso corrigió: Componente separado
+- <strong>Lección</strong>: Separación de concerns es fundamental</p>
+<p><strong>Error 2: Over-engineering Inicial (Claude)</strong>
+- ❌ Diseñé telemetría custom compleja
+- ✅ Prometheus existe y funciona
+- <strong>Lección</strong>: No reinventar ruedas bien hechas</p>
+<p><strong>Decisión Correcta: Lenguaje Natural (Alonso)</strong>
+- ✅ Visión de queries multidioma desde día 1
+- ✅ Identifica core value real
+- <strong>Lección</strong>: El "qué" es más importante que el "cómo"</p>
+<hr />
+<h3 id="62-risk-assessment">6.2 Risk Assessment</h3>
+<p><strong>Riesgos Técnicos</strong>:</p>
+<table>
+<thead>
+<tr>
+<th>Riesgo</th>
+<th>Probabilidad</th>
+<th>Impacto</th>
+<th>Mitigación</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>TinyLlama insuficiente para parsing</td>
+<td>Media</td>
+<td>Alto</td>
+<td>Benchmark early, upgrade si needed</td>
+</tr>
+<tr>
+<td>FAISS indices corruptos</td>
+<td>Baja</td>
+<td>Alto</td>
+<td>Checksums, backups, re-build scripts</td>
+</tr>
+<tr>
+<td>etcd discovery falla</td>
+<td>Media</td>
+<td>Medio</td>
+<td>Fallback a config estático</td>
+</tr>
+<tr>
+<td>PCA training insuficiente</td>
+<td>Baja</td>
+<td>Medio</td>
+<td>Validación con 10K eventos</td>
+</tr>
+<tr>
+<td>Query latency &gt; 500ms</td>
+<td>Media</td>
+<td>Medio</td>
+<td>Caching, index optimization</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Riesgos de Escala</strong>:</p>
+<table>
+<thead>
+<tr>
+<th>Riesgo</th>
+<th>Probabilidad</th>
+<th>Impacto</th>
+<th>Mitigación</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Índices agregados muy lentos</td>
+<td>Alta</td>
+<td>Medio</td>
+<td>Batch nocturno, no real-time</td>
+</tr>
+<tr>
+<td>Sincronización multi-RAG compleja</td>
+<td>Alta</td>
+<td>Alto</td>
+<td>Phase 1: NO implementar</td>
+</tr>
+<tr>
+<td>Costos escalado imprevistos</td>
+<td>Media</td>
+<td>Alto</td>
+<td>Documentar costos claramente</td>
+</tr>
+<tr>
+<td>Deployment 1000+ instancias</td>
+<td>Baja</td>
+<td>Alto</td>
+<td>Requiere fondos institucionales</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Riesgos de Timeline</strong>:</p>
+<table>
+<thead>
+<tr>
+<th>Riesgo</th>
+<th>Probabilidad</th>
+<th>Impacto</th>
+<th>Mitigación</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Phase 1 toma &gt;6 semanas</td>
+<td>Media</td>
+<td>Medio</td>
+<td>Buffer 2 semanas incluido</td>
+</tr>
+<tr>
+<td>TinyLlama training needed</td>
+<td>Baja</td>
+<td>Alto</td>
+<td>Use pre-trained, no fine-tune</td>
+</tr>
+<tr>
+<td>Integration bugs inesperados</td>
+<td>Alta</td>
+<td>Bajo</td>
+<td>Testing continuo</td>
+</tr>
+<tr>
+<td>Paper rejection</td>
+<td>Media</td>
+<td>Bajo</td>
+<td>Submit Tier 2 si Tier 1 rechaza</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h3 id="63-trade-offs-analysis">6.3 Trade-offs Analysis</h3>
+<h4 id="trade-off-1-simplicidad-vs-escalabilidad">Trade-off 1: Simplicidad vs Escalabilidad</h4>
+<p><strong>Opción A: Todo Local (Simple)</strong></p>
+<pre><code>Pros:
+  - Muy simple de implementar
+  - Sin coordinación
+  - Costos mínimos
+
+Cons:
+  - No escala más allá de 1 sitio
+  - No queries multi-sitio
+  - No publicable (poco novel)
+</code></pre>
+<p><strong>Opción B: Centralizado (Simple pero Limitado)</strong></p>
+<pre><code>Pros:
+  - Relativamente simple
+  - Un solo índice FAISS
+  - Queries globales fáciles
+
+Cons:
+  - Bottleneck central
+  - Single point of failure
+  - No escala geográficamente
+  - Latencia para sitios remotos
+</code></pre>
+<p><strong>Opción C: Jerárquico (Complejo pero Escalable)</strong> ← ELEGIDA</p>
+<pre><code>Pros:
+  - Escala orgánicamente
+  - Queries locales rápidas
+  - Queries globales posibles
+  - Muy publicable (novel)
+
+Cons:
+  - Más complejo de implementar
+  - Requiere sincronización
+  - Costos mayores a escala
+
+Justificación:
+  - La complejidad está en el DISEÑO, no en Phase 1
+  - Phase 1 es simple (1 nivel)
+  - Preparado para crecer cuando haya fondos
+  - Publicable por la visión arquitectónica
+</code></pre>
+<h4 id="trade-off-2-performance-vs-consistencia">Trade-off 2: Performance vs Consistencia</h4>
+<p><strong>Decisión</strong>: Eventual Consistency (no Strong Consistency)</p>
+<pre><code>Strong Consistency (rechazada):
+  - Todos los RAG ven EXACTOS mismos datos
+  - Requires distributed transactions
+  - Latencia alta
+  - Complejidad alta
+
+Eventual Consistency (elegida):
+  - RAG Local ve su índice local (fresh)
+  - RAG Ciudad ve agregado (lag &lt;24h)
+  - RAG Nacional ve agregado (lag &lt;1 semana)
+  - Mucho más simple
+  - Acceptable para análisis (no detección real-time)
+</code></pre>
+<p><strong>Justificación</strong>:</p>
+<blockquote>
+<p>"RAG es para análisis retrospectivo, no detección tiempo real.
+Lag de 24h en índice ciudad es totalmente aceptable.
+Simplifica enormemente la arquitectura."</p>
+</blockquote>
+<h4 id="trade-off-3-costo-vs-capacidad">Trade-off 3: Costo vs Capacidad</h4>
+<p><strong>Decisión</strong>: Diseño modular, deployment según presupuesto</p>
+<pre><code>Deployment Tier 1 ($70/mes):
+  - 1 RAG Local
+  - 1 FAISS Ingester
+  - Proof-of-concept completo
+  - Publicable
+
+Deployment Tier 2 ($1K/mes):
+  - 10 RAG Locales
+  - 1 RAG Ciudad
+  - Demostración jerarquía
+  - Grant-friendly
+
+Deployment Tier 3 ($100K/año):
+  - Deployment nacional
+  - Requiere fondos institucionales
+  - Production-grade
+</code></pre>
+<p><strong>Justificación</strong>:</p>
+<blockquote>
+<p>"Diseñar para Tier 3, implementar Tier 1, crecer según fondos.
+No sacrificar visión por falta de presupuesto inicial."</p>
+</blockquote>
+<hr />
+<h3 id="64-alternative-approaches-consideradas">6.4 Alternative Approaches Consideradas</h3>
+<h4 id="alternativa-1-skip-rag-solo-grafanaprometheus">Alternativa 1: Skip RAG, Solo Grafana/Prometheus</h4>
+<p><strong>Propuesta</strong>: Usar stack tradicional monitoreo</p>
+<pre><code>Pros:
+  - Battle-tested
+  - Ecosistema maduro
+  - Muchos dashboards pre-hechos
+
+Cons:
+  - ❌ No lenguaje natural
+  - ❌ Requiere expertise técnico
+  - ❌ No queries semánticas
+  - ❌ Un solo idioma (inglés)
+  - ❌ Poco novel para paper
+
+Decisión: RECHAZADA
+Razón: Core value es lenguaje natural
+</code></pre>
+<h4 id="alternativa-2-rag-sin-jerarquia-flat">Alternativa 2: RAG sin Jerarquía (Flat)</h4>
+<p><strong>Propuesta</strong>: Un solo nivel de RAG, múltiples instancias independientes</p>
+<pre><code>Pros:
+  - Más simple de implementar
+  - Sin coordinación
+  - Cada sitio autónomo
+
+Cons:
+  - ❌ No queries multi-sitio
+  - ❌ No análisis agregado
+  - ❌ Menos publicable
+  - ❌ No demuestra escalabilidad
+
+Decisión: PARCIALMENTE ACEPTADA
+Razón: Phase 1 es efectivamente flat,
+       pero diseñado para crecer
+</code></pre>
+<h4 id="alternativa-3-cloud-only-no-local">Alternativa 3: Cloud-Only (No Local)</h4>
+<p><strong>Propuesta</strong>: Todo en cloud, cero instalación local</p>
+<pre><code>Pros:
+  - Deployment más simple
+  - Mantenimiento centralizado
+  - Escalabilidad automática
+
+Cons:
+  - ❌ Latencia para edge
+  - ❌ Dependencia conectividad
+  - ❌ Preocupaciones privacidad
+  - ❌ Costos mayores
+
+Decisión: RECHAZADA
+Razón: Hospitales requieren on-premise
+       por privacidad/GDPR
+</code></pre>
+<hr />
+<h2 id="parte-vii-open-questions-para-consejo-de-sabios">❓ PARTE VII: OPEN QUESTIONS PARA CONSEJO DE SABIOS</h2>
+<h3 id="pregunta-1-tinyllama-capacity">Pregunta 1: TinyLlama Capacity</h3>
+<p><strong>Contexto</strong>: TinyLlama 1.1B params para query parsing</p>
+<p><strong>Pregunta</strong>:</p>
+<blockquote>
+<p>¿Es suficiente TinyLlama para entender queries complejas multidioma?</p>
+<p>Ejemplo query complejo:
+"Show me all attacks from Eastern European IPs in the last week that
+targeted port 443 and resulted in connection timeouts, excluding known
+false positives from our partner networks."</p>
+</blockquote>
+<p><strong>Opciones</strong>:
+- A) TinyLlama suficiente (optimista)
+- B) Necesitamos Llama 7B (más seguro)
+- C) Two-stage: TinyLlama parse → Llama 7B analysis (híbrido)</p>
+<p><strong>Mi opinión inicial</strong>: Opción A para Phase 1, upgrade a B si needed</p>
+<p><strong>¿Qué opina el consejo?</strong></p>
+<hr />
+<h3 id="pregunta-2-aggregated-indices-strategy">Pregunta 2: Aggregated Indices Strategy</h3>
+<p><strong>Contexto</strong>: RAG Ciudad necesita índice agregado de múltiples RAG locales</p>
+<p><strong>Pregunta</strong>:</p>
+<blockquote>
+<p>¿Cómo construir índices agregados eficientemente?</p>
+</blockquote>
+<p><strong>Opciones</strong>:</p>
+<pre><code>OPCIÓN A: Batch Nightly
+  - Cada noche: FAISS merge de índices locales
+  - Pro: Simple, no afecta runtime
+  - Con: Lag 24h
+  - Costo: Low
+
+OPCIÓN B: Streaming Incremental
+  - Updates continuos desde RAG locales
+  - Pro: Near real-time
+  - Con: Complejo, afecta performance
+  - Costo: High
+
+OPCIÓN C: Query Federation (No Aggregation)
+  - Query todos los índices locales en paralelo
+  - Pro: Siempre fresh, sin aggregation
+  - Con: Latencia alta (N×query time)
+  - Costo: Medium
+
+OPCIÓN D: Hybrid
+  - Aggregated para queries comunes (cached)
+  - Federation para queries específicas
+  - Pro: Best of both
+  - Con: Más complejo
+  - Costo: Medium-High
+</code></pre>
+<p><strong>Mi recomendación</strong>: Opción A para Phase 2-3 (simple)</p>
+<p><strong>¿Qué opina el consejo?</strong></p>
+<hr />
+<h3 id="pregunta-3-multi-tenancy-y-data-isolation">Pregunta 3: Multi-tenancy y Data Isolation</h3>
+<p><strong>Contexto</strong>: Hospital La Paz no debe ver datos de Hospital Ramón y Cajal</p>
+<p><strong>Pregunta</strong>:</p>
+<blockquote>
+<p>¿Cómo garantizar data isolation en RAG Ciudad?</p>
+</blockquote>
+<p><strong>Opciones</strong>:</p>
+<pre><code>OPCIÓN A: Separate Indices
+  - Cada hospital tiene su propio índice
+  - RAG Ciudad tiene múltiples índices separados
+  - Query routing basado en tenant_id
+  - Pro: Isolation garantizado
+  - Con: Más índices para mantener
+
+OPCIÓN B: Single Index + Metadata Filtering
+  - Un índice agregado con tenant_id en metadata
+  - Filter en query time
+  - Pro: Más simple
+  - Con: Riesgo de leak si bug
+
+OPCIÓN C: Encrypted Embeddings
+  - Embeddings encriptados por tenant
+  - Pro: Máximo security
+  - Con: FAISS no soporta esto nativamente
+</code></pre>
+<p><strong>Mi recomendación</strong>: Opción A (paranoid, pero correcto para healthcare)</p>
+<p><strong>¿Qué opina el consejo?</strong></p>
+<hr />
+<h3 id="pregunta-4-cold-start-con-synthetic-data">Pregunta 4: Cold Start con Synthetic Data</h3>
+<p><strong>Contexto</strong>: Día 1, índices vacíos, RAG no puede responder queries</p>
+<p><strong>Pregunta</strong>:</p>
+<blockquote>
+<p>¿Vale la pena cold start con datos sintéticos?</p>
+</blockquote>
+<p><strong>Análisis</strong>:</p>
+<pre><code>Pros de Synthetic Seeding:
+  - Sistema operational desde día 1
+  - Users pueden testear queries inmediatamente
+  - Evita &quot;empty index&quot; user experience
+
+Cons de Synthetic Seeding:
+  - Resultados no reales (puede confundir)
+  - Esfuerzo extra en generar synthetic data
+  - Necesita transición clear (synthetic → real)
+
+Alternativa:
+  - Start empty, explicar a user &quot;no data yet&quot;
+  - Esperar 1 semana para tener datos reales
+  - Más honesto, menos confusión
+</code></pre>
+<p><strong>Mi opinión</strong>: Pro synthetic seeding (mejor UX)</p>
+<p><strong>¿Qué opina el consejo?</strong></p>
+<hr />
+<h3 id="pregunta-5-paper-contribution-priority">Pregunta 5: Paper Contribution Priority</h3>
+<p><strong>Contexto</strong>: Tenemos 3 contributions principales</p>
+<p><strong>Pregunta</strong>:</p>
+<blockquote>
+<p>¿Cuál contribution destacar como primary?</p>
+</blockquote>
+<p><strong>Opciones</strong>:</p>
+<pre><code>A) Anti-Curse Strategies (Technical Depth)
+   - 11 estrategias validadas
+   - Empíricamente probadas
+   - Novelty: Aplicación a security vectors
+   - Appeal: Systems + Security communities
+
+B) Hierarchical RAG (Architectural Novelty)
+   - 3 niveles de jerarquía
+   - Organic scaling model
+   - Novelty: RAG distribuido para security
+   - Appeal: Distributed Systems + ML
+
+C) Natural Language Security (User Impact)
+   - Multidioma, non-technical users
+   - Semantic queries
+   - Novelty: RAG aplicado a security analysis
+   - Appeal: HCI + Security
+
+D) Combination (Holistic)
+   - Los 3 son necesarios para la visión
+   - Novelty: Sistema completo end-to-end
+   - Appeal: Broad (pero menos deep?)
+</code></pre>
+<p><strong>Mi recomendación</strong>: Opción D (holistic), pero A como primary technical contribution</p>
+<p><strong>¿Qué opina el consejo?</strong></p>
+<hr />
+<h3 id="pregunta-6-timeline-aggressiveness">Pregunta 6: Timeline Aggressiveness</h3>
+<p><strong>Contexto</strong>: Propongo 4 meses (15 semanas) total</p>
+<p><strong>Pregunta</strong>:</p>
+<blockquote>
+<p>¿Es realista o demasiado agresivo?</p>
+</blockquote>
+<p><strong>Breakdown</strong>:</p>
+<pre><code>Week 5-10 (6 semanas): Phase 1 implementation
+  - DimensionalityReducer
+  - FAISS Ingester
+  - RAG Local
+  - Natural language queries
+
+Week 11-12 (2 semanas): Hierarchical proof-of-concept
+  - RAG Ciudad simplified
+  - Demostración funcional
+
+Week 13-15 (3 semanas): Paper writing
+  - Draft, review, submit
+
+TOTAL: 15 semanas
+</code></pre>
+<p><strong>Factores de riesgo</strong>:
+- Integration bugs inesperados
+- TinyLlama insuficiente (requiere upgrade)
+- Performance issues (requiere optimization)
+- Paper review cycles (puede tomar más)</p>
+<p><strong>Buffer considerations</strong>:
+- +2 semanas buffer → 17 semanas (4.5 meses)
+- +4 semanas buffer → 19 semanas (5 meses)</p>
+<p><strong>Mi recomendación</strong>: 15 semanas nominal, 17 semanas realista</p>
+<p><strong>¿Qué opina el consejo? ¿Demasiado agresivo?</strong></p>
+<hr />
+<h2 id="parte-viii-decisiones-finales">✅ PARTE VIII: DECISIONES FINALES</h2>
+<h3 id="decision-1-component-separation">Decisión 1: Component Separation</h3>
+<p><strong>CONFIRMADO</strong>: ✅ RAG (consumer) y FAISS-Ingester (producer) separados</p>
+<p><strong>Rationale</strong>:
+- Separación de concerns clara
+- Escalabilidad independiente
+- Pipeline no bloqueado
+- Mantenibilidad mejorada</p>
+<p><strong>Status</strong>: Consenso total (Alonso + Claude)</p>
+<hr />
+<h3 id="decision-2-hierarchical-design-con-implementacion-faseada">Decisión 2: Hierarchical Design con Implementación Faseada</h3>
+<p><strong>CONFIRMADO</strong>: ✅ Diseñar para 3 niveles, implementar 1 nivel (Phase 1)</p>
+<p><strong>Rationale</strong>:
+- Configs modulares preparados para jerarquía
+- Stubs en código para extensión futura
+- Phase 1 simple y demostrable
+- Phase 2-3 solo si tiempo/presupuesto</p>
+<p><strong>Status</strong>: Consenso (pragmático)</p>
+<hr />
+<h3 id="decision-3-natural-language-como-core-value">Decisión 3: Natural Language como Core Value</h3>
+<p><strong>CONFIRMADO</strong>: ✅ Lenguaje natural multidioma es prioridad #1</p>
+<p><strong>Rationale</strong>:
+- Diferenciador clave vs Grafana/Prometheus
+- User impact alto
+- Publicable como novelty
+- Escalable a usuarios no-técnicos</p>
+<p><strong>Status</strong>: Consenso total</p>
+<hr />
+<h3 id="decision-4-timeline-4-meses">Decisión 4: Timeline 4 Meses</h3>
+<p><strong>CONFIRMADO</strong>: ⚠️ 15 semanas nominal, 17 semanas con buffer</p>
+<p><strong>Rationale</strong>:
+- Phase 1: 6 semanas (core implementation)
+- Phase 2: 2 semanas (optional proof-of-concept)
+- Phase 3: 3 semanas (paper writing)
+- +2 semanas buffer
+- Total realista: ~4.5 meses</p>
+<p><strong>Status</strong>: Pendiente validación consejo</p>
+<hr />
+<h3 id="decision-5-costos-phase-1">Decisión 5: Costos Phase 1</h3>
+<p><strong>CONFIRMADO</strong>: ✅ ~$70/mes cloud o $0/mes on-premise</p>
+<p><strong>Rationale</strong>:
+- Muy affordable para proof-of-concept
+- No requiere fondos institucionales
+- Escalabilidad a futuro documentada
+- Honestidad sobre costos a escala</p>
+<p><strong>Status</strong>: Consenso</p>
+<hr />
+<h2 id="parte-ix-referencias-y-dependencies">📚 PARTE IX: REFERENCIAS Y DEPENDENCIES</h2>
+<h3 id="prerequisites-tecnicos">Prerequisites Técnicos</h3>
+<p><strong>Software</strong>:
+- FAISS v1.8.0+ (vector search)
+- ONNX Runtime v1.23.2+ (embedding generation)
+- TinyLlama 1.1B (LLM)
+- etcd v3.5+ (service discovery)
+- SQLite 3.40+ (metadata storage)
+- C++20 compiler (GCC 11+)
+- Python 3.10+ (training scripts)</p>
+<p><strong>Hardware Mínimo (Phase 1)</strong>:
+- RAM: 12GB total
+- CPU: 6 cores total
+- Storage: 60GB SSD
+- Network: 1 Gbps (LAN)</p>
+<p><strong>Skills Requeridos</strong>:
+- C++ systems programming
+- Python machine learning
+- FAISS / vector search
+- LLM integration
+- Distributed systems (etcd)</p>
+<hr />
+<h3 id="related-work">Related Work</h3>
+<p><strong>RAG Systems</strong>:
+- LangChain (general purpose RAG framework)
+- LlamaIndex (data framework for LLMs)
+- Haystack (NLP framework with RAG)</p>
+<p><strong>Network Security + ML</strong>:
+- Zeek + Elastic (log analysis)
+- Suricata + Splunk (SIEM)
+- Darktrace (ML-based threat detection)</p>
+<p><strong>Vector Search at Scale</strong>:
+- Pinecone (managed vector DB)
+- Weaviate (vector search engine)
+- Milvus (open-source vector DB)</p>
+<p><strong>Novelty de ML Defender</strong>:
+- ✅ Hierarchical RAG (novel para security)
+- ✅ Anti-curse strategies (novel para security vectors)
+- ✅ Natural language queries (novel para SIEM)
+- ✅ Healthcare deployment (novel application domain)</p>
+<hr />
+<h2 id="conclusion">🎯 CONCLUSIÓN</h2>
+<h3 id="summary-of-vision">Summary of Vision</h3>
+<p>ML Defender's Hierarchical RAG system representa una arquitectura pragmática y escalable para análisis de seguridad mediante lenguaje natural en deployments distribuidos.</p>
+<p><strong>Phase 1 (4-6 semanas)</strong>: Implementación sólida de RAG Local + FAISS Ingester
+- ✅ Demostrable
+- ✅ Publicable
+- ✅ Affordable ($70/mes)</p>
+<p><strong>Phase 2-3 (2-4 semanas)</strong>: Proof-of-concept jerarquía
+- ⚠️ Opcional
+- ⚠️ Requiere presupuesto modesto (~$1K/mes)</p>
+<p><strong>Future (si fondos disponibles)</strong>: Deployment masivo
+- 🔮 Requiere fondos institucionales
+- 🔮 $100K+/año para escala nacional</p>
+<h3 id="next-steps">Next Steps</h3>
+<ol>
+<li>
+<p><strong>Peer Review</strong> (Este documento)</p>
+<ul>
+<li>Presentar a consejo de sabios</li>
+<li>Incorporar feedback</li>
+<li>Refinar decisiones</li>
+</ul>
+</li>
+<li>
+<p><strong>Implementation</strong> (Week 5-10)</p>
+<ul>
+<li>Day 35: DimensionalityReducer</li>
+<li>Week 6: FAISS Ingester</li>
+<li>Week 7-8: RAG Local</li>
+<li>Week 9-10: Integration + testing</li>
+</ul>
+</li>
+<li>
+<p><strong>Publication</strong> (Week 13-15)</p>
+<ul>
+<li>Paper writing</li>
+<li>Submission</li>
+<li>arXiv preprint</li>
+</ul>
+</li>
+</ol>
+<h3 id="final-philosophy">Final Philosophy</h3>
+<blockquote>
+<p>"Diseñar con visión de 1000 instancias.
+Implementar con realismo de 1 instancia.
+Demostrar el potencial, no construir el imperio.
+Si Dios quiere y hay fondos, escalar orgánicamente.</p>
+<p>Via Appia Quality: Foundation sólida primero,
+expansión cuando recursos permitan." 🏛️</p>
+</blockquote>
+<hr />
+<p><strong>Document Status</strong>: ✅ Ready for Peer Review<br />
+<strong>Next Action</strong>: Presentar al Consejo de Sabios<br />
+<strong>Timeline</strong>: Pending feedback antes de implementación</p>
+<p><strong>Authors' Note</strong>:</p>
+<blockquote>
+<p>"Este diseño refleja honestidad sobre errores cometidos,
+ambición controlada sobre visión futura,
+y pragmatismo sobre recursos disponibles.
+Invitamos crítica constructiva para refinarlo." 🏛️</p>
+</blockquote>
+<hr />
+<p><strong>END OF DOCUMENT</strong> - Version 1.0 (Pre-Review)</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.top", "search.highlight"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

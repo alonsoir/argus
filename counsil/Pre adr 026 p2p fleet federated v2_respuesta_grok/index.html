@@ -1,0 +1,1009 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source embedded-ML NDR for hospitals and schools">
+      
+      
+        <meta name="author" content="Alonso Isidoro Roman">
+      
+      
+        <link rel="canonical" href="https://alonsoir.github.io/argus/counsil/Pre%20adr%20026%20p2p%20fleet%20federated%20v2_respuesta_grok/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>Pre adr 026 p2p fleet federated v2 respuesta grok - ML Defender (aRGus NDR)</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#1-track-1-prerequisito-debe-formalizarse-el-versionado-del-schema-csv-debt-proto-002-antes-de-cualquier-trabajo-de-agregacion-de-telemetria-es-un-bloqueante-duro" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-header__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ML Defender (aRGus NDR)
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Pre adr 026 p2p fleet federated v2 respuesta grok
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../README.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/BACKLOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Backlog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Security Model
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-tabs__link">
+          
+  
+  
+  ADRs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/contracts/Protobuf contracts.md" class="md-tabs__link">
+          
+  
+  
+  Contracts
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-nav__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ML Defender (aRGus NDR)
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../README.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/BACKLOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADRs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ADRs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013 Seed Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-021-deployment-topology-seed-families.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-021 Topology SSOT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-022-threat-model-opcion2-descartada.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-022 Threat Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Protobuf contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protobuf
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/JSON contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JSON
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Rag security commands.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-track-1-prerequisito-debe-formalizarse-el-versionado-del-schema-csv-debt-proto-002-antes-de-cualquier-trabajo-de-agregacion-de-telemetria-es-un-bloqueante-duro" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Track 1 prerequisito: ¿Debe formalizarse el versionado del schema CSV (DEBT-PROTO-002) antes de cualquier trabajo de agregación de telemetría? ¿Es un bloqueante duro?
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-protocolo-de-telemetria-nodoservidor-zeromq-ya-en-stack-grpc-o-https-simple-que-overhead-es-aceptable-en-nodos-limitados" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Protocolo de telemetría nodo→servidor: ¿ZeroMQ (ya en stack), gRPC, o HTTPS simple? ¿Qué overhead es aceptable en nodos limitados?
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-threshold-de-validacion-de-plugins-que-criterios-exactos-debe-pasar-un-rf-specialist-para-ser-distribuido-a-la-flota-f1-099-evaluado-sobre-que-dataset-de-referencia" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Threshold de validación de plugins: ¿Qué criterios exactos debe pasar un RF specialist para ser distribuido a la flota? ¿F1 &gt; 0.99? ¿Evaluado sobre qué dataset de referencia?
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-privacidad-de-telemetria-antes-del-track-2-es-suficiente-anonimizar-ips-hash-salado-o-se-necesita-analisis-legal-formal-bajo-lopd-para-datos-de-hospitales-espanoles" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Privacidad de telemetría: Antes del Track 2, ¿es suficiente anonimizar IPs (hash salado) o se necesita análisis legal formal bajo LOPD para datos de hospitales españoles?
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-ft-transformer-vs-xgboost-para-el-track-2-tabular-justifica-ft-transformer-la-complejidad-adicional-sobre-xgboost-para-este-dominio-el-consejo-debe-pronunciarse-con-evidencia-de-benchmarks-en-datos-de-red" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. FT-Transformer vs XGBoost: Para el Track 2 tabular, ¿justifica FT-Transformer la complejidad adicional sobre XGBoost para este dominio? El Consejo debe pronunciarse con evidencia de benchmarks en datos de red.
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-vllm-server-que-modelo-base-es-mas-adecuado-para-fine-tuning-en-explicabilidad-de-seguridad-de-red-phi-3-mini-mistral-7b-o-llama-31-8b-criterios-licencia-open-source-compatible-huella-de-memoria-rendimiento-en-razonamiento-estructurado" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. vLLM server: ¿Qué modelo base es más adecuado para fine-tuning en explicabilidad de seguridad de red — Phi-3 Mini, Mistral 7B, o Llama 3.1 8B? Criterios: licencia open-source compatible, huella de memoria, rendimiento en razonamiento estructurado.
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-ciclo-de-vida-de-plugins-como-se-retira-un-specialist-que-degrada-con-drift-de-datos-hay-un-mecanismo-de-rollback-en-la-flota" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Ciclo de vida de plugins: ¿Cómo se retira un specialist que degrada con drift de datos? ¿Hay un mecanismo de rollback en la flota?
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#posicion-general-del-consejo-mi-sintesis" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Posición general del "Consejo" (mi síntesis)
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+  <h1>Pre adr 026 p2p fleet federated v2 respuesta grok</h1>
+
+<p>¡Excelente PRE-ADR, Alonso! Muy claro, bien estructurado y con una madurez arquitectónica notable. La distinción entre capas (detección tabular vs. explicabilidad/razonamiento) es clave y evita el clásico error de "todo con LLMs". La asimetría nodo ligero / servidor central es la premisa correcta para entornos de infraestructura crítica con hardware limitado (hospitales, escuelas, municipios). Coincido plenamente en que los nodos solo observan, capturan y envían telemetría comprimida+firmada; cualquier cosa más pesada rompe la viabilidad.</p>
+<p>Voy a responder directamente a las <strong>preguntas abiertas para el Consejo</strong>, evaluándolas con los criterios que pediste: (1) complejidad de implementación, (2) cumplimiento LOPD/GDPR para datos hospitalarios, (3) viabilidad en hardware limitado de nodos, y (4) valor científico/académico. Mi posición es técnica y pragmática, priorizando robustez, mantenibilidad y escalabilidad real.</p>
+<h3 id="1-track-1-prerequisito-debe-formalizarse-el-versionado-del-schema-csv-debt-proto-002-antes-de-cualquier-trabajo-de-agregacion-de-telemetria-es-un-bloqueante-duro">1. Track 1 prerequisito: ¿Debe formalizarse el versionado del schema CSV (DEBT-PROTO-002) antes de cualquier trabajo de agregación de telemetría? ¿Es un bloqueante duro?</h3>
+<p><strong>Sí, es un bloqueante duro.</strong>
+- <strong>Complejidad</strong>: Media-baja (definir un schema en JSON Schema o Avro + versioning semántico + migración de features).
+- <strong>Cumplimiento LOPD</strong>: Indirectamente ayuda (mejor trazabilidad de qué datos se envían).
+- <strong>Viabilidad nodos</strong>: Alta (solo afecta el exportador de features).
+- <strong>Valor científico</strong>: Muy alto — evita que TB de datos históricos queden inservibles por un cambio de features.</p>
+<p><strong>Recomendación del Consejo</strong>: Formalizar DEBT-PROTO-002 ya, antes de cualquier agregación central. Incluye compatibilidad hacia atrás (features opcionales con valores por defecto) y un mecanismo de deprecación. Esto es el fundamento de todo el pipeline de ML.</p>
+<h3 id="2-protocolo-de-telemetria-nodoservidor-zeromq-ya-en-stack-grpc-o-https-simple-que-overhead-es-aceptable-en-nodos-limitados">2. Protocolo de telemetría nodo→servidor: ¿ZeroMQ (ya en stack), gRPC, o HTTPS simple? ¿Qué overhead es aceptable en nodos limitados?</h3>
+<p><strong>Recomendación: HTTPS simple (con mTLS) + payloads comprimidos (zstd o brotli) + firma Ed25519 por lote.</strong><br />
+ZeroMQ es tentador por estar en el stack, pero para telemetría asincrónica y fiable a través de internet (con posibles NAT/firewalls en hospitales), HTTPS es más operable, seguro y fácil de auditar. gRPC añade overhead innecesario en nodos muy limitados (protobuf + HTTP/2).</p>
+<ul>
+<li>Overhead aceptable: &lt;5-10% de CPU/RAM adicional en Raspberry Pi clase durante picos; lotes de varios minutos/hora en lugar de streaming continuo.</li>
+<li><strong>Criterios</strong>: (1) Baja complejidad (usar librerías existentes), (2) Excelente cumplimiento (TLS + firma), (3) Alta viabilidad en hardware limitado, (4) Valor medio (no es novedoso, pero sí robusto).</li>
+</ul>
+<p>Alternativa ligera: ZeroMQ sobre TLS si el control de la red es total, pero HTTPS es más "a prueba de futuro" con infra de terceros.</p>
+<h3 id="3-threshold-de-validacion-de-plugins-que-criterios-exactos-debe-pasar-un-rf-specialist-para-ser-distribuido-a-la-flota-f1-099-evaluado-sobre-que-dataset-de-referencia">3. Threshold de validación de plugins: ¿Qué criterios exactos debe pasar un RF specialist para ser distribuido a la flota? ¿F1 &gt; 0.99? ¿Evaluado sobre qué dataset de referencia?</h3>
+<p><strong>Criterios propuestos (conservadores pero realistas para producción crítica)</strong>:
+- F1-score ≥ 0.95 en el conjunto de validación hold-out (por tipo de ataque).
+- False Positive Rate (FPR) ≤ 0.001 (crítico en entornos donde FP genera alertas/cuarentenas costosas).
+- Evaluación obligatoria en: (a) datos sintéticos/ CTU-13-like, (b) telemetría agregada anonimizada de la flota actual, (c) adversarial examples básicos (si es viable).
+- Mínimo coverage: el modelo debe mejorar la detección general del ensemble en al menos un 5-10% en escenarios de drift.
+- Validación cruzada con al menos 3 seeds.</p>
+<p>F1 &gt; 0.99 es demasiado agresivo y llevará a pocos plugins (drift natural en tráfico real). Empieza con umbrales más permisivos y súbelos con madurez de la flota.<br />
+<strong>Criterios evaluación</strong>: (1) Media (automatizable), (2) Alta (reduce falsos positivos en datos sensibles), (3) Alta, (4) Alto (permite publicación académica del pipeline).</p>
+<p>Incluye un "canary deployment" a un subconjunto pequeño de nodos antes de distribuir a toda la flota.</p>
+<h3 id="4-privacidad-de-telemetria-antes-del-track-2-es-suficiente-anonimizar-ips-hash-salado-o-se-necesita-analisis-legal-formal-bajo-lopd-para-datos-de-hospitales-espanoles">4. Privacidad de telemetría: Antes del Track 2, ¿es suficiente anonimizar IPs (hash salado) o se necesita análisis legal formal bajo LOPD para datos de hospitales españoles?</h3>
+<p><strong>No es suficiente solo con hash salado de IPs.</strong> Se necesita <strong>análisis legal formal</strong> (DPO o consultor LOPD/GDPR) + medidas técnicas adicionales.<br />
+Datos de flows de red en hospitales pueden contener indirectamente datos de salud (patrones de acceso a servidores médicos, volúmenes que correlacionan con actividad clínica, etc.). Aunque no sean datos de salud explícitos, el contexto los hace sensibles (categoría especial bajo GDPR Art. 9 si se infiere).</p>
+<p><strong>Medidas mínimas recomendadas</strong>:
+- Hash salado de IPs + timestamps con ruido temporal.
+- Agregación a nivel de flujos (no paquetes individuales).
+- Differential privacy (ruido Laplace en conteos) para agregados.
+- Consentimiento o base legal clara (interés público en ciberseguridad + contrato con hospitales).
+- Data Protection Impact Assessment (DPIA) obligatoria.</p>
+<p><strong>Criterios</strong>: (1) Alta (legal &gt; técnico), (2) Bloqueante sin esto, (3) Alta (anonimización se hace en nodo), (4) Medio-alto (contribuye a investigación ética en FL para salud).</p>
+<p>Haz el DPIA antes de cualquier piloto con datos reales de hospitales.</p>
+<h3 id="5-ft-transformer-vs-xgboost-para-el-track-2-tabular-justifica-ft-transformer-la-complejidad-adicional-sobre-xgboost-para-este-dominio-el-consejo-debe-pronunciarse-con-evidencia-de-benchmarks-en-datos-de-red">5. FT-Transformer vs XGBoost: Para el Track 2 tabular, ¿justifica FT-Transformer la complejidad adicional sobre XGBoost para este dominio? El Consejo debe pronunciarse con evidencia de benchmarks en datos de red.</h3>
+<p><strong>No justifica la complejidad adicional en la mayoría de casos para NDR.</strong><br />
+Benchmarks recientes en datos tabulares (incluyendo intrusion detection como CICIDS, UNSW-NB15, KDD) muestran consistentemente que <strong>XGBoost / LightGBM / CatBoost</strong> superan o igualan a FT-Transformer en accuracy/F1, con mucha menor complejidad computacional, mejor interpretabilidad (feature importance nativa + SHAP) y escalabilidad.</p>
+<p>En tráfico de red (features numéricas/categóricas con distribuciones skewed, missing values, etc.), los tree-based ensembles siguen dominando. FT-Transformer brilla en datasets muy limpios y grandes, pero añade overhead significativo en entrenamiento e inferencia — innecesario cuando los "specialists" RF/XGBoost ya son ligeros y explicables.</p>
+<p><strong>Recomendación</strong>: Usa XGBoost (o ensemble con RF) para la detección tabular en Track 2. Reserva transformers solo si emerges con datasets masivos donde capturen interacciones de orden superior no lineales que los trees no capturen bien. TabPFN podría ser interesante para few-shot, pero evalúa primero.</p>
+<p><strong>Criterios</strong>: (1) Baja para XGBoost, alta para FT, (2) Similar, (3) Mucho mejor para XGBoost en nodos/servidor, (4) Alto (evidencia empírica clara).</p>
+<h3 id="6-vllm-server-que-modelo-base-es-mas-adecuado-para-fine-tuning-en-explicabilidad-de-seguridad-de-red-phi-3-mini-mistral-7b-o-llama-31-8b-criterios-licencia-open-source-compatible-huella-de-memoria-rendimiento-en-razonamiento-estructurado">6. vLLM server: ¿Qué modelo base es más adecuado para fine-tuning en explicabilidad de seguridad de red — Phi-3 Mini, Mistral 7B, o Llama 3.1 8B? Criterios: licencia open-source compatible, huella de memoria, rendimiento en razonamiento estructurado.</h3>
+<p><strong>Recomendación principal: Phi-3 Mini (3.8B) o su evolución Phi-4-mini.</strong>
+- <strong>Licencia</strong>: Muy permisiva (MIT-like).
+- <strong>Huella</strong>: Baja (corre en hardware modesto, QLoRA rápido).
+- <strong>Rendimiento</strong>: Sorprendentemente bueno en razonamiento, multilingual (español), y instruction-following para outputs estructurados (JSON para reglas de firewall, explicaciones claras). Competitivo con modelos 7-8B en muchos benchmarks.</p>
+<p>Mistral 7B es excelente alternativa si necesitas más capacidad de razonamiento general (muy buena documentación y soporte Unsloth para fine-tuning). Llama 3.1 8B es fuerte en factualidad y conocimiento, pero huella mayor y licencia ligeramente más restrictiva en algunos usos comerciales.</p>
+<p>Para dominio específico de seguridad de red: fine-tunea con narrativas generadas a partir de specialists RF + contexto de ataques (como propones). Empieza con Phi-3 por velocidad de iteración.</p>
+<p><strong>Criterios</strong>: (1) Baja-media, (2) Alta para Phi, (3) N/A (servidor central), (4) Alto (permite investigación en LLMs para ciberseguridad explicable).</p>
+<h3 id="7-ciclo-de-vida-de-plugins-como-se-retira-un-specialist-que-degrada-con-drift-de-datos-hay-un-mecanismo-de-rollback-en-la-flota">7. Ciclo de vida de plugins: ¿Cómo se retira un specialist que degrada con drift de datos? ¿Hay un mecanismo de rollback en la flota?</h3>
+<p><strong>Mecanismo propuesto</strong>:
+- Versionado de plugins (v1, v2...) con manifest firmado.
+- Cada nodo mantiene los últimos N plugins por tipo de ataque (con puntuación de confianza/performance local).
+- Servidor central publica "deprecation list" o "replacement torrent".
+- Rollback: el nodo puede volver a la versión anterior firmada si detecta degradación local (FPR alto o métricas de confianza caen). Hot-reload sin reinicio (ya en roadmap de plugins).
+- Monitoreo central ligero: nodos reportan métricas agregadas anonimizadas de performance de cada plugin.</p>
+<p>Esto añade resiliencia al sistema P2P. BitTorrent ayuda aquí: múltiples versiones coexisten en la swarm.</p>
+<p><strong>Criterios</strong>: (1) Media, (2) Alta (control de cambios), (3) Alta, (4) Alto (drift es un problema real en NDR).</p>
+<h3 id="posicion-general-del-consejo-mi-sintesis">Posición general del "Consejo" (mi síntesis)</h3>
+<ul>
+<li><strong>Validar la asimetría</strong> como principio arquitectónico fundamental.</li>
+<li>Prioridad inmediata: schema versionado + telemetría segura + thresholds conservadores + DPIA legal.</li>
+<li>Track 1 (RF specialists como plugins) es el camino de valor rápido y robusto. Track 2 (LLM para explicabilidad) es complemento excelente, no sustituto.</li>
+<li>BitTorrent para distribución de plugins: sí, elegante y resiliente ante DDoS al servidor (ventaja estratégica real). No para telemetría.</li>
+<li>Aprendizaje en portátil: totalmente de acuerdo con tu recomendación progresiva. Empieza por el ciclo RF → ONNX → plugin; eso da confianza rápida.</li>
+</ul>
+<p>Esta arquitectura tiene potencial académico fuerte (nuevo dataset propietario de NDR en entornos reales limitados + enfoque asimétrico + plugins interpretables). Podría publicarse como extensión de CTU-13 con énfasis en despliegue real.</p>
+<p>¿Quieres que profundicemos en alguna pregunta, propongamos un diagrama de secuencia para el flujo de telemetría/plugin, o simulemos thresholds con datos CTU-13? El Consejo está abierto a iterar en la v3 del ADR.</p>
+<p>¡Buen trabajo! Esto avanza el proyecto de forma sólida.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.top", "search.highlight"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

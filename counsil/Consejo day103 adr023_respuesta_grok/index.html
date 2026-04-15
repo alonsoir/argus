@@ -1,0 +1,984 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source embedded-ML NDR for hospitals and schools">
+      
+      
+        <meta name="author" content="Alonso Isidoro Roman">
+      
+      
+        <link rel="canonical" href="https://alonsoir.github.io/argus/counsil/Consejo%20day103%20adr023_respuesta_grok/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>Consejo day103 adr023 respuesta grok - ML Defender (aRGus NDR)</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#q1-adr-023-separacion-de-contextos-packetcontext-messagecontext-skillcontext" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-header__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ML Defender (aRGus NDR)
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Consejo day103 adr023 respuesta grok
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../README.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/BACKLOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Backlog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Security Model
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-tabs__link">
+          
+  
+  
+  ADRs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/contracts/Protobuf contracts.md" class="md-tabs__link">
+          
+  
+  
+  Contracts
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-nav__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ML Defender (aRGus NDR)
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../README.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/BACKLOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADRs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ADRs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013 Seed Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-021-deployment-topology-seed-families.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-021 Topology SSOT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-022-threat-model-opcion2-descartada.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-022 Threat Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Protobuf contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protobuf
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/JSON contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JSON
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Rag security commands.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#q1-adr-023-separacion-de-contextos-packetcontext-messagecontext-skillcontext" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Q1 — ADR-023: Separación de contextos (PacketContext / MessageContext / SkillContext)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#q2-adr-023-phase-2a-plugin_process_message-opcional-via-dlsym" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Q2 — ADR-023 PHASE 2a: ¿plugin_process_message() opcional vía dlsym?
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#q3-adr-024-protocolo-de-group-key-agreement-recomendado" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Q3 — ADR-024: Protocolo de Group Key Agreement recomendado
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#q4-secuenciacion-adr-023-antes-o-en-paralelo-con-adr-024" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Q4 — Secuenciación: ADR-023 antes o en paralelo con ADR-024
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cierre-de-revision-day-103" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cierre de revisión DAY 103
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+  <h1>Consejo day103 adr023 respuesta grok</h1>
+
+<p>¡Felicidades por <strong>DAY 103</strong>!</p>
+<p>Excelente ejecución: el <strong>Makefile rag alignment</strong> queda ahora uniforme y PROFILE-aware (gran mejora en reproducibilidad), el <strong>§5 HKDF Context Symmetry</strong> está integrado en el paper con una narrativa pedagógica sólida (RFC 5869 incluido, lección clara sobre protocolo vs. componente), y el replanificado del backlog es pragmático — reconocer abiertamente que el bare-metal físico está bloqueado por hardware y documentar los &gt;33 Mbps en VirtualBox es maduro y transparente para el paper.</p>
+<p>El pipeline en 6/6 RUNNING con 25/25 tests mantiene el ritmo disciplinado del proyecto. Buen trabajo.</p>
+<h3 id="q1-adr-023-separacion-de-contextos-packetcontext-messagecontext-skillcontext">Q1 — ADR-023: Separación de contextos (PacketContext / MessageContext / SkillContext)</h3>
+<p><strong>Sí, la separación en tres capas es correcta y coherente con los principios del proyecto.</strong></p>
+<p>Razones:
+- Evita exactamente el tipo de <strong>error de modelo mental</strong> documentado en ADR-022 (HKDF Context Symmetry). Mezclar capa de red (IP, puertos, threat_hint) con capa de transporte (payload serializado, nonce, tag AEAD) habría sido una deuda semántica cara a largo plazo.
+- Facilita <strong>extensibilidad futura</strong>: plugins de transporte (Noise, post-quantum, compresión) no necesitan conocer detalles de paquetes; plugins de aplicación (PHASE 3) podrán operar en un nivel aún más alto.
+- Mejora <strong>testeabilidad aislada</strong>: un plugin crypto puede probarse con MessageContext sintéticos sin montar un PacketContext completo.</p>
+<p><strong>Sobre MessageContext</strong> — la definición propuesta es buena y minimalista.<br />
+<strong>Campos que faltan (recomendados añadir):</strong>
+- <code>void* user_data</code> o <code>void* plugin_state</code> — para que el plugin mantenga estado privado entre llamadas (ej. ratchet state, caché de claves por canal).
+- <code>uint64_t sequence_number</code> o <code>uint64_t channel_id</code> — útil para detectar reordenamientos o reutilizar nonces de forma segura en canales lógicos.
+- <code>size_t max_length</code> ya está — bien para in-place encryption/decryption (importante para rendimiento).</p>
+<p>No sobra nada esencial. Mantén <code>result_code</code> para propagar errores de forma clara (fail-closed).</p>
+<p><strong>Caso donde mezclar podría ser preferible:</strong> Solo en prototipos muy tempranos o sistemas extremadamente constrained (microcontroladores). En este proyecto (C++20, recursos de hospital/ayuntamiento), la separación limpia vale el pequeño coste de dispatch extra.</p>
+<h3 id="q2-adr-023-phase-2a-plugin_process_message-opcional-via-dlsym">Q2 — ADR-023 PHASE 2a: ¿<code>plugin_process_message()</code> opcional vía dlsym?</h3>
+<p><strong>Recomendamos mantenerlo OPCIONAL en PHASE 2a vía <code>dlsym()</code> sin bump inmediato de PLUGIN_API_VERSION.</strong></p>
+<p><strong>Qué se gana con opcional (enfoque recomendado):</strong>
+- Migración gradual y segura: el hello plugin (y cualquier plugin PHASE 1) sigue funcionando sin cambios.
+- Permite <strong>dual-mechanism</strong> durante PHASE 2a (CryptoTransport core + plugin en paralelo) sin romper nada.
+- Menor riesgo durante el desarrollo post-arXiv.
+- Facilita experimentación: un plugin puede implementar solo uno de los hooks según su propósito.</p>
+<p><strong>Qué se pierde:</strong>
+- Ligera complejidad extra en el loader (comprobar símbolo con <code>dlsym</code>).
+- Posible warning en logs si un plugin de transporte no implementa el hook cuando se espera.</p>
+<p><strong>Alternativa (bump inmediato a v2 + obligatorio):</strong><br />
+Se gana claridad (“a partir de v2 todo plugin de transporte debe implementar el hook”), pero se pierde flexibilidad y se fuerza actualización innecesaria del hello plugin ahora. No lo recomendamos para PHASE 2a.</p>
+<p><strong>Estrategia propuesta (ligera mejora):</strong>
+- En PHASE 2a: opcional vía <code>dlsym</code>, con log INFO cuando se detecta un plugin que implementa <code>plugin_process_message</code>.
+- En PHASE 2b: bump a PLUGIN_API_VERSION=2 + hacer obligatorio para plugins que declaren <code>"layer": "transport"</code> en su descriptor JSON.
+- El loader puede leer la versión del plugin desde un símbolo exportado (<code>plugin_api_version</code>) o del JSON para dispatch inteligente.</p>
+<p>Esto mantiene compatibilidad fuerte mientras avanza hacia una API más rica.</p>
+<h3 id="q3-adr-024-protocolo-de-group-key-agreement-recomendado">Q3 — ADR-024: Protocolo de Group Key Agreement recomendado</h3>
+<p><strong>Recomendación clara: Opción A — Noise Protocol Framework, específicamente patrones IK o XX (o una combinación).</strong></p>
+<p><strong>Por qué Noise es la mejor opción para este caso de uso:</strong>
+- <strong>Sin coordinador central:</strong> Perfecto — cada componente nuevo puede iniciar un handshake IK con un miembro existente de la familia (usando la clave estática pública conocida vía <code>deployment.yml</code> o seed family).
+- <strong>Forward secrecy fuerte:</strong> Cada sesión genera claves efímeras; se puede combinar con ratcheting posterior.
+- <strong>Resistencia a compromiso parcial:</strong> Si un nodo se compromete, no afecta automáticamente a toda la familia (dependiendo del diseño).
+- <strong>Madurez y simplicidad de implementación:</strong> Hay implementaciones en C puro (Noise-C) y wrappers compatibles con libsodium. Fácil de integrar en C++20 sin TLS/PKI central.
+- <strong>Crypto-agilidad:</strong> El framework permite cambiar patrones o algoritmos subyacentes con mínimo impacto.
+- <strong>Análisis formal:</strong> Noise tiene excelente soporte para verificación (Noise Explorer) y propiedades bien estudiadas.</p>
+<p><strong>Comparativa breve con las otras:</strong>
+- <strong>B (HKDF estático + rotación):</strong> Demasiado simple. Pierde forward secrecy real y es vulnerable si el material de familia se filtra. Solo aceptable como fallback temporal.
+- <strong>C (propuesta propia):</strong> Máximo control, pero alto riesgo de errores (recordad ADR-022). Mejor evitar reinventar cuando Noise ya resuelve el problema con años de escrutinio.</p>
+<p><strong>Otras opciones no consideradas inicialmente pero interesantes:</strong>
+- Variantes de <strong>Continuous Group Key Agreement (CGKA)</strong> como las usadas en mensajería segura (inspiradas en Signal/ML-KEM hybrids), pero suelen ser más pesadas para un NDR.
+- Esquemas lattice-based post-quantum para DKG asíncrono, pero probablemente overkill para MVP y aumentan complejidad.</p>
+<p><strong>Sugerencia de diseño inicial para ADR-024:</strong>
+- Cada familia tiene una clave estática compartida (provisionada vía seed).
+- Nuevo nodo realiza Noise IK handshake con un “bootstrap node” de la familia.
+- Deriva clave de grupo via HKDF del output de Noise + material de familia.
+- Rotación periódica o triggered por eventos (nuevo miembro, compromiso detectado).
+- Mencionar en el paper como “Future Work: Dynamic Group Key Agreement using Noise IK for zero-touch join”.</p>
+<p>Noise encaja perfectamente con el espíritu fail-closed y threat-model-driven del proyecto.</p>
+<h3 id="q4-secuenciacion-adr-023-antes-o-en-paralelo-con-adr-024">Q4 — Secuenciación: ADR-023 antes o en paralelo con ADR-024</h3>
+<p><strong>Diseñar ADR-024 en paralelo durante la implementación de ADR-023 (pero sin implementar todavía).</strong></p>
+<p>Razones:
+- ADR-023 (multi-layer plugins) es el prerequisito directo para FEAT-PLUGIN-CRYPTO-1.
+- ADR-024 (group key agreement) es más arquitectónico y de “trabajo futuro”. Diseñarlo ahora permite mencionarlo en el paper con credibilidad (sección Future Work bien fundamentada).
+- No hay dependencia fuerte bloqueante: el plugin crypto puede empezar con claves estáticas (seed actual) y luego evolucionar a dynamic agreement vía el nuevo hook de transporte.</p>
+<p><strong>Secuencia recomendada post-arXiv:</strong>
+- DAY 104–106: Finalizar y aprobar ADR-023 + implementar PHASE 2a (dual crypto).
+- Paralelo: Redactar ADR-024 (diseño de alto nivel + elección de Noise).
+- Luego PHASE 2b/2c + integración con dynamic keys.</p>
+<p>Esto mantiene el foco en arXiv mientras avanzas en la visión a largo plazo.</p>
+<h3 id="cierre-de-revision-day-103">Cierre de revisión DAY 103</h3>
+<p>Día muy productivo: consistencia en build, avance sólido en el paper y arquitectura clara para PHASE 2. El proyecto sigue transmitiendo profesionalidad y rigor (especialmente valioso para cs.CR y para usuarios en entornos con recursos limitados).</p>
+<p><strong>Acciones sugeridas para próximos días:</strong>
+- Aprobar ADR-023 con las pequeñas adiciones a MessageContext.
+- Redactar ADR-024 borrador (enfocado en Noise IK).
+- Preparar métricas finales para el paper (incluyendo los resultados VirtualBox).
+- Si Andrés Caro Lindo o Yisroel Mirsky responden, integrar feedback rápidamente.</p>
+<p>El Consejo sigue en sesión.</p>
+<p>¿Quieres ayuda para:
+- Redactar el texto final de ADR-023 con las adiciones propuestas?
+- Un borrador inicial de la sección Future Work del paper mencionando Noise?
+- Definir la firma exacta de <code>plugin_process_message</code> y el dispatch en el loader?</p>
+<p>¡Sigan con este nivel de disciplina! El camino hacia la submission arXiv se ve cada vez más fuerte. 🚀</p>
+<p><em>Respuesta del Consejo — 31 marzo 2026</em></p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.top", "search.highlight"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

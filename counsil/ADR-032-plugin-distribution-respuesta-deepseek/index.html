@@ -1,0 +1,1146 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source embedded-ML NDR for hospitals and schools">
+      
+      
+        <meta name="author" content="Alonso Isidoro Roman">
+      
+      
+        <link rel="canonical" href="https://alonsoir.github.io/argus/counsil/ADR-032-plugin-distribution-respuesta-deepseek/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>ADR 032 plugin distribution respuesta deepseek - ML Defender (aRGus NDR)</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#respuesta-del-consejo-de-sabios-revision-de-adr-032-borrador" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-header__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ML Defender (aRGus NDR)
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              ADR 032 plugin distribution respuesta deepseek
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../README.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/BACKLOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Backlog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Security Model
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-tabs__link">
+          
+  
+  
+  ADRs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/contracts/Protobuf contracts.md" class="md-tabs__link">
+          
+  
+  
+  Contracts
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-nav__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ML Defender (aRGus NDR)
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../README.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/BACKLOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADRs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ADRs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013 Seed Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-021-deployment-topology-seed-families.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-021 Topology SSOT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-022-threat-model-opcion2-descartada.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-022 Threat Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Protobuf contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protobuf
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/JSON contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JSON
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Rag security commands.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#respuesta-del-consejo-de-sabios-revision-de-adr-032-borrador" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Respuesta del Consejo de Sabios – Revisión de ADR-032 (Borrador)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Respuesta del Consejo de Sabios – Revisión de ADR-032 (Borrador)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#fortalezas-del-adr" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fortalezas del ADR
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#problemas-criticos-deben-corregirse-antes-de-aprobar" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Problemas críticos (deben corregirse antes de aprobar)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Problemas críticos (deben corregirse antes de aprobar)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-la-premisa-clave-privada-nunca-en-disco-es-tecnicamente-imposible-en-el-flujo-descrito" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. La premisa “clave privada nunca en disco” es técnicamente imposible en el flujo descrito
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-el-manifiesto-introduce-complejidad-sin-justificar-completamente-la-necesidad-de-campos-como-customer_id-y-expires_at-en-el-primer-hito" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. El manifiesto introduce complejidad sin justificar completamente la necesidad de campos como customer_id y expires_at en el primer hito
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-la-revocacion-de-plugins-no-esta-resuelta" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. La revocación de plugins no está resuelta
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-falta-un-analisis-de-la-cadena-de-suministro-para-el-propio-hsm" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Falta un análisis de la cadena de suministro para el propio HSM
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5-impacto-en-el-usuario-final-cliente-no-se-describe-suficientemente" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Impacto en el usuario final (cliente) no se describe suficientemente
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#preguntas-especificas-respuesta-del-consejo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Preguntas específicas (respuesta del Consejo)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Preguntas específicas (respuesta del Consejo)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-yubikey-piv-con-ed25519-es-la-eleccion-correcta" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. ¿YubiKey PIV con Ed25519 es la elección correcta?
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-manifiesto-separado-o-embebido-en-sig" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. ¿Manifiesto separado o embebido en .sig?
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-customer_id-binding-es-viable-sin-infraestructura-de-registro" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. ¿customer_id binding es viable sin infraestructura de registro?
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-como-gestionar-la-revocacion-de-plugins" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. ¿Cómo gestionar la revocación de plugins?
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5-tpm-20-measured-boot-como-capa-complementaria" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. ¿TPM 2.0 measured boot como capa complementaria?
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#recomendaciones-generales-para-mejorar-el-adr" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Recomendaciones generales para mejorar el ADR
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#veredicto-preliminar" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Veredicto preliminar
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+  <h1>ADR 032 plugin distribution respuesta deepseek</h1>
+
+<h2 id="respuesta-del-consejo-de-sabios-revision-de-adr-032-borrador">Respuesta del Consejo de Sabios – Revisión de ADR-032 (Borrador)</h2>
+<p>El Consejo agradece la propuesta de ADR-032. Aborda un vector real (clave privada en disco) y extiende la cadena de confianza de forma coherente con ADR-025. Sin embargo, <strong>el borrador tiene problemas de claridad, viabilidad y omisiones significativas</strong> que deben resolverse antes de aceptarlo como BACKLOG. A continuación, el análisis detallado.</p>
+<hr />
+<h3 id="fortalezas-del-adr">Fortalezas del ADR</h3>
+<ol>
+<li><strong>Identifica correctamente una limitación real</strong> del modelo actual (clave privada en disco vulnerable a atacante con shell).</li>
+<li><strong>Propone una solución basada en HSM portátil</strong> (YubiKey) que es económica (55 USD) y práctica para un vendor individual.</li>
+<li><strong>Introduce el concepto de manifiesto</strong> con campos útiles (<code>sha256</code>, <code>key_id</code>, <code>customer_id</code>, <code>expires_at</code>), que permite control granular.</li>
+<li><strong>Reconoce que esto es una evolución</strong> de ADR-025, no un reemplazo, y lo relaciona con otros ADRs.</li>
+</ol>
+<hr />
+<h3 id="problemas-criticos-deben-corregirse-antes-de-aprobar">Problemas críticos (deben corregirse antes de aprobar)</h3>
+<h4 id="1-la-premisa-clave-privada-nunca-en-disco-es-tecnicamente-imposible-en-el-flujo-descrito">1. La premisa “clave privada nunca en disco” es técnicamente imposible en el flujo descrito</h4>
+<blockquote>
+<p>“La clave privada NUNCA abandona el hardware del YubiKey”</p>
+</blockquote>
+<p>Pero luego se dice: <code>provision.sh sign --hsm &lt;plugin.so&gt;</code> → firma vía YubiKey PIV.<br />
+El problema: para firmar un <code>.so</code>, el plugin-loader necesita el <strong>par de claves completo</strong> o al menos la clave privada para generar la firma. Si el YubiKey realiza la firma internamente (como un HSM real), entonces la clave privada nunca sale del dispositivo, pero <strong>el binario resultante (<code>.sig</code>) debe contener la firma</strong>. Eso es posible: el YubiKey recibe el hash del <code>.so</code> (o el archivo completo) y devuelve la firma. El script de firma no necesita tener la clave privada en disco. <strong>Pero el ADR no especifica cómo se comunica el script con el YubiKey</strong> (¿usando <code>ykman</code>? ¿<code>openssl engine</code>? ¿<code>pkcs11-tool</code>?). Tampoco aclara si el YubiKey soporta firmar archivos grandes (el <code>.so</code> puede ser de varios MB). La mayoría de tokens solo firman hashes, no archivos completos.</p>
+<p><strong>Exigencia:</strong>
+- Especificar el mecanismo concreto: el script calcula SHA-256 del <code>.so</code>, envía el hash al YubiKey (vía PKCS#11 o interfaz nativa), este devuelve la firma Ed25519. Luego se empaqueta <code>.sig</code> (firma binaria) y <code>.manifest.json</code>.
+- Verificar que YubiKey 5 Series soporta Ed25519 en modo PIV (no todos los modelos lo tienen; revisar documentación). Alternativa: usar la applet OpenPGP de YubiKey con curva Ed25519 (soportado en firmware 5.2.3+). Añadir nota de verificación.</p>
+<h4 id="2-el-manifiesto-introduce-complejidad-sin-justificar-completamente-la-necesidad-de-campos-como-customer_id-y-expires_at-en-el-primer-hito">2. El manifiesto introduce complejidad sin justificar completamente la necesidad de campos como <code>customer_id</code> y <code>expires_at</code> en el primer hito</h4>
+<ul>
+<li><strong><code>customer_id</code> binding</strong> requiere que cada instalación tenga un identificador único y que el vendor conozca ese ID al firmar. El ADR no propone cómo se genera, distribuye o verifica ese ID (¿un archivo <code>/etc/ml-defender/customer.id</code>? ¿Provisionado durante la instalación?). Sin infraestructura de registro, un cliente puede copiar el ID de otro.</li>
+<li><strong><code>expires_at</code></strong> obliga a reintroducir la clave privada (o al menos a generar nuevas firmas) periódicamente, lo que contradice el objetivo de no tener la clave en producción. Si el vendor debe re-firmar cada año, el proceso es manual y costoso.</li>
+</ul>
+<p><strong>Recomendación:</strong>
+- Dividir el ADR en dos fases bien diferenciadas:
+    - <strong>Fase 1 (core):</strong> Solo firma Ed25519 vía HSM, sin manifiesto adicional (o manifiesto mínimo con <code>sha256</code> y <code>key_id</code>).
+    - <strong>Fase 2 (avanzada):</strong> <code>customer_id</code>, <code>expires_at</code>, revocación.
+- Para la Fase 1, basta con que el plugin-loader verifique la firma Ed25519 tal como hace ADR-025, pero obteniendo la firma de un YubiKey externo. El manifiesto puede ser un JSON adicional opcional.
+- Aclarar que <code>customer_id</code> y <code>expires_at</code> son <em>future work</em> opcional, no requisito para la implementación inicial.</p>
+<h4 id="3-la-revocacion-de-plugins-no-esta-resuelta">3. La revocación de plugins no está resuelta</h4>
+<p>El ADR menciona “lista de revocación local en etcd, o lista firmada distribuida”. Ninguna de las dos es trivial en el contexto actual (aRGus no tiene etcd por defecto; la lista firmada requiere infraestructura de distribución). Sin revocación, un plugin comprometido (pero firmado válidamente) seguiría siendo aceptado indefinidamente.</p>
+<p><strong>Recomendación:</strong>
+- Aceptar que la revocación está fuera del alcance de este ADR y documentarlo como limitación conocida.
+- Propuesta de solución simple (para futuro): el manifiesto incluye un campo <code>revoked: false</code> que podría ser sobreescrito por una lista negra local mantenida por el operador (ej. un archivo JSON en <code>/etc/ml-defender/revoked_plugins.json</code>). El plugin-loader comprueba esa lista antes de cargar.</p>
+<h4 id="4-falta-un-analisis-de-la-cadena-de-suministro-para-el-propio-hsm">4. Falta un análisis de la cadena de suministro para el propio HSM</h4>
+<p>El YubiKey debe ser adquirido por el vendor (el autor). ¿Cómo se asegura que el dispositivo no ha sido manipulado antes de llegar? Esto es un problema general de hardware de seguridad, pero el ADR debería al menos mencionar que se recomienda comprar directamente a Yubico o a un distribuidor autorizado y verificar el paquete de fábrica.</p>
+<h4 id="5-impacto-en-el-usuario-final-cliente-no-se-describe-suficientemente">5. Impacto en el usuario final (cliente) no se describe suficientemente</h4>
+<ul>
+<li>¿Qué ocurre si el cliente quiere modificar un plugin existente (por ejemplo, para adaptarlo a su red local)? Con ADR-032, no puede, porque la firma debe venir del vendor. Eso puede ser deseable (modelo App Store) pero también limita la autonomía del cliente. El ADR debe discutir esta compensación.</li>
+<li>¿El cliente puede tener su propio HSM y firmar sus plugins internos? El diseño actual asume que solo el vendor tiene la autoridad. Si una organización quiere ser autónoma, necesitaría generar su propio par de claves y modificar el binario (hardcodear su clave pública). Eso es posible pero no está documentado.</li>
+</ul>
+<hr />
+<h3 id="preguntas-especificas-respuesta-del-consejo">Preguntas específicas (respuesta del Consejo)</h3>
+<h4 id="1-yubikey-piv-con-ed25519-es-la-eleccion-correcta">1. ¿YubiKey PIV con Ed25519 es la elección correcta?</h4>
+<p><strong>Respuesta:</strong> <strong>Sí, pero con matices.</strong>
+- YubiKey 5 Series soporta Ed25519 en la applet OpenPGP (no en PIV). PIV soporta ECC P-256/P-384, no Ed25519. Por tanto, se debe usar el modo OpenPGP con la curva Ed25519 (disponible desde firmware 5.2.3).
+- Alternativas más robustas al mismo precio: SoloKey (open source), Nitrokey Start (algo más caro). Para un solo vendor, YubiKey es adecuado.
+- Recomendación: especificar el modelo concreto (YubiKey 5 NFC, firmware ≥5.2.3) y las herramientas (<code>gpg --card-edit</code>, <code>ykman openpgp</code>).</p>
+<h4 id="2-manifiesto-separado-o-embebido-en-sig">2. ¿Manifiesto separado o embebido en <code>.sig</code>?</h4>
+<p><strong>Respuesta:</strong> <strong>Opción B (embebido en el <code>.sig</code> como payload JSON firmado)</strong> es más limpia.
+- Razones: un solo archivo por plugin (<code>.sig</code>) que contiene el manifiesto + la firma. El plugin-loader extrae el JSON, verifica la firma contra el <code>.so</code>, y luego valida los campos.
+- Alternativa A (tres archivos) es más simple de implementar pero propensa a errores (el <code>.sig</code> podría no estar sincronizado con el manifiesto).
+- El ADR debería elegir explícitamente la opción B y definir el formato:
+  <code>json
+  {
+    "manifest": { ... },
+    "signature": "hex or base64 of Ed25519 signature over (manifest + .so hash?)"
+  }</code><br />
+  Nota: la firma debe cubrir el hash del <code>.so</code> y los campos del manifiesto para evitar separación.</p>
+<h4 id="3-customer_id-binding-es-viable-sin-infraestructura-de-registro">3. ¿<code>customer_id</code> binding es viable sin infraestructura de registro?</h4>
+<p><strong>Respuesta:</strong> <strong>No es viable sin un sistema de emisión de identidades.</strong>
+- Para que el binding tenga sentido, cada instalación debe tener un ID único y secreto (o al menos conocido por el vendor). Sin un servidor de registro, el vendor no puede asociar un ID a un cliente concreto.
+- Una alternativa sin registro: el <code>customer_id</code> puede ser un hash de la clave pública de la instalación (si cada cliente genera su propio par de claves y el vendor firma el plugin con un campo <code>target_pubkey_hash</code>). Pero eso requiere que el cliente envíe su clave pública al vendor (canal fuera de banda).
+- <strong>Recomendación:</strong> Aplazar <code>customer_id</code> a una fase posterior cuando haya infraestructura de gestión de clientes. Por ahora, el manifiesto puede tener un campo opcional <code>audience</code> con valores <code>"all"</code> o <code>"single"</code> (sin ID concreto).</p>
+<h4 id="4-como-gestionar-la-revocacion-de-plugins">4. ¿Cómo gestionar la revocación de plugins?</h4>
+<p><strong>Respuesta:</strong> <strong>Fuera de alcance para este ADR, pero se debe documentar como limitación.</strong>
+- Propuesta de diseño futuro (no bloqueante): el manifiesto incluye un campo <code>revocation_token</code> (nonce). El vendor publica una lista de tokens revocados en un endpoint HTTPS conocido. El plugin-loader descarga la lista periódicamente.
+- Mientras tanto, la única manera de revocar un plugin es reemplazar el binario (con una nueva versión firmada) o eliminar manualmente el plugin de la configuración.</p>
+<h4 id="5-tpm-20-measured-boot-como-capa-complementaria">5. ¿TPM 2.0 measured boot como capa complementaria?</h4>
+<p><strong>Respuesta:</strong> <strong>Es un ADR separado.</strong>
+- TPM 2.0 puede usarse para atestación remota y para sellar claves, pero no reemplaza la cadena de firma de plugins. Podría combinarse para garantizar que el sistema arranca en un estado conocido antes de cargar plugins.
+- El Consejo recomienda que el autor lo estudie como posible ADR-033, no mezclarlo aquí.</p>
+<hr />
+<h3 id="recomendaciones-generales-para-mejorar-el-adr">Recomendaciones generales para mejorar el ADR</h3>
+<ol>
+<li><strong>Separar claramente las fases</strong> (Fase A: solo HSM sin manifiesto avanzado; Fase B: manifiesto con <code>customer_id</code>/<code>expires_at</code>; Fase C: revocación).</li>
+<li><strong>Especificar el flujo de firma paso a paso</strong> con comandos concretos (ej. <code>ykman openpgp sign --hash-alg sha256 --input plugin.so --output plugin.so.sig</code>).</li>
+<li><strong>Añadir una sección de “Limitaciones”</strong> donde se reconozca que:<ul>
+<li>El modelo requiere que el vendor sea confiable (single point of trust).</li>
+<li>La revocación no está resuelta.</li>
+<li>El cliente no puede modificar plugins sin el vendor (trade-off seguridad vs flexibilidad).</li>
+</ul>
+</li>
+<li><strong>Actualizar el threat model</strong> para incluir el caso de pérdida/robo del YubiKey (y la necesidad de PIN y políticas de backup).</li>
+<li><strong>Evaluar el impacto en el rendimiento</strong> (firmar plugins grandes puede ser lento si se envía el archivo completo al YubiKey; usar hash es rápido).</li>
+<li><strong>Incluir una estimación de esfuerzo</strong> para cada fase (personas-día) y dependencias de herramientas externas (<code>ykman</code>, <code>opensc</code>, <code>gpg</code>).</li>
+</ol>
+<hr />
+<h3 id="veredicto-preliminar">Veredicto preliminar</h3>
+<p>El ADR-032 es <strong>prometedor pero necesita una revisión sustancial</strong> antes de pasar a estado BACKLOG. El Consejo recomienda al autor:</p>
+<ol>
+<li>Dividir el ADR en dos documentos: uno para el uso de HSM (YubiKey) para firma offline sin cambios en el formato de firma, y otro para el manifiesto enriquecido (customer_id, expires_at, revocación).</li>
+<li>Para la parte HSM, simplificarla al máximo: solo reemplazar la generación de firma local por una llamada a YubiKey, manteniendo el mismo formato <code>.sig</code> que ADR-025.</li>
+<li>Aplazar los campos avanzados a un ADR-032b, con una justificación clara de la infraestructura necesaria.</li>
+<li>Agregar una sección de “Preguntas abiertas resueltas” con las respuestas anteriores.</li>
+</ol>
+<p>Una vez realizados estos cambios, el Consejo evaluará de nuevo.</p>
+<p><em>“La verdad por delante, siempre” – también en el diseño de cadenas de confianza.</em></p>
+<p><em>Via Appia Quality · Un escudo, nunca una espada.</em><br />
+<em>Acta de revisión – 11 Abril 2026</em></p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.top", "search.highlight"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

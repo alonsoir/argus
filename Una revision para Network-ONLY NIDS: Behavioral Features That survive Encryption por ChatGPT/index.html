@@ -1,0 +1,1137 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source embedded-ML NDR for hospitals and schools">
+      
+      
+        <meta name="author" content="Alonso Isidoro Roman">
+      
+      
+        <link rel="canonical" href="https://alonsoir.github.io/argus/Una%20revision%20para%20Network-ONLY%20NIDS%3A%20Behavioral%20Features%20That%20survive%20Encryption%20por%20ChatGPT/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>Una revision para Network ONLY NIDS: Behavioral Features That survive Encryption por ChatGPT - ML Defender (aRGus NDR)</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#1-evaluacion-del-informe" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="ML Defender (aRGus NDR)" class="md-header__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ML Defender (aRGus NDR)
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Una revision para Network ONLY NIDS: Behavioral Features That survive Encryption por ChatGPT
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../README.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../docs/ARCHITECTURE.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../docs/BACKLOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Backlog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../docs/SECURITY_MODEL.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Security Model
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../docs/adr/ADR-013 seed distribution component authentication.md" class="md-tabs__link">
+          
+  
+  
+  ADRs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../docs/contracts/Protobuf contracts.md" class="md-tabs__link">
+          
+  
+  
+  Contracts
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="ML Defender (aRGus NDR)" class="md-nav__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ML Defender (aRGus NDR)
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../README.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/ARCHITECTURE.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/BACKLOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/SECURITY_MODEL.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADRs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ADRs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/adr/ADR-013 seed distribution component authentication.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013 Seed Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/adr/ADR-021-deployment-topology-seed-families.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-021 Topology SSOT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/adr/ADR-022-threat-model-opcion2-descartada.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-022 Threat Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/contracts/Protobuf contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protobuf
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/contracts/JSON contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JSON
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/contracts/Rag security commands.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#conclusion-clave" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Conclusión clave
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<p>El informe que compartiste es bastante sólido. En general, coincide bien con el consenso académico actual sobre <strong>NIDS basados únicamente en tráfico de red</strong>. A continuación hago tres cosas:</p>
+<ol>
+<li>evaluar la calidad técnica del informe,</li>
+<li>extraer implicaciones concretas para tu sistema,</li>
+<li>proponer features adicionales que encajan directamente con tu pipeline.</li>
+</ol>
+<hr />
+<h1 id="1-evaluacion-del-informe">1. Evaluación del informe</h1>
+<p>El diagnóstico central es correcto:</p>
+<h3 id="conclusion-clave">Conclusión clave</h3>
+<p>No se puede inferir de forma fiable:</p>
+<ul>
+<li>CPU usage</li>
+<li>disk I/O</li>
+<li>actividad por proceso</li>
+</ul>
+<p>solo desde tráfico de red.</p>
+<p>Esto coincide con lo que aparece en varios trabajos clásicos:</p>
+<ul>
+<li>Watkins et al. (ACM TECS 2015)</li>
+<li>Ristenpart et al. (CCS 2009)</li>
+</ul>
+<p>Esos trabajos dependen de <strong>side channels extremadamente frágiles</strong>.</p>
+<p>En producción se rompen por:</p>
+<ul>
+<li>jitter de red</li>
+<li>NAT</li>
+<li>NIC offloading</li>
+<li>batching del kernel</li>
+<li>middleboxes</li>
+</ul>
+<p>Por tanto, tu decisión de <strong>no invertir tiempo en esas features</strong> es técnicamente correcta.</p>
+<hr />
+<h1 id="2-lo-mas-importante-del-informe-para-tu-sistema">2. Lo más importante del informe para tu sistema</h1>
+<p>Tres partes del informe son especialmente relevantes para tu arquitectura.</p>
+<hr />
+<h1 id="21-entropia-normalizada">2.1 Entropía normalizada</h1>
+<p>Esto es una mejora directa sobre lo que ya tienes.</p>
+<p>Actualmente probablemente calculas:</p>
+<pre><code>H(X)
+</code></pre>
+<p>Pero el valor depende del volumen de tráfico.</p>
+<p>La versión recomendada es:</p>
+<pre><code>H_norm = H(X) / log2(N)
+</code></pre>
+<p>donde:</p>
+<pre><code>N = número de valores distintos
+</code></pre>
+<p>Esto tiene dos ventajas:</p>
+<ol>
+<li>la feature queda en rango <strong>[0,1]</strong></li>
+<li>deja de depender del volumen de eventos</li>
+</ol>
+<p>Esto mejora mucho el entrenamiento del modelo.</p>
+<hr />
+<h1 id="22-inter-arrival-time-iat">2.2 Inter-arrival time (IAT)</h1>
+<p>Esto es una de las señales más potentes para:</p>
+<ul>
+<li>beaconing C2</li>
+<li>scanning lento</li>
+<li>exfiltración</li>
+</ul>
+<p>Features típicas:</p>
+<pre><code>IAT_mean
+IAT_std
+IAT_cv = std / mean
+IAT_p90
+IAT_p99
+</code></pre>
+<p>La <strong>coefficient of variation</strong> suele ser muy informativa.</p>
+<p>Bots periódicos producen:</p>
+<pre><code>IAT_cv ≈ 0
+</code></pre>
+<hr />
+<h1 id="23-fan-in-fan-out">2.3 Fan-in / Fan-out</h1>
+<p>Esto encaja perfectamente con tu agregador.</p>
+<pre><code>fan_out = unique_dst_per_src
+fan_in  = unique_src_per_dst
+</code></pre>
+<p>Detecta muy bien:</p>
+<ul>
+<li>scanning</li>
+<li>worm propagation</li>
+<li>lateral movement</li>
+</ul>
+<hr />
+<h1 id="3-la-recomendacion-de-sketches-es-importante">3. La recomendación de sketches es importante</h1>
+<p>El informe menciona dos estructuras críticas para streaming:</p>
+<h3 id="hyperloglog-hll">HyperLogLog (HLL)</h3>
+<p>Para contar valores únicos:</p>
+<pre><code>distinct IPs
+distinct ports
+</code></pre>
+<p>Ventajas:</p>
+<ul>
+<li>memoria constante</li>
+<li>O(1)</li>
+<li>error muy bajo (~1%)</li>
+</ul>
+<hr />
+<h3 id="count-min-sketch-cms">Count-Min Sketch (CMS)</h3>
+<p>Para frecuencias:</p>
+<pre><code>top ports
+top destinations
+heavy hitters
+</code></pre>
+<p>Esto es útil si algún día quieres detectar:</p>
+<pre><code>top_k_dst_ratio
+</code></pre>
+<hr />
+<h1 id="4-el-punto-sobre-tls-y-cifrado-es-muy-relevante">4. El punto sobre TLS y cifrado es muy relevante</h1>
+<p>El informe acierta completamente en esta tendencia:</p>
+<h3 id="antes">Antes</h3>
+<p>IDS dependía de:</p>
+<ul>
+<li>payload</li>
+<li>DPI</li>
+<li>SNI</li>
+<li>TLS handshake</li>
+</ul>
+<hr />
+<h3 id="ahora">Ahora</h3>
+<p>Con:</p>
+<ul>
+<li>TLS 1.3</li>
+<li>QUIC</li>
+<li>ECH</li>
+</ul>
+<p>cada vez queda menos metadata.</p>
+<p>Por eso los sistemas modernos se basan en:</p>
+<ul>
+<li>timing</li>
+<li>tamaños</li>
+<li>grafos</li>
+<li>estadísticas</li>
+</ul>
+<p>exactamente lo que estás implementando.</p>
+<hr />
+<h1 id="5-el-modelo-de-grafo-temporal-es-muy-interesante">5. El modelo de grafo temporal es muy interesante</h1>
+<p>Tu feature:</p>
+<pre><code>lateral_movement_score
+</code></pre>
+<p>podría evolucionar hacia algo más potente.</p>
+<p>La idea es modelar la red como:</p>
+<pre><code>G(t) = (hosts, connections)
+</code></pre>
+<p>Cada conexión es una <strong>arista temporal</strong>.</p>
+<p>La detección se convierte en:</p>
+<pre><code>¿esta conexión es rara?
+</code></pre>
+<p>Eso se calcula con:</p>
+<pre><code>P(edge | historical graph)
+</code></pre>
+<p>El paper <strong>Euler (2023)</strong> hace esto.</p>
+<p>No necesitas implementarlo ahora, pero es una dirección muy potente.</p>
+<hr />
+<h1 id="6-lo-que-ya-estas-haciendo-bien">6. Lo que ya estás haciendo bien</h1>
+<p>Tu pipeline ya tiene muchas de las features recomendadas:</p>
+<table>
+<thead>
+<tr>
+<th>Feature</th>
+<th>Estado</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>connection_rate</td>
+<td>✔</td>
+</tr>
+<tr>
+<td>src_ip_entropy</td>
+<td>✔</td>
+</tr>
+<tr>
+<td>port_entropy</td>
+<td>✔</td>
+</tr>
+<tr>
+<td>lateral_movement_score</td>
+<td>✔</td>
+</tr>
+<tr>
+<td>service_discovery_patterns</td>
+<td>✔</td>
+</tr>
+</tbody>
+</table>
+<p>Esto es exactamente lo que recomiendan los papers.</p>
+<hr />
+<h1 id="7-features-que-anadiria-a-tu-sistema">7. Features que añadiría a tu sistema</h1>
+<p>Basado en ese informe, las mejores candidatas son:</p>
+<h3 id="1-normalized-entropy">1. Normalized entropy</h3>
+<p>Para:</p>
+<pre><code>src_ip
+dst_ip
+port
+</code></pre>
+<hr />
+<h3 id="2-inter-arrival-features">2. Inter-arrival features</h3>
+<pre><code>iat_mean
+iat_std
+iat_cv
+</code></pre>
+<hr />
+<h3 id="3-burstiness">3. Burstiness</h3>
+<pre><code>burst_score = std(packet_rate)
+</code></pre>
+<hr />
+<h3 id="4-byte-distribution">4. Byte distribution</h3>
+<pre><code>packet_size_entropy
+packet_size_std
+</code></pre>
+<hr />
+<h3 id="5-directional-asymmetry">5. Directional asymmetry</h3>
+<p>Muy útil para exfiltración.</p>
+<pre><code>bytes_out / bytes_in
+packets_out / packets_in
+</code></pre>
+<hr />
+<h1 id="8-sobre-la-arquitectura-de-ventanas">8. Sobre la arquitectura de ventanas</h1>
+<p>El informe sugiere algo muy interesante:</p>
+<p>ventanas multi-escala.</p>
+<p>Ejemplo:</p>
+<pre><code>5s   → burst detection
+30s  → behavioral patterns
+5m   → baseline
+</code></pre>
+<p>Esto mejora mucho la detección.</p>
+<p>Pero también aumenta complejidad.</p>
+<p>Para tu sistema ahora mismo:</p>
+<pre><code>30s
+</code></pre>
+<p>es un buen equilibrio.</p>
+<hr />
+<h1 id="9-un-detalle-muy-interesante-que-menciona-el-informe">9. Un detalle muy interesante que menciona el informe</h1>
+<p>El error en CICIDS2017 sobre FIN.</p>
+<p>Muchos pipelines académicos hacen:</p>
+<pre><code>flow termina al primer FIN
+</code></pre>
+<p>Pero TCP correcto es:</p>
+<pre><code>FIN
+FIN
+ACK
+</code></pre>
+<p>Si tu pipeline maneja esto correctamente, <strong>tu dataset generado será mejor que muchos papers</strong>.</p>
+<hr />
+<h1 id="10-conclusion-sobre-el-trabajo-de-parallelai">10. Conclusión sobre el trabajo de Parallel.ai</h1>
+<p>El análisis es:</p>
+<ul>
+<li>bien documentado</li>
+<li>alineado con literatura</li>
+<li>útil para tu sistema</li>
+</ul>
+<p>Y confirma algo importante:</p>
+<p>Tu arquitectura actual (ventanas + features estadísticas) está <strong>muy alineada con el estado del arte</strong>.</p>
+<hr />
+<h1 id="11-lo-mas-interesante-para-tu-proyecto">11. Lo más interesante para tu proyecto</h1>
+<p>Lo que estás construyendo es básicamente:</p>
+<pre><code>streaming feature engine
++
+ML inference
++
+replay experimentation framework
+</code></pre>
+<p>Eso te permite hacer algo muy valioso:</p>
+<pre><code>feature ablation experiments
+</code></pre>
+<p>Es decir:</p>
+<pre><code>entrenar modelo
+quitar una feature
+medir impacto
+</code></pre>
+<p>Eso es exactamente lo que produce resultados publicables.</p>
+<hr />
+<p>Si quieres, en el siguiente mensaje puedo hacer algo muy útil para tu proyecto:</p>
+<p><strong>diseñarte una lista de ~20 features adicionales "estado del arte" que encajan perfectamente con tu arquitectura actual</strong>, muchas de las cuales aparecen en CIC-IDS2017, UNSW-NB15 y CTU-13.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.tabs", "navigation.top", "search.highlight"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

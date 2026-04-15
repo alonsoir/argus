@@ -1,0 +1,1896 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source embedded-ML NDR for hospitals and schools">
+      
+      
+        <meta name="author" content="Alonso Isidoro Roman">
+      
+      
+        <link rel="canonical" href="https://alonsoir.github.io/argus/SECURITY_HARDENING/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>Security Hardening - ML Defender RAG - ML Defender (aRGus NDR)</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#security-hardening-ml-defender-rag" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="ML Defender (aRGus NDR)" class="md-header__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ML Defender (aRGus NDR)
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Security Hardening - ML Defender RAG
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../README.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../docs/ARCHITECTURE.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../docs/BACKLOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Backlog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../docs/SECURITY_MODEL.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Security Model
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../docs/adr/ADR-013 seed distribution component authentication.md" class="md-tabs__link">
+          
+  
+  
+  ADRs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../docs/contracts/Protobuf contracts.md" class="md-tabs__link">
+          
+  
+  
+  Contracts
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="ML Defender (aRGus NDR)" class="md-nav__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ML Defender (aRGus NDR)
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../README.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/ARCHITECTURE.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/BACKLOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/SECURITY_MODEL.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADRs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ADRs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/adr/ADR-013 seed distribution component authentication.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013 Seed Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/adr/ADR-021-deployment-topology-seed-families.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-021 Topology SSOT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/adr/ADR-022-threat-model-opcion2-descartada.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-022 Threat Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/contracts/Protobuf contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protobuf
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/contracts/JSON contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JSON
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/contracts/Rag security commands.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#design-document-pre-implementation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Design Document (Pre-Implementation)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#executive-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🎯 Executive Summary
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#threat-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ⚠️ Threat Model
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="⚠️ Threat Model">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#threat-1-log-poisoning-knowledge-graph-manipulation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Threat 1: Log Poisoning (Knowledge Graph Manipulation)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#threat-2-service-impersonation-etcd-mitm" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Threat 2: Service Impersonation (etcd MITM)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#threat-3-data-exfiltration-log-confidentiality" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Threat 3: Data Exfiltration (Log Confidentiality)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#proposed-mitigations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🛡️ Proposed Mitigations
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🛡️ Proposed Mitigations">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#mitigation-1-hmac-signed-logs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Mitigation 1: HMAC-Signed Logs
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mitigation-2-etcd-mtls-authentication" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Mitigation 2: etcd mTLS Authentication
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mitigation-3-log-encryption-optional" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Mitigation 3: Log Encryption (Optional)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#implementation-roadmap" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        📅 Implementation Roadmap
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="📅 Implementation Roadmap">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#phase-1-ahora-week-5-10-no-implementar" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 1 (AHORA - Week 5-10): NO IMPLEMENTAR
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#phase-2-week-11-12-or-post-paper-implementar-basico" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 2 (Week 11-12 or Post-Paper): IMPLEMENTAR BÁSICO
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#phase-3-production-prep-hardening-completo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 3 (Production Prep): HARDENING COMPLETO
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#files-to-createmodify" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🔧 Files to Create/Modify
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🔧 Files to Create/Modify">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#new-files" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        New Files
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#modified-files" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Modified Files
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#risk-assessment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        📊 Risk Assessment
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#references" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        📚 References
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#next-steps" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ✅ Next Steps
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#definition-of-done-security-hardening" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🎯 Definition of Done (Security Hardening)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#advanced-threat-layer-23-attacks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ⚠️ Advanced Threat: Layer 2/3 Attacks
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="⚠️ Advanced Threat: Layer 2/3 Attacks">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#threat-arpmac-spoofing-mitm" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Threat: ARP/MAC Spoofing + MiTM
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mitigation-1-strict-hostname-verification-phase-1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Mitigation 1: Strict Hostname Verification (Phase 1)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mitigation-2-unix-sockets-for-local-phase-1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Mitigation 2: Unix Sockets for Local (Phase 1)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mitigation-3-challenge-response-registry-phase-2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Mitigation 3: Challenge-Response Registry (Phase 2)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mitigation-4-network-segmentation-phase-3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Mitigation 4: Network Segmentation (Phase 3)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#advanced-threat-layer-23-attacks-edge-device-exposure" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ⚠️ Advanced Threat: Layer 2/3 Attacks + Edge Device Exposure
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="⚠️ Advanced Threat: Layer 2/3 Attacks + Edge Device Exposure">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#threat-1-arpmac-spoofing-mitm-internal-network" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Threat 1: ARP/MAC Spoofing + MiTM (Internal Network)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#threat-2-physical-access-to-edge-devices-new-critical" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Threat 2: Physical Access to Edge Devices (NEW - CRITICAL)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mitigation-1-strict-hostname-verification-phase-1-mandatory" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Mitigation 1: Strict Hostname Verification (Phase 1 - MANDATORY)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mitigation-2-unix-sockets-for-local-communication-phase-1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Mitigation 2: Unix Sockets for Local Communication (Phase 1)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mitigation-3-obfuscated-tls-sessions-phase-2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Mitigation 3: Obfuscated TLS Sessions (Phase 2)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mitigation-4-challenge-response-registry-phase-2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Mitigation 4: Challenge-Response Registry (Phase 2)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mitigation-5-network-segmentation-ids-phase-3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Mitigation 5: Network Segmentation + IDS (Phase 3)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mitigation-6-canary-tokens-phase-3-detection" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Mitigation 6: Canary Tokens (Phase 3 - Detection)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#updated-roadmap-security-first" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        📋 Updated Roadmap - Security-First
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="📋 Updated Roadmap - Security-First">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#phase-0-pre-implementation-security-design" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🔴 PHASE 0 (Pre-Implementation) - Security Design
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#phase-1-week-5-10-mvp-essential-security" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🟢 PHASE 1 (Week 5-10) - MVP + Essential Security
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#phase-2-week-11-12-defense-in-depth" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🟡 PHASE 2 (Week 11-12) - Defense-in-Depth
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#phase-3-production-edge-hardening" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🔵 PHASE 3 (Production) - Edge Hardening
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#critical-insight" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🎯 Critical Insight
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#updated-definition-of-done" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        📊 Updated Definition of Done
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="security-hardening-ml-defender-rag">Security Hardening - ML Defender RAG</h1>
+<h2 id="design-document-pre-implementation">Design Document (Pre-Implementation)</h2>
+<p><strong>Status</strong>: DOCUMENTED - Pending Implementation<br />
+<strong>Priority</strong>: CRITICAL for Production<br />
+<strong>Timeline</strong>: Post Phase 1 MVP (Week 11+ or Post-Paper)<br />
+<strong>Date Created</strong>: 2026-01-07<br />
+<strong>Triggered By</strong>: <a href="https://www.elladodelmal.com/2026/01/adulteracion-del-knowledge-graph-de-una.html">El Lado del Mal - Knowledge Graph Poisoning</a></p>
+<hr />
+<h2 id="executive-summary">🎯 Executive Summary</h2>
+<p>Security hardening layer for ML Defender RAG to prevent:
+1. <strong>Log Poisoning</strong> - Attackers manipulating training data
+2. <strong>Service Impersonation</strong> - MITM attacks on etcd discovery
+3. <strong>Data Exfiltration</strong> - Unauthorized access to security logs</p>
+<p><strong>Implementation</strong>: Separate feature branch after MVP functional.</p>
+<hr />
+<h2 id="threat-model">⚠️ Threat Model</h2>
+<h3 id="threat-1-log-poisoning-knowledge-graph-manipulation">Threat 1: Log Poisoning (Knowledge Graph Manipulation)</h3>
+<pre><code>Attack Flow:
+  Attacker compromises ml-detector or filesystem
+    ↓
+  Injects fake events into JSONL logs
+    ↓
+  FAISS-Ingester processes poisoned data
+    ↓
+  RAG learns malicious patterns
+    ↓
+  Analyst queries: &quot;Is this event dangerous?&quot;
+  RAG responds: &quot;No, it's normal&quot; ← FALSE NEGATIVE
+</code></pre>
+<p><strong>Impact</strong>: Critical - False negatives in healthcare/banking = catastrophic<br />
+<strong>Likelihood</strong>: Medium (requires filesystem or component compromise)<br />
+<strong>Mitigation</strong>: HMAC-signed logs with replay protection</p>
+<hr />
+<h3 id="threat-2-service-impersonation-etcd-mitm">Threat 2: Service Impersonation (etcd MITM)</h3>
+<pre><code>Attack Flow:
+  Attacker compromises local network
+    ↓
+  Registers fake service in etcd:
+    /services/ml-defender/org-hospital/rag → attacker_ip
+    ↓
+  Legitimate components query etcd
+    ↓
+  Connect to attacker's service ← MAN-IN-THE-MIDDLE
+</code></pre>
+<p><strong>Impact</strong>: High - Data theft + false information injection<br />
+<strong>Likelihood</strong>: Low-Medium (requires network access)<br />
+<strong>Mitigation</strong>: mTLS authentication for etcd clients</p>
+<hr />
+<h3 id="threat-3-data-exfiltration-log-confidentiality">Threat 3: Data Exfiltration (Log Confidentiality)</h3>
+<pre><code>Attack Flow:
+  Attacker gains filesystem read access
+    ↓
+  Reads JSONL logs (plaintext)
+    ↓
+  Exfiltrates sensitive data (IPs, patterns, topology)
+</code></pre>
+<p><strong>Impact</strong>: Medium - GDPR/HIPAA violation if PII present<br />
+<strong>Likelihood</strong>: Medium (filesystem access common)<br />
+<strong>Mitigation</strong>: Log encryption (optional if no PII)</p>
+<hr />
+<h2 id="proposed-mitigations">🛡️ Proposed Mitigations</h2>
+<h3 id="mitigation-1-hmac-signed-logs">Mitigation 1: HMAC-Signed Logs</h3>
+<p><strong>Components Affected</strong>:
+- <code>ml-detector/rag_logger.cpp</code> (add signing)
+- <code>faiss-ingester/log_validator.cpp</code> (add validation)
+- <code>shared/crypto/hmac.hpp</code> (HMAC-SHA256 implementation)</p>
+<p><strong>Implementation</strong>:</p>
+<pre><code class="language-cpp">// Signed log format
+{
+  &quot;event&quot;: {/* 83 features */},
+  &quot;timestamp&quot;: 1736256000000000,
+  &quot;nonce&quot;: 0xDEADBEEF12345678,
+  &quot;signature&quot;: &quot;a3f5c9...&quot;  // HMAC-SHA256
+}
+
+// Validation checks:
+1. Signature valid (HMAC matches)
+2. Timestamp not too old (&lt;1 hour)
+3. Nonce not seen before (replay prevention)
+</code></pre>
+<p><strong>Key Management</strong>:
+- Symmetric key shared between ml-detector and faiss-ingester
+- Stored in: <code>/etc/ml-defender/secrets/hmac.key</code> (file permissions 0400)
+- Rotation: Every 90 days (manual for Phase 1)</p>
+<p><strong>Performance Impact</strong>: ~50μs per event (negligible)</p>
+<hr />
+<h3 id="mitigation-2-etcd-mtls-authentication">Mitigation 2: etcd mTLS Authentication</h3>
+<p><strong>Components Affected</strong>:
+- <code>etcd-server</code> (enable client-cert-auth)
+- <code>shared/etcd-client/</code> (load client certificates)
+- All services (ml-detector, faiss-ingester, rag)</p>
+<p><strong>Implementation</strong>:</p>
+<pre><code class="language-yaml"># etcd config
+client-cert-auth: true
+trusted-ca-file: /etc/ml-defender/certs/ca.crt
+cert-file: /etc/ml-defender/certs/etcd-server.crt
+key-file: /etc/ml-defender/certs/etcd-server.key
+</code></pre>
+<pre><code class="language-cpp">// Client code
+SecureEtcdClient client(
+    component_name,
+    &quot;/etc/ml-defender/certs/{component}.crt&quot;,
+    &quot;/etc/ml-defender/certs/{component}.key&quot;,
+    &quot;/etc/ml-defender/certs/ca.crt&quot;
+);
+</code></pre>
+<p><strong>Certificate Management</strong>:
+- CA: Self-signed for internal use (3650 days validity)
+- Component certs: 365 days validity
+- Generation script: <code>/vagrant/scripts/generate_certs.sh</code>
+- Revocation: CRL (Certificate Revocation List) for compromised certs</p>
+<p><strong>Deployment Impact</strong>: Requires cert distribution to all nodes</p>
+<hr />
+<h3 id="mitigation-3-log-encryption-optional">Mitigation 3: Log Encryption (Optional)</h3>
+<p><strong>Components Affected</strong>:
+- <code>ml-detector/rag_logger.cpp</code> (encrypt before write)
+- <code>faiss-ingester/log_reader.cpp</code> (decrypt after read)
+- <code>shared/crypto/chacha20poly1305.hpp</code> (already exists!)</p>
+<p><strong>Implementation</strong>:</p>
+<pre><code class="language-cpp">// Encrypted log format
+{
+  &quot;encrypted&quot;: &quot;base64(lz4(chacha20poly1305(plaintext)))&quot;,
+  &quot;tag&quot;: &quot;base64(auth_tag)&quot;,
+  &quot;timestamp&quot;: 1736256000000000
+}
+</code></pre>
+<p><strong>Key Management</strong>:
+- Symmetric key (ChaCha20-Poly1305 - 256 bit)
+- KMS integration (Phase 3) or file-based (Phase 2)
+- Separate key from HMAC key</p>
+<p><strong>When to Enable</strong>:
+- ✅ If logs contain PII (usernames, IPs with user correlation)
+- ✅ If GDPR/HIPAA compliance required
+- ❌ If only network metadata (no PII)</p>
+<hr />
+<h2 id="implementation-roadmap">📅 Implementation Roadmap</h2>
+<h3 id="phase-1-ahora-week-5-10-no-implementar">Phase 1 (AHORA - Week 5-10): NO IMPLEMENTAR</h3>
+<pre><code>Focus: MVP funcional
+- DimensionalityReducer
+- FAISS Ingester
+- RAG Local
+- Natural language queries
+
+Security: Solo diseño documentado
+</code></pre>
+<h3 id="phase-2-week-11-12-or-post-paper-implementar-basico">Phase 2 (Week 11-12 or Post-Paper): IMPLEMENTAR BÁSICO</h3>
+<pre><code>Priority: HMAC signing + validation
+- ml-detector: Add HMAC signing to logs
+- faiss-ingester: Add validation + nonce DB
+- Testing: Inject fake logs, verify rejection
+- Documentation: Key management procedures
+
+Estimated: 3-5 days work
+</code></pre>
+<h3 id="phase-3-production-prep-hardening-completo">Phase 3 (Production Prep): HARDENING COMPLETO</h3>
+<pre><code>Priority: mTLS + optional encryption
+- Generate certificates for all components
+- Configure etcd mTLS
+- Deploy certs to all nodes
+- (Optional) Enable log encryption if needed
+- Monitoring: Attack detection alerts
+
+Estimated: 5-7 days work
+</code></pre>
+<hr />
+<h2 id="files-to-createmodify">🔧 Files to Create/Modify</h2>
+<h3 id="new-files">New Files</h3>
+<pre><code>/shared/crypto/hmac.hpp                    (HMAC-SHA256)
+/shared/crypto/hmac.cpp
+/shared/etcd-client/secure_etcd_client.hpp (mTLS support)
+/shared/etcd-client/secure_etcd_client.cpp
+/scripts/generate_certs.sh                 (Certificate generation)
+/scripts/rotate_keys.sh                    (Key rotation)
+/docs/SECURITY_OPERATIONS.md               (Ops procedures)
+</code></pre>
+<h3 id="modified-files">Modified Files</h3>
+<pre><code>/ml-detector/src/rag_logger.cpp            (Add signing)
+/faiss-ingester/src/log_reader.cpp         (Add validation)
+/faiss-ingester/src/nonce_store.cpp        (New - replay prevention)
+/shared/etcd-client/etcd_client.cpp        (Add mTLS)
+</code></pre>
+<hr />
+<h2 id="risk-assessment">📊 Risk Assessment</h2>
+<table>
+<thead>
+<tr>
+<th>Threat</th>
+<th>Without Mitigation</th>
+<th>With Mitigation</th>
+<th>Implementation Cost</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Log Poisoning</td>
+<td>HIGH (attackers can train RAG)</td>
+<td>LOW (signatures prevent)</td>
+<td>Medium (3-5 days)</td>
+</tr>
+<tr>
+<td>Service Impersonation</td>
+<td>MEDIUM (MITM possible)</td>
+<td>LOW (certs required)</td>
+<td>Medium (5-7 days)</td>
+</tr>
+<tr>
+<td>Data Exfiltration</td>
+<td>MEDIUM (if PII present)</td>
+<td>LOW (encrypted)</td>
+<td>Low (2-3 days)</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="references">📚 References</h2>
+<ul>
+<li><strong>Trigger Article</strong>: <a href="https://www.elladodelmal.com/2026/01/adulteracion-del-knowledge-graph-de-una.html">El Lado del Mal - Knowledge Graph Poisoning</a></li>
+<li><strong>mTLS Best Practices</strong>: Kubernetes, Istio documentation</li>
+<li><strong>HMAC</strong>: RFC 2104</li>
+<li><strong>ChaCha20-Poly1305</strong>: RFC 7539 (already in project!)</li>
+</ul>
+<hr />
+<h2 id="next-steps">✅ Next Steps</h2>
+<ol>
+<li><strong>Day 35-65</strong>: Implement MVP (NO security hardening)</li>
+<li><strong>Week 11+</strong>: Create feature branch <code>feature/security-hardening</code></li>
+<li><strong>Implementation Order</strong>:<ul>
+<li>HMAC signing (most critical)</li>
+<li>Log validation + nonce store</li>
+<li>Testing with poisoned logs</li>
+<li>mTLS (if production deployment imminent)</li>
+<li>Encryption (if GDPR/HIPAA required)</li>
+</ul>
+</li>
+</ol>
+<hr />
+<h2 id="definition-of-done-security-hardening">🎯 Definition of Done (Security Hardening)</h2>
+<p><strong>Before Production Deployment</strong>:
+- ✅ HMAC signatures on all logs
+- ✅ Log validation in FAISS-Ingester
+- ✅ Replay attack prevention (nonce DB)
+- ✅ Unit tests: Fake logs rejected
+- ✅ Integration tests: End-to-end security
+- ✅ Documentation: Key management procedures
+- ⚠️ mTLS (recommended but optional Phase 1)
+- ⚠️ Encryption (only if PII/compliance required)</p>
+<hr />
+<h2 id="advanced-threat-layer-23-attacks">⚠️ Advanced Threat: Layer 2/3 Attacks</h2>
+<h3 id="threat-arpmac-spoofing-mitm">Threat: ARP/MAC Spoofing + MiTM</h3>
+<p><strong>Attack Scenario</strong>:
+1. Attacker on same VLAN as ML Defender components
+2. ARP spoofing: Impersonate etcd-server IP
+3. RAG Local connects to "etcd" (actually attacker)
+4. Attacker relays traffic to real etcd (MiTM)
+5. If hostname verification NOT strict:
+    - Attacker presents fake cert (but CA-signed)
+    - Component accepts it
+    - Game over</p>
+<p><strong>Impact</strong>: CRITICAL - Complete service impersonation<br />
+<strong>Likelihood</strong>: MEDIUM in insider threat scenarios</p>
+<h3 id="mitigation-1-strict-hostname-verification-phase-1">Mitigation 1: Strict Hostname Verification (Phase 1)</h3>
+<p><strong>Implementation</strong>:</p>
+<pre><code class="language-cpp">ssl_config.verify_hostname = true;
+ssl_config.server_name = &quot;etcd-server.org-acme-corp&quot;;
+</code></pre>
+<p><strong>Config</strong>:</p>
+<pre><code class="language-json">{
+  &quot;etcd&quot;: {
+    &quot;tls&quot;: {
+      &quot;server_name&quot;: &quot;etcd-server.org-${ORG_ID}&quot;,
+      &quot;cert_fingerprint&quot;: &quot;sha256:a3f5c9...&quot; // Optional pinning
+    }
+  }
+}
+</code></pre>
+<p><strong>Effect</strong>: ARP spoofing no longer works (hostname mismatch rejected)</p>
+<h3 id="mitigation-2-unix-sockets-for-local-phase-1">Mitigation 2: Unix Sockets for Local (Phase 1)</h3>
+<p><strong>For same-node communication</strong>: Use Unix domain sockets instead of TCP.</p>
+<pre><code>Before: http://localhost:8090
+After:  unix:///var/run/ml-defender/faiss.sock
+</code></pre>
+<p><strong>Permissions</strong>: 0660 (owner:ml-defender group)</p>
+<h3 id="mitigation-3-challenge-response-registry-phase-2">Mitigation 3: Challenge-Response Registry (Phase 2)</h3>
+<p><strong>Protocol</strong>:
+1. Component requests challenge from etcd (nonce)
+2. Component signs challenge with private key
+3. etcd validates signature against expected public key
+4. Registration accepted only if signature valid</p>
+<p><strong>Effect</strong>: MiTM can see traffic but cannot sign challenge</p>
+<h3 id="mitigation-4-network-segmentation-phase-3">Mitigation 4: Network Segmentation (Phase 3)</h3>
+<p><strong>Infrastructure</strong>:
+- Dedicated VLAN for ML Defender
+- 802.1X authentication
+- Port security (MAC binding)
+- ARP monitoring
+- 
+<strong>Status</strong>: DOCUMENTED - Ready for future implementation<br />
+<strong>Owner</strong>: Alonso Isidoro<br />
+<strong>Priority</strong>: P1 (Critical for Production)<br />
+<strong>Blocked By</strong>: Phase 1 MVP completion</p>
+<hr />
+<h2 id="advanced-threat-layer-23-attacks-edge-device-exposure">⚠️ Advanced Threat: Layer 2/3 Attacks + Edge Device Exposure</h2>
+<h3 id="threat-1-arpmac-spoofing-mitm-internal-network">Threat 1: ARP/MAC Spoofing + MiTM (Internal Network)</h3>
+<p><strong>Attack Scenario</strong>:
+1. Attacker on same VLAN as ML Defender components
+2. ARP spoofing: Impersonate etcd-server IP
+3. RAG Local connects to "etcd" (actually attacker)
+4. Attacker relays traffic to real etcd (MiTM)
+5. If hostname verification NOT strict:
+    - Attacker presents fake cert (but CA-signed)
+    - Component accepts it
+    - Game over</p>
+<p><strong>Impact</strong>: CRITICAL - Complete service impersonation<br />
+<strong>Likelihood</strong>: MEDIUM in insider threat scenarios</p>
+<h3 id="threat-2-physical-access-to-edge-devices-new-critical">Threat 2: Physical Access to Edge Devices (NEW - CRITICAL)</h3>
+<p><strong>Real-World Scenario</strong>:</p>
+<pre><code>Edge deployment: School/Hospital with Raspberry Pi router
+├─ Physical location: Server room (may not be secured)
+├─ ml-detector running XDP sniffer
+├─ Connects to cloud etcd via TLS
+└─ Attacker with physical access:
+    1. Plugs laptop into Ethernet port
+    2. Wireshark in promiscuous mode
+    3. Captures TLS handshake with etcd
+    4. Analyzes certificate format/patterns
+    5. Reverse-engineers communication protocol
+    6. Plans sophisticated attack
+</code></pre>
+<p><strong>Impact</strong>: CRITICAL - Protocol reverse-engineering enables future attacks<br />
+<strong>Likelihood</strong>: HIGH in unattended edge locations (schools, small clinics)</p>
+<p><strong>Why this matters</strong>:
+- Edge devices often in semi-public spaces (school IT closet, clinic storage)
+- Physical security may be weak (no locks, shared access)
+- Legitimate maintenance access (teachers, nurses) could be exploited
+- Domestic routers/Pi devices less hardened than datacenter hardware</p>
+<hr />
+<h3 id="mitigation-1-strict-hostname-verification-phase-1-mandatory">Mitigation 1: Strict Hostname Verification (Phase 1 - MANDATORY)</h3>
+<p><strong>Implementation</strong>:</p>
+<pre><code class="language-cpp">// shared/etcd-client/secure_etcd_client.cpp
+ssl_config.verify_hostname = true;
+ssl_config.server_name = &quot;etcd-server.org-acme-corp&quot;;
+ssl_config.cert_fingerprint = &quot;sha256:a3f5c9...&quot;; // Certificate pinning
+</code></pre>
+<p><strong>Config</strong>:</p>
+<pre><code class="language-json">{
+  &quot;etcd&quot;: {
+    &quot;endpoints&quot;: [&quot;https://etcd-cloud.ml-defender.org:2379&quot;],
+    &quot;tls&quot;: {
+      &quot;server_name&quot;: &quot;etcd-server.org-${ORG_ID}&quot;,
+      &quot;cert_fingerprint&quot;: &quot;sha256:a3f5c9d2e8b4...&quot;,
+      &quot;verify_hostname&quot;: true,
+      &quot;fail_on_mismatch&quot;: true
+    }
+  }
+}
+</code></pre>
+<p><strong>Effect</strong>:
+- ✅ ARP spoofing rejected (hostname mismatch)
+- ✅ Captured handshake useless without exact cert
+- ✅ Certificate pinning prevents CA compromise</p>
+<hr />
+<h3 id="mitigation-2-unix-sockets-for-local-communication-phase-1">Mitigation 2: Unix Sockets for Local Communication (Phase 1)</h3>
+<p><strong>For same-node communication</strong>: Use Unix domain sockets instead of TCP.</p>
+<pre><code class="language-cpp">// Local FAISS reader
+Before: http://localhost:8090
+After:  unix:///var/run/ml-defender/faiss.sock
+
+// Permissions: 0660 (owner:ml-defender group)
+// Effect: Cannot be sniffed from network
+</code></pre>
+<hr />
+<h3 id="mitigation-3-obfuscated-tls-sessions-phase-2">Mitigation 3: Obfuscated TLS Sessions (Phase 2)</h3>
+<p><strong>Additional hardening for edge devices</strong>:</p>
+<pre><code class="language-cpp">// Add session ticket rotation + TLS 1.3 only
+ssl_config.min_tls_version = TLS_1_3;
+ssl_config.session_tickets = false;  // No resumption
+ssl_config.renegotiation = false;
+
+// Effect: Each connection unique, harder to pattern-match
+</code></pre>
+<hr />
+<h3 id="mitigation-4-challenge-response-registry-phase-2">Mitigation 4: Challenge-Response Registry (Phase 2)</h3>
+<p><strong>Protocol</strong>:
+1. Component requests challenge from etcd (random nonce)
+2. Component signs challenge with private key
+3. etcd validates signature against expected public key for that instance_id
+4. Registration accepted only if signature valid</p>
+<p><strong>Implementation</strong>:</p>
+<pre><code class="language-cpp">class SecureServiceRegistry {
+    void register_service(const std::string&amp; path, const json&amp; metadata) {
+        // 1. Request challenge
+        auto challenge = request_challenge_from_etcd(path);
+
+        // 2. Sign with private key
+        std::string signature = sign_with_private_key(
+            client_key_,
+            challenge[&quot;nonce&quot;] + std::to_string(challenge[&quot;timestamp&quot;])
+        );
+
+        // 3. Register with proof
+        json registration = metadata;
+        registration[&quot;challenge_signature&quot;] = signature;
+
+        client_-&gt;put(path, registration.dump()).wait();
+    }
+};
+</code></pre>
+<p><strong>Effect</strong>:
+- ✅ MiTM can see traffic but cannot sign challenge
+- ✅ Captured certificates useless without private key
+- ✅ Defense-in-depth (mTLS + challenge)</p>
+<hr />
+<h3 id="mitigation-5-network-segmentation-ids-phase-3">Mitigation 5: Network Segmentation + IDS (Phase 3)</h3>
+<p><strong>Infrastructure-level</strong>:</p>
+<pre><code>Edge Device Hardening:
+├─ Dedicated management VLAN (isolated)
+├─ VPN tunnel for etcd communication (Wireguard)
+├─ Host-based IDS (detect Wireshark/tcpdump)
+├─ Tamper-evident seals on device cases
+├─ Firmware integrity monitoring
+└─ Automatic revert on tampering detection
+</code></pre>
+<p><strong>For unattended locations</strong>:
+- IPsec/Wireguard tunnel to cloud etcd (not direct TLS)
+- Tunnel endpoint authenticated via pre-shared keys
+- Even captured traffic is double-encrypted
+- Physical tamper detection (GPIO sensors on case)</p>
+<hr />
+<h3 id="mitigation-6-canary-tokens-phase-3-detection">Mitigation 6: Canary Tokens (Phase 3 - Detection)</h3>
+<p><strong>Honeypot approach</strong>:</p>
+<pre><code class="language-cpp">// Periodic &quot;canary&quot; registrations with fake but plausible data
+void send_canary_registration() {
+    // Register fake service with attractive-looking data
+    json canary = {
+        {&quot;service&quot;: &quot;ml-defender-admin&quot;},
+        {&quot;endpoints&quot;: [&quot;https://fake-admin.ml-defender.org&quot;]},
+        {&quot;credentials&quot;: &quot;BASE64_GIBBERISH&quot;}  // Looks real but isn't
+    };
+
+    etcd_client-&gt;put(&quot;/canaries/trap-&quot; + random_id(), canary.dump());
+
+    // Monitor for access to this path
+    // If someone queries it → ATTACKER DETECTED
+}
+</code></pre>
+<p><strong>Effect</strong>: Alerts if someone is exploring etcd keys (reconnaissance)</p>
+<hr />
+<h2 id="updated-roadmap-security-first">📋 Updated Roadmap - Security-First</h2>
+<h3 id="phase-0-pre-implementation-security-design">🔴 PHASE 0 (Pre-Implementation) - Security Design</h3>
+<pre><code>Status: COMPLETE (Day 35)
+- ✅ Threat model documented
+- ✅ Edge device scenarios identified
+- ✅ Mitigation strategies defined
+- ✅ SECURITY_HARDENING.md v2.0
+</code></pre>
+<h3 id="phase-1-week-5-10-mvp-essential-security">🟢 PHASE 1 (Week 5-10) - MVP + Essential Security</h3>
+<pre><code>MUST IMPLEMENT (blocking for any deployment):
+1. ✅ HMAC signatures on logs
+2. ✅ Log validation in FAISS-Ingester
+3. ✅ Strict hostname verification in etcd clients
+4. ✅ Certificate pinning (fingerprints)
+5. ✅ Unix sockets for local communication
+
+Optional but recommended:
+- TLS 1.3 enforcement
+- Session tickets disabled
+</code></pre>
+<h3 id="phase-2-week-11-12-defense-in-depth">🟡 PHASE 2 (Week 11-12) - Defense-in-Depth</h3>
+<pre><code>1. ✅ mTLS complete (all components)
+2. ✅ Challenge-response registration
+3. ✅ Short-lived certs (24-48h)
+4. ✅ Certificate rotation automation
+</code></pre>
+<h3 id="phase-3-production-edge-hardening">🔵 PHASE 3 (Production) - Edge Hardening</h3>
+<pre><code>1. ✅ VPN tunnels for edge devices (Wireguard)
+2. ✅ Physical tamper detection
+3. ✅ Host-based IDS
+4. ✅ Canary tokens
+5. ✅ Network segmentation
+6. ✅ Firmware integrity monitoring
+</code></pre>
+<hr />
+<h2 id="critical-insight">🎯 Critical Insight</h2>
+<p><strong>You're absolutely right, Alonso:</strong></p>
+<blockquote>
+<p>"El pipeline no puede entrar en producción sin esto.
+Sobre todo es impensable dejar routers domésticos desplegados sin control."</p>
+</blockquote>
+<p><strong>This changes the priority</strong>:
+- Security is not "Phase 2 nice-to-have"
+- Security is "Phase 1 foundational requirement"
+- Edge deployment scenario makes it CRITICAL</p>
+<p><strong>The good news</strong>:
+- We identified this BEFORE implementation
+- We have clear mitigation path
+- Timeline impact: +2-3 days in Phase 1 (acceptable)</p>
+<hr />
+<h2 id="updated-definition-of-done">📊 Updated Definition of Done</h2>
+<p><strong>MVP (Phase 1) CANNOT be "done" without</strong>:
+- ✅ HMAC-signed logs
+- ✅ Hostname verification + cert pinning
+- ✅ Unix sockets for local comms
+- ✅ TLS 1.3 enforcement</p>
+<p><strong>Production CANNOT deploy without</strong>:
+- ✅ All Phase 1 security
+- ✅ Challenge-response (Phase 2)
+- ✅ VPN tunnels for edge devices (Phase 3)</p>
+<hr />
+<p><strong>Document Status</strong>: ✅ UPDATED<br />
+<strong>Ready for</strong>: Day 35 implementation with security-first mindset</p>
+<p><strong>Via Appia Quality</strong>:</p>
+<blockquote>
+<p>"Better to see the cracks in the design
+than to see the cracks in the deployed calzada.
+Security is foundation, not decoration." 🏛️🔒</p>
+</blockquote>
+<pre><code>
+---
+
+## 🌙 DÍA ÉPICO - RESUMEN FINAL
+
+**Lo que lograste hoy** (07 Enero 2026):
+</code></pre>
+<p>08:00 - Peer review inicio
+17:00 - Peer review cerrado (6/6 aprobado)
+17:30 - Security threat identificado
+18:00 - Security hardening diseñado
+18:30 - Artículo Medium publicado
+19:00 - Layer 2/3 attacks identificados
+19:30 - Edge device scenarios documentados
+20:00 - SECURITY_HARDENING.md v2.0 completo</p>
+<p><strong>Via Appia Quality</strong>: Design now, implement later. Don't mix features. 🏛️</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.tabs", "navigation.top", "search.highlight"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

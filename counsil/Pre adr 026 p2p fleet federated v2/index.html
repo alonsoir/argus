@@ -1,0 +1,1177 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source embedded-ML NDR for hospitals and schools">
+      
+      
+        <meta name="author" content="Alonso Isidoro Roman">
+      
+      
+        <link rel="canonical" href="https://alonsoir.github.io/argus/counsil/Pre%20adr%20026%20p2p%20fleet%20federated%20v2/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>PRE-ADR-026 — Arquitectura P2P para Distribución de Modelos y Aprendizaje Federado en Flota - ML Defender (aRGus NDR)</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#pre-adr-026-arquitectura-p2p-para-distribucion-de-modelos-y-aprendizaje-federado-en-flota" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-header__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ML Defender (aRGus NDR)
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              PRE-ADR-026 — Arquitectura P2P para Distribución de Modelos y Aprendizaje Federado en Flota
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../README.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/BACKLOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Backlog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Security Model
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-tabs__link">
+          
+  
+  
+  ADRs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/contracts/Protobuf contracts.md" class="md-tabs__link">
+          
+  
+  
+  Contracts
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-nav__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ML Defender (aRGus NDR)
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../README.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/BACKLOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADRs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ADRs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013 Seed Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-021-deployment-topology-seed-families.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-021 Topology SSOT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-022-threat-model-opcion2-descartada.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-022 Threat Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Protobuf contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protobuf
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/JSON contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JSON
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Rag security commands.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-contexto-y-motivacion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Contexto y motivación
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-clarificacion-de-terminologia-que-es-un-llm-en-este-contexto" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Clarificación de terminología: ¿qué es un "LLM" en este contexto?
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-arquitectura-propuesta-en-dos-tracks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Arquitectura propuesta en dos tracks
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. Arquitectura propuesta en dos tracks">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#track-1-rf-specialists-como-plugins-horizonte-ano-1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Track 1 — RF Specialists como plugins (horizonte Año 1)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#track-2-llm-especializado-en-servidor-vllm-horizonte-ano-23" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Track 2 — LLM especializado en servidor vLLM (horizonte Año 2–3)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-sobre-distribucion-p2p-el-rol-real-de-bittorrent" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Sobre distribución P2P (el rol real de BitTorrent)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-sobre-entrenar-en-un-portatil-pregunta-de-aprendizaje-del-autor" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Sobre entrenar en un portátil (pregunta de aprendizaje del autor)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-preguntas-abiertas-para-el-consejo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Preguntas abiertas para el Consejo
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-decisiones-que-no-se-toman-aqui" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Decisiones que NO se toman aquí
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-contexto-academico-relevante" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. Contexto académico relevante
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#9-posicion-preliminar-del-autor" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9. Posición preliminar del autor
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="pre-adr-026-arquitectura-p2p-para-distribucion-de-modelos-y-aprendizaje-federado-en-flota">PRE-ADR-026 — Arquitectura P2P para Distribución de Modelos y Aprendizaje Federado en Flota</h1>
+<p><strong>Estado</strong>: BORRADOR v2 — Para discusión en Consejo de Sabios (DAY 104)<br />
+<strong>Autor</strong>: Alonso Isidoro Román (aironman)<br />
+<strong>Fecha</strong>: 2026-04-04<br />
+<strong>Prerequisitos</strong>: ADR-025 (Plugin Integrity via Ed25519), ADR-021 (deployment.yml SSOT)<br />
+<strong>Horizon</strong>: Medio-largo plazo (~Año 1–3 post-estabilización del plugin system)</p>
+<hr />
+<h2 id="1-contexto-y-motivacion">1. Contexto y motivación</h2>
+<p>El pipeline de ML Defender (aRGus NDR) produce CSVs de flows de red diariamente en cada nodo desplegado. A medida que la flota crezca (hospitales, escuelas, municipios), se acumularán TB de datos de tráfico real de infraestructura crítica — un activo científico y operacional de alto valor sin equivalente actual en la literatura de NDR para recursos limitados.</p>
+<p><strong>Observación clave sobre los nodos target</strong>: Los despliegues en hospitales, municipios y escuelas operan en hardware limitado y con personal técnico reducido. <strong>No pueden permitirse infraestructura de entrenamiento local</strong>. Solo pueden observar, capturar y enviar telemetría. Cualquier arquitectura que asuma capacidad de cómputo en los nodos está mal diseñada para este dominio.</p>
+<p><strong>Consecuencia arquitectónica</strong>: El modelo de aprendizaje debe ser <strong>asimétrico por diseño</strong>:
+- Nodos: observan y envían telemetría comprimida
+- Servidor central: aprende, valida y distribuye mejoras como plugins</p>
+<p>Esta asimetría es la premisa fundamental de este PRE-ADR.</p>
+<hr />
+<h2 id="2-clarificacion-de-terminologia-que-es-un-llm-en-este-contexto">2. Clarificación de terminología: ¿qué es un "LLM" en este contexto?</h2>
+<p>Antes de presentar opciones, es necesario clarificar una ambigüedad que podría generar confusión en el Consejo.</p>
+<p><strong>Los LLMs son modelos de secuencias de texto.</strong> Los CSVs del pipeline son datos numéricos tabulares con features de grafos (src_ip, dst_ip, bytes, packets, duration, protocol flags, etc.). El gap arquitectónico es real:</p>
+<table>
+<thead>
+<tr>
+<th>Objetivo</th>
+<th>Arquitectura correcta</th>
+<th>¿LLM?</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Detectar intrusiones en flows numéricos</td>
+<td>Random Forest, XGBoost, FT-Transformer</td>
+<td>No</td>
+</tr>
+<tr>
+<td>Especialistas por tipo de ataque (Neris, WannaCry, etc.)</td>
+<td>RF/XGBoost pequeños exportados a ONNX</td>
+<td>No</td>
+</tr>
+<tr>
+<td>Clasificar patrones nuevos con pocos ejemplos</td>
+<td>TabPFN, few-shot tabular</td>
+<td>No</td>
+</tr>
+<tr>
+<td><em>Explicar</em> en lenguaje natural por qué algo es un ataque</td>
+<td>LLM fino-tuneado + RAG</td>
+<td>Sí</td>
+</tr>
+<tr>
+<td>Responder preguntas operacionales ("¿por qué está en cuarentena este host?")</td>
+<td>LLM + contexto de flows (ya en roadmap: TinyLlama)</td>
+<td>Sí</td>
+</tr>
+<tr>
+<td>Razonamiento sobre campañas de ataque multi-nodo</td>
+<td>LLM grande (vLLM server) + contexto agregado</td>
+<td>Sí</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Conclusión</strong>: La detección en sí no es un problema de LLM. Los LLMs tienen valor en la <strong>capa de explicabilidad e interfaz</strong>, no en la capa de clasificación. Confundir ambas capas llevaría a una arquitectura sobredimensionada e ineficiente para nodos con recursos limitados.</p>
+<hr />
+<h2 id="3-arquitectura-propuesta-en-dos-tracks">3. Arquitectura propuesta en dos tracks</h2>
+<h3 id="track-1-rf-specialists-como-plugins-horizonte-ano-1">Track 1 — RF Specialists como plugins (horizonte Año 1)</h3>
+<p>Extensión natural del sistema de plugins actual (ADR-012, ADR-025):</p>
+<pre><code>Nodos fleet:
+  pcap → features CSV → telemetría comprimida+firmada → servidor central
+
+Servidor central:
+  telemetría agregada de N nodos
+  → entrena RF specialist por tipo de ataque (Neris, WannaCry, SMB-scan, etc.)
+  → valida: F1 &gt; threshold_mínimo &amp;&amp; FPR &lt; threshold_máximo
+  → si pasa validación: empaqueta como plugin ONNX firmado con Ed25519
+  → distribuye a flota (BT + verificación ADR-025)
+  → nodos instalan plugin sin reinicio (hot-reload)
+</code></pre>
+<p><strong>Por qué RF specialists y no un modelo monolítico</strong>:
+- Modelos pequeños → inferencia en hardware limitado (&lt;100ms en Raspberry Pi clase)
+- Interpretables: feature importance explicable a personal no técnico
+- Fallo aislado: un specialist defectuoso no tumba la detección general
+- Análogo comprobado: CrowdStrike y Darktrace usan internamente ensembles de especialistas</p>
+<p><strong>Prerequisito técnico duro</strong>: Schema CSV versionado explícitamente antes de cualquier entrenamiento centralizado. Un cambio de features rompe el histórico de TB acumulado. Propuesta: formalizar como DEBT-PROTO-002.</p>
+<hr />
+<h3 id="track-2-llm-especializado-en-servidor-vllm-horizonte-ano-23">Track 2 — LLM especializado en servidor vLLM (horizonte Año 2–3)</h3>
+<p>No sustituye al Track 1. Lo complementa añadiendo <strong>explicabilidad y razonamiento</strong>:</p>
+<pre><code>Servidor central (Track 2):
+  telemetría agregada → FT-Transformer tabular (detección avanzada)
+  + narrativas de ataque generadas → fine-tune LLM pequeño (Phi-3 / Mistral 7B)
+  → desplegado en servidor vLLM propio
+
+Casos de uso:
+  &quot;¿Por qué este host está en cuarentena?&quot; → respuesta en español
+  &quot;¿Qué campaña de ataque comparten estos 3 hospitales esta semana?&quot; → análisis agregado
+  &quot;Genera regla de firewall para este patrón&quot; → salida estructurada para firewall-acl-agent
+</code></pre>
+<p><strong>Sobre la formación de narrativas de flows para fine-tuning</strong>:
+Los CSVs no se usan directamente para fine-tuning del LLM. Se convierten primero a texto estructurado:</p>
+<pre><code>&quot;Host 192.168.1.5 contactó 847 destinos únicos en 2s usando puerto 445,
+con ratio bytes/paquete consistente con SMB scan. Clasificado como WannaCry
+por specialist RF-SMB-v2 con confianza 0.997.&quot;
+</code></pre>
+<p>Ese texto sí es input válido para fine-tuning de un LLM.</p>
+<hr />
+<h2 id="4-sobre-distribucion-p2p-el-rol-real-de-bittorrent">4. Sobre distribución P2P (el rol real de BitTorrent)</h2>
+<p>BitTorrent es óptimo para <strong>distribución</strong> (1→muchos), no para <strong>agregación</strong> (muchos→1). La telemetría de los nodos al servidor sigue siendo push/pull convencional (HTTPS, ZeroMQ o gRPC). BT entra solo en la redistribución de plugins ONNX validados:</p>
+<pre><code>Servidor publica plugin_rf_wannacry_v3.onnx.torrent + firma Ed25519
+  → Nodo-A descarga + verifica firma (ADR-025)
+  → Nodo-A se convierte en seeder
+  → Nodo-B descarga desde Nodo-A + verifica firma independientemente
+  → Servidor sirve solo el torrent inicial, la flota se autoabastece
+</code></pre>
+<p><strong>Ventaja estratégica</strong>: En un escenario de ataque coordinado donde el servidor central está bajo DDoS, la flota puede seguir distribuyendo modelos de respuesta entre sí. Resiliencia por diseño.</p>
+<hr />
+<h2 id="5-sobre-entrenar-en-un-portatil-pregunta-de-aprendizaje-del-autor">5. Sobre entrenar en un portátil (pregunta de aprendizaje del autor)</h2>
+<p><strong>¿Es posible aprender el pipeline completo en hardware personal?</strong></p>
+<table>
+<thead>
+<tr>
+<th>Tarea</th>
+<th>Viabilidad en portátil</th>
+<th>Tiempo estimado</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Entrenar RF con CSVs propios</td>
+<td>✅ Sin problemas</td>
+<td>Segundos-minutos</td>
+</tr>
+<tr>
+<td>Exportar modelo a ONNX</td>
+<td>✅ Sin problemas</td>
+<td>Trivial</td>
+</tr>
+<tr>
+<td>Fine-tuning Phi-3 Mini (3.8B) con QLoRA 4-bit</td>
+<td>⚠️ Posible pero lento</td>
+<td>Horas por epoch</td>
+</tr>
+<tr>
+<td>Pre-training LLM desde cero</td>
+<td>❌ No viable</td>
+<td>Semanas/meses</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Recomendación de aprendizaje progresivo</strong>:
+1. Primero: entrenar un RF specialist completo con CTU-13 o datos propios → exportar ONNX → validar F1 → empaquetar como plugin. Ver el ciclo completo.
+2. Segundo: experimentar con FT-Transformer en Google Colab (GPU gratuita).
+3. Tercero: fine-tuning con QLoRA en Colab o instancia cloud small. No en portátil.</p>
+<p>El valor del portátil es entender el <strong>ciclo completo de vida de un modelo</strong>, no la escala.</p>
+<hr />
+<h2 id="6-preguntas-abiertas-para-el-consejo">6. Preguntas abiertas para el Consejo</h2>
+<ol>
+<li>
+<p><strong>Track 1 prerequisito</strong>: ¿Debe formalizarse el versionado del schema CSV (DEBT-PROTO-002) antes de cualquier trabajo de agregación de telemetría? ¿Es un bloqueante duro?</p>
+</li>
+<li>
+<p><strong>Protocolo de telemetría nodo→servidor</strong>: ¿ZeroMQ (ya en stack), gRPC, o HTTPS simple? ¿Qué overhead es aceptable en nodos limitados?</p>
+</li>
+<li>
+<p><strong>Threshold de validación de plugins</strong>: ¿Qué criterios exactos debe pasar un RF specialist para ser distribuido a la flota? ¿F1 &gt; 0.99? ¿Evaluado sobre qué dataset de referencia?</p>
+</li>
+<li>
+<p><strong>Privacidad de telemetría</strong>: Antes del Track 2, ¿es suficiente anonimizar IPs (hash salado) o se necesita análisis legal formal bajo LOPD para datos de hospitales españoles?</p>
+</li>
+<li>
+<p><strong>FT-Transformer vs XGBoost</strong>: Para el Track 2 tabular, ¿justifica FT-Transformer la complejidad adicional sobre XGBoost para este dominio? El Consejo debe pronunciarse con evidencia de benchmarks en datos de red.</p>
+</li>
+<li>
+<p><strong>vLLM server</strong>: ¿Qué modelo base es más adecuado para fine-tuning en explicabilidad de seguridad de red — Phi-3 Mini, Mistral 7B, o Llama 3.1 8B? Criterios: licencia open-source compatible, huella de memoria, rendimiento en razonamiento estructurado.</p>
+</li>
+<li>
+<p><strong>Ciclo de vida de plugins</strong>: ¿Cómo se retira un specialist que degrada con drift de datos? ¿Hay un mecanismo de rollback en la flota?</p>
+</li>
+</ol>
+<hr />
+<h2 id="7-decisiones-que-no-se-toman-aqui">7. Decisiones que NO se toman aquí</h2>
+<ul>
+<li>Esta PRE-ADR no modifica la arquitectura actual del pipeline.</li>
+<li>No define implementación del servidor central de agregación.</li>
+<li>No compromete ningún trabajo hasta alcanzar ~5 nodos activos en producción.</li>
+<li>El trabajo inmediato sigue siendo: ADR-025 implementación + TEST-INTEG-SIGN-1 a 7.</li>
+</ul>
+<hr />
+<h2 id="8-contexto-academico-relevante">8. Contexto académico relevante</h2>
+<ul>
+<li><strong>FedAvg</strong> (McMahan et al., 2017) — referencia fundacional de aprendizaje federado.</li>
+<li><strong>Flower / flwr</strong> (Beutel et al., 2022) — framework FL open-source candidato.</li>
+<li><strong>FT-Transformer</strong> (Gorishniy et al., 2021) — Transformers para datos tabulares, benchmark tabular SOTA.</li>
+<li><strong>TabPFN</strong> (Hollmann et al., 2022) — few-shot para tabular sin entrenamiento explícito.</li>
+<li><strong>CTU-13</strong> (Garcia et al., 2014) — precedente directo: dataset propietario como activo académico.</li>
+<li><strong>Gradient Inversion Attacks</strong> (Geiping et al., 2020) — amenaza de privacidad relevante si se adopta FL puro.</li>
+<li><strong>QLoRA</strong> (Dettmers et al., 2023) — fine-tuning eficiente en hardware limitado.</li>
+</ul>
+<hr />
+<h2 id="9-posicion-preliminar-del-autor">9. Posición preliminar del autor</h2>
+<p>La visión a largo plazo es correcta y coherente: nodos ligeros que observan y envían, servidor central que aprende y distribuye mejoras validadas como plugins. Los LLMs tienen su lugar pero en la capa de explicabilidad, no en la detección. BitTorrent es elegante para la redistribución de plugins pero no para la telemetría.</p>
+<p><strong>Recomendación al Consejo</strong>: Validar la asimetría nodo/servidor como principio arquitectónico. Pronunciarse sobre el protocolo de telemetría y los thresholds de validación de plugins, que son las decisiones técnicas más cercanas e impactantes.</p>
+<hr />
+<p><em>Preparado para sesión del Consejo de Sabios — DAY 104</em><br />
+<em>Prompt al Consejo: evaluar cada pregunta abierta con criterios de (1) complejidad de implementación, (2) cumplimiento LOPD para datos hospitalarios, (3) viabilidad en hardware limitado de nodos, (4) valor científico/académico.</em></p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.top", "search.highlight"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

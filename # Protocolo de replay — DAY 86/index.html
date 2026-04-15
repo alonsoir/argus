@@ -1,0 +1,1438 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source embedded-ML NDR for hospitals and schools">
+      
+      
+        <meta name="author" content="Alonso Isidoro Roman">
+      
+      
+        <link rel="canonical" href="https://alonsoir.github.io/argus/%23%20Protocolo%20de%20replay%20%E2%80%94%20DAY%2086/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>Protocolo de replay — DAY 86.md - ML Defender (aRGus NDR)</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#protocolo-de-replay-day-86md" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="ML Defender (aRGus NDR)" class="md-header__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ML Defender (aRGus NDR)
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Protocolo de replay — DAY 86.md
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../README.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../docs/ARCHITECTURE.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../docs/BACKLOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Backlog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../docs/SECURITY_MODEL.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Security Model
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../docs/adr/ADR-013 seed distribution component authentication.md" class="md-tabs__link">
+          
+  
+  
+  ADRs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../docs/contracts/Protobuf contracts.md" class="md-tabs__link">
+          
+  
+  
+  Contracts
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="ML Defender (aRGus NDR)" class="md-nav__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ML Defender (aRGus NDR)
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../README.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/ARCHITECTURE.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/BACKLOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/SECURITY_MODEL.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADRs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ADRs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/adr/ADR-013 seed distribution component authentication.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013 Seed Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/adr/ADR-021-deployment-topology-seed-families.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-021 Topology SSOT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/adr/ADR-022-threat-model-opcion2-descartada.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-022 Threat Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/contracts/Protobuf contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protobuf
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/contracts/JSON contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JSON
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/contracts/Rag security commands.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="protocolo-de-replay-day-86md">Protocolo de replay — DAY 86.md</h1>
+<h1 id="experimento-1">Experimento 1</h1>
+<p>(.venv) aironman@MacBook-Pro-de-Alonso argus % make up
+Bringing machine 'defender' up with 'virtualbox' provider...
+Bringing machine 'client' up with 'virtualbox' provider...
+...
+(.venv) aironman@MacBook-Pro-de-Alonso argus % make pipeline-stop
+🛑 Stopping all pipeline components...
+✅ Pipeline stopped
+(.venv) aironman@MacBook-Pro-de-Alonso argus % make pipeline-start</p>
+<p>...
+╔════════════════════════════════════════════════════════════╗
+║  ✅ FULL PIPELINE STARTED (Day 74)                        ║
+╚════════════════════════════════════════════════════════════╝</p>
+<p>╔════════════════════════════════════════════════════════════╗
+║  📊 ML Defender Pipeline Status (via TMUX)                ║
+╚════════════════════════════════════════════════════════════╝
+✅ etcd-server:   RUNNING
+✅ rag-security:  RUNNING
+✅ rag-ingester:  RUNNING
+✅ ml-detector:   RUNNING
+✅ sniffer:       RUNNING
+✅ firewall:      RUNNING
+╚════════════════════════════════════════════════════════════╝
+(.venv) aironman@MacBook-Pro-de-Alonso argus % sleep 15
+(.venv) aironman@MacBook-Pro-de-Alonso argus % make test-replay-small
+🧪 Replaying CTU-13 smallFlows.pcap...
+Test start: 2026-03-14 07:16:23.730783 ...
+Actual: 3624 packets (2500833 bytes) sent in 2.00 seconds
+Rated: 1249959.0 Bps, 9.99 Mbps, 1811.33 pps
+Actual: 8176 packets (5000865 bytes) sent in 4.00 seconds
+Rated: 1249941.2 Bps, 9.99 Mbps, 2043.55 pps
+Actual: 11931 packets (7501596 bytes) sent in 6.00 seconds
+Rated: 1249840.8 Bps, 9.99 Mbps, 1987.82 pps
+Test complete: 2026-03-14 07:16:31.104044
+Actual: 14261 packets (9216531 bytes) sent in 7.37 seconds
+Rated: 1249993.8 Bps, 9.99 Mbps, 1934.15 pps
+Flows: 1209 flows, 163.97 fps, 14243 unique flow packets, 18 unique non-flow packets
+Statistics for network device: eth1
+Successful packets:        14261
+Failed packets:            0
+Truncated packets:         0
+Retried packets (ENOBUFS): 0
+Retried packets (EAGAIN):  0
+(.venv) aironman@MacBook-Pro-de-Alonso argus % vagrant ssh defender -c "grep 'Stats:' /vagrant/logs/lab/ml-detector.log | tail -1"</p>
+<p>[2026-03-14 07:16:12.434] [ml-detector] [info] 📊 Stats: received=18, processed=18, sent=18, attacks=0, errors=(deser:0, feat:0, inf:0)
+(.venv) aironman@MacBook-Pro-de-Alonso argus % vagrant ssh defender -c "cat /vagrant/logs/lab/sniffer.log" &gt; /tmp/sniffer_small.log</p>
+<p>(.venv) aironman@MacBook-Pro-de-Alonso argus % python3 scripts/calculate_f1_neris.py /tmp/sniffer_small.log --total-events XXXX --day "DAY86_small"</p>
+<p>usage: calculate_f1_neris.py [-h] --total-events TOTAL_EVENTS [--day DAY] [--thresholds THRESHOLDS] sniffer_log
+calculate_f1_neris.py: error: argument --total-events: invalid int value: 'XXXX'
+(.venv) aironman@MacBook-Pro-de-Alonso argus % vagrant ssh defender -c "grep 'Stats:' /vagrant/logs/lab/ml-detector.log | tail -1"
+[2026-03-14 07:17:12.443] [ml-detector] [info] 📊 Stats: received=1030, processed=1030, sent=1030, attacks=0, errors=(deser:0, feat:0, inf:0)
+(.venv) aironman@MacBook-Pro-de-Alonso argus % vagrant ssh defender -c "grep 'Stats:' /vagrant/logs/lab/ml-detector.log | tail -1"
+[2026-03-14 07:18:12.461] [ml-detector] [info] 📊 Stats: received=3370, processed=3370, sent=3370, attacks=0, errors=(deser:0, feat:0, inf:0)
+(.venv) aironman@MacBook-Pro-de-Alonso argus % echo "Es obvio que hacer el grep lleva tiempo. Esperamos un poco."
+Es obvio que hacer el grep lleva tiempo. Esperamos un poco.
+(.venv) aironman@MacBook-Pro-de-Alonso argus % vagrant ssh defender -c "grep 'Stats:' /vagrant/logs/lab/ml-detector.log | tail -1"
+[2026-03-14 07:18:12.461] [ml-detector] [info] 📊 Stats: received=3370, processed=3370, sent=3370, attacks=0, errors=(deser:0, feat:0, inf:0)
+(.venv) aironman@MacBook-Pro-de-Alonso argus % vagrant ssh defender -c "grep 'Stats:' /vagrant/logs/lab/ml-detector.log | tail -1"
+[2026-03-14 07:19:12.464] [ml-detector] [info] 📊 Stats: received=7435, processed=7435, sent=7435, attacks=1, errors=(deser:0, feat:0, inf:0)
+(.venv) aironman@MacBook-Pro-de-Alonso argus % vagrant ssh defender -c "grep 'Stats:' /vagrant/logs/lab/ml-detector.log | tail -1"
+[2026-03-14 07:19:12.464] [ml-detector] [info] 📊 Stats: received=7435, processed=7435, sent=7435, attacks=1, errors=(deser:0, feat:0, inf:0)
+(.venv) aironman@MacBook-Pro-de-Alonso argus % vagrant ssh defender -c "grep 'Stats:' /vagrant/logs/lab/ml-detector.log | tail -1"
+[2026-03-14 07:19:12.464] [ml-detector] [info] 📊 Stats: received=7435, processed=7435, sent=7435, attacks=1, errors=(deser:0, feat:0, inf:0)
+(.venv) aironman@MacBook-Pro-de-Alonso argus % vagrant ssh defender -c "grep 'Stats:' /vagrant/logs/lab/ml-detector.log | tail -1"
+[2026-03-14 07:20:12.466] [ml-detector] [info] 📊 Stats: received=7441, processed=7441, sent=7441, attacks=1, errors=(deser:0, feat:0, inf:0)
+(.venv) aironman@MacBook-Pro-de-Alonso argus % vagrant ssh defender -c "grep 'Stats:' /vagrant/logs/lab/ml-detector.log | tail -1"
+[2026-03-14 07:21:12.467] [ml-detector] [info] 📊 Stats: received=7447, processed=7447, sent=7447, attacks=1, errors=(deser:0, feat:0, inf:0)
+(.venv) aironman@MacBook-Pro-de-Alonso argus % vagrant ssh defender -c "grep 'Stats:' /vagrant/logs/lab/ml-detector.log | tail -1"
+[2026-03-14 07:22:12.467] [ml-detector] [info] 📊 Stats: received=7457, processed=7457, sent=7457, attacks=1, errors=(deser:0, feat:0, inf:0)
+(.venv) aironman@MacBook-Pro-de-Alonso argus % wc -l /vagrant/logs/lab/ml-detector.log
+wc: /vagrant/logs/lab/ml-detector.log: open: No such file or directory
+(.venv) aironman@MacBook-Pro-de-Alonso argus % wc -l logs/lab/ml-detector.log
+55474 logs/lab/ml-detector.log
+(.venv) aironman@MacBook-Pro-de-Alonso argus % Cuando puedo sacar el número para el script python3 scripts/calculate_f1_neris.py /tmp/sniffer_small.log --total-events XXXX --day "DAY86_small"
+(.venv) aironman@MacBook-Pro-de-Alonso argus % vagrant ssh defender -c "grep 'Stats:' /vagrant/logs/lab/ml-detector.log | tail -1"
+[2026-03-14 07:26:12.470] [ml-detector] [info] 📊 Stats: received=7481, processed=7481, sent=7481, attacks=1, errors=(deser:0, feat:0, inf:0)
+(.venv) aironman@MacBook-Pro-de-Alonso argus % vagrant ssh defender -c "grep 'Stats:' /vagrant/logs/lab/ml-detector.log | tail -1"
+[2026-03-14 07:26:12.470] [ml-detector] [info] 📊 Stats: received=7481, processed=7481, sent=7481, attacks=1, errors=(deser:0, feat:0, inf:0)
+(.venv) aironman@MacBook-Pro-de-Alonso argus % vagrant ssh defender -c "grep 'Stats:' /vagrant/logs/lab/ml-detector.log | tail -1"
+[2026-03-14 07:26:12.470] [ml-detector] [info] 📊 Stats: received=7481, processed=7481, sent=7481, attacks=1, errors=(deser:0, feat:0, inf:0)
+(.venv) aironman@MacBook-Pro-de-Alonso argus % vagrant ssh defender -c "grep 'Stats:' /vagrant/logs/lab/ml-detector.log | tail -1"
+[2026-03-14 07:26:12.470] [ml-detector] [info] 📊 Stats: received=7481, processed=7481, sent=7481, attacks=1, errors=(deser:0, feat:0, inf:0)
+(.venv) aironman@MacBook-Pro-de-Alonso argus % python3 scripts/calculate_f1_neris.py /tmp/sniffer_small.log --total-events 7481 --day "DAY86_small"</p>
+<p>====================================================================
+ML DEFENDER - F1 SCORE CALCULATOR
+Day: DAY86_small  |  Thresholds:
+Ground truth: CTU-13 Neris (3 malicious IPs)
+====================================================================
+Malicious IPs: 147.32.84.165, 147.32.84.191, 147.32.84.192</p>
+<p>====================================================================
+FAST DETECTOR — deduplicated alerts vs ground truth
+====================================================================
+Raw [FAST ALERT] lines:      10064
+Deduplicated alert events:   916
+Total events (ml-detector):  7481</p>
+<p>TP  (malicious, detected):   766
+FP  (benign, false alarm):   150
+FN  (malicious, missed):     0
+TN  (benign, correct):       6565</p>
+<p>Precision:  0.8362
+Recall:     1.0000
+F1-Score:   0.9108  ← paper metric
+FPR:        0.0223
+Accuracy:   0.9799</p>
+<h1 id="note-fn-estimated-as-0-fast-alert-only-fires-on-detected-flows-true-fn-requires-per-event-ip-table-recall10-is-an-upper-bound-not-confirmed">NOTE: FN estimated as 0 — [FAST ALERT] only fires on detected flows. True FN requires per-event IP table. Recall=1.0 is an upper bound, not confirmed.</h1>
+<p>DETECTED IPs breakdown:
+147.32.84.165  →  766 flow(s) detected  [MALICIOUS ✓]</p>
+<p>FALSE POSITIVE IPs (sample, max 5):
+src=192.168.3.131  dst=65.55.5.232
+src=72.14.213.147  dst=192.168.3.131
+src=66.235.139.121  dst=192.168.3.131
+src=65.55.239.163  dst=192.168.3.131
+src=192.168.3.131  dst=65.55.239.163</p>
+<p>CSV line for f1_replay_log.csv:
+DAYDAY86_small,,7481,766,150,0,6565,0.9108,0.8362,1.0000,0.0223</p>
+<h1 id="experimento-2-neris-el-principal">Experimento 2 — neris (el principal)</h1>
+<p>(.venv) aironman@MacBook-Pro-de-Alonso argus % make pipeline-stop &amp;&amp; make logs-lab-clean &amp;&amp; make pipeline-start &amp;&amp; sleep 15</p>
+<p>🛑 Stopping all pipeline components...
+✅ Pipeline stopped
+🧹 Rotating pipeline logs...
+✅ Logs rotated to /vagrant/logs/lab/archive/</p>
+<p>...
+(.venv) aironman@MacBook-Pro-de-Alonso argus % make pipeline-status</p>
+<p>╔════════════════════════════════════════════════════════════╗
+║  📊 ML Defender Pipeline Status (via TMUX)                ║
+╚════════════════════════════════════════════════════════════╝
+✅ etcd-server:   RUNNING
+✅ rag-security:  RUNNING
+❌ rag-ingester:  STOPPED
+✅ ml-detector:   RUNNING
+✅ sniffer:       RUNNING
+✅ firewall:      RUNNING
+╚════════════════════════════════════════════════════════════╝
+(.venv) aironman@MacBook-Pro-de-Alonso argus % make pipeline-health</p>
+<p>╔══════════════════════════════════════════════════════════════╗
+║      ML Defender — Pipeline Health Monitor                  ║
+╚══════════════════════════════════════════════════════════════╝</p>
+<p>🖥  VM Status:
+defender: running
+client:   running</p>
+<p>📦 Pipeline Components:
+Component              Status     PID        Log Activity
+---------              ------     ---        ------------
+etcd-server            ✅ UP     2760       ❓ no log
+rag-security           ✅ UP     2817       ❓ no log
+rag-ingester           ❌ DOWN   -          -       <br />
+ml-detector            ✅ UP     2936       ❓ no log
+sniffer                ✅ UP     3170       ❓ no log
+firewall               ✅ UP     3039       ❓ no log</p>
+<p>📊 ML-Detector last stats:
+received=16, processed=16, sent=16, attacks=0, errors=(deser:0, feat:0, inf:0)</p>
+<p>⚠️  VM 'client' ya está RUNNING — no ejecutar 'vagrant up client'</p>
+<p>╚══════════════════════════════════════════════════════════════╝</p>
+<p>Me estoy dando cuenta que en el Makefile no tenemos una tarea para arrancar rag-ingester, por eso está parado.</p>
+<p>(.venv) aironman@MacBook-Pro-de-Alonso argus % make rag-ingester-start
+🚀 Starting RAG Ingester (Full Context)...
+Ejecución desde la raíz del componente para resolver paths relativos del config...</p>
+<p>╔════════════════════════════════════════════════════════════╗
+║  📊 ML Defender Pipeline Status (via TMUX)                ║
+╚════════════════════════════════════════════════════════════╝
+✅ etcd-server:   RUNNING
+✅ rag-security:  RUNNING
+✅ rag-ingester:  RUNNING
+✅ ml-detector:   RUNNING
+✅ sniffer:       RUNNING
+✅ firewall:      RUNNING
+╚════════════════════════════════════════════════════════════╝
+(.venv) aironman@MacBook-Pro-de-Alonso argus % make pipeline-health</p>
+<p>╔══════════════════════════════════════════════════════════════╗
+║      ML Defender — Pipeline Health Monitor                  ║
+╚══════════════════════════════════════════════════════════════╝</p>
+<p>🖥  VM Status:
+defender: running
+client:   running</p>
+<p>📦 Pipeline Components:
+Component              Status     PID        Log Activity
+---------              ------     ---        ------------
+etcd-server            ✅ UP     2760       ❓ no log
+rag-security           ✅ UP     2817       ❓ no log
+rag-ingester           ✅ UP     3679       ❓ no log
+ml-detector            ✅ UP     2936       ❓ no log
+sniffer                ✅ UP     3170       ❓ no log
+firewall               ✅ UP     3039       ❓ no log</p>
+<p>📊 ML-Detector last stats:
+received=52, processed=52, sent=52, attacks=0, errors=(deser:0, feat:0, inf:0)</p>
+<p>⚠️  VM 'client' ya está RUNNING — no ejecutar 'vagrant up client'</p>
+<p>╚══════════════════════════════════════════════════════════════╝</p>
+<p>Por qué ha fallado levantar rag-ingester antes?</p>
+<p>(.venv) aironman@MacBook-Pro-de-Alonso argus % make test-replay-neris
+🧪 Replaying CTU-13 Neris botnet (492K events)...
+...
+Test complete: 2026-03-14 07:43:41.718741
+Actual: 320524 packets (44200259 bytes) sent in 39.68 seconds
+Rated: 1113850.3 Bps, 8.91 Mbps, 8077.23 pps
+Flows: 19135 flows, 482.20 fps, 322242 unique flow packets, 906 unique non-flow packets
+Statistics for network device: eth1
+Successful packets:        320524
+Failed packets:            2630
+Truncated packets:         0
+Retried packets (ENOBUFS): 0
+Retried packets (EAGAIN):  0
+(.venv) aironman@MacBook-Pro-de-Alonso argus % vagrant ssh defender -c "grep 'Stats:' /vagrant/logs/lab/ml-detector.log | tail -1"</p>
+<p>[2026-03-14 07:45:24.961] [ml-detector] [info] 📊 Stats: received=5941, processed=5941, sent=5941, attacks=0, errors=(deser:0, feat:0, inf:0)
+(.venv) aironman@MacBook-Pro-de-Alonso argus % vagrant ssh defender -c "grep 'Stats:' /vagrant/logs/lab/ml-detector.log | tail -1"</p>
+<p>[2026-03-14 07:47:24.962] [ml-detector] [info] 📊 Stats: received=11904, processed=11904, sent=11904, attacks=12, errors=(deser:0, feat:0, inf:0)
+(.venv) aironman@MacBook-Pro-de-Alonso argus % vagrant ssh defender -c "grep 'Stats:' /vagrant/logs/lab/ml-detector.log | tail -1"</p>
+<p>[2026-03-14 07:50:24.972] [ml-detector] [info] 📊 Stats: received=12046, processed=12046, sent=12046, attacks=12, errors=(deser:0, feat:0, inf:0)
+(.venv) aironman@MacBook-Pro-de-Alonso argus % vagrant ssh defender -c "grep 'Stats:' /vagrant/logs/lab/ml-detector.log | tail -1"</p>
+<p>[2026-03-14 07:50:24.972] [ml-detector] [info] 📊 Stats: received=12046, processed=12046, sent=12046, attacks=12, errors=(deser:0, feat:0, inf:0)
+(.venv) aironman@MacBook-Pro-de-Alonso argus % vagrant ssh defender -c "grep 'Stats:' /vagrant/logs/lab/ml-detector.log | tail -1"</p>
+<p>[2026-03-14 07:54:24.975] [ml-detector] [info] 📊 Stats: received=12214, processed=12214, sent=12214, attacks=12, errors=(deser:0, feat:0, inf:0)
+(.venv) aironman@MacBook-Pro-de-Alonso argus % vagrant ssh defender -c "grep 'Stats:' /vagrant/logs/lab/ml-detector.log | tail -1"</p>
+<p>[2026-03-14 07:54:24.975] [ml-detector] [info] 📊 Stats: received=12214, processed=12214, sent=12214, attacks=12, errors=(deser:0, feat:0, inf:0)
+(.venv) aironman@MacBook-Pro-de-Alonso argus % vagrant ssh defender -c "grep 'Stats:' /vagrant/logs/lab/ml-detector.log | tail -1"</p>
+<p>[2026-03-14 07:54:24.975] [ml-detector] [info] 📊 Stats: received=12214, processed=12214, sent=12214, attacks=12, errors=(deser:0, feat:0, inf:0)
+(.venv) aironman@MacBook-Pro-de-Alonso argus % vagrant ssh defender -c "grep 'Stats:' /vagrant/logs/lab/ml-detector.log | tail -1"</p>
+<p>[2026-03-14 07:57:25.012] [ml-detector] [info] 📊 Stats: received=12332, processed=12332, sent=12332, attacks=12, errors=(deser:0, feat:0, inf:0)
+(.venv) aironman@MacBook-Pro-de-Alonso argus % vagrant ssh defender -c "cat /vagrant/logs/lab/sniffer.log" &gt; /tmp/sniffer_neris.log</p>
+<p>(.venv) aironman@MacBook-Pro-de-Alonso argus % wc -l /tmp/sniffer_neris.log
+38277 /tmp/sniffer_neris.log
+(.venv) aironman@MacBook-Pro-de-Alonso argus % vagrant ssh defender -c "grep 'Stats:' /vagrant/logs/lab/ml-detector.log | tail -1"</p>
+<p>[2026-03-14 07:59:25.012] [ml-detector] [info] 📊 Stats: received=12444, processed=12444, sent=12444, attacks=12, errors=(deser:0, feat:0, inf:0)
+(.venv) aironman@MacBook-Pro-de-Alonso argus % vagrant ssh defender -c "grep 'Stats:' /vagrant/logs/lab/ml-detector.log | tail -1"</p>
+<p>[2026-03-14 07:59:25.012] [ml-detector] [info] 📊 Stats: received=12444, processed=12444, sent=12444, attacks=12, errors=(deser:0, feat:0, inf:0)
+(.venv) aironman@MacBook-Pro-de-Alonso argus % vagrant ssh defender -c "grep 'Stats:' /vagrant/logs/lab/ml-detector.log | tail -1"</p>
+<p>[2026-03-14 08:00:25.012] [ml-detector] [info] 📊 Stats: received=12517, processed=12517, sent=12517, attacks=12, errors=(deser:0, feat:0, inf:0)
+(.venv) aironman@MacBook-Pro-de-Alonso argus % vagrant ssh defender -c "grep 'Stats:' /vagrant/logs/lab/ml-detector.log | tail -1"</p>
+<p>[2026-03-14 08:01:25.015] [ml-detector] [info] 📊 Stats: received=12563, processed=12563, sent=12563, attacks=12, errors=(deser:0, feat:0, inf:0)
+(.venv) aironman@MacBook-Pro-de-Alonso argus % vagrant ssh defender -c "grep 'Stats:' /vagrant/logs/lab/ml-detector.log | tail -1"</p>
+<p>[2026-03-14 08:01:25.015] [ml-detector] [info] 📊 Stats: received=12563, processed=12563, sent=12563, attacks=12, errors=(deser:0, feat:0, inf:0)
+(.venv) aironman@MacBook-Pro-de-Alonso argus % echo "Es suficiente?"
+Es suficiente?
+(.venv) aironman@MacBook-Pro-de-Alonso argus % python3 scripts/calculate_f1_neris.py /tmp/sniffer_neris.log --total-events 12563 --day "DAY86_neris"</p>
+<p>====================================================================
+ML DEFENDER - F1 SCORE CALCULATOR
+Day: DAY86_neris  |  Thresholds:
+Ground truth: CTU-13 Neris (3 malicious IPs)
+====================================================================
+Malicious IPs: 147.32.84.165, 147.32.84.191, 147.32.84.192</p>
+<p>====================================================================
+FAST DETECTOR — deduplicated alerts vs ground truth
+====================================================================
+Raw [FAST ALERT] lines:      5662
+Deduplicated alert events:   648
+Total events (ml-detector):  12563</p>
+<p>TP  (malicious, detected):   646
+FP  (benign, false alarm):   2
+FN  (malicious, missed):     0
+TN  (benign, correct):       11915</p>
+<p>Precision:  0.9969
+Recall:     1.0000
+F1-Score:   0.9985  ← paper metric
+FPR:        0.0002
+Accuracy:   0.9998</p>
+<h1 id="note-fn-estimated-as-0-fast-alert-only-fires-on-detected-flows-true-fn-requires-per-event-ip-table-recall10-is-an-upper-bound-not-confirmed_1">NOTE: FN estimated as 0 — [FAST ALERT] only fires on detected flows. True FN requires per-event IP table. Recall=1.0 is an upper bound, not confirmed.</h1>
+<p>DETECTED IPs breakdown:
+147.32.84.165  →  646 flow(s) detected  [MALICIOUS ✓]</p>
+<p>FALSE POSITIVE IPs (sample, max 5):
+src=192.168.56.1  dst=224.0.0.251
+src=192.168.56.1  dst=192.168.56.255</p>
+<p>CSV line for f1_replay_log.csv:
+DAYDAY86_neris,,12563,646,2,0,11915,0.9985,0.9969,1.0000,0.0002</p>
+<p>(.venv) aironman@MacBook-Pro-de-Alonso argus % vagrant ssh defender -c "grep 'Stats:' /vagrant/logs/lab/ml-detector.log | tail -1"</p>
+<p>[2026-03-14 08:02:25.023] [ml-detector] [info] 📊 Stats: received=12605, processed=12605, sent=12605, attacks=12, errors=(deser:0, feat:0, inf:0)
+(.venv) aironman@MacBook-Pro-de-Alonso argus % python3 scripts/calculate_f1_neris.py /tmp/sniffer_neris.log --total-events 12605 --day "DAY86_neris"</p>
+<p>====================================================================
+ML DEFENDER - F1 SCORE CALCULATOR
+Day: DAY86_neris  |  Thresholds:
+Ground truth: CTU-13 Neris (3 malicious IPs)
+====================================================================
+Malicious IPs: 147.32.84.165, 147.32.84.191, 147.32.84.192</p>
+<p>====================================================================
+FAST DETECTOR — deduplicated alerts vs ground truth
+====================================================================
+Raw [FAST ALERT] lines:      5662
+Deduplicated alert events:   648
+Total events (ml-detector):  12605</p>
+<p>TP  (malicious, detected):   646
+FP  (benign, false alarm):   2
+FN  (malicious, missed):     0
+TN  (benign, correct):       11957</p>
+<p>Precision:  0.9969
+Recall:     1.0000
+F1-Score:   0.9985  ← paper metric
+FPR:        0.0002
+Accuracy:   0.9998</p>
+<h1 id="note-fn-estimated-as-0-fast-alert-only-fires-on-detected-flows-true-fn-requires-per-event-ip-table-recall10-is-an-upper-bound-not-confirmed_2">NOTE: FN estimated as 0 — [FAST ALERT] only fires on detected flows. True FN requires per-event IP table. Recall=1.0 is an upper bound, not confirmed.</h1>
+<p>DETECTED IPs breakdown:
+147.32.84.165  →  646 flow(s) detected  [MALICIOUS ✓]</p>
+<p>FALSE POSITIVE IPs (sample, max 5):
+src=192.168.56.1  dst=224.0.0.251
+src=192.168.56.1  dst=192.168.56.255</p>
+<p>CSV line for f1_replay_log.csv:
+DAYDAY86_neris,,12605,646,2,0,11957,0.9985,0.9969,1.0000,0.0002</p>
+<p>(.venv) aironman@MacBook-Pro-de-Alonso argus % vagrant ssh defender -c "grep 'Stats:' /vagrant/logs/lab/ml-detector.log | tail -1"</p>
+<p>[2026-03-14 08:04:25.069] [ml-detector] [info] 📊 Stats: received=12685, processed=12685, sent=12685, attacks=12, errors=(deser:0, feat:0, inf:0)
+(.venv) aironman@MacBook-Pro-de-Alonso argus % vagrant ssh defender -c "grep 'Stats:' /vagrant/logs/lab/ml-detector.log | tail -1"</p>
+<p>[2026-03-14 08:04:25.069] [ml-detector] [info] 📊 Stats: received=12685, processed=12685, sent=12685, attacks=12, errors=(deser:0, feat:0, inf:0)
+(.venv) aironman@MacBook-Pro-de-Alonso argus % vagrant ssh defender -c "grep 'Stats:' /vagrant/logs/lab/ml-detector.log | tail -1"</p>
+<p>[2026-03-14 08:05:25.073] [ml-detector] [info] 📊 Stats: received=12723, processed=12723, sent=12723, attacks=12, errors=(deser:0, feat:0, inf:0)
+(.venv) aironman@MacBook-Pro-de-Alonso argus % python3 scripts/calculate_f1_neris.py /tmp/sniffer_neris.log --total-events 12723 --day "DAY86_neris"</p>
+<p>====================================================================
+ML DEFENDER - F1 SCORE CALCULATOR
+Day: DAY86_neris  |  Thresholds:
+Ground truth: CTU-13 Neris (3 malicious IPs)
+====================================================================
+Malicious IPs: 147.32.84.165, 147.32.84.191, 147.32.84.192</p>
+<p>====================================================================
+FAST DETECTOR — deduplicated alerts vs ground truth
+====================================================================
+Raw [FAST ALERT] lines:      5662
+Deduplicated alert events:   648
+Total events (ml-detector):  12723</p>
+<p>TP  (malicious, detected):   646
+FP  (benign, false alarm):   2
+FN  (malicious, missed):     0
+TN  (benign, correct):       12075</p>
+<p>Precision:  0.9969
+Recall:     1.0000
+F1-Score:   0.9985  ← paper metric
+FPR:        0.0002
+Accuracy:   0.9998</p>
+<h1 id="note-fn-estimated-as-0-fast-alert-only-fires-on-detected-flows-true-fn-requires-per-event-ip-table-recall10-is-an-upper-bound-not-confirmed_3">NOTE: FN estimated as 0 — [FAST ALERT] only fires on detected flows. True FN requires per-event IP table. Recall=1.0 is an upper bound, not confirmed.</h1>
+<p>DETECTED IPs breakdown:
+147.32.84.165  →  646 flow(s) detected  [MALICIOUS ✓]</p>
+<p>FALSE POSITIVE IPs (sample, max 5):
+src=192.168.56.1  dst=224.0.0.251
+src=192.168.56.1  dst=192.168.56.255</p>
+<p>CSV line for f1_replay_log.csv:
+DAYDAY86_neris,,12723,646,2,0,12075,0.9985,0.9969,1.0000,0.0002</p>
+<p>(.venv) aironman@MacBook-Pro-de-Alonso argus % vagrant ssh defender -c "grep 'Stats:' /vagrant/logs/lab/ml-detector.log | tail -1"</p>
+<p>[2026-03-14 08:16:25.086] [ml-detector] [info] 📊 Stats: received=13034, processed=13034, sent=13034, attacks=12, errors=(deser:0, feat:0, inf:0)
+(.venv) aironman@MacBook-Pro-de-Alonso argus % vagrant ssh defender -c "grep 'Stats:' /vagrant/logs/lab/ml-detector.log | tail -1"</p>
+<p>[2026-03-14 08:48:25.345] [ml-detector] [info] 📊 Stats: received=13930, processed=13930, sent=13930, attacks=12, errors=(deser:0, feat:0, inf:0)
+(.venv) aironman@MacBook-Pro-de-Alonso argus % vagrant ssh defender -c "grep 'Stats:' /vagrant/logs/lab/ml-detector.log | tail -1"</p>
+<p>[2026-03-14 08:48:25.345] [ml-detector] [info] 📊 Stats: received=13930, processed=13930, sent=13930, attacks=12, errors=(deser:0, feat:0, inf:0)
+(.venv) aironman@MacBook-Pro-de-Alonso argus % python3 scripts/calculate_f1_neris.py /tmp/sniffer_neris.log --total-events 13930 --day "DAY86_neris"</p>
+<p>====================================================================
+ML DEFENDER - F1 SCORE CALCULATOR
+Day: DAY86_neris  |  Thresholds:
+Ground truth: CTU-13 Neris (3 malicious IPs)
+====================================================================
+Malicious IPs: 147.32.84.165, 147.32.84.191, 147.32.84.192</p>
+<p>====================================================================
+FAST DETECTOR — deduplicated alerts vs ground truth
+====================================================================
+Raw [FAST ALERT] lines:      5662
+Deduplicated alert events:   648
+Total events (ml-detector):  13930</p>
+<p>TP  (malicious, detected):   646
+FP  (benign, false alarm):   2
+FN  (malicious, missed):     0
+TN  (benign, correct):       13282</p>
+<p>Precision:  0.9969
+Recall:     1.0000
+F1-Score:   0.9985  ← paper metric
+FPR:        0.0002
+Accuracy:   0.9999</p>
+<h1 id="note-fn-estimated-as-0-fast-alert-only-fires-on-detected-flows-true-fn-requires-per-event-ip-table-recall10-is-an-upper-bound-not-confirmed_4">NOTE: FN estimated as 0 — [FAST ALERT] only fires on detected flows. True FN requires per-event IP table. Recall=1.0 is an upper bound, not confirmed.</h1>
+<p>DETECTED IPs breakdown:
+147.32.84.165  →  646 flow(s) detected  [MALICIOUS ✓]</p>
+<p>FALSE POSITIVE IPs (sample, max 5):
+src=192.168.56.1  dst=224.0.0.251
+src=192.168.56.1  dst=192.168.56.255</p>
+<p>CSV line for f1_replay_log.csv:
+DAYDAY86_neris,,13930,646,2,0,13282,0.9985,0.9969,1.0000,0.0002</p>
+<p>Un par de horas más tarde, o algo más...</p>
+<p>(.venv) aironman@MacBook-Pro-de-Alonso argus % vagrant ssh defender -c "grep 'Stats:' /vagrant/logs/lab/ml-detector.log | tail -1"</p>
+<p>[2026-03-14 12:04:26.613] [ml-detector] [info] 📊 Stats: received=17866, processed=17866, sent=17866, attacks=12, errors=(deser:0, feat:0, inf:0)
+(.venv) aironman@MacBook-Pro-de-Alonso argus % vagrant ssh defender -c "grep 'Stats:' /vagrant/logs/lab/ml-detector.log | tail -1"</p>
+<p>[2026-03-14 12:04:26.613] [ml-detector] [info] 📊 Stats: received=17866, processed=17866, sent=17866, attacks=12, errors=(deser:0, feat:0, inf:0)
+(.venv) aironman@MacBook-Pro-de-Alonso argus % vagrant ssh defender -c "grep 'Stats:' /vagrant/logs/lab/ml-detector.log | tail -1"</p>
+<p>[2026-03-14 12:04:26.613] [ml-detector] [info] 📊 Stats: received=17866, processed=17866, sent=17866, attacks=12, errors=(deser:0, feat:0, inf:0)
+(.venv) aironman@MacBook-Pro-de-Alonso argus % python3 scripts/calculate_f1_neris.py /tmp/sniffer_neris.log --total-events 17866 --day "DAY86_neris"</p>
+<p>====================================================================
+ML DEFENDER - F1 SCORE CALCULATOR
+Day: DAY86_neris  |  Thresholds:
+Ground truth: CTU-13 Neris (3 malicious IPs)
+====================================================================
+Malicious IPs: 147.32.84.165, 147.32.84.191, 147.32.84.192</p>
+<p>====================================================================
+FAST DETECTOR — deduplicated alerts vs ground truth
+====================================================================
+Raw [FAST ALERT] lines:      5662
+Deduplicated alert events:   648
+Total events (ml-detector):  17866</p>
+<p>TP  (malicious, detected):   646
+FP  (benign, false alarm):   2
+FN  (malicious, missed):     0
+TN  (benign, correct):       17218</p>
+<p>Precision:  0.9969
+Recall:     1.0000
+F1-Score:   0.9985  ← paper metric
+FPR:        0.0001
+Accuracy:   0.9999</p>
+<h1 id="note-fn-estimated-as-0-fast-alert-only-fires-on-detected-flows-true-fn-requires-per-event-ip-table-recall10-is-an-upper-bound-not-confirmed_5">NOTE: FN estimated as 0 — [FAST ALERT] only fires on detected flows. True FN requires per-event IP table. Recall=1.0 is an upper bound, not confirmed.</h1>
+<p>DETECTED IPs breakdown:
+147.32.84.165  →  646 flow(s) detected  [MALICIOUS ✓]</p>
+<p>FALSE POSITIVE IPs (sample, max 5):
+src=192.168.56.1  dst=224.0.0.251
+src=192.168.56.1  dst=192.168.56.255</p>
+<p>CSV line for f1_replay_log.csv:
+DAYDAY86_neris,,17866,646,2,0,17218,0.9985,0.9969,1.0000,0.0001</p>
+<p>(.venv) aironman@MacBook-Pro-de-Alonso argus %</p>
+<h1 id="experimento-3-bigflows-cpuram-30-min">Experimento 3: bigFlows + CPU/RAM (30 min)</h1>
+<p>(.venv) aironman@MacBook-Pro-de-Alonso argus % make pipeline-stop &amp;&amp; make logs-lab-clean &amp;&amp; make pipeline-start &amp;&amp; sleep 15</p>
+<p>🛑 Stopping all pipeline components...
+✅ Pipeline stopped
+🧹 Rotating pipeline logs...
+✅ Logs rotated to /vagrant/logs/lab/archive/
+...
+╔════════════════════════════════════════════════════════════╗
+║  📊 ML Defender Pipeline Status (via TMUX)                ║
+╚════════════════════════════════════════════════════════════╝
+✅ etcd-server:   RUNNING
+✅ rag-security:  RUNNING
+✅ rag-ingester:  RUNNING
+✅ ml-detector:   RUNNING
+✅ sniffer:       RUNNING
+✅ firewall:      RUNNING
+╚════════════════════════════════════════════════════════════╝</p>
+<p>(.venv) aironman@MacBook-Pro-de-Alonso argus % vagrant ssh defender -c "top -b -n 60 -d 10 &gt; /vagrant/logs/lab/top_bigflows.log &amp;"</p>
+<p>(.venv) aironman@MacBook-Pro-de-Alonso argus % make test-replay-big</p>
+<p>🧪 Replaying CTU-13 bigFlows.pcap...
+Test start: 2026-03-14 12:15:07.978917 ...
+Actual: 32623 packets (12499674 bytes) sent in 10.00 seconds
+Rated: 1249952.4 Bps, 9.99 Mbps, 3262.26 pps
+Actual: 61886 packets (25000292 bytes) sent in 20.00 seconds
+Rated: 1249967.2 Bps, 9.99 Mbps, 3094.18 pps
+Actual: 87964 packets (37501041 bytes) sent in 30.00 seconds
+Rated: 1249979.5 Bps, 9.99 Mbps, 2932.00 pps
+Actual: 112482 packets (50002423 bytes) sent in 40.00 seconds
+Rated: 1249988.2 Bps, 9.99 Mbps, 2811.88 pps
+Actual: 139077 packets (62503278 bytes) sent in 50.00 seconds
+Rated: 1249999.1 Bps, 9.99 Mbps, 2781.39 pps
+Actual: 171078 packets (75003815 bytes) sent in 60.00 seconds
+Rated: 1249998.3 Bps, 9.99 Mbps, 2851.15 pps
+Actual: 201974 packets (87504863 bytes) sent in 70.00 seconds
+Rated: 1249998.8 Bps, 9.99 Mbps, 2885.17 pps
+Actual: 226644 packets (100005853 bytes) sent in 80.00 seconds
+Rated: 1249998.8 Bps, 9.99 Mbps, 2832.88 pps
+Actual: 251491 packets (112507007 bytes) sent in 90.00 seconds
+Rated: 1249998.2 Bps, 9.99 Mbps, 2794.16 pps
+Actual: 281457 packets (125007132 bytes) sent in 100.00 seconds
+Rated: 1249997.9 Bps, 9.99 Mbps, 2814.40 pps
+Actual: 311510 packets (137507592 bytes) sent in 110.00 seconds
+Rated: 1249994.8 Bps, 9.99 Mbps, 2831.74 pps
+Actual: 336340 packets (150008829 bytes) sent in 120.00 seconds
+Rated: 1249996.2 Bps, 9.99 Mbps, 2802.65 pps
+Actual: 362757 packets (162508791 bytes) sent in 130.00 seconds
+Rated: 1249996.2 Bps, 9.99 Mbps, 2790.27 pps
+Actual: 389070 packets (175010159 bytes) sent in 140.00 seconds
+Rated: 1249999.9 Bps, 9.99 Mbps, 2778.91 pps
+Actual: 415171 packets (187510235 bytes) sent in 150.00 seconds
+Rated: 1249999.7 Bps, 9.99 Mbps, 2767.65 pps
+Actual: 437370 packets (200010649 bytes) sent in 160.00 seconds
+Rated: 1249996.6 Bps, 9.99 Mbps, 2733.40 pps
+Actual: 467434 packets (212511211 bytes) sent in 170.00 seconds
+Rated: 1249999.9 Bps, 9.99 Mbps, 2749.46 pps
+Actual: 493401 packets (225010621 bytes) sent in 180.00 seconds
+Rated: 1249995.7 Bps, 9.99 Mbps, 2740.97 pps
+Actual: 524772 packets (237512299 bytes) sent in 190.01 seconds
+Rated: 1249997.1 Bps, 9.99 Mbps, 2761.80 pps
+Actual: 557267 packets (250012751 bytes) sent in 200.01 seconds
+Rated: 1249996.8 Bps, 9.99 Mbps, 2786.18 pps
+Actual: 591386 packets (262513534 bytes) sent in 210.01 seconds
+Rated: 1249999.9 Bps, 9.99 Mbps, 2815.97 pps
+Actual: 621439 packets (275012753 bytes) sent in 220.01 seconds
+Rated: 1249995.1 Bps, 9.99 Mbps, 2824.58 pps
+Actual: 650894 packets (287513675 bytes) sent in 230.01 seconds
+Rated: 1249997.9 Bps, 9.99 Mbps, 2829.83 pps
+Actual: 678794 packets (300014719 bytes) sent in 240.01 seconds
+Rated: 1249999.3 Bps, 9.99 Mbps, 2828.16 pps
+Actual: 709331 packets (312515918 bytes) sent in 250.01 seconds
+Rated: 1249999.9 Bps, 9.99 Mbps, 2837.17 pps
+Actual: 734226 packets (325015760 bytes) sent in 260.01 seconds
+Rated: 1249999.3 Bps, 9.99 Mbps, 2823.80 pps
+Actual: 756748 packets (337515328 bytes) sent in 270.01 seconds
+Rated: 1249997.1 Bps, 9.99 Mbps, 2802.63 pps
+Actual: 783620 packets (350016381 bytes) sent in 280.01 seconds
+Rated: 1249997.1 Bps, 9.99 Mbps, 2798.50 pps
+Test complete: 2026-03-14 12:19:52.313313
+Actual: 791615 packets (355417784 bytes) sent in 284.33 seconds
+Rated: 1249999.2 Bps, 9.99 Mbps, 2784.09 pps
+Flows: 40467 flows, 142.32 fps, 790934 unique flow packets, 436 unique non-flow packets
+Statistics for network device: eth1
+Successful packets:        791615
+Failed packets:            0
+Truncated packets:         0
+Retried packets (ENOBUFS): 0
+Retried packets (EAGAIN):  0
+(.venv) aironman@MacBook-Pro-de-Alonso argus % wc -l logs/lab/sniffer.log
+230013 logs/lab/sniffer.log
+(.venv) aironman@MacBook-Pro-de-Alonso argus % wc -l logs/lab/sniffer.log
+230025 logs/lab/sniffer.log
+(.venv) aironman@MacBook-Pro-de-Alonso argus % echo "Si, está creciendo el log..."
+Si, está creciendo el log...
+(.venv) aironman@MacBook-Pro-de-Alonso argus % ls -ltah logs/lab/sniffer.log
+-rw-r--r--@ 1 aironman  staff    11M Mar 14 13:28 logs/lab/sniffer.log
+(.venv) aironman@MacBook-Pro-de-Alonso argus % ls -ltah logs/lab/sniffer.log
+-rw-r--r--@ 1 aironman  staff    11M Mar 14 13:28 logs/lab/sniffer.log
+(.venv) aironman@MacBook-Pro-de-Alonso argus % vagrant ssh defender -c "cat /vagrant/logs/lab/sniffer.log" &gt; /tmp/sniffer_big.log</p>
+<p>Cual es --total-events?
+(.venv) aironman@MacBook-Pro-de-Alonso argus % python3 scripts/calculate_f1_neris.py /tmp/sniffer_big.log --total-events XXXX --day "DAY87_big"</p>
+<p>(.venv) aironman@MacBook-Pro-de-Alonso argus % wc -l /logs/lab/sniffer.log
+wc: /logs/lab/sniffer.log: open: No such file or directory
+(.venv) aironman@MacBook-Pro-de-Alonso argus % wc -l logs/lab/sniffer.log
+230013 logs/lab/sniffer.log
+(.venv) aironman@MacBook-Pro-de-Alonso argus % wc -l logs/lab/sniffer.log
+230025 logs/lab/sniffer.log
+(.venv) aironman@MacBook-Pro-de-Alonso argus % echo "Si, está creciendo el log..."
+Si, está creciendo el log...
+(.venv) aironman@MacBook-Pro-de-Alonso argus % ls -ltah /logs/lab/sniffer.log
+ls: /logs/lab/sniffer.log: No such file or directory
+(.venv) aironman@MacBook-Pro-de-Alonso argus % ls -ltah logs/lab/sniffer.log
+-rw-r--r--@ 1 aironman  staff    11M Mar 14 13:28 logs/lab/sniffer.log
+(.venv) aironman@MacBook-Pro-de-Alonso argus % ls -ltah logs/lab/sniffer.log
+-rw-r--r--@ 1 aironman  staff    11M Mar 14 13:28 logs/lab/sniffer.log
+(.venv) aironman@MacBook-Pro-de-Alonso argus % vagrant ssh defender -c "cat /vagrant/logs/lab/sniffer.log" &gt; /tmp/sniffer_big.log</p>
+<p>(.venv) aironman@MacBook-Pro-de-Alonso argus % vagrant ssh defender -c "grep 'Stats:' /vagrant/logs/lab/ml-detector.log | tail -1"
+[2026-03-14 12:33:57.778] [ml-detector] [info] 📊 Stats: received=37668, processed=37668, sent=37668, attacks=5, errors=(deser:0, feat:0, inf:0)
+(.venv) aironman@MacBook-Pro-de-Alonso argus % vagrant ssh defender -c "grep 'Stats:' /vagrant/logs/lab/ml-detector.log | tail -1"
+[2026-03-14 12:33:57.778] [ml-detector] [info] 📊 Stats: received=37668, processed=37668, sent=37668, attacks=5, errors=(deser:0, feat:0, inf:0)
+(.venv) aironman@MacBook-Pro-de-Alonso argus % sleep 60
+(.venv) aironman@MacBook-Pro-de-Alonso argus % vagrant ssh defender -c "grep 'Stats:' /vagrant/logs/lab/ml-detector.log | tail -1"
+[2026-03-14 12:34:57.778] [ml-detector] [info] 📊 Stats: received=37674, processed=37674, sent=37674, attacks=5, errors=(deser:0, feat:0, inf:0)
+(.venv) aironman@MacBook-Pro-de-Alonso argus % echo "sigue creciendo, espero un par de horas..."
+sigue creciendo, espero un par de horas...
+(.venv) aironman@MacBook-Pro-de-Alonso argus % vagrant ssh defender -c "grep 'Stats:' /vagrant/logs/lab/ml-detector.log | tail -1"
+[2026-03-14 12:54:57.880] [ml-detector] [info] 📊 Stats: received=37982, processed=37982, sent=37982, attacks=5, errors=(deser:0, feat:0, inf:0)
+(.venv) aironman@MacBook-Pro-de-Alonso argus % vagrant ssh defender -c "grep 'Stats:' /vagrant/logs/lab/ml-detector.log | tail -1"
+[2026-03-14 12:54:57.880] [ml-detector] [info] 📊 Stats: received=37982, processed=37982, sent=37982, attacks=5, errors=(deser:0, feat:0, inf:0)
+(.venv) aironman@MacBook-Pro-de-Alonso argus % ls -ltah logs/lab/top_bigflows.log
+ls: logs/lab/top_bigflows.log: No such file or directory
+(.venv) aironman@MacBook-Pro-de-Alonso argus % echo "amos, no me digas que no se ha creado el fichero que mide el consumo de ram..."
+amos, no me digas que no se ha creado el fichero que mide el consumo de ram...
+(.venv) aironman@MacBook-Pro-de-Alonso argus % vagrant ssh defender -c "ls -ltah /vagrant/logs/lab/top_bigflows.log"<br />
+ls: no se puede acceder a '/vagrant/logs/lab/top_bigflows.log': No existe el fichero o el directorio</p>
+<p>(.venv) aironman@MacBook-Pro-de-Alonso argus % vagrant ssh defender -c "grep 'Stats:' /vagrant/logs/lab/ml-detector.log | tail -1"<br />
+[2026-03-14 13:01:57.962] [ml-detector] [info] 📊 Stats: received=38064, processed=38064, sent=38064, attacks=5, errors=(deser:0, feat:0, inf:0)
+(.venv) aironman@MacBook-Pro-de-Alonso argus % python3 scripts/calculate_f1_neris.py /tmp/sniffer_big.log --total-events 38064 --day "DAY87_big"</p>
+<p>====================================================================
+ML DEFENDER - F1 SCORE CALCULATOR
+Day: DAY87_big  |  Thresholds:
+Ground truth: CTU-13 Neris (3 malicious IPs)
+====================================================================
+Malicious IPs: 147.32.84.165, 147.32.84.191, 147.32.84.192</p>
+<p>====================================================================
+FAST DETECTOR — deduplicated alerts vs ground truth
+====================================================================
+Raw [FAST ALERT] lines:      32400
+Deduplicated alert events:   2517
+Total events (ml-detector):  38064</p>
+<p>TP  (malicious, detected):   0
+FP  (benign, false alarm):   2517
+FN  (malicious, missed):     0
+TN  (benign, correct):       35547</p>
+<p>Precision:  0.0000
+Recall:     0.0000
+F1-Score:   0.0000  ← paper metric
+FPR:        0.0661
+Accuracy:   0.9339</p>
+<h1 id="note-fn-estimated-as-0-fast-alert-only-fires-on-detected-flows-true-fn-requires-per-event-ip-table-recall10-is-an-upper-bound-not-confirmed_6">NOTE: FN estimated as 0 — [FAST ALERT] only fires on detected flows. True FN requires per-event IP table. Recall=1.0 is an upper bound, not confirmed.</h1>
+<p>DETECTED IPs breakdown:
+No malicious IPs detected in alerts.</p>
+<p>FALSE POSITIVE IPs (sample, max 5):
+src=67.217.94.204  dst=172.16.133.114
+src=172.16.133.53  dst=172.16.139.250
+src=157.56.242.198  dst=172.16.133.57
+src=172.16.133.114  dst=67.217.65.49
+src=172.16.133.43  dst=172.16.139.250</p>
+<p>CSV line for f1_replay_log.csv:
+DAYDAY87_big,,38064,0,2517,0,35547,0.0000,0.0000,0.0000,0.0661</p>
+<p>(.venv) aironman@MacBook-Pro-de-Alonso argus % vagrant ssh defender -c "grep -i 'attack|ATTACK' /vagrant/logs/lab/ml-detector.log | grep -v '147.32.84.' | head -20"</p>
+<ul>
+<li>Level 1 (Attack): ✅
+  Level 1: ✅ attack_detector (23 features)
+  [2026-03-14 12:12:57.308] [ml-detector] [info] 📦 Loading Level 1 model: level1/level1_attack_detector.onnx
+  [2026-03-14 12:12:57.308] [ml-detector] [info]    Name: attack_detector
+  [2026-03-14 12:12:57.308] [ml-detector] [info] Loading ONNX model: models/production/level1/level1_attack_detector.onnx
+  [2026-03-14 12:12:57.560] [ml-detector] [info]      Level 1: General Attack (ONNX)
+  [2026-03-14 12:12:57.562] [ml-detector] [info]    Level 1: General Attack (ONNX)
+  [2026-03-14 12:13:57.562] [ml-detector] [info] 📊 Stats: received=0, processed=0, sent=0, attacks=0, errors=(deser:0, feat:0, inf:0)
+  [2026-03-14 12:14:57.565] [ml-detector] [info] 📊 Stats: received=1, processed=1, sent=1, attacks=0, errors=(deser:0, feat:0, inf:0)
+  [2026-03-14 12:15:57.591] [ml-detector] [info] 📊 Stats: received=772, processed=772, sent=772, attacks=0, errors=(deser:0, feat:0, inf:0)
+  [2026-03-14 12:16:57.612] [ml-detector] [info] 📊 Stats: received=2956, processed=2956, sent=2956, attacks=0, errors=(deser:0, feat:0, inf:0)
+  [2026-03-14 12:17:57.616] [ml-detector] [info] 📊 Stats: received=5152, processed=5152, sent=5152, attacks=0, errors=(deser:0, feat:0, inf:0)
+  [2026-03-14 12:18:57.633] [ml-detector] [info] 📊 Stats: received=7085, processed=7085, sent=7085, attacks=0, errors=(deser:0, feat:0, inf:0)
+  [2026-03-14 12:19:36.832] [ml-detector] [info] 🚨 ATTACK: event=18346460942505_1408203495, L1_conf=68.97%, processing=56.42ms
+  [2026-03-14 12:19:37.242] [ml-detector] [info] 🚨 ATTACK: event=18346461613105_1408203513, L1_conf=68.97%, processing=54.26ms
+  [2026-03-14 12:19:57.659] [ml-detector] [info] 📊 Stats: received=8881, processed=8881, sent=8881, attacks=2, errors=(deser:0, feat:0, inf:0)
+  [2026-03-14 12:19:59.015] [ml-detector] [info] 🚨 ATTACK: event=18346792711219_3760030506, L1_conf=60.04%, processing=34.09ms
+  [2026-03-14 12:20:19.538] [ml-detector] [info] 🚨 ATTACK: event=18347294214112_3466237660, L1_conf=59.04%, processing=32.68ms
+  [2026-03-14 12:20:48.734] [ml-detector] [info] 🚨 ATTACK: event=18348610893760_341342910, L1_conf=52.52%, processing=14.12ms
+  [2026-03-14 12:20:57.683] [ml-detector] [info] 📊 Stats: received=11367, processed=11367, sent=11367, attacks=2, errors=(deser:0, feat:0, inf:0)</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.tabs", "navigation.top", "search.highlight"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

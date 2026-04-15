@@ -1,0 +1,2371 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source embedded-ML NDR for hospitals and schools">
+      
+      
+        <meta name="author" content="Alonso Isidoro Roman">
+      
+      
+        <link rel="canonical" href="https://alonsoir.github.io/argus/HOTRELOAD_DESIGN/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>Hot-Reload ML Models - Design Document - ML Defender (aRGus NDR)</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#hot-reload-ml-models-design-document" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="ML Defender (aRGus NDR)" class="md-header__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ML Defender (aRGus NDR)
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Hot-Reload ML Models - Design Document
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../README.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../docs/ARCHITECTURE.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../docs/BACKLOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Backlog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../docs/SECURITY_MODEL.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Security Model
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../docs/adr/ADR-013 seed distribution component authentication.md" class="md-tabs__link">
+          
+  
+  
+  ADRs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../docs/contracts/Protobuf contracts.md" class="md-tabs__link">
+          
+  
+  
+  Contracts
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="ML Defender (aRGus NDR)" class="md-nav__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ML Defender (aRGus NDR)
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../README.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/ARCHITECTURE.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/BACKLOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/SECURITY_MODEL.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADRs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ADRs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/adr/ADR-013 seed distribution component authentication.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013 Seed Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/adr/ADR-021-deployment-topology-seed-families.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-021 Topology SSOT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/adr/ADR-022-threat-model-opcion2-descartada.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-022 Threat Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/contracts/Protobuf contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protobuf
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/contracts/JSON contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JSON
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/contracts/Rag security commands.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#executive-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🎯 Executive Summary
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🎯 Executive Summary">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#problema-a-resolver" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Problema a Resolver
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#solucion-propuesta" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Solución Propuesta
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#valor-del-sistema" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Valor del Sistema
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#arquitectura-del-sistema" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🏗️ Arquitectura del Sistema
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🏗️ Arquitectura del Sistema">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#vista-de-alto-nivel" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Vista de Alto Nivel
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#componentes-principales" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        📦 Componentes Principales
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="📦 Componentes Principales">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-modelwatcher-file-system-observer" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. ModelWatcher - File System Observer
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-modelregistry-thread-safe-model-manager" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. ModelRegistry - Thread-Safe Model Manager
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-ensemblepredictor-multi-model-inference" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. EnsemblePredictor - Multi-Model Inference
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#integracion-con-ml-detector" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🔧 Integración con ml-detector
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🔧 Integración con ml-detector">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#modificacion-de-maincpp" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Modificación de main.cpp
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#monitoring-metrics" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        📊 Monitoring &amp; Metrics
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="📊 Monitoring &amp; Metrics">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#metrics-endpoint-json-output" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Metrics Endpoint (JSON Output)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#testing-strategy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🧪 Testing Strategy
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🧪 Testing Strategy">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#unit-tests" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Unit Tests
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#integration-test" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Integration Test
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#implementation-roadmap" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🗺️ Implementation Roadmap
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🗺️ Implementation Roadmap">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#phase-1-foundation-week-1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 1: Foundation (Week 1)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#phase-2-concurrency-week-2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 2: Concurrency (Week 2)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#phase-3-ensemble-week-3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 3: Ensemble (Week 3)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#phase-4-production-week-4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 4: Production (Week 4)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#safety-reliability" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🔒 Safety &amp; Reliability
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🔒 Safety &amp; Reliability">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#error-handling" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Error Handling
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#resource-limits" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Resource Limits
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#performance-considerations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        📈 Performance Considerations
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="📈 Performance Considerations">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#latency-analysis" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Latency Analysis
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#memory-usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Memory Usage
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#best-practices" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🎓 Best Practices
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#future-enhancements" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🚀 Future Enhancements
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🚀 Future Enhancements">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#advanced-features-future-versions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Advanced Features (Future Versions)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#references-resources" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        📚 References &amp; Resources
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#success-metrics" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🎯 Success Metrics
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="hot-reload-ml-models-design-document">Hot-Reload ML Models - Design Document</h1>
+<blockquote>
+<p><strong>Arquitectura completa para carga dinámica de modelos ML en runtime sin downtime</strong></p>
+</blockquote>
+<hr />
+<h2 id="executive-summary">🎯 Executive Summary</h2>
+<h3 id="problema-a-resolver">Problema a Resolver</h3>
+<p>Actualmente, añadir o actualizar un modelo ML en el detector requiere:
+1. ❌ Detener el proceso ml-detector
+2. ❌ Recompilar o al menos reiniciar
+3. ❌ Perder eventos durante el downtime
+4. ❌ No poder hacer A/B testing en producción</p>
+<h3 id="solucion-propuesta">Solución Propuesta</h3>
+<p>Sistema de <strong>Hot-Reload</strong> que permite:
+- ✅ Cargar nuevos modelos en runtime (zero downtime)
+- ✅ Validación automática de compatibilidad de features
+- ✅ Ensemble learning con múltiples modelos simultáneos
+- ✅ A/B testing y gradual rollout
+- ✅ Rollback instantáneo si un modelo falla
+- ✅ Monitoreo de performance por modelo</p>
+<h3 id="valor-del-sistema">Valor del Sistema</h3>
+<pre><code>Business Value:
+- Continuous improvement sin interrupciones
+- Experimentación rápida (A/B testing)
+- Reducción de MTTR (Mean Time To Recovery)
+
+Technical Value:
+- Zero downtime deployments
+- Concurrent model inference
+- Graceful degradation
+- Real-time performance metrics
+</code></pre>
+<hr />
+<h2 id="arquitectura-del-sistema">🏗️ Arquitectura del Sistema</h2>
+<h3 id="vista-de-alto-nivel">Vista de Alto Nivel</h3>
+<pre><code>┌─────────────────────────────────────────────────────────────────────┐
+│                         HOST (macOS)                                 │
+│                                                                       │
+│  ml-training/                                                        │
+│    ├─&gt; scripts/train_level1_v2.py                                   │
+│    ├─&gt; scripts/convert_to_onnx.py                                   │
+│    └─&gt; outputs/onnx/                                                 │
+│        ├─&gt; level1_rf_v1.onnx  (baseline)                            │
+│        ├─&gt; level1_rf_v2.onnx  (NEW - better accuracy)               │
+│        ├─&gt; level1_rf_v3.onnx  (NEW - experimental)                  │
+│        └─&gt; metadata.json       (model info + features)              │
+│                                                                       │
+│  etcd (opcional):                                                    │
+│    └─&gt; PUT /models/level1/v2 {path, features, metrics}             │
+└─────────────────────────────────────────────────────────────────────┘
+                                 ↓
+                    (shared folder /vagrant)
+                                 ↓
+┌─────────────────────────────────────────────────────────────────────┐
+│                         VAGRANT VM                                   │
+│                                                                       │
+│  ModelWatcher (inotify thread)                                       │
+│    ├─&gt; Watches: /vagrant/ml-training/outputs/onnx/                  │
+│    ├─&gt; Detects: IN_CLOSE_WRITE on *.onnx files                      │
+│    ├─&gt; Reads: metadata.json (validation)                            │
+│    └─&gt; Triggers: ModelRegistry.hot_load()                           │
+│                                                                       │
+│  ModelRegistry (thread-safe registry)                                │
+│    ├─&gt; models_ = {                                                   │
+│    │     &quot;level1_v1&quot;: {session, metrics, features: 23},             │
+│    │     &quot;level1_v2&quot;: {session, metrics, features: 23},  ← HOT      │
+│    │   }                                                             │
+│    ├─&gt; active_models_ = [&quot;level1_v1&quot;, &quot;level1_v2&quot;]                 │
+│    ├─&gt; shared_mutex for concurrent reads                            │
+│    └─&gt; Validation: feature dimensions, ONNX format                  │
+│                                                                       │
+│  InferenceEngine (ensemble predictor)                                │
+│    ├─&gt; Strategy: voting | weighted | stacking | all                 │
+│    ├─&gt; Per-event:                                                    │
+│    │     for model in active_models:                                │
+│    │       predictions[model] = model.infer(features)               │
+│    └─&gt; final = ensemble(predictions)                                │
+│                                                                       │
+│  MetricsCollector (monitoring)                                       │
+│    └─&gt; Per model: inferences, latency, accuracy, errors             │
+└─────────────────────────────────────────────────────────────────────┘
+</code></pre>
+<hr />
+<h2 id="componentes-principales">📦 Componentes Principales</h2>
+<h3 id="1-modelwatcher-file-system-observer">1. ModelWatcher - File System Observer</h3>
+<p><strong>Responsabilidad:</strong> Detectar nuevos modelos y triggear hot-reload.</p>
+<p><strong>Tecnología:</strong> <code>inotify</code> (Linux kernel subsystem)</p>
+<p><strong>Header (<code>include/model_watcher.hpp</code>):</strong></p>
+<pre><code class="language-cpp">#pragma once
+#include &lt;string&gt;
+#include &lt;thread&gt;
+#include &lt;functional&gt;
+#include &lt;atomic&gt;
+#include &lt;sys/inotify.h&gt;
+
+namespace mldetector {
+
+class ModelWatcher {
+public:
+    using ModelCallback = std::function&lt;void(const std::string&amp; /* path */)&gt;;
+
+    ModelWatcher(const std::string&amp; watch_dir, ModelCallback on_new_model);
+    ~ModelWatcher();
+
+    // Lifecycle
+    void start();
+    void stop();
+    bool is_running() const { return running_.load(); }
+
+    // Config
+    void set_file_pattern(const std::string&amp; pattern) { file_pattern_ = pattern; }
+    void set_cooldown_ms(uint32_t ms) { cooldown_ms_ = ms; }
+
+private:
+    void watch_loop();
+    bool matches_pattern(const std::string&amp; filename) const;
+
+    std::string watch_dir_;
+    std::string file_pattern_ = &quot;*.onnx&quot;;
+    ModelCallback on_new_model_;
+
+    int inotify_fd_;
+    int watch_descriptor_;
+    std::thread watcher_thread_;
+    std::atomic&lt;bool&gt; running_{false};
+
+    uint32_t cooldown_ms_ = 1000;  // Evitar múltiples triggers
+    std::chrono::steady_clock::time_point last_trigger_;
+};
+
+} // namespace mldetector
+</code></pre>
+<p><strong>Implementation (<code>src/core/model_watcher.cpp</code>):</strong></p>
+<pre><code class="language-cpp">#include &quot;model_watcher.hpp&quot;
+#include &lt;sys/inotify.h&gt;
+#include &lt;unistd.h&gt;
+#include &lt;iostream&gt;
+#include &lt;cstring&gt;
+
+namespace mldetector {
+
+ModelWatcher::ModelWatcher(const std::string&amp; watch_dir, ModelCallback callback)
+    : watch_dir_(watch_dir)
+    , on_new_model_(callback)
+    , inotify_fd_(-1)
+    , watch_descriptor_(-1) {
+}
+
+ModelWatcher::~ModelWatcher() {
+    stop();
+}
+
+void ModelWatcher::start() {
+    if (running_.load()) {
+        std::cerr &lt;&lt; &quot;[ModelWatcher] Already running&quot; &lt;&lt; std::endl;
+        return;
+    }
+
+    // Initialize inotify
+    inotify_fd_ = inotify_init1(IN_NONBLOCK);
+    if (inotify_fd_ &lt; 0) {
+        throw std::runtime_error(&quot;Failed to initialize inotify&quot;);
+    }
+
+    // Watch directory for file writes
+    watch_descriptor_ = inotify_add_watch(
+        inotify_fd_,
+        watch_dir_.c_str(),
+        IN_CLOSE_WRITE | IN_MOVED_TO  // File completely written
+    );
+
+    if (watch_descriptor_ &lt; 0) {
+        close(inotify_fd_);
+        throw std::runtime_error(&quot;Failed to watch directory: &quot; + watch_dir_);
+    }
+
+    running_.store(true);
+    watcher_thread_ = std::thread(&amp;ModelWatcher::watch_loop, this);
+
+    std::cout &lt;&lt; &quot;[ModelWatcher] ✅ Started watching: &quot; &lt;&lt; watch_dir_ &lt;&lt; std::endl;
+}
+
+void ModelWatcher::stop() {
+    if (!running_.load()) return;
+
+    running_.store(false);
+
+    if (watcher_thread_.joinable()) {
+        watcher_thread_.join();
+    }
+
+    if (watch_descriptor_ &gt;= 0) {
+        inotify_rm_watch(inotify_fd_, watch_descriptor_);
+    }
+
+    if (inotify_fd_ &gt;= 0) {
+        close(inotify_fd_);
+    }
+
+    std::cout &lt;&lt; &quot;[ModelWatcher] ✅ Stopped&quot; &lt;&lt; std::endl;
+}
+
+void ModelWatcher::watch_loop() {
+    constexpr size_t EVENT_SIZE = sizeof(struct inotify_event);
+    constexpr size_t BUF_LEN = 1024 * (EVENT_SIZE + 16);
+    char buffer[BUF_LEN];
+
+    while (running_.load()) {
+        int length = read(inotify_fd_, buffer, BUF_LEN);
+
+        if (length &lt; 0) {
+            if (errno == EAGAIN || errno == EWOULDBLOCK) {
+                std::this_thread::sleep_for(std::chrono::milliseconds(100));
+                continue;
+            }
+            std::cerr &lt;&lt; &quot;[ModelWatcher] Read error: &quot; &lt;&lt; strerror(errno) &lt;&lt; std::endl;
+            break;
+        }
+
+        int i = 0;
+        while (i &lt; length) {
+            struct inotify_event* event = (struct inotify_event*)&amp;buffer[i];
+
+            if (event-&gt;len &gt; 0) {
+                std::string filename = event-&gt;name;
+
+                // Check if matches pattern
+                if (matches_pattern(filename)) {
+                    // Apply cooldown to avoid duplicate triggers
+                    auto now = std::chrono::steady_clock::now();
+                    auto elapsed = std::chrono::duration_cast&lt;std::chrono::milliseconds&gt;(
+                        now - last_trigger_
+                    ).count();
+
+                    if (elapsed &gt; cooldown_ms_) {
+                        std::string full_path = watch_dir_ + &quot;/&quot; + filename;
+                        std::cout &lt;&lt; &quot;[ModelWatcher] 🔔 New model detected: &quot; 
+                                  &lt;&lt; filename &lt;&lt; std::endl;
+
+                        on_new_model_(full_path);
+                        last_trigger_ = now;
+                    }
+                }
+            }
+
+            i += EVENT_SIZE + event-&gt;len;
+        }
+    }
+}
+
+bool ModelWatcher::matches_pattern(const std::string&amp; filename) const {
+    // Simple pattern matching (can be enhanced with regex)
+    if (file_pattern_ == &quot;*.onnx&quot;) {
+        return filename.size() &gt; 5 &amp;&amp; 
+               filename.substr(filename.size() - 5) == &quot;.onnx&quot;;
+    }
+    return true;
+}
+
+} // namespace mldetector
+</code></pre>
+<hr />
+<h3 id="2-modelregistry-thread-safe-model-manager">2. ModelRegistry - Thread-Safe Model Manager</h3>
+<p><strong>Responsabilidad:</strong> Gestión centralizada de modelos con acceso concurrente.</p>
+<p><strong>Header (<code>include/model_registry.hpp</code>):</strong></p>
+<pre><code class="language-cpp">#pragma once
+#include &lt;map&gt;
+#include &lt;vector&gt;
+#include &lt;string&gt;
+#include &lt;memory&gt;
+#include &lt;shared_mutex&gt;
+#include &lt;onnxruntime_cxx_api.h&gt;
+
+namespace mldetector {
+
+struct ModelInfo {
+    std::string name;
+    std::string path;
+    size_t expected_features;
+    bool enabled;
+
+    // Metrics
+    uint64_t total_inferences = 0;
+    double avg_latency_us = 0.0;
+    uint64_t errors = 0;
+    std::chrono::system_clock::time_point loaded_at;
+};
+
+struct Prediction {
+    int label;           // 0 = BENIGN, 1 = ATTACK
+    float confidence;    // [0.0, 1.0]
+    std::string model_name;
+    double latency_us;
+};
+
+class ModelRegistry {
+public:
+    ModelRegistry(size_t expected_features);
+    ~ModelRegistry();
+
+    // Model Management (write operations)
+    bool load_model(const std::string&amp; name, const std::string&amp; path);
+    bool unload_model(const std::string&amp; name);
+    bool enable_model(const std::string&amp; name);
+    bool disable_model(const std::string&amp; name);
+
+    // Inference (read operations - concurrent)
+    std::vector&lt;Prediction&gt; infer_all(const std::vector&lt;float&gt;&amp; features);
+    Prediction infer_single(const std::string&amp; name, const std::vector&lt;float&gt;&amp; features);
+
+    // Query
+    std::vector&lt;std::string&gt; get_active_models() const;
+    ModelInfo get_model_info(const std::string&amp; name) const;
+    std::vector&lt;ModelInfo&gt; get_all_models_info() const;
+    size_t count_active() const;
+
+private:
+    struct ModelEntry {
+        std::unique_ptr&lt;Ort::Session&gt; session;
+        ModelInfo info;
+    };
+
+    bool validate_model(const std::string&amp; path);
+    void update_metrics(const std::string&amp; name, double latency_us, bool error);
+
+    size_t expected_features_;
+    std::map&lt;std::string, ModelEntry&gt; models_;
+    std::vector&lt;std::string&gt; active_models_;
+
+    mutable std::shared_mutex mutex_;  // Read-write lock
+    Ort::Env env_{ORT_LOGGING_LEVEL_WARNING, &quot;MLDetector&quot;};
+};
+
+} // namespace mldetector
+</code></pre>
+<p><strong>Implementation (<code>src/inference/model_registry.cpp</code>):</strong></p>
+<pre><code class="language-cpp">#include &quot;model_registry.hpp&quot;
+#include &lt;iostream&gt;
+#include &lt;algorithm&gt;
+#include &lt;chrono&gt;
+
+namespace mldetector {
+
+ModelRegistry::ModelRegistry(size_t expected_features)
+    : expected_features_(expected_features) {
+    std::cout &lt;&lt; &quot;[ModelRegistry] Initialized (expecting &quot; 
+              &lt;&lt; expected_features &lt;&lt; &quot; features)&quot; &lt;&lt; std::endl;
+}
+
+ModelRegistry::~ModelRegistry() {
+    std::unique_lock lock(mutex_);
+    models_.clear();
+    active_models_.clear();
+}
+
+bool ModelRegistry::validate_model(const std::string&amp; path) {
+    try {
+        Ort::SessionOptions options;
+        Ort::Session session(env_, path.c_str(), options);
+
+        // Get input shape
+        auto input_info = session.GetInputTypeInfo(0);
+        auto tensor_info = input_info.GetTensorTypeAndShapeInfo();
+        auto shape = tensor_info.GetShape();
+
+        if (shape.size() &lt; 2) {
+            std::cerr &lt;&lt; &quot;[ModelRegistry] ❌ Invalid input shape&quot; &lt;&lt; std::endl;
+            return false;
+        }
+
+        size_t feature_count = shape[1];  // [batch_size, features]
+
+        if (feature_count != expected_features_) {
+            std::cerr &lt;&lt; &quot;[ModelRegistry] ❌ Feature mismatch: &quot;
+                      &lt;&lt; &quot;expected &quot; &lt;&lt; expected_features_ 
+                      &lt;&lt; &quot;, got &quot; &lt;&lt; feature_count &lt;&lt; std::endl;
+            return false;
+        }
+
+        std::cout &lt;&lt; &quot;[ModelRegistry] ✅ Model validation passed&quot; &lt;&lt; std::endl;
+        return true;
+
+    } catch (const std::exception&amp; e) {
+        std::cerr &lt;&lt; &quot;[ModelRegistry] ❌ Validation error: &quot; &lt;&lt; e.what() &lt;&lt; std::endl;
+        return false;
+    }
+}
+
+bool ModelRegistry::load_model(const std::string&amp; name, const std::string&amp; path) {
+    // First validate without holding the lock
+    if (!validate_model(path)) {
+        return false;
+    }
+
+    std::unique_lock lock(mutex_);
+
+    // Check if already exists
+    if (models_.find(name) != models_.end()) {
+        std::cerr &lt;&lt; &quot;[ModelRegistry] ⚠️  Model already exists: &quot; &lt;&lt; name &lt;&lt; std::endl;
+        return false;
+    }
+
+    try {
+        ModelEntry entry;
+
+        // Load ONNX session
+        Ort::SessionOptions options;
+        options.SetIntraOpNumThreads(1);
+        options.SetGraphOptimizationLevel(GraphOptimizationLevel::ORT_ENABLE_ALL);
+
+        entry.session = std::make_unique&lt;Ort::Session&gt;(env_, path.c_str(), options);
+
+        // Set info
+        entry.info.name = name;
+        entry.info.path = path;
+        entry.info.expected_features = expected_features_;
+        entry.info.enabled = true;
+        entry.info.loaded_at = std::chrono::system_clock::now();
+
+        // Add to registry
+        models_[name] = std::move(entry);
+        active_models_.push_back(name);
+
+        std::cout &lt;&lt; &quot;[ModelRegistry] ✅ Hot-loaded model: &quot; &lt;&lt; name 
+                  &lt;&lt; &quot; (total active: &quot; &lt;&lt; active_models_.size() &lt;&lt; &quot;)&quot; &lt;&lt; std::endl;
+
+        return true;
+
+    } catch (const std::exception&amp; e) {
+        std::cerr &lt;&lt; &quot;[ModelRegistry] ❌ Failed to load model: &quot; &lt;&lt; e.what() &lt;&lt; std::endl;
+        return false;
+    }
+}
+
+bool ModelRegistry::unload_model(const std::string&amp; name) {
+    std::unique_lock lock(mutex_);
+
+    auto it = models_.find(name);
+    if (it == models_.end()) {
+        return false;
+    }
+
+    // Remove from active list
+    active_models_.erase(
+        std::remove(active_models_.begin(), active_models_.end(), name),
+        active_models_.end()
+    );
+
+    // Remove from registry
+    models_.erase(it);
+
+    std::cout &lt;&lt; &quot;[ModelRegistry] ✅ Unloaded model: &quot; &lt;&lt; name &lt;&lt; std::endl;
+    return true;
+}
+
+std::vector&lt;Prediction&gt; ModelRegistry::infer_all(const std::vector&lt;float&gt;&amp; features) {
+    std::shared_lock lock(mutex_);  // Multiple readers allowed
+
+    std::vector&lt;Prediction&gt; predictions;
+    predictions.reserve(active_models_.size());
+
+    for (const auto&amp; name : active_models_) {
+        auto it = models_.find(name);
+        if (it == models_.end() || !it-&gt;second.info.enabled) {
+            continue;
+        }
+
+        try {
+            auto start = std::chrono::high_resolution_clock::now();
+
+            // Prepare input tensor
+            Ort::MemoryInfo memory_info = Ort::MemoryInfo::CreateCpu(
+                OrtDeviceAllocator, OrtMemTypeCPU
+            );
+
+            std::vector&lt;int64_t&gt; input_shape = {1, static_cast&lt;int64_t&gt;(features.size())};
+            Ort::Value input_tensor = Ort::Value::CreateTensor&lt;float&gt;(
+                memory_info,
+                const_cast&lt;float*&gt;(features.data()),
+                features.size(),
+                input_shape.data(),
+                input_shape.size()
+            );
+
+            // Run inference
+            const char* input_names[] = {&quot;float_input&quot;};
+            const char* output_names[] = {&quot;label&quot;, &quot;probabilities&quot;};
+
+            auto output_tensors = it-&gt;second.session-&gt;Run(
+                Ort::RunOptions{nullptr},
+                input_names, &amp;input_tensor, 1,
+                output_names, 2
+            );
+
+            // Extract prediction
+            int64_t* label_data = output_tensors[0].GetTensorMutableData&lt;int64_t&gt;();
+            float* probs_data = output_tensors[1].GetTensorMutableData&lt;float&gt;();
+
+            auto end = std::chrono::high_resolution_clock::now();
+            double latency_us = std::chrono::duration&lt;double, std::micro&gt;(end - start).count();
+
+            Prediction pred;
+            pred.label = static_cast&lt;int&gt;(label_data[0]);
+            pred.confidence = probs_data[pred.label];
+            pred.model_name = name;
+            pred.latency_us = latency_us;
+
+            predictions.push_back(pred);
+
+            // Update metrics (need to acquire write lock briefly)
+            lock.unlock();
+            update_metrics(name, latency_us, false);
+            lock.lock();
+
+        } catch (const std::exception&amp; e) {
+            std::cerr &lt;&lt; &quot;[ModelRegistry] ❌ Inference error in &quot; &lt;&lt; name 
+                      &lt;&lt; &quot;: &quot; &lt;&lt; e.what() &lt;&lt; std::endl;
+
+            lock.unlock();
+            update_metrics(name, 0, true);
+            lock.lock();
+        }
+    }
+
+    return predictions;
+}
+
+void ModelRegistry::update_metrics(const std::string&amp; name, double latency_us, bool error) {
+    std::unique_lock lock(mutex_);
+
+    auto it = models_.find(name);
+    if (it == models_.end()) return;
+
+    if (error) {
+        it-&gt;second.info.errors++;
+    } else {
+        it-&gt;second.info.total_inferences++;
+
+        // Running average of latency
+        double alpha = 0.1;  // Exponential moving average factor
+        it-&gt;second.info.avg_latency_us = 
+            alpha * latency_us + (1.0 - alpha) * it-&gt;second.info.avg_latency_us;
+    }
+}
+
+std::vector&lt;std::string&gt; ModelRegistry::get_active_models() const {
+    std::shared_lock lock(mutex_);
+    return active_models_;
+}
+
+std::vector&lt;ModelInfo&gt; ModelRegistry::get_all_models_info() const {
+    std::shared_lock lock(mutex_);
+
+    std::vector&lt;ModelInfo&gt; infos;
+    infos.reserve(models_.size());
+
+    for (const auto&amp; [name, entry] : models_) {
+        infos.push_back(entry.info);
+    }
+
+    return infos;
+}
+
+} // namespace mldetector
+</code></pre>
+<hr />
+<h3 id="3-ensemblepredictor-multi-model-inference">3. EnsemblePredictor - Multi-Model Inference</h3>
+<p><strong>Header (<code>include/ensemble_predictor.hpp</code>):</strong></p>
+<pre><code class="language-cpp">#pragma once
+#include &quot;model_registry.hpp&quot;
+#include &lt;string&gt;
+#include &lt;map&gt;
+
+namespace mldetector {
+
+enum class EnsembleMode {
+    SINGLE,       // Use only best model
+    VOTING,       // Majority vote
+    WEIGHTED,     // Weighted average
+    ALL           // Return all predictions
+};
+
+struct EnsembleResult {
+    int final_label;
+    float confidence;
+    std::vector&lt;Prediction&gt; individual_predictions;
+
+    // Metadata
+    size_t models_used;
+    double total_latency_us;
+    bool unanimous;  // All models agree
+};
+
+class EnsemblePredictor {
+public:
+    EnsemblePredictor(ModelRegistry&amp; registry);
+
+    void set_mode(EnsembleMode mode) { mode_ = mode; }
+    void set_weights(const std::map&lt;std::string, float&gt;&amp; weights) { weights_ = weights; }
+
+    EnsembleResult predict(const std::vector&lt;float&gt;&amp; features);
+
+private:
+    EnsembleResult voting(const std::vector&lt;Prediction&gt;&amp; predictions);
+    EnsembleResult weighted(const std::vector&lt;Prediction&gt;&amp; predictions);
+    EnsembleResult single_best(const std::vector&lt;Prediction&gt;&amp; predictions);
+
+    ModelRegistry&amp; registry_;
+    EnsembleMode mode_ = EnsembleMode::VOTING;
+    std::map&lt;std::string, float&gt; weights_;
+};
+
+} // namespace mldetector
+</code></pre>
+<p><strong>Implementation:</strong></p>
+<pre><code class="language-cpp">#include &quot;ensemble_predictor.hpp&quot;
+#include &lt;algorithm&gt;
+#include &lt;numeric&gt;
+
+namespace mldetector {
+
+EnsemblePredictor::EnsemblePredictor(ModelRegistry&amp; registry)
+    : registry_(registry) {
+}
+
+EnsembleResult EnsemblePredictor::predict(const std::vector&lt;float&gt;&amp; features) {
+    // Get predictions from all active models
+    auto predictions = registry_.infer_all(features);
+
+    if (predictions.empty()) {
+        throw std::runtime_error(&quot;No active models available&quot;);
+    }
+
+    switch (mode_) {
+        case EnsembleMode::SINGLE:
+            return single_best(predictions);
+        case EnsembleMode::VOTING:
+            return voting(predictions);
+        case EnsembleMode::WEIGHTED:
+            return weighted(predictions);
+        case EnsembleMode::ALL:
+            // Return all predictions with no aggregation
+            EnsembleResult result;
+            result.individual_predictions = predictions;
+            result.final_label = predictions[0].label;
+            result.confidence = predictions[0].confidence;
+            result.models_used = predictions.size();
+            return result;
+    }
+
+    return voting(predictions);  // Default
+}
+
+EnsembleResult EnsemblePredictor::voting(const std::vector&lt;Prediction&gt;&amp; predictions) {
+    EnsembleResult result;
+    result.individual_predictions = predictions;
+    result.models_used = predictions.size();
+
+    // Count votes
+    std::map&lt;int, int&gt; votes;
+    std::map&lt;int, std::vector&lt;float&gt;&gt; confidences;
+
+    for (const auto&amp; pred : predictions) {
+        votes[pred.label]++;
+        confidences[pred.label].push_back(pred.confidence);
+    }
+
+    // Find majority
+    auto max_vote = std::max_element(
+        votes.begin(), votes.end(),
+        [](const auto&amp; a, const auto&amp; b) { return a.second &lt; b.second; }
+    );
+
+    result.final_label = max_vote-&gt;first;
+
+    // Average confidence of winning label
+    const auto&amp; winning_confidences = confidences[result.final_label];
+    result.confidence = std::accumulate(
+        winning_confidences.begin(),
+        winning_confidences.end(),
+        0.0f
+    ) / winning_confidences.size();
+
+    // Check unanimity
+    result.unanimous = (votes.size() == 1);
+
+    // Total latency
+    result.total_latency_us = std::accumulate(
+        predictions.begin(), predictions.end(), 0.0,
+        [](double sum, const Prediction&amp; p) { return sum + p.latency_us; }
+    );
+
+    return result;
+}
+
+EnsembleResult EnsemblePredictor::weighted(const std::vector&lt;Prediction&gt;&amp; predictions) {
+    EnsembleResult result;
+    result.individual_predictions = predictions;
+    result.models_used = predictions.size();
+
+    // If no weights specified, fall back to equal weights
+    if (weights_.empty()) {
+        return voting(predictions);
+    }
+
+    // Weighted scoring
+    std::map&lt;int, float&gt; weighted_scores;
+
+    for (const auto&amp; pred : predictions) {
+        float weight = 1.0f;
+        if (weights_.count(pred.model_name)) {
+            weight = weights_[pred.model_name];
+        }
+
+        weighted_scores[pred.label] += pred.confidence * weight;
+    }
+
+    // Find highest weighted score
+    auto max_score = std::max_element(
+        weighted_scores.begin(), weighted_scores.end(),
+        [](const auto&amp; a, const auto&amp; b) { return a.second &lt; b.second; }
+    );
+
+    result.final_label = max_score-&gt;first;
+    result.confidence = max_score-&gt;second / predictions.size();  // Normalize
+    result.unanimous = false;  // Weighted voting doesn't have unanimity concept
+
+    result.total_latency_us = std::accumulate(
+        predictions.begin(), predictions.end(), 0.0,
+        [](double sum, const Prediction&amp; p) { return sum + p.latency_us; }
+    );
+
+    return result;
+}
+
+EnsembleResult EnsemblePredictor::single_best(const std::vector&lt;Prediction&gt;&amp; predictions) {
+    // Use the prediction with highest confidence
+    auto best = std::max_element(
+        predictions.begin(), predictions.end(),
+        [](const Prediction&amp; a, const Prediction&amp; b) {
+            return a.confidence &lt; b.confidence;
+        }
+    );
+
+    EnsembleResult result;
+    result.final_label = best-&gt;label;
+    result.confidence = best-&gt;confidence;
+    result.individual_predictions = predictions;
+    result.models_used = 1;
+    result.unanimous = false;
+    result.total_latency_us = best-&gt;latency_us;
+
+    return result;
+}
+
+} // namespace mldetector
+</code></pre>
+<hr />
+<h2 id="integracion-con-ml-detector">🔧 Integración con ml-detector</h2>
+<h3 id="modificacion-de-maincpp">Modificación de <code>main.cpp</code></h3>
+<pre><code class="language-cpp">#include &quot;model_watcher.hpp&quot;
+#include &quot;model_registry.hpp&quot;
+#include &quot;ensemble_predictor.hpp&quot;
+
+int main(int argc, char* argv[]) {
+    // ... existing initialization ...
+
+    // Create model registry
+    constexpr size_t EXPECTED_FEATURES = 23;
+    mldetector::ModelRegistry model_registry(EXPECTED_FEATURES);
+
+    // Load initial model(s)
+    if (!model_registry.load_model(&quot;level1_v1&quot;, &quot;models/level1_rf_model.onnx&quot;)) {
+        std::cerr &lt;&lt; &quot;Failed to load baseline model&quot; &lt;&lt; std::endl;
+        return 1;
+    }
+
+    // Create ensemble predictor
+    mldetector::EnsemblePredictor ensemble(model_registry);
+    ensemble.set_mode(mldetector::EnsembleMode::VOTING);
+
+    // Setup model watcher (hot-reload)
+    mldetector::ModelWatcher watcher(
+        &quot;/vagrant/ml-training/outputs/onnx&quot;,
+        [&amp;model_registry](const std::string&amp; path) {
+            // Extract model name from path
+            std::string name = extract_model_name(path);
+
+            std::cout &lt;&lt; &quot;[HotReload] 🔥 Attempting to load: &quot; &lt;&lt; name &lt;&lt; std::endl;
+
+            if (model_registry.load_model(name, path)) {
+                std::cout &lt;&lt; &quot;[HotReload] ✅ Successfully loaded: &quot; &lt;&lt; name &lt;&lt; std::endl;
+            } else {
+                std::cout &lt;&lt; &quot;[HotReload] ❌ Failed to load: &quot; &lt;&lt; name &lt;&lt; std::endl;
+            }
+        }
+    );
+
+    watcher.start();
+
+    // Main inference loop
+    while (running) {
+        auto event = zmq_receive_event();
+        auto features = extract_features(event);
+
+        // Ensemble prediction with all active models
+        auto result = ensemble.predict(features);
+
+        std::cout &lt;&lt; &quot;[Inference] Label: &quot; &lt;&lt; result.final_label
+                  &lt;&lt; &quot;, Confidence: &quot; &lt;&lt; result.confidence
+                  &lt;&lt; &quot;, Models used: &quot; &lt;&lt; result.models_used
+                  &lt;&lt; &quot;, Unanimous: &quot; &lt;&lt; (result.unanimous ? &quot;YES&quot; : &quot;NO&quot;)
+                  &lt;&lt; std::endl;
+
+        // Log individual predictions for debugging
+        for (const auto&amp; pred : result.individual_predictions) {
+            std::cout &lt;&lt; &quot;  - &quot; &lt;&lt; pred.model_name 
+                      &lt;&lt; &quot;: &quot; &lt;&lt; pred.label 
+                      &lt;&lt; &quot; (&quot; &lt;&lt; pred.confidence &lt;&lt; &quot;)&quot;
+                      &lt;&lt; &quot; [&quot; &lt;&lt; pred.latency_us &lt;&lt; &quot; μs]&quot;
+                      &lt;&lt; std::endl;
+        }
+    }
+
+    watcher.stop();
+    return 0;
+}
+</code></pre>
+<hr />
+<h2 id="monitoring-metrics">📊 Monitoring &amp; Metrics</h2>
+<h3 id="metrics-endpoint-json-output">Metrics Endpoint (JSON Output)</h3>
+<pre><code class="language-cpp">// include/metrics_reporter.hpp
+class MetricsReporter {
+public:
+    MetricsReporter(ModelRegistry&amp; registry);
+
+    std::string get_metrics_json() const;
+    void start_http_server(uint16_t port);  // Optional: HTTP endpoint
+
+private:
+    ModelRegistry&amp; registry_;
+};
+
+// Example output:
+{
+  &quot;timestamp&quot;: &quot;2025-10-26T10:30:00Z&quot;,
+  &quot;models&quot;: [
+    {
+      &quot;name&quot;: &quot;level1_v1&quot;,
+      &quot;enabled&quot;: true,
+      &quot;total_inferences&quot;: 152340,
+      &quot;avg_latency_us&quot;: 45.3,
+      &quot;errors&quot;: 0,
+      &quot;loaded_at&quot;: &quot;2025-10-25T16:23:00Z&quot;,
+      &quot;uptime_hours&quot;: 18.1
+    },
+    {
+      &quot;name&quot;: &quot;level1_v2&quot;,
+      &quot;enabled&quot;: true,
+      &quot;total_inferences&quot;: 8730,
+      &quot;avg_latency_us&quot;: 42.8,
+      &quot;errors&quot;: 0,
+      &quot;loaded_at&quot;: &quot;2025-10-26T10:15:00Z&quot;,
+      &quot;uptime_hours&quot;: 0.25
+    }
+  ],
+  &quot;ensemble&quot;: {
+    &quot;mode&quot;: &quot;voting&quot;,
+    &quot;total_predictions&quot;: 8730,
+    &quot;unanimous_percentage&quot;: 94.2
+  }
+}
+</code></pre>
+<hr />
+<h2 id="testing-strategy">🧪 Testing Strategy</h2>
+<h3 id="unit-tests">Unit Tests</h3>
+<pre><code class="language-cpp">// tests/test_model_registry.cpp
+TEST(ModelRegistry, LoadValidModel) {
+    ModelRegistry registry(23);
+    ASSERT_TRUE(registry.load_model(&quot;test&quot;, &quot;models/test_model.onnx&quot;));
+    ASSERT_EQ(registry.count_active(), 1);
+}
+
+TEST(ModelRegistry, RejectInvalidFeatures) {
+    ModelRegistry registry(23);
+    // Model with 50 features
+    ASSERT_FALSE(registry.load_model(&quot;bad&quot;, &quot;models/bad_features.onnx&quot;));
+}
+
+TEST(ModelRegistry, ConcurrentInference) {
+    ModelRegistry registry(23);
+    registry.load_model(&quot;m1&quot;, &quot;models/m1.onnx&quot;);
+
+    std::vector&lt;std::thread&gt; threads;
+    for (int i = 0; i &lt; 10; ++i) {
+        threads.emplace_back([&amp;]() {
+            std::vector&lt;float&gt; features(23, 0.5f);
+            auto preds = registry.infer_all(features);
+            ASSERT_FALSE(preds.empty());
+        });
+    }
+
+    for (auto&amp; t : threads) t.join();
+}
+</code></pre>
+<h3 id="integration-test">Integration Test</h3>
+<pre><code class="language-bash">#!/bin/bash
+# tests/test_hotreload.sh
+
+echo &quot;=== Hot-Reload Integration Test ===&quot;
+
+# 1. Start ml-detector with baseline model
+./build/ml-detector -c config/ml_detector_config.json &amp;
+DETECTOR_PID=$!
+
+sleep 2
+
+# 2. Send test event
+echo &quot;Sending test event...&quot;
+python scripts/send_test_event.py
+
+# 3. Copy new model to watched directory
+echo &quot;Deploying new model...&quot;
+cp models/level1_rf_v2.onnx /vagrant/ml-training/outputs/onnx/
+
+sleep 2
+
+# 4. Verify new model was loaded
+echo &quot;Checking metrics...&quot;
+curl http://localhost:9090/metrics | jq '.models'
+
+# 5. Send another test event (should use ensemble now)
+python scripts/send_test_event.py
+
+# Cleanup
+kill $DETECTOR_PID
+</code></pre>
+<hr />
+<h2 id="implementation-roadmap">🗺️ Implementation Roadmap</h2>
+<h3 id="phase-1-foundation-week-1">Phase 1: Foundation (Week 1)</h3>
+<ul>
+<li>[ ] Implement <code>ModelWatcher</code> with inotify</li>
+<li>[ ] Basic <code>ModelRegistry</code> (load/unload)</li>
+<li>[ ] Unit tests for core components</li>
+<li>[ ] Documentation updates</li>
+</ul>
+<p><strong>Deliverable:</strong> Model can be loaded dynamically</p>
+<h3 id="phase-2-concurrency-week-2">Phase 2: Concurrency (Week 2)</h3>
+<ul>
+<li>[ ] Thread-safe <code>ModelRegistry</code> with <code>shared_mutex</code></li>
+<li>[ ] Concurrent inference stress tests</li>
+<li>[ ] Metrics collection per model</li>
+<li>[ ] Integration test suite</li>
+</ul>
+<p><strong>Deliverable:</strong> Multiple models can run concurrently</p>
+<h3 id="phase-3-ensemble-week-3">Phase 3: Ensemble (Week 3)</h3>
+<ul>
+<li>[ ] <code>EnsemblePredictor</code> implementation</li>
+<li>[ ] Voting strategy</li>
+<li>[ ] Weighted voting</li>
+<li>[ ] Configuration via JSON</li>
+</ul>
+<p><strong>Deliverable:</strong> Ensemble predictions working</p>
+<h3 id="phase-4-production-week-4">Phase 4: Production (Week 4)</h3>
+<ul>
+<li>[ ] Graceful degradation (fallback to single model)</li>
+<li>[ ] HTTP metrics endpoint</li>
+<li>[ ] Performance benchmarks</li>
+<li>[ ] Documentation complete</li>
+</ul>
+<p><strong>Deliverable:</strong> Production-ready system</p>
+<hr />
+<h2 id="safety-reliability">🔒 Safety &amp; Reliability</h2>
+<h3 id="error-handling">Error Handling</h3>
+<pre><code class="language-cpp">// Graceful degradation
+EnsembleResult EnsemblePredictor::predict(const std::vector&lt;float&gt;&amp; features) {
+    try {
+        auto predictions = registry_.infer_all(features);
+
+        if (predictions.empty()) {
+            // No models available - critical error
+            throw std::runtime_error(&quot;No active models&quot;);
+        }
+
+        return voting(predictions);
+
+    } catch (const std::exception&amp; e) {
+        std::cerr &lt;&lt; &quot;[Ensemble] ❌ Prediction error: &quot; &lt;&lt; e.what() &lt;&lt; std::endl;
+
+        // Try to use at least one model
+        auto active = registry_.get_active_models();
+        if (!active.empty()) {
+            return registry_.infer_single(active[0], features);
+        }
+
+        throw;  // Re-throw if no fallback possible
+    }
+}
+</code></pre>
+<h3 id="resource-limits">Resource Limits</h3>
+<pre><code class="language-cpp">class ModelRegistry {
+private:
+    static constexpr size_t MAX_MODELS = 10;
+    static constexpr size_t MAX_MEMORY_MB = 2048;
+
+    bool check_resource_limits() const {
+        if (models_.size() &gt;= MAX_MODELS) {
+            std::cerr &lt;&lt; &quot;Max model limit reached&quot; &lt;&lt; std::endl;
+            return false;
+        }
+
+        // Check memory usage
+        size_t total_memory = get_total_model_memory();
+        if (total_memory &gt; MAX_MEMORY_MB * 1024 * 1024) {
+            std::cerr &lt;&lt; &quot;Memory limit exceeded&quot; &lt;&lt; std::endl;
+            return false;
+        }
+
+        return true;
+    }
+};
+</code></pre>
+<hr />
+<h2 id="performance-considerations">📈 Performance Considerations</h2>
+<h3 id="latency-analysis">Latency Analysis</h3>
+<pre><code>Single Model:
+- Feature extraction: ~10 μs
+- ONNX inference: ~50 μs
+- Total: ~60 μs per event
+
+Ensemble (3 models, concurrent):
+- Feature extraction: ~10 μs
+- ONNX inference (parallel): ~50 μs (NOT 3x!)
+- Voting: ~1 μs
+- Total: ~61 μs per event
+</code></pre>
+<p><strong>Key Insight:</strong> Concurrent inference with <code>shared_mutex</code> allows parallel reads, so latency doesn't scale linearly with model count.</p>
+<h3 id="memory-usage">Memory Usage</h3>
+<pre><code>Baseline (1 model):
+- Model size: ~2 MB
+- Runtime overhead: ~50 MB
+- Total: ~52 MB
+
+Hot-Reload (3 models):
+- Models: 3 x 2 MB = 6 MB
+- Runtime overhead: ~50 MB
+- Total: ~56 MB
+</code></pre>
+<p><strong>Conclusion:</strong> Memory cost is minimal.</p>
+<hr />
+<h2 id="best-practices">🎓 Best Practices</h2>
+<ol>
+<li><strong>Always validate features</strong> before loading a model</li>
+<li><strong>Use semantic versioning</strong> for model names (level1_v2.1.0)</li>
+<li><strong>Log all hot-reload events</strong> for audit trail</li>
+<li><strong>Monitor individual model performance</strong> to detect degradation</li>
+<li><strong>Implement rollback mechanism</strong> (keep previous version)</li>
+<li><strong>Test under load</strong> before production deployment</li>
+<li><strong>Document feature engineering</strong> to ensure compatibility</li>
+</ol>
+<hr />
+<h2 id="future-enhancements">🚀 Future Enhancements</h2>
+<h3 id="advanced-features-future-versions">Advanced Features (Future Versions)</h3>
+<ul>
+<li><strong>A/B Testing Framework</strong>: Gradual rollout (10% → 50% → 100%)</li>
+<li><strong>Canary Deployments</strong>: Route specific traffic to new model</li>
+<li><strong>Model Versioning</strong>: Git-style version control for models</li>
+<li><strong>Distributed Registry</strong>: Share models across multiple ml-detector instances</li>
+<li><strong>Auto-scaling</strong>: Load/unload models based on traffic</li>
+<li><strong>Stacking Meta-Learner</strong>: Train a model that combines predictions</li>
+</ul>
+<hr />
+<h2 id="references-resources">📚 References &amp; Resources</h2>
+<ul>
+<li><a href="https://man7.org/linux/man-pages/man7/inotify.7.html">inotify man page</a></li>
+<li><a href="https://onnxruntime.ai/docs/api/c/">ONNX Runtime C++ API</a></li>
+<li><a href="https://en.cppreference.com/w/cpp/thread/shared_mutex">C++ Concurrency: shared_mutex</a></li>
+<li><a href="https://scikit-learn.org/stable/modules/ensemble.html">Ensemble Learning Techniques</a></li>
+</ul>
+<hr />
+<h2 id="success-metrics">🎯 Success Metrics</h2>
+<p><strong>How to know it's working:</strong></p>
+<p>✅ New model appears in watched directory<br />
+✅ ModelWatcher triggers within 1 second<br />
+✅ Model loads successfully (validation passes)<br />
+✅ Ensemble predictions use new model<br />
+✅ Zero downtime during hot-reload<br />
+✅ Latency remains stable (&lt;100 μs)<br />
+✅ No memory leaks (valgrind clean)</p>
+<hr />
+<div align="center">
+
+## 🎉 This is the Future of Your ML Pipeline 🎉
+
+**Zero Downtime • Continuous Improvement • Production Ready**
+
+*Design Document v1.0 - October 25, 2025*
+
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.tabs", "navigation.top", "search.highlight"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

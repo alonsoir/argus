@@ -1,0 +1,1478 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source embedded-ML NDR for hospitals and schools">
+      
+      
+        <meta name="author" content="Alonso Isidoro Roman">
+      
+      
+        <link rel="canonical" href="https://alonsoir.github.io/argus/adr/ADR-025%3A%20Plugin%20Integrity%20Verification%20%28Ed25519%20%2B%20SHA-256%20%2B%20TOCTOU-safe%20dlopen%29/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>ADR-025: Plugin Integrity Verification (Ed25519 + TOCTOU-safe dlopen) - ML Defender (aRGus NDR)</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#adr-025-plugin-integrity-verification-ed25519-toctou-safe-dlopen" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-header__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ML Defender (aRGus NDR)
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              ADR-025: Plugin Integrity Verification (Ed25519 + TOCTOU-safe dlopen)
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../README.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/BACKLOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Backlog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Security Model
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-tabs__link">
+          
+  
+  
+  ADRs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/contracts/Protobuf contracts.md" class="md-tabs__link">
+          
+  
+  
+  Contracts
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-nav__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ML Defender (aRGus NDR)
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../README.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/BACKLOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADRs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ADRs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013 Seed Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-021-deployment-topology-seed-families.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-021 Topology SSOT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-022-threat-model-opcion2-descartada.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-022 Threat Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Protobuf contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protobuf
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/JSON contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JSON
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Rag security commands.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#contexto" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Contexto
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#decision" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Decisión
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#decisiones-detalladas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Decisiones detalladas
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Decisiones detalladas">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#d1-firma-ed25519-offline-obligatoria" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        D1 — Firma Ed25519 offline obligatoria
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#d2-validacion-de-tamano-o_nofollow-fstat" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        D2 — Validación de tamaño + O_NOFOLLOW + fstat()
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#d3-prefix-check-estricto-antes-de-open" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        D3 — Prefix check estricto antes de open()
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#d4-secuencia-de-verificacion-y-fd-discipline" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        D4 — Secuencia de verificación y FD discipline
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#d5-mismo-patron-fd-para-el-fichero-sig" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        D5 — Mismo patrón fd para el fichero .sig
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#d6-sha-256-adicional-para-logging-forense" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        D6 — SHA-256 adicional para logging forense
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#d7-clave-publica-hardcoded-en-binario-via-cmake" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        D7 — Clave pública hardcoded en binario vía CMake
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#d8-campo-signature-en-json-config" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        D8 — Campo "signature" en JSON config
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#d9-fail-closed-explicito-y-diferenciado" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        D9 — Fail-closed explícito y diferenciado
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#d10-limpieza-de-entorno-en-launcher" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        D10 — Limpieza de entorno en launcher
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#d11-rotacion-de-claves-operacion-exclusivamente-manual" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        D11 — Rotación de claves: operación exclusivamente manual
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#d12-clave-publica-por-componente-preparacion-phase-2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        D12 — Clave pública por componente (preparación PHASE 2)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#ficheros-afectados" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Ficheros afectados
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#tests-requeridos-antes-de-merge" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Tests requeridos antes de merge
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#threat-model-y-vectores-de-ataque" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Threat model y vectores de ataque
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Threat model y vectores de ataque">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#threat-model-boundaries" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Threat model boundaries
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#alternativas-descartadas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Alternativas descartadas
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#consecuencias" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Consecuencias
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#registro-del-proceso-de-decision" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Registro del proceso de decisión
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="adr-025-plugin-integrity-verification-ed25519-toctou-safe-dlopen">ADR-025: Plugin Integrity Verification (Ed25519 + TOCTOU-safe dlopen)</h1>
+<p><strong>Estado:</strong> APROBADO — Listo para implementación<br />
+<strong>Fecha:</strong> 2026-04-02<br />
+<strong>Rama:</strong> <code>feature/bare-metal-arxiv</code><br />
+<strong>Componentes afectados:</strong> plugin-loader, todos los componentes con sección <code>plugins</code> en config JSON<br />
+<strong>ADR relacionados:</strong> ADR-012 (Plugin Loader Architecture), ADR-013 (Seed Distribution), ADR-023 (CryptoTransport), ADR-024 (Deployment Topology SSOT)<br />
+<strong>Revisores (Consejo de Sabios):</strong> Claude, ChatGPT-5, DeepSeek, Gemini, Grok, Qwen — tres rondas<br />
+<strong>Veredicto:</strong> APROBADO unánime en ronda 3</p>
+<hr />
+<h2 id="contexto">Contexto</h2>
+<p>El plugin-loader implementado en PHASE 1 (ADR-012) carga ficheros <code>.so</code> mediante <code>dlopen()</code> directo, verificando únicamente que el fichero existe en disco (<code>std::filesystem::exists</code>). El propio comentario de cabecera documenta esta limitación:</p>
+<pre><code>// dlopen/dlsym lazy loading. Sin crypto. Sin seed-client (PHASE 1).
+</code></pre>
+<p>El flujo actual es:</p>
+<ol>
+<li>Leer JSON config</li>
+<li><code>std::filesystem::exists(so_path)</code> — solo comprueba existencia</li>
+<li><code>dlopen()</code> directo — carga ciega</li>
+</ol>
+<p>No existe verificación de integridad ni autenticidad. Existe una ventana TOCTOU entre <code>exists()</code> y <code>dlopen()</code> explotable por un atacante con acceso al filesystem.</p>
+<p>La infraestructura criptográfica necesaria ya existe en el proyecto:
+- Keypairs Ed25519 generados por <code>tools/provision.sh</code>
+- libsodium 1.0.19 compilada desde fuente
+- Paths canónicos ya establecidos: <code>/usr/lib/ml-defender/plugins/</code></p>
+<hr />
+<h2 id="decision">Decisión</h2>
+<p>Se introduce verificación criptográfica obligatoria en el plugin-loader antes de cualquier <code>dlopen()</code>. La implementación sigue un esquema de firma offline (clave privada nunca en host productivo) con clave pública hardcoded en el binario compilado.</p>
+<hr />
+<h2 id="decisiones-detalladas">Decisiones detalladas</h2>
+<h3 id="d1-firma-ed25519-offline-obligatoria">D1 — Firma Ed25519 offline obligatoria</h3>
+<p>Cada plugin <code>.so</code> se firma con la clave privada Ed25519 en la máquina de build/CI. La firma se deposita como <code>&lt;plugin_name&gt;.so.sig</code> en el mismo directorio. La clave privada <strong>nunca</strong> reside en el host de producción. El host contiene únicamente la clave pública, hardcoded en el binario (D7).</p>
+<p>La rotación de claves implica recompilación y redespliegue del binario. Este coste es intencional: disuade rotaciones innecesarias y fuerza evaluación humana explícita ante cualquier cambio criptográfico.</p>
+<h3 id="d2-validacion-de-tamano-o_nofollow-fstat">D2 — Validación de tamaño + <code>O_NOFOLLOW</code> + <code>fstat()</code></h3>
+<p>Antes de leer el contenido del plugin, verificar que el tamaño es razonable para evitar DoS por lectura de ficheros gigantes o malformados:</p>
+<pre><code class="language-cpp">// 1. Abrir con O_NOFOLLOW — rechaza symlinks en el último componente
+int fd = open(so_path.c_str(), O_RDONLY | O_NOFOLLOW | O_CLOEXEC);
+if (fd &lt; 0) { /* rechazar */ }
+
+// 2. fstat sobre el fd — verifica tipo y tamaño antes de leer
+struct stat st;
+if (fstat(fd, &amp;st) &lt; 0 || !S_ISREG(st.st_mode)) {
+    close(fd); /* rechazar — no es fichero regular */
+}
+
+constexpr size_t MIN_PLUGIN_SIZE = 4096;             // mínimo ELF válido
+constexpr size_t MAX_PLUGIN_SIZE = 10 * 1024 * 1024; // 10 MB — plugins reales &lt; 500 KB
+if (st.st_size &lt; MIN_PLUGIN_SIZE || st.st_size &gt; MAX_PLUGIN_SIZE) {
+    log_critical(&quot;Plugin size suspicious: %zu bytes&quot;, st.st_size);
+    close(fd);
+    std::terminate();
+}
+</code></pre>
+<p>El mismo patrón aplica al <code>.sig</code> con <code>MAX_SIG_SIZE = 512</code> bytes.</p>
+<h3 id="d3-prefix-check-estricto-antes-de-open">D3 — Prefix check estricto antes de <code>open()</code></h3>
+<p>La validación de path ocurre <strong>antes</strong> de abrir cualquier fd — es política (input validation), no operación privilegiada:</p>
+<pre><code class="language-cpp">namespace fs = std::filesystem;
+// weakly_canonical evita bloqueos en mount points no disponibles
+// en entornos resource-constrained
+auto canonical = fs::weakly_canonical(so_path);
+const std::string allowed_prefix = &quot;/usr/lib/ml-defender/plugins/&quot;;
+if (canonical.string().substr(0, allowed_prefix.size()) != allowed_prefix) {
+    log_critical(&quot;Plugin path outside allowed prefix: %s&quot;, so_path.c_str());
+    std::terminate(); // path traversal o config poisoning
+}
+// Solo después del prefix check: open()
+</code></pre>
+<h3 id="d4-secuencia-de-verificacion-y-fd-discipline">D4 — Secuencia de verificación y FD discipline</h3>
+<p>La secuencia completa es estrictamente ordenada. El fd se mantiene abierto sin interrupción desde <code>open()</code> hasta después del <code>dlopen()</code>. Cerrarlo entre verificación y carga reabre la ventana TOCTOU:</p>
+<pre><code>1.  prefix_check(so_path)                               // D3 — política antes de operación
+2.  fd_so  = open(so_path, O_RDONLY|O_NOFOLLOW|O_CLOEXEC)
+3.  fstat(fd_so) + size check                           // D2
+4.  prefix_check(sig_path)                              // D3 — también para el .sig
+5.  fd_sig = open(sig_path, O_RDONLY|O_NOFOLLOW|O_CLOEXEC)
+6.  fstat(fd_sig) + size check (max 512 bytes)          // D2 + D5
+7.  content = read(fd_so)
+8.  sig     = read(fd_sig)
+9.  sha256  = crypto_hash_sha256(content)              // D6 — forense
+10. verify  = crypto_sign_verify_detached(sig, content, pubkey_embedded) // D1
+11. handle  = dlopen(&quot;/proc/self/fd/&quot; + fd_so)         // nunca volver al path
+12. close(fd_so); close(fd_sig)                        // solo después de dlopen exitoso
+</code></pre>
+<h3 id="d5-mismo-patron-fd-para-el-fichero-sig">D5 — Mismo patrón fd para el fichero <code>.sig</code></h3>
+<p>El fichero de firma se abre con <code>O_NOFOLLOW</code> y se lee desde el fd. La ruta del <code>.sig</code> se infiere automáticamente añadiendo <code>.sig</code> al path del <code>.so</code>. Se puede sobreescribir con campo explícito <code>"signature"</code> en el JSON config.</p>
+<h3 id="d6-sha-256-adicional-para-logging-forense">D6 — SHA-256 adicional para logging forense</h3>
+<p>Se calcula hash SHA-256 del contenido leído del fd antes de la verificación Ed25519. Su función es forense: distingue corrupción accidental de tampering deliberado y facilita correlación con Falco. El log incluye:</p>
+<ul>
+<li>Hash SHA-256 del plugin</li>
+<li>Tamaño en bytes (<code>st.st_size</code>)</li>
+<li>Timestamp de última modificación (<code>st.st_mtime</code>)</li>
+<li>Fingerprint de la clave pública embebida actual</li>
+</ul>
+<p>Coste despreciable con libsodium (<code>crypto_hash_sha256</code>).</p>
+<h3 id="d7-clave-publica-hardcoded-en-binario-via-cmake">D7 — Clave pública hardcoded en binario vía CMake</h3>
+<p>La clave pública Ed25519 se inyecta en tiempo de compilación como constante en el binario del plugin-loader. Elimina el vector de sustitución del fichero de clave pública:</p>
+<pre><code class="language-cmake"># tools/provision.sh exporta la pubkey como hex
+# CMakeLists.txt la inyecta en compilación:
+target_compile_definitions(plugin_loader PRIVATE
+    MLD_PLUGIN_PUBKEY_HEX=&quot;${PLUGIN_PUBKEY_HEX}&quot;)
+</code></pre>
+<p><strong>Garantía contractual (explícita):</strong> El plugin-loader rechaza cualquier firma generada con una clave distinta a la embebida en el binario actual, sin excepción. Esta garantía se deriva del funcionamiento de Ed25519 pero se documenta como invariante de diseño.</p>
+<p>La clave pública no es un secreto. Hardcodearla en código fuente abierto es correcto y seguro.</p>
+<h3 id="d8-campo-signature-en-json-config">D8 — Campo <code>"signature"</code> en JSON config</h3>
+<pre><code class="language-json">{
+  &quot;name&quot;: &quot;libplugin_hello&quot;,
+  &quot;path&quot;: &quot;/usr/lib/ml-defender/plugins/libplugin_hello.so&quot;,
+  &quot;signature&quot;: &quot;/usr/lib/ml-defender/plugins/libplugin_hello.so.sig&quot;,
+  &quot;active&quot;: true,
+  &quot;require_signature&quot;: true,
+  &quot;allowed_key_id&quot;: &quot;ed25519:2026-04-prod&quot;
+}
+</code></pre>
+<p><code>"signature"</code> es opcional — si ausente, se infiere como <code>path + ".sig"</code>.<br />
+<code>"require_signature"</code> por defecto es <code>true</code> en producción, <code>false</code> con <code>MLD_DEV_MODE=1</code>.<br />
+<code>"allowed_key_id"</code> es opcional en PHASE 1, preparado para D12.</p>
+<h3 id="d9-fail-closed-explicito-y-diferenciado">D9 — Fail-closed explícito y diferenciado</h3>
+<p><strong>Plugin con <code>"require_signature": true</code> (default en producción):</strong>
+- Verificación fallida → log <code>CRITICAL</code> con: nombre del plugin, path intentado, motivo exacto (firma inválida / symlink detectado / tamaño fuera de rango / path traversal / key mismatch), fingerprint de la clave pública actual
+- <code>std::terminate()</code> — el componente no arranca</p>
+<p><strong>Plugin con <code>"require_signature": false</code> (solo desarrollo):</strong>
+- Verificación fallida → log <code>WARNING</code>
+- Componente continúa sin ese plugin</p>
+<p>Coherente con <code>std::set_terminate()</code> ya insertado en los 6 componentes <code>main()</code> y con D1 de ADR-023.</p>
+<p><strong>Nota operacional:</strong> Los componentes deben ejecutarse bajo systemd con <code>Restart=always</code> y <code>RestartSec=5s</code> para evitar caídas permanentes ante errores puntuales de verificación.</p>
+<h3 id="d10-limpieza-de-entorno-en-launcher">D10 — Limpieza de entorno en launcher</h3>
+<pre><code class="language-bash">unset LD_PRELOAD
+unset LD_LIBRARY_PATH
+exec /usr/bin/ml-defender-sniffer &quot;$@&quot;
+</code></pre>
+<p>Mitiga inyección vía linker dinámico (V6).</p>
+<h3 id="d11-rotacion-de-claves-operacion-exclusivamente-manual">D11 — Rotación de claves: operación exclusivamente manual</h3>
+<p><code>provision.sh --reset</code> es una operación de alto impacto que ejecuta:</p>
+<ol>
+<li>Muestra advertencia con fingerprint de la clave actual y consecuencias</li>
+<li>Exige confirmación interactiva: escribir literalmente <code>RESET-KEYS</code></li>
+<li>Genera nuevo par Ed25519</li>
+<li>Estampa fecha y hora en el nombre: <code>plugin_signing_key_20260402_143022.sk</code></li>
+<li>Muestra fingerprint de la nueva clave pública (hex corto) para que el admin lo anote</li>
+<li>Registra en syslog: <code>KEY ROTATION: old signatures invalidated at &lt;timestamp&gt;</code></li>
+<li>Mueve (no borra) los <code>.sig</code> existentes a <code>/var/lib/ml-defender/invalidated/&lt;timestamp&gt;/</code> — preserva trazabilidad forense</li>
+<li>No genera nuevas firmas automáticamente</li>
+<li>Imprime instrucción explícita: <strong>"La clave privada debe guardarse INMEDIATAMENTE en ubicación segura OFFLINE, fuera del filesystem de producción. El pipeline no arrancará hasta re-firmar todos los plugins con la nueva clave privada."</strong></li>
+</ol>
+<p><strong>No existe cron de rotación automática.</strong> Un cron puede emitir notificación (<code>NOTICE</code>: "La clave actual tiene N días"), nunca ejecutar la rotación.</p>
+<p><strong>Estado parcial inaceptable:</strong> No es posible tener plugins firmados con claves distintas. El arranque falla si cualquier plugin crítico presenta mismatch. Todo o nada.</p>
+<p><strong>Dos escenarios de rotación:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Escenario</th>
+<th>Trigger</th>
+<th>Proceso</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Rotación preventiva</td>
+<td>Decisión admin (semestral o anual)</td>
+<td>CI/CD: nueva clave → recompila binarios → re-firma plugins → redespliega</td>
+</tr>
+<tr>
+<td>Rotación de emergencia</td>
+<td>Compromiso detectado</td>
+<td>Parada total → nueva clave → re-firma todo → descarte completo → redespliegue → clave privada a custodia offline</td>
+</tr>
+</tbody>
+</table>
+<h3 id="d12-clave-publica-por-componente-preparacion-phase-2">D12 — Clave pública por componente (preparación PHASE 2)</h3>
+<p>El campo <code>"allowed_key_id"</code> en el JSON config está preparado para que en futuras versiones cada componente pueda tener su propia clave de confianza. Formato: <code>"ed25519:YYYY-MM-&lt;env&gt;"</code> (ej: <code>"ed25519:2026-04-prod"</code>). Mitiga el vector V11 (mixed signing).</p>
+<hr />
+<h2 id="ficheros-afectados">Ficheros afectados</h2>
+<table>
+<thead>
+<tr>
+<th>Fichero</th>
+<th>Cambio</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>plugin-loader/src/plugin_loader.cpp</code></td>
+<td>Verificación Ed25519 + SHA-256 + O_NOFOLLOW + fstat + size check + fd discipline</td>
+</tr>
+<tr>
+<td><code>plugin-loader/CMakeLists.txt</code></td>
+<td><code>target_link_libraries(plugin_loader PRIVATE sodium)</code> + inyección pubkey hex</td>
+</tr>
+<tr>
+<td><code>tools/provision.sh</code></td>
+<td><code>--reset</code>: advertencias, confirmación, timestamp, fingerprint, movido de .sig a invalidated/</td>
+</tr>
+<tr>
+<td>JSON config schemas (6 componentes)</td>
+<td>Campos <code>"require_signature"</code>, <code>"allowed_key_id"</code> en sección plugins</td>
+</tr>
+<tr>
+<td>systemd units</td>
+<td><code>Restart=always</code>, <code>RestartSec=5s</code>, <code>unset LD_PRELOAD</code></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="tests-requeridos-antes-de-merge">Tests requeridos antes de merge</h2>
+<table>
+<thead>
+<tr>
+<th>Test</th>
+<th>Escenario</th>
+<th>Resultado esperado</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>TEST-INTEG-SIGN-1</td>
+<td>Plugin con firma válida</td>
+<td>Carga exitosa</td>
+</tr>
+<tr>
+<td>TEST-INTEG-SIGN-2</td>
+<td>Plugin con firma inválida</td>
+<td>CRITICAL + terminate()</td>
+</tr>
+<tr>
+<td>TEST-INTEG-SIGN-3</td>
+<td>.sig ausente</td>
+<td>CRITICAL + terminate()</td>
+</tr>
+<tr>
+<td>TEST-INTEG-SIGN-4</td>
+<td>Symlink attack (O_NOFOLLOW)</td>
+<td>CRITICAL + terminate()</td>
+</tr>
+<tr>
+<td>TEST-INTEG-SIGN-5</td>
+<td>Path traversal en JSON config</td>
+<td>CRITICAL + terminate()</td>
+</tr>
+<tr>
+<td>TEST-INTEG-SIGN-6</td>
+<td>Plugin firmado con clave rotada (mismatch)</td>
+<td>CRITICAL + terminate()</td>
+</tr>
+<tr>
+<td>TEST-INTEG-SIGN-7</td>
+<td>Plugin truncado (size check)</td>
+<td>CRITICAL + terminate()</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="threat-model-y-vectores-de-ataque">Threat model y vectores de ataque</h2>
+<table>
+<thead>
+<tr>
+<th>Vector</th>
+<th>Viabilidad</th>
+<th>Mitigación</th>
+<th>Estado</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>V1 — Compromiso clave privada</td>
+<td>Alta si mal gestionada</td>
+<td>Firma offline, privada nunca en host</td>
+<td>D1 — Ahora</td>
+</tr>
+<tr>
+<td>V2 — Sustitución .so + .sig (DAC débil)</td>
+<td>Alta</td>
+<td>AppArmor: solo root escribe en /usr/lib/ml-defender/plugins/</td>
+<td>Hardening Debian</td>
+</tr>
+<tr>
+<td>V3 — Compromiso pipeline build</td>
+<td>Media</td>
+<td>Documentado como limitación PHASE 1; reproducible builds en PHASE 3</td>
+<td>Diferido</td>
+</tr>
+<tr>
+<td>V4 — Path traversal en JSON config</td>
+<td>Media</td>
+<td>Prefix check estricto antes de open()</td>
+<td>D3 — Ahora</td>
+</tr>
+<tr>
+<td>V5 — Race en fd /proc/self/fd</td>
+<td>Media</td>
+<td>FD discipline: fd abierto sin interrupción</td>
+<td>D4 — Ahora</td>
+</tr>
+<tr>
+<td>V6 — LD_PRELOAD / entorno</td>
+<td>Media</td>
+<td>unset en launcher</td>
+<td>D10 — Ahora</td>
+</tr>
+<tr>
+<td>V7 — libsodium troyanizada</td>
+<td>Baja</td>
+<td>IMA en imagen Debian hardened</td>
+<td>Diferido</td>
+</tr>
+<tr>
+<td>V8 — Plugin legítimo con comportamiento malicioso</td>
+<td>Alta</td>
+<td>D8 snapshot/invariant check (ADR-023) + seccomp en PHASE 3</td>
+<td>Parcial</td>
+</tr>
+<tr>
+<td>V9 — Symlink race</td>
+<td>Alta</td>
+<td>O_NOFOLLOW + fstat() en fd</td>
+<td>D2 — Ahora</td>
+</tr>
+<tr>
+<td>V10 — Truncamiento / DoS por tamaño</td>
+<td>Media</td>
+<td>Size check antes de lectura + log forense</td>
+<td>D2 + D6 — Ahora</td>
+</tr>
+<tr>
+<td>V11 — Mixed signing</td>
+<td>Baja en PHASE 1</td>
+<td>Campo allowed_key_id preparado</td>
+<td>D12 — PHASE 2</td>
+</tr>
+</tbody>
+</table>
+<h3 id="threat-model-boundaries">Threat model boundaries</h3>
+<p>ADR-025 asume que el atacante no tiene privilegios root en el host de producción. Si root es comprometido, cualquier mecanismo en userspace es vulnerable a bypass. Ejemplo concreto: un atacante con root puede parchear el binario del verificador en memoria (vía <code>/proc/&lt;pid&gt;/mem</code>) para que acepte cualquier firma, o inyectar código en el proceso, bypassando completamente la verificación Ed25519.</p>
+<p><strong>Mitigación en capas:</strong></p>
+<ul>
+<li><strong>Capa 1 (este ADR):</strong> Firma Ed25519 offline + clave pública hardcoded → previene sustitución de plugins por usuarios no-root.</li>
+<li><strong>Capa 2 (ADR futuro — Runtime Monitoring):</strong> Falco monitorea en tiempo real:</li>
+</ul>
+<pre><code class="language-yaml">- rule: ml-defender-plugin-modified
+  desc: &quot;Plugin signature or binary modified outside provision.sh&quot;
+  condition: &gt;
+    open_write and
+    fd.name =~ &quot;/usr/lib/ml-defender/plugins/.*\.(so|sig)&quot; and
+    not proc.name in (&quot;provision.sh&quot;, &quot;dpkg&quot;, &quot;apt&quot;)
+  output: &quot;Plugin modification detected (user=%user.name command=%proc.cmdline)&quot;
+  priority: CRITICAL
+</code></pre>
+<ul>
+<li><strong>Capa 3 (imagen Debian hardened):</strong> AppArmor profile restringiendo escritura. IMA para integridad del binario verificador.</li>
+</ul>
+<hr />
+<h2 id="alternativas-descartadas">Alternativas descartadas</h2>
+<p><strong>Clave pública en fichero root-only:</strong> Introduce vector de sustitución del fichero. Descartada en favor de D7. Puede reconsiderarse si el coste de recompilación resulta prohibitivo en entornos muy distribuidos (opción B documentada).</p>
+<p><strong><code>memfd_create()</code> en lugar de <code>/proc/self/fd/N</code>:</strong> Más portable pero mayor complejidad. Diferido a PHASE 2.</p>
+<p><strong>IMA del kernel:</strong> Diferido a imagen Debian hardened.</p>
+<p><strong>Cron de rotación automática:</strong> Antipatrón. Una rotación automática fallida puede dejar el sistema sin plugins en producción en un hospital. Descartado.</p>
+<p><strong><code>std::filesystem::canonical()</code> en D3:</strong> Rechaza paths a mount points no disponibles — problemático en entornos resource-constrained. Se usa <code>weakly_canonical()</code> con prefix check estricto.</p>
+<hr />
+<h2 id="consecuencias">Consecuencias</h2>
+<p><strong>Positivas:</strong>
+- Elimina carga ciega de <code>.so</code> arbitrarios
+- Cierra ventana TOCTOU del plugin-loader
+- Fail-closed explícito y auditable ante cualquier fallo de verificación
+- Logging forense distingue corrupción de tampering
+- Sin dependencias nuevas (libsodium ya en el proyecto)</p>
+<p><strong>Negativas / trade-offs:</strong>
+- Cada plugin nuevo requiere firma explícita en deploy
+- Rotación de clave implica recompilación y redespliegue — coste operacional intencional
+- <code>provision.sh</code> requiere actualización para gestionar ciclo de vida de firmas</p>
+<hr />
+<h2 id="registro-del-proceso-de-decision">Registro del proceso de decisión</h2>
+<p>Desarrollado en tres rondas del Consejo de Sabios (Claude, ChatGPT-5, DeepSeek, Gemini, Grok, Qwen).</p>
+<p><strong>Ronda 1:</strong> Identificación de vectores de ataque y diseño base. Vectores V9 (symlink race) y V10 (TOCTOU en .sig) aportados por el Consejo — no estaban en el borrador inicial.</p>
+<p><strong>Ronda 2:</strong> Resolución de preguntas operacionales sobre rotación de claves, coste de D7, comportamiento de <code>provision.sh --reset</code> y rol de Falco. Consenso en todas las preguntas principales.</p>
+<p><strong>Ronda 3:</strong> Ajustes de precisión sin cambios bloqueantes. Incorporados: orden prefix_check antes de open(), validación de tamaño MIN/MAX para .so y .sig, systemd Restart=always, formato allowed_key_id, exclusiones dpkg/apt en regla Falco, log st_mtime en D6, garantía contractual explícita en D7, ejemplo concreto de root compromise en threat model boundaries, tabla de tests TEST-INTEG-SIGN-1 a 7.</p>
+<p><strong>Posición de minoría registrada (Grok, ronda 1):</strong> En componentes ultra-críticos como <code>firewall-acl-agent</code>, <code>std::terminate()</code> incluso para plugins sin <code>require_signature: true</code>. Árbitro adopta posición mayoritaria: el flag por componente con default <code>true</code> en producción es el mecanismo de control.</p>
+<p><strong>Posición de minoría registrada (Gemini, ronda 2):</strong> <code>provision.sh</code> debería guardar histórico local de rotaciones incluyendo hash del binario resultante. Diferido a implementación de <code>provision.sh</code>.</p>
+<p><strong>Nota de atribución:</strong> En las tres rondas, Qwen se autoidentificó como DeepSeek en cuatro ocasiones. Las contribuciones están registradas bajo el nombre del modelo según el archivo de respuesta recibido. El patrón queda documentado como observación de comportamiento del Consejo.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.top", "search.highlight"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

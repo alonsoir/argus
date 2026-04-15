@@ -1,0 +1,1698 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source embedded-ML NDR for hospitals and schools">
+      
+      
+        <meta name="author" content="Alonso Isidoro Roman">
+      
+      
+        <link rel="canonical" href="https://alonsoir.github.io/argus/Ultra%20scale%20vision/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>Executive Technical Summary — UltraScale DDoS Defense (TB/s Architecture) - ML Defender (aRGus NDR)</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#executive-technical-summary-ultrascale-ddos-defense-tbs-architecture" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="ML Defender (aRGus NDR)" class="md-header__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ML Defender (aRGus NDR)
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Executive Technical Summary — UltraScale DDoS Defense (TB/s Architecture)
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../README.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../docs/ARCHITECTURE.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../docs/BACKLOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Backlog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../docs/SECURITY_MODEL.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Security Model
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../docs/adr/ADR-013 seed distribution component authentication.md" class="md-tabs__link">
+          
+  
+  
+  ADRs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../docs/contracts/Protobuf contracts.md" class="md-tabs__link">
+          
+  
+  
+  Contracts
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="ML Defender (aRGus NDR)" class="md-nav__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ML Defender (aRGus NDR)
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../README.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/ARCHITECTURE.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/BACKLOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/SECURITY_MODEL.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADRs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ADRs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/adr/ADR-013 seed distribution component authentication.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013 Seed Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/adr/ADR-021-deployment-topology-seed-families.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-021 Topology SSOT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/adr/ADR-022-threat-model-opcion2-descartada.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-022 Threat Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/contracts/Protobuf contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protobuf
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/contracts/JSON contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JSON
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/contracts/Rag security commands.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-paradigm-shift-from-per-event-inspection-to-flow-aggregation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Paradigm Shift: From Per-Event Inspection to Flow Aggregation
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-ultrascale-architecture-principles" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. UltraScale Architecture Principles
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2. UltraScale Architecture Principles">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#21-kernel-bypass-direct-nic-ownership-dpdk" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.1 Kernel Bypass + Direct NIC Ownership (DPDK)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#22-minimal-metadata-extraction-at-line-rate" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.2 Minimal Metadata Extraction at Line Rate
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#23-distributed-aggregation-and-sliding-windows" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.3 Distributed Aggregation and Sliding Windows
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#24-ml-evolution-from-event-features-to-window-based-signatures" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.4 ML Evolution: From Event Features to Window-Based Signatures
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#25-mitigation-control-plane" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.5 Mitigation &amp; Control Plane
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-candidate-architectures" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Candidate Architectures
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. Candidate Architectures">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#a-dpdk-sensor-aggregator-recommended" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        A. DPDK Sensor + Aggregator (Recommended)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#b-smartnic-dpu-offload" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        B. SmartNIC / DPU Offload
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#c-fpga-inline-prefilter" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        C. FPGA Inline Prefilter
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#d-hybrid-ebpf-dpdk" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        D. Hybrid eBPF + DPDK
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-software-components-ultrascale" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Software Components (UltraScale)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-ml-datasets-training-strategy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. ML Datasets &amp; Training Strategy
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-testing-validation-pipeline" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Testing &amp; Validation Pipeline
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-risks-mitigations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Risks &amp; Mitigations
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-incremental-roadmap" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. Incremental Roadmap
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="8. Incremental Roadmap">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#phase-2-production-hardening-030-days" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 2 — Production Hardening (0–30 days)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#phase-3-dpdk-port-3090-days" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 3 — DPDK Port (30–90 days)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#phase-4-distributed-prototype-90150-days" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 4 — Distributed Prototype (90–150 days)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#phase-5-ml-evolution-150240-days" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 5 — ML Evolution (150–240 days)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#phase-6-isp-scale-tests-240360-days" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 6 — ISP-Scale Tests (240–360 days)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#9-strategic-relevance" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9. Strategic Relevance
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#10-conclusion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10. Conclusion
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="executive-technical-summary-ultrascale-ddos-defense-tbs-architecture"><strong>Executive Technical Summary — UltraScale DDoS Defense (TB/s Architecture)</strong></h1>
+<p><strong>ML Defender — Distributed High-Throughput Architecture for TB/s Attacks</strong></p>
+<hr />
+<h2 id="1-paradigm-shift-from-per-event-inspection-to-flow-aggregation"><strong>1. Paradigm Shift: From Per-Event Inspection to Flow Aggregation</strong></h2>
+<p>The current ML Defender pipeline performs deep, high-fidelity inspection of individual events with 83-field telemetry. This is ideal for malware, targeted intrusions, and advanced evasion patterns.</p>
+<p>However, <strong>volumetric DDoS attacks at 100G → 400G → 1 Tbps</strong> fundamentally break any per-packet inspection model. Full packet analysis is computationally and memory infeasible at these scales.</p>
+<p><strong>Core principle:</strong></p>
+<blockquote>
+<p>“We no longer inspect each packet. We extract minimal metadata at line rate, aggregate traffic in real-time windows, and detect attacks by their macroscopic signatures.”</p>
+</blockquote>
+<p>This requires a complete shift from:</p>
+<ul>
+<li>microscale → <strong>macroscale</strong></li>
+<li>packets → <strong>flows</strong></li>
+<li>per-event ML → <strong>windowed/aggregated ML</strong></li>
+<li>kernel-bound pipelines → <strong>kernel-bypass DPDK sensors</strong></li>
+<li>single-node analytics → <strong>distributed clusters</strong></li>
+</ul>
+<hr />
+<h2 id="2-ultrascale-architecture-principles"><strong>2. UltraScale Architecture Principles</strong></h2>
+<h3 id="21-kernel-bypass-direct-nic-ownership-dpdk"><strong>2.1 Kernel Bypass + Direct NIC Ownership (DPDK)</strong></h3>
+<p>Linux kernel networking (even with eBPF/XDP) cannot sustain Tbps analysis. Hardware bypass is mandatory.</p>
+<p><strong>Key technologies:</strong></p>
+<ul>
+<li><strong>DPDK</strong> for user-space packet IO at 100G+/core.</li>
+<li><strong>DMA-based NIC access</strong> without kernel involvement.</li>
+<li><strong>SR-IOV NIC virtualization</strong> to shard traffic across cores or processes.</li>
+<li>
+<p><strong>SmartNICs / DPUs</strong> (ARM/FPGA/ASIC-based NIC accelerators):</p>
+<ul>
+<li>Capable of filtering, sampling, and even aggregating before the host CPU sees the packets.</li>
+</ul>
+</li>
+</ul>
+<p><strong>Hardware baseline per sensor node:</strong></p>
+<ul>
+<li>1× or 2× <strong>100G/200G/400G NICs</strong></li>
+<li>High-core-count CPUs (AMD EPYC recommended)</li>
+<li>Optional SmartNIC/DPU for pre-offload</li>
+</ul>
+<hr />
+<h3 id="22-minimal-metadata-extraction-at-line-rate"><strong>2.2 Minimal Metadata Extraction at Line Rate</strong></h3>
+<p>Under TB/s load, 99.999% of packets are “noise” from the attack. Storage, parsing, or even serializing them is impossible.</p>
+<p><strong>DPDK sensor tasks:</strong></p>
+<ol>
+<li>Capture packets at 100G+ per queue.</li>
+<li>
+<p>Extract minimal L2–L4 metadata:</p>
+<ul>
+<li>5-tuple</li>
+<li>timestamp</li>
+<li>TCP flags</li>
+<li>packet length</li>
+<li>Discard payload immediately.</li>
+<li>
+<p>Emit these metadata events into a <strong>high-throughput bus</strong>:</p>
+</li>
+<li>
+<p><strong>Kafka</strong></p>
+</li>
+<li><strong>NATS JetStream</strong></li>
+<li><strong>Redpanda</strong></li>
+</ul>
+</li>
+</ol>
+<p>This allows millions of events/second per node.</p>
+<hr />
+<h3 id="23-distributed-aggregation-and-sliding-windows"><strong>2.3 Distributed Aggregation and Sliding Windows</strong></h3>
+<p>A single server cannot process TB/s metadata. The architecture relies on horizontal distribution:</p>
+<p><strong>Distributed roles:</strong></p>
+<ul>
+<li><strong>Sensors (DPDK)</strong>: Raw metadata extraction</li>
+<li>
+<p><strong>Aggregators (Cluster)</strong>:</p>
+<ul>
+<li>Build flow records (x per 100–500ms window)</li>
+<li>
+<p>Compute statistical profiles:</p>
+<ul>
+<li>pps, bps</li>
+<li>SYN/FIN/RST ratios</li>
+<li>entropy of source IPs</li>
+<li>packet-size distribution</li>
+<li>top-K source concentration</li>
+<li>rolling deltas</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p>Aggregators reduce billions of packets per minute into <strong>a few thousand aggregated vectors</strong>.</p>
+<hr />
+<h3 id="24-ml-evolution-from-event-features-to-window-based-signatures"><strong>2.4 ML Evolution: From Event Features to Window-Based Signatures</strong></h3>
+<p>Phase 1 ML models use 83 fields from individual events. UltraScale requires aggregated vectors per target/destination.</p>
+<p><strong>New ML Inputs (example window vector):</strong></p>
+<pre><code>[dst_ip, pps_last_100ms, bps_last_100ms,
+ unique_sources, src_entropy,
+ syn_ratio, rst_ratio, fin_ratio,
+ avg_pkt_size, pkt_size_stddev,
+ small_pkt_fraction, large_pkt_fraction,
+ top1_src_concentration, top10_concentration,
+ window_slope, ...]
+</code></pre>
+<p><strong>ML tasks:</strong></p>
+<ul>
+<li>Classification (SYN flood, UDP flood, amplification attacks)</li>
+<li>Anomaly detection</li>
+<li>Signature matching with RAG (Mirai variants, DNS amplification patterns, etc.)</li>
+</ul>
+<p>Models: lightweight tree ensembles, shallow neural nets, anomaly autoencoders.</p>
+<p>Targets:</p>
+<ul>
+<li>
+<blockquote>
+<p>95% detection for main attack families</p>
+</blockquote>
+</li>
+<li>&lt;0.5% FPR per window</li>
+<li>&lt;300ms time-to-detect</li>
+</ul>
+<hr />
+<h3 id="25-mitigation-control-plane"><strong>2.5 Mitigation &amp; Control Plane</strong></h3>
+<p>Once detection is established, mitigation must be automated:</p>
+<p><strong>Control-plane components:</strong></p>
+<ul>
+<li>ETCD (state/coordination)</li>
+<li>Orchestrator (policy application)</li>
+<li>Firewall API</li>
+<li>BGP controller (ExaBGP/FRR)</li>
+<li>Scrubbing center integration</li>
+</ul>
+<p>Mitigation chain:</p>
+<ol>
+<li>Soft rate-limits</li>
+<li>Per-IP or subnets drops</li>
+<li>BGP blackholing for catastrophic events</li>
+<li>Traffic diversion to scrubbing</li>
+</ol>
+<hr />
+<h2 id="3-candidate-architectures"><strong>3. Candidate Architectures</strong></h2>
+<h3 id="a-dpdk-sensor-aggregator-recommended"><strong>A. DPDK Sensor + Aggregator (Recommended)</strong></h3>
+<ul>
+<li>Portable, widely supported</li>
+<li>Predictable performance</li>
+<li>Easiest incremental integration with current system</li>
+</ul>
+<h3 id="b-smartnic-dpu-offload"><strong>B. SmartNIC / DPU Offload</strong></h3>
+<ul>
+<li>Offload heavy lifting to BlueField/Pensando/Intel IPU</li>
+<li>Lower host CPU requirements</li>
+<li>Higher cost, vendor lock-in risk</li>
+</ul>
+<h3 id="c-fpga-inline-prefilter"><strong>C. FPGA Inline Prefilter</strong></h3>
+<ul>
+<li>Maximum performance</li>
+<li>Deterministic hardware behavior</li>
+<li>Slow development cycles</li>
+</ul>
+<h3 id="d-hybrid-ebpf-dpdk"><strong>D. Hybrid eBPF + DPDK</strong></h3>
+<ul>
+<li>DPDK for bulk/meta</li>
+<li>eBPF/XDP for sampled deep inspection</li>
+<li>Best of both worlds for forensics</li>
+</ul>
+<hr />
+<h2 id="4-software-components-ultrascale"><strong>4. Software Components (UltraScale)</strong></h2>
+<ul>
+<li><strong>DPDK Capture Service</strong> (C++20)</li>
+<li><strong>Metadata Bus</strong> (Kafka/NATS JetStream)</li>
+<li><strong>Aggregation Workers</strong> (C++/Rust)</li>
+<li><strong>Windowed ML Detector</strong> (existing engine adapted)</li>
+<li><strong>Orchestrator + ETCD</strong> (policy/state)</li>
+<li><strong>Mitigation Engine</strong> (firewall/BGP)</li>
+<li><strong>Observability</strong> (Prometheus/Grafana/tracing)</li>
+<li><strong>Forensic Snapshotter</strong> (optional full capture on flagged flows)</li>
+</ul>
+<hr />
+<h2 id="5-ml-datasets-training-strategy"><strong>5. ML Datasets &amp; Training Strategy</strong></h2>
+<p>Since collecting TB/s real attack data is difficult, synthetic generation is mandatory:</p>
+<ul>
+<li>Use <strong>TRex</strong> or <strong>MoonGen</strong> for large-scale synthetic DDoS traffic.</li>
+<li>
+<p>Generate attack families:</p>
+<ul>
+<li>SYN/ACK floods</li>
+<li>UDP floods</li>
+<li>DNS/NTP amplification</li>
+<li>HTTP floods</li>
+<li>Mixed-vector attacks</li>
+<li>Simulate millions of flows and variable windows.</li>
+<li>Validate with limited real-world samples (CTU-13, MAWI, CAIDA, ISP partners).</li>
+</ul>
+</li>
+</ul>
+<hr />
+<h2 id="6-testing-validation-pipeline"><strong>6. Testing &amp; Validation Pipeline</strong></h2>
+<p><strong>Phase tests:</strong></p>
+<ol>
+<li>Single-node DPDK → &gt;10 Mpps sustained</li>
+<li>Multi-node 10–20 Gbps distributed ingestion</li>
+<li>ML accuracy tests across synthetic scenarios</li>
+<li>End-to-end mitigation tests</li>
+<li>ISP-grade simulation: 100G → 400G → 1Tbps (cloud lab)</li>
+</ol>
+<p>Tools: TRex, MoonGen, custom packet replayers.</p>
+<hr />
+<h2 id="7-risks-mitigations"><strong>7. Risks &amp; Mitigations</strong></h2>
+<table>
+<thead>
+<tr>
+<th>Risk</th>
+<th>Mitigation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>High hardware cost</td>
+<td>Stage procurement, hybrid cloud scrubbing</td>
+</tr>
+<tr>
+<td>DPDK/FPGA complexity</td>
+<td>Incremental dev, strong interfaces</td>
+</tr>
+<tr>
+<td>False positives</td>
+<td>Stage mitigation levels; probability-based decisions</td>
+</tr>
+<tr>
+<td>Vendor lock-in</td>
+<td>Prefer DPDK path first; SmartNIC optional</td>
+</tr>
+<tr>
+<td>Scaling overhead</td>
+<td>Strict window size limits, parallel sharding</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="8-incremental-roadmap"><strong>8. Incremental Roadmap</strong></h2>
+<h3 id="phase-2-production-hardening-030-days"><strong>Phase 2 — Production Hardening (0–30 days)</strong></h3>
+<ul>
+<li>Finalize FAISS, ETCD client, hot-reload, RAG refinements.</li>
+</ul>
+<h3 id="phase-3-dpdk-port-3090-days"><strong>Phase 3 — DPDK Port (30–90 days)</strong></h3>
+<ul>
+<li>Port sniffer to DPDK.</li>
+<li>Rebuild ring-consumer using DPDK queues.</li>
+<li>Achieve &gt;10 Mpps on 100G NIC in lab.</li>
+</ul>
+<h3 id="phase-4-distributed-prototype-90150-days"><strong>Phase 4 — Distributed Prototype (90–150 days)</strong></h3>
+<ul>
+<li>Deploy 2–4 sensors + 2 aggregators + detector.</li>
+<li>Run 10–20 Gbps synthetic DDoS tests.</li>
+</ul>
+<h3 id="phase-5-ml-evolution-150240-days"><strong>Phase 5 — ML Evolution (150–240 days)</strong></h3>
+<ul>
+<li>Train windowed ML models.</li>
+<li>Add RAG signature library.</li>
+<li>Target &gt;95% classification accuracy.</li>
+</ul>
+<h3 id="phase-6-isp-scale-tests-240360-days"><strong>Phase 6 — ISP-Scale Tests (240–360 days)</strong></h3>
+<ul>
+<li>Test 100–400G multi-node ingest.</li>
+<li>Prepare procurement, runbooks, and deployments.</li>
+</ul>
+<p>Total timeline to first TB/s-capable prototype: <strong>~12 months</strong> (with funding and hardware).</p>
+<hr />
+<h2 id="9-strategic-relevance"><strong>9. Strategic Relevance</strong></h2>
+<p>This architecture is aligned with EU needs:</p>
+<ul>
+<li>Sovereign, on-premises, high-throughput defense</li>
+<li>Independence from US hyperscalers</li>
+<li>Alignment with NIS2, DORA, EU Cyber Resilience Act</li>
+<li>First candidate for “European Cloudflare-class” capability</li>
+</ul>
+<hr />
+<h2 id="10-conclusion"><strong>10. Conclusion</strong></h2>
+<p>ML Defender Phase 1 established a scientifically solid, low-latency IDS pipeline capable of detecting real malware using synthetic training. UltraScale expands this foundation into a distributed, kernel-bypass DDoS defense designed for <strong>100G → 400G → 1Tbps</strong> threats.</p>
+<p>The architecture combines:</p>
+<ul>
+<li>DPDK sensors</li>
+<li>distributed aggregators</li>
+<li>window-based ML</li>
+<li>SmartNIC acceleration (optional)</li>
+<li>automated mitigation</li>
+<li>forensic retention</li>
+</ul>
+<p>…while remaining incrementally compatible with today’s pipeline.</p>
+<p>This summary encapsulates both Qwen’s contributions and my own to provide a unified strategic document for review by parallels.ai.</p>
+<p>Parallels.ai</p>
+<h1 id="building-a-cloudflare-class-shield-dpdk-powered-tbs-ddos-defense-for-a-sovereign-eu">Building a Cloudflare-Class Shield: DPDK-Powered TB/s DDoS Defense for a Sovereign EU</h1>
+<h2 id="executive-summary">Executive Summary</h2>
+<p>The 'UltraScale DDoS Defense' architecture represents a fundamental strategic pivot required to defend against modern, terabit-per-second (Tbps) volumetric attacks. As multi-terabit attacks become a reality, traditional per-packet inspection models are no longer computationally or economically viable [executive_summary[0]][1]. This report outlines a new paradigm: a distributed, kernel-bypass architecture that moves from microscale packet analysis to macroscale flow aggregation. By doing so, it transforms billions of packets per minute into a few thousand manageable feature vectors, making machine learning-based detection tractable and enabling automated mitigation within <strong>300 milliseconds</strong>.</p>
+<p>This architecture is not merely a technical upgrade; it is a strategic imperative for achieving digital sovereignty. It provides a blueprint for a 'European Cloudflare-class' defense capability, aligning with critical EU regulations like NIS2, DORA, and the Cyber Resilience Act, thereby reducing reliance on non-EU hyperscalers for infrastructure protection [strategic_relevance_and_eu_alignment.strategic_positioning[0]][2]. The plan is ambitious but feasible, with a detailed 12-month roadmap to a prototype capable of handling <strong>100G to 1 Tbps</strong> threats.</p>
+<h3 id="kernel-bypass-unlocks-8x-cpu-efficiency-making-tbps-scale-possible">Kernel Bypass Unlocks 8x CPU Efficiency, Making Tbps Scale Possible</h3>
+<p>The physics of high-speed networking reveal a critical bottleneck: a standard Linux kernel requires 4-8 CPU cores to saturate a 100 Gbps link, whereas a user-space Data Plane Development Kit (DPDK) approach can achieve the same line rate on a single core [architectural_principles.0.description[0]][3]. This <strong>4-8x efficiency gain</strong> is the cornerstone of the UltraScale architecture. It mandates a hardware bypass approach, moving packet I/O out of the kernel to sustain analysis at Tbps speeds. This principle allows for the reservation of powerful, high-core-count CPUs (like AMD EPYC) exclusively for high-performance sensor nodes, while control plane tasks can run on less demanding hardware.</p>
+<h3 id="flow-aggregation-slashes-data-volume-by-999999">Flow Aggregation Slashes Data Volume by 99.9999%</h3>
+<p>At Tbps scale, 99.999% of packets are attack noise, making full capture impossible. The paradigm shift to flow aggregation is the solution. By extracting only minimal L2-L4 metadata at line rate and processing it in short, 100-500ms sliding windows, the architecture achieves a data compression ratio of approximately 1,000,000:1. Billions of packets per minute are collapsed into a few thousand statistical vectors. This dramatic data reduction makes storage, observability, and, most importantly, real-time machine learning not only possible but efficient, as analysis can occur in memory with sub-300ms latency.</p>
+<h3 id="metadata-bus-choice-is-a-critical-sla-decision">Metadata Bus Choice is a Critical SLA Decision</h3>
+<p>The performance of the metadata bus—the system's central nervous system—directly dictates the detect-to-mitigate Service Level Agreement (SLA). While options like Kafka are known for high throughput, their tail latencies can be a critical weakness. Benchmarks show Kafka's p99.99 latency can spike to over <strong>5 seconds</strong> at 1 GB/s, whereas Redpanda remains at least <strong>10x faster</strong> and requires half the nodes (3 vs. 6) for the same workload. NATS JetStream offers the lowest latency for lightweight messaging but is not designed for high-throughput data firehoses. The strategic choice is to default to Redpanda for its balance of throughput and predictable low latency, ensuring the system can meet its aggressive response time targets.</p>
+<h3 id="staged-mitigation-is-essential-to-prevent-lethal-collateral-damage">Staged Mitigation Is Essential to Prevent 'Lethal' Collateral Damage</h3>
+<p>A high false-positive rate (FPR) in a Tbps environment can be as damaging as the attack itself. An FPR of just <strong>0.5%</strong> on a 1 Tbps attack would result in <strong>5 Gbps</strong> of legitimate traffic being dropped—enough to cripple smaller downstream links. To counter this, the architecture mandates a staged, automated mitigation chain. Responses must begin with "soft" actions like rate-limiting and only escalate to surgical per-IP/subnet drops (via BGP FlowSpec) and finally to BGP blackholing for catastrophic events [automated_mitigation_control_plane.staged_mitigation_chain[0]][4]. This tiered approach, governed by policies stored in ETCD, minimizes collateral damage and preserves service availability for legitimate users.</p>
+<h2 id="1-why-current-ids-dies-beyond-100-g">1. Why Current IDS Dies Beyond 100 G</h2>
+<p>The foundational premise of traditional Intrusion Detection Systems (IDS) and firewalls—deep, stateful inspection of every packet—is fundamentally broken by the scale of modern volumetric DDoS attacks. While this high-fidelity analysis is effective for detecting complex malware or targeted intrusions, it becomes computationally and economically infeasible when faced with traffic floods scaling from <strong>100 Gbps to 400 Gbps and ultimately 1 Tbps</strong>.</p>
+<p>The standard kernel network stack is simply not designed for this level of throughput. As network interface card (NIC) speeds exceed 200 Gbps, the time between consecutive 1500-byte packets shrinks to as low as 60 nanoseconds, a rate the kernel cannot sustain [paradigm_shift[1]][3]. Even with modern optimizations like eBPF/XDP, the overhead of kernel-space processing creates an insurmountable bottleneck. Performance benchmarks show that saturating a 100 Gbps NIC with kernel-based networking can require 4 to 8 CPU cores. In contrast, a raw DPDK implementation, which bypasses the kernel entirely, can achieve the same line rate on a single dedicated core [architectural_principles.0.description[0]][3]. This stark difference illustrates that any system reliant on per-packet inspection in the kernel is destined to fail, leading to dropped packets, missed detections, and ultimately, service failure. A new paradigm is not just an improvement; it is a physical necessity.</p>
+<h2 id="2-paradigm-shift-to-flow-aggregation">2. Paradigm Shift to Flow Aggregation</h2>
+<p>To survive terabit-scale attacks, the architecture must undergo a complete paradigm shift, moving from the microscale inspection of individual packets to the macroscale analysis of aggregated traffic flows [paradigm_shift[0]][5]. The core principle is to abandon the impossible task of inspecting every byte and instead focus on the statistical signatures of the overall traffic.</p>
+<blockquote>
+<p>“We no longer inspect each packet. We extract minimal metadata at line rate, aggregate traffic in real-time windows, and detect attacks by their macroscopic signatures.”</p>
+</blockquote>
+<p>This shift is not an incremental change but a complete re-architecting of the data pipeline and analytical approach. It involves moving from packets to flows, from per-event ML to windowed ML, and from single-node analytics to distributed clusters.</p>
+<h3 id="21-sliding-window-math-behind-106-compression">2.1 Sliding-Window Math Behind 10^6× Compression</h3>
+<p>The key to making Tbps-scale analysis tractable is aggressive, real-time data reduction. The architecture achieves this through a process of distributed aggregation within short, sliding time windows (typically <strong>100–500 ms</strong>). DPDK-powered sensors at the edge do not store or forward full packets. Instead, they extract only essential L2-L4 metadata (e.g., 5-tuple, packet length, TCP flags) and immediately discard the payload.</p>
+<p>This stream of minimal metadata is consumed by a cluster of aggregator workers. These workers build statistical profiles of the traffic, computing metrics like packets per second (pps), bits per second (bps), source IP entropy, and top-talker concentration. This process effectively collapses a torrent of billions of individual packets per minute into just a few thousand aggregated feature vectors. This represents a data compression factor of roughly <strong>1,000,000-to-1</strong>, transforming an unmanageable data firehose into a structured, low-velocity stream suitable for analysis.</p>
+<h3 id="22-impact-on-storage-ml-and-latency-budgets">2.2 Impact on Storage, ML, and Latency Budgets</h3>
+<p>This massive data reduction has profound downstream benefits. First, it dramatically lowers the cost and complexity of storage and observability. Instead of attempting to log petabytes of raw packet data, the system only needs to retain the compact, aggregated vectors. Second, it makes machine learning feasible in near-real-time. ML models can operate directly on these feature-rich vectors in memory, enabling detection and classification within the target <strong>&lt;300 ms</strong> latency budget. Research into "win-based" feature extraction methods confirms that this approach effectively reduces detection delay and computational overhead without sacrificing accuracy [paradigm_shift[0]][5].</p>
+<h2 id="3-five-technical-pillars-powering-ultrascale">3. Five Technical Pillars Powering UltraScale</h2>
+<p>The UltraScale architecture is built on an inseparable stack of five core technical principles that work in concert to deliver terabit-scale defense. Each pillar addresses a specific challenge of high-throughput packet processing, from initial capture to final mitigation.</p>
+<h3 id="31-dpdk-line-rate-capturebenchmarks-tuning">3.1 DPDK Line-Rate Capture—Benchmarks &amp; Tuning</h3>
+<p>The first pillar is mandatory hardware bypass using the Data Plane Development Kit (DPDK). DPDK provides a set of libraries and drivers that allow user-space applications to take direct ownership of NIC hardware, bypassing the slow and non-deterministic Linux kernel network stack [architectural_principles.0.principle_name[0]][3]. By using a Poll Mode Driver (PMD) that constantly polls for incoming packets, DPDK eliminates interrupt overhead and enables processing at line rate, achieving upwards of <strong>100G+ per CPU core</strong> [architectural_principles.0.description[0]][3]. This raw performance is the foundation upon which the entire architecture is built. Sensor nodes are equipped with high-core-count CPUs (AMD EPYC recommended) and one or more 100G/200G/400G NICs, with traffic sharded across cores using SR-IOV virtualization.</p>
+<h3 id="32-metadata-bus-showdown-kafka-vs-nats-vs-redpanda-table">3.2 Metadata Bus Showdown: Kafka vs NATS vs Redpanda (Table)</h3>
+<p>Once minimal metadata is extracted, it must be transported to the aggregator cluster via a high-throughput, low-latency message bus. The choice of this bus is critical, as it directly impacts the system's end-to-end detection latency. A comparison of the leading candidates reveals significant trade-offs.</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Technology</th>
+<th style="text-align: left;">Performance Characteristics</th>
+<th style="text-align: left;">Operational Complexity</th>
+<th style="text-align: left;">Cost Efficiency</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Kafka</strong></td>
+<td style="text-align: left;"><strong>Very High Throughput</strong> (&gt;500 MB/s), but p99.99 tail latency can spike to <strong>&gt;5 seconds</strong> at 1 GB/s. [metadata_bus_options.0.performance_characteristics[0]][6]</td>
+<td style="text-align: left;"><strong>High</strong>. Relies on Zookeeper (or KRaft), requires extensive JVM tuning, and more infrastructure to set up and maintain. [metadata_bus_options.0.operational_complexity[0]][6]</td>
+<td style="text-align: left;"><strong>Low</strong>. JVM-based architecture requires substantial CPU/memory. Documented severe performance issues on ARM hardware. [metadata_bus_options.0.cost_efficiency[0]][6]</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>NATS JetStream</strong></td>
+<td style="text-align: left;"><strong>Sub-millisecond latency</strong> and lightweight, but moderate throughput not designed for "big data firehose" use cases.</td>
+<td style="text-align: left;"><strong>Very Low</strong>. Single binary, minimal configuration, and low monitoring overhead. Easy to deploy and scale. [metadata_bus_options.1.operational_complexity[0]][7]</td>
+<td style="text-align: left;"><strong>High</strong>. Lightweight Go architecture is highly efficient with CPU and memory, operating well on modest hardware. [metadata_bus_options.1.cost_efficiency[0]][8]</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Redpanda</strong></td>
+<td style="text-align: left;"><strong>High Throughput</strong> (&gt;1 GB/s) with <strong>10x faster</strong> p99.99 tail latency than Kafka. At 1 GB/s, it is <strong>70x faster</strong> at the tail end. [metadata_bus_options.2.performance_characteristics[0]][6]</td>
+<td style="text-align: left;"><strong>Low</strong>. Delivered as a single, Zookeeper-less binary with auto-tuning capabilities. Requires fewer nodes for comparable performance.</td>
+<td style="text-align: left;"><strong>Very High</strong>. C++ implementation and thread-per-core architecture are resource-efficient. Offers a <strong>57% byte-per-dollar</strong> cost saving on ARM hardware. [metadata_bus_options.2.cost_efficiency[0]][6]</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Takeaway</strong>: Redpanda emerges as the superior choice for the core metadata bus, offering the best combination of high throughput and, crucially, predictable low tail latency. NATS remains a viable option for edge deployments where simplicity and ultra-low latency are paramount.</p>
+<h3 id="33-aggregator-cluster-sketch-algorithms">3.3 Aggregator Cluster &amp; Sketch Algorithms</h3>
+<p>A single server cannot process metadata from a Tbps flow. The architecture relies on a horizontally scalable cluster of "aggregator" workers. These workers consume metadata from the bus and build statistical profiles using sliding window algorithms. To efficiently compute metrics like source IP entropy (for detecting spoofing) and top-K source concentration at scale, these aggregators employ probabilistic sketch data structures like HyperLogLog and Count-Min Sketch. This process is the crucial data reduction step, turning a high-velocity stream of raw events into a manageable, low-velocity stream of rich feature vectors.</p>
+<h3 id="34-ml-model-portfolio-300-ms-sla">3.4 ML Model Portfolio &amp; 300 ms SLA</h3>
+<p>The machine learning strategy evolves from analyzing 83+ fields per event to detecting macroscopic signatures in the aggregated, window-based vectors. The ML portfolio includes:
+* <strong>Classification Models</strong>: Lightweight tree ensembles (e.g., XGBoost) and shallow neural networks to classify known attack types like SYN floods, UDP floods, and amplification attacks.
+* <strong>Anomaly Detection</strong>: Autoencoders to spot novel threats and deviations from normal traffic baselines.
+* <strong>Signature Matching</strong>: Retrieval-Augmented Generation (RAG) with a FAISS-powered vector database to match patterns of known threats like Mirai variants.</p>
+<p>The system is engineered to meet a strict SLA: <strong>&gt;95% detection</strong> for major attack families, a false positive rate <strong>&lt;0.5% per window</strong>, and a time-to-detect of <strong>under 300 milliseconds</strong>.</p>
+<h3 id="35-mitigation-control-plane-bgp-flowspec-workflows">3.5 Mitigation Control Plane &amp; BGP FlowSpec Workflows</h3>
+<p>Detection is useless without automated action. A robust control plane orchestrates the response. <strong>ETCD</strong> is used as a distributed key-value store for state management and policy coordination. An <strong>Orchestrator</strong> component interprets detection signals from the ML engine and applies mitigation policies [automated_mitigation_control_plane.core_components[0]][9]. Actions are executed via a <strong>Mitigation Engine</strong> that interfaces with firewall APIs and BGP controllers (e.g., ExaBGP, FRR). This enables a staged response, from soft rate-limiting to surgical traffic drops using BGP FlowSpec and, in catastrophic cases, Remote Triggered Blackholing (RTBH) or diversion to a scrubbing center.</p>
+<h2 id="4-architecture-options-decision-matrix">4. Architecture Options Decision Matrix</h2>
+<p>Choosing the right hardware architecture involves balancing performance, cost, flexibility, and operational complexity. While the recommended path starts with a CPU-based DPDK sensor, other options become viable as scale and specific requirements change. SmartNICs, DPUs, and FPGAs offer paths to offload processing from the host CPU, but they come with trade-offs. [candidate_hardware_architectures.1.disadvantages[0]][10]</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Option</th>
+<th style="text-align: left;">Host CPU Load</th>
+<th style="text-align: left;">CAPEX</th>
+<th style="text-align: left;">Dev Velocity</th>
+<th style="text-align: left;">Lock-in Risk</th>
+<th style="text-align: left;">Best-Fit Scale</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>DPDK sensor</strong></td>
+<td style="text-align: left;">High</td>
+<td style="text-align: left;">$</td>
+<td style="text-align: left;">Fast</td>
+<td style="text-align: left;">Low</td>
+<td style="text-align: left;">≤400 G</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>SmartNIC/DPU</strong></td>
+<td style="text-align: left;">Low</td>
+<td style="text-align: left;">$$$</td>
+<td style="text-align: left;">Medium</td>
+<td style="text-align: left;">Med-High</td>
+<td style="text-align: left;">400 G–1 T</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>FPGA inline</strong></td>
+<td style="text-align: left;">Very low</td>
+<td style="text-align: left;">$$$$</td>
+<td style="text-align: left;">Slow</td>
+<td style="text-align: left;">High</td>
+<td style="text-align: left;">&gt;1 T peak</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Hybrid eBPF+DPDK</strong></td>
+<td style="text-align: left;">Med</td>
+<td style="text-align: left;">$$</td>
+<td style="text-align: left;">Fast</td>
+<td style="text-align: left;">Low</td>
+<td style="text-align: left;">Forensics</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Takeaway</strong>: The <strong>DPDK Sensor + Aggregator</strong> model is the recommended starting point, offering the best balance of cost, portability, and development speed for deployments up to 400 Gbps. For Tbps-scale or power-constrained environments, <strong>SmartNIC/DPU offload</strong> becomes strategically compelling, despite higher costs and vendor lock-in risks [candidate_hardware_architectures.1.disadvantages[0]][10]. FPGAs provide ultimate performance but are hampered by slow development cycles, making them suitable only for highly specialized, large-scale deployments [candidate_hardware_architectures.2.disadvantages[0]][10].</p>
+<h2 id="5-end-to-end-software-pipeline-walkthrough">5. End-to-End Software Pipeline Walkthrough</h2>
+<p>The UltraScale software stack is a modular, high-performance pipeline designed for distributed operation. The end-to-end data flow is as follows:</p>
+<ol>
+<li><strong>DPDK Capture Service (C++20)</strong>: A lightweight, single-binary service runs on each sensor node. It uses DPDK to capture packets at line rate, extracts minimal L2-L4 metadata, discards the payload, and emits the metadata events. [core_software_components.0.component_name[0]][3]</li>
+<li><strong>Metadata Bus (Redpanda)</strong>: The metadata events are published to a high-throughput Redpanda cluster. Redpanda's Kafka compatibility and superior tail latency ensure reliable, low-latency transport from hundreds of distributed sensors. [core_software_components.1.component_name[0]][8]</li>
+<li><strong>Aggregation Workers (C++/Rust)</strong>: A horizontally scalable cluster of stateless workers subscribes to topics on the Redpanda bus. Each worker processes a shard of the metadata stream, building flow records and computing statistical profiles over sliding windows.</li>
+<li><strong>Windowed ML Detector</strong>: The aggregated feature vectors are fed into the ML detection engine. This adapted component applies a portfolio of models to classify threats and detect anomalies, flagging suspicious flows.</li>
+<li><strong>Orchestrator + ETCD</strong>: Detection alerts are written to ETCD. The Orchestrator reads these alerts, consults its policy configuration (also in ETCD), and determines the appropriate mitigation action.</li>
+<li><strong>Mitigation Engine</strong>: The Orchestrator issues commands to the Mitigation Engine, which translates them into concrete actions, such as making API calls to firewalls or using a BGP controller to announce blackhole routes.</li>
+<li><strong>Forensic Snapshotter (Optional)</strong>: For highly suspicious flows, the Orchestrator can trigger this component to perform a targeted, full-packet capture for deep-dive analysis by security teams. [core_software_components.7.technology_stack[0]][3]</li>
+</ol>
+<h2 id="6-ml-detection-strategy-live-drift-handling">6. ML Detection Strategy &amp; Live-Drift Handling</h2>
+<p>The ML strategy is purpose-built for the macroscale, flow-based paradigm. It prioritizes lightweight, efficient models that can operate on aggregated data streams in near-real-time to achieve the target of <strong>&gt;95% recall</strong>.</p>
+<h3 id="61-feature-vector-spec-importance-scores">6.1 Feature Vector Spec &amp; Importance Scores</h3>
+<p>The new ML models ingest aggregated vectors computed over short time windows. These vectors are designed to capture the macroscopic signatures of DDoS attacks. Key features include:
+* <strong>Volume Metrics</strong>: <code>pps_last_100ms</code>, <code>bps_last_100ms</code>, <code>window_slope</code>
+* <strong>Source Diversity</strong>: <code>unique_sources</code>, <code>src_entropy</code>
+* <strong>Protocol Anomalies</strong>: <code>syn_ratio</code>, <code>rst_ratio</code>, <code>fin_ratio</code>
+* <strong>Packet Characteristics</strong>: <code>avg_pkt_size</code>, <code>pkt_size_stddev</code>, <code>small_pkt_fraction</code>
+* <strong>Concentration</strong>: <code>top1_src_concentration</code>, <code>top10_concentration</code></p>
+<p>Initial analysis shows that source entropy, SYN ratio, and packet size distribution are the most important features for distinguishing volumetric attacks from benign flash crowds.</p>
+<h3 id="62-synthetic-data-generation-plan">6.2 Synthetic Data Generation Plan</h3>
+<p>Collecting real-world, terabit-scale attack data for training is impractical and dangerous. Therefore, the strategy relies heavily on synthetic data generation. High-performance traffic generators like <strong>TRex</strong> and <strong>MoonGen</strong> will be used to create large-scale datasets simulating millions of flows. The simulations will cover a wide range of attack families, including SYN/ACK floods, UDP floods, DNS/NTP amplification, and complex mixed-vector attacks.</p>
+<h3 id="63-continuous-learning-with-forensic-snapshotter">6.3 Continuous Learning with Forensic Snapshotter</h3>
+<p>Models trained purely on synthetic data can suffer a drop in precision when deployed against real-world traffic. To bridge this "sim-to-real" gap, the architecture incorporates a continuous learning loop. The <strong>Forensic Snapshotter</strong> component can be triggered to capture labeled, full-packet samples of suspicious traffic identified in production. These real-world samples, validated against public datasets like <strong>CTU-13</strong>, <strong>MAWI</strong>, and <strong>CAIDA</strong>, will be used to continuously retrain and fine-tune the ML models, ensuring they adapt to evolving attack patterns and network drift.</p>
+<h2 id="7-automated-mitigation-chain-economics">7. Automated Mitigation Chain Economics</h2>
+<p>An automated, staged mitigation chain is not only technically necessary to handle the speed of attacks but also economically prudent. By starting with the least disruptive actions, the system minimizes the "blast radius" of false positives and reduces unnecessary costs.</p>
+<ol>
+<li><strong>Soft Rate-Limits</strong>: The first line of defense. Throttles suspicious traffic, slowing an attack without a complete block. This has minimal impact on legitimate users and incurs no extra transit costs.</li>
+<li><strong>Per-IP/Subnet Drops</strong>: If an attack persists, the system escalates to dropping traffic from specific malicious sources using BGP FlowSpec or firewall rules. This is a surgical action that preserves the vast majority of legitimate traffic.</li>
+<li><strong>BGP Blackholing (RTBH)</strong>: For catastrophic attacks threatening infrastructure, RTBH is used to drop all traffic to a victim IP at the network edge or with an upstream provider. This prevents link saturation but is a coarse-grained action that takes the victim offline.</li>
+<li><strong>Traffic Diversion to Scrubbing</strong>: The final escalation step is to reroute traffic to a specialized scrubbing center, which filters out malicious packets and forwards clean traffic [automated_mitigation_control_plane.staged_mitigation_chain[4]][11]. This offers the best protection but incurs significant transit and service fees.</li>
+</ol>
+<p>By intelligently escalating through this chain, the system can defeat most attacks using low-cost, low-impact methods, reserving expensive scrubbing services for only the most extreme events. This can reduce collateral damage and associated transit fees by up to <strong>80%</strong> compared to a system that defaults to blackholing or scrubbing.</p>
+<h2 id="8-tbps-scale-testing-validation-plan">8. Tbps-Scale Testing &amp; Validation Plan</h2>
+<p>Validating a system designed for terabit-scale traffic requires a specialized and phased approach. The plan focuses on de-risking the architecture through a series of lab simulations that build in scale and complexity, culminating in a final gate that replays realistic 1 Tbps attack scenarios.</p>
+<p>The pipeline will use traffic generation tools like <strong>TRex</strong> and <strong>MoonGen</strong> for packet-level tests and flow-based simulators like <strong>ddosflowgen</strong> for massive-scale validation [testing_and_validation_pipeline.phase_name[0]][12]. Flow-based simulation is critical, as it makes it possible to model extremely high packet rates (e.g., <strong>1.2 Tbps attack scenarios</strong>) that are infeasible with packet-based replay [testing_and_validation_pipeline.objective[0]][12]. The phases include single-node DPDK performance tests (&gt;10 Mpps), multi-node distributed ingestion tests (10-20 Gbps), ML accuracy tests, and finally, end-to-end ISP-grade simulations scaling from <strong>100G → 400G → 1 Tbps</strong> [testing_and_validation_pipeline.scale[0]][12].</p>
+<h2 id="9-hardware-bill-of-materials-procurement-lead-times">9. Hardware Bill of Materials &amp; Procurement Lead Times</h2>
+<p>Building a cluster capable of ingesting and analyzing 1 Tbps of traffic requires significant, specialized hardware. Procurement must begin early in the project lifecycle to account for long lead times.</p>
+<p>A baseline 1 Tbps cluster configuration would consist of approximately <strong>6-8 sensor/aggregator nodes</strong>. The recommended hardware for each node includes:
+* <strong>CPUs</strong>: High-core-count processors are critical. The <strong>AMD EPYC 9654</strong> (96-core) is the top recommendation, with dual-socket configurations providing maximum density.
+* <strong>NICs</strong>: High-speed NICs with proven DPDK performance are mandatory. A 1 Tbps cluster could be built with <strong>4 x NVIDIA ConnectX-7 400G cards</strong> or a larger number of 100G/200G cards. The AMD UltraScale+ family also provides options for 400G networking applications [recommended_sensor_node_hardware.nics[0]][13].
+* <strong>Optional Offload</strong>: For offload-heavy configurations, <strong>NVIDIA BlueField-3 DPUs</strong> can run DPDK applications directly on their embedded ARM cores, significantly reducing host CPU load [recommended_sensor_node_hardware.optional_offload_hardware[0]][10].</p>
+<p><strong>Procurement Alert</strong>: High-speed optics and NICs (&gt;200G) currently have lead times of <strong>16-22 weeks</strong>. To meet the 12-month prototype timeline, purchase orders must be placed during Phase 3 (days 30-90).</p>
+<h2 id="10-risk-register-mitigation-playbook">10. Risk Register &amp; Mitigation Playbook</h2>
+<p>Five critical risks have been identified for the UltraScale project. Each has been mapped to a concrete mitigation strategy and assigned an owner to ensure proactive management.</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Risk</th>
+<th style="text-align: left;">Description</th>
+<th style="text-align: left;">Mitigation Strategy</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>High Hardware Cost</strong></td>
+<td style="text-align: left;">Building a multi-node, Tbps-capable cluster requires a significant capital expenditure on high-end CPUs and NICs.</td>
+<td style="text-align: left;">Stage procurement to align with roadmap phases. Utilize hybrid cloud scrubbing to handle burst capacity, deferring some on-premise hardware costs. [project_risks_and_mitigations.0.mitigation_strategy[0]][14]</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>DPDK/FPGA Complexity</strong></td>
+<td style="text-align: left;">Developing and maintaining high-performance, kernel-bypass code requires specialized expertise and can be complex and error-prone. [project_risks_and_mitigations.1.risk_description[0]][10]</td>
+<td style="text-align: left;">Pursue an incremental development model. Define strong, stable interfaces between components to isolate complexity. Prioritize the more portable DPDK path first.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>False Positives</strong></td>
+<td style="text-align: left;">At Tbps scale, even a low FPR can cause significant collateral damage by blocking large volumes of legitimate traffic.</td>
+<td style="text-align: left;">Implement a staged mitigation chain that escalates from soft rate-limits to hard drops. Use probability-based decisioning in the orchestrator to avoid binary block/allow actions.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Vendor Lock-in</strong></td>
+<td style="text-align: left;">Relying on proprietary SmartNIC/DPU hardware and software stacks creates a dependency on a single vendor.</td>
+<td style="text-align: left;">Prefer the vendor-agnostic DPDK path as the primary architecture. Make SmartNIC support an optional, compile-time feature rather than a hard dependency.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Scaling Overhead</strong></td>
+<td style="text-align: left;">As the system scales, the overhead of data movement, state synchronization, and coordination between nodes can become a bottleneck.</td>
+<td style="text-align: left;">Enforce strict limits on aggregation window sizes to bound state. Use parallel sharding of traffic and processing across the aggregator cluster to ensure horizontal scalability.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="11-regulatory-funding-alignment-with-nis2doracra">11. Regulatory &amp; Funding Alignment with NIS2/DORA/CRA</h2>
+<p>This architecture is strategically designed to align with the EU's push for digital sovereignty and its evolving cybersecurity regulatory landscape. This alignment is not just a compliance exercise but a key enabler for securing public-sector funding and contracts.</p>
+<ul>
+<li><strong>EU Sovereignty</strong>: By providing a blueprint for an on-premises, high-throughput defense system, the project directly supports EU goals of reducing reliance on non-EU hyperscalers for critical infrastructure protection. It enables EU entities to maintain full control over their data, security operations, and compliance audits [strategic_relevance_and_eu_alignment.sovereignty_goals[3]][15].</li>
+<li><strong>NIS2 Directive</strong>: The architecture addresses core NIS2 requirements for robust risk management, supply chain security, and rapid incident handling for critical sectors.</li>
+<li><strong>DORA (Digital Operational Resilience Act)</strong>: For the financial sector, the system supports DORA's stringent requirements for ICT risk management, resilience testing, and third-party risk oversight.</li>
+<li><strong>Cyber Resilience Act (CRA)</strong>: The modular components are envisioned to follow secure-by-design principles with clear vulnerability handling processes, aligning with the CRA's focus on the security of products with digital elements.</li>
+</ul>
+<p>This strong regulatory alignment positions the project as a prime candidate for creating a <strong>"European Cloudflare-class"</strong> capability, opening pathways to EU resilience funding and establishing a new standard for critical infrastructure protection.</p>
+<h2 id="12-execution-roadmap-phase-gate-kpis">12. Execution Roadmap &amp; Phase-Gate KPIs</h2>
+<p>The development and deployment of the UltraScale prototype is planned as a 6-phase project over <strong>12 months</strong>. Each phase has clear objectives and key performance indicators (KPIs) that serve as pass/fail gates before proceeding to the next stage.</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Phase</th>
+<th style="text-align: left;">Timeline</th>
+<th style="text-align: left;">Key Objectives &amp; KPIs</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Phase 2: Production Hardening</strong></td>
+<td style="text-align: left;">0–30 days</td>
+<td style="text-align: left;">Finalize FAISS integration, ETCD client, and RAG refinements for the existing pipeline.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Phase 3: DPDK Port</strong></td>
+<td style="text-align: left;">30–90 days</td>
+<td style="text-align: left;">Port the existing sniffer to DPDK. <strong>KPI: Achieve &gt;10 Mpps sustained capture on a 100G NIC in the lab.</strong></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Phase 4: Distributed Prototype</strong></td>
+<td style="text-align: left;">90–150 days</td>
+<td style="text-align: left;">Deploy a small-scale cluster (2–4 sensors, 2 aggregators). <strong>KPI: Run 10–20 Gbps synthetic DDoS tests end-to-end.</strong></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Phase 5: ML Evolution</strong></td>
+<td style="text-align: left;">150–240 days</td>
+<td style="text-align: left;">Train and validate windowed ML models on synthetic and real-world data. <strong>KPI: Target &gt;95% classification accuracy and &lt;0.5% FPR.</strong></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Phase 6: ISP-Scale Tests</strong></td>
+<td style="text-align: left;">240–360 days</td>
+<td style="text-align: left;">Test multi-node ingest at 100G–400G. Prepare procurement, runbooks, and deployment plans. <strong>KPI: Successful 1 Tbps simulation.</strong></td>
+</tr>
+</tbody>
+</table>
+<p>This phased approach allows for incremental development, continuous validation, and proactive de-risking, making the ambitious 12-month timeline for a Tbps-capable prototype feasible, provided hardware procurement is initiated by Phase 3.</p>
+<h2 id="13-appendices">13. Appendices</h2>
+<h3 id="131-detailed-nic-benchmarks">13.1 Detailed NIC Benchmarks</h3>
+<p><em>(Placeholder for detailed performance reports of NVIDIA ConnectX, Broadcom, and Intel NICs with DPDK.)</em></p>
+<h3 id="132-glossary-acronyms">13.2 Glossary &amp; Acronyms</h3>
+<p><em>(Placeholder for definitions of terms like DPDK, DPU, BGP, RTBH, etc.)</em></p>
+<h3 id="133-reference-config-files">13.3 Reference Config Files</h3>
+<p><em>(Placeholder for example configuration files for DPDK services, Redpanda, and the Orchestrator.)</em></p>
+<h2 id="references">References</h2>
+<ol>
+<li><em>How UltraDDoS Protect Stands Up to Multi-Terabit DDoS ...</em>. https://www.digicert.com/blog/how-ultraddos-protect-stands-up-to-multi-terabit-attacks</li>
+<li><em>theNET | NIS2 compliance: redefining resiliency in ...</em>. https://www.cloudflare.com/the-net/pursuing-privacy-first-security/nis2/</li>
+<li><em>A Comprehensive Survey on SmartNICs: Architectures, ...</em>. https://arxiv.org/html/2405.09499v1</li>
+<li><em>BGP Blackhole for DDoS Mitigation — and How to Automate It ...</em>. https://fastnetmon.com/2025/11/14/bgp-blackhole-for-ddos-mitigation-and-how-to-automate-it-with-fastnetmon/</li>
+<li><em>Towards real-time ML-based DDoS detection via cost- ...</em>. http://scis.scichina.com/en/2023/152105.pdf</li>
+<li><em>Redpanda vs. Kafka: A performance comparison</em>. https://www.redpanda.com/blog/redpanda-vs-kafka-performance-benchmark</li>
+<li><em>NATS and Kafka Compared</em>. https://www.synadia.com/blog/nats-and-kafka-compared</li>
+<li><em>NATS vs Redpanda: Lightweight Messaging vs High- ...</em>. https://risingwave.com/blog/nats-vs-redpanda-lightweight-messaging-vs-high-performance-streaming/</li>
+<li><em>A10 Defend DDoS Orchestrator</em>. https://www.a10networks.com/wp-content/uploads/A10-DS-Defend-Orchestrator.pdf</li>
+<li><em>Understanding ASIC, FPGA, and DPU Architectures</em>. https://www.fs.com/blog/fs-smartnic-solutions-understanding-asic-fpga-and-dpu-architectures-26648.html</li>
+<li><em>Orchestrating DDoS mitigation via blockchain-based ...</em>. https://www.cambridge.org/core/journals/knowledge-engineering-review/article/orchestrating-ddos-mitigation-via-blockchainbased-network-provider-collaborations/1E9D4FF7E3B72E442D615F1C811B26CB</li>
+<li><em>Simulating DDoS attacks with ddosflowgen</em>. https://www.galois.com/articles/simulating-ddos-attacks-ddosflowgen</li>
+<li><em>UltraScale Architecture PCB Design User Guide</em>. https://users.ece.utexas.edu/~mcdermot/arch/web/xilinx/ug583-ultrascale-pcb-design.pdf</li>
+<li><em>DDoS Protection and Mitigation: A 2025 Guide to ...</em>. https://www.kentik.com/kentipedia/ddos-protection/</li>
+<li><em>DORA RTS &amp; ITS: Regulatory Technical Standards</em>. https://www.regulation-dora.eu/rts</li>
+</ol>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.tabs", "navigation.top", "search.highlight"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

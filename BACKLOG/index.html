@@ -1,0 +1,1767 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source embedded-ML NDR for hospitals and schools">
+      
+      
+        <meta name="author" content="Alonso Isidoro Roman">
+      
+      
+        <link rel="canonical" href="https://alonsoir.github.io/argus/BACKLOG/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>aRGus NDR — BACKLOG - ML Defender (aRGus NDR)</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#argus-ndr-backlog" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="ML Defender (aRGus NDR)" class="md-header__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ML Defender (aRGus NDR)
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              aRGus NDR — BACKLOG
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../README.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../docs/ARCHITECTURE.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../docs/BACKLOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Backlog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../docs/SECURITY_MODEL.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Security Model
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../docs/adr/ADR-013 seed distribution component authentication.md" class="md-tabs__link">
+          
+  
+  
+  ADRs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../docs/contracts/Protobuf contracts.md" class="md-tabs__link">
+          
+  
+  
+  Contracts
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="ML Defender (aRGus NDR)" class="md-nav__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ML Defender (aRGus NDR)
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../README.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/ARCHITECTURE.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/BACKLOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/SECURITY_MODEL.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADRs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ADRs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/adr/ADR-013 seed distribution component authentication.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013 Seed Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/adr/ADR-021-deployment-topology-seed-families.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-021 Topology SSOT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/adr/ADR-022-threat-model-opcion2-descartada.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-022 Threat Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/contracts/Protobuf contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protobuf
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/contracts/JSON contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JSON
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/contracts/Rag security commands.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#criterio-de-complecion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        📐 Criterio de compleción
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#politica-de-deuda-tecnica" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        📋 POLÍTICA DE DEUDA TÉCNICA
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#completado" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ✅ COMPLETADO
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="✅ COMPLETADO">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#day-118-15-apr-2026-phase-3-completada-v040-mergeado-a-main" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DAY 118 (15 Apr 2026) — PHASE 3 COMPLETADA — v0.4.0 MERGEADO A MAIN 🎉
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#day-117-14-apr-2026-phase-3-debts-bloqueantes-apparmor-enforce-56" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DAY 117 (14 Apr 2026) — PHASE 3 DEBTs bloqueantes + AppArmor enforce 5/6
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#day-116-13-apr-2026-phase-3-core-bug-critico-seed_family" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DAY 116 (13 Apr 2026) — PHASE 3 CORE + Bug crítico seed_family
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#day-115-12-apr-2026-phase-3-items-1-4-adr-024-oqs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DAY 115 (12 Apr 2026) — PHASE 3 ítems 1-4 + ADR-024 OQs
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#day-114-11-apr-2026-adr-025-merge-signal-safety-arxiv-v15" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DAY 114 (11 Apr 2026) — ADR-025 MERGE + Signal Safety + arXiv v15
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#day-113-adr-025-implementado-paper-v14-ver-git-log" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DAY 113 — ADR-025 IMPLEMENTADO + Paper v14 (ver git log)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#day-111-arxiv260404952-publicado-doi-httpsdoiorg1048550arxiv260404952" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DAY 111 — arXiv:2604.04952 PUBLICADO 🎉 · DOI: https://doi.org/10.48550/arXiv.2604.04952
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#day-11062-ver-historial-completo-en-git-log" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DAY 110–62 (ver historial completo en git log)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#backlog-activo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        📋 BACKLOG ACTIVO
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="📋 BACKLOG ACTIVO">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#p0-bloqueantes-featurephase3-hardening" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        P0 — BLOQUEANTES feature/phase3-hardening
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#p1-deuda-de-seguridad-critica-featurecrypto-hardening" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        P1 — Deuda de seguridad crítica (→ feature/crypto-hardening)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#p2-post-enforce-apparmor-featureops-tooling" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        P2 — Post-enforce AppArmor (→ feature/ops-tooling)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#p3-post-phase-3-features-futuras" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        P3 — Post-PHASE 3 (features futuras)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pospuesto-adr-033-institutional-knowledge-base-via-rag" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ⏸️ POSPUESTO — ADR-033 Institutional Knowledge Base via RAG
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#decisiones-de-diseno-consolidadas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🔑 Decisiones de diseño consolidadas
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#procedimiento-de-verificacion-de-estabilidad-del-pipeline" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🔑 Procedimiento de verificación de estabilidad del pipeline
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#estado-global-del-proyecto" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        📊 Estado global del proyecto
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="📊 Estado global del proyecto">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#notas-del-consejo-de-sabios-day-116" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Notas del Consejo de Sabios — DAY 116
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#adr-034-deployment-topology-declarativa-post-adr-026" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ADR-034 — Deployment Topology Declarativa (⏳ post-ADR-026)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#adr-035-etcd-server-alta-disponibilidad-post-adr-034" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ADR-035 — etcd-server Alta Disponibilidad (⏳ post-ADR-034)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#adr-036-formal-verification-baseline-decisiones-del-consejo-day-117" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ADR-036 — Formal Verification Baseline — Decisiones del Consejo (DAY 117)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="argus-ndr-backlog">aRGus NDR — BACKLOG</h1>
+<p><em>Última actualización: DAY 118 — 15 Abril 2026</em></p>
+<hr />
+<h2 id="criterio-de-complecion">📐 Criterio de compleción</h2>
+<table>
+<thead>
+<tr>
+<th>Estado</th>
+<th>Criterio</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>✅ 100%</td>
+<td>Implementado + probado en condiciones reales + resultado documentado</td>
+</tr>
+<tr>
+<td>🟡 80%</td>
+<td>Implementado + compilando + smoke test pasado, sin validación E2E completa</td>
+</tr>
+<tr>
+<td>🟡 60%</td>
+<td>Implementado parcialmente o con valores placeholder conocidos</td>
+</tr>
+<tr>
+<td>⏳ 0%</td>
+<td>No iniciado</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="politica-de-deuda-tecnica">📋 POLÍTICA DE DEUDA TÉCNICA</h2>
+<ul>
+<li><strong>Bloqueante:</strong> se cierra dentro de la feature en que se detectó. No hay merge a main sin test verde.</li>
+<li><strong>No bloqueante con feature natural:</strong> se asigna a la feature destino. Documentada con ID de feature.</li>
+<li><strong>No bloqueante sin feature natural:</strong> se acumula hasta abrir <code>feature/tech-debt-cleanup</code> (3+ DEBTs sin destino claro).</li>
+<li><strong>Toda deuda tiene test de cierre.</strong> Implementado sin test = no cerrado.</li>
+</ul>
+<hr />
+<h2 id="completado">✅ COMPLETADO</h2>
+<h3 id="day-118-15-apr-2026-phase-3-completada-v040-mergeado-a-main">DAY 118 (15 Apr 2026) — PHASE 3 COMPLETADA — v0.4.0 MERGEADO A MAIN 🎉</h3>
+<p><strong>AppArmor enforce sniffer ✅</strong> — 0 denials en 300s · TEST-APPARMOR-ENFORCE PASSED
+<strong>noclobber audit crítico ✅</strong> — sin riesgos de clobber en rutas sensibles
+<strong>CHANGELOG-v0.4.0.md ✅</strong> — docs/CHANGELOG-v0.4.0.md creado y commiteado
+<strong>MERGE feature/phase3-hardening → main ✅</strong> — git merge --no-ff · tag v0.4.0-phase3-hardening
+<strong>feature/adr026-xgboost ABIERTA ✅</strong> — rama creada · XGBOOST-VALIDATION.md pendiente
+Commits: b6ee97c0 → da0296cd</p>
+<hr />
+<h3 id="day-117-14-apr-2026-phase-3-debts-bloqueantes-apparmor-enforce-56">DAY 117 (14 Apr 2026) — PHASE 3 DEBTs bloqueantes + AppArmor enforce 5/6</h3>
+<p><strong>DEBT-VAGRANTFILE-001 ✅</strong> — apparmor-utils + apparmor-profiles en Vagrantfile
+<strong>DEBT-SEED-PERM-001 + TEST-PERMS-SEED ✅</strong> — seed_client.cpp 0600→0640 · ctest 2/2
+<strong>REC-2 noclobber + hook 0-bytes ✅</strong> — set -o noclobber en 3 scripts · pre-commit hook
+<strong>TEST-INVARIANT-SEED ✅</strong> — make test-invariant-seed integrado en make test-all
+<strong>TEST-PROVISION-1 8/8 ✅</strong> — check #8 apparmor-utils · echoes 7/7→8/8 · test-all gate
+<strong>Backup policy .bak.* ✅</strong> — cleanup_old_backups() · 3 resets → 14 backups (2×7) ✅
+<strong>ADR-021 addendum ✅</strong> — INVARIANTE-SEED-001 validado producción + backup policy
+<strong>docs/Recovery Contract (OQ-6 ADR-024) ✅</strong> — 5 pasos + lección pubkey hardcoded
+<strong>DEBT-RAG-BUILD-001 ✅</strong> — rag/build→build-debug · build-active symlink · 6/6 en set-build-profile.sh
+<strong>apparmor-utils check #8 ✅</strong> — TEST-PROVISION-1 check #8 verde
+<strong>tools/apparmor-promote.sh ✅</strong> — complain→enforce · monitor 5min · rollback automático
+<strong>AppArmor enforce 5/6 ✅</strong> — etcd-server · rag-security · rag-ingester · ml-detector · firewall (0 denials cada uno)
+<strong>AppArmor enforce sniffer ✅</strong> — DAY 118 · 0 denials 300s · TEST-APPARMOR-ENFORCE PASSED
+<strong>Pubkey dev rotada ✅</strong> — e51a91e91d72f74fe97e8a4eb883c9c6eb41dd2fc994feaf59d5ba2177720f3d
+<strong>arXiv Draft v15 recibido de Cornell ✅</strong> — https://arxiv.org/abs/2604.04952
+Commits: 85197f96 → fac4cd54 (7 commits)</p>
+<hr />
+<h3 id="day-116-13-apr-2026-phase-3-core-bug-critico-seed_family">DAY 116 (13 Apr 2026) — PHASE 3 CORE + Bug crítico seed_family</h3>
+<p><strong>DEBT-ADR025-D11: provision.sh --reset ✅</strong>
+- reset_all_keys(): UN seed_family compartido → 6 componentes (INVARIANTE-SEED-001)
+- reset_plugin_signing_keypair(): backup + regeneración + mensaje operacional
+- TEST-RESET-1/2/3: PASSED
+- Nueva pubkey dev: c44a4fe2bfe4ee8ad86f840277625e10ca1c97e85671f366c38a38e6bf02d575
+- Bug arquitectural resuelto: seeds independientes → HKDF MAC fail → ver ADR-021 addendum
+- Commits: 3c0a214f</p>
+<p><strong>TEST-PROVISION-1 checks 6+7 ✅</strong>
+- Check #6: permisos .sk no world-writable, seed.bin = 640
+- Check #7: plugins activos en JSONs tienen .so + .sig
+- 7/7 checks PASSED — Commit: e01b5919</p>
+<p><strong>AppArmor complain mode (6/6) ✅</strong>
+- 6 perfiles en tools/apparmor/, instalados en /etc/apparmor.d/
+- 0 denials con pipeline 6/6 + 12/12 PASSED
+- Commit: efe203bf</p>
+<p><strong>Documentación DAY 116 ✅</strong>
+- README.md + BACKLOG.md actualizados
+- ADR-021 addendum: INVARIANTE-SEED-001 + threat model RAM
+- Prompt de continuidad DAY 117
+- Commit: 9bf0209d</p>
+<hr />
+<h3 id="day-115-12-apr-2026-phase-3-items-1-4-adr-024-oqs">DAY 115 (12 Apr 2026) — PHASE 3 ítems 1-4 + ADR-024 OQs</h3>
+<p><strong>ADR-024 OQ-5..8: CERRADAS (Consejo unanimidad) ✅</strong>
+- OQ-5: allowed_static_keys en deployment.yml + caché local
+- OQ-6: Dual-key T=24h + versioned deployment.yml + secuencia 5 pasos cero downtime
+- OQ-7: Riesgo replay aceptado v1 + nftables rate-limiting
+- OQ-8: Noise_IKpsk3 mantenido + benchmark ARMv8 obligatorio pre-producción
+- ADR-024 actualizado con Recovery Contract + TEST-INTEG-8/9</p>
+<p><strong>PHASE 3 ítem 1 — systemd units ✅</strong>
+- 6 units: Restart=always, RestartSec=5s, Environment="LD_PRELOAD="
+- set-build-profile.sh: symlinks build-active → build-debug|release</p>
+<p><strong>PHASE 3 ítem 2 — DEBT-SIGN-AUTO ✅</strong>
+- provision.sh check-plugins: sign-if-needed dev, verify-only producción. Idempotente.</p>
+<p><strong>PHASE 3 ítem 3 — DEBT-HELLO-001 ✅</strong>
+- BUILD_DEV_PLUGINS=OFF guard. libplugin_hello eliminado de 5 JSONs.
+- Bug resuelto: 4 componentes tenían active:true. make validate-prod-configs añadido.</p>
+<p><strong>PHASE 3 ítem 4 — TEST-PROVISION-1 (5/5) ✅</strong>
+- 5 checks CI gate. pipeline-start depende de test-provision-1.
+- Commits: df976d90, a1b23882</p>
+<hr />
+<h3 id="day-114-11-apr-2026-adr-025-merge-signal-safety-arxiv-v15">DAY 114 (11 Apr 2026) — ADR-025 MERGE + Signal Safety + arXiv v15</h3>
+<p><strong>ADR-025 Plugin Integrity: MERGEADO A MAIN ✅</strong>
+- Tag: v0.3.0-plugin-integrity. 12/12 tests PASSED.
+- DEBT-SIGNAL-001/002 resueltos. TEST-INTEG-4d PASSED.
+- Commits: 65a29034 (merge), 37c22423 (docs v15)</p>
+<p><strong>arXiv Replace v15 SUBMITTED ✅</strong> — submit/7467190</p>
+<p><strong>ADR-032 Plugin Distribution Chain: APROBADO ✅</strong>
+- YubiKey OpenPGP Ed25519 (NO PIV). Formato .sig embebido. Multi-key loader.</p>
+<hr />
+<h3 id="day-113-adr-025-implementado-paper-v14-ver-git-log">DAY 113 — ADR-025 IMPLEMENTADO + Paper v14 <em>(ver git log)</em></h3>
+<h3 id="day-111-arxiv260404952-publicado-doi-httpsdoiorg1048550arxiv260404952">DAY 111 — arXiv:2604.04952 PUBLICADO 🎉 · DOI: https://doi.org/10.48550/arXiv.2604.04952</h3>
+<h3 id="day-11062-ver-historial-completo-en-git-log">DAY 110–62 <em>(ver historial completo en git log)</em></h3>
+<hr />
+<h2 id="backlog-activo">📋 BACKLOG ACTIVO</h2>
+<h3 id="p0-bloqueantes-featurephase3-hardening">P0 — BLOQUEANTES feature/phase3-hardening</h3>
+<p><strong>✅ TODOS CERRADOS DAY 118 — PHASE 3 COMPLETADA · main @ v0.4.0-phase3-hardening</strong></p>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Tarea</th>
+<th>Test de cierre</th>
+<th>Deadline</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>DEBT-VAGRANTFILE-001</strong></td>
+<td>Añadir apparmor-utils al bloque apt del Vagrantfile</td>
+<td>vagrant provision → which aa-complain OK sin instalación manual</td>
+<td>DAY 117</td>
+</tr>
+<tr>
+<td><strong>DEBT-SEED-PERM-001</strong></td>
+<td>Corregir mensaje SeedClient: chmod 600 → chmod 640 + condición check</td>
+<td>TEST-PERMS-SEED: 640 sin warning · 600 warning correcto · 644 warning</td>
+<td>DAY 117</td>
+</tr>
+<tr>
+<td><strong>REC-2</strong></td>
+<td>set -o noclobber en scripts + check 0-bytes pre-commit/CI</td>
+<td>Script con &gt; no trunca fichero existente · hook rechaza 0-bytes</td>
+<td>DAY 117</td>
+</tr>
+<tr>
+<td><strong>TEST-INVARIANT-SEED</strong></td>
+<td>Test post-reset: todos los seed.bin byte-a-byte idénticos</td>
+<td>6 seeds iguales tras --reset · falla si alguno difiere</td>
+<td>DAY 117</td>
+</tr>
+<tr>
+<td><strong>TEST-PROVISION-1 echoes</strong></td>
+<td>Actualizar "Check X/5" y "5/5 OK" → "7/7" en todos los echoes del Makefile</td>
+<td>make test-provision-1 | grep '5/5' → vacío</td>
+<td>DAY 117</td>
+</tr>
+<tr>
+<td><strong>Backup policy .bak.</strong>*</td>
+<td>keep last 2 backups por componente en reset_all_keys()</td>
+<td>3 resets → max 12 backups (2×6) · el más antiguo se elimina</td>
+<td>DAY 117</td>
+</tr>
+<tr>
+<td><strong>ADR-021 addendum</strong></td>
+<td>Commitear al repo docs/adr/ con INVARIANTE-SEED-001 + threat model RAM</td>
+<td>git log docs/adr/ muestra commit del addendum</td>
+<td>DAY 117</td>
+</tr>
+<tr>
+<td><strong>docs/Recovery Contract</strong></td>
+<td>OQ-6 ADR-024: rotación zero downtime 5 pasos en docs/operations/</td>
+<td>Fichero existe con 5 pasos · referenciado desde ADR-024</td>
+<td>DAY 117</td>
+</tr>
+<tr>
+<td><strong>DEBT-RAG-BUILD-001</strong></td>
+<td>rag-security: build-active symlink igual que resto de componentes</td>
+<td>set-build-profile.sh incluye rag-security → build-active → build-debug ✅</td>
+<td>DAY 117</td>
+</tr>
+<tr>
+<td><strong>apparmor-utils check #8</strong></td>
+<td>Añadir check #8 a TEST-PROVISION-1: aa-complain presente</td>
+<td>make test-provision-1 check #8 verde</td>
+<td>DAY 117</td>
+</tr>
+<tr>
+<td><strong>apparmor-promote.sh</strong></td>
+<td>tools/apparmor-promote.sh: enforce → monitor 5min → rollback automático si denials</td>
+<td>promote.sh etcd-server → enforce + 0 denials → estado confirmado</td>
+<td>DAY 117</td>
+</tr>
+<tr>
+<td><strong>AppArmor enforce 5/6</strong></td>
+<td>Enforce secuencial: etcd-server → rag-security → rag-ingester → ml-detector → firewall</td>
+<td>TEST-APPARMOR-ENFORCE: 6/6 RUNNING + 12/12 PASSED con 5 perfiles enforce</td>
+<td>DAY 117</td>
+</tr>
+<tr>
+<td><strong>AppArmor enforce sniffer</strong></td>
+<td>48h mínimo en complain → enforce con apparmor-promote.sh</td>
+<td>pipeline 6/6 + 0 denials con sniffer en enforce</td>
+<td>✅ DAY 118</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h3 id="p1-deuda-de-seguridad-critica-featurecrypto-hardening">P1 — Deuda de seguridad crítica (→ feature/crypto-hardening)</h3>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Tarea</th>
+<th>Test de cierre</th>
+<th>Contexto</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>DEBT-CRYPTO-003a</strong></td>
+<td>mlock() + explicit_bzero(seed) post-derivación HKDF en seed_client.cpp. Post-bzero solo viven los subkeys en RAM con mlock().</td>
+<td>Verificar con valgrind/ASan que seed no permanece en heap post-derivación</td>
+<td>RAM forensics threat — DAY 116. Ver ADR-021 addendum.</td>
+</tr>
+<tr>
+<td><strong>DEBT-SNIFFER-SEED</strong></td>
+<td>Unificar sniffer bajo SeedClient</td>
+<td>sniffer arranca con SeedClient como resto de componentes</td>
+<td>DAY 107</td>
+</tr>
+<tr>
+<td><strong>docs/CRYPTO-INVARIANTS.md</strong></td>
+<td>Tabla invariantes criptográficos + tests de validación asociados</td>
+<td>Fichero existe con tabla: invariante · componentes · test</td>
+<td>DAY 116 — ver ADR-021 addendum</td>
+</tr>
+<tr>
+<td><strong>ADR-021 multi-familia</strong></td>
+<td>Reimplementar seed_families por canal para topología multi-nodo</td>
+<td>Test canal aislado: compromiso componente A no expone seed canal B</td>
+<td>DAY 116 addendum — en single-node seed compartido es aceptable</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h3 id="p2-post-enforce-apparmor-featureops-tooling">P2 — Post-enforce AppArmor (→ feature/ops-tooling)</h3>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Tarea</th>
+<th>Test de cierre</th>
+<th>Origen</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>DEBT-OPS-001</strong></td>
+<td>make redeploy-plugins: build+sign+deploy en un solo target</td>
+<td>make redeploy-plugins → plugins firmados y desplegados sin pasos manuales</td>
+<td>BACKLOG original</td>
+</tr>
+<tr>
+<td><strong>DEBT-OPS-002</strong></td>
+<td>Documentación operativa + sección Troubleshooting pipeline</td>
+<td>docs/operations/troubleshooting.md con síntomas → solución</td>
+<td>BACKLOG original</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h3 id="p3-post-phase-3-features-futuras">P3 — Post-PHASE 3 (features futuras)</h3>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Tarea</th>
+<th>Test de cierre</th>
+<th>Feature destino</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>ADR-026</strong></td>
+<td>XGBoost plugins Track 1. Precision ≥ 0.99 (gate médico). DPIA requerida pre-producción. Pre-req: AppArmor enforce completo + todos los DEBTs bloqueantes cerrados.</td>
+<td>Plugin XGBoost cargado + firmado + F1 ≥ 0.9985 en replay CTU-13</td>
+<td>feature/adr026-xgboost</td>
+</tr>
+<tr>
+<td><strong>DEBT-TOOLS-001</strong></td>
+<td>Synthetic injectors + PluginLoader + plugins firmados Ed25519</td>
+<td>Injectors generan tráfico procesado por plugin correctamente</td>
+<td>feature/adr026-xgboost</td>
+</tr>
+<tr>
+<td><strong>DEBT-FD-001</strong></td>
+<td>Fast Detector Path A → thresholds desde JSON, no hardcoded</td>
+<td>sniffer.json controla thresholds · tests con valores distintos pasan</td>
+<td>feature/adr026-xgboost</td>
+</tr>
+<tr>
+<td>ADR-024 impl</td>
+<td>Noise_IKpsk3 P2P. OQs 5..8 cerradas DAY 115. Listo.</td>
+<td>TEST-INTEG-8/9 PASSED (definidos en ADR-024)</td>
+<td>feature/adr024-noise-p2p</td>
+</tr>
+<tr>
+<td>ADR-032 Fase A</td>
+<td>Manifest JSON + multi-key loader + revocación. Ver ADR-032 DAY 114.</td>
+<td>Plugin cargado desde manifest firmado + revocación funciona</td>
+<td>feature/adr032-hsm</td>
+</tr>
+<tr>
+<td>ADR-032 Fase B</td>
+<td>YubiKey OpenPGP (2× unidades) + firma HSM. Pre-req: hardware.</td>
+<td>Plugin firmado con YubiKey verificado por plugin-loader</td>
+<td>feature/adr032-hsm (post-hardware)</td>
+</tr>
+<tr>
+<td><strong>ADR-033 TPM</strong></td>
+<td>TPM 2.0 Measured Boot. seed_family nunca en userspace. Solución definitiva RAM forensics. Ver ADR-021 addendum DAY 116.</td>
+<td>seed no presente en /proc/PID/mem post-arranque</td>
+<td>feature/crypto-hardening</td>
+</tr>
+<tr>
+<td>ADR-029</td>
+<td>Variantes hardened A/B/C. x86 + ARM RPi. Delta A vs C publicable.</td>
+<td>F1 ≥ 0.9985 + 0 paquetes perdidos bajo carga X Mbps en cada variante</td>
+<td>feature/bare-metal</td>
+</tr>
+<tr>
+<td>ADR-021 multi-familia</td>
+<td>Reimplementar seed_families por canal para multi-nodo.</td>
+<td>Test: compromiso componente A no expone seed canal B</td>
+<td>feature/crypto-hardening</td>
+</tr>
+<tr>
+<td>DEBT-INFRA-001</td>
+<td>Migrar box Vagrant a Debian Trixie</td>
+<td>vagrant up desde Vagrantfile nuevo → 6/6 RUNNING</td>
+<td>feature/bare-metal</td>
+</tr>
+<tr>
+<td>DEBT-CLI-001</td>
+<td>ml-defender verify-plugin --bundle CLI. Ver ADR-032 DAY 114.</td>
+<td>CLI verifica bundle sin pipeline activo</td>
+<td>feature/adr032-hsm</td>
+</tr>
+<tr>
+<td>BARE-METAL stress</td>
+<td>tcpreplay en NIC físico. 0 drops a 100 Mbps.</td>
+<td>0 drops · latencia &lt; 2× baseline VM</td>
+<td>bloqueado hardware</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h3 id="pospuesto-adr-033-institutional-knowledge-base-via-rag">⏸️ POSPUESTO — ADR-033 Institutional Knowledge Base via RAG</h3>
+<p><strong>Estado:</strong> POSPUESTO indefinidamente. No es una feature activa.</p>
+<p><strong>Decisión del Consejo (DAY 116, unanimidad):</strong>
+La idea es correcta pero prematura. El source of truth actual (ADRs + BACKLOG + scripts)
+es suficiente. Cualquier mecanismo de curación manual muere en DAY 150 en modo solopreneur.
+El RAG con docs obsoletos es peor que no tener RAG.</p>
+<p><strong>Condiciones de activación</strong> (cualquiera desbloquea):
+1. Un operador no resuelve un incidente porque el conocimiento no está accesible.
+2. El número de ADRs supera 40 y la búsqueda manual se vuelve lenta.
+3. Un segundo contribuidor se incorpora y necesita onboarding estructurado.</p>
+<p><strong>Alternativa más simple cuando llegue el momento:</strong>
+<code>ONBOARDING.md</code> con estructura "si te encuentras X, mira Y". Sin infraestructura nueva.
+El 90% del contenido ya existe en ADRs y commits. Solo hay que reorganizarlo.</p>
+<p><strong>Si se activa:</strong> modelo "Golden Sources" — RAG indexa directamente ADRs + BACKLOG + tools/.
+<code>make discover-knowledge</code> como gate de CI para coherencia, no como generador de docs nuevos.</p>
+<hr />
+<h2 id="decisiones-de-diseno-consolidadas">🔑 Decisiones de diseño consolidadas</h2>
+<table>
+<thead>
+<tr>
+<th>Decisión</th>
+<th>Resolución</th>
+<th>ADR/DAY</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>seed_family single-node</td>
+<td>UN seed compartido para 6 componentes — INVARIANTE-SEED-001</td>
+<td>ADR-021 addendum · DAY 116</td>
+</tr>
+<tr>
+<td>seed_family multi-nodo</td>
+<td>Un seed por familia de canal — blast radius limitado a canal comprometido</td>
+<td>ADR-021 · DAY 100/116</td>
+</tr>
+<tr>
+<td>RAM protection del seed</td>
+<td>explicit_bzero(seed) post-HKDF + mlock(subkeys). Definitivo: TPM ADR-033</td>
+<td>ADR-021 addendum · DAY 116</td>
+</tr>
+<tr>
+<td>Firma automática plugins</td>
+<td>NUNCA en producción. Dev: provision.sh check-plugins. DEBT-SIGN-AUTO</td>
+<td>ADR-025 · DAY 115</td>
+</tr>
+<tr>
+<td>provision.sh --reset</td>
+<td>Regenera claves SIN auto-firma. Operador firma manualmente post-reset</td>
+<td>ADR-025 D11 · DAY 116</td>
+</tr>
+<tr>
+<td>AppArmor estrategia</td>
+<td>complain → audit → enforce. Sniffer: 48h mínimo en complain</td>
+<td>Consejo Q1 · DAY 116</td>
+</tr>
+<tr>
+<td>AppArmor enforce orden</td>
+<td>etcd-server → rag-* → ml-detector → firewall → sniffer (último)</td>
+<td>Consejo Q1 unanimidad · DAY 116</td>
+</tr>
+<tr>
+<td>Plugin integrity</td>
+<td>Ed25519 + TOCTOU-safe dlopen + fail-closed std::terminate</td>
+<td>ADR-025 · DAY 113</td>
+</tr>
+<tr>
+<td>D8-pre bidireccional</td>
+<td>READONLY+payload→terminate + NORMAL+nullptr→terminate</td>
+<td>ADR-023 FIX-C · DAY 111</td>
+</tr>
+<tr>
+<td>MAX_PLUGIN_PAYLOAD_SIZE</td>
+<td>64KB hard limit, std::terminate()</td>
+<td>ADR-023 FIX-D · DAY 111</td>
+</tr>
+<tr>
+<td>ADR-032 autoridad firma</td>
+<td>YubiKey OpenPGP Ed25519 (NO PIV). 2 unidades. Firma y prod no comparten dominio</td>
+<td>ADR-032 · DAY 114</td>
+</tr>
+<tr>
+<td>XGBoost vs FT-Transformer</td>
+<td>XGBoost Track 1 Year 1. vLLM explainability Track 2 Year 2-3</td>
+<td>ADR-026 pre · DAY 104</td>
+</tr>
+<tr>
+<td>Precision gate médico</td>
+<td>Precision ≥ 0.99 obligatorio antes de producción en hospitales</td>
+<td>Consejo · DAY 104 · DPIA requerida</td>
+</tr>
+<tr>
+<td>HKDF telemetría</td>
+<td>HTTPS:443. LZ4 antes de ChaCha20 siempre</td>
+<td>ADR-013/020 · DAY 94</td>
+</tr>
+<tr>
+<td>Deuda bloqueante</td>
+<td>Cierra en su feature. Sin merge a main sin test verde</td>
+<td>Política · DAY 116</td>
+</tr>
+<tr>
+<td>Deuda no bloqueante</td>
+<td>Asignada a feature destino o tech-debt-cleanup</td>
+<td>Política · DAY 116</td>
+</tr>
+<tr>
+<td>ADR-033 KB RAG</td>
+<td>POSPUESTO. Condiciones de activación definidas. Alternativa: ONBOARDING.md</td>
+<td>Consejo · DAY 116</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="procedimiento-de-verificacion-de-estabilidad-del-pipeline">🔑 Procedimiento de verificación de estabilidad del pipeline</h2>
+<pre><code class="language-bash">make pipeline-stop
+make pipeline-build 2&gt;&amp;1 | tail -5
+vagrant ssh -c &quot;sudo bash /vagrant/etcd-server/config/set-build-profile.sh debug&quot;
+make sign-plugins
+make test-provision-1      # CI gate: 7/7 checks
+make pipeline-start &amp;&amp; make pipeline-status  # 6/6 RUNNING
+make plugin-integ-test 2&gt;&amp;1 | grep -E &quot;PASSED|FAILED&quot;  # 12/12 PASSED
+</code></pre>
+<p><strong>Regla de oro:</strong> 6/6 RUNNING + 12/12 PASSED = pipeline estable.
+Tras cualquier cambio: stop → build → sign → test-provision-1 → start → status → plugin-integ-test.</p>
+<hr />
+<h2 id="estado-global-del-proyecto">📊 Estado global del proyecto</h2>
+<pre><code>Foundation + Thread-Safety:            ████████████████████ 100% ✅
+HMAC Infrastructure:                   ████████████████████ 100% ✅
+F1-Score Validation (CTU-13 Neris):    ████████████████████ 100% ✅  F1=0.9985 · Recall=1.0000
+CryptoTransport (HKDF+nonce+AEAD):     ████████████████████ 100% ✅  DAY 97
+contexts.hpp (HKDF simétricos):        ████████████████████ 100% ✅  DAY 99
+TEST-INTEG-1/2/3 (gate arXiv):         ████████████████████ 100% ✅  DAY 99
+plugin-loader ADR-012 PHASE 1b:        ████████████████████ 100% ✅  DAY 102
+ADR-023 PHASE 2a-2e (6 componentes):   ████████████████████ 100% ✅  DAY 105-112
+ADR-025 Plugin Integrity (Ed25519):    ████████████████████ 100% ✅  DAY 113-114 🎉
+TEST-INTEG-4a/4b/4c/4d/4e:            ████████████████████ 100% ✅  DAY 114
+TEST-INTEG-SIGN-1..7:                  ████████████████████ 100% ✅  DAY 113
+DEBT-SIGNAL-001/002:                   ████████████████████ 100% ✅  DAY 114 🎉
+arXiv:2604.04952 PUBLICADO:            ████████████████████ 100% ✅  DAY 111 🎉
+arXiv Replace v15 SUBMITTED:           ████████████████████ 100% ✅  DAY 114 🎉
+ADR-024 OQs 5..8 CERRADAS:            ████████████████████ 100% ✅  DAY 115 🎉
+PHASE 3 ítem 1 (systemd units):        ████████████████████ 100% ✅  DAY 115 🎉
+PHASE 3 ítem 2 (DEBT-SIGN-AUTO):       ████████████████████ 100% ✅  DAY 115 🎉
+PHASE 3 ítem 3 (DEBT-HELLO-001):       ████████████████████ 100% ✅  DAY 115 🎉
+PHASE 3 ítem 4 (TEST-PROVISION-1 5/5): ████████████████████ 100% ✅  DAY 115 🎉
+DEBT-ADR025-D11 (--reset):             ████████████████████ 100% ✅  DAY 116 🎉
+TEST-PROVISION-1 (7/7 checks):         ████████████████████ 100% ✅  DAY 116 🎉
+AppArmor complain (6/6 perfiles):      ████████████████████ 100% ✅  DAY 116 🎉
+AppArmor enforce (5/6):                ████████████████████ 100% ✅  DAY 117 🎉
+AppArmor enforce sniffer:              ████████████████████ 100% ✅  DAY 118 🎉
+DEBT-VAGRANTFILE-001:                  ████████████████████ 100% ✅  DAY 117 🎉
+DEBT-SEED-PERM-001 + TEST-PERMS-SEED:  ████████████████████ 100% ✅  DAY 117 🎉
+REC-2 (noclobber + 0-bytes):           ████████████████████ 100% ✅  DAY 117 🎉
+TEST-INVARIANT-SEED:                   ████████████████████ 100% ✅  DAY 117 🎉
+TEST-PROVISION-1 8/8 + test-all gate:  ████████████████████ 100% ✅  DAY 117 🎉
+Backup policy .bak.*:                  ████████████████████ 100% ✅  DAY 117 🎉
+ADR-021 addendum (repo):               ████████████████████ 100% ✅  DAY 117 🎉
+docs/Recovery Contract:                ████████████████████ 100% ✅  DAY 117 🎉
+DEBT-RAG-BUILD-001:                    ████████████████████ 100% ✅  DAY 117 🎉
+apparmor-utils check #8:               ████████████████████ 100% ✅  DAY 117 🎉
+apparmor-promote.sh:                   ████████████████████ 100% ✅  DAY 117 🎉
+DEBT-CRYPTO-003a (mlock+bzero):        ░░░░░░░░░░░░░░░░░░░░   0% ⏳  feature/crypto-hardening
+ADR-026 XGBoost Track 1:               ░░░░░░░░░░░░░░░░░░░░   0% ⏳  feature/adr026-xgboost
+ADR-024 Noise_IKpsk3 impl:             ░░░░░░░░░░░░░░░░░░░░   0% ⏳  feature/adr024-noise-p2p
+ADR-032 Fase A:                        ░░░░░░░░░░░░░░░░░░░░   0% ⏳  feature/adr032-hsm
+ADR-033 TPM Measured Boot:             ░░░░░░░░░░░░░░░░░░░░   0% ⏳  feature/crypto-hardening
+ADR-029 variantes hardened:            ░░░░░░░░░░░░░░░░░░░░   0% ⏳  feature/bare-metal
+BARE-METAL stress test:                ░░░░░░░░░░░░░░░░░░░░   0% 🔴  bloqueado hardware
+DEBT-FD-001 (JSON thresholds):         ████░░░░░░░░░░░░░░░░  20% 🟡
+</code></pre>
+<hr />
+<h3 id="notas-del-consejo-de-sabios-day-116">Notas del Consejo de Sabios — DAY 116</h3>
+<blockquote>
+<p>"PHASE 3 CORE completada. Bug arquitectural crítico resuelto: seeds independientes
+rompían HKDF/MAC — INVARIANTE-SEED-001 ahora explícita en ADR-021 addendum.
+AppArmor 6/6 en complain, 0 denials. TEST-PROVISION-1 a 7/7.
+13 DEBTs bloqueantes identificados para DAY 117-118.</p>
+<p>Consejo unánime: AppArmor enforce DAY 117 (etcd-server → rag-* → ml-detector →
+firewall → sniffer 48h). DEBTs VAGRANTFILE-001 + SEED-PERM-001 DAY 117.
+ADR-026 XGBoost solo cuando enforce completo y DEBTs cerrados.</p>
+<p>Amenaza RAM forensics sobre seed_family: mitigación DEBT-CRYPTO-003a
+(explicit_bzero + mlock). Solución definitiva: ADR-033 TPM post-PHASE 4.</p>
+<p>ADR-033 Knowledge Base RAG: POSPUESTO por unanimidad. Prematuro.
+Alternativa cuando llegue: ONBOARDING.md + Golden Sources.
+Condiciones de activación definidas.</p>
+<p>Política de deuda técnica formalizada: bloqueante cierra en su feature,
+no bloqueante asignada a feature destino. Toda deuda tiene test de cierre."
+— Consejo de Sabios (6 miembros) · DAY 116</p>
+</blockquote>
+<hr />
+<p><em>Última actualización: DAY 118 — 15 Abril 2026</em>
+<em>Branch activa: main (feature/adr026-xgboost abierta)</em>
+<em>Tests: make test-all VERDE · TEST-PROVISION-1 8/8 · 6/6 RUNNING · AppArmor 6/6 enforce</em>
+<em>arXiv: 2604.04952 · v15 ✅ · Tag: v0.4.0-phase3-hardening</em>
+<em>PHASE 3: COMPLETADA ✅ · PHASE 4: feature/adr026-xgboost abierta</em>
+<em>"Via Appia Quality — Un escudo, nunca una espada."</em></p>
+<hr />
+<h3 id="adr-034-deployment-topology-declarativa-post-adr-026">ADR-034 — Deployment Topology Declarativa (⏳ post-ADR-026)</h3>
+<p><strong>Concepto:</strong> <code>deployment.yml</code> como SSOT de topología física del hospital.
+Describe plantas, nodos por planta, y componentes por nodo.
+Ansible + Jinja2 iteran el fichero y generan configuraciones por nodo.
+Jenkins orquesta el pipeline CI/CD completo.</p>
+<p><strong>Tres capas:</strong>
+1. <code>deployment.yml</code> — topología declarativa (plantas × nodos × componentes)
+2. Ansible + Jinja2 — motor de despliegue. Jenkins como orquestador CI/CD.
+3. seed_families por planta — ADR-021 multi-familia: blast radius limitado a planta comprometida.</p>
+<p><strong>Ejemplo real (hospital):</strong></p>
+<pre><code class="language-yaml">floors:
+  - floor: 1
+    nodes: 1
+    components: {sniffer: 1, ml-detector: 2, firewall: 1}
+  - floor: 2
+    nodes: 10
+    components: {sniffer: 10, ml-detector: 10, firewall: 10}
+aggregation:
+  rag-ingester: 30   # suma ml-detector+firewall de todas las plantas
+  rag-security: 1    # único punto de consulta semántica
+</code></pre>
+<p><strong>Pregunta abierta (para el Consejo cuando llegue):</strong>
+Aggregation fanout: 30 rag-ingesters → 1 FAISS+SQLite sin colisiones,
+sin duplicados, con trazabilidad de origen por planta.
+Opciones: ZeroMQ PUSH/PULL, particionado por trace_id,
+rag-ingester-coordinator como nuevo componente.</p>
+<p><strong>Pre-requisitos:</strong> ADR-026 XGBoost + ADR-029 bare-metal + MULTI-VM + ANSIBLE
+<strong>Feature destino:</strong> feature/bare-metal (fase tardía)</p>
+<hr />
+<h3 id="adr-035-etcd-server-alta-disponibilidad-post-adr-034">ADR-035 — etcd-server Alta Disponibilidad (⏳ post-ADR-034)</h3>
+<p><strong>Concepto:</strong> etcd-server en modo cluster (3 nodos mínimo) para eliminar
+SPOF en topología multi-nodo. Sin etcd HA, una topología de 30+ nodos
+tiene un punto único de fallo en registro de componentes y distribución
+de seeds.</p>
+<p><strong>Dependencia directa con ADR-034:</strong> deployment.yml debe describir
+el cluster etcd (quorum, líder, réplicas) además de los componentes
+del pipeline.</p>
+<p><strong>Opciones a evaluar por el Consejo:</strong>
+1. etcd nativo (3 nodos, Raft consensus) — la más robusta
+2. etcd embebido con replicación simplificada — más ligero para hospitales pequeños
+3. Consul como alternativa — mayor superficie pero más features</p>
+<p><strong>Pre-requisitos:</strong> ADR-034 + topología multi-VM funcionando
+<strong>Feature destino:</strong> feature/bare-metal (fase tardía)</p>
+<hr />
+<h3 id="adr-036-formal-verification-baseline-decisiones-del-consejo-day-117">ADR-036 — Formal Verification Baseline — Decisiones del Consejo (DAY 117)</h3>
+<p><strong>Estado:</strong> BORRADOR APROBADO CON REFINAMIENTOS — pendiente incorporar al ADR</p>
+<p><strong>Veredictos consolidados (5/5 modelos):</strong></p>
+<p><strong>OQ-1 — Frama-C vs CBMC:</strong> Enfoque híbrido.
+CBMC para baseline inicial (propiedades de seguridad acotadas, rápido, contraejemplos concretos).
+Frama-C/WP para demostración deductiva completa en componentes P0.
+Orden: CBMC primero → Frama-C para certificación.</p>
+<p><strong>OQ-2 — C++20:</strong> ASan + UBSan + contratos informales anotados. Punto.
+No hay herramientas de verificación formal maduras para C++20 en 2026.
+Revisión del estado del arte en 2027.</p>
+<p><strong>OQ-3 — Certificación:</strong> IEC 62443-4-2 SL2 como objetivo realista (corto/medio plazo).
+ENS High para despliegues públicos en España.
+Common Criteria EAL4+ solo para Variante C como investigación — no producto inmediato.
+Separar verificación técnica (ADR-036) de certificación (ADR-037 futuro).</p>
+<p><strong>OQ-4 — Variante A vs C:</strong> Variante A primero y completa (8 meses estimados).
+Variante C como research track separado — rama <code>research/sel4-verification</code>.
+No en paralelo. No bloquea roadmap principal.</p>
+<p><strong>Refinamientos obligatorios al ADR antes de ACEPTADO:</strong>
+- Reducir Fase A a 2 componentes P0: seed_client + crypto-transport únicamente
+- P5 (terminación pipeline) → reformular como "ausencia de deadlocks bajo carga"
+- Añadir Definition of Done explícita
+- Añadir criterio de parada temporal: 3 meses → re-evaluar si P1+P3 no demostradas
+- Añadir sección "código fuera de alcance" (libsodium, FAISS, ZeroMQ → environment assumptions)
+- Unificar toolchain en <code>make verify-P0</code>
+- Separar certificación en ADR-037 (futuro)</p>
+<p><strong>Estimación de esfuerzo (DeepSeek):</strong>
+Variante A completa: ~8 meses en solitario.
+Variante C: ~13 meses (5 meses adicionales sobre Variante A).</p>
+<p><strong>Feature destino:</strong> feature/formal-verification
+<strong>Pre-requisitos:</strong> ADR-029 + ADR-034 + ADR-035 + merge de todas las features anteriores</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.tabs", "navigation.top", "search.highlight"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

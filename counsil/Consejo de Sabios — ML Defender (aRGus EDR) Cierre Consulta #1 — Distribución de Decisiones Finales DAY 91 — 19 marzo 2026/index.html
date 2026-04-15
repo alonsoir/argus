@@ -1,0 +1,1302 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source embedded-ML NDR for hospitals and schools">
+      
+      
+        <meta name="author" content="Alonso Isidoro Roman">
+      
+      
+        <link rel="canonical" href="https://alonsoir.github.io/argus/counsil/Consejo%20de%20Sabios%20%E2%80%94%20ML%20Defender%20%28aRGus%20EDR%29%20Cierre%20Consulta%20%231%20%E2%80%94%20Distribuci%C3%B3n%20de%20Decisiones%20Finales%20DAY%2091%20%E2%80%94%2019%20marzo%202026/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>Consejo de Sabios — ML Defender (aRGus EDR) - ML Defender (aRGus NDR)</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#consejo-de-sabios-ml-defender-argus-edr" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-header__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ML Defender (aRGus NDR)
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Consejo de Sabios — ML Defender (aRGus EDR)
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../README.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/BACKLOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Backlog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Security Model
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-tabs__link">
+          
+  
+  
+  ADRs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/contracts/Protobuf contracts.md" class="md-tabs__link">
+          
+  
+  
+  Contracts
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-nav__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ML Defender (aRGus NDR)
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../README.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/BACKLOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADRs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ADRs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013 Seed Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-021-deployment-topology-seed-families.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-021 Topology SSOT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-022-threat-model-opcion2-descartada.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-022 Threat Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Protobuf contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protobuf
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/JSON contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JSON
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Rag security commands.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#cierre-consulta-1-acta-final-con-respuestas-completas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cierre Consulta #1 — Acta Final con Respuestas Completas
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Cierre Consulta #1 — Acta Final con Respuestas Completas">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#day-91-19-marzo-2026" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DAY 91 — 19 marzo 2026
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#contexto-del-sistema" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Contexto del sistema
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#preguntas-de-la-consulta-1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Preguntas de la Consulta #1
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#decisiones-finales-del-consejo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Decisiones finales del Consejo
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Decisiones finales del Consejo">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#unanimidad-todos-los-modelos-coincidieron" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        UNANIMIDAD — todos los modelos coincidieron
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mayoria-clara-consenso-con-matices-menores" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        MAYORÍA CLARA — consenso con matices menores
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#descartadas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Descartadas
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#roadmap-de-features-resultante" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Roadmap de features resultante
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#estado-de-respuestas-por-modelo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Estado de respuestas por modelo
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#respuestas-de-qwen-day-91-chatqwenai" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Respuestas de Qwen — DAY 91 (chat.qwen.ai)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Respuestas de Qwen — DAY 91 (chat.qwen.ai)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#ronda-day-91-respuesta-1-consulta-1-features-wannacrynotpetya" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Ronda DAY 91 — Respuesta 1 (Consulta #1 — features WannaCry/NotPetya)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ronda-day-91-respuesta-2-revision-network_securityproto" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Ronda DAY 91 — Respuesta 2 (revisión network_security.proto)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#respuesta-adicional-de-qwen-day-91-ronda-1-consulta-1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Respuesta adicional de Qwen — DAY 91 (Ronda 1, Consulta #1)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#solicitud-pendiente-a-qwen-alibaba-tongyi-lab" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Solicitud pendiente a Qwen (Alibaba / Tongyi Lab)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#proximos-pasos-tras-cierre-del-consejo-1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Próximos pasos tras cierre del Consejo #1
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="consejo-de-sabios-ml-defender-argus-edr">Consejo de Sabios — ML Defender (aRGus EDR)</h1>
+<h2 id="cierre-consulta-1-acta-final-con-respuestas-completas">Cierre Consulta #1 — Acta Final con Respuestas Completas</h2>
+<h3 id="day-91-19-marzo-2026">DAY 91 — 19 marzo 2026</h3>
+<hr />
+<p>Estimados miembros del Consejo,</p>
+<p>Este documento es el <strong>acta final</strong> de la <strong>Consulta #1</strong> (iniciada DAY 90), relativa a la detección de ransomware SMB (WannaCry / NotPetya) en ML Defender. Recoge todas las respuestas recibidas, incluyendo la respuesta adicional de DeepSeek (DAY 91) y el estado pendiente de Qwen.</p>
+<p>Este documento tiene tres propósitos:</p>
+<ol>
+<li><strong>Registrar formalmente</strong> las decisiones alcanzadas por el Consejo para que todos los miembros tengan la misma versión canónica.</li>
+<li><strong>Documentar la respuesta adicional de DeepSeek</strong> (DAY 91), que aportó <code>flow_duration_min</code> como nueva feature P2 no contemplada en el roadmap original.</li>
+<li><strong>Mantener abierta la solicitud a Qwen (Alibaba/Tongyi)</strong>, cuya respuesta genuina sigue pendiente.</li>
+</ol>
+<hr />
+<h2 id="contexto-del-sistema">Contexto del sistema</h2>
+<p><strong>ML Defender (aRGus EDR)</strong> es un IDS/EDR open-source en C++20 para organizaciones con recursos limitados (hospitales, colegios, ayuntamientos). Stack: eBPF/XDP, ZeroMQ, ChaCha20-Poly1305, FAISS, ONNX Runtime, protobuf.</p>
+<p><strong>Baseline validado (DAY 86):</strong>
+- F1 = 0.9985, Recall = 1.0000, FPR = 6.61% — sobre CTU-13 Neris (botnet IRC)
+- 31/31 tests CTest pasando
+- 6/6 componentes del pipeline en ejecución</p>
+<p><strong>Limitación identificada:</strong> El modelo actual tiene recall estimado de <strong>0.70–0.85</strong> contra WannaCry/NotPetya sin reentrenamiento, por dos razones:
+- Los features <code>rst_ratio</code> y <code>syn_ack_ratio</code> están actualmente a sentinel (<code>-9999.0f</code>) — nunca se han extraído
+- La distribución de entrenamiento (CTU-13 Neris, IRC C2) no cubre tráfico SMB de escaneo masivo</p>
+<hr />
+<h2 id="preguntas-de-la-consulta-1">Preguntas de la Consulta #1</h2>
+<p>Se sometieron al Consejo las siguientes preguntas:</p>
+<p><strong>Q1.</strong> ¿Qué features son imprescindibles para detectar WannaCry/NotPetya en capa 3/4?</p>
+<p><strong>Q2.</strong> ¿Es la ventana de 10 segundos suficiente para ambos ataques?</p>
+<p><strong>Q3.</strong> ¿Debe incluirse el killswitch DNS de WannaCry como señal de detección?</p>
+<p><strong>Q4.</strong> ¿Qué recall estimado tiene el modelo actual sin reentrenamiento?</p>
+<p><strong>Q5.</strong> ¿Cuál es el roadmap de features recomendado (P1/P2/P3)?</p>
+<hr />
+<h2 id="decisiones-finales-del-consejo">Decisiones finales del Consejo</h2>
+<h3 id="unanimidad-todos-los-modelos-coincidieron">UNANIMIDAD — todos los modelos coincidieron</h3>
+<p><strong>D1 — <code>rst_ratio</code> → P1 INMEDIATO</strong>
+El ratio de paquetes RST sobre el total es el discriminador más potente para escaneo SMB masivo. WannaCry produce <code>rst_ratio &gt; 0.70</code> (la mayoría de targets rechazan o no responden). Debe implementarse antes de cualquier dataset sintético.</p>
+<p><strong>D2 — <code>syn_ack_ratio</code> → P1 INMEDIATO</strong>
+El ratio SYN/ACK mide handshakes completados. WannaCry produce <code>syn_ack_ratio &lt; 0.10</code> (solo hosts vulnerables completan el handshake). Complementario e independiente de <code>rst_ratio</code>. Implementar en la misma iteración.</p>
+<p><strong>D3 — El modelo actual NO generaliza a ransomware SMB sin reentrenamiento</strong>
+Recall estimado: <strong>0.70–0.85</strong> sin datos SMB + reentrenamiento.
+Para alcanzar F1 &gt; 0.90 en WannaCry/NotPetya se requieren:
+- Features <code>rst_ratio</code> + <code>syn_ack_ratio</code> implementados
+- Dataset sintético SMB validado
+- Reentrenamiento del Random Forest</p>
+<h3 id="mayoria-clara-consenso-con-matices-menores">MAYORÍA CLARA — consenso con matices menores</h3>
+<p><strong>D4 — Ventana 10s: suficiente para WannaCry, insuficiente para NotPetya temprano</strong>
+WannaCry a 100–200 SYN/s produce señal clara en 10s.
+NotPetya a 50–150 SYN/s puede requerir acumulación en ventana de 60s para fases tempranas.
+<strong>Decisión:</strong> Mantener 10s como ventana primaria + añadir FEAT-WINDOW-2 (60s secundaria) al backlog P2.</p>
+<p><strong>D5 — Killswitch DNS de WannaCry: NO incluir como señal de detección</strong>
+Razones:
+- ML Defender opera en capa 3/4 únicamente — el nombre de dominio DNS requiere DPI
+- La firma compuesta DNS→SMB produce FPR inaceptable (patrón presente en tráfico Windows legítimo: WSUS, DC lookups)
+- La propagación SMB ya está cubierta por <code>rst_ratio</code> sin necesitar DNS
+- Es una <strong>limitación honesta</strong> que se documentará explícitamente en el paper (§10)</p>
+<p><strong>D6 — <code>dns_query_count</code> → P3</strong>
+Valor solo en correlación con otras señales, no como feature primaria.</p>
+<h3 id="descartadas">Descartadas</h3>
+<ul>
+<li><code>ICMP_unreachable_rate</code> — señal secundaria, no primaria para SMB</li>
+<li>Firma compuesta DNS→SMB — FPR inaceptable en tráfico Windows legítimo</li>
+</ul>
+<h3 id="roadmap-de-features-resultante">Roadmap de features resultante</h3>
+<table>
+<thead>
+<tr>
+<th>Prioridad</th>
+<th>Feature</th>
+<th>Justificación</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>P1</strong></td>
+<td><code>rst_ratio</code></td>
+<td>Discriminador primario WannaCry/NotPetya</td>
+</tr>
+<tr>
+<td><strong>P1</strong></td>
+<td><code>syn_ack_ratio</code></td>
+<td>Complementario — handshakes fallidos</td>
+</tr>
+<tr>
+<td>P2</td>
+<td><code>port_diversity_ratio</code></td>
+<td>NotPetya usa SMB + WMI + RPC</td>
+</tr>
+<tr>
+<td>P2</td>
+<td><code>new_dst_ip_rate</code></td>
+<td>Velocidad de descubrimiento de nuevos targets</td>
+</tr>
+<tr>
+<td>P2</td>
+<td><code>dst_port_445_ratio</code></td>
+<td>Proporción de tráfico a puerto SMB</td>
+</tr>
+<tr>
+<td>P2</td>
+<td><code>flow_duration_min</code></td>
+<td>Flujos WannaCry &lt; 50ms (SYN→RST); legítimos &gt; 200ms — aporte DeepSeek DAY 91</td>
+</tr>
+<tr>
+<td>P2</td>
+<td>FEAT-WINDOW-2 (60s)</td>
+<td>Cobertura NotPetya fase temprana</td>
+</tr>
+<tr>
+<td>P3</td>
+<td><code>dns_query_count</code></td>
+<td>Solo en correlación</td>
+</tr>
+<tr>
+<td>P3</td>
+<td><code>smb_connection_burst</code></td>
+<td>Señal complementaria</td>
+</tr>
+<tr>
+<td>P3</td>
+<td><code>wmi_activity_proxy</code></td>
+<td>Proxy de actividad lateral WMI</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="estado-de-respuestas-por-modelo">Estado de respuestas por modelo</h2>
+<table>
+<thead>
+<tr>
+<th>Modelo</th>
+<th>Ronda 1</th>
+<th>Ronda 2</th>
+<th>Ronda 3 (DAY 91)</th>
+<th>Estado</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Claude (Anthropic)</td>
+<td>✅</td>
+<td>✅</td>
+<td>—</td>
+<td>Completo</td>
+</tr>
+<tr>
+<td>Grok (xAI)</td>
+<td>✅</td>
+<td>✅</td>
+<td>—</td>
+<td>Completo</td>
+</tr>
+<tr>
+<td>ChatGPT (OpenAI)</td>
+<td>✅</td>
+<td>✅</td>
+<td>—</td>
+<td>Completo</td>
+</tr>
+<tr>
+<td>DeepSeek</td>
+<td>✅</td>
+<td>✅</td>
+<td>—</td>
+<td>Completo</td>
+</tr>
+<tr>
+<td>Gemini (Google)</td>
+<td>✅</td>
+<td>✅</td>
+<td>—</td>
+<td>Completo</td>
+</tr>
+<tr>
+<td>Parallel.ai</td>
+<td>✅</td>
+<td>✅</td>
+<td>—</td>
+<td>Completo</td>
+</tr>
+<tr>
+<td><strong>Qwen (Alibaba/Tongyi)</strong></td>
+<td>⚠️</td>
+<td>⚠️</td>
+<td>✅</td>
+<td><strong>Completo — ver nota</strong></td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>Nota de atribución — Qwen DAY 91:</strong> Las dos respuestas recibidas en DAY 91 provienen de <strong><code>chat.qwen.ai</code></strong> (plataforma oficial Alibaba/Tongyi), confirmado por el acceso directo de Alonso. En ambas respuestas el modelo se autoidentificó como "DeepSeek" — fenómeno documentado en LLMs chinos de la generación 2024-2025, donde el entrenamiento con datos cruzados entre modelos produce autoidentificaciones incorrectas. <strong>La fuente de verdad es la plataforma, no la autodeclaración del modelo.</strong> Ambas respuestas se atribuyen correctamente a Qwen (Alibaba/Tongyi) en el registro del Consejo.</p>
+</blockquote>
+<hr />
+<h2 id="respuestas-de-qwen-day-91-chatqwenai">Respuestas de Qwen — DAY 91 (chat.qwen.ai)</h2>
+<h3 id="ronda-day-91-respuesta-1-consulta-1-features-wannacrynotpetya">Ronda DAY 91 — Respuesta 1 (Consulta #1 — features WannaCry/NotPetya)</h3>
+<p>Qwen confirmó el 95% de las decisiones del Consejo y aportó <code>flow_duration_min</code> como feature P2 no contemplada en el roadmap original:</p>
+<ul>
+<li><code>rst_ratio</code> → P1: ✅ acuerdo total</li>
+<li><code>syn_ack_ratio</code> → P1: ✅ acuerdo total</li>
+<li>Ventana 10s (WannaCry): ✅ suficiente</li>
+<li>Ventana 10s (NotPetya temprano): ⚠️ marginal — recomienda 60s secundaria</li>
+<li>Killswitch DNS: ✅ NO incluir — acuerdo total</li>
+<li>Recall estimado sin reentrenamiento: desagregado como WannaCry 0.80–0.90, NotPetya 0.60–0.75 (media 0.70–0.85, coincide con el Consejo)</li>
+</ul>
+<p><strong>Aporte nuevo Ronda 1:</strong> <code>flow_duration_min</code> (P2) — flujos WannaCry &lt; 50ms (SYN→RST inmediato) vs legítimos &gt; 200ms. Derivable de timestamps eBPF/XDP sin coste adicional. Añadido al roadmap y al spec sintético.</p>
+<h3 id="ronda-day-91-respuesta-2-revision-network_securityproto">Ronda DAY 91 — Respuesta 2 (revisión network_security.proto)</h3>
+<p>Qwen revisó el schema protobuf completo y aportó:</p>
+<p><strong>Fortalezas validadas:</strong>
+- Dual-score architecture (<code>fast_detector_score</code> + <code>ml_detector_score</code> + <code>DetectorSource</code>) — trazabilidad completa
+- <code>DetectionProvenance</code> con <code>repeated EngineVerdict</code> — captura todos los votos, no solo el ganador
+- Organización por modelo (<code>ddos_embedded</code>, <code>ransomware_embedded</code>, etc.) — no una bolsa desordenada de features
+- <code>custom_features</code> (map<string, double>) — extensibilidad sin breaking changes</p>
+<p><strong>Observación técnica — ambigüedad RansomwareFeatures:</strong>
+Identificó dos caminos para ransomware features que pueden confundir a nuevos contribuidores:</p>
+<pre><code>Camino 1 (PHASE 1): NetworkFeatures.ransomware_embedded (10 features)
+Camino 2 (enterprise): NetworkSecurityEvent.ransomware (20 features)
+</code></pre>
+<p>Recomendación: añadir comentario explicativo en el proto documentando que PHASE 1 usa <code>ransomware_embedded</code> y PHASE 2 usará <code>RansomwareFeatures</code> (migración gradual sin breaking changes).</p>
+<p><strong>Aporte concreto — campos proto para P1:</strong></p>
+<pre><code class="language-protobuf">// En NetworkFeatures
+optional float rst_ratio = 116;     // RST/SYN ratio — escaneo SMB fallido
+optional float syn_ack_ratio = 117; // SYN/ACK ratio — complementa rst_ratio
+</code></pre>
+<p>Opcionales → no breaking change. Tipos float → compatibles con pipeline existente.</p>
+<p><strong>Checklist pre-arXiv (schema-related):</strong>
+1. Añadir comentarios <code>RansomwareFeatures</code> vs <code>ransomware_embedded</code>
+2. Añadir <code>rst_ratio</code> / <code>syn_ack_ratio</code> como opcionales (P1)
+3. Validar mapping CSV 127-columnas ↔ proto
+4. Confirmar que <code>schema_version=31</code> refleja v3.1.0 (no v31.0)
+5. Generar diagrama UML del schema para el paper (opcional)</p>
+<hr />
+<hr />
+<h2 id="respuesta-adicional-de-qwen-day-91-ronda-1-consulta-1">Respuesta adicional de Qwen — DAY 91 (Ronda 1, Consulta #1)</h2>
+<blockquote>
+<p><em>Nota: esta respuesta fue reatribuida de DeepSeek a Qwen tras confirmar que el acceso fue realizado desde <code>chat.qwen.ai</code>. Ver nota de atribución en tabla de estado.</em></p>
+</blockquote>
+<p>Qwen confirmó el 95% de las decisiones y aportó <code>flow_duration_min</code> como feature P2 nueva. Ver detalle completo en la sección de respuestas DAY 91 más arriba.</p>
+<hr />
+<h2 id="solicitud-pendiente-a-qwen-alibaba-tongyi-lab">Solicitud pendiente a Qwen (Alibaba / Tongyi Lab)</h2>
+<p><strong>Estado:</strong> CERRADO — Qwen ha respondido en DAY 91 (dos rondas). Ver sección anterior.</p>
+<p>La Consulta #1 está formalmente cerrada con los 7 miembros del Consejo habiendo respondido.</p>
+<p><strong>Las 5 preguntas para Qwen:</strong></p>
+<p><strong>Q1.</strong> Dado que ML Defender opera exclusivamente en capa 3/4 (sin DPI), ¿qué features del vector de 127 columnas son más relevantes para detectar WannaCry y NotPetya? ¿Cuáles implementarías primero?</p>
+<p><strong>Q2.</strong> La ventana de agregación actual es de 10 segundos. WannaCry genera 100–200 SYN/s; NotPetya genera 50–150 SYN/s con mayor foco interno. ¿Es la ventana de 10s suficiente para ambos? ¿Qué cambiarías?</p>
+<p><strong>Q3.</strong> WannaCry tiene un mecanismo de killswitch: antes de ejecutar el payload, hace una consulta DNS a un dominio hardcoded. Si recibe respuesta, se detiene. ¿Debería ML Defender incluir esta señal DNS como feature de detección?</p>
+<p><strong>Q4.</strong> El modelo actual (Random Forest, CTU-13 Neris) tiene F1 = 0.9985 en botnet IRC. ¿Qué recall estimarías para WannaCry/NotPetya sin reentrenamiento? ¿Qué necesitaría el modelo para alcanzar F1 &gt; 0.90 en SMB ransomware?</p>
+<p><strong>Q5.</strong> ¿Algún aspecto de la detección de ransomware SMB en capa 3/4 que el Consejo debería haber considerado y no aparece en el roadmap?</p>
+<hr />
+<h2 id="proximos-pasos-tras-cierre-del-consejo-1">Próximos pasos tras cierre del Consejo #1</h2>
+<p>Una vez registrada la respuesta de Qwen, se cierra formalmente la Consulta #1 y se procede a:</p>
+<ol>
+<li><strong>DAY 91–92:</strong> Implementar <code>rst_ratio</code> y <code>syn_ack_ratio</code> en el sniffer (próxima sesión con VM)</li>
+<li><strong>DAY 92–95:</strong> Generador de datos sintéticos WannaCry/NotPetya (spec en <code>docs/design/synthetic_data_wannacry_spec.md</code>)</li>
+<li><strong>DAY 95–100:</strong> Reentrenamiento del Random Forest + validación F1</li>
+<li><strong>Paralelo:</strong> Envío del preprint arXiv (esperando endorser — deadline DAY 96)</li>
+</ol>
+<hr />
+<p><em>Consejo de Sabios — ML Defender (aRGus EDR)</em>
+<em>Consulta #1 — Cierre formal</em>
+<em>DAY 91 — 19 marzo 2026</em>
+<em>Co-authored-by: Alonso Isidoro Román + Claude (Anthropic)</em></p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.top", "search.highlight"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

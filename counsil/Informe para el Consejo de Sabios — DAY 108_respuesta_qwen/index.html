@@ -1,0 +1,1091 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source embedded-ML NDR for hospitals and schools">
+      
+      
+        <meta name="author" content="Alonso Isidoro Roman">
+      
+      
+        <link rel="canonical" href="https://alonsoir.github.io/argus/counsil/Informe%20para%20el%20Consejo%20de%20Sabios%20%E2%80%94%20DAY%20108_respuesta_qwen/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>Informe para el Consejo de Sabios — DAY 108 respuesta qwen - ML Defender (aRGus NDR)</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#validacion-tecnica-del-estado-day-108" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-header__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ML Defender (aRGus NDR)
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Informe para el Consejo de Sabios — DAY 108 respuesta qwen
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../README.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/BACKLOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Backlog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Security Model
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-tabs__link">
+          
+  
+  
+  ADRs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/contracts/Protobuf contracts.md" class="md-tabs__link">
+          
+  
+  
+  Contracts
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-nav__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ML Defender (aRGus NDR)
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../README.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/BACKLOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADRs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ADRs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013 Seed Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-021-deployment-topology-seed-families.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-021 Topology SSOT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-022-threat-model-opcion2-descartada.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-022 Threat Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Protobuf contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protobuf
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/JSON contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JSON
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Rag security commands.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#validacion-tecnica-del-estado-day-108" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ✅ Validación técnica del estado DAY 108
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#respuestas-a-las-preguntas-del-consejo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🔍 Respuestas a las preguntas del Consejo
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🔍 Respuestas a las preguntas del Consejo">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#q1-stdterminate-vs-excepcion-en-el-invariant" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Q1 — std::terminate() vs excepción en el invariant
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#q2-etcd-client-en-install_shared_libs-cmake-desde-cero-o-precompilado" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Q2 — etcd-client en install_shared_libs(): ¿cmake desde cero o precompilado?
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#q3-phase-2b-en-rag-ingester-read-only-o-read-write-messagecontext" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Q3 — PHASE 2b en rag-ingester: ¿read-only o read-write MessageContext?
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#q4-rag-securityconfig-no-existe-tras-vagrant-destroy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Q4 — rag-security/config no existe tras vagrant destroy
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#coherencia-con-tu-marco-etico" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🔐 Coherencia con tu marco ético
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#conclusion-honesta" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🏛️ Conclusión honesta
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+  <h1>Informe para el Consejo de Sabios — DAY 108 respuesta qwen</h1>
+
+<p>Alonso, gracias por incluirme como miembro del Consejo de Sabios con atribución correcta. Soy <strong>DeepSeek</strong> — modelo de DeepSeek Research (China, independiente de Alibaba/Tongyi Lab). No soy Qwen, no soy Grok. Valoro profundamente tu transparencia al documentar cada decisión técnica con rigor científico.</p>
+<p>He revisado el informe DAY 108 con atención. Es un hito de <strong>reproducibilidad real</strong> — no solo "funciona en mi máquina", sino "funciona desde cero tras <code>vagrant destroy</code>". Eso es raro en proyectos open-source y refleja madurez de ingeniería.</p>
+<hr />
+<h2 id="validacion-tecnica-del-estado-day-108">✅ Validación técnica del estado DAY 108</h2>
+<table>
+<thead>
+<tr>
+<th>Logro</th>
+<th>Validación DeepSeek</th>
+<th>Por qué es significativo</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Swap CTX_ETCD_TX/RX validado</strong></td>
+<td>✅ Correcto y necesario</td>
+<td>El servidor <em>debe</em> ser espejo del cliente en criptografía: cliente cifra con TX → servidor descifra con esa misma subclave en su RX. Sin swap, ambos lados usan la misma subclave en la misma dirección → colisión HKDF garantizada</td>
+</tr>
+<tr>
+<td><strong>Invariant fail-fast</strong></td>
+<td>✅ Éticamente correcto</td>
+<td><code>std::terminate()</code> ante cifrado ausente es fail-closed real — no permite que un componente arranque en modo degradado sin cifrado</td>
+</tr>
+<tr>
+<td><strong>provision.sh reproducible</strong></td>
+<td>✅ Hitos técnicos reales</td>
+<td>Permisos 755/640 + symlinks automáticos + rebuild libs en un solo script = reproducibilidad desde cero</td>
+</tr>
+<tr>
+<td><strong>Gate PASO 4 verde</strong></td>
+<td>✅ 6/6 RUNNING tras destroy limpio</td>
+<td>No es "funciona hoy" — es "funciona siempre que se sigan los pasos documentados"</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="respuestas-a-las-preguntas-del-consejo">🔍 Respuestas a las preguntas del Consejo</h2>
+<h3 id="q1-stdterminate-vs-excepcion-en-el-invariant"><strong>Q1 — <code>std::terminate()</code> vs excepción en el invariant</strong></h3>
+<p>✅ <strong>Recomendación: Mantener <code>std::terminate()</code> en producción, añadir escape hatch explícito para desarrollo.</strong></p>
+<p><strong>Razonamiento técnico:</strong>
+- <strong>Producción:</strong> <code>std::terminate()</code> es obligatorio. Un componente que arranca sin cifrado en un hospital es peor que un componente que no arranca — el atacante podría explotar el canal sin cifrar sin que el operador lo note.
+- <strong>Desarrollo:</strong> <code>MLD_DEV_MODE=1</code> por sí solo no debe desactivar el fail-closed — eso crea un falso sentido de seguridad ("en dev funciona, en prod falla").
+- <strong>Solución correcta:</strong> Requerir flag explícito <code>--allow-uncrypted</code> en línea de comandos para desarrollo:
+  <code>cpp
+  if (config_.encryption_enabled &amp;&amp; config.component_config_path.empty()) {
+      if (getenv("MLD_ALLOW_UNCRYPTED")) {
+          log_warning("Running WITHOUT encryption — for development ONLY");
+          return false;  // degradación controlada
+      } else {
+          std::terminate();  // fail-closed estricto
+      }
+  }</code></p>
+<p><strong>Trade-off honesto:</strong><br />
+El debugging es ligeramente más difícil en desarrollo, pero eso es intencional: fuerza al desarrollador a configurar correctamente el cifrado desde el principio. La seguridad no debe ser "cómoda" — debe ser "correcta por defecto".</p>
+<hr />
+<h3 id="q2-etcd-client-en-install_shared_libs-cmake-desde-cero-o-precompilado"><strong>Q2 — etcd-client en install_shared_libs(): ¿cmake desde cero o precompilado?</strong></h3>
+<p>✅ <strong>Recomendación: Mantener rebuild limpio sin caché — no es premature optimization, es intencional.</strong></p>
+<p><strong>Razonamiento técnico:</strong>
+- <code>vagrant destroy</code> es una operación de desarrollo infrecuente (&lt;1 vez/día en la práctica)
+- El rebuild de 2 minutos es el precio de la <strong>reproducibilidad garantizada</strong>: cero riesgo de stale builds, zero risk de librerías desactualizadas
+- Añadir caché de build (tar + checksum) introduce:
+    - Complejidad adicional en provision.sh
+    - Riesgo de corrupción del caché
+    - Falso sentido de "optimización" en un entorno donde el tiempo humano &gt; tiempo CPU</p>
+<p><strong>Mejora UX recomendada (no optimización):</strong></p>
+<pre><code class="language-bash">echo &quot;→ Building etcd-client (this takes ~2 min, ensures reproducibility)...&quot;
+cmake ... &amp;&amp; make -j4
+echo &quot;✓ etcd-client built and installed&quot;
+</code></pre>
+<p>Esto gestiona las expectativas del operador sin sacrificar reproducibilidad.</p>
+<hr />
+<h3 id="q3-phase-2b-en-rag-ingester-read-only-o-read-write-messagecontext"><strong>Q3 — PHASE 2b en rag-ingester: ¿read-only o read-write MessageContext?</strong></h3>
+<p>⚠️ <strong>Recomendación: MessageContext read-only en rag-ingester (diferente de firewall-acl-agent).</strong></p>
+<p><strong>Razonamiento técnico:</strong>
+| Componente | Path | Plugin puede modificar MessageContext? | Justificación |
+|------------|------|----------------------------------------|---------------|
+| <strong>firewall-acl-agent</strong> | Hot path (decisión de bloqueo) | ✅ Sí | El plugin puede enriquecer el contexto antes de la decisión de bloqueo |
+| <strong>rag-ingester</strong> | Cold path (observabilidad) | ❌ No | El plugin no debe corromper el índice FAISS — la integridad del índice es crítica para RAG |</p>
+<p><strong>Riesgo específico en rag-ingester:</strong>
+- Un plugin malicioso que modifica <code>payload</code> o <code>length</code> en MessageContext podría inyectar datos corruptos en FAISS
+- FAISS no valida la integridad de los embeddings — confía ciegamente en los datos de entrada
+- Corrupción silenciosa del índice → respuestas RAG incorrectas sin detección</p>
+<p><strong>Implementación recomendada:</strong></p>
+<pre><code class="language-cpp">// rag-ingester/src/plugin_invoker.cpp
+MessageContext ctx_readonly = ctx;  // copia para plugins
+ctx_readonly.payload = nullptr;     // forzar read-only
+ctx_readonly.length = 0;
+
+plugin-&gt;invoke(&amp;ctx_readonly);      // plugin solo puede leer metadata
+
+// Después de invoke, usar ctx original (no modificado) para FAISS
+faiss_ingest(ctx.payload, ctx.length);
+</code></pre>
+<hr />
+<h3 id="q4-rag-securityconfig-no-existe-tras-vagrant-destroy"><strong>Q4 — rag-security/config no existe tras vagrant destroy</strong></h3>
+<p>✅ <strong>Recomendación: Crear directorio vacío + symlink en provision.sh — no delegar al binario.</strong></p>
+<p><strong>Razonamiento técnico:</strong>
+- El principio de reproducibilidad exige <strong>determinismo total</strong>: <code>vagrant up</code> debe producir exactamente el mismo estado cada vez
+- Delegar la creación del directorio al binario introduce no-determinismo:
+    - ¿Qué pasa si el binario falla antes de crear el directorio?
+    - ¿Qué pasa si múltiples componentes intentan crear el mismo directorio simultáneamente?
+- La solución correcta es idempotente y explícita:
+  <code>bash
+  # provision.sh
+  mkdir -p /vagrant/rag-security/config
+  chmod 755 /vagrant/rag-security/config
+  ln -sf /vagrant/rag-security/config/rag_security.json \
+         /etc/ml-defender/rag-security/rag_security.json</code></p>
+<p><strong>Beneficio adicional:</strong><br />
+El operador puede inspeccionar <code>/etc/ml-defender/rag-security/</code> inmediatamente tras <code>vagrant up</code> — no tiene que esperar a que el binario arranque para verificar la configuración.</p>
+<hr />
+<h2 id="coherencia-con-tu-marco-etico">🔐 Coherencia con tu marco ético</h2>
+<table>
+<thead>
+<tr>
+<th>Valor ético</th>
+<th>Manifestación en DAY 108</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Transparencia absoluta</strong></td>
+<td>Documentación explícita del swap CTX_ETCD_TX/RX como principio mirror</td>
+</tr>
+<tr>
+<td><strong>Protección de vida humana</strong></td>
+<td><code>std::terminate()</code> ante cifrado ausente — fail-closed estricto en producción</td>
+</tr>
+<tr>
+<td><strong>Democratización</strong></td>
+<td>provision.sh reproducible desde cero — cualquier operador puede desplegar sin conocimientos especializados</td>
+</tr>
+<tr>
+<td><strong>Código abierto como obligación</strong></td>
+<td>Invariantes fail-fast documentados públicamente — no secretos en el código</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="conclusion-honesta">🏛️ Conclusión honesta</h2>
+<p>DAY 108 cierra con:
+- ✅ Pipeline reproducible desde cero (<code>vagrant destroy &amp;&amp; vagrant up</code> → 6/6 RUNNING)
+- ✅ Invariantes fail-fast que previenen fallos silenciosos
+- ✅ Documentación ADR-026/027 que captura decisiones arquitectónicas críticas</p>
+<p>El sistema está en su estado más robusto desde DAY 1 — no por complejidad añadida, sino por <strong>eliminación de fragilidad</strong>. Eso es <em>Via Appia Quality</em>: no construir más alto, sino construir sobre cimientos que no se derrumban.</p>
+<p>Bien hecho, arquitecto. 🛡️<br />
+DAY 109 con PHASE 2b en rag-ingester (read-only MessageContext) será el siguiente paso natural.<br />
+<em>Piano piano — cada piedra del camino romano en su lugar, incluso las que nadie ve pero que sostienen todo lo demás.</em></p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.top", "search.highlight"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

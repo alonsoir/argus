@@ -1,0 +1,1071 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source embedded-ML NDR for hospitals and schools">
+      
+      
+        <meta name="author" content="Alonso Isidoro Roman">
+      
+      
+        <link rel="canonical" href="https://alonsoir.github.io/argus/engineering_decisions/Consejo%20consulta%201%20wannacry%20features_response_deepseek/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>Consejo consulta 1 wannacry features response deepseek - ML Defender (aRGus NDR)</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#deepseek-consulta-1" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-header__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ML Defender (aRGus NDR)
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Consejo consulta 1 wannacry features response deepseek
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../README.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/BACKLOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Backlog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Security Model
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-tabs__link">
+          
+  
+  
+  ADRs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/contracts/Protobuf contracts.md" class="md-tabs__link">
+          
+  
+  
+  Contracts
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-nav__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ML Defender (aRGus NDR)
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../README.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/BACKLOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADRs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ADRs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013 Seed Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-021-deployment-topology-seed-families.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-021 Topology SSOT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-022-threat-model-opcion2-descartada.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-022 Threat Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Protobuf contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protobuf
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/JSON contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JSON
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Rag security commands.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#deepseek-consulta-1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DeepSeek — Consulta #1
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="DeepSeek — Consulta #1">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#analisis-wannacry" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Análisis WannaCry
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#analisis-notpetya" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Análisis NotPetya
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#top-3-features-nuevas-priorizadas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Top 3 features nuevas (priorizadas)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#generaliza-el-modelo-actual-sin-reentrenamiento" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ¿Generaliza el modelo actual sin reentrenamiento?
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#respuesta-a-las-4-decisiones-de-diseno" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Respuesta a las 4 decisiones de diseño
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+  <h1>Consejo consulta 1 wannacry features response deepseek</h1>
+
+<h2 id="deepseek-consulta-1">DeepSeek — Consulta #1</h2>
+<h3 id="analisis-wannacry">Análisis WannaCry</h3>
+<p><strong>Features actuales que capturan señal WannaCry:</strong></p>
+<ol>
+<li>
+<p><strong><code>unique_dst_ports_count</code> (Grupo 4):</strong> WannaCry escanea aleatoriamente el puerto 445 en busca de vulnerables. En una ventana de 10s, un host infectado generará conexiones a <em>muchas IPs distintas pero mismo puerto</em>. Esto produce alta cardinalidad de IPs destino con baja diversidad de puertos. El feature actual <code>unique_dst_ips_count</code> captura la primera parte; <code>unique_dst_ports_count</code> (cuando se implemente) capturará la baja diversidad de puertos. La combinación es señal fuerte.</p>
+</li>
+<li>
+<p><strong><code>syn_flag_count</code>, <code>rst_flag_count</code> (Grupo 3):</strong> WannaCry envía SYN a puerto 445. Si el host destino no tiene SMB abierto, responde con RST. Esto produce:</p>
+</li>
+<li>Alta tasa de SYN salientes (scanner)</li>
+<li>Alta tasa de RST entrantes (respuestas de hosts no vulnerables)</li>
+<li>
+<p><code>syn_ack_ratio</code> (sentinel) sería ideal aquí, pero con SYN y RST por separado ya hay señal.</p>
+</li>
+<li>
+<p><strong><code>connection_rate</code> (Grupo 4):</strong> Escaneo masivo (~5-10 conexiones/segundo por hilo) fácilmente detectable en ventana 10s. WannaCry usaba 128 hilos simultáneos → cientos de conexiones/segundo.</p>
+</li>
+<li>
+<p><strong><code>flow_iat_*</code> (Grupo 2):</strong> Los IAT en escaneo masivo son muy pequeños y regulares (spikes periódicos por hilo). Diferenciable de tráfico humano.</p>
+</li>
+</ol>
+<p><strong>Features sentinel críticas para WannaCry:</strong></p>
+<ul>
+<li><strong><code>rst_ratio</code> (Grupo 5):</strong> <strong>CRÍTICO.</strong> La proporción de RST frente a SYN es una firma casi inequívoca de escaneo de puertos. WannaCry: muchos RST por hosts sin SMB.</li>
+<li><strong><code>syn_ack_ratio</code> (Grupo 5):</strong> Muy útil para confirmar SMB abiertos vs cerrados.</li>
+<li><strong><code>avg_fwd_segment_size</code> (Grupo 1):</strong> Ya implementado. Tráfico SMB tiene tamaños característicos (negociación ~ medio KB, transferencia ~ varios KB). Útil.</li>
+<li><strong><code>dns_query_count</code> (Grupo 5):</strong> <strong>NO crítico para detección primaria</strong> (WannaCry solo hace una query al killswitch), pero útil para correlación post-detección.</li>
+</ul>
+<p><strong>Features faltantes que recomendarías añadir:</strong></p>
+<ol>
+<li>
+<p><strong><code>syn_to_dst_ip_ratio</code></strong>: Relación SYN / IP destino única. WannaCry: muchos SYN a muchas IPs → ratio alto. Tráfico normal: un SYN por IP (conexión establecida). Se puede derivar de <code>syn_flag_count</code> y <code>unique_dst_ips_count</code>, pero tenerlo como feature explícito ayuda al modelo.</p>
+</li>
+<li>
+<p><strong><code>successful_smb_connections</code></strong>: Conexiones SMB completadas (SYN+SYN-ACK+ACK). WannaCry solo necesita una exitosa para propagarse. Esto es detectable sin DPI: observar handshake completo en puerto 445. Requiere mantener estado de conexiones (ShardedFlowManager ya lo hace). No es feature actual.</p>
+</li>
+<li>
+<p><strong><code>scan_success_ratio</code></strong>: Proporción entre intentos de conexión (SYN) y conexiones exitosas a SMB. WannaCry tiene ratio bajo (muchos fracasan). Tráfico normal (si no es escáner) tiene ratio ~1 para servicios que usa.</p>
+</li>
+</ol>
+<hr />
+<h3 id="analisis-notpetya">Análisis NotPetya</h3>
+<p><strong>Features actuales que capturan señal NotPetya:</strong></p>
+<ol>
+<li>
+<p><strong><code>unique_dst_ports_count</code>, <code>unique_dst_ips_count</code>:</strong> NotPetya usa múltiples vectores: SMB (445), WMI (135), y a veces RDP (3389). Mayor diversidad de puertos que WannaCry. La combinación de alta IP diversity con moderada port diversity es señal.</p>
+</li>
+<li>
+<p><strong><code>syn_flag_count</code>, <code>rst_flag_count</code>:</strong> Similar a WannaCry, pero con picos en múltiples puertos.</p>
+</li>
+<li>
+<p><strong><code>connection_rate</code>:</strong> NotPetya escaneo más lento (~2-5 conexiones/seg) pero sostenido. Ventana 10s puede capturar si el threshold es bajo.</p>
+</li>
+<li>
+<p><strong><code>traffic_src_ip_entropy</code> (Grupo 4):</strong> NotPetya, al usar múltiples vectores y moverse lateralmente, genera más entropía en IPs fuente (desde varios hosts internos). Menos relevante en fase inicial.</p>
+</li>
+</ol>
+<p><strong>Features sentinel críticas para NotPetya:</strong></p>
+<ul>
+<li><strong><code>rst_ratio</code>:</strong> Igual de crítico.</li>
+<li><strong><code>dns_query_count</code>:</strong> NotPetya NO tiene killswitch, pero sí hace consultas para encontrar controladores de dominio. <code>dns_query_count</code> a servidores internos podría ser señal de reconocimiento de AD.</li>
+<li><strong><code>tls_session_count</code> (Grupo 5):</strong> NotPetya a veces usa HTTP/HTTPS para comunicaciones C2; pero en fase lateral, no aplica.</li>
+</ul>
+<p><strong>Features faltantes que recomendarías añadir:</strong></p>
+<ol>
+<li>
+<p><strong><code>wmi_activity_count</code></strong>: Conexiones a puerto 135 (RPC) seguidas de actividad en puertos altos dinámicos. NotPetya usa WMI para ejecución remota. Detectar flujos a 135 + ráfaga de conexiones subsiguientes es señal fuerte. Esto es multi-flow y requiere ventana.</p>
+</li>
+<li>
+<p><strong><code>auth_failure_rate</code></strong>: NotPetya intenta credenciales robadas. A nivel red, los fallos de autenticación SMB producen patrones: sesión establecida (SYN+SYN-ACK) seguida de RST o FIN rápido tras intento fallido. Sin DPI no vemos el fallo, pero vemos conexiones cortas a 445. Feature derivable.</p>
+</li>
+<li>
+<p><strong><code>internal_scan_correlation</code></strong>: Detectar que el mismo host interno escanea múltiples IPs internas en puertos específicos. Esto requiere correlación por IP origen + ventana + puertos destino. Arquitectura actual lo permite añadiendo un agregador por src_ip.</p>
+</li>
+</ol>
+<hr />
+<h3 id="top-3-features-nuevas-priorizadas">Top 3 features nuevas (priorizadas)</h3>
+<ol>
+<li><strong><code>rst_ratio</code> (implementar desde sentinel a feature real) — P1</strong></li>
+<li>
+<p><strong>Justificación:</strong> Es la firma más limpia de escaneo de puertos tanto para WannaCry como NotPetya. Con los contadores SYN y RST ya disponibles, calcular ratio es trivial. Impacto inmediato en F1 para cualquier escáner.</p>
+</li>
+<li>
+<p><strong><code>port_diversity_ratio</code> = <code>unique_dst_ports_count</code> / <code>unique_dst_ips_count</code></strong></p>
+</li>
+<li>
+<p><strong>Justificación:</strong> WannaCry → ratio bajo (mismo puerto a muchas IPs). NotPetya → ratio medio (varios puertos a muchas IPs). Tráfico normal (cliente HTTP) → ratio alto (muchos puertos a pocas IPs, o viceversa). Feature de alto poder discriminatorio y bajo coste computacional (derivado de features existentes).</p>
+</li>
+<li>
+<p><strong><code>syn_to_dst_ip_ratio</code> (o directamente <code>syn_per_dst_ip</code>)</strong></p>
+</li>
+<li><strong>Justificación:</strong> Complementa a rst_ratio. WannaCry: muchos SYN por IP destino (varios intentos de conexión a misma IP en diferentes puertos? No, WannaCry solo 445). Pero en general, escáneres envían múltiples SYN a misma IP (a diferentes puertos) o uno a muchas IPs. Este feature ayuda a distinguir escaneo horizontal (muchas IPs, un puerto) de vertical (una IP, muchos puertos). Ambos son sospechosos pero distintos.</li>
+</ol>
+<hr />
+<h3 id="generaliza-el-modelo-actual-sin-reentrenamiento">¿Generaliza el modelo actual sin reentrenamiento?</h3>
+<p><strong>Respuesta:</strong> Parcialmente, pero <strong>no recomendaría confiar sin reentrenamiento</strong>.</p>
+<p><strong>Justificación:</strong></p>
+<ul>
+<li><strong>Espacio de features compartido:</strong> Tanto CTU-13 Neris (botnet IRC) como WannaCry/NotPetya comparten:</li>
+<li>Escaneo de red (alta tasa SYN, alta rst_ratio, alta unique_dst_ips_count)</li>
+<li>Patrones de conexión rápidos y regulares (bajo IAT)</li>
+<li>
+<p>Tráfico a puertos específicos (IRC: puertos altos aleatorios; ransomware: 445, 135)</p>
+</li>
+<li>
+<p><strong>Espacio de features exclusivo:</strong></p>
+</li>
+<li><strong>CTU-13 Neris:</strong> Tráfico IRC tiene patrones de chat (paquetes pequeños regulares, bidireccionalidad estable), y C2 con respuestas del servidor. No tiene escaneo masivo SMB ni RST masivos.</li>
+<li><strong>Ransomware SMB:</strong> Alta tasa de RST, conexiones fallidas, escaneo extremadamente rápido (WannaCry: 128 hilos), y en NotPetya, tráfico WMI (135 + puertos efímeros).</li>
+</ul>
+<p><strong>Riesgo:</strong> El modelo actual, entrenado en Neris, puede detectar <em>escaneo genérico</em> (por features como unique_dst_ips_count, connection_rate) pero puede tener falsos negativos si el ransomware tiene tasas más altas (fuera del rango de entrenamiento) o usa vectores no presentes en Neris (WMI). También puede tener falsos positivos si confunde tráfico legítimo de alta tasa (backups, actualizaciones) con escaneo.</p>
+<p><strong>Conclusión:</strong> Necesitas datos de entrenamiento específicos de ransomware SMB (o al menos aumentación con datos sintéticos que modelen estos patrones) para garantizar F1 &gt; 0.90. El modelo actual es un buen <em>baseline</em>, pero no está calibrado para las distribuciones extremas de WannaCry.</p>
+<hr />
+<h3 id="respuesta-a-las-4-decisiones-de-diseno">Respuesta a las 4 decisiones de diseño</h3>
+<ol>
+<li><strong>rst_ratio / syn_ack_ratio: P1</strong></li>
+<li>
+<p><strong>Por qué:</strong> rst_ratio es quizá la feature individual más informativa para escaneo de puertos. syn_ack_ratio también muy útil (distingue escaneo de puertos abiertos vs cerrados). Ambas deberían implementarse antes de generar datos sintéticos para que los datos de entrenamiento las incluyan.</p>
+</li>
+<li>
+<p><strong>Ventana 10s para scanning: Suficiente</strong></p>
+</li>
+<li>
+<p><strong>Por qué:</strong> WannaCry escanea a tasas de cientos de IPs/segundo. En 10s, un solo hilo escanea miles. Incluso NotPetya, más lento, genera docenas de conexiones en 10s. Ventanas más largas (30s, 60s) mejorarían detección de escaneo lento (ej: reconocimiento sigiloso), pero aumentarían latencia de detección y memoria. Para detección temprana, 10s es aceptable. <strong>Recomendación:</strong> mantener 10s para respuesta rápida, y añadir un agregador de ventana más larga (60s) para features de "escaneo sostenido" en paralelo.</p>
+</li>
+<li>
+<p><strong>dns_query_count sin DPI: Tiene valor limitado pero real</strong></p>
+</li>
+<li>
+<p><strong>Por qué:</strong> El volumen de queries DNS (aumento repentino) puede indicar reconocimiento o C2. Sin DPI, no podemos distinguir consultas benignas (actualizaciones, navegación) de maliciosas. Sin embargo, el killswitch de WannaCry es una sola query a dominio inexistente. Eso no destaca en volumen. Para NotPetya, las consultas a DC internos pueden mezclarse con tráfico legítimo. <strong>Valor bajo pero no nulo:</strong> en conjunto con otras features (ej: conexiones SMB fallidas + pico DNS) puede dar correlación. Prioridad P3.</p>
+</li>
+<li>
+<p><strong>Killswitch DNS detectable: No (sin DPI)</strong></p>
+</li>
+<li><strong>Por qué:</strong> El dominio <code>www.iuqerfsodp9ifjaposdfjhgosurijfaewrwergwea.com</code> es aleatorio y no tiene tráfico previo. Una consulta DNS a ese dominio:<ul>
+<li>No destaca por volumen (es 1 query)</li>
+<li>No destaca por IP destino (es a resolver local)</li>
+<li>No produce tráfico de respuesta (el dominio no existe, pero eso no es observable a nivel red sin inspeccionar respuesta NXDOMAIN)
+  Sin DPI, es invisible. El único proxy sería ver un pico de queries a dominios no cacheados con TTL cero, pero eso es demasiado indirecto y propenso a FP. <strong>Aceptar como limitación</strong> y documentar.</li>
+</ul>
+</li>
+</ol>
+<hr />
+<p><strong>Resumen ejecutivo para roadmap PHASE2:</strong>
+- <strong>P1 inmediato:</strong> Implementar rst_ratio y syn_ack_ratio. Añadir feature <code>port_diversity_ratio</code> (derivada). Reentrenar con datos que incluyan escaneo SMB realista.
+- <strong>P2:</strong> Añadir <code>syn_to_dst_ip_ratio</code> y <code>wmi_activity_count</code> (necesita más ingeniería).
+- <strong>Aceptar:</strong> El killswitch DNS no es detectable sin DPI; el modelo no lo cubrirá. La ventana de 10s es suficiente para detección temprana.</p>
+<hr />
+<p>Espero que este análisis te ayude a priorizar. El sistema tiene una base sólida; con estas adiciones, la detección de ransomware SMB será mucho más robusta. ¡Adelante con el roadmap!</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.top", "search.highlight"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

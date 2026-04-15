@@ -1,0 +1,1239 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source embedded-ML NDR for hospitals and schools">
+      
+      
+        <meta name="author" content="Alonso Isidoro Roman">
+      
+      
+        <link rel="canonical" href="https://alonsoir.github.io/argus/adr/ADR-022%20threat%20model%20opcion2%20descartada/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>ADR-022 — Threat Model Formal y Opción 2 Descartada (Caso Pedagógico) - ML Defender (aRGus NDR)</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#adr-022-threat-model-formal-y-opcion-2-descartada-caso-pedagogico" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-header__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ML Defender (aRGus NDR)
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              ADR-022 — Threat Model Formal y Opción 2 Descartada (Caso Pedagógico)
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../README.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/BACKLOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Backlog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Security Model
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-tabs__link">
+          
+  
+  
+  ADRs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/contracts/Protobuf contracts.md" class="md-tabs__link">
+          
+  
+  
+  Contracts
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-nav__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ML Defender (aRGus NDR)
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../README.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/BACKLOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADRs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ADRs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013 Seed Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-021-deployment-topology-seed-families.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-021 Topology SSOT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-022-threat-model-opcion2-descartada.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-022 Threat Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Protobuf contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protobuf
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/JSON contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JSON
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Rag security commands.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#contexto" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Contexto
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#threat-model-sistema-criptografico-argus" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Threat Model — Sistema Criptográfico Argus
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Threat Model — Sistema Criptográfico Argus">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#activos-protegidos" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Activos protegidos
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#modelo-de-amenaza" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Modelo de amenaza
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#limites-del-modelo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Límites del modelo
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#opcion-2-descripcion-y-descarte" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Opción 2 — Descripción y Descarte
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Opción 2 — Descripción y Descarte">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#que-era-la-opcion-2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Qué era la Opción 2
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#por-que-fue-descartada" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Por qué fue descartada
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#caso-pedagogico-bug-de-asimetria-day-99" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Caso Pedagógico — Bug de Asimetría DAY 99
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Caso Pedagógico — Bug de Asimetría DAY 99">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#el-bug" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        El bug
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#la-leccion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        La lección
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#relevancia-para-el-paper" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Relevancia para el paper
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#consecuencias" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Consecuencias
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#estado" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Estado
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="adr-022-threat-model-formal-y-opcion-2-descartada-caso-pedagogico">ADR-022 — Threat Model Formal y Opción 2 Descartada (Caso Pedagógico)</h1>
+<p><strong>Estado:</strong> Aprobado — deuda técnica documentada y descartada
+<strong>Fecha:</strong> 2026-03-28 (DAY 100)
+<strong>Autores:</strong> Alonso Isidoro Roman + Consejo de Sabios (ChatGPT/OpenAI, Grok/xAI)
+<strong>Relacionado:</strong> ADR-013 (seed distribution), ADR-021 (topology SSOT)</p>
+<hr />
+<h2 id="contexto">Contexto</h2>
+<p>Durante DAY 99 se detectó y corrigió un bug crítico: contextos HKDF asimétricos
+entre emisor y receptor del mismo canal. La causa raíz fue usar el nombre del
+<strong>componente</strong> como contexto en lugar del nombre del <strong>canal</strong>.</p>
+<p>Durante el análisis de la corrección se evaluaron dos opciones para escalar
+a multi-instancia en el futuro (FASE 2). Esta ADR documenta formalmente:</p>
+<ol>
+<li>El <strong>threat model</strong> del sistema criptográfico actual</li>
+<li>Por qué la <strong>Opción 2 fue descartada</strong> como deuda técnica inaceptable</li>
+<li>El <strong>caso pedagógico</strong> del bug de asimetría para el paper arXiv</li>
+</ol>
+<hr />
+<h2 id="threat-model-sistema-criptografico-argus">Threat Model — Sistema Criptográfico Argus</h2>
+<h3 id="activos-protegidos">Activos protegidos</h3>
+<table>
+<thead>
+<tr>
+<th>Activo</th>
+<th>Descripción</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>seed.bin</code></td>
+<td>32 bytes aleatorios, raíz de toda la cadena de confianza</td>
+</tr>
+<tr>
+<td>Claves HKDF derivadas</td>
+<td>ChaCha20-Poly1305, 256 bits, efímeras por canal</td>
+</tr>
+<tr>
+<td>Tráfico inter-componente</td>
+<td>Eventos de red, alertas, telemetría, vectores FAISS</td>
+</tr>
+<tr>
+<td>Configuración (<code>*.json</code>)</td>
+<td>"JSON is the law" — modificación → comportamiento arbitrario</td>
+</tr>
+</tbody>
+</table>
+<h3 id="modelo-de-amenaza">Modelo de amenaza</h3>
+<table>
+<thead>
+<tr>
+<th>Amenaza</th>
+<th>Vector</th>
+<th>Mitigación actual</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Escucha pasiva en ZeroMQ</td>
+<td>Red interna comprometida</td>
+<td>ChaCha20-Poly1305 IETF</td>
+</tr>
+<tr>
+<td>Replay de mensajes</td>
+<td>Captura y reinyección</td>
+<td>Nonce monotónico 96-bit</td>
+</tr>
+<tr>
+<td>Suplantación de componente</td>
+<td>Proceso malicioso en host</td>
+<td>seed.bin + HKDF → MAC falla</td>
+</tr>
+<tr>
+<td>Robo de seed.bin</td>
+<td>Acceso físico / root</td>
+<td>chmod 0600, mlock() (P2)</td>
+</tr>
+<tr>
+<td>Replay cross-instancia</td>
+<td>Ver Opción 2 abajo</td>
+<td><strong>Opción 2 descartada</strong></td>
+</tr>
+<tr>
+<td>Modificación de config JSON</td>
+<td>Acceso a filesystem</td>
+<td>OS hardening (ADR-019)</td>
+</tr>
+<tr>
+<td>Inyección en canal RAG</td>
+<td>Prompt injection vía telemetría</td>
+<td>TinyLlama confinado (ADR-010)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="limites-del-modelo">Límites del modelo</h3>
+<ul>
+<li><strong>Fuera de scope:</strong> ataques al kernel (eBPF integrity en ADR-015)</li>
+<li><strong>Fuera de scope:</strong> compromisos de CA / PKI (no se usa PKI — seed-based)</li>
+<li><strong>Asumido:</strong> el canal de distribución de seeds (<code>provision.sh</code>) es seguro</li>
+<li><strong>Asumido:</strong> instancia única por rol en FASE 1 (ver abajo)</li>
+</ul>
+<hr />
+<h2 id="opcion-2-descripcion-y-descarte">Opción 2 — Descripción y Descarte</h2>
+<h3 id="que-era-la-opcion-2">Qué era la Opción 2</h3>
+<p>En el análisis de FASE 2 (multi-instancia) se propuso incorporar un <code>instance_id</code>
+en el contexto HKDF para diferenciar instancias del mismo componente:</p>
+<pre><code class="language-cpp">// Opción 2 — DESCARTADA
+std::string ctx = std::string(&quot;ml-defender:sniffer-to-ml-detector:v1:&quot;) + instance_id;
+CryptoTransport transport(seed, ctx);
+</code></pre>
+<p>La motivación era: si hay <code>sniffer1</code> y <code>sniffer2</code>, cada uno derivaría
+una clave distinta, evitando colisiones.</p>
+<h3 id="por-que-fue-descartada">Por qué fue descartada</h3>
+<p><strong>El problema:</strong> la clave HKDF se deriva del <strong>contexto</strong>. Si emisor y receptor
+usan contextos distintos → claves distintas → <strong>MAC error garantizado</strong>.</p>
+<p>En el canal <code>sniffer → ml-detector</code>:
+- <code>sniffer1</code> deriva con contexto <code>...:sniffer1</code>
+- <code>ml-detector1</code> debe recibir de <code>sniffer1</code> <strong>y</strong> <code>sniffer2</code>
+- <code>ml-detector1</code> no puede saber de antemano qué instancia envía cada mensaje
+- → Imposible seleccionar el contexto correcto en el receptor sin metadatos adicionales</p>
+<p>Esto reproduce exactamente el <strong>bug de asimetría de DAY 99</strong>, pero estructuralmente,
+por diseño. No es un bug corregible — es una contradicción en el modelo.</p>
+<p><strong>Alternativas evaluadas y descartadas:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Alternativa</th>
+<th>Problema</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>instance_id</code> en nonce</td>
+<td>El nonce es de 96 bits — reducir entropía útil es inaceptable</td>
+</tr>
+<tr>
+<td>Handshake previo para negociar contexto</td>
+<td>Complejidad de protocolo, superficie de ataque nueva</td>
+</tr>
+<tr>
+<td>PKI por instancia</td>
+<td>Rompe el modelo seed-based, añade CA</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Decisión:</strong> La Opción 2 es <strong>deuda técnica inaceptable</strong>. Se descarta formalmente.
+La solución correcta para multi-instancia es el modelo de <strong>familias de canal</strong> (ADR-021),
+donde el contexto pertenece al canal lógico, no a la instancia.</p>
+<hr />
+<h2 id="caso-pedagogico-bug-de-asimetria-day-99">Caso Pedagógico — Bug de Asimetría DAY 99</h2>
+<p>Este bug merece documentación explícita para el paper arXiv porque ilustra
+un principio de diseño criptográfico no obvio.</p>
+<h3 id="el-bug">El bug</h3>
+<pre><code class="language-cpp">// ANTES (bug) — contexto = nombre del componente
+// sniffer usaba:    &quot;ml-defender:sniffer:v1&quot;
+// ml-detector usaba: &quot;ml-defender:ml-detector:v1&quot;
+// → claves HKDF distintas → MAC error en cada mensaje
+</code></pre>
+<pre><code class="language-cpp">// DESPUÉS (corrección) — contexto = nombre del canal
+// sniffer usaba:    &quot;ml-defender:sniffer-to-ml-detector:v1&quot;
+// ml-detector usaba: &quot;ml-defender:sniffer-to-ml-detector:v1&quot;
+// → misma clave HKDF → autenticación correcta
+</code></pre>
+<h3 id="la-leccion">La lección</h3>
+<p><strong>El contexto HKDF no identifica quién habla — identifica de qué hablan.</strong></p>
+<p>Es un identificador semántico del canal, no del emisor. Esta distinción es
+contraintuitiva: en sistemas de identidad, el contexto suele identificar
+a la entidad. En HKDF para canales simétricos, identifica el canal compartido.</p>
+<h3 id="relevancia-para-el-paper">Relevancia para el paper</h3>
+<p>Este caso es un ejemplo de <strong>error de modelo mental</strong> en sistemas criptográficos:
+el desarrollador aplica correctamente la API, pero con semántica incorrecta.
+El tipo-checker no puede detectarlo. Los tests de integración sí (TEST-INTEG-1/2/3).</p>
+<p>Esto refuerza el argumento del paper sobre la importancia de <strong>Test-Driven Hardening</strong>
+(TDH): sin TEST-INTEG-1 (ping cifrado end-to-end), el bug habría llegado a producción.</p>
+<hr />
+<h2 id="consecuencias">Consecuencias</h2>
+<p><strong>De descartar Opción 2:</strong>
+- FASE 1 queda acotada a instancia única por rol — explícitamente documentado
+- Multi-instancia requiere FASE 3 (families) — no hay atajos
+- El paper puede citar esta decisión como ejemplo de honestidad científica</p>
+<p><strong>Del threat model formal:</strong>
+- Superficie de ataque documentada públicamente → revisión externa facilitada
+- <code>mlock()</code> en seed_client.cpp promovido a P2 explícito
+- Falco como complemento de runtime behavioral monitoring (ya documentado)</p>
+<hr />
+<h2 id="estado">Estado</h2>
+<table>
+<thead>
+<tr>
+<th>Elemento</th>
+<th>Estado</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Bug de asimetría corregido</td>
+<td>✅ DAY 99 (contexts.hpp)</td>
+</tr>
+<tr>
+<td>Opción 2 descartada</td>
+<td>✅ Esta ADR</td>
+</tr>
+<tr>
+<td>Threat model documentado</td>
+<td>✅ Esta ADR</td>
+</tr>
+<tr>
+<td><code>mlock()</code> implementado</td>
+<td>⏳ DEBT-CRYPTO-003a (P2)</td>
+</tr>
+<tr>
+<td>Caso pedagógico → paper arXiv</td>
+<td>⏳ Sección de diseño</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<p><em>DAY 100 — 2026-03-28</em>
+<em>Co-authored-by: Alonso Isidoro Roman + Claude (Anthropic)</em></p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.top", "search.highlight"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

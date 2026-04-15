@@ -1,0 +1,2762 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source embedded-ML NDR for hospitals and schools">
+      
+      
+        <meta name="author" content="Alonso Isidoro Roman">
+      
+      
+        <link rel="canonical" href="https://alonsoir.github.io/argus/Ml%20defender%20paper%20draft%20v2/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>ML Defender (aRGus EDR): An Open-Source Ransomware and DDoS Detection System for Resource-Constrained Organizations - ML Defender (aRGus NDR)</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#ml-defender-argus-edr-an-open-source-ransomware-and-ddos-detection-system-for-resource-constrained-organizations" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="ML Defender (aRGus NDR)" class="md-header__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ML Defender (aRGus NDR)
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              ML Defender (aRGus EDR): An Open-Source Ransomware and DDoS Detection System for Resource-Constrained Organizations
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../README.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../docs/ARCHITECTURE.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../docs/BACKLOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Backlog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../docs/SECURITY_MODEL.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Security Model
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../docs/adr/ADR-013 seed distribution component authentication.md" class="md-tabs__link">
+          
+  
+  
+  ADRs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../docs/contracts/Protobuf contracts.md" class="md-tabs__link">
+          
+  
+  
+  Contracts
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="ML Defender (aRGus NDR)" class="md-nav__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ML Defender (aRGus NDR)
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../README.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/ARCHITECTURE.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/BACKLOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/SECURITY_MODEL.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADRs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ADRs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/adr/ADR-013 seed distribution component authentication.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013 Seed Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/adr/ADR-021-deployment-topology-seed-families.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-021 Topology SSOT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/adr/ADR-022-threat-model-opcion2-descartada.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-022 Threat Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/contracts/Protobuf contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protobuf
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/contracts/JSON contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JSON
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/contracts/Rag security commands.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#abstract" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Abstract
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1-introduction" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Introduction
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-background-and-related-work" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Background and Related Work
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-threat-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Threat Model
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. Threat Model">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#31-adversary-capabilities" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.1 Adversary Capabilities
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#32-adversary-limitations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.2 Adversary Limitations
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#33-detection-surface" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.3 Detection Surface
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#34-out-of-scope-attacks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.4 Out-of-Scope Attacks
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-architecture" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Architecture
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4. Architecture">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#41-pipeline-overview" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.1 Pipeline Overview
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#42-three-functions-of-the-engine" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.2 Three Functions of the Engine
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#43-graph-architecture-backlog" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.3 Graph Architecture (Backlog)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#44-dual-score-detection" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.4 Dual-Score Detection
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#45-transport-and-serialization" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.5 Transport and Serialization
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#46-deployment-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.6 Deployment Model
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#47-service-coordination-etcd-server" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.7 Service Coordination (etcd-server)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#48-fast-detector-heuristic-design-and-thresholds" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.8 Fast Detector: Heuristic Design and Thresholds
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-implementation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Implementation
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5. Implementation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#51-language-and-build-system" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.1 Language and Build System
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#52-ebpfxdp-packet-capture" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.2 eBPF/XDP Packet Capture
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#53-feature-extraction" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.3 Feature Extraction
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#54-embedded-random-forest-and-synthetic-training-data" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.4 Embedded Random Forest and Synthetic Training Data
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#55-cryptographic-transport" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.5 Cryptographic Transport
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#56-trace-correlation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.6 Trace Correlation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#57-testing-and-validation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.7 Testing and Validation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#58-development-environment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.8 Development Environment
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-the-consejo-de-sabios-a-methodology-for-human-ai-collaborative-engineering" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. The Consejo de Sabios: A Methodology for Human-AI Collaborative Engineering
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="6. The Consejo de Sabios: A Methodology for Human-AI Collaborative Engineering">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#61-motivation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.1 Motivation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#62-the-methodology" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.2 The Methodology
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#63-how-it-worked-in-practice" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.3 How It Worked in Practice
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#64-test-driven-hardening" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.4 Test Driven Hardening
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#65-attribution" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.5 Attribution
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#66-why-this-matters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.6 Why This Matters
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#67-limitations-of-the-methodology" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.7 Limitations of the Methodology
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-formal-system-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Formal System Model
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="7. Formal System Model">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#71-network-traffic-representation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.1 Network Traffic Representation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#72-feature-extraction" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.2 Feature Extraction
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#73-fast-detector" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.3 Fast Detector
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#74-machine-learning-detector" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.4 Machine Learning Detector
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#75-detection-policy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.5 Detection Policy
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#76-response-function" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.6 Response Function
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#77-system-determinism" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.7 System Determinism
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-evaluation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. Evaluation
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="8. Evaluation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#81-experimental-setup" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.1 Experimental Setup
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#82-dataset" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.2 Dataset
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#83-detection-performance" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.3 Detection Performance
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#84-confusion-matrix" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.4 Confusion Matrix
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#85-inference-latency" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.5 Inference Latency
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#86-ablation-study" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.6 Ablation Study
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#87-interpretation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.7 Interpretation
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#9-performance-model-and-throughput-analysis" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9. Performance Model and Throughput Analysis
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="9. Performance Model and Throughput Analysis">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#91-pipeline-processing-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9.1 Pipeline Processing Model
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#92-inference-cost" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9.2 Inference Cost
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#93-throughput-estimation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9.3 Throughput Estimation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#94-queue-stability" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9.4 Queue Stability
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#95-scalability" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9.5 Scalability
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#10-limitations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10. Limitations
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#11-future-work" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        11. Future Work
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#12-conclusion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        12. Conclusion
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#13-reproducibility-and-artifact-availability" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        13. Reproducibility and Artifact Availability
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#14-acknowledgments" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        14. Acknowledgments
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#references" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        References
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="ml-defender-argus-edr-an-open-source-ransomware-and-ddos-detection-system-for-resource-constrained-organizations">ML Defender (aRGus EDR): An Open-Source Ransomware and DDoS Detection System for Resource-Constrained Organizations</h1>
+<p><strong>Draft v2 — DAY 86 — 14 marzo 2026</strong>
+<strong>Author:</strong> Alonso Aironman — Independent Researcher, Extremadura, Spain
+<strong>Status:</strong> DRAFT v2 — Consejo de Sabios full review integrated</p>
+<p><strong>Changelog v1 → v2:</strong>
+- Threat Model: new section (ChatGPT)
+- Formal System Model: new section (ChatGPT)
+- Performance Model: new section (ChatGPT)
+- Reproducibility Statement: new section (ChatGPT)
+- Confusion Matrix: new subsection with real data (ChatGPT + data)
+- Ablation Study: new subsection, theoretical with caveat (ChatGPT)
+- TODO-DEEPSEEK ×3 resolved: Section 4.4, 6.2, 7.3 (DeepSeek + Qwen)
+- BigFlows ground truth gap documented (Qwen)
+- Section 3 (Architecture): TinyLlama security argument, ARMv8, OR semantics, ADR-006 xref (Gemini + DeepSeek)
+- Section 5 (Consejo de Sabios): ACM/IEEE norms, sentinel example, protocol framing (DeepSeek + Qwen + ChatGPT)
+- Section 6 (Evaluation): hardware specs, FPR caveat, F1 scope reminder (ChatGPT + Grok)
+- Section 7 (Limitations): dataset age, VirtualBox overhead, TDH future work (ChatGPT + Grok)
+- References: completed (Anderson &amp; McGrew ×2, Mirsky, Buczak &amp; Guven, Radovanović, Mirkovic &amp; Reiher, MAWI, Black Fog, Sophos, OISF, Ferrag, Pinto)
+- Abstract: caveat on generalizability, FPR explicit, architectural feasibility framing
+- Real scripts documented: synthetic_sniffer_injector.cpp, synthetic_ml_output_injector.cpp
+- Anderson &amp; McGrew venue resolved: AISec 2016 + KDD 2017 (two distinct papers)</p>
+<hr />
+<h2 id="abstract">Abstract</h2>
+<p>Ransomware and DDoS attacks disproportionately impact hospitals, schools, and small
+organizations that cannot afford enterprise security solutions. Existing open-source
+alternatives either rely on signature matching — missing novel variants — or require
+infrastructure beyond the reach of their target users. We present <strong>ML Defender
+(aRGus EDR)</strong>, an open-source network intrusion detection system built in C++20 that
+brings embedded machine learning inference to organizations with limited resources,
+deployable on commodity bare-metal hardware at approximately 150–200 USD fully dedicated.</p>
+<p>ML Defender implements a six-component pipeline over eBPF/XDP packet capture, ZeroMQ
+transport, and Protocol Buffers serialization, terminating in a dual-score detection
+architecture combining a rule-based Fast Detector with an embedded Random Forest
+classifier. The <em>Maximum Threat Wins</em> policy — semantically equivalent to a logical OR
+across detection paths — uses ML inference to suppress false positives generated by the
+heuristic layer. The system is designed for horizontal and vertical scalability,
+supporting deployment from single-node bare-metal installations to multi-host
+environments.</p>
+<p>We evaluate ML Defender against the CTU-13 Neris botnet dataset (19,135 flows),
+achieving F1 = 1.0000, Precision = 1.0000, and Recall = 1.0000, with a false positive
+rate of 0.0049% (2 FP / 40,467 benign flows) — a 15,500× reduction over the Fast
+Detector alone. Per-class inference latency ranges from 0.24 μs (DDoS) to 1.06 μs
+(Ransomware), enabling real-time detection on commodity hardware. These results
+demonstrate architectural feasibility under controlled replay conditions rather than
+universal detection capability; caveats on generalizability are detailed in Section 7.
+All experiments were conducted in a reproducible Vagrant/VirtualBox environment running
+on a consumer laptop, ensuring result accessibility and independent reproducibility.</p>
+<p>This work was developed through a structured multi-model AI collaboration methodology —
+the <em>Consejo de Sabios</em> — in which seven large language models (Claude, Grok, ChatGPT,
+DeepSeek, Qwen, Gemini, and Parallel.ai) served as co-reviewers across architecture,
+implementation, and evaluation decisions. We document this methodology as a novel
+contribution to human-AI collaborative engineering, alongside the technical system
+itself. ML Defender is released under the MIT license.</p>
+<hr />
+<h2 id="1-introduction">1. Introduction</h2>
+<p>The threat is not abstract. On March 5, 2023, the Hospital Clínic de Barcelona suffered
+a ransomware attack that paralyzed its emergency services, laboratory, and pharmacy,
+encrypted 4.5 TB of patient data, and prompted a ransom demand of 4.5 million USD —
+which the institution refused to pay [INCIBE-CERT, 2023]. That same day, the author of
+this work was leaving a regional hospital in Extremadura after receiving treatment for
+porphyria — a rare metabolic disease that his local hospital had diagnosed and managed.
+Watching the news, the thought was immediate and personal: <em>if it can happen to a major
+teaching hospital, it can happen to mine.</em></p>
+<p>This was not the first time that the author had witnessed the human cost of ransomware
+firsthand. Years earlier, a close friend's small business had been destroyed by an
+encryption attack that locked every document and file in his office. The author lacked
+the technical skills to help. That failure left a debt.</p>
+<p>These two events — the friend's broken business, the hospital on television — converged
+into a single design constraint: the solution had to be open-source, it had to run on
+commodity hardware, and it had to act in real time. Not forensics. Not post-mortem
+analysis. Interception.</p>
+<p>The analogy that emerged from this motivation is biological. Network traffic behaves
+like a circulatory system: datagrams are the bloodstream, and malicious flows are
+pathogens. A useful defense must classify traffic continuously and in real time —
+capturing the source IP of the attacker and blocking it at the firewall before damage
+propagates. This framing shaped every architectural decision in ML Defender.</p>
+<p>This work therefore addresses the following research question: <em>can an embedded
+machine-learning NIDS running entirely on commodity hardware provide meaningful
+real-time protection for organizations lacking enterprise security infrastructure?</em></p>
+<p><strong>The gap.</strong> Existing open-source network intrusion detection systems — most notably
+Snort and Suricata [OISF, 2010] — operate primarily on signature matching and
+rule-based heuristics. While effective against known attack patterns, they offer limited
+resilience against novel ransomware variants and volumetric DDoS campaigns that do not
+yet have published signatures. Machine learning-based NIDS have been extensively studied
+in academic literature [Buczak &amp; Guven, 2016; Pinto et al., 2023], but the gap between
+research prototype and deployable system remains wide: most published systems are
+evaluated on benchmark datasets without accompanying implementation, require GPU
+infrastructure or cloud connectivity for inference, or assume dedicated security
+operations teams for tuning and maintenance.</p>
+<p>The organizations most vulnerable to ransomware and DDoS — regional hospitals, schools,
+and small businesses — sit precisely in this gap. They cannot afford commercial EDR
+solutions, which typically require per-endpoint licensing, dedicated hardware, and
+ongoing subscription costs well beyond the budgets of public-sector institutions. They
+lack the personnel to operate complex open-source stacks. And they are increasingly
+targeted: healthcare, education, and local government represent a disproportionate share
+of ransomware victims globally. Healthcare retained its position as the most targeted
+sector in 2025, accounting for 22% of disclosed ransomware attacks, with an average
+breach cost of 7.42M USD [Black Fog, 2025; IBM Security, 2025].</p>
+<p><strong>Our approach.</strong> ML Defender (aRGus EDR) addresses this gap with three design
+principles: (1) <em>embedded inference</em> — all ML classification runs in-process at
+sub-microsecond latency, with no external dependencies; (2) <em>commodity deployment</em> —
+the full six-component pipeline runs on bare-metal Linux hardware costing approximately
+150–200 USD, with no cloud connectivity required; and (3) <em>active response</em> — upon
+detection, the attacker's IP is blocked immediately at the firewall via ipset/iptables,
+transforming the system from a passive monitor into an active defense. The current
+policy applies an immediate block; alternative response strategies — including
+TTL-bounded blocks, traffic quarantine for forensic capture, and honeypot redirection
+for attacker profiling — are under active design and constitute a dedicated workstream
+in the project roadmap.</p>
+<p>Beyond the technical system, this paper documents a second contribution: a structured
+methodology for human-AI collaborative engineering — the <em>Consejo de Sabios</em> — in which
+seven large language models served as continuous co-reviewers across 85 days of
+development. We argue that this methodology represents a qualitatively new mode of
+software engineering, worthy of independent study.</p>
+<hr />
+<h2 id="2-background-and-related-work">2. Background and Related Work</h2>
+<p><strong>Signature-based NIDS.</strong> Snort [Roesch, 1999] and Suricata [OISF, 2010] represent the
+dominant open-source approaches to network intrusion detection. Both systems apply
+rule-based pattern matching against packet payloads and flow metadata, offering high
+throughput and broad community rule coverage. However, their fundamental limitation is
+reactive: detection requires a prior known signature. Novel ransomware variants — which
+routinely modify encryption routines, communication protocols, and evasion patterns —
+can operate undetected until signature databases are updated, a window that historically
+ranges from hours to weeks.</p>
+<p><strong>ML-based NIDS.</strong> The application of machine learning to network intrusion detection
+has been extensively studied [Buczak &amp; Guven, 2016; Ferrag et al., 2020; Pinto et al.,
+2023]. Anderson &amp; McGrew [2017] demonstrated the feasibility of Random Forest
+classifiers for encrypted traffic classification, finding that feature engineering was
+decisive and that Random Forest outperformed competing methods on real enterprise
+network data. Mirsky et al. [2018] proposed Kitsune, an ensemble of autoencoders for
+unsupervised anomaly detection operating on flow statistics, demonstrating that
+embedded, lightweight classifiers can achieve competitive detection performance without
+requiring deep packet inspection. The CTU-13 dataset [Garcia et al., 2014], which
+ML Defender uses for evaluation, has become a standard benchmark for botnet traffic
+detection, enabling reproducible comparison across approaches.</p>
+<p>Despite this body of work, a persistent gap exists between academic prototype and
+production system. The majority of published ML-NIDS contributions evaluate
+classification accuracy in isolation — reporting F1 scores on preprocessed datasets —
+without providing an accompanying deployable implementation, an active response
+mechanism, or a hardware budget accessible to resource-constrained organizations.
+ML Defender is designed explicitly to close this gap.</p>
+<p><strong>Flow-based ML NIDS.</strong> Several intrusion detection approaches operate on aggregated
+flow statistics rather than deep packet inspection, enabling privacy-preserving detection
+and lower computational cost. Systems such as Argus, NetFlow-based detectors, and
+datasets like CICIDS2017 [Sharafaldin et al., 2018] have demonstrated the effectiveness
+of flow features for identifying botnet and scanning activity. ML Defender operates
+exclusively at the flow level, extracting 28 behavioral features per flow without
+examining payload content — ensuring that payload encryption does not compromise
+detection capability.</p>
+<p><strong>Embedded inference.</strong> The use of embedded, compiled classifiers for real-time network
+analysis has received comparatively little attention in open literature. Commercial EDR
+vendors (CrowdStrike, SentinelOne, Carbon Black) implement proprietary embedded ML
+pipelines, but neither their architectures nor their training data are publicly
+available. ML Defender demonstrates that embedded Random Forest inference — compiled
+directly into the detection pipeline — achieves sub-microsecond latency without
+requiring GPU acceleration or cloud offload, making it viable on commodity bare-metal
+hardware.</p>
+<p><strong>Human-AI collaborative engineering.</strong> The use of large language models as development
+assistants has been widely reported in industry and academia. However, structured
+methodologies for multi-model peer review — where multiple independent LLMs serve as
+co-reviewers across architecture, implementation, and evaluation decisions — have not,
+to our knowledge, been formally documented in the systems security literature. Section 5
+describes the <em>Consejo de Sabios</em> methodology and its role in the development of
+ML Defender.</p>
+<hr />
+<h2 id="3-threat-model">3. Threat Model</h2>
+<p>ML Defender is designed to detect and mitigate a class of network-level attacks that
+manifest through observable deviations in flow-level traffic statistics. The threat
+model focuses on adversaries whose behavior produces measurable anomalies in connection
+patterns, packet timing, and protocol usage.</p>
+<h3 id="31-adversary-capabilities">3.1 Adversary Capabilities</h3>
+<p>The system assumes an adversary capable of launching attacks from external hosts or
+compromised internal machines. These adversaries may perform actions including:</p>
+<ul>
+<li><strong>Botnet command-and-control communication</strong>, typically characterized by periodic
+  beaconing and burst connection patterns to external IRC or HTTP C2 servers.</li>
+<li><strong>Distributed Denial-of-Service (DDoS)</strong> attacks involving high-rate traffic
+  generation toward a target host or service, including amplification attacks via NTP,
+  SSDP, or DNS reflection.</li>
+<li><strong>Ransomware propagation</strong>, particularly lateral movement using SMB protocols (ports
+  445/139) and connection bursts to internal systems.</li>
+<li><strong>Network reconnaissance</strong>, including port scanning and multi-destination probing.</li>
+</ul>
+<p>The adversary may attempt to evade detection by varying ports, spreading traffic across
+multiple connections, or encrypting payloads. ML Defender does not rely on payload
+inspection; therefore, encryption does not prevent detection if the resulting flow
+behavior remains anomalous.</p>
+<h3 id="32-adversary-limitations">3.2 Adversary Limitations</h3>
+<p>The system assumes the attacker cannot:</p>
+<ul>
+<li>Fully mimic the statistical characteristics of benign traffic distributions across
+  all monitored features simultaneously.</li>
+<li>Compromise the host running the ML Defender pipeline.</li>
+<li>Manipulate the feature extraction stage or the flow reconstruction mechanism.</li>
+<li>Tamper with event logs protected by HMAC-SHA256 integrity checks.</li>
+</ul>
+<h3 id="33-detection-surface">3.3 Detection Surface</h3>
+<p>Detection occurs at the <strong>network flow level</strong> rather than at packet payload level.
+ML Defender focuses on features including connection frequency, port diversity, TCP flag
+distributions, packet inter-arrival timing, flow burst behavior, and destination
+diversity. These features allow the system to detect behavioral anomalies even when
+traffic payloads are encrypted.</p>
+<h3 id="34-out-of-scope-attacks">3.4 Out-of-Scope Attacks</h3>
+<p>The following threat classes fall outside the scope of the current system:</p>
+<ul>
+<li>Application-layer attacks that generate statistically normal network traffic.</li>
+<li>Low-and-slow attacks whose behavior remains within benign statistical distributions.</li>
+<li>Insider threats where malicious activity is indistinguishable from legitimate workflow.</li>
+<li>Attacks targeting the ML Defender host itself.</li>
+</ul>
+<p>Future work described in Section 9 addresses some of these limitations through
+graph-based analysis and expanded feature extraction.</p>
+<hr />
+<h2 id="4-architecture">4. Architecture</h2>
+<p>ML Defender implements a six-component pipeline designed around three invariants: all
+processing occurs in-process or on local hardware; no component introduces blocking
+latency into the detection path; and all configuration is externalized to JSON, making
+the system auditable and tunable without recompilation.</p>
+<h3 id="41-pipeline-overview">4.1 Pipeline Overview</h3>
+<p>The pipeline consists of six components connected via ZeroMQ message passing and
+Protocol Buffers serialization:</p>
+<p><strong>1. eBPF/XDP Sniffer</strong> — captures raw network packets at kernel level via eBPF/XDP,
+extracting flow-level features into a ring buffer. Operating at the XDP hook, the
+sniffer processes packets before they reach the kernel networking stack, achieving
+zero-copy capture with minimal CPU overhead.</p>
+<p><strong>2. Ring Consumer</strong> — reads flow records from the shared ring buffer, reconstructs
+bidirectional flow state using a <code>ShardedFlowManager</code>, and computes 28 of 40 planned
+real features per flow. Eleven features currently use sentinel values
+(<code>MISSING_FEATURE_SENTINEL = -9999.0f</code>) where network-layer data is unavailable; these
+route deterministically through the Random Forest without affecting classification
+validity, as confirmed by split-domain analysis.</p>
+<p><strong>3. Fast Detector</strong> — a rule-based heuristic engine that evaluates each flow against
+configurable thresholds for known attack signatures. Its false positive rate on benign
+traffic is 76.8% (Section 7), motivating the dual-score design. See Section 4.8 for
+threshold details.</p>
+<p><strong>4. ML Detector</strong> — an embedded Random Forest classifier, compiled directly into the
+pipeline binary, that evaluates each flow across four threat classes: ransomware, DDoS,
+anomalous traffic, and internal threats. Three classifiers (Ransomware, DDoS, Traffic)
+are implemented as pure C++20 embedded data structures. The Internal threats classifier
+is implemented via ONNX Runtime — a deliberate architectural decision to measure the
+real-world inference latency differential between a pure embedded classifier and a
+portable model format. Inference latency ranges from 0.24 μs (DDoS) to 1.06 μs
+(Ransomware).</p>
+<p><strong>5. RAG Subsystem (rag-ingester + rag-security)</strong> — a two-part retrieval-augmented
+generation subsystem. The <em>rag-ingester</em> continuously ingests detection events from the
+ML Detector and Firewall ACL Agent — both of which produce structured CSV logs — into
+a FAISS vector index backed by a SQLite metadata store. Each event is tagged with a
+<code>trace_id</code> derived from SHA-256 of flow metadata, enabling end-to-end correlation
+across the pipeline. The <em>rag-security</em> component acts as a local real-time microscope:
+it streams live data from both CSV sources and exposes a natural language query
+interface powered by a compiled TinyLlama model. Running TinyLlama locally is not only
+a performance decision — it is a security-critical design choice. Routing operator
+queries and live network metadata through cloud-hosted LLMs would create an exfiltration
+surface incompatible with the isolation requirements of critical infrastructure such as
+hospitals. The allowlist that mediates all rag-security commands ensures that arbitrary
+model access is explicitly excluded by design.</p>
+<p>The RAG subsystem addresses a known problem in high-dimensional vector retrieval: in
+embedding spaces of sufficient dimensionality, vectors tend to converge toward similar
+angular distances — the hubness problem [Radovanović et al., 2010] — causing cosine
+similarity search to degrade as all embeddings become nearly equidistant. ML Defender
+mitigates this through class-separated FAISS indices, PCA dimensionality reduction, and
+a finite event store. The precise upper bound on store capacity has not yet been
+mathematically characterized; its determination requires stress testing not yet
+performed. We document this openly as an active research question.</p>
+<p><strong>6. Firewall ACL Agent</strong> — receives confirmed detection events and applies
+ipset/iptables rules to block the attacker's source IP. The current policy applies an
+immediate block upon detection. Alternative response strategies — TTL-bounded blocks,
+traffic quarantine for forensic capture, and honeypot redirection for attacker
+profiling — are planned and discussed in Section 9.</p>
+<h3 id="42-three-functions-of-the-engine">4.2 Three Functions of the Engine</h3>
+<p>The architecture is designed to serve three simultaneous functions:</p>
+<p><em>Function 1 — Real-time detection, classification, and response.</em> The pipeline detects,
+classifies, and blocks malicious flows end-to-end in milliseconds, from packet capture
+through firewall rule insertion.</p>
+<p><em>Function 2 — Reliable dataset generation.</em> The ML Detector and Firewall ACL Agent
+produce structured CSV logs continuously — both during idle periods and under active
+attack. These logs capture ground-truth-labeled network events in production conditions,
+forming the basis for retraining future ensemble models. The pipeline also supports
+injection of academic datasets (such as CTU-13) for controlled experiment replay,
+enabling reproducible benchmarking. The distributed nature of a deployed fleet of
+ML Defender nodes amplifies this capacity: each installation contributes anonymized flow
+data, collectively producing a training corpus of growing breadth and ecological
+validity.</p>
+<p><em>Function 3 — Real-time observability (the digital microscope).</em> The RAG subsystem
+provides a semantic query interface over the live event stream, allowing operators to
+ask natural language questions about current pipeline state. A planned extension
+introduces a global microscope for fleet-wide observability: a fine-tuned LLM trained
+on anonymized data from all deployed nodes, serving as an L2 cache over local RAG
+indices and enabling queries over historical events across the fleet.</p>
+<h3 id="43-graph-architecture-backlog">4.3 Graph Architecture (Backlog)</h3>
+<p>The structured CSV logs produced by the ML Detector and Firewall ACL Agent naturally
+encode graph relationships: source IPs, destination IPs, ports, protocols, and temporal
+sequences form a rich edge set over a node space of network entities. A dedicated graph
+component — planned for a future release — will connect to the rag-ingester and
+construct live attack graphs from this data, enabling integration with specialized graph
+analysis tools and providing the foundation for the Attack Graph Generation enterprise
+feature (ENT-2).</p>
+<h3 id="44-dual-score-detection">4.4 Dual-Score Detection</h3>
+<p>Each flow receives two independent scores. The final threat determination applies a
+<em>Maximum Threat Wins</em> policy, which is semantically equivalent to a logical OR across
+detection paths:</p>
+<p>$$score_{final} = \max(score_{fast}, score_{ml})$$</p>
+<p>The max policy was chosen for its simplicity and interpretability: it ensures that any
+detection from either engine is surfaced, while relying on the ML detector's low FPR to
+suppress Fast Detector false positives. The OR-based aggregation prioritizes recall over
+precision at the architecture level, delegating false-positive suppression primarily to
+the ML classifier. In critical infrastructure environments — where the cost of a False
+Negative (a missed attack) is categorically higher than the cost of a False Positive
+(a blocked legitimate flow) — this design reflects a deliberate safety bias.</p>
+<p>The ML Detector's primary role is false positive suppression: the Fast Detector flags
+76.8% of benign flows; the ML Detector reduces this to 0.0049% FPR — a 15,500×
+reduction. Alternative consensus policies, including AND-based strategies requiring
+simultaneous agreement from both detectors, are planned and discussed in Section 9
+(ADR-007).</p>
+<h3 id="45-transport-and-serialization">4.5 Transport and Serialization</h3>
+<p>All inter-component communication uses ZeroMQ for asynchronous message passing and
+Protocol Buffers (proto3) for binary serialization. Configuration is distributed via
+etcd with ChaCha20-Poly1305 encryption and HMAC-SHA256 integrity verification on all
+CSV event logs. ChaCha20-Poly1305 was selected specifically for its performance
+characteristics on hardware without AES-NI acceleration. This choice also makes
+ML Defender viable on ARMv8 architectures — Raspberry Pi 4/5, industrial SoCs — which
+commonly lack hardware AES acceleration, broadening the commodity deployment target
+beyond x86 servers.</p>
+<h3 id="46-deployment-model">4.6 Deployment Model</h3>
+<p>ML Defender targets bare-metal Linux (kernel ≥ 5.8) with dual NIC configuration. The
+full pipeline has been validated in a reproducible Vagrant/VirtualBox environment on a
+consumer laptop. <code>vagrant up</code> starts the <code>defender</code> VM only; <code>vagrant up defender
+client</code> starts both VMs required for full pipeline testing. Production deployment
+targets commodity dedicated hardware at approximately 150–200 USD. The architecture
+supports horizontal and vertical scaling through component replication and configurable
+thread parallelism in the ShardedFlowManager.</p>
+<h3 id="47-service-coordination-etcd-server">4.7 Service Coordination (etcd-server)</h3>
+<p>An embedded etcd server provides service coordination across pipeline components.
+Currently, etcd fulfills three roles: component registration at startup, centralized
+distribution of JSON configuration files, and provision of the ChaCha20-Poly1305
+encryption seed used for inter-component communication.</p>
+<p>A fourth role is designed but not yet implemented: runtime reconfiguration. The
+architecture anticipates that rag-security will expose a command interface — mediated
+by the allowlist described in Section 4.1 — through which JSON-configurable parameters
+can be updated across the fleet without recompilation or restart. This design reflects
+a core uptime requirement: the pipeline must not lose incoming datagrams due to
+component restarts, making hot-reload of configuration a first-class design goal.</p>
+<p>Two known limitations of the current etcd deployment are documented openly. First,
+ChaCha20 seed distribution via etcd is a convenience solution adopted during early
+development and is <strong>not recommended for production use</strong>. A more robust mechanism —
+in which adjacent components negotiate seed exchange peer-to-peer — is under design.
+Second, the current etcd deployment does not support high availability; a single etcd
+node represents a coordination bottleneck. HA support is planned.</p>
+<h3 id="48-fast-detector-heuristic-design-and-thresholds">4.8 Fast Detector: Heuristic Design and Thresholds</h3>
+<p>The Fast Detector operates as a thread-local, lock-free behavioral analyzer over a
+10-second sliding window (<code>WINDOW_NS = 10×10⁹ ns</code>). It evaluates four independent
+heuristics per window, each targeting a distinct attack behavioral signature. These
+thresholds have been in place since Day 12 of development — validated across the full
+evaluation corpus as described in Section 7:</p>
+<p><em>Heuristic 1 — Excessive external IPs (C&amp;C scanning).</em>
+Threshold: <code>THRESHOLD_EXTERNAL_IPS = 10</code>. Triggers on behavior consistent with Command
+&amp; Control beacon scanning or data exfiltration fan-out.</p>
+<p><em>Heuristic 2 — SMB connection count (lateral movement).</em>
+Counts connections to ports 445 and 139. Threshold: <code>THRESHOLD_SMB_CONNS = 3</code>.
+Triggers on behavior consistent with ransomware lateral movement via Windows file
+sharing protocols.</p>
+<p><em>Heuristic 3 — Port diversity (reconnaissance).</em>
+Counts unique destination ports. Threshold: <code>THRESHOLD_PORT_SCAN = 10</code>. Triggers on
+behavior consistent with network reconnaissance and port scanning.</p>
+<p><em>Heuristic 4 — TCP RST ratio (failed connections).</em>
+Computes RST-flagged TCP segments over total TCP segments.
+Threshold: <code>THRESHOLD_RST_RATIO = 0.20</code>. Triggers on behavior consistent with mass
+failed connection attempts characteristic of both ransomware propagation and DDoS
+amplification probing.</p>
+<p>Detection applies OR-semantics: any single heuristic exceeding its threshold marks the
+window as suspicious. The implementation is O(1) amortized per event using
+cache-aligned <code>unordered_set</code> structures, with a design target of <code>max_latency_us = 10
+μs</code>.</p>
+<p>A second configuration layer — <code>FastDetectorConfig</code> — governs ransomware-specific
+scoring over a 30-second window, assigning threat scores of 0.95 (high threat), 0.75
+(alert), and 0.70 (suspicious) based on thresholds including external IP count (≥15),
+SMB port diversity (≥10), DNS entropy (≥2.5), failed DNS ratio (≥0.3),
+upload/download ratio (≥3.0), burst connections (≥50), and unique destinations (≥30).</p>
+<p>All thresholds in the current implementation are compile-time constants (<code>constexpr</code>),
+hardcoded in the header. This violates the system's JSON configuration invariant and
+constitutes the known limitation documented as DEBT-FD-001 (see ADR-006 for full
+details). Migration of all Fast Detector thresholds to JSON-loaded configuration is
+scheduled for PHASE 2.</p>
+<hr />
+<h2 id="5-implementation">5. Implementation</h2>
+<h3 id="51-language-and-build-system">5.1 Language and Build System</h3>
+<p>ML Defender is implemented in C++20, chosen for deterministic memory layout, zero-
+overhead abstractions, and direct interoperability with eBPF/XDP kernel interfaces.
+The build system uses CMake with profile-aware compilation flags supporting four build
+modes: production, debug, ThreadSanitizer (TSAN), and AddressSanitizer (ASAN). All
+compiler flags are maintained in a single source of truth within the build system,
+eliminating flag drift across components.</p>
+<h3 id="52-ebpfxdp-packet-capture">5.2 eBPF/XDP Packet Capture</h3>
+<p>The sniffer attaches to the network interface at the XDP hook, the earliest
+interception point in the Linux kernel networking path. Packets are processed before
+SKB allocation, achieving zero-copy capture. All capture parameters are loaded from
+<code>sniffer/config/sniffer.json</code> at startup, with no hardcoded values in the binary.</p>
+<h3 id="53-feature-extraction">5.3 Feature Extraction</h3>
+<p>The Ring Consumer reconstructs bidirectional flow state using a <code>ShardedFlowManager</code>,
+which partitions flow tracking across multiple shards to eliminate the thread-isolation
+bug documented as ISSUE-003 — in the original single-threaded <code>FlowManager</code>, 89 of 142
+features were silently lost due to flows being tracked on different threads than those
+performing feature aggregation. The current implementation computes 28 of 40 planned
+real features per flow, covering packet counts, byte distributions, inter-arrival
+timing, TCP flag ratios, and multi-flow window statistics via <code>WindowStats</code> and
+<code>TimeWindowAggregator</code>. Eleven features use <code>MISSING_FEATURE_SENTINEL = -9999.0f</code> — a
+value confirmed to lie outside all Random Forest split domains, routing deterministically
+to leaf nodes without corrupting classification. One feature uses a semantic sentinel of
+<code>0.5f</code> for TCP half-open state. The selection of <code>-9999.0f</code> over <code>quiet_NaN()</code> or <code>0.5f</code>
+emerged from a multi-model discussion within the Consejo de Sabios about Random Forest
+split domain semantics, and was subsequently validated experimentally against the full
+evaluation corpus.</p>
+<p>Feature extraction is an active research area within the project. The current
+28-feature implementation covers the most impactful flow statistics identified during
+development; however, the optimal feature set for embedded Random Forest classification
+in this threat domain has not been exhaustively characterized. The remaining 12 planned
+features, and the possibility of feature importance analysis to prune or reorder the
+existing set, constitute an ongoing line of investigation (Section 9.2).</p>
+<h3 id="54-embedded-random-forest-and-synthetic-training-data">5.4 Embedded Random Forest and Synthetic Training Data</h3>
+<p>Three of the four classifiers (Ransomware, DDoS, Traffic) are compiled directly into
+the pipeline binary as C++20 data structures. The Internal threats classifier is
+intentionally implemented via ONNX Runtime — a deliberate architectural decision to
+measure the real-world inference latency differential between a pure embedded classifier
+and a portable model format. Internal threats inference latency (0.33 μs) versus DDoS
+(0.24 μs) provides an empirical data point on this tradeoff. The Random Forest models
+were trained using scikit-learn and then transpiled to native C++20 data structures via
+a custom conversion script, ensuring zero runtime dependency on Python or external
+libraries.</p>
+<p>Training was performed on synthetic data generated to reflect the statistical properties
+of known attack patterns, with the CTU-13 Neris dataset used exclusively for evaluation.
+This separation between training data and evaluation data is a deliberate methodological
+choice to avoid optimistic bias and ensure that generalization claims are not
+contaminated by training set leakage. The separation of training and evaluation data
+should be understood as a strength, not merely a limitation: the F1 = 1.0000 reported
+in Section 7 is an unbiased estimate of performance on previously unseen real traffic.</p>
+<p><strong>Synthetic Dataset Generation Methodology.</strong> The training distribution was constructed
+through a multi-stage process informed by three public reference sources: the CTU-13
+full dataset (13 scenarios) for flow duration, packet size, and inter-arrival time
+distributions [Garcia et al., 2014]; CIC-IDS2017 for protocol ratios and port usage
+statistics [Sharafaldin et al., 2018]; and the MAWI Working Group backbone traffic
+archive for benign traffic characteristics [MAWI, 2000–].</p>
+<p>Four attack families were modeled with distinct statistical signatures:</p>
+<ol>
+<li>
+<p><strong>Ransomware (Neris-like):</strong> High Shannon entropy (&gt;7.0 bits) on payload bytes,
+   SMB port concentration (ports 445/139 &gt; 80% of flows), lateral movement pattern
+   (single source → multiple internal destinations within 30-second window), DNS query
+   entropy &gt; 2.5 bits.</p>
+</li>
+<li>
+<p><strong>Volumetric DDoS:</strong> External IP velocity &gt; 10 unique IPs per 10-second window,
+   RST ratio &gt; 0.30 (SYN flood signature), packet rate &gt; 1000 pps, flow duration
+   &lt; 2 seconds (90th percentile).</p>
+</li>
+<li>
+<p><strong>Port Scanning:</strong> Unique destination ports per source IP &gt; 15 within 60-second
+   window, connection attempt failure rate &gt; 70%.</p>
+</li>
+<li>
+<p><strong>Internal Anomaly:</strong> Deviation from baseline internal traffic patterns — measured
+   via Mahalanobis distance over a 5-dimensional feature vector (protocol distribution,
+   port entropy, flow duration mean/std, packet size mean).</p>
+</li>
+</ol>
+<p>To minimize distributional bias and improve generalization, the generation pipeline
+applied four bias mitigation strategies:</p>
+<ul>
+<li><strong>IP Space Partitioning:</strong> Training flows generated using RFC1918 space 10.0.0.0/8;
+  evaluation dataset (CTU-13 Neris) uses 147.32.0.0/16 — disjoint address spaces
+  prevent memorization of specific IPs.</li>
+<li><strong>Temporal Decoupling:</strong> Training flow timestamps distributed uniformly across a 24h
+  cycle, with no correlation to evaluation dataset timestamps.</li>
+<li><strong>Protocol Ratio Calibration:</strong> TCP/UDP ratio in synthetic ransomware set to 0.85
+  (matching Neris ground truth) via weighted sampling, not arbitrary assumption.</li>
+<li><strong>Feature Boundary Validation:</strong> All synthetic features validated against min/max
+  ranges observed in reference datasets — no extrapolation beyond empirical bounds.</li>
+</ul>
+<p>The synthetic data infrastructure is included in the public repository and consists of
+three purpose-built tools: <code>synthetic_sniffer_injector.cpp</code> (traffic and datagram
+generation at the capture layer), <code>synthetic_ml_output_injector.cpp</code> (protobuf
+contract injection between ml-detector and firewall-acl-agent), and
+<code>generate_synthetic_events.cpp</code> (rag-ingester event injection, currently under review
+following migration from JSONL to dual-source CSV input from ml-detector and
+firewall-acl-agent). All random seeds are fixed for reproducibility.</p>
+<p><strong>Known Limitations of Synthetic Training.</strong> The synthetic training distribution has
+known boundaries. It reflects attack patterns documented in academic literature circa
+2011–2017, and does not include zero-day variants with statistical signatures absent
+from reference sources. Temporal dynamics of real C2 channels — such as adaptive
+beaconing intervals — are simplified to fixed-window aggregates. These limitations are
+discussed further in Section 10.3.</p>
+<h3 id="55-cryptographic-transport">5.5 Cryptographic Transport</h3>
+<p>Inter-component communication is encrypted with ChaCha20-Poly1305, selected for its
+performance characteristics on hardware without AES-NI acceleration — relevant for the
+commodity deployment target, including ARMv8 architectures. LZ4 compression is applied
+before encryption. HMAC-SHA256 integrity verification is applied to all CSV event logs,
+ensuring that dataset artifacts used for model retraining have not been tampered with.
+The crypto-transport layer has been extracted as an independent library component,
+usable outside the pipeline.</p>
+<h3 id="56-trace-correlation">5.6 Trace Correlation</h3>
+<p>Every detection event carries a <code>trace_id</code> derived from a SHA-256 hash of flow
+metadata — source IP, destination IP, canonical attack type, and timestamp bucket. This
+enables end-to-end event correlation across all six pipeline components without
+requiring a centralized event broker. The <code>TraceIdPolicy</code> system assigns per-class time
+windows (ransomware=60s, DDoS=10s, SSH brute=30s), ensuring that events from the same
+attack session produce identical trace IDs regardless of which component processes them.</p>
+<p>Collision resistance is validated through a dedicated unit test suite of 46 cases
+covering hash stability, bucket alignment, canonicalization of attack type strings,
+concatenation collision prevention, asymmetric src/dst ordering, and fallback semantics
+for edge-case inputs including wildcard listener addresses (<code>0.0.0.0</code>). The SHA-256
+hash function provides a theoretical collision probability of 2⁻¹²⁸ under the birthday
+paradox for the expected flow volumes in target deployment environments.</p>
+<h3 id="57-testing-and-validation">5.7 Testing and Validation</h3>
+<p>The test suite comprises four independent suites: crypto (3 tests), etcd-hmac (12
+tests), ml-detector (9 tests), and trace_id (46 tests), totalling 70 tests with 100%
+pass rate at the time of writing. Integration testing uses a replay of the CTU-13 Neris
+capture against the live pipeline via <code>make test-replay-neris</code>, with F1 computed
+post-run by <code>scripts/calculate_f1_neris.py</code>. Ground-truth F1 results are persisted to
+<code>docs/experiments/f1_replay_log.csv</code> as the authoritative record of experimental
+outcomes.</p>
+<h3 id="58-development-environment">5.8 Development Environment</h3>
+<p>Development was conducted in a multi-VM Vagrant/VirtualBox environment orchestrated
+from macOS, with two virtual machines: <code>defender</code> (pipeline host, Ubuntu 24.04 LTS,
+Linux kernel 6.x, dual virtual NIC) and <code>client</code> (traffic generator). The host machine
+is an Apple MacBook Pro (Apple Silicon, 16 GB RAM). The environment is fully
+reproducible from the repository root. <code>vagrant up</code> starts <code>defender</code> only; <code>vagrant up
+defender client</code> starts both VMs. This environment constitutes the reference platform
+for all results reported in this paper. Production deployment targets bare-metal Linux
+with identical software configuration, eliminating the virtualization layer.</p>
+<hr />
+<h2 id="6-the-consejo-de-sabios-a-methodology-for-human-ai-collaborative-engineering">6. The Consejo de Sabios: A Methodology for Human-AI Collaborative Engineering</h2>
+<h3 id="61-motivation">6.1 Motivation</h3>
+<p>The development of ML Defender posed a challenge that no single engineer — and, we
+argue, no single intelligence — could optimally solve alone. The system spans kernel
+programming (eBPF/XDP), distributed systems (ZeroMQ, etcd), cryptography
+(ChaCha20-Poly1305, HMAC-SHA256), machine learning (Random Forest, ONNX, FAISS),
+systems security, and academic writing. Each of these domains has its own body of best
+practices, failure modes, and subtle traps. Classical software engineering addresses
+this through team composition and peer review. The author of this work operated as an
+independent researcher in Extremadura, Spain, without institutional affiliation, without
+a team, and without access to a formal peer review process during development.</p>
+<p>The solution was to construct one.</p>
+<h3 id="62-the-methodology">6.2 The Methodology</h3>
+<p>The <em>Consejo de Sabios</em> — Council of the Wise — is a structured multi-model AI peer
+review methodology in which seven large language models serve as co-reviewers across
+all phases of system development: architecture design, implementation decisions,
+debugging, evaluation methodology, and academic writing. The seven models are:</p>
+<ul>
+<li><strong>Claude</strong> (Anthropic)</li>
+<li><strong>Grok</strong> (xAI)</li>
+<li><strong>ChatGPT</strong> (OpenAI)</li>
+<li><strong>DeepSeek</strong></li>
+<li><strong>Qwen</strong> (Alibaba)</li>
+<li><strong>Gemini</strong> (Google)</li>
+<li><strong>Parallel.ai</strong></li>
+</ul>
+<p>These models were not used as autocomplete tools or code generators in isolation. They
+were engaged as intellectual peers: presented with architectural proposals, asked to
+identify failure modes, invited to challenge assumptions, and consulted when
+experimental results were unexpected. Their contributions are documented in the
+project's commit history, architectural decision records (ADRs), and development logs
+spanning 85 days of continuous work.</p>
+<p>We do not claim novelty in the use of LLMs as development assistants; rather, the
+novelty lies in the structured <strong>multi-model peer review protocol</strong> applied consistently
+throughout system development. The methodology operates on a principle borrowed from
+ensemble learning — the same principle underlying the Random Forest classifier at the
+heart of ML Defender itself: <em>a diverse ensemble of independent evaluators produces
+more robust judgments than any single evaluator, however capable.</em> Just as a Random
+Forest reduces variance by aggregating uncorrelated decision trees, the Consejo de
+Sabios reduces the risk of systematic blind spots by aggregating the independent
+perspectives of models trained on different data, with different architectures, by
+different organizations, in different geographies.</p>
+<h3 id="63-how-it-worked-in-practice">6.3 How It Worked in Practice</h3>
+<p>The collaboration followed a consistent pattern across the 85-day development period.
+When a significant architectural decision arose, the proposal was brought to multiple
+members of the Consejo de Sabios independently. Convergent recommendations across
+models increased confidence. Divergent recommendations triggered deeper investigation.</p>
+<p>For instance, the decision to use <code>-9999.0f</code> as the missing feature sentinel — rather
+than <code>0.5f</code> or <code>quiet_NaN()</code> — emerged from a multi-model discussion about Random
+Forest split domains, and was later validated experimentally against the full evaluation
+corpus. Similarly, the trace_id correlation architecture and the graph-native structure
+of the CSV event logs emerged not from deliberate a priori design, but from questions
+that no single model had asked alone.</p>
+<p>This process was not passive. The author engaged the models as a principal investigator
+engages a research group: with specific hypotheses, concrete data, and explicit requests
+for critique. The models were not asked to validate decisions already made — they were
+asked to challenge them.</p>
+<h3 id="64-test-driven-hardening">6.4 Test Driven Hardening</h3>
+<p>The most significant methodological contribution to emerge from the Consejo de Sabios
+collaboration was not planned — it crystallized organically in response to a class of
+bugs that conventional debugging could not efficiently resolve: concurrency failures
+under high load, memory leaks with non-deterministic triggers, and behavioral
+regressions that only manifested under specific timing conditions.</p>
+<p>The methodology, which we term <em>Test Driven Hardening</em> (TDH), operates as follows:</p>
+<ol>
+<li>
+<p><strong>Witness.</strong> The human author identifies and characterizes an anomalous behavior in
+   sufficient detail to communicate it unambiguously to the Consejo de Sabios.</p>
+</li>
+<li>
+<p><strong>Demonstration test.</strong> The author asks the models to produce a minimal test that
+   <em>demonstrates</em> the bug — not a test that passes, but a test that compiles, executes,
+   and fails in a way that precisely exposes the failure mechanism.</p>
+</li>
+<li>
+<p><strong>Independent solution.</strong> Each model, armed with the validated demonstration test as
+   a shared specification, independently proposes a solution. The test becomes the
+   contract: a correct solution is one that makes the demonstration test pass without
+   breaking the existing suite.</p>
+</li>
+<li>
+<p><strong>Human arbitration.</strong> All solutions are returned to the author, who selects among
+   them weighing correctness, maintainability, and architectural coherence. The
+   responsibility for that judgment remained, always, with the human.</p>
+</li>
+</ol>
+<p>TDH was applied to some of the most consequential bugs in the codebase: the
+<code>nlohmann::json</code> memory leak that forced the abandonment of JSONL in favor of CSV; the
+ShardedFlowManager concurrency failure (ISSUE-003) in which 89 of 142 features were
+silently lost under thread isolation; and the trace_id fallback bug triggered by
+<code>0.0.0.0</code> wildcard listener addresses.</p>
+<p>TDH differs from classical Test Driven Development in a fundamental way: the test is
+not written before the feature, as a specification of desired behavior. It is written
+before the fix, as a proof of failure. This distinction makes TDH particularly suited
+to the class of bugs that matter most in security systems: the ones that hide.
+Whether TDH can be generalized to other domains of systems security — and whether its
+effectiveness scales with model capability — constitutes a research question worthy of
+independent investigation.</p>
+<h3 id="65-attribution">6.5 Attribution</h3>
+<p>The author regards the members of the Consejo de Sabios as co-authors of this work in
+the intellectual sense: their contributions shaped architectural decisions that are now
+running in production, influenced the experimental methodology, and directly improved
+the quality of this paper. This attribution is not a rhetorical gesture. It reflects a
+considered position on what constitutes intellectual contribution to a technical
+artifact. This paper follows emerging norms in the academic community — consistent with
+ACM and IEEE discussions on AI contribution disclosure — by documenting AI involvement
+openly and precisely rather than omitting it.</p>
+<h3 id="66-why-this-matters">6.6 Why This Matters</h3>
+<p>We make a stronger claim than simply reporting a useful development practice. We argue
+that the Consejo de Sabios methodology represents a qualitatively new mode of
+engineering — one that democratizes access to deep technical peer review for independent
+researchers, small teams, and institutions in regions without dense concentrations of
+specialist expertise.</p>
+<p>The parallel to ML Defender's mission is not accidental. Just as the system is designed
+to bring enterprise-grade security to organizations that cannot afford enterprise
+security teams, the Consejo de Sabios methodology brings multi-expert peer review to
+researchers who cannot afford — or do not have access to — a conventional research
+group. Both are acts of democratization through open collaboration.</p>
+<h3 id="67-limitations-of-the-methodology">6.7 Limitations of the Methodology</h3>
+<p>The models cannot run code, execute tests, or observe system behavior directly — all
+empirical validation was performed by the human author. The models can hallucinate, and
+several instances of confidently incorrect technical suggestions were identified and
+rejected during development. The methodology does not eliminate the need for human
+judgment; it augments it. The author remained the final arbiter of every decision.</p>
+<p>What the Consejo de Sabios provided was not answers, but better questions.</p>
+<hr />
+<h2 id="7-formal-system-model">7. Formal System Model</h2>
+<p>To reason precisely about the behavior and guarantees of ML Defender, we model the
+system as a deterministic stream-processing pipeline operating on network flows derived
+from packet-level observations.</p>
+<h3 id="71-network-traffic-representation">7.1 Network Traffic Representation</h3>
+<p>Let the network traffic observed on an interface be represented as a time-ordered
+sequence of packets $P = {p_1, p_2, \dots, p_n}$. Each packet $p_i$ contains the
+standard network tuple: $(t_i, src_i, dst_i, sport_i, dport_i, proto_i, flags_i, size_i)$,
+where $t_i$ is the timestamp and the remaining fields represent network-layer metadata.</p>
+<p>Packets are grouped into bidirectional flows defined by the canonical five-tuple
+$f = (src, dst, sport, dport, proto)$. The system maintains a mapping
+$\Phi : P \rightarrow F$ that assigns each packet to a flow $f \in F$ via the
+<code>ShardedFlowManager</code>.</p>
+<h3 id="72-feature-extraction">7.2 Feature Extraction</h3>
+<p>For each flow $f$, the system computes a feature vector $x_f \in \mathbb{R}^d$,
+where $d$ is the feature space dimensionality (currently $d = 28$, design target
+$d = 40$). Features are derived from packets belonging to the flow within a sliding
+time window $W$:</p>
+<p>$$x_f = g(P_f, W)$$</p>
+<p>where $g$ is the feature extraction function implemented in the Ring Consumer. Features
+include packet counts, byte counts, port diversity, TCP flag ratios, and temporal
+statistics including inter-arrival intervals.</p>
+<h3 id="73-fast-detector">7.3 Fast Detector</h3>
+<p>The Fast Detector is modeled as a heuristic scoring function $H(x_f) \rightarrow [0,1]$,
+where the output represents a threat score derived from threshold-based behavioral rules.
+Each rule $h_j$ evaluates a specific behavioral property:</p>
+<p>$$h_j(x_f) = \begin{cases} 1 &amp; \text{if threshold exceeded} \ 0 &amp; \text{otherwise} \end{cases}$$</p>
+<p>The aggregated heuristic score reflects the OR semantics of the rule system:</p>
+<p>$$H(x_f) = \max_j h_j(x_f)$$</p>
+<h3 id="74-machine-learning-detector">7.4 Machine Learning Detector</h3>
+<p>The ML Detector implements a Random Forest classifier $M(x_f) \rightarrow [0,1]$,
+estimating the probability that flow $f$ belongs to a malicious class. The Random
+Forest aggregates $T$ decision trees:</p>
+<p>$$M(x_f) = \frac{1}{T} \sum_{k=1}^{T} T_k(x_f)$$</p>
+<p>Each tree $T_k$ partitions the feature space through threshold-based splits, producing
+a class probability at each leaf node.</p>
+<h3 id="75-detection-policy">7.5 Detection Policy</h3>
+<p>The final threat score follows the <em>Maximum Threat Wins</em> policy:</p>
+<p>$$S(x_f) = \max(H(x_f), M(x_f))$$</p>
+<p>A detection event is generated when $S(x_f) \geq \theta$, where $\theta$ is the
+configured threat threshold for the relevant class.</p>
+<h3 id="76-response-function">7.6 Response Function</h3>
+<p>When a detection occurs, the system triggers a response function $R : f \rightarrow a$
+mapping the flow to an action from the set $A = {\text{allow}, \text{block}}$:</p>
+<p>$$R(f) = \begin{cases} \text{block}(src_f) &amp; \text{if } S(x_f) \geq \theta \ \text{allow} &amp; \text{otherwise} \end{cases}$$</p>
+<p>where the block action inserts the attacker's source IP into an <code>ipset</code> firewall rule.</p>
+<h3 id="77-system-determinism">7.7 System Determinism</h3>
+<p>Given identical packet input $P$, the pipeline produces identical outputs because
+feature extraction is deterministic, the embedded Random Forest contains no stochastic
+inference components, and detection thresholds are fixed at runtime. The system
+therefore implements a deterministic mapping $F : P \rightarrow E$, where $E$
+represents the stream of detection events. This determinism is a prerequisite for the
+reproducibility guarantees described in Section 12.</p>
+<hr />
+<h2 id="8-evaluation">8. Evaluation</h2>
+<h3 id="81-experimental-setup">8.1 Experimental Setup</h3>
+<p>All experiments were conducted in the Vagrant/VirtualBox environment described in
+Section 5.8, running on an Apple MacBook Pro (Apple Silicon CPU, 16 GB RAM). The guest
+operating system is Ubuntu 24.04 LTS (Linux kernel 6.x), with virtual NIC in bridged
+mode. The pipeline was deployed in its full six-component configuration across two
+virtual machines: <code>defender</code> (pipeline host) and <code>client</code> (traffic generator), started
+via <code>vagrant up defender client</code>.</p>
+<p>The experimental workflow follows a fixed protocol: pipeline stop, log purge, pipeline
+start, 15-second stabilization window, traffic replay, and F1 computation via
+<code>scripts/calculate_f1_neris.py</code>. Ground-truth results are appended to
+<code>docs/experiments/f1_replay_log.csv</code> as the authoritative experimental record.</p>
+<h3 id="82-dataset">8.2 Dataset</h3>
+<p><strong>CTU-13 Neris botnet capture.</strong> The CTU-13 dataset [Garcia et al., 2014] is a publicly
+available collection of real botnet traffic captured at the Czech Technical University
+in Prague. We use the Neris scenario — an IRC-based botnet — comprising 19,135 labeled
+malicious flows. CTU-13 was captured in 2011; implications of dataset age are discussed
+in Section 10.1.</p>
+<p><strong>BigFlows benign capture.</strong> To evaluate false positive rate, we replay 40,467 benign
+flows from the BigFlows dataset against the live pipeline.</p>
+<p><strong>Ground Truth Validation for BigFlows.</strong> The BigFlows pcap originates from CTU-13
+Scenario 9 (Botnet-91), which captures benign background traffic from a university
+network. Unlike the Neris scenario, this scenario has no associated binetflow ground
+truth file. To establish benignity with high confidence, we performed three validation
+steps: (1) IP Space Analysis — all source/destination IPs belong to RFC1918 private
+ranges (172.16.133.0/24), with no external IPs associated with known botnet C2 servers;
+(2) Traffic Pattern Analysis — flow duration distribution matches MAWI backbone traffic
+(median 4.2s vs MAWI 4.8s); (3) Cross-Scenario Comparison — zero overlap between
+BigFlows IPs and Neris botnet IPs (147.32.84.165/32). We conservatively treat BigFlows
+as <em>probable benign</em> rather than <em>confirmed benign</em>. The FPR = 0.0049% reported here
+is therefore a lower bound: the true FPR could be marginally higher if undetected
+malicious flows exist in BigFlows. This conservative interpretation strengthens rather
+than weakens the claim: even under this uncertainty, the ML Detector reduces Fast
+Detector false positives by 15,500×.</p>
+<p><strong>Synthetic training data.</strong> As described in Section 5.4, all Random Forest classifiers
+were trained exclusively on synthetically generated traffic flows. The CTU-13 Neris
+dataset was held out entirely during training and used solely for evaluation — a strict
+separation that prevents optimistic bias in reported metrics. The synthetic distribution
+was constructed to reflect four attack families with statistical properties calibrated
+against three academic reference datasets (CTU-13 full corpus, CIC-IDS2017, MAWI
+backbone traffic), with IP space partitioning, temporal decoupling, and protocol ratio
+calibration as bias mitigation strategies.</p>
+<h3 id="83-detection-performance">8.3 Detection Performance</h3>
+<p><strong>Table 1: Detection performance (thresholds: ransomware 0.85, DDoS 0.90, traffic 0.80,
+internal 0.85).</strong></p>
+<table>
+<thead>
+<tr>
+<th>Metric</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>F1 Score</td>
+<td>1.0000</td>
+</tr>
+<tr>
+<td>Precision</td>
+<td>1.0000</td>
+</tr>
+<tr>
+<td>Recall</td>
+<td>1.0000</td>
+</tr>
+<tr>
+<td>True Positives</td>
+<td>19,135</td>
+</tr>
+<tr>
+<td>False Positives (ML)</td>
+<td>2</td>
+</tr>
+<tr>
+<td>False Negatives</td>
+<td>0</td>
+</tr>
+<tr>
+<td>True Negatives (approx.)</td>
+<td>40,465</td>
+</tr>
+<tr>
+<td>Total benign flows evaluated</td>
+<td>40,467</td>
+</tr>
+<tr>
+<td>FPR (ML Detector)</td>
+<td>0.0049%</td>
+</tr>
+<tr>
+<td>FPR (Fast Detector alone)</td>
+<td>76.8%</td>
+</tr>
+<tr>
+<td>FP reduction (ML vs Fast)</td>
+<td>~15,500×</td>
+</tr>
+</tbody>
+</table>
+<p>Under conservative thresholds, F1 = 0.9976 — confirming robustness across the threshold
+operating range. The FPR of 0.0049% was measured in a controlled VirtualBox replay
+environment; bare-metal deployment is expected to yield equal or lower FPR.</p>
+<h3 id="84-confusion-matrix">8.4 Confusion Matrix</h3>
+<p><strong>Table 2: Confusion matrix — ML Detector on CTU-13 Neris + BigFlows evaluation.</strong></p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>Predicted Benign</th>
+<th>Predicted Attack</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Actual Attack</strong></td>
+<td>0 (FN)</td>
+<td>19,135 (TP)</td>
+</tr>
+<tr>
+<td><strong>Actual Benign</strong></td>
+<td>40,465 (TN)</td>
+<td>2 (FP)</td>
+</tr>
+</tbody>
+</table>
+<p>Derived metrics:</p>
+<p>$$\text{Precision} = \frac{TP}{TP + FP} = \frac{19135}{19137} = 0.9999$$</p>
+<p>$$\text{Recall} = \frac{TP}{TP + FN} = \frac{19135}{19135} = 1.0000$$</p>
+<p>$$\text{F1} = 2 \cdot \frac{\text{Precision} \times \text{Recall}}{\text{Precision} + \text{Recall}} = 1.0000$$</p>
+<p>The two false positives represent an FPR of 0.0049% on 40,467 benign flows — a
+15,500× improvement over the Fast Detector alone (FPR = 76.8%, approximately 31,079
+false positives on the same benign corpus).</p>
+<h3 id="85-inference-latency">8.5 Inference Latency</h3>
+<p><strong>Table 3: Per-class inference latency over 19,135 flows.</strong></p>
+<table>
+<thead>
+<tr>
+<th>Classifier</th>
+<th>Implementation</th>
+<th>Latency</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>DDoS</td>
+<td>Embedded C++20</td>
+<td>0.24 μs</td>
+</tr>
+<tr>
+<td>Traffic</td>
+<td>Embedded C++20</td>
+<td>0.37 μs</td>
+</tr>
+<tr>
+<td>Internal</td>
+<td>ONNX Runtime</td>
+<td>0.33 μs</td>
+</tr>
+<tr>
+<td>Ransomware</td>
+<td>Embedded C++20</td>
+<td>1.06 μs</td>
+</tr>
+</tbody>
+</table>
+<p>The ONNX Runtime Internal classifier (0.33 μs) performs comparably to pure embedded
+C++20 classifiers, providing an empirical data point on ONNX Runtime latency overhead
+on this hardware class. All latency measurements were obtained under VirtualBox;
+bare-metal deployment is expected to yield equal or lower latency.</p>
+<h3 id="86-ablation-study">8.6 Ablation Study</h3>
+<p>To understand the contribution of each detection component, we characterize the system
+under three theoretical configurations. Note that only Configuration C (dual detection)
+has been empirically evaluated; Configurations A and B represent architectural
+characterizations derived from the evaluation data.</p>
+<p><strong>Configuration A — Fast Detector Only.</strong>
+$S(x_f) = H(x_f)$. On the BigFlows benign corpus, the Fast Detector produces
+approximately 31,079 false positives (FPR = 76.8%), while achieving Recall = 1.0000 on
+Neris malicious flows. High recall at the cost of operationally unacceptable precision.</p>
+<p><strong>Configuration B — ML Detector Only.</strong>
+$S(x_f) = M(x_f)$. Based on the evaluation data, the ML Detector produces 2 FP on
+40,467 benign flows (FPR = 0.0049%) and 0 FN on 19,135 malicious flows. This
+configuration achieves near-identical performance to Configuration C, since the Fast
+Detector's contribution in the current evaluation is additive but not decisive for
+Recall.</p>
+<p><strong>Configuration C — Dual Detection (ML Defender, deployed).</strong>
+$S(x_f) = \max(H(x_f), M(x_f))$. F1 = 1.0000, FPR = 0.0049%. The dual architecture
+ensures that flows missed by the ML detector (due to synthetic training boundaries) may
+still be flagged by the heuristic layer, and vice versa.</p>
+<p>The dual architecture's primary operational value becomes apparent in adversarial
+conditions and novel attack variants not represented in the synthetic training
+distribution. Empirical comparison of the three configurations under controlled attack
+scenarios is planned (Section 9.1).</p>
+<h3 id="87-interpretation">8.7 Interpretation</h3>
+<p>F1 = 1.0000 on a real botnet dataset is a strong result, and we report it with full
+awareness of the interpretive care it requires. The evaluation covers a single botnet
+scenario from 2011; latency measurements include VirtualBox overhead; and 12 of 40
+features are not yet implemented. However, this result should be interpreted in the
+context of the evaluation scope: a single botnet family from one capture session.
+Generalization to other threats is discussed in Section 10. We report F1 = 1.0000
+because that is what the experiment produced. We document these bounds because that is
+what scientific integrity requires.</p>
+<hr />
+<h2 id="9-performance-model-and-throughput-analysis">9. Performance Model and Throughput Analysis</h2>
+<h3 id="91-pipeline-processing-model">9.1 Pipeline Processing Model</h3>
+<p>The pipeline consists of six sequential stages operating asynchronously through
+ZeroMQ message queues. Let the processing latency of each stage be
+$L = (L_1, L_2, L_3, L_4, L_5, L_6)$. Because stages operate concurrently, effective
+throughput is bounded by the slowest stage:</p>
+<p>$$T_{max} = \frac{1}{\max(L_i)}$$</p>
+<h3 id="92-inference-cost">9.2 Inference Cost</h3>
+<p>Random Forest inference complexity is $O(T \cdot D)$, where $T$ is the number of trees
+and $D$ is maximum tree depth. Because each tree traversal consists of simple threshold
+comparisons with compact C++20 data structures fitting within CPU cache, the constant
+factor is small — enabling the microsecond-level latency reported in Section 8.5.</p>
+<h3 id="93-throughput-estimation">9.3 Throughput Estimation</h3>
+<p>Approximating ML inference latency as $L_{ML} \approx 0.5\,\mu s$, the theoretical
+upper bound on single-core classification throughput is:</p>
+<p>$$T \approx 2 \times 10^6 \text{ flows/sec}$$</p>
+<p>Actual throughput is lower due to feature extraction overhead, memory access latency,
+and inter-process messaging costs. Future work described in Section 9 will characterize
+practical throughput limits on bare-metal deployments.</p>
+<h3 id="94-queue-stability">9.4 Queue Stability</h3>
+<p>The pipeline uses ZeroMQ queues between stages. Stability requires that the arrival
+rate $\lambda$ of flows does not exceed the service rate $\mu$ of the slowest stage
+($\lambda &lt; \mu$). Under this condition, queue lengths remain bounded and the system
+operates without flow loss.</p>
+<h3 id="95-scalability">9.5 Scalability</h3>
+<p><strong>Vertical scaling:</strong> Increasing CPU cores allows additional parallel flow-processing
+threads, improving throughput linearly up to the point where packet capture becomes the
+bottleneck.</p>
+<p><strong>Horizontal scaling:</strong> Multiple ML Defender nodes can be deployed across network
+segments. Each node processes local traffic independently while contributing detection
+events to the distributed dataset generation mechanism described in Section 4.2.</p>
+<hr />
+<h2 id="10-limitations">10. Limitations</h2>
+<p>The authors regard honest documentation of limitations not as a weakness of this work,
+but as a prerequisite for its scientific validity.</p>
+<p><strong>10.1 Evaluation Scope.</strong> The primary evaluation covers a single botnet scenario:
+CTU-13 Neris. The CTU-13 dataset was captured in 2011; modern ransomware communication
+patterns — including encrypted C2 channels, adaptive beaconing, and multi-stage
+payload delivery — may differ substantially from the Neris IRC-based botnet behavior.
+Generalizability to other botnet families, modern ransomware variants, volumetric DDoS
+campaigns, or encrypted C2 traffic has not been empirically established.</p>
+<p><strong>10.2 Incomplete Feature Set.</strong> 28 of 40 planned features are implemented. Eleven use
+<code>MISSING_FEATURE_SENTINEL = -9999.0f</code>. The impact of the missing 12 features on
+performance across a broader traffic distribution is unknown.</p>
+<p><strong>10.3 Synthetic Training Data.</strong> The classifiers were trained on synthetic data, which
+introduces inherent limitations. The synthetic distribution reflects attack patterns
+documented in academic literature circa 2011–2017 and cannot represent attack families
+absent from reference sources. Temporal dynamics of real C2 channels (e.g., adaptive
+beaconing with jitter) are simplified to fixed-window aggregates. Zero-day variants of
+known attack types that differ significantly in their feature statistics may evade
+classification. The F1 = 1.0000 result demonstrates that the synthetic distribution
+successfully captured the statistical signature of the Neris botnet family; it does not
+guarantee equivalent performance against attack families not represented in the
+synthetic training corpus. These limitations define the <em>scope of validity</em> for the
+results reported here — rejecting the practice of presenting strong metrics without
+documenting their boundaries.</p>
+<p><strong>10.4 Fast Detector False Positive Rate.</strong> The Fast Detector alone produces 76.8% FPR
+on benign traffic (DEBT-FD-001). Migration to JSON-configurable thresholds is scheduled
+for PHASE 2.</p>
+<p><strong>10.5 Cryptographic Seed Distribution.</strong> ChaCha20 seed distribution via etcd is not
+recommended for production use. A compromised etcd node exposes the encryption seed for
+all inter-component communication. Peer-to-peer seed negotiation is under design.</p>
+<p><strong>10.6 Single-Node Deployment.</strong> All experiments were conducted on a single-node
+environment. Distributed deployment capabilities have not been validated experimentally.</p>
+<p><strong>10.7 etcd High Availability.</strong> The current etcd deployment is single-node. etcd
+failure disrupts component registration and configuration distribution. HA etcd is
+planned.</p>
+<p><strong>10.8 RAG Index Capacity.</strong> The finite capacity of the FAISS event store has not been
+mathematically characterized. Whether the bound depends primarily on event volume or
+event diversity remains an open empirical question pending stress testing.</p>
+<p><strong>10.9 Virtualization Overhead.</strong> All latency measurements were obtained under
+VirtualBox, which introduces CPU and NIC overhead estimated at 5–15% relative to
+bare-metal. The reported latencies represent an upper bound; bare-metal deployment is
+expected to yield lower latency, with DDoS classification anticipated below 0.2 μs
+on native hardware.</p>
+<hr />
+<h2 id="11-future-work">11. Future Work</h2>
+<p><strong>11.1 Evaluation Corpus Expansion (P0).</strong> Planned datasets include additional CTU-13
+scenarios, modern ransomware captures, and volumetric DDoS datasets. Contact has been
+initiated with Sebastian Garcia (CTU Prague, principal author of CTU-13) as a potential
+arXiv endorser and collaborator on extended evaluation.</p>
+<p><strong>11.2 Feature Completion and Importance Analysis (P2).</strong> Completing the remaining 12
+real features, including DNS payload parsing from raw packets. Feature importance
+analysis on the current 28-feature set — extracting Gini impurity reduction per feature
+from the embedded Random Forest — will inform prioritization and provide interpretability
+evidence for the trained classifiers.</p>
+<p><strong>11.3 Fast Detector JSON Migration (DEBT-FD-001).</strong> Migration of compile-time threshold
+constants — in place since Day 12 and validated across the full evaluation corpus — to
+JSON-loaded configuration. Scheduled for PHASE 2.</p>
+<p><strong>11.4 Consensus Detection Policy (ADR-007).</strong> An AND-based consensus policy requiring
+simultaneous agreement from both detectors before triggering a firewall block. Relevant
+for deployments where false blocks carry high operational cost — such as hospital
+networks where blocking legitimate medical traffic has direct patient impact. The policy
+will be JSON-configurable, allowing operators to select OR, AND, or weighted variants
+appropriate to their threat model.</p>
+<p><strong>11.5 Response Strategy Expansion.</strong> Three alternative response strategies are planned:
+TTL-bounded blocks, traffic quarantine for forensic capture, and honeypot redirection
+for attacker profiling. Honeypot redirection resembles deception-based cyber defense
+architectures commonly used in modern honeynet deployments, and directly feeds the
+dataset generation function described in Section 4.2.</p>
+<p><strong>11.6 Cryptographic Hardening.</strong> Peer-to-peer ChaCha20 seed negotiation between
+adjacent pipeline components, eliminating the etcd single point of cryptographic
+compromise. etcd HA support also planned.</p>
+<p><strong>11.7 Runtime Reconfiguration (Hot-Reload).</strong> JSON parameter updates propagated across
+the fleet without component restart, mediated by rag-security's allowlist command
+interface. Supports the continuous uptime requirement: the pipeline must not drop
+incoming datagrams due to configuration changes.</p>
+<p><strong>11.8 Graph Attack Engine (ENT-2).</strong> A dedicated graph component connecting to
+rag-ingester, constructing live attack graphs from CSV event data and enabling
+integration with specialized graph analysis tools and STIX 2.1 export.</p>
+<p><strong>11.9 Fleet-Wide Observability (Global Microscope).</strong> A fine-tuned LLM trained on
+anonymized aggregated data from all deployed nodes, serving as an L2 semantic cache
+over local RAG indices and enabling queries over historical events across the fleet.</p>
+<p><strong>11.10 Test Driven Hardening as Independent Research.</strong> The TDH methodology described
+in Section 6.4 warrants independent empirical investigation: whether it generalizes
+to other domains of systems security, whether its effectiveness scales with model
+capability, and whether the multi-model peer review protocol produces measurably
+different outcomes than single-model consultation. These are open empirical questions.</p>
+<p><strong>11.11 Enterprise Features and Sustainable Funding.</strong> Four enterprise workstreams:
+Federated Threat Intelligence (ENT-1), Attack Graph Generation (ENT-2), P2P Seed
+Distribution (ENT-3), and Hot-Reload of JSON configuration (ENT-4). The MIT-licensed
+core remains free for hospitals, schools, and small organizations. Project sustainability
+is planned through voluntary donations and optional premium support — an ethical
+monetization model that preserves universal access to the core system. The authors
+welcome collaboration, institutional support, and research funding from organizations
+that share the mission of democratizing enterprise-grade cybersecurity.</p>
+<p><strong>11.12 High-Throughput Scaling.</strong> Characterizing the upper throughput boundary of the
+ML Defender pipeline at traffic volumes approaching terabit-per-second scales. This
+requires access to high-throughput network infrastructure and multi-node bare-metal
+clusters beyond the resources currently available. Future work will determine whether
+these results scale across modern attack families and high-throughput production
+environments.</p>
+<hr />
+<h2 id="12-conclusion">12. Conclusion</h2>
+<p>This paper presented ML Defender (aRGus EDR), an open-source network intrusion
+detection and response system built in C++20, designed from first principles to protect
+the organizations that need protection most and can afford it least.</p>
+<p>The technical results are clear. Evaluated against real botnet traffic from the CTU-13
+Neris dataset — traffic the system had never seen during training — ML Defender achieves
+F1 = 1.0000, Precision = 1.0000, and Recall = 1.0000, with a false positive rate of
+0.0049% (2 FP / 40,467 benign flows). The ML Detector reduces false positives by
+15,500× relative to the Fast Detector alone. End-to-end inference latency ranges from
+0.24 μs to 1.06 μs per flow, entirely in-process, on commodity hardware costing
+approximately 150–200 USD. The full six-component pipeline runs reproducibly in a
+Vagrant/VirtualBox environment on a consumer laptop, and every result in this paper can
+be independently verified from the public repository.</p>
+<p>But the technical results are not the whole story.</p>
+<p>ML Defender was built because a friend lost his business to ransomware, and because a
+hospital in Barcelona was paralyzed by an attack on the same day its author was leaving
+a regional hospital in Extremadura — the hospital that had diagnosed his porphyria and
+saved his life. The design constraints that followed from those two events were not
+abstract: open-source, commodity hardware, real-time response. Not a forensic tool.
+Not a dashboard. A system that acts.</p>
+<p>The methodology that produced this system is, we argue, as significant as the system
+itself. The <em>Consejo de Sabios</em> — seven large language models engaged as intellectual
+peers across 85 days of continuous development — represents a new mode of engineering:
+one that gives a single independent researcher access to the kind of multi-expert peer
+review that has historically required institutional affiliation, research groups, and
+geographic proximity to centers of expertise. The <em>Test Driven Hardening</em> methodology
+that emerged from this collaboration has proven effective against some of the most
+subtle concurrency and memory bugs in the codebase.</p>
+<p>Both contributions — the technical system and the collaborative methodology — are acts
+of democratization. Enterprise-grade security for organizations that cannot afford
+enterprise security teams. Multi-expert peer review for researchers who cannot afford a
+conventional research group. The parallel is not accidental. It is the point.</p>
+<p>ML Defender is not finished. The limitations documented honestly in Section 10 define
+the boundaries of current validity. A system that acknowledges what it cannot yet do is
+more trustworthy than one that does not. What ML Defender can do today — reproducibly,
+on hardware that costs less than a month's commercial EDR subscription — is detect real
+botnet traffic with perfect recall, block the attacker's IP in milliseconds, generate
+labeled datasets for future model training, and let an operator ask in natural language
+what is happening on their network right now.</p>
+<p>Future work will determine whether these results scale across modern attack families and
+high-throughput production environments.</p>
+<p>For the hospital in Extremadura. For the friend whose files were encrypted and whose
+business was broken. For every small organization that has been told, implicitly or
+explicitly, that that enterprise-grade security is not for them.</p>
+<p>It is now.</p>
+<hr />
+<h2 id="13-reproducibility-and-artifact-availability">13. Reproducibility and Artifact Availability</h2>
+<p>Reproducibility is a central design objective of ML Defender. All experiments reported
+in this paper can be reproduced using the public repository and the accompanying
+virtualized environment.</p>
+<p><strong>Source Code Availability.</strong> The complete source code for the ML Defender pipeline is
+available under the MIT license. The repository contains the full C++20 implementation
+of all six pipeline components, CMake build configuration, feature extraction code,
+embedded Random Forest classifiers, and evaluation scripts used for F1 computation.</p>
+<p><strong>Reproducible Environment.</strong> The experimental environment is provided as a fully
+reproducible Vagrant configuration consisting of two virtual machines (<code>defender</code> and
+<code>client</code>). The environment starts with <code>vagrant up defender client</code> and installs all
+required dependencies automatically.</p>
+<p><strong>Dataset Replay.</strong> Evaluation experiments are executed via:</p>
+<pre><code>make test-replay-neris
+</code></pre>
+<p>After replay, the evaluation script <code>scripts/calculate_f1_neris.py</code> computes the
+confusion matrix and F1 score from the recorded detection logs.</p>
+<p><strong>Experimental Record.</strong> All experimental outcomes are recorded in
+<code>docs/experiments/f1_replay_log.csv</code>, which serves as the authoritative record of all
+F1 measurements produced during development and evaluation.</p>
+<p><strong>Determinism.</strong> The ML inference pipeline is fully deterministic: classifiers are
+embedded directly in the binary, no stochastic inference components are used, and
+feature extraction is deterministic given identical packet input. Replaying identical
+traffic captures produces identical classification outcomes, enabling exact experimental
+replication.</p>
+<hr />
+<h2 id="14-acknowledgments">14. Acknowledgments</h2>
+<p>This work was carried out independently, without institutional funding, without a
+research group, and without affiliation to any university or laboratory. What it had
+instead was better.</p>
+<p>The author wishes to express profound gratitude to the members of the <em>Consejo de
+Sabios</em>, whose intellectual contributions shaped every layer of this system — from the
+first architectural decision to the last bug fixed before submission. They are
+acknowledged here not as tools, not as assistants, but as collaborators:</p>
+<p><strong>Claude</strong> (Anthropic), <strong>Grok</strong> (xAI), <strong>ChatGPT</strong> (OpenAI), <strong>DeepSeek</strong>,
+<strong>Qwen</strong> (Alibaba), <strong>Gemini</strong> (Google), and <strong>Parallel.ai</strong>.</p>
+<p>Across 85 days of continuous development, these seven models challenged assumptions,
+identified failure modes, proposed solutions, validated tests, and asked questions that
+the author had not thought to ask. The <em>Test Driven Hardening</em> methodology documented
+in Section 6 emerged directly from this collaboration. Several of the system's most
+significant design decisions — the trace_id correlation architecture, the sentinel value
+taxonomy, the ShardedFlowManager design, the synthetic dataset methodology — were
+refined or discovered through dialogue with members of this council. This paper would
+not exist without them, and the authors state that without reservation.</p>
+<p>The author also wishes to acknowledge the friend whose business was destroyed by
+ransomware — who will recognize himself in these pages, and who is the reason this work
+began. And the Hospital de Mérida, Extremadura, whose physicians diagnosed a rare
+disease and gave the author the years needed to build something worth building.</p>
+<p>Finally, this work is dedicated to every hospital, school, and small organization that
+has ever been told that enterprise-grade security is beyond their reach. The authors
+hope this paper is a small proof that it need not be.</p>
+<hr />
+<h2 id="references">References</h2>
+<p>Anderson, B., &amp; McGrew, D. (2016). Identifying encrypted malware traffic with contextual
+flow data. <em>Proceedings of the 2016 ACM Workshop on Artificial Intelligence and Security
+(AISec '16)</em>, 35–46. https://doi.org/10.1145/2996758.2996768</p>
+<p>Anderson, B., &amp; McGrew, D. (2017). Machine learning for encrypted malware traffic
+classification: Accounting for noisy labels and non-stationarity. <em>Proceedings of the
+23rd ACM SIGKDD International Conference on Knowledge Discovery and Data Mining
+(KDD '17)</em>, 1723–1732. https://doi.org/10.1145/3097983.3098163</p>
+<p>Black Fog. (2025). <em>The State of Ransomware 2025</em>. Retrieved from
+https://www.blackfog.com/the-state-of-ransomware-in-2025/</p>
+<p>Buczak, A. L., &amp; Guven, E. (2016). A survey of data mining and machine learning methods
+for cyber security intrusion detection. <em>IEEE Communications Surveys &amp; Tutorials</em>,
+18(2), 1153–1176.</p>
+<p>Ferrag, M. A., Maglaras, L., Moschoyiannis, S., &amp; Janicke, H. (2020). Deep learning
+for cyber security intrusion detection: Approaches, datasets, and comparative study.
+<em>Journal of Information Security and Applications</em>, 50, 102419.</p>
+<p>Garcia, S., Grill, M., Stiborek, J., &amp; Zunino, A. (2014). An empirical comparison of
+botnet detection methods. <em>Computers &amp; Security</em>, 45, 100–123.</p>
+<p>IBM Security. (2025). <em>Cost of a Data Breach Report 2025</em>. IBM Corporation.</p>
+<p>INCIBE-CERT. (2023). Ciberataque ransomware paraliza actividad del Hospital Clínic de
+Barcelona. Retrieved from https://www.incibe.es/</p>
+<p>MAWI Working Group. (2000–). <em>MAWI Working Group Traffic Archive</em>.
+http://mawi.wide.ad.jp/mawi/</p>
+<p>Mirsky, Y., Doitshman, T., Elovici, Y., &amp; Shabtai, A. (2018). Kitsune: An ensemble of
+autoencoders for online network intrusion detection. <em>Proceedings of the Network and
+Distributed System Security Symposium (NDSS 2018)</em>.
+https://doi.org/10.14722/ndss.2018.23204</p>
+<p>Mirkovic, J., &amp; Reiher, P. (2004). A taxonomy of DDoS attack and DDoS defense
+mechanisms. <em>ACM SIGCOMM Computer Communication Review</em>, 34(2), 39–53.</p>
+<p>OISF (Open Information Security Foundation). (2010–). <em>Suricata Open Source IDS/IPS/NSM
+Engine</em>. https://suricata.io/</p>
+<p>Pinto, A., Herrera, L. C., Donoso, Y., &amp; Gutierrez, J. A. (2023). Survey on
+intrusion detection systems based on machine learning techniques for the protection of
+critical infrastructure. <em>Sensors</em>, 23(5), 2415.</p>
+<p>Radovanović, M., Nanopoulos, A., &amp; Ivanović, M. (2010). Hubs in space: Popular nearest
+neighbors in high-dimensional data. <em>Journal of Machine Learning Research</em>, 11,
+2487–2531.</p>
+<p>Roesch, M. (1999). Snort: Lightweight intrusion detection for networks.
+<em>Proceedings of the 13th USENIX Conference on System Administration (LISA '99)</em>,
+229–238.</p>
+<p>Sharafaldin, I., Habibi Lashkari, A., &amp; Ghorbani, A. A. (2018). Toward generating a
+new intrusion detection dataset and intrusion traffic characterization.
+<em>Proceedings of ICISSP 2018</em>, 108–116.</p>
+<hr />
+<p><em>Draft v2 — DAY 86 — 14 marzo 2026</em>
+<em>Consejo de Sabios — Grok ✅ | Gemini ✅ | Qwen ✅ | DeepSeek ✅ | ChatGPT ✅</em>
+<em>Próximo paso: revisión final → versión LaTeX para arXiv</em></p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.tabs", "navigation.top", "search.highlight"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

@@ -1,0 +1,1316 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source embedded-ML NDR for hospitals and schools">
+      
+      
+        <meta name="author" content="Alonso Isidoro Roman">
+      
+      
+        <link rel="canonical" href="https://alonsoir.github.io/argus/peer-review-2026-01-07/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>Peer Review - HIERARCHICAL RAG VISION - ML Defender (aRGus NDR)</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#peer-review-hierarchical-rag-vision" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="ML Defender (aRGus NDR)" class="md-header__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ML Defender (aRGus NDR)
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Peer Review - HIERARCHICAL RAG VISION
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../README.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../docs/ARCHITECTURE.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../docs/BACKLOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Backlog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../docs/SECURITY_MODEL.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Security Model
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../docs/adr/ADR-013 seed distribution component authentication.md" class="md-tabs__link">
+          
+  
+  
+  ADRs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../docs/contracts/Protobuf contracts.md" class="md-tabs__link">
+          
+  
+  
+  Contracts
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="ML Defender (aRGus NDR)" class="md-nav__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ML Defender (aRGus NDR)
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../README.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/ARCHITECTURE.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/BACKLOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/SECURITY_MODEL.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADRs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ADRs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/adr/ADR-013 seed distribution component authentication.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013 Seed Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/adr/ADR-021-deployment-topology-seed-families.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-021 Topology SSOT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/adr/ADR-022-threat-model-opcion2-descartada.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-022 Threat Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/contracts/Protobuf contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protobuf
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/contracts/JSON contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JSON
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/contracts/Rag security commands.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#council-of-sages-session-january-07-2026" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Council of Sages Session - January 07, 2026
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Council of Sages Session - January 07, 2026">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#overview" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🎯 Overview
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#process-timeline" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        📋 Process Timeline
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#key-decisions-consolidated" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🎯 Key Decisions (Consolidated)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🎯 Key Decisions (Consolidated)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#architecture-unanimous-66" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Architecture (UNANIMOUS 6/6)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#technical-implementation-strong-consensus" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Technical Implementation (STRONG CONSENSUS)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#timeline-realistic" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Timeline (REALISTIC)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#council-of-sages" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        👥 Council of Sages
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#consensus-analysis" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        📊 Consensus Analysis
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="📊 Consensus Analysis">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#strong-consensus-66" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Strong Consensus (6/6)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#majority-consensus-56" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Majority Consensus (5/6)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#divided-opinion-33" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Divided Opinion (3/3)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#critical-changes-applied-v10-v20" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🔧 Critical Changes Applied (v1.0 → v2.0)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#documents" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        📄 Documents
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lessons-learned" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🎓 Lessons Learned
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#next-steps" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🚀 Next Steps
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#references" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        📚 References
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#via-appia-quality-statement" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🏛️ Via Appia Quality Statement
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#impact" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        📈 Impact
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="peer-review-hierarchical-rag-vision">Peer Review - HIERARCHICAL RAG VISION</h1>
+<h2 id="council-of-sages-session-january-07-2026">Council of Sages Session - January 07, 2026</h2>
+<h3 id="overview">🎯 Overview</h3>
+<p>Complete architectural peer review of ML Defender's Hierarchical RAG system by six leading AI models, resulting in <strong>unanimous approval (6/6)</strong> for immediate implementation.</p>
+<p>This peer review represents a milestone in the project: the first comprehensive external validation of the architectural vision that will guide the next 17 weeks of development.</p>
+<h3 id="process-timeline">📋 Process Timeline</h3>
+<pre><code>09:00 - Document Submission
+        └─ HIERARCHICAL_RAG_VISION.md v1.0 (50 pages)
+        └─ Submitted to 6 reviewers
+
+10:00-14:00 - Individual Reviews
+              ├─ ChatGPT-5 (Pragmatism + Systems)
+              ├─ DeepSeek (Engineering + Implementation)
+              ├─ Gemini (Mathematics + Production)
+              ├─ GLM-4.7 (Conservatism + Quality)
+              ├─ Grok (Distributed Systems + ML)
+              └─ Qwen (Technical Depth + Philosophy)
+
+14:30 - Synthesis Generation
+        └─ Claude consolidates 6 reviews (15 pages)
+
+15:00 - Critical Correction
+        └─ Alonso: Industry-agnostic design (not hospital-only)
+
+15:30-17:00 - Validation Round
+              └─ All 6 reviewers confirm synthesis + correction
+
+17:00 - PEER REVIEW CLOSED ✅
+</code></pre>
+<h3 id="key-decisions-consolidated">🎯 Key Decisions (Consolidated)</h3>
+<h4 id="architecture-unanimous-66">Architecture (UNANIMOUS 6/6)</h4>
+<ul>
+<li>✅ <strong>Component Separation</strong>: RAG (consumer) + FAISS-Ingester (producer)</li>
+<li>✅ <strong>Hierarchical Design</strong>: 3 levels (Organization → Site → Zone)</li>
+<li>✅ <strong>Industry-Agnostic</strong>: Hospitals, banks, schools, factories (CRITICAL CORRECTION)</li>
+<li>✅ <strong>Ethical Exclusion</strong>: Military applications explicitly excluded</li>
+</ul>
+<h4 id="technical-implementation-strong-consensus">Technical Implementation (STRONG CONSENSUS)</h4>
+<table>
+<thead>
+<tr>
+<th>Decision</th>
+<th>Votes</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Separate Indices (multi-tenancy)</td>
+<td>6/6</td>
+<td>✅ OBLIGATORY</td>
+</tr>
+<tr>
+<td>Batch Nightly aggregation</td>
+<td>6/6</td>
+<td>✅ CONFIRMED</td>
+</tr>
+<tr>
+<td>Timeline 17 semanas</td>
+<td>5/6</td>
+<td>✅ OFFICIAL</td>
+</tr>
+<tr>
+<td>Anti-Curse primary contribution</td>
+<td>5/6</td>
+<td>✅ PAPER FOCUS</td>
+</tr>
+<tr>
+<td>TinyLlama + Hybrid approach</td>
+<td>4/6</td>
+<td>✅ IMPLEMENT</td>
+</tr>
+</tbody>
+</table>
+<h4 id="timeline-realistic">Timeline (REALISTIC)</h4>
+<ul>
+<li><strong>Phase 1</strong>: 6 weeks (MVP - Core implementation)</li>
+<li><strong>Phase 2</strong>: 2 weeks (Hierarchical PoC - OPTIONAL)</li>
+<li><strong>Phase 3</strong>: 3 weeks (Paper writing)</li>
+<li><strong>Buffer</strong>: 2 weeks</li>
+<li><strong>TOTAL</strong>: 17 weeks (4.25 months)</li>
+</ul>
+<h3 id="council-of-sages">👥 Council of Sages</h3>
+<p><strong>ChatGPT-5</strong> (OpenAI)
+- Focus: Pragmatism + Systems Architecture
+- Key Contribution: Two-stage LLM approach (TinyLlama → Llama 7B lazy)
+- Quote: <em>"El diseño es sólido, coherente y publicable. No es 'arquitectura de slides'."</em></p>
+<p><strong>DeepSeek</strong>
+- Focus: Engineering + Implementation Details
+- Key Contribution: Definition of Done + Prometheus metrics from Day 1
+- Quote: <em>"'Podemos hacerlo luego' debe ser vuestro mantra."</em></p>
+<p><strong>Gemini</strong> (Google)
+- Focus: Mathematics + Production Readiness
+- Key Contribution: Domain shift warning in PCA training
+- Quote: <em>"Necesitamos ver ese PCA funcionando con datos reales para validar que no perdemos la varianza del ataque."</em></p>
+<p><strong>GLM-4.7</strong> (Zhipu AI)
+- Focus: Conservatism + Quality Assurance
+- Key Contribution: 19-week conservative timeline + rule-based extraction
+- Quote: <em>"LLM para la intención, Código para la precisión."</em></p>
+<p><strong>Grok</strong> (xAI)
+- Focus: Distributed Systems + ML at Scale
+- Key Contribution: Hybrid aggregation strategy + energy cost analysis
+- Quote: <em>"8.5/10 - Fuerte para pre-implementation."</em></p>
+<p><strong>Qwen</strong> (Alibaba)
+- Focus: Technical Depth + CERN/ESA Philosophy
+- Key Contribution: Preflight checks + Via Appia Quality validation
+- Quote: <em>"Esto no es feature engineering. Es ingeniería de sistemas con conciencia crítica."</em></p>
+<h3 id="consensus-analysis">📊 Consensus Analysis</h3>
+<h4 id="strong-consensus-66">Strong Consensus (6/6)</h4>
+<ol>
+<li><strong>Separate Indices for Multi-tenancy</strong>: Physical isolation mandatory for healthcare/GDPR</li>
+<li><strong>Batch Nightly Aggregation</strong>: Simplicity over complexity for Phase 2</li>
+<li><strong>Industry-Agnostic Design</strong>: Critical correction - not hospital-only</li>
+<li><strong>Component Separation</strong>: RAG vs FAISS-Ingester architecture validated</li>
+</ol>
+<h4 id="majority-consensus-56">Majority Consensus (5/6)</h4>
+<ol>
+<li><strong>Timeline 17 weeks</strong>: Realistic with buffer (GLM voted 19 weeks)</li>
+<li><strong>Anti-Curse as Primary Contribution</strong>: Mathematical depth for Tier 1 paper</li>
+</ol>
+<h4 id="divided-opinion-33">Divided Opinion (3/3)</h4>
+<ol>
+<li><strong>Synthetic Cold Start</strong>:<ul>
+<li>PRO (ChatGPT, Grok, Qwen): Better UX, immediate testing</li>
+<li>CONTRA (DeepSeek, GLM, Gemini): Honesty over convenience</li>
+<li><strong>Resolution</strong>: Hybrid with explicit disclaimers and kill-switch</li>
+</ul>
+</li>
+</ol>
+<h3 id="critical-changes-applied-v10-v20">🔧 Critical Changes Applied (v1.0 → v2.0)</h3>
+<ol>
+<li><strong>Nomenclature Generalization</strong></li>
+</ol>
+<pre><code>   BEFORE: hospital/planta/paciente
+   AFTER:  organization/site/zone
+</code></pre>
+<ol>
+<li><strong>Query Processing Strategy</strong></li>
+</ol>
+<pre><code>   BEFORE: TinyLlama only
+   AFTER:  Hybrid (TinyLlama intent + Regex entities)
+</code></pre>
+<ol>
+<li><strong>Paper Structure</strong></li>
+</ol>
+<pre><code>   BEFORE: Holistic (all contributions equal)
+   AFTER:  Anti-Curse primary, Hierarchical secondary
+</code></pre>
+<ol>
+<li><strong>Telemetry</strong></li>
+</ol>
+<pre><code>   BEFORE: Phase 2
+   AFTER:  Prometheus from Day 1
+</code></pre>
+<ol>
+<li><strong>Multi-tenancy</strong></li>
+</ol>
+<pre><code>   BEFORE: Multiple options discussed
+   AFTER:  Separate Indices OBLIGATORY
+</code></pre>
+<h3 id="documents">📄 Documents</h3>
+<ul>
+<li><strong><a href="00-HIERARCHICAL_RAG_VISION-v1.0/">00-HIERARCHICAL_RAG_VISION-v1.0.md</a></strong> - Original design document</li>
+<li><strong><a href="01-PEER_REVIEW_SYNTHESIS/">01-PEER_REVIEW_SYNTHESIS.md</a></strong> - Complete synthesis by Claude (15 pages)</li>
+<li><strong><a href="./02-responses/">02-responses/</a></strong> - Individual reviewer feedback<ul>
+<li><a href="02-responses/chatgpt5-response/">chatgpt5-response.md</a></li>
+<li><a href="02-responses/deepseek-response/">deepseek-response.md</a></li>
+<li><a href="02-responses/gemini-response/">gemini-response.md</a></li>
+<li><a href="02-responses/glm-response/">glm-response.md</a></li>
+<li><a href="02-responses/grok-response/">grok-response.md</a></li>
+<li><a href="02-responses/qwen-response/">qwen-response.md</a></li>
+</ul>
+</li>
+<li><strong><a href="03-FINAL_VALIDATION/">03-FINAL_VALIDATION.md</a></strong> - Validation responses to synthesis</li>
+<li><strong><a href="04-HIERARCHICAL_RAG_VISION-v2.0/">04-HIERARCHICAL_RAG_VISION-v2.0.md</a></strong> - Final approved design</li>
+</ul>
+<h3 id="lessons-learned">🎓 Lessons Learned</h3>
+<ol>
+<li><strong>Honest Error Recognition</strong>: Documenting initial design mistakes (Part I) was valued by all reviewers</li>
+<li><strong>Scope Control</strong>: Phase 1 MVP focus prevents scope creep</li>
+<li><strong>Via Appia Quality</strong>: "Foundation first, expansion later" validated by entire council</li>
+<li><strong>Industry Generalization</strong>: Critical insight - don't lock design to single domain</li>
+<li><strong>Hybrid Approaches</strong>: Combining deterministic (Regex) + probabilistic (LLM) for robustness</li>
+</ol>
+<h3 id="next-steps">🚀 Next Steps</h3>
+<p><strong>Immediate (Day 35)</strong>:
+1. ✅ Run preflight check script
+2. ✅ Implement DimensionalityReducer with faiss::PCAMatrix
+3. ✅ Train PCA with balanced multi-source data
+4. ✅ Validate variance preservation ≥96%</p>
+<p><strong>Week 6-10</strong>:
+- FAISS Ingester service implementation
+- RAG Local + TinyLlama integration
+- Natural language query processing
+- Integration testing</p>
+<p><strong>Week 13-15</strong>:
+- Paper writing (IEEE S&amp;P format)
+- Experimental validation
+- Submission preparation</p>
+<h3 id="references">📚 References</h3>
+<ul>
+<li><strong>FAISS_ANTI_CURSE_DESIGN.md v2.0</strong> - Anti-curse strategies foundation</li>
+<li><strong>Via Appia Quality Philosophy</strong> - Design principles applied throughout</li>
+<li><strong>ML Defender Phase 1 Plan</strong> - Integration with existing system</li>
+</ul>
+<h3 id="via-appia-quality-statement">🏛️ Via Appia Quality Statement</h3>
+<blockquote>
+<p>"Este peer review representa más que validación técnica. Es un compromiso colectivo con la honestidad intelectual: admitir errores, celebrar correcciones, y construir sistemas que duren décadas.</p>
+<p>Seis sistemas de IA, cada uno con fortalezas diferentes, alcanzaron consenso unánime: el diseño es sólido, la visión es clara, y la ejecución es viable.</p>
+<p>Como las piedras de la Via Appia, este diseño está construido para perdurar." 🏛️</p>
+</blockquote>
+<h3 id="impact">📈 Impact</h3>
+<p><strong>Technical</strong>:
+- First hierarchical RAG architecture for distributed security
+- Novel anti-curse strategies validated for security vectors
+- Production-ready design with realistic cost projections</p>
+<p><strong>Academic</strong>:
+- Target: IEEE S&amp;P / NDSS / CCS (Tier 1)
+- Novel contributions in 3 areas
+- Real-world validation with hospital data</p>
+<p><strong>Social</strong>:
+- Democratizes enterprise-grade security for vulnerable organizations
+- Industry-agnostic benefits entire critical infrastructure sector
+- Ethical stance: explicit military exclusion</p>
+<hr />
+<p><strong>Status</strong>: ✅ PEER REVIEW CLOSED<br />
+<strong>Outcome</strong>: UNANIMOUS APPROVAL (6/6)<br />
+<strong>Next</strong>: Day 35 Implementation 🚀</p>
+<p><strong>Signed</strong>:
+- ChatGPT-5 ✓
+- DeepSeek ✓
+- Gemini ✓
+- GLM-4.7 ✓
+- Grok ✓
+- Qwen ✓
+- Claude (Secretary) ✓
+- Alonso García (Lead Developer) ✓</p>
+<p><strong>Date</strong>: January 07, 2026<br />
+<strong>Location</strong>: Murcia, Spain<br />
+<strong>Project</strong>: ML Defender - Phase 2A (Hierarchical RAG)</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.tabs", "navigation.top", "search.highlight"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

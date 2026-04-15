@@ -1,0 +1,1325 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source embedded-ML NDR for hospitals and schools">
+      
+      
+        <meta name="author" content="Alonso Isidoro Roman">
+      
+      
+        <link rel="canonical" href="https://alonsoir.github.io/argus/ml-features/implementation_roadmap/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>docs/ml-features/implementation_roadmap.md - ML Defender (aRGus NDR)</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#docsml-featuresimplementation_roadmapmd" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-header__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ML Defender (aRGus NDR)
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              docs/ml-features/implementation_roadmap.md
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../README.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/BACKLOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Backlog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Security Model
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-tabs__link">
+          
+  
+  
+  ADRs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/contracts/Protobuf contracts.md" class="md-tabs__link">
+          
+  
+  
+  Contracts
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-nav__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ML Defender (aRGus NDR)
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../README.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/BACKLOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADRs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ADRs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013 Seed Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-021-deployment-topology-seed-families.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-021 Topology SSOT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-022-threat-model-opcion2-descartada.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-022 Threat Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Protobuf contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protobuf
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/JSON contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JSON
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Rag security commands.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="docsml-featuresimplementation_roadmapmd">docs/ml-features/implementation_roadmap.md</h1>
+<h1 id="ransomware-detection-implementation-roadmap">Ransomware Detection - Implementation Roadmap</h1>
+<h2 id="from-feature-design-to-operational-model">From Feature Design to Operational Model</h2>
+<p><strong>Status:</strong> Design Complete ✅ | Implementation Pending ⏳<br />
+<strong>Target:</strong> Operational Level 3 ransomware detector in 2-3 weeks<br />
+<strong>Hardware:</strong> Raspberry Pi 4 (1-4GB RAM)  </p>
+<hr />
+<h2 id="what-we-just-designed">📋 What We Just Designed</h2>
+<h3 id="features-defined">✅ Features Defined</h3>
+<ul>
+<li><strong>20 critical features</strong> optimized for RPi</li>
+<li><strong>4 categories:</strong> C&amp;C, Lateral Movement, Exfiltration, Behavioral</li>
+<li><strong>Performance budget:</strong> &lt;500 µs inference, &lt;50 MB memory</li>
+</ul>
+<h3 id="files-created">✅ Files Created</h3>
+<ol>
+<li><code>ransomware_20_features_design.md</code> - Full design document</li>
+<li><code>ransomware_20_features.json</code> - JSON schema for sniffer</li>
+</ol>
+<hr />
+<h2 id="configuration-changes-needed">🔧 Configuration Changes Needed</h2>
+<h3 id="1-update-snifferjson">1. Update sniffer.json</h3>
+<p><strong>File:</strong> <code>sniffer/config/sniffer.json</code></p>
+<p><strong>Changes:</strong></p>
+<pre><code class="language-json">&quot;ransomware_feature_group&quot;: {
+  &quot;count&quot;: 20,  // ← Change from 83 to 20
+  &quot;reference&quot;: &quot;config/features/ransomware_20_features.json&quot;,  // ← Update path
+  &quot;description&quot;: &quot;Ransomware detection features (20 critical features for RPi)&quot;
+}
+</code></pre>
+<p><strong>Location to place JSON file:</strong></p>
+<pre><code class="language-bash">mkdir -p sniffer/config/features/
+cp ransomware_20_features.json sniffer/config/features/
+</code></pre>
+<h3 id="2-update-ml_detector_configjson">2. Update ml_detector_config.json</h3>
+<p><strong>File:</strong> <code>ml-detector/config/ml_detector_config.json</code></p>
+<p><strong>Changes:</strong></p>
+<pre><code class="language-json">&quot;level2&quot;: {
+  &quot;ransomware&quot;: {
+    &quot;enabled&quot;: false,  // ← Keep false until model is trained
+    &quot;name&quot;: &quot;ransomware_detector&quot;,
+    &quot;model_file&quot;: &quot;level2/ransomware_rf_20.onnx&quot;,  // ← New filename
+    &quot;features_count&quot;: 20,  // ← Change from 82 to 20
+    &quot;model_type&quot;: &quot;RandomForest&quot;,
+    &quot;description&quot;: &quot;Ransomware detection - RandomForest (20 features, RPi optimized)&quot;,
+    &quot;requires_scaling&quot;: false,
+    &quot;timeout_ms&quot;: 10
+  }
+}
+</code></pre>
+<hr />
+<h2 id="implementation-phases">🏗️ Implementation Phases</h2>
+<h3 id="phase-1-feature-extraction-infrastructure-week-1">Phase 1: Feature Extraction Infrastructure (Week 1)</h3>
+<p><strong>Goal:</strong> Sniffer can extract all 20 features</p>
+<h4 id="11-add-data-structures-to-sniffer">1.1 Add Data Structures to Sniffer</h4>
+<p><strong>New classes needed:</strong></p>
+<pre><code class="language-cpp">// sniffer/src/flow_tracker.hpp
+class FlowTracker {
+    struct FlowKey {
+        uint32_t src_ip, dst_ip;
+        uint16_t src_port, dst_port;
+        uint8_t protocol;
+    };
+
+    struct FlowStats {
+        uint64_t bytes_sent, bytes_received;
+        uint32_t packets_sent, packets_received;
+        uint64_t start_time_ns, last_seen_ns;
+        uint16_t tcp_flags;  // Bitmask of all flags seen
+    };
+
+    std::unordered_map&lt;FlowKey, FlowStats&gt; flows_;
+
+public:
+    void update_flow(const Packet&amp; pkt);
+    FlowStats* get_flow(const FlowKey&amp; key);
+    void cleanup_expired_flows(uint64_t timeout_ns);
+    size_t get_flow_count() const;
+};
+</code></pre>
+<pre><code class="language-cpp">// sniffer/src/ip_whitelist.hpp
+class IPWhitelist {
+    struct IPEntry {
+        uint32_t ip;
+        uint64_t last_seen_timestamp;
+    };
+
+    // LRU cache of 10K IPs
+    std::unordered_map&lt;uint32_t, uint64_t&gt; seen_ips_;
+
+public:
+    bool is_known_ip(uint32_t ip);
+    void add_ip(uint32_t ip, uint64_t timestamp);
+    size_t count_new_ips_in_window(uint64_t window_start);
+    void evict_old_entries(uint64_t cutoff_timestamp);
+};
+</code></pre>
+<pre><code class="language-cpp">// sniffer/src/dns_analyzer.hpp
+class DNSAnalyzer {
+    struct DNSQuery {
+        std::string query_name;
+        uint64_t timestamp;
+        bool success;  // true = got response, false = NXDOMAIN
+    };
+
+    std::deque&lt;DNSQuery&gt; recent_queries_;  // Ring buffer, 1K entries
+
+public:
+    void add_query(const std::string&amp; name, uint64_t timestamp, bool success);
+    float calculate_entropy();  // Shannon entropy of query names
+    float get_query_rate_per_minute();
+    float get_failure_ratio();
+};
+</code></pre>
+<pre><code class="language-cpp">// sniffer/src/time_window_aggregator.hpp
+class TimeWindowAggregator {
+    struct WindowFeatures {
+        // All 20 features aggregated over window
+        float dns_query_entropy;
+        int new_external_ips_30s;
+        float dns_query_rate_per_min;
+        // ... etc for all 20 features
+    };
+
+    WindowFeatures aggregate_features(uint64_t window_start, uint64_t window_end);
+
+private:
+    FlowTracker&amp; flow_tracker_;
+    IPWhitelist&amp; ip_whitelist_;
+    DNSAnalyzer&amp; dns_analyzer_;
+    // ... etc
+};
+</code></pre>
+<h4 id="12-implement-feature-extraction-functions">1.2 Implement Feature Extraction Functions</h4>
+<p><strong>Priority order:</strong>
+1. <strong>Phase 1A (Critical):</strong> Features 1, 2, 7
+   - <code>dns_query_entropy</code> - Requires DNS parsing
+   - <code>new_external_ips_30s</code> - Requires IP whitelist
+   - <code>smb_connection_diversity</code> - Requires port detection</p>
+<ol>
+<li><strong>Phase 1B (High):</strong> Features 3, 4, 9, 11, 13, 17</li>
+<li>DNS rates, failed queries</li>
+<li>New internal connections</li>
+<li>Upload/download ratios</li>
+<li>
+<p>Protocol diversity</p>
+</li>
+<li>
+<p><strong>Phase 1C (Medium):</strong> Remaining features</p>
+</li>
+</ol>
+<h4 id="13-add-protobuf-fields-if-needed">1.3 Add Protobuf Fields (if needed)</h4>
+<p><strong>Check:</strong> Does <code>NetworkFeatures</code> in protobuf have fields for all 20 features?</p>
+<p>If not, add to <code>protobuf/network_event.proto</code>:</p>
+<pre><code class="language-protobuf">message RansomwareFeatures {
+  // C&amp;C Communication
+  float dns_query_entropy = 1;
+  int32 new_external_ips_30s = 2;
+  float dns_query_rate_per_min = 3;
+  float failed_dns_queries_ratio = 4;
+  int32 tls_self_signed_cert_count = 5;
+  int32 non_standard_port_http_count = 6;
+
+  // Lateral Movement
+  int32 smb_connection_diversity = 7;
+  int32 rdp_failed_auth_count = 8;
+  int32 new_internal_connections_30s = 9;
+  float port_scan_pattern_score = 10;
+
+  // Exfiltration
+  float upload_download_ratio_30s = 11;
+  int32 burst_connections_count = 12;
+  int32 unique_destinations_30s = 13;
+  int32 large_upload_sessions_count = 14;
+
+  // Behavioral
+  bool nocturnal_activity_flag = 15;
+  float connection_rate_stddev = 16;
+  float protocol_diversity_score = 17;
+  float avg_flow_duration_seconds = 18;
+  float tcp_rst_ratio = 19;
+  float syn_without_ack_ratio = 20;
+}
+
+// Add to NetworkFeatures message:
+message NetworkFeatures {
+  // ... existing fields ...
+  RansomwareFeatures ransomware = 100;  // New field
+}
+</code></pre>
+<h4 id="14-testing-strategy">1.4 Testing Strategy</h4>
+<p><strong>Unit tests for each component:</strong></p>
+<pre><code class="language-bash"># Test flow tracker
+./tests/test_flow_tracker
+# Expected: Can track 100K flows, cleanup works, no memory leaks
+
+# Test IP whitelist
+./tests/test_ip_whitelist
+# Expected: LRU eviction works, can handle 10K IPs
+
+# Test DNS analyzer
+./tests/test_dns_analyzer
+# Expected: Entropy calculation correct, query rate accurate
+
+# Test time window aggregator
+./tests/test_time_window_aggregator
+# Expected: All 20 features extracted correctly from sample PCAP
+</code></pre>
+<p><strong>Integration test:</strong></p>
+<pre><code class="language-bash"># Run sniffer with test PCAP
+./build/sniffer --config config/sniffer.json --input-pcap tests/data/ransomware_sample.pcap
+
+# Expected output:
+# - All 20 features populated
+# - No segfaults
+# - Memory usage &lt;10 MB
+# - Processing time &lt;1ms per packet
+</code></pre>
+<hr />
+<h3 id="phase-2-dataset-preparation-training-week-2">Phase 2: Dataset Preparation &amp; Training (Week 2)</h3>
+<h4 id="21-download-datasets">2.1 Download Datasets</h4>
+<p><strong>Ransomware samples:</strong></p>
+<pre><code class="language-bash">cd ml-training/datasets
+
+# CTU-13 Botnet Dataset
+wget https://www.stratosphereips.org/datasets-ctu13
+# Contains: Neris, Rbot, Virut, Menti, Sogou, Murlo, etc.
+
+# CIC-IDS2017 Dataset
+wget https://www.unb.ca/cic/datasets/ids-2017.html
+# Contains: DoS, DDoS, Brute Force, Web Attack, Infiltration, Botnet
+
+# Stratosphere IPS
+wget https://www.stratosphereips.org/datasets-malware
+# Contains: Recent malware captures including ransomware
+</code></pre>
+<p><strong>Benign samples:</strong></p>
+<pre><code class="language-bash"># Capture your own network (7 days minimum)
+sudo tcpdump -i eth0 -w benign_traffic.pcap -G 3600 -W 168
+
+# Or use public datasets:
+wget https://cloudstor.aarnet.edu.au/plus/s/2DhnLGDdEECo4ys  # UNSW-NB15
+</code></pre>
+<h4 id="22-feature-extraction-from-pcaps">2.2 Feature Extraction from PCAPs</h4>
+<p><strong>Create Python script:</strong> <code>ml-training/extract_features.py</code></p>
+<pre><code class="language-python">import pyshark
+import pandas as pd
+from pathlib import Path
+
+def extract_features_from_pcap(pcap_path):
+    &quot;&quot;&quot;
+    Extract all 20 ransomware features from PCAP file.
+
+    Returns: pandas DataFrame with columns:
+    - dns_query_entropy
+    - new_external_ips_30s
+    - ... (all 20 features)
+    - label (0=benign, 1=ransomware)
+    &quot;&quot;&quot;
+    # Use tshark to parse PCAP
+    cap = pyshark.FileCapture(pcap_path, display_filter='ip')
+
+    # Aggregate over 30-second windows
+    features = []
+
+    for window_start in range(0, total_duration, 30):
+        window_features = compute_features_for_window(
+            cap, window_start, window_start + 30
+        )
+        features.append(window_features)
+
+    return pd.DataFrame(features)
+
+# Process all PCAPs
+benign_df = extract_features_from_pcap('benign_traffic.pcap')
+benign_df['label'] = 0
+
+ransomware_df = extract_features_from_pcap('ransomware_traffic.pcap')
+ransomware_df['label'] = 1
+
+# Combine and save
+df = pd.concat([benign_df, ransomware_df])
+df.to_csv('ransomware_training_data.csv', index=False)
+</code></pre>
+<p><strong>Run feature extraction:</strong></p>
+<pre><code class="language-bash">cd ml-training
+python extract_features.py --input datasets/ctu13/ --output data/ctu13_features.csv
+python extract_features.py --input datasets/cicids/ --output data/cicids_features.csv
+python extract_features.py --input datasets/benign/ --output data/benign_features.csv
+
+# Combine all features
+python combine_datasets.py --output data/final_training_data.csv
+</code></pre>
+<p><strong>Expected output:</strong>
+- CSV file with ~100K rows (samples)
+- 20 feature columns + 1 label column
+- Balanced classes (50% benign, 50% ransomware)</p>
+<h4 id="23-train-randomforest-model">2.3 Train RandomForest Model</h4>
+<p><strong>Create training script:</strong> <code>ml-training/train_ransomware_rf.py</code></p>
+<pre><code class="language-python">import pandas as pd
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import classification_report, confusion_matrix
+import skl2onnx
+from skl2onnx import convert_sklearn
+from skl2onnx.common.data_types import FloatTensorType
+
+# Load data
+df = pd.read_csv('data/final_training_data.csv')
+
+# Split features and labels
+X = df.drop('label', axis=1)
+y = df['label']
+
+# Train/test split
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.2, random_state=42, stratify=y
+)
+
+# Train model
+model = RandomForestClassifier(
+    n_estimators=100,
+    max_depth=10,
+    min_samples_split=20,
+    random_state=42,
+    n_jobs=-1
+)
+
+model.fit(X_train, y_train)
+
+# Evaluate
+y_pred = model.predict(X_test)
+print(classification_report(y_test, y_pred))
+print(confusion_matrix(y_test, y_pred))
+
+# Export to ONNX
+initial_type = [('float_input', FloatTensorType([None, 20]))]
+onnx_model = convert_sklearn(model, initial_types=initial_type)
+
+with open('ransomware_rf_20.onnx', 'wb') as f:
+    f.write(onnx_model.SerializeToString())
+</code></pre>
+<p><strong>Run training:</strong></p>
+<pre><code class="language-bash">cd ml-training
+python train_ransomware_rf.py
+
+# Expected output:
+#               precision    recall  f1-score   support
+#            0       0.96      0.97      0.97     10000
+#            1       0.97      0.96      0.97     10000
+#
+#     accuracy                           0.97     20000
+</code></pre>
+<p><strong>Copy model to production:</strong></p>
+<pre><code class="language-bash">cp ransomware_rf_20.onnx ../ml-detector/models/production/level2/
+</code></pre>
+<hr />
+<h3 id="phase-3-integration-testing-week-3">Phase 3: Integration &amp; Testing (Week 3)</h3>
+<h4 id="31-enable-ransomware-model-in-ml-detector">3.1 Enable Ransomware Model in ml-detector</h4>
+<p><strong>Update config:</strong></p>
+<pre><code class="language-json">&quot;level2&quot;: {
+  &quot;ransomware&quot;: {
+    &quot;enabled&quot;: true,  // ← Enable it!
+    &quot;name&quot;: &quot;ransomware_detector&quot;,
+    &quot;model_file&quot;: &quot;level2/ransomware_rf_20.onnx&quot;,
+    &quot;features_count&quot;: 20,
+    &quot;model_type&quot;: &quot;RandomForest&quot;,
+    &quot;description&quot;: &quot;Ransomware detection - RandomForest (20 features)&quot;,
+    &quot;requires_scaling&quot;: false,
+    &quot;timeout_ms&quot;: 10
+  }
+}
+</code></pre>
+<p><strong>Rebuild ml-detector:</strong></p>
+<pre><code class="language-bash">cd ml-detector
+make clean
+make rebuild
+</code></pre>
+<h4 id="32-end-to-end-testing">3.2 End-to-End Testing</h4>
+<p><strong>Test 1: Benign Traffic</strong></p>
+<pre><code class="language-bash"># Terminal 1
+make run-detector
+
+# Terminal 2
+make run-sniffer
+
+# Expected:
+# - Level 2 ransomware predictions: all ~0.0 (benign)
+# - No false positives
+# - Latency &lt;2ms
+</code></pre>
+<p><strong>Test 2: Ransomware Sample</strong></p>
+<pre><code class="language-bash"># Replay ransomware PCAP through sniffer
+tcpreplay -i eth0 tests/data/wannacry_capture.pcap
+
+# Expected:
+# - Level 2 ransomware predictions: &gt;0.75 (malicious)
+# - Detection within first 30 seconds
+# - Immediate alert triggered
+</code></pre>
+<p><strong>Test 3: Performance Under Load</strong></p>
+<pre><code class="language-bash"># Generate high traffic load
+hping3 -c 10000 -d 120 -S -w 64 -p 80 --flood target_ip
+
+# Expected:
+# - System remains stable
+# - No packet drops
+# - Latency &lt;5ms P99
+# - Memory usage &lt;200 MB
+</code></pre>
+<h4 id="33-tuning">3.3 Tuning</h4>
+<p><strong>Adjust thresholds if needed:</strong></p>
+<pre><code class="language-json">&quot;thresholds&quot;: {
+  &quot;level2_ransomware&quot;: 0.75,  // ← Start here, tune based on FPR
+}
+</code></pre>
+<p><strong>Tune based on metrics:</strong>
+- <strong>Too many false positives?</strong> Increase threshold to 0.8-0.85
+- <strong>Missing attacks?</strong> Decrease threshold to 0.65-0.7
+- <strong>Performance issues?</strong> Reduce feature count or increase window size</p>
+<hr />
+<h2 id="next-steps-for-integration-with-firewall">🚨 Next Steps for Integration with Firewall</h2>
+<h3 id="phase-4-firewall-acl-agent-future">Phase 4: Firewall ACL Agent (Future)</h3>
+<p><strong>When ransomware detected:</strong>
+1. ML-detector sends alert to firewall-acl-agent via ZMQ
+2. Firewall agent executes:
+   ```bash
+   # Kill existing connection
+   conntrack -D -s <malicious_ip></p>
+<p># Add to blocklist
+   nft add element inet filter blocklist { <malicious_ip> }
+   ```
+3. Time to block: &lt;50 µs (per Parallels.ai recommendation)</p>
+<p><strong>Architecture:</strong></p>
+<pre><code>Sniffer → ML-Detector → [Ransomware Detected!] → Firewall-ACL-Agent
+                                ↓
+                        ZMQ message:
+                        {
+                          &quot;threat&quot;: &quot;ransomware&quot;,
+                          &quot;confidence&quot;: 0.89,
+                          &quot;src_ip&quot;: &quot;192.168.1.100&quot;,
+                          &quot;action&quot;: &quot;BLOCK_IMMEDIATELY&quot;
+                        }
+</code></pre>
+<hr />
+<h2 id="success-metrics">📊 Success Metrics</h2>
+<h3 id="phase-1-complete-when">Phase 1 Complete When:</h3>
+<ul>
+<li>✅ All 20 features extracted correctly</li>
+<li>✅ Unit tests pass</li>
+<li>✅ Integration test with sample PCAP works</li>
+<li>✅ Memory usage &lt;10 MB</li>
+<li>✅ Processing time &lt;1ms per packet</li>
+</ul>
+<h3 id="phase-2-complete-when">Phase 2 Complete When:</h3>
+<ul>
+<li>✅ Dataset has &gt;50K ransomware samples</li>
+<li>✅ Dataset has &gt;50K benign samples</li>
+<li>✅ Model accuracy &gt;95%</li>
+<li>✅ False positive rate &lt;1%</li>
+<li>✅ ONNX model &lt;50 MB</li>
+</ul>
+<h3 id="phase-3-complete-when">Phase 3 Complete When:</h3>
+<ul>
+<li>✅ End-to-end pipeline works</li>
+<li>✅ Detects WannaCry in &lt;30 seconds</li>
+<li>✅ Zero false positives on 24h benign traffic</li>
+<li>✅ Latency P99 &lt;5ms</li>
+<li>✅ Memory total &lt;200 MB (sniffer + detector)</li>
+</ul>
+<hr />
+<h2 id="current-status">🎯 Current Status</h2>
+<p><strong>Today's output:</strong>
+- ✅ 20 features designed and documented
+- ✅ JSON schema created
+- ✅ Implementation plan defined
+- ⏳ Config updates pending
+- ⏳ Code implementation pending</p>
+<p><strong>Next session priorities:</strong>
+1. Update sniffer.json and ml_detector_config.json
+2. Implement FlowTracker class
+3. Implement DNSAnalyzer class
+4. Start Phase 1A feature extraction</p>
+<p><strong>Ready to start coding?</strong> Let's begin with the FlowTracker implementation! 🏛️</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.top", "search.highlight"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

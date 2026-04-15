@@ -1,0 +1,997 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source embedded-ML NDR for hospitals and schools">
+      
+      
+        <meta name="author" content="Alonso Isidoro Roman">
+      
+      
+        <link rel="canonical" href="https://alonsoir.github.io/argus/counsil/Consejo-ADR-30%20y%20ADR-31%20Respuesta_grok/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>Consejo ADR 30 y ADR 31 Respuesta grok - ML Defender (aRGus NDR)</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#puntos-fuertes-generales-ambas-adrs" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-header__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ML Defender (aRGus NDR)
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Consejo ADR 30 y ADR 31 Respuesta grok
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../README.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/BACKLOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Backlog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Security Model
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-tabs__link">
+          
+  
+  
+  ADRs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/contracts/Protobuf contracts.md" class="md-tabs__link">
+          
+  
+  
+  Contracts
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-nav__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ML Defender (aRGus NDR)
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../README.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/BACKLOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADRs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ADRs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013 Seed Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-021-deployment-topology-seed-families.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-021 Topology SSOT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-022-threat-model-opcion2-descartada.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-022 Threat Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Protobuf contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protobuf
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/JSON contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JSON
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Rag security commands.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#puntos-fuertes-generales-ambas-adrs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Puntos fuertes generales (ambas ADRs)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#opinion-especifica-sobre-adr-030-apparmor-hardened" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Opinión específica sobre ADR-030 (AppArmor-Hardened)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#opinion-especifica-sobre-adr-031-sel4-genode" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Opinión específica sobre ADR-031 (seL4-Genode)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#sugerencias-transversales" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Sugerencias transversales
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#conclusion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Conclusión
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+  <h1>Consejo ADR 30 y ADR 31 Respuesta grok</h1>
+
+<p>La división en <strong>ADR-030</strong> (pragmático, orientado a producción) y <strong>ADR-031</strong> (investigación pura) es una <strong>excelente decisión</strong>. Mejora mucho la claridad, evita mezclar objetivos contradictorios (producción vs. ciencia) y permite avanzar de forma más ordenada. Ambas ADRs están muy bien escritas, honestas y alineadas con la filosofía “La verdad por delante, siempre”.</p>
+<p>A continuación, mi opinión detallada con puntos fuertes, riesgos reales (basados en el estado actual de Genode/seL4 en 2026) y propuestas concretas de mejora.</p>
+<h3 id="puntos-fuertes-generales-ambas-adrs">Puntos fuertes generales (ambas ADRs)</h3>
+<ul>
+<li><strong>Separación clara de objetivos</strong>: ADR-030 es realista y accionable para hospitales/municipios con hardware modesto. ADR-031 es honesta sobre su carácter académico. Esto evita frustración futura.</li>
+<li><strong>Axioma operativo compartido</strong> — muy potente y realista.</li>
+<li><strong>TCB explícito</strong> en ambas — gran madurez. Especialmente bueno en ADR-031 al distinguir TCB del supervisor vs. guest.</li>
+<li><strong>Mitigación concreta del bug AppArmor (CrackArmor / confused deputy)</strong> en ADR-030 → excelente, cierra directamente el vector documentado por Qualys en marzo 2026.</li>
+<li><strong>Benchmarks comparables</strong> entre ambas (mismo workload CTU-13 Neris) → permite una comparación científica limpia.</li>
+<li><strong>Criterios de viabilidad y aceptación de resultados negativos</strong> — muy profesional.</li>
+<li><strong>Notas finales</strong> — refuerzan la ética del proyecto.</li>
+</ul>
+<h3 id="opinion-especifica-sobre-adr-030-apparmor-hardened">Opinión específica sobre ADR-030 (AppArmor-Hardened)</h3>
+<p><strong>Muy sólido y listo para avanzar</strong> (con pequeños ajustes).</p>
+<p><strong>Fortalezas</strong>:
+- Enfoque incremental y productizable.
+- Perfiles AppArmor + deny explícito a apparmor_parser y /sys/kernel/security/apparmor/** es una mitigación inteligente y directa del CrackArmor.
+- Flags de kernel y compilación del pipeline bien elegidos.
+- Vagrant + bare-metal Raspberry Pi es un plan realista.</p>
+<p><strong>Mejoras recomendadas</strong>:
+1. <strong>Kernel version</strong>: Debian 13 (Trixie) se liberó en agosto 2025 con kernel 6.12 LTS y ya está en 13.4 (marzo 2026). Usa <strong>6.12</strong> como base (no menciones 6.12 como si fuera futuro). Si hay backports necesarios para drivers ARM64 específicos de Pi 4/5, menciónalo como riesgo menor.
+2. <strong>Umbrales de viabilidad</strong>: Subir ligeramente el throughput a <strong>&gt; 70-75%</strong> es razonable, pero considera añadir un umbral más suave para entornos sanitarios de baja velocidad de red (ej. &lt; 1 Gbps). Por ejemplo: “Viable para enlaces ≤ 500 Mbps si latencia p50 &lt; 1.5x y drop rate &lt; 0.1%”.
+3. <strong>Añadir una métrica</strong>: “<strong>Superficie de ataque reducida</strong>” (número de syscalls permitidas por seccomp, número de perfiles AppArmor, servicios deshabilitados). Es fácil de medir y muy comunicable.
+4. <strong>En Alternativas consideradas</strong>: Puedes mencionar brevemente “Landlock + seccomp sin AppArmor” como opción aún más ligera (menor overhead, pero menos granular).</p>
+<p><strong>Riesgo menor</strong>: La calibración de perfiles AppArmor en modo complain requiere tiempo. Sugiero añadir en “Alcance” una fase explícita de “audit → generate → enforce” con herramientas como aa-genprof y aa-logprof.</p>
+<h3 id="opinion-especifica-sobre-adr-031-sel4-genode">Opinión específica sobre ADR-031 (seL4-Genode)</h3>
+<p><strong>Bien estructurada, pero con realismo técnico necesario</strong>. El spike técnico previo es <strong>imprescindible</strong> — has hecho bien en marcarlo como MUST.</p>
+<p><strong>Fortalezas</strong>:
+- Honestidad brutal sobre limitaciones (XDP casi seguro inviable, overhead esperado, TCB del guest sigue siendo Linux).
+- Distinción clara: seL4 protege el aislamiento del guest, pero no la integridad del guest.
+- Alternativas consideradas (DDE-Linux, componentes nativos Genode, etc.) son muy completas.
+- Infraestructura de validación con QEMU + KVM es correcta (Vagrant no sirve aquí).</p>
+<p><strong>Realismo técnico actual (abril 2026)</strong>:
+- Genode 26.02 ya existe y sigue avanzando (DDE-Linux actualizado a kernel 6.18, mejoras en VMs).
+- Soporte de <strong>Linux guest virtualizado</strong> sobre Genode+seL4 sigue siendo experimental en muchos escenarios, especialmente ARM64. En x86 es más maduro (Seoul VMM), pero en Raspberry Pi 5 el soporte de virtualización (EL2) está mejorando, aunque no es tan fluido como en x86.
+- <strong>XDP/eBPF en guest</strong>: Muy probable que no funcione nativamente. El datapath pasa por el supervisor Genode → fallback a libpcap (o posiblemente AF_XDP si hay algún bridge) es realista. Tu sección “Riesgo crítico: XDP” es perfecta y debe mantenerse fuerte.
+- Overhead: Tus estimaciones de 40-60% (o más en red) son conservadoras y realistas según literatura histórica de Genode/seL4 + VMs.</p>
+<p><strong>Mejoras recomendadas</strong>:
+1. <strong>Diagrama de stack</strong> → hazlo aún más preciso:
+   <code>┌─────────────────────────────────────────┐
+   │      aRGus NDR pipeline                 │
+   │      (adaptaciones mínimas documentadas)│
+   ├─────────────────────────────────────────┤
+   │  Linux guest (Debian 13 minimal)        │
+   │  kernel 6.12 LTS hardened               │
+   │  (VM via Seoul VMM u otro)              │
+   │  Red: fallback libpcap / virtio-net     │
+   ├─────────────────────────────────────────┤
+   │      Genode OS Framework                │
+   │      (capability-based, sandboxing)     │
+   ├─────────────────────────────────────────┤
+   │         seL4 Microkernel                │
+   │    (formalmente verificado)             │
+   └─────────────────────────────────────────┘</code>
+   Añade nota: “El Linux guest se ejecuta como VM no privilegiada. El supervisor Genode+seL4 proporciona aislamiento fuerte, pero el datapath de red pasa por virtualización.”</p>
+<ol>
+<li><strong>Spike técnico</strong> → amplía ligeramente los puntos a validar:</li>
+<li>Soporte concreto de virtualización en ARM64 (RPi5 preferida por mejor EL2).</li>
+<li>Posibilidad de pasar NIC vía passthrough o virtio-net de alto rendimiento.</li>
+<li>Comportamiento de dlopen(), ZeroMQ y ONNX Runtime en el guest.</li>
+<li>
+<p>Overhead baseline solo de red (iperf3 + pktgen) antes de meter aRGus completo.</p>
+</li>
+<li>
+<p><strong>En Riesgos</strong> → añade:</p>
+</li>
+<li>Soporte de seL4/Genode en Raspberry Pi 5 sigue siendo más limitado que en x86 (virtualización dinámica menos madura en 2026).</li>
+<li>
+<p>Mantenimiento: actualizaciones de Genode/seL4 requieren recompilación completa de la imagen y re-validación del guest.</p>
+</li>
+<li>
+<p><strong>Métricas</strong> → está bien que sean “documentar” en vez de umbrales duros. Añade opcionalmente “<strong>Tamaño del TCB supervisor</strong> (líneas de código efectivas de seL4 + componentes Genode críticos)” como métrica cualitativa.</p>
+</li>
+<li>
+<p><strong>Estado en roadmap</strong>: Está correcto que se active <strong>después de ADR-030</strong>. El baseline de AppArmor-Hardened será oro para comparar.</p>
+</li>
+</ol>
+<h3 id="sugerencias-transversales">Sugerencias transversales</h3>
+<ul>
+<li><strong>Consistencia entre ADRs</strong>:</li>
+<li>Usa el mismo nombre exacto para el workload (“CTU-13 Neris pcap replay con tráfico sintético 60/30/10”).</li>
+<li>En ambas, menciona explícitamente que los resultados se publicarán (paper, blog, repositorio reproducible) independientemente del outcome.</li>
+<li><strong>Hardware</strong>: Raspberry Pi 5 es claramente la mejor opción para ADR-031 (mejor soporte virtualización). Para ADR-030, Pi 4/5 son equivalentes.</li>
+<li><strong>Futuro a largo plazo</strong> (puedes añadir una nota compartida): Si ADR-031 muestra overhead inaceptable, el siguiente paso lógico sería portar componentes críticos (sniffer, detector ML) como componentes nativos Genode (sin Linux guest), reduciendo aún más el TCB.</li>
+</ul>
+<h3 id="conclusion">Conclusión</h3>
+<ul>
+<li><strong>ADR-030</strong>: Casi listo para pasar a <strong>PROPOSED</strong>. Es la variante que realmente puede llegar a producción en hardware realista.</li>
+<li><strong>ADR-031</strong>: Excelente como investigación. El spike decidirá si vale la pena invertir más o si el resultado negativo ya es una contribución valiosa por sí solo (“las garantías formales cuestan X en rendimiento hoy”).</li>
+</ul>
+<p>La pareja de ADRs posiciona muy bien a <strong>aRGus</strong> como proyecto serio que responde con ingeniería + ciencia a amenazas reales como Mythos Preview y CrackArmor.</p>
+<p>¿Quieres que te re-escriba alguna sección concreta (por ejemplo, el diagrama de stack, la sección de Riesgos de ADR-031, o el spike técnico)? ¿O prefieres que preparemos el template del informe del spike para ADR-031?</p>
+<p>Estoy listo para la siguiente iteración. ¡Buen trabajo!</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.top", "search.highlight"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

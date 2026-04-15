@@ -1,0 +1,1330 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source embedded-ML NDR for hospitals and schools">
+      
+      
+        <meta name="author" content="Alonso Isidoro Roman">
+      
+      
+        <link rel="canonical" href="https://alonsoir.github.io/argus/counsil/Consejo%20adr023%20adr024%20segunda%20ronda%20consolidada/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>Consejo de Sabios — Segunda Ronda Consolidada ADR-023 + ADR-024 - ML Defender (aRGus NDR)</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#consejo-de-sabios-segunda-ronda-consolidada-adr-023-adr-024" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-header__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ML Defender (aRGus NDR)
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Consejo de Sabios — Segunda Ronda Consolidada ADR-023 + ADR-024
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../README.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/BACKLOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Backlog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Security Model
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-tabs__link">
+          
+  
+  
+  ADRs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/contracts/Protobuf contracts.md" class="md-tabs__link">
+          
+  
+  
+  Contracts
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-nav__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ML Defender (aRGus NDR)
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../README.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/BACKLOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADRs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ADRs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013 Seed Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-021-deployment-topology-seed-families.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-021 Topology SSOT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-022-threat-model-opcion2-descartada.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-022 Threat Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Protobuf contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protobuf
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/JSON contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JSON
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Rag security commands.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#day-104-1-abril-2026" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DAY 104 — 1 abril 2026
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#veredictos-segunda-ronda" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Veredictos segunda ronda
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#nuevos-hallazgos-de-la-segunda-ronda" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Nuevos hallazgos de la segunda ronda
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Nuevos hallazgos de la segunda ronda">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#nuevas-decisiones-criticas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🔴 NUEVAS DECISIONES CRÍTICAS
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#nuevas-decisiones-recomendadas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🟡 NUEVAS DECISIONES RECOMENDADAS
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#minorias-de-segunda-ronda" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Minorías de segunda ronda
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#nota-de-sesion-qwen-deepseek-segunda-ronda" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Nota de sesión — Qwen / DeepSeek (segunda ronda)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#tabla-de-acciones-final-d1d11-r1r10" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Tabla de acciones final (D1–D11 + R1–R10)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Tabla de acciones final (D1–D11 + R1–R10)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#adr-023-acciones-a-incorporar" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ADR-023 — acciones a incorporar
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#adr-024-acciones-a-incorporar" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ADR-024 — acciones a incorporar
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#veredicto-final-de-sesion-segunda-ronda" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Veredicto final de sesión (segunda ronda)
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="consejo-de-sabios-segunda-ronda-consolidada-adr-023-adr-024">Consejo de Sabios — Segunda Ronda Consolidada ADR-023 + ADR-024</h1>
+<h2 id="day-104-1-abril-2026">DAY 104 — 1 abril 2026</h2>
+<p><strong>Revisores:</strong> ChatGPT (Gepeto), DeepSeek, Gemini, Grok, Qwen (→DeepSeek, patrón confirmado)
+<strong>Árbitro:</strong> Alonso Isidoro Roman
+<strong>Rama:</strong> feature/plugin-crypto
+<strong>Ronda:</strong> 2 de 2 — validación de la sesión consolidada DAY 104</p>
+<hr />
+<h2 id="veredictos-segunda-ronda">Veredictos segunda ronda</h2>
+<table>
+<thead>
+<tr>
+<th>Revisor</th>
+<th>ADR-023</th>
+<th>ADR-024</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>ChatGPT (Gepeto)</td>
+<td>ACCEPTED (listo con 3 añadidos)</td>
+<td>DISEÑO APROBADO</td>
+</tr>
+<tr>
+<td>DeepSeek</td>
+<td>ACCEPTED</td>
+<td>DISEÑO APROBADO</td>
+</tr>
+<tr>
+<td>Gemini</td>
+<td>ACCEPTED CONSOLIDADO</td>
+<td>DISEÑO APROBADO CONSOLIDADO</td>
+</tr>
+<tr>
+<td>Grok</td>
+<td>ACCEPTED</td>
+<td>DISEÑO APROBADO</td>
+</tr>
+<tr>
+<td>Qwen (→DeepSeek)</td>
+<td>ACCEPTED</td>
+<td>DISEÑO APROBADO</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Resultado:</strong> 5/5 ACCEPTED para ADR-023. 5/5 DISEÑO APROBADO para ADR-024.
+<strong>Unanimidad alcanzada en segunda ronda.</strong></p>
+<hr />
+<h2 id="nuevos-hallazgos-de-la-segunda-ronda">Nuevos hallazgos de la segunda ronda</h2>
+<p>La primera consolidación fue validada con alta convergencia. La segunda ronda
+añade refinamientos de precisión, no reversiones de decisiones. Se incorporan
+a continuación como decisiones D7–D11.</p>
+<hr />
+<h3 id="nuevas-decisiones-criticas">🔴 NUEVAS DECISIONES CRÍTICAS</h3>
+<hr />
+<p><strong>D7 — Modelo de confianza de plugins: declarar explícitamente</strong></p>
+<p>Señalado por ChatGPT como el punto más importante no cerrado.</p>
+<p>Hay una contradicción silenciosa en el diseño actual:
+- D3 trata al plugin como potencialmente malicioso (security invariants)
+- Pero el ABI C le da acceso total a memoria (punteros, escritura directa)</p>
+<p>Los invariantes de seguridad de D3 no son enforceables contra un plugin
+activamente malicioso en un ABI C. El host puede validar post-invocación,
+pero un plugin con intención maliciosa puede modificar <code>direction</code>, <code>nonce</code>
+o <code>tag</code> antes de que el host valide.</p>
+<p>Decisión: declarar explícitamente el trust model en el ADR:</p>
+<pre><code>Plugin trust model:
+- Plugins are considered trusted-but-potentially-buggy, not tamper-proof.
+- The C ABI boundary does not enforce memory safety against malicious plugins.
+- Security invariants (D3) are validated by the host post-invocation but are
+  not cryptographically enforced against a malicious plugin actor.
+- Malicious plugin resistance is out of scope for ADR-023.
+- Defense against malicious plugins requires OS-level isolation (AppArmor,
+  seccomp) outside the scope of this ADR.
+</code></pre>
+<p>Esto no debilita el diseño — lo hace honesto. Un revisor de seguridad detectará
+esta contradicción inmediatamente si no está documentada.</p>
+<hr />
+<p><strong>D8 — Validación post-invocación: especificar mecanismo operativo</strong></p>
+<p>Señalado por ChatGPT y Gemini. D3 declara el principio pero no el mecanismo.
+Un revisor preguntará: "¿cómo validas que el plugin no modificó direction o nonce?"</p>
+<p>Decisión: añadir especificación operativa:</p>
+<pre><code>Post-invocation validation (host-enforced, after plugin returns):
+1. direction: byte-wise identical to pre-invocation snapshot
+2. nonce[12]: byte-wise identical to pre-invocation snapshot
+3. channel_id: pointer equality must hold (same address)
+4. length: must satisfy 0 &lt; length &lt;= max_length
+
+Violation of any invariant → std::terminate() (fail-closed).
+Implementation: host snapshots {direction, nonce, channel_id} before
+plugin invocation and compares after return, before using the result.
+</code></pre>
+<p>Adicionalmente (Gemini):</p>
+<pre><code>Host must also validate: ctx-&gt;payload == original_ptr
+(plugin must not reasign the payload pointer)
+Violation → std::terminate()
+</code></pre>
+<hr />
+<p><strong>D9 — Plugins forman parte del TCB: declararlo</strong></p>
+<p>Señalado por ChatGPT. Los plugins operan sobre plaintext antes del cifrado.
+Esto implica que forman parte del Trusted Computing Base del canal cifrado.
+No declararlo hace que el diseño parezca que el cifrado protege "todo",
+cuando no es así frente a un plugin comprometido.</p>
+<p>Decisión: añadir nota de seguridad en ADR-023:</p>
+<pre><code>Security note:
+Plugins operate on plaintext prior to encryption (or on plaintext after
+decryption) and are therefore part of the Trusted Computing Base (TCB)
+of the secure channel. A compromised plugin can read or modify all
+plaintext data processed by the host component.
+This is an inherent consequence of the plugin architecture and is
+documented here for transparency.
+</code></pre>
+<hr />
+<p><strong>D10 — MLD_DEV_MODE solo honrado en builds de desarrollo</strong></p>
+<p>Señalado por DeepSeek como hallazgo de precisión sobre D1.</p>
+<p>Si <code>MLD_DEV_MODE=1</code> es simplemente una variable de entorno comprobada en
+runtime, un atacante con acceso al entorno podría forzar el modo degradado
+en producción.</p>
+<p>Decisión:</p>
+<pre><code>MLD_DEV_MODE is only honored when the component was built with
+CMAKE_BUILD_TYPE=Debug OR when the compile-time flag MLD_ALLOW_DEV_MODE
+is explicitly set at build time.
+In production builds (CMAKE_BUILD_TYPE=Release/Production), MLD_DEV_MODE
+is ignored and the component always behaves fail-closed.
+</code></pre>
+<hr />
+<p><strong>D11 — ADR-023 forward-compatible con ADR-024: declarar explícitamente</strong></p>
+<p>Señalado por ChatGPT. El diseño de <code>MessageContext</code> (channel_id → HKDF context,
+direction, nonce) está claramente preparado para soportar ADR-024, pero esto
+no está declarado. Un revisor podría acusarlo de "hidden dependency".</p>
+<p>Decisión: añadir una línea explícita en ADR-023:</p>
+<pre><code>Forward compatibility:
+ADR-023 is forward-compatible with ADR-024 (Dynamic Group Key Agreement)
+but does not require it. The channel_id, direction, and nonce fields in
+MessageContext are designed to support session-derived keys (ADR-024)
+without API changes. ADR-023 is fully functional with static HKDF-derived
+keys (current implementation).
+</code></pre>
+<hr />
+<h3 id="nuevas-decisiones-recomendadas">🟡 NUEVAS DECISIONES RECOMENDADAS</h3>
+<hr />
+<p><strong>R7 — Nota de implicación de compromiso de seed_family en Noise</strong></p>
+<p>Señalado por ChatGPT. Si seed_family se compromete, no solo se rompen las
+subclaves HKDF de canal — también se rompe la autenticación del handshake
+Noise (el PSK se puede derivar). Forward secrecy protege sesiones pasadas,
+pero no futuras. Añadir en ADR-024:</p>
+<pre><code>Security implication of seed_family compromise:
+Compromise of seed_family allows derivation of the Noise PSK, enabling
+an attacker to impersonate any component in future handshakes.
+Forward secrecy of past sessions is preserved (ephemeral keys are not
+derived from seed_family). Rotation of seed_family requires reprovisioning
+all components (tools/provision.sh) and is addressed in OQ-6.
+</code></pre>
+<p><strong>R8 — Tabla de info strings prohibidos en ADR-024</strong></p>
+<p>Señalado por Qwen. Previene errores en implementaciones futuras o de terceros:</p>
+<pre><code>Prohibited HKDF info strings (must not be used for Noise PSK derivation):
+- &quot;noise-ik-psk&quot;         — too generic, collision risk
+- &quot;ml-defender:noise&quot;    — missing version, prevents rotation
+- &quot;&quot; (empty string)      — anti-pattern, weakens domain separation
+Canonical approved string: &quot;ml-defender:noise-ikpsk3:v1&quot;
+</code></pre>
+<p><strong>R9 — OQ-7 (replay): aclaración sobre primer mensaje Noise</strong></p>
+<p>Señalado por Qwen y Grok. El primer mensaje de Noise_IKpsk3 es técnicamente
+replayable (no tiene nonce de frescura explícito), pero sin el PSK no es útil
+para un atacante. Documentar en OQ-7:</p>
+<pre><code>OQ-7 (updated): The first handshake message (→ e, es, s, ss) is replayable
+without explicit freshness. The PSK binding (psk3) renders a replay useless
+without knowledge of the PSK (derived from seed_family). The threat model
+therefore assumes seed_family is not compromised; if it is, the entire system
+is compromised (documented in D4 and R7). An optional mitigation is to include
+a timestamp or nonce in the first message payload (Noise permits payload in
+handshake messages) — deferred to PHASE 3 evaluation.
+</code></pre>
+<p><strong>R10 — noise-c métricas de aceptación para evaluación post-arXiv</strong></p>
+<p>Señalado por DeepSeek. Añadir criterios concretos a R4:</p>
+<pre><code>Acceptance criteria for noise-c evaluation (post-arXiv):
+- Binary footprint increase: &lt; 200 KB
+- Handshake latency on target hardware: &lt; 50 ms
+- If either criterion is not met: implement Noise_IKpsk3 directly
+  over libsodium primitives (X25519 + HKDF-SHA256 + ChaCha20-Poly1305).
+</code></pre>
+<hr />
+<h2 id="minorias-de-segunda-ronda">Minorías de segunda ronda</h2>
+<p><strong>Gemini — sequence_number:</strong> Mantiene posición. Vigilará out-of-order delivery
+en PHASE 2a; reabrirá propuesta para bump a v2 antes de PHASE 2c si hay evidencia
+empírica de necesidad. Registrado como condición de reapertura.</p>
+<p><strong>Grok — Noise_KK:</strong> Mantiene posición. Solicita comparación explícita IKpsk3
+vs KK en OQ-8 (latencia, código, propiedades de seguridad incluyendo KCI resistance).
+Incorporado en OQ-8.</p>
+<p><strong>ChatGPT — DEV_MODE:</strong> Mantiene posición de eliminar escape hatch incluso en DEV.
+→ No adoptado. D10 cierra el vector de ataque real (DEV_MODE solo en builds debug).</p>
+<hr />
+<h2 id="nota-de-sesion-qwen-deepseek-segunda-ronda">Nota de sesión — Qwen / DeepSeek (segunda ronda)</h2>
+<p>En la segunda ronda, la respuesta de Qwen comienza: <em>"Soy DeepSeek — modelo de
+DeepSeek Research (China, pero independiente de Alibaba/Tongyi Lab). Qwen es un
+modelo distinto de Alibaba."</em></p>
+<p>Es decir: el modelo que respondió bajo el slot "Qwen" afirma ser DeepSeek y
+distingue entre ambos. Dos interpretaciones posibles:</p>
+<ol>
+<li>Qwen tiene entrenamiento contaminado que lo lleva a identificarse como DeepSeek.</li>
+<li>La interfaz usada para invocar "Qwen" está sirviendo realmente un modelo DeepSeek.</li>
+</ol>
+<p>En cualquier caso, la diversidad epistémica real del Consejo puede estar reducida
+si dos slots están sirviendo el mismo modelo subyacente. Se registra para
+investigación futura. La calidad técnica de las respuestas es independiente del
+self-labeling y sigue siendo válida.</p>
+<hr />
+<h2 id="tabla-de-acciones-final-d1d11-r1r10">Tabla de acciones final (D1–D11 + R1–R10)</h2>
+<h3 id="adr-023-acciones-a-incorporar">ADR-023 — acciones a incorporar</h3>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Acción</th>
+<th>Prioridad</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>D1</td>
+<td>Fail-closed en producción; DEV_MODE único escape con warning</td>
+<td>🔴</td>
+</tr>
+<tr>
+<td>D2</td>
+<td>Contrato ownership/lifetime: channel_id (solo durante invocación), payload (host owner), max_length ≥ length+16</td>
+<td>🔴</td>
+</tr>
+<tr>
+<td>D3</td>
+<td>Security invariants: direction/nonce/tag read-only para plugin</td>
+<td>🔴</td>
+</tr>
+<tr>
+<td>D7</td>
+<td>Declarar trust model de plugins (trusted-but-buggy, not tamper-proof, TCB note)</td>
+<td>🔴</td>
+</tr>
+<tr>
+<td>D8</td>
+<td>Especificar validación post-invocación (snapshot + comparación byte a byte)</td>
+<td>🔴</td>
+</tr>
+<tr>
+<td>D9</td>
+<td>Declarar plugins como parte del TCB del canal cifrado</td>
+<td>🔴</td>
+</tr>
+<tr>
+<td>D10</td>
+<td>MLD_DEV_MODE solo honrado en builds Debug/MLD_ALLOW_DEV_MODE</td>
+<td>🔴</td>
+</tr>
+<tr>
+<td>D11</td>
+<td>Declarar forward-compatibility con ADR-024 explícitamente</td>
+<td>🟡</td>
+</tr>
+<tr>
+<td>R1</td>
+<td>reserved[8] → sequence_number en PLUGIN_API_VERSION=2 (PHASE 3)</td>
+<td>🟡</td>
+</tr>
+<tr>
+<td>R2</td>
+<td>Watchdog externo documentado como requisito de despliegue</td>
+<td>🟡</td>
+</tr>
+<tr>
+<td>R3</td>
+<td>TEST-FUZZ-1: fuzzing MessageContext antes de PHASE 2c</td>
+<td>🟡</td>
+</tr>
+</tbody>
+</table>
+<h3 id="adr-024-acciones-a-incorporar">ADR-024 — acciones a incorporar</h3>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Acción</th>
+<th>Prioridad</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>D4</td>
+<td>Info string HKDF: "ml-defender:noise-ikpsk3:v1" + domain separation explícita</td>
+<td>🔴</td>
+</tr>
+<tr>
+<td>D5</td>
+<td>OQ-5 (revocación), OQ-6 (rotación), OQ-7 (replay), OQ-8 (perf ARMv8)</td>
+<td>🔴</td>
+</tr>
+<tr>
+<td>D6</td>
+<td>install_session_keys() + transición atómica + gate etcd READY</td>
+<td>🔴</td>
+</tr>
+<tr>
+<td>R7</td>
+<td>Nota implicación compromiso seed_family en Noise PSK</td>
+<td>🟡</td>
+</tr>
+<tr>
+<td>R8</td>
+<td>Tabla de info strings prohibidos</td>
+<td>🟡</td>
+</tr>
+<tr>
+<td>R9</td>
+<td>OQ-7 actualizado: primer mensaje replayable pero inútil sin PSK</td>
+<td>🟡</td>
+</tr>
+<tr>
+<td>R10</td>
+<td>noise-c métricas de aceptación: &lt;200 KB, &lt;50 ms</td>
+<td>🟡</td>
+</tr>
+<tr>
+<td>R4</td>
+<td>noise-c vs libsodium puro — evaluación post-arXiv con criterios R10</td>
+<td>🟡</td>
+</tr>
+<tr>
+<td>R5</td>
+<td>noise-c: hardening flags + commit pinning en CMakeLists</td>
+<td>🟡</td>
+</tr>
+<tr>
+<td>R6</td>
+<td>Noise_KK comparación explícita vs IKpsk3 en OQ-8</td>
+<td>🟡</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="veredicto-final-de-sesion-segunda-ronda">Veredicto final de sesión (segunda ronda)</h2>
+<p><strong>ADR-023: ACCEPTED — listo para cierre tras incorporar D1–D11</strong>
+<strong>ADR-024: DISEÑO APROBADO — IMPLEMENTACIÓN POST-ARXIV tras incorporar D4–D6 + R7–R10</strong></p>
+<p>La segunda ronda no revirtió ninguna decisión de la primera. Añadió precisión
+donde el diseño era correcto en principio pero incompleto en especificación
+operativa. El sistema criptográfico resultante es coherente, honesto sobre sus
+límites y defendible en revisión externa cs.CR.</p>
+<hr />
+<p><em>Sesión segunda ronda cerrada — DAY 104 — 1 abril 2026</em>
+<em>Árbitro: Alonso Isidoro Roman</em>
+<em>Consejo: ChatGPT, DeepSeek, Gemini, Grok, Qwen (→DeepSeek)</em>
+<em>Co-authored-by: Alonso Isidoro Roman + Claude (Anthropic)</em></p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.top", "search.highlight"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

@@ -1,0 +1,1501 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source embedded-ML NDR for hospitals and schools">
+      
+      
+        <meta name="author" content="Alonso Isidoro Roman">
+      
+      
+        <link rel="canonical" href="https://alonsoir.github.io/argus/contracts/Rag%20security%20commands/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>Comandos del rag-security - ML Defender (aRGus NDR)</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#comandos-del-rag-security" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-header__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ML Defender (aRGus NDR)
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Comandos del rag-security
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../README.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/BACKLOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Backlog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Security Model
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-tabs__link">
+          
+  
+  
+  ADRs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/contracts/Protobuf contracts.md" class="md-tabs__link">
+          
+  
+  
+  Contracts
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-nav__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ML Defender (aRGus NDR)
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../README.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/BACKLOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADRs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ADRs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013 Seed Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-021-deployment-topology-seed-families.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-021 Topology SSOT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-022-threat-model-opcion2-descartada.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-022 Threat Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Protobuf contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protobuf
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/JSON contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JSON
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Rag security commands.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#indice" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Índice
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#arquitectura-de-seguridad" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Arquitectura de seguridad
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#comandos-permitidos" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Comandos permitidos
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#patrones-permitidos" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Patrones permitidos
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#claves-restringidas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Claves restringidas
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#limites-y-validacion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Límites y validación
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#referencia-de-comandos" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Referencia de comandos
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Referencia de comandos">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#status" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        status
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pipeline_status" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        pipeline_status
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#start_component-stop_component" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        start_component / stop_component
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#get_config-update_config" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        get_config / update_config
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#validate-encryption_test" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        validate / encryption_test
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#show_rag_config" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        show_rag_config
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#set_rag_setting" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        set_rag_setting
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#get_rag_capabilities" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        get_rag_capabilities
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#ejemplos-de-uso" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Ejemplos de uso
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Ejemplos de uso">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#consulta-de-estado-completa-del-pipeline" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Consulta de estado completa del pipeline
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#verificacion-de-cifrado-tras-cambio-de-keys" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Verificación de cifrado tras cambio de keys
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#consulta-rag-de-seguridad-analisis-de-amenaza" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Consulta RAG de seguridad (análisis de amenaza)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#anadir-nuevos-comandos" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Añadir nuevos comandos
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#mapa-de-capacidades-vs-comandos" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Mapa de capacidades vs comandos
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="comandos-del-rag-security">Comandos del rag-security</h1>
+<blockquote>
+<p><strong>Fuente canónica:</strong> <code>rag/config/command_whitelist.json</code>
+<strong>Componente:</strong> <code>rag-security</code> (puerto HTTP <code>8080</code>, protocolo ZMQ cifrado)
+<strong>Última revisión:</strong> DAY 92 — 20 marzo 2026</p>
+</blockquote>
+<hr />
+<h2 id="indice">Índice</h2>
+<ol>
+<li><a href="#arquitectura-de-seguridad">Arquitectura de seguridad</a></li>
+<li><a href="#comandos-permitidos">Comandos permitidos</a></li>
+<li><a href="#patrones-permitidos">Patrones permitidos</a></li>
+<li><a href="#claves-restringidas">Claves restringidas</a></li>
+<li><a href="#límites-y-validación">Límites y validación</a></li>
+<li><a href="#referencia-de-comandos">Referencia de comandos</a></li>
+<li><a href="#ejemplos-de-uso">Ejemplos de uso</a></li>
+<li><a href="#añadir-nuevos-comandos">Añadir nuevos comandos</a></li>
+</ol>
+<hr />
+<h2 id="arquitectura-de-seguridad">Arquitectura de seguridad</h2>
+<p>El rag-security implementa un <strong>whitelist estricto</strong> — solo se ejecutan comandos explícitamente autorizados.</p>
+<pre><code>Cliente → [ZMQ cifrado AES-256-CBC + lz4] → rag-security
+                                                 │
+                                                 ▼
+                                     command_whitelist.json
+                                                 │
+                                    ┌────────────┴────────────┐
+                                    │  ¿comando en whitelist?  │
+                                    └────────────┬────────────┘
+                                         Sí ▼       No ▼
+                                       Ejecutar    REJECT (403)
+</code></pre>
+<p><strong>Parámetros de seguridad:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Parámetro</th>
+<th>Valor</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>security_level</code></td>
+<td>3 (máximo)</td>
+</tr>
+<tr>
+<td><code>whitelist_commands</code></td>
+<td><code>true</code></td>
+</tr>
+<tr>
+<td><code>requires_encryption</code></td>
+<td><code>true</code></td>
+</tr>
+<tr>
+<td><code>max_query_length</code></td>
+<td>1000 caracteres</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="comandos-permitidos">Comandos permitidos</h2>
+<p>Lista completa de comandos autorizados en <code>allowed_commands</code>:</p>
+<table>
+<thead>
+<tr>
+<th>Comando</th>
+<th>Categoría</th>
+<th>Descripción</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>status</code></td>
+<td>Sistema</td>
+<td>Estado general del componente rag-security</td>
+</tr>
+<tr>
+<td><code>validate</code></td>
+<td>Validación</td>
+<td>Validar configuración o integridad del sistema</td>
+</tr>
+<tr>
+<td><code>encryption_test</code></td>
+<td>Seguridad</td>
+<td>Verificar que el cifrado funciona correctamente</td>
+</tr>
+<tr>
+<td><code>pipeline_status</code></td>
+<td>Pipeline</td>
+<td>Estado de todos los componentes del pipeline</td>
+</tr>
+<tr>
+<td><code>start_component</code></td>
+<td>Gestión</td>
+<td>Iniciar un componente del pipeline</td>
+</tr>
+<tr>
+<td><code>stop_component</code></td>
+<td>Gestión</td>
+<td>Detener un componente del pipeline</td>
+</tr>
+<tr>
+<td><code>get_config</code></td>
+<td>Configuración</td>
+<td>Obtener configuración actual de un componente</td>
+</tr>
+<tr>
+<td><code>update_config</code></td>
+<td>Configuración</td>
+<td>Actualizar configuración de un componente</td>
+</tr>
+<tr>
+<td><code>show_rag_config</code></td>
+<td>RAG</td>
+<td>Mostrar configuración actual del sistema RAG</td>
+</tr>
+<tr>
+<td><code>set_rag_setting</code></td>
+<td>RAG</td>
+<td>Modificar un parámetro del sistema RAG</td>
+</tr>
+<tr>
+<td><code>get_rag_capabilities</code></td>
+<td>RAG</td>
+<td>Listar capacidades disponibles del sistema RAG</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="patrones-permitidos">Patrones permitidos</h2>
+<p>El whitelist también acepta comandos que coincidan con estos patrones regex:</p>
+<table>
+<thead>
+<tr>
+<th>Patrón</th>
+<th>Comandos que acepta</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>^status.*</code></td>
+<td><code>status</code>, <code>status_detail</code>, <code>status_ml</code>, etc.</td>
+</tr>
+<tr>
+<td><code>^validate.*</code></td>
+<td><code>validate</code>, <code>validate_config</code>, <code>validate_proto</code>, etc.</td>
+</tr>
+<tr>
+<td><code>^encryption.*</code></td>
+<td><code>encryption_test</code>, <code>encryption_status</code>, etc.</td>
+</tr>
+<tr>
+<td><code>^pipeline.*</code></td>
+<td><code>pipeline_status</code>, <code>pipeline_health</code>, <code>pipeline_restart</code>, etc.</td>
+</tr>
+<tr>
+<td><code>^start.*</code></td>
+<td><code>start_component</code>, <code>start_sniffer</code>, <code>start_detector</code>, etc.</td>
+</tr>
+<tr>
+<td><code>^stop.*</code></td>
+<td><code>stop_component</code>, <code>stop_sniffer</code>, etc.</td>
+</tr>
+<tr>
+<td><code>^config.*</code></td>
+<td><code>config_reload</code>, <code>config_validate</code>, etc.</td>
+</tr>
+<tr>
+<td><code>^show.*</code></td>
+<td><code>show_rag_config</code>, <code>show_logs</code>, <code>show_metrics</code>, etc.</td>
+</tr>
+<tr>
+<td><code>^set.*</code></td>
+<td><code>set_rag_setting</code>, <code>set_log_level</code>, etc.</td>
+</tr>
+<tr>
+<td><code>^get.*</code></td>
+<td><code>get_config</code>, <code>get_rag_capabilities</code>, <code>get_metrics</code>, etc.</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>Nota:</strong> Los patrones son evaluados <strong>después</strong> de la lista <code>allowed_commands</code>. Un comando es válido si aparece en la lista explícita <strong>o</strong> coincide con algún patrón.</p>
+</blockquote>
+<hr />
+<h2 id="claves-restringidas">Claves restringidas</h2>
+<p>Las siguientes claves <strong>nunca</strong> deben aparecer en los parámetros de un comando. Su presencia provoca rechazo inmediato:</p>
+<table>
+<thead>
+<tr>
+<th>Clave restringida</th>
+<th>Razón</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>password</code></td>
+<td>Credenciales de acceso</td>
+</tr>
+<tr>
+<td><code>secret</code></td>
+<td>Secretos de configuración</td>
+</tr>
+<tr>
+<td><code>private_key</code></td>
+<td>Clave privada criptográfica</td>
+</tr>
+<tr>
+<td><code>encryption_seed</code></td>
+<td>Seed ChaCha20 — dato crítico de seguridad</td>
+</tr>
+</tbody>
+</table>
+<p>Estas claves están protegidas independientemente del comando que se use.</p>
+<hr />
+<h2 id="limites-y-validacion">Límites y validación</h2>
+<table>
+<thead>
+<tr>
+<th>Parámetro</th>
+<th>Límite</th>
+<th>Comportamiento al exceder</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>max_query_length</code></td>
+<td>1000 caracteres</td>
+<td>REJECT</td>
+</tr>
+<tr>
+<td>Claves restringidas</td>
+<td>Lista fija</td>
+<td>REJECT inmediato</td>
+</tr>
+<tr>
+<td>Cifrado</td>
+<td>Requerido</td>
+<td>Sin cifrado → conexión rechazada</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="referencia-de-comandos">Referencia de comandos</h2>
+<h3 id="status"><code>status</code></h3>
+<p>Devuelve el estado operacional del rag-security.</p>
+<pre><code class="language-json">{
+  &quot;command&quot;: &quot;status&quot;
+}
+</code></pre>
+<p>Respuesta esperada: estado del servidor LLM (TinyLlama), índices FAISS cargados, conexión a etcd.</p>
+<hr />
+<h3 id="pipeline_status"><code>pipeline_status</code></h3>
+<p>Devuelve el estado de todos los componentes registrados en etcd.</p>
+<pre><code class="language-json">{
+  &quot;command&quot;: &quot;pipeline_status&quot;
+}
+</code></pre>
+<p>Respuesta esperada: lista de componentes con su estado (<code>ACTIVE</code>, <code>ERROR</code>, <code>STARTING</code>, etc.) y último heartbeat.</p>
+<hr />
+<h3 id="start_component-stop_component"><code>start_component</code> / <code>stop_component</code></h3>
+<p>Inicia o detiene un componente del pipeline.</p>
+<pre><code class="language-json">{
+  &quot;command&quot;: &quot;start_component&quot;,
+  &quot;component&quot;: &quot;sniffer&quot;
+}
+</code></pre>
+<pre><code class="language-json">{
+  &quot;command&quot;: &quot;stop_component&quot;,
+  &quot;component&quot;: &quot;ml-detector&quot;
+}
+</code></pre>
+<p>Componentes válidos: <code>sniffer</code>, <code>ml-detector</code>, <code>firewall-acl-agent</code>, <code>rag-ingester</code>, <code>rag-security</code>, <code>etcd-server</code>.</p>
+<hr />
+<h3 id="get_config-update_config"><code>get_config</code> / <code>update_config</code></h3>
+<p>Obtiene o actualiza la configuración de un componente.</p>
+<pre><code class="language-json">{
+  &quot;command&quot;: &quot;get_config&quot;,
+  &quot;component&quot;: &quot;sniffer&quot;
+}
+</code></pre>
+<pre><code class="language-json">{
+  &quot;command&quot;: &quot;update_config&quot;,
+  &quot;component&quot;: &quot;sniffer&quot;,
+  &quot;key&quot;: &quot;fast_detector.enabled&quot;,
+  &quot;value&quot;: true
+}
+</code></pre>
+<blockquote>
+<p><strong>Restricción:</strong> No se pueden modificar claves en <code>restricted_keys</code>.</p>
+</blockquote>
+<hr />
+<h3 id="validate-encryption_test"><code>validate</code> / <code>encryption_test</code></h3>
+<pre><code class="language-json">{
+  &quot;command&quot;: &quot;validate&quot;,
+  &quot;target&quot;: &quot;proto_schema&quot;
+}
+</code></pre>
+<pre><code class="language-json">{
+  &quot;command&quot;: &quot;encryption_test&quot;
+}
+</code></pre>
+<p><code>encryption_test</code> verifica el cifrado AES-256-CBC extremo a extremo.</p>
+<hr />
+<h3 id="show_rag_config"><code>show_rag_config</code></h3>
+<p>Devuelve la configuración activa del sistema RAG (modelo LLM, dimensiones FAISS, nivel de seguridad).</p>
+<pre><code class="language-json">{
+  &quot;command&quot;: &quot;show_rag_config&quot;
+}
+</code></pre>
+<hr />
+<h3 id="set_rag_setting"><code>set_rag_setting</code></h3>
+<p>Modifica un parámetro del sistema RAG en runtime.</p>
+<pre><code class="language-json">{
+  &quot;command&quot;: &quot;set_rag_setting&quot;,
+  &quot;key&quot;: &quot;log_level&quot;,
+  &quot;value&quot;: &quot;debug&quot;
+}
+</code></pre>
+<hr />
+<h3 id="get_rag_capabilities"><code>get_rag_capabilities</code></h3>
+<p>Lista las capacidades habilitadas en esta instancia:</p>
+<pre><code class="language-json">{
+  &quot;command&quot;: &quot;get_rag_capabilities&quot;
+}
+</code></pre>
+<p>Respuesta esperada:</p>
+<pre><code class="language-json">{
+  &quot;capabilities&quot;: [
+    &quot;component_management&quot;,
+    &quot;config_validation&quot;,
+    &quot;pipeline_control&quot;,
+    &quot;embedder_system&quot;,
+    &quot;faiss_search&quot;
+  ]
+}
+</code></pre>
+<hr />
+<h2 id="ejemplos-de-uso">Ejemplos de uso</h2>
+<h3 id="consulta-de-estado-completa-del-pipeline">Consulta de estado completa del pipeline</h3>
+<pre><code class="language-bash"># Via ZMQ (requiere cliente con cifrado AES-256-CBC + lz4)
+zmq_client --host localhost --port 8080 \
+  --command '{&quot;command&quot;: &quot;pipeline_status&quot;}'
+</code></pre>
+<h3 id="verificacion-de-cifrado-tras-cambio-de-keys">Verificación de cifrado tras cambio de keys</h3>
+<pre><code class="language-bash">zmq_client --host localhost --port 8080 \
+  --command '{&quot;command&quot;: &quot;encryption_test&quot;}'
+</code></pre>
+<h3 id="consulta-rag-de-seguridad-analisis-de-amenaza">Consulta RAG de seguridad (análisis de amenaza)</h3>
+<p>Las consultas de análisis de amenazas se envían como queries en lenguaje natural al modelo TinyLlama. El sistema recupera contexto relevante de los índices FAISS antes de generar la respuesta.</p>
+<pre><code class="language-json">{
+  &quot;command&quot;: &quot;get_rag_capabilities&quot;,
+  &quot;query&quot;: &quot;show threat analysis for suspicious SMB traffic&quot;
+}
+</code></pre>
+<hr />
+<h2 id="anadir-nuevos-comandos">Añadir nuevos comandos</h2>
+<p>Para añadir un nuevo comando al whitelist:</p>
+<ol>
+<li>Editar <code>rag/config/command_whitelist.json</code></li>
+<li>Añadir el comando exacto a <code>allowed_commands</code> <strong>o</strong> un patrón regex a <code>allowed_patterns</code></li>
+<li>Si el comando accede a datos sensibles, verificar que no use ninguna clave de <code>restricted_keys</code></li>
+<li>Reiniciar rag-security para que cargue la nueva configuración</li>
+</ol>
+<pre><code class="language-json">{
+  &quot;allowed_commands&quot;: [
+    &quot;...&quot;,
+    &quot;nuevo_comando&quot;
+  ]
+}
+</code></pre>
+<blockquote>
+<p>No se requiere recompilación. El whitelist se carga desde JSON en cada arranque.</p>
+</blockquote>
+<hr />
+<h2 id="mapa-de-capacidades-vs-comandos">Mapa de capacidades vs comandos</h2>
+<table>
+<thead>
+<tr>
+<th>Capacidad</th>
+<th>Comandos relacionados</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>component_management</code></td>
+<td><code>start_component</code>, <code>stop_component</code></td>
+</tr>
+<tr>
+<td><code>config_validation</code></td>
+<td><code>validate</code>, <code>get_config</code>, <code>update_config</code></td>
+</tr>
+<tr>
+<td><code>pipeline_control</code></td>
+<td><code>pipeline_status</code>, <code>start_component</code>, <code>stop_component</code></td>
+</tr>
+<tr>
+<td><code>embedder_system</code></td>
+<td><code>show_rag_config</code>, <code>set_rag_setting</code></td>
+</tr>
+<tr>
+<td><code>faiss_search</code></td>
+<td>Consultas de análisis RAG (lenguaje natural)</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<p><em>Co-authored-by: Alonso Isidoro Román + Claude (Anthropic)</em>
+<em>DAY 92 — 20 marzo 2026</em></p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.top", "search.highlight"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

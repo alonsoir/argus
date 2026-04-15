@@ -1,0 +1,1354 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source embedded-ML NDR for hospitals and schools">
+      
+      
+        <meta name="author" content="Alonso Isidoro Roman">
+      
+      
+        <link rel="canonical" href="https://alonsoir.github.io/argus/adr/ADR-023-multi-layer-plugin-architecture/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>ADR-023 — Multi-Layer Plugin Architecture - ML Defender (aRGus NDR)</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#adr-023-multi-layer-plugin-architecture" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-header__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ML Defender (aRGus NDR)
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              ADR-023 — Multi-Layer Plugin Architecture
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../README.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/BACKLOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Backlog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Security Model
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-tabs__link">
+          
+  
+  
+  ADRs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/contracts/Protobuf contracts.md" class="md-tabs__link">
+          
+  
+  
+  Contracts
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-nav__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ML Defender (aRGus NDR)
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../README.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/BACKLOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADRs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ADRs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013 Seed Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-021-deployment-topology-seed-families.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-021 Topology SSOT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-022-threat-model-opcion2-descartada.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-022 Threat Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Protobuf contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protobuf
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/JSON contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JSON
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Rag security commands.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#context" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Context
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#decision" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Decision
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Decision">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#messagecontext-definition" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        MessageContext definition
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#plugin-trust-model-d7" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Plugin Trust Model (D7)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#security-invariants-and-post-invocation-validation-d3-d8" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Security Invariants and Post-Invocation Validation (D3 + D8)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#graceful-degradation-policy-d1-d10" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Graceful Degradation Policy (D1 + D10)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Graceful Degradation Policy (D1 + D10)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#case-a-symbol-absent-plugin_process_message-not-found-via-dlsym" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Case A — Symbol absent (plugin_process_message not found via dlsym)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#case-b-symbol-present-but-returns-non-zero-result_code" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Case B — Symbol present but returns non-zero result_code
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#plugin-api" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Plugin API
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#integration-strategy-phase-2a-2b-2c" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Integration Strategy: PHASE 2a / 2b / 2c
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Integration Strategy: PHASE 2a / 2b / 2c">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#phase-2a-firewall-acl-agent" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        PHASE 2a — firewall-acl-agent
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#phase-2b-rag-ingester" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        PHASE 2b — rag-ingester
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#phase-2c-rag-security" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        PHASE 2c — rag-security
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#forward-compatibility-with-adr-024-d11" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Forward Compatibility with ADR-024 (D11)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#minority-positions-registered-per-consejo-methodology" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Minority Positions (registered per Consejo methodology)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#backlog-non-blocking" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Backlog (non-blocking)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#connection-to-adr-022-hkdf-context-symmetry" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Connection to ADR-022 (HKDF Context Symmetry)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#consequences" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Consequences
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#related-adrs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Related ADRs
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="adr-023-multi-layer-plugin-architecture">ADR-023 — Multi-Layer Plugin Architecture</h1>
+<p><strong>Status:</strong> ACCEPTED
+<strong>Date:</strong> 2026-04-01 (DAY 104)
+<strong>Branch:</strong> feature/plugin-crypto
+<strong>Consejo de Sabios Ronda 1:</strong> DAY 103 — Claude, Grok, ChatGPT, DeepSeek, Gemini
+<strong>Consejo de Sabios Ronda 2:</strong> DAY 104 — ChatGPT, DeepSeek, Gemini, Grok, Qwen — unanimidad
+<strong>Deciders:</strong> Alonso Isidoro Roman (final arbiter)</p>
+<hr />
+<h2 id="context">Context</h2>
+<p>ML Defender's <code>CryptoTransport</code> layer provides authenticated encryption
+(ChaCha20-Poly1305 + HKDF-SHA256) across all six pipeline components. As
+the plugin loader (ADR-012) is integrated into each component, plugins require
+access to the same cryptographic context in order to process messages.</p>
+<p>Three options were evaluated by the Consejo de Sabios:</p>
+<ol>
+<li><strong>Plugins receive raw (decrypted) payloads only</strong> — CryptoTransport invisible to plugins.</li>
+<li><strong>Plugins receive a <code>MessageContext</code> struct</strong> — structured envelope with decrypted payload
+   plus metadata; plugins do not control key derivation.</li>
+<li><strong>Plugins perform their own HKDF derivation</strong> — plugins receive the seed directly.</li>
+</ol>
+<p>Option 3 unanimously rejected: replicates the HKDF Context Asymmetry bug (ADR-022) at
+the plugin boundary and undermines the single source of truth in <code>contexts.hpp</code>.</p>
+<p>Option 2 approved unanimously.</p>
+<hr />
+<h2 id="decision">Decision</h2>
+<p>Plugins interact with the cryptographic layer exclusively through a <strong><code>MessageContext</code>
+struct</strong>. The host component owns key derivation and encryption/decryption. Plugins
+never touch HKDF or libsodium directly.</p>
+<h3 id="messagecontext-definition">MessageContext definition</h3>
+<pre><code class="language-c">typedef struct {
+    uint8_t     version;       // MESSAGE_CONTEXT_VERSION = 1
+    uint8_t     direction;     // MLD_TX = 0, MLD_RX = 1  [READ-ONLY for plugins]
+    uint8_t     nonce[12];     // 96-bit monotonic counter  [READ-ONLY for plugins]
+    uint8_t     tag[16];       // Poly1305 tag (16 bytes)   [READ-ONLY for plugins]
+    uint8_t*    payload;       // buffer (in/out) — host-owned; pointer must not be reassigned
+    size_t      length;        // current payload length (plugin updates after processing)
+    size_t      max_length;    // capacity — INVARIANT: always &gt;= length + 16
+    const char* channel_id;    // &quot;sniffer-to-ml-detector&quot; — valid only during invocation
+    int32_t     result_code;   // 0=OK, -1=MAC failure, -2=buffer overflow (plugin writes)
+    uint8_t     reserved[8];   // reserved for uint64_t sequence_number in PLUGIN_API_VERSION=2
+} MessageContext;
+</code></pre>
+<p><strong>Field contracts:</strong></p>
+<ul>
+<li><code>direction</code> — mirrors <code>tx</code>/<code>rx</code> from <code>contexts.hpp</code> (ADR-022 fix). <strong>Read-only for plugins.</strong>
+  Host validates post-invocation; violation → <code>std::terminate()</code>.</li>
+<li><code>nonce[12]</code> — 96-bit monotonic counter (ADR-015). Host owns increment. <strong>Read-only for plugins.</strong></li>
+<li><code>tag[16]</code> — Poly1305 tag. Present for inspection only. <strong>Read-only for plugins.</strong></li>
+<li><code>payload</code> — decrypted buffer. <strong>Host-owned at all times.</strong> Plugin may write up to
+  <code>max_length</code> bytes but must not reassign the pointer.</li>
+<li><code>max_length</code> — <strong>Security invariant:</strong> <code>max_length &gt;= length + 16</code> always, to accommodate
+  Poly1305 tag on re-encryption. Violation is undefined behavior.</li>
+<li><code>channel_id</code> — HKDF <code>info</code> selector. <strong>Valid only during the plugin invocation call.</strong>
+  Plugin must not retain this pointer across the call boundary.</li>
+<li><code>result_code</code> — plugin output. Any non-zero value → host calls <code>std::terminate()</code>.</li>
+<li><code>reserved[8]</code> — reserved for <code>uint64_t sequence_number</code> in <code>PLUGIN_API_VERSION = 2</code> (PHASE 3).
+  Not to be read or written in v1 implementations.</li>
+</ul>
+<hr />
+<h2 id="plugin-trust-model-d7">Plugin Trust Model (D7)</h2>
+<p>Plugins are considered <strong>trusted-but-potentially-buggy</strong>, not tamper-proof.</p>
+<p>The C ABI boundary does not enforce memory safety against a malicious plugin actor.
+Security invariants (see below) are validated by the host post-invocation but are not
+cryptographically enforced against an actively malicious plugin.</p>
+<p><strong>Malicious plugin resistance is explicitly out of scope for ADR-023.</strong>
+Defense against malicious plugins requires OS-level isolation (AppArmor, seccomp)
+outside the scope of the plugin architecture.</p>
+<p><strong>TCB declaration (D9):</strong>
+Plugins operate on plaintext prior to encryption (TX path) or after decryption (RX path).
+Plugins are therefore part of the <strong>Trusted Computing Base (TCB)</strong> of the secure channel.
+A compromised plugin can read or modify all plaintext data processed by the host component.
+This is an inherent consequence of the plugin architecture, documented here for transparency.</p>
+<hr />
+<h2 id="security-invariants-and-post-invocation-validation-d3-d8">Security Invariants and Post-Invocation Validation (D3 + D8)</h2>
+<p>The host snapshots read-only fields before invoking <code>plugin_process_message()</code> and
+validates byte-for-byte after the plugin returns.</p>
+<pre><code class="language-c">// Pre-invocation snapshot (host)
+uint8_t     snap_direction = ctx-&gt;direction;
+uint8_t     snap_nonce[12]; memcpy(snap_nonce, ctx-&gt;nonce, 12);
+const char* snap_channel   = ctx-&gt;channel_id;
+uint8_t*    snap_payload   = ctx-&gt;payload;
+
+// === plugin invocation ===
+int rc = plugin_process_message(ctx);
+
+// Post-invocation validation (host)
+if (ctx-&gt;direction  != snap_direction)           std::terminate();
+if (memcmp(ctx-&gt;nonce, snap_nonce, 12) != 0)     std::terminate();
+if (ctx-&gt;channel_id != snap_channel)             std::terminate(); // pointer equality
+if (ctx-&gt;payload    != snap_payload)             std::terminate(); // pointer equality
+if (ctx-&gt;length     &gt; ctx-&gt;max_length)           std::terminate();
+if (rc != 0 || ctx-&gt;result_code != 0)            std::terminate();
+</code></pre>
+<p>Any invariant violation → <code>std::terminate()</code> (fail-closed), regardless of
+<code>result_code</code> value and regardless of build type.</p>
+<hr />
+<h2 id="graceful-degradation-policy-d1-d10">Graceful Degradation Policy (D1 + D10)</h2>
+<h3 id="case-a-symbol-absent-plugin_process_message-not-found-via-dlsym">Case A — Symbol absent (<code>plugin_process_message</code> not found via <code>dlsym</code>)</h3>
+<table>
+<thead>
+<tr>
+<th>Build type</th>
+<th>Behaviour</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Production</strong> (Release / Production)</td>
+<td><code>std::terminate()</code> — fail-closed</td>
+</tr>
+<tr>
+<td><strong>Development</strong> (Debug + <code>MLD_ALLOW_DEV_MODE</code> compile flag)</td>
+<td>Plugin loads; mandatory log: <code>[SECURITY WARNING] Plugin &lt;name&gt; loaded WITHOUT plugin_process_message — plaintext may be exposed</code></td>
+</tr>
+</tbody>
+</table>
+<p><code>MLD_DEV_MODE=1</code> is <strong>only honoured</strong> when:
+- <code>CMAKE_BUILD_TYPE=Debug</code>, AND
+- compile-time flag <code>MLD_ALLOW_DEV_MODE</code> is explicitly set at build time.</p>
+<p>In Release/Production builds, <code>MLD_DEV_MODE</code> is silently ignored. The component
+always behaves fail-closed. This prevents an attacker with environment access from
+forcing degraded mode in production deployments.</p>
+<h3 id="case-b-symbol-present-but-returns-non-zero-result_code">Case B — Symbol present but returns non-zero <code>result_code</code></h3>
+<p><strong>Always <code>std::terminate()</code></strong>, in all environments, with no fallback.</p>
+<p>Rationale: a plugin that has executed may have partially modified the payload buffer.
+No safe fallback state exists; the only secure response is fail-closed.</p>
+<hr />
+<h2 id="plugin-api">Plugin API</h2>
+<pre><code class="language-c">// Plugin API — PLUGIN_API_VERSION = 1
+// Resolved via dlsym — see Graceful Degradation Policy
+int plugin_process_message(MessageContext* ctx);
+</code></pre>
+<p><strong>Signature contract:</strong>
+- Input: <code>ctx-&gt;payload</code> contains the decrypted message; <code>ctx-&gt;length</code> is valid.
+- Output: plugin writes result into <code>ctx-&gt;payload</code> (in-place, respecting <code>max_length</code>),
+  sets <code>ctx-&gt;length</code> to new length, sets <code>ctx-&gt;result_code</code>.
+- Return value: <code>0</code> on success, non-zero on failure (must mirror <code>result_code</code>).</p>
+<hr />
+<h2 id="integration-strategy-phase-2a-2b-2c">Integration Strategy: PHASE 2a / 2b / 2c</h2>
+<p>Approved order (Consejo de Sabios, DAY 103 + DAY 104, unanimidad):</p>
+<pre><code>firewall-acl-agent → rag-ingester → rag-security
+</code></pre>
+<p><strong>Rationale:</strong> <code>firewall-acl-agent</code> has the simplest message structure and no ML
+inference path — lowest risk for validating the <code>MessageContext</code> interface.</p>
+<h3 id="phase-2a-firewall-acl-agent">PHASE 2a — firewall-acl-agent</h3>
+<p><strong>Gate:</strong> <code>TEST-INTEG-4a</code> must pass before PHASE 2b begins.</p>
+<p>Steps:
+1. Add <code>MessageContext</code> to <code>plugin_api.h</code> (<code>PLUGIN_API_VERSION = 1</code>).
+2. Implement <code>plugin_process_message()</code> resolution in <code>PluginLoader</code> (<code>dlsym</code>).
+3. Apply Graceful Degradation Policy (D1 + D10).
+4. Integrate into <code>firewall-acl-agent/src/main.cpp</code> under <code>#ifdef PLUGIN_LOADER_ENABLED</code>.
+5. <strong>Core <code>CryptoTransport</code> is read-only during PHASE 2a</strong> (DeepSeek consensus).
+6. Add <code>plugins</code> section to <code>firewall-acl-agent/config/firewall-acl-agent.json</code>.</p>
+<p><code>TEST-INTEG-4a</code> pass criteria:
+- <code>plugin_process_message()</code> invoked on at least one real <code>MessageContext</code>.
+- Post-invocation security invariants verified (D8).
+- <code>result_code == 0</code> confirmed.
+- <code>CryptoTransport</code> decryption path unmodified (diff check).</p>
+<h3 id="phase-2b-rag-ingester">PHASE 2b — rag-ingester</h3>
+<p><strong>Gate:</strong> <code>TEST-INTEG-4b</code> must pass before PHASE 2c begins.</p>
+<p>Same pattern as PHASE 2a. Plugin hook placed after deserialization, before FAISS insert.</p>
+<p><code>TEST-INTEG-4b</code> pass criteria:
+- <code>plugin_process_message()</code> invoked on at least one ingested event.
+- Post-invocation security invariants verified.
+- FAISS index size increases correctly after plugin-processed event.
+- <code>result_code == 0</code> confirmed.</p>
+<h3 id="phase-2c-rag-security">PHASE 2c — rag-security</h3>
+<p><strong>Gate:</strong> <code>TEST-INTEG-4c</code> must pass to close PHASE 2.
+<strong>Pre-requisite:</strong> <code>TEST-FUZZ-1</code> (MessageContext fuzzing, Backlog R3) must complete
+before PHASE 2c begins.</p>
+<p>Plugin hooks placed on the query path only; TinyLlama inference loop is not modified.</p>
+<p><code>TEST-INTEG-4c</code> pass criteria:
+- <code>plugin_process_message()</code> invoked on at least one query context.
+- Post-invocation security invariants verified.
+- TinyLlama inference latency unaffected (measured via <code>high_resolution_clock</code>).
+- <code>result_code == 0</code> confirmed.</p>
+<hr />
+<h2 id="forward-compatibility-with-adr-024-d11">Forward Compatibility with ADR-024 (D11)</h2>
+<p>ADR-023 is <strong>forward-compatible</strong> with ADR-024 (Dynamic Group Key Agreement) but
+does not require it. The <code>channel_id</code>, <code>direction</code>, and <code>nonce</code> fields are designed
+to support session-derived keys without API changes. ADR-023 is fully functional
+with the current static HKDF-derived keys.</p>
+<p>When ADR-024 is implemented (post-arXiv), <code>CryptoTransport</code> will receive session keys
+via <code>install_session_keys(tx_key, rx_key)</code> after the Noise handshake. From the plugin's
+perspective, <code>MessageContext</code> is unchanged.</p>
+<hr />
+<h2 id="minority-positions-registered-per-consejo-methodology">Minority Positions (registered per Consejo methodology)</h2>
+<p><strong>Gemini — PLUGIN_API_VERSION=2 immediate bump:</strong>
+Proposed <code>sequence_number</code> and <code>timestamp</code> as explicit fields from day one. Not adopted.
+<code>reserved[8]</code> provides a clean migration path.
+<em>Condition for reopening:</em> if out-of-order delivery in ZeroMQ becomes observable during
+PHASE 2a testing, proposal will be reconsidered before PHASE 2c.</p>
+<p><strong>Grok — fail-closed even without symbol in DEV_MODE:</strong>
+Plugin loader should always require <code>plugin_process_message</code>. Partially adopted:
+D10 constrains DEV_MODE to Debug builds + compile flag, closing the production vector.</p>
+<p><strong>ChatGPT — eliminate DEV_MODE escape hatch entirely:</strong>
+Force fail-closed in all environments. Not adopted. DEV_MODE serves a legitimate need
+for resource-constrained operators (hospitals, schools) debugging plugins without
+specialised hardware.</p>
+<hr />
+<h2 id="backlog-non-blocking">Backlog (non-blocking)</h2>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Item</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>R1</td>
+<td><code>reserved[8]</code> → explicit <code>uint64_t sequence_number</code> in <code>PLUGIN_API_VERSION=2</code> (PHASE 3)</td>
+</tr>
+<tr>
+<td>R2</td>
+<td>External watchdog / automatic reboot documented as production deployment requirement</td>
+</tr>
+<tr>
+<td>R3</td>
+<td><code>TEST-FUZZ-1</code>: MessageContext fuzzing campaign — required before PHASE 2c</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="connection-to-adr-022-hkdf-context-symmetry">Connection to ADR-022 (HKDF Context Symmetry)</h2>
+<p>The <code>direction</code> and <code>channel_id</code> fields directly encode the lessons of the HKDF
+Context Asymmetry bug: context identity is explicit in the struct, not implicit
+in the call site. This design avoids semantic overloading of data structures across
+layers — a common source of subtle security and correctness bugs (ADR-022, §5.5).</p>
+<hr />
+<h2 id="consequences">Consequences</h2>
+<p><strong>Positive:</strong>
+- Plugins isolated from key derivation — cannot introduce HKDF context bugs.
+- Versioned interface enables safe future evolution.
+- Post-invocation invariant validation catches buggy plugins before pipeline corruption.
+- Phased integration with explicit gates limits blast radius of defects.
+- Trust model explicitly documented — no hidden assumptions about plugin safety.</p>
+<p><strong>Negative / risks:</strong>
+- Plugins form part of the TCB; a compromised plugin reads all plaintext (documented, D9).
+- C ABI boundary does not enforce invariants against a malicious plugin; OS-level
+  isolation required for that guarantee (documented, D7).
+- <code>max_length</code> discipline required from all plugin authors.</p>
+<hr />
+<h2 id="related-adrs">Related ADRs</h2>
+<table>
+<thead>
+<tr>
+<th>ADR</th>
+<th>Relation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>ADR-012</td>
+<td>Plugin Loader — PHASE 1b established the <code>dlopen</code>/<code>dlsym</code> pattern</td>
+</tr>
+<tr>
+<td>ADR-015</td>
+<td>96-bit monotonic nonce — <code>nonce[12]</code> in <code>MessageContext</code></td>
+</tr>
+<tr>
+<td>ADR-021</td>
+<td>deployment.yml as SSOT — <code>channel_id</code> values derived from topology</td>
+</tr>
+<tr>
+<td>ADR-022</td>
+<td>HKDF Context Symmetry — <code>direction</code> and <code>channel_id</code> encode this lesson</td>
+</tr>
+<tr>
+<td>ADR-024</td>
+<td>Dynamic Group Key Agreement — forward-compatible; <code>reserved[8]</code> for Noise IK</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<p><em>Co-authored-by: Alonso Isidoro Roman + Claude (Anthropic)</em>
+<em>Consejo Ronda 1: Claude, Grok, ChatGPT, DeepSeek, Gemini — DAY 103</em>
+<em>Consejo Ronda 2: ChatGPT, DeepSeek, Gemini, Grok, Qwen — DAY 104 — unanimidad</em></p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.top", "search.highlight"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

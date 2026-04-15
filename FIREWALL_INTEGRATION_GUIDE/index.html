@@ -1,0 +1,2293 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source embedded-ML NDR for hospitals and schools">
+      
+      
+        <meta name="author" content="Alonso Isidoro Roman">
+      
+      
+        <link rel="canonical" href="https://alonsoir.github.io/argus/FIREWALL_INTEGRATION_GUIDE/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>Firewall Integration Guide - Day 23 (Decryption + Decompression) - ML Defender (aRGus NDR)</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#firewall-integration-guide-day-23-decryption-decompression" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="ML Defender (aRGus NDR)" class="md-header__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ML Defender (aRGus NDR)
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Firewall Integration Guide - Day 23 (Decryption + Decompression)
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../README.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../docs/ARCHITECTURE.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../docs/BACKLOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Backlog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../docs/SECURITY_MODEL.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Security Model
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../docs/adr/ADR-013 seed distribution component authentication.md" class="md-tabs__link">
+          
+  
+  
+  ADRs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../docs/contracts/Protobuf contracts.md" class="md-tabs__link">
+          
+  
+  
+  Contracts
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="ML Defender (aRGus NDR)" class="md-nav__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ML Defender (aRGus NDR)
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../README.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/ARCHITECTURE.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/BACKLOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/SECURITY_MODEL.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADRs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ADRs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/adr/ADR-013 seed distribution component authentication.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013 Seed Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/adr/ADR-021-deployment-topology-seed-families.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-021 Topology SSOT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/adr/ADR-022-threat-model-opcion2-descartada.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-022 Threat Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/contracts/Protobuf contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protobuf
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/contracts/JSON contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JSON
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/contracts/Rag security commands.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#filosofia-despacio-y-bien" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🎯 Filosofía: "Despacio y Bien"
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#plan-de-trabajo-2-dias" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        📅 Plan de Trabajo (2 Días)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="📅 Plan de Trabajo (2 Días)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#dia-1-hoy-verificacion-y-preparacion-1-2-horas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DÍA 1 (HOY): Verificación y Preparación (1-2 horas)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dia-2-manana-implementacion-incremental-2-4-horas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DÍA 2 (MAÑANA): Implementación Incremental (2-4 horas)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dia-3-cuando-sea-testing-y-validacion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DÍA 3+ (CUANDO SEA): Testing y Validación
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#fase-21-cmakeliststxt-modifications" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🔧 FASE 2.1: CMakeLists.txt Modifications
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🔧 FASE 2.1: CMakeLists.txt Modifications">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#backup-actual" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Backup Actual
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cambios-necesarios" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cambios Necesarios
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#verificacion-post-modificacion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Verificación Post-Modificación
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#fase-22-headers-y-estructuras" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🔧 FASE 2.2: Headers y Estructuras
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🔧 FASE 2.2: Headers y Estructuras">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#maincpp-o-archivo-principal-headers-section" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        main.cpp (o archivo principal) - Headers Section
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#estructuras-de-configuracion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Estructuras de Configuración
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#fase-23-inicializacion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🔧 FASE 2.3: Inicialización
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🔧 FASE 2.3: Inicialización">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#load-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Load Configuration
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#initialize-etcd-client" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Initialize etcd-client
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#main-function-initialization" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Main Function Initialization
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#fase-24-helper-functions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🔧 FASE 2.4: Helper Functions
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🔧 FASE 2.4: Helper Functions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#decryption-function" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Decryption Function
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#decompression-function" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Decompression Function
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#get-crypto-token-from-etcd" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Get Crypto Token from etcd
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#fase-25-integracion-en-loop-zmq" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🔧 FASE 2.5: Integración en Loop ZMQ
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🔧 FASE 2.5: Integración en Loop ZMQ">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#modified-zmq-receive-loop" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Modified ZMQ Receive Loop
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#fase-26-cleanup-y-refinamiento" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🔧 FASE 2.6: Cleanup y Refinamiento
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🔧 FASE 2.6: Cleanup y Refinamiento">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#cleanup-function" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cleanup Function
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#signal-handler" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Signal Handler
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#checklist-completo-de-implementacion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ✅ Checklist Completo de Implementación
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="✅ Checklist Completo de Implementación">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#cmakeliststxt" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CMakeLists.txt
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#headers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Headers
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#config-loading" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Config Loading
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#initialization" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Initialization
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#helper-functions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Helper Functions
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#zmq-loop" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ZMQ Loop
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cleanup" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cleanup
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#config-file" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Config File
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#plan-de-testing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🧪 Plan de Testing
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🧪 Plan de Testing">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#test-1-compilacion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Test 1: Compilación
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#test-2-startup-sin-pipeline" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Test 2: Startup Sin Pipeline
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#test-3-con-etcd-server-solo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Test 3: Con etcd-server Solo
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#test-4-pipeline-completo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Test 4: Pipeline Completo
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#troubleshooting" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🐛 Troubleshooting
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🐛 Troubleshooting">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#error-undefined-reference-to-etcd_client_init" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Error: "undefined reference to etcd_client_init"
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#error-failed-to-get-token-from-etcd" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Error: "Failed to get token from etcd"
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#error-decryption-failed-authentication-tag-mismatch" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Error: "Decryption failed - authentication tag mismatch"
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#error-lz4-decompression-failed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Error: "LZ4 decompression failed"
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#metricas-de-exito" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        📊 Métricas de Éxito
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="📊 Métricas de Éxito">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#compilacion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Compilación
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#startup" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Startup
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#runtime" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Runtime
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#performance" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Performance
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#siguiente-sesion-manana" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🎯 Siguiente Sesión (Mañana)
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="firewall-integration-guide-day-23-decryption-decompression">Firewall Integration Guide - Day 23 (Decryption + Decompression)</h1>
+<h2 id="filosofia-despacio-y-bien">🎯 Filosofía: "Despacio y Bien"</h2>
+<p><strong>Objetivo</strong>: Integrar capacidades de descifrado y descompresión en firewall sin romper lo que funciona.</p>
+<p><strong>Timeline</strong>: Hoy (verificación) + Mañana (implementación) + Cuando sea (testing)</p>
+<p><strong>Principio Via Appia</strong>: "Predecible, robusto, y bien documentado."</p>
+<hr />
+<h2 id="plan-de-trabajo-2-dias">📅 Plan de Trabajo (2 Días)</h2>
+<h3 id="dia-1-hoy-verificacion-y-preparacion-1-2-horas"><strong>DÍA 1 (HOY)</strong>: Verificación y Preparación (1-2 horas)</h3>
+<p>✅ <strong>Fase 1.1</strong>: Análisis del código actual (15 min)
+- Ejecutar script de verificación
+- Identificar qué tiene y qué falta
+- Listar archivos a modificar</p>
+<p>✅ <strong>Fase 1.2</strong>: Backup y preparación (10 min)
+- Backup de firewall.json
+- Backup de CMakeLists.txt
+- Backup de src/*.cpp
+- Crear rama git (opcional pero recomendado)</p>
+<p>✅ <strong>Fase 1.3</strong>: Revisión de dependencias (15 min)
+- Verificar etcd-client compilado
+- Verificar LZ4 instalado en VM
+- Verificar OpenSSL disponible
+- Documentar versiones</p>
+<p>✅ <strong>Fase 1.4</strong>: Plan detallado (30 min)
+- Revisar esta guía completa
+- Identificar secciones de código a modificar
+- Preparar snippets de código
+- Decidir orden de cambios</p>
+<hr />
+<h3 id="dia-2-manana-implementacion-incremental-2-4-horas"><strong>DÍA 2 (MAÑANA)</strong>: Implementación Incremental (2-4 horas)</h3>
+<p>🔧 <strong>Fase 2.1</strong>: CMakeLists.txt (15 min)
+- Añadir etcd-client library
+- Añadir LZ4 library
+- Añadir OpenSSL libraries
+- Añadir include directories
+- Test: cmake clean build</p>
+<p>🔧 <strong>Fase 2.2</strong>: Headers y estructuras (15 min)
+- Añadir #include statements
+- Definir estructuras de config
+- Añadir variables globales (si necesario)
+- Test: Compile check (no link)</p>
+<p>🔧 <strong>Fase 2.3</strong>: Inicialización (30 min)
+- Leer config["transport"]
+- Inicializar etcd-client
+- Verificar configuración al startup
+- Test: Startup sin errores</p>
+<p>🔧 <strong>Fase 2.4</strong>: Funciones helper (45 min)
+- Implementar decrypt_chacha20_poly1305()
+- Implementar decompress_lz4()
+- Añadir error handling
+- Test: Unit tests si es posible</p>
+<p>🔧 <strong>Fase 2.5</strong>: Integración en loop ZMQ (30 min)
+- Modificar zmq_recv() flow
+- Añadir decrypt → decompress → parse
+- Añadir logging
+- Test: Compile completo</p>
+<p>🔧 <strong>Fase 2.6</strong>: Cleanup y refinamiento (30 min)
+- Añadir etcd_client_cleanup()
+- Mejorar error messages
+- Añadir métricas
+- Code review</p>
+<hr />
+<h3 id="dia-3-cuando-sea-testing-y-validacion"><strong>DÍA 3+ (CUANDO SEA)</strong>: Testing y Validación</h3>
+<p>🧪 <strong>Fase 3.1</strong>: Testing unitario (30 min)
+- Firewall solo (sin pipeline)
+- Con datos de prueba
+- Verificar logs</p>
+<p>🧪 <strong>Fase 3.2</strong>: Testing integrado (30 min)
+- Pipeline completo
+- Con etcd-server
+- Verificar end-to-end</p>
+<p>🧪 <strong>Fase 3.3</strong>: Stress test (cuando esté listo)
+- make test-day23-stress
+- Monitoring
+- Análisis de resultados</p>
+<hr />
+<h2 id="fase-21-cmakeliststxt-modifications">🔧 FASE 2.1: CMakeLists.txt Modifications</h2>
+<h3 id="backup-actual">Backup Actual</h3>
+<pre><code class="language-bash">cp /vagrant/firewall-acl-agent/CMakeLists.txt /vagrant/firewall-acl-agent/CMakeLists.txt.backup
+</code></pre>
+<h3 id="cambios-necesarios">Cambios Necesarios</h3>
+<pre><code class="language-cmake">cmake_minimum_required(VERSION 3.10)
+project(../firewall-acl-agent)
+
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+# ============================================================================
+# DEPENDENCIES
+# ============================================================================
+
+# Find required packages
+find_package(../protobuf REQUIRED)
+find_package(spdlog REQUIRED)
+find_package(nlohmann_json 3.2.0 REQUIRED)
+
+# ZMQ (system or custom)
+find_library(ZMQ_LIB zmq REQUIRED)
+
+# LZ4 (for decompression) - NEW
+find_library(LZ4_LIB lz4 REQUIRED)
+
+# OpenSSL (for ChaCha20-Poly1305) - NEW
+find_package(OpenSSL REQUIRED)
+
+# etcd-client (custom) - NEW
+find_library(ETCD_CLIENT_LIB etcd_client
+        PATHS ${CMAKE_SOURCE_DIR}/../etcd-client/build
+        NO_DEFAULT_PATH
+        REQUIRED
+)
+
+message(STATUS &quot;Found etcd_client: ${ETCD_CLIENT_LIB}&quot;)
+message(STATUS &quot;Found LZ4: ${LZ4_LIB}&quot;)
+message(STATUS &quot;Found OpenSSL: ${OPENSSL_LIBRARIES}&quot;)
+
+# ============================================================================
+# INCLUDE DIRECTORIES
+# ============================================================================
+
+include_directories(
+        ${CMAKE_SOURCE_DIR}/include
+        ${CMAKE_SOURCE_DIR}/../proto
+        ${CMAKE_SOURCE_DIR}/../etcd-client/include  # NEW
+        ${PROTOBUF_INCLUDE_DIRS}
+        ${OPENSSL_INCLUDE_DIR}                       # NEW
+)
+
+# ============================================================================
+# SOURCE FILES
+# ============================================================================
+
+set(SOURCES
+        src/main.cpp
+        src/firewall_agent.cpp  # si existe
+        # ... otros archivos ...
+)
+
+# Protobuf generated files
+set(PROTO_SRCS
+        ${CMAKE_SOURCE_DIR}/../proto/packet.pb.cc
+)
+
+# ============================================================================
+# EXECUTABLE
+# ============================================================================
+
+add_executable(firewall-acl-agent
+        ${SOURCES}
+        ${PROTO_SRCS}
+)
+
+# ============================================================================
+# LINKING
+# ============================================================================
+
+target_link_libraries(firewall-acl-agent
+        ${PROTOBUF_LIBRARIES}
+        ${ZMQ_LIB}
+        spdlog::spdlog
+        nlohmann_json::nlohmann_json
+        ${ETCD_CLIENT_LIB}      # NEW
+        ${LZ4_LIB}              # NEW
+        ${OPENSSL_LIBRARIES}    # NEW (ssl + crypto)
+        pthread
+)
+
+# ============================================================================
+# COMPILE OPTIONS
+# ============================================================================
+
+target_compile_options(firewall-acl-agent PRIVATE
+        -Wall
+        -Wextra
+        -O2
+        -g
+)
+
+# For etcd-client to find shared library at runtime
+set_target_properties(firewall-acl-agent PROPERTIES
+        BUILD_RPATH &quot;${CMAKE_SOURCE_DIR}/../etcd-client/build&quot;
+        INSTALL_RPATH &quot;${CMAKE_SOURCE_DIR}/../etcd-client/build&quot;
+)
+</code></pre>
+<h3 id="verificacion-post-modificacion">Verificación Post-Modificación</h3>
+<pre><code class="language-bash">vagrant ssh
+cd /vagrant/firewall-acl-agent/build
+rm -rf *
+cmake ..
+
+# Debe mostrar:
+# -- Found etcd_client: /vagrant/etcd-client/build/libetcd_client.so
+# -- Found LZ4: /usr/lib/x86_64-linux-gnu/liblz4.so
+# -- Found OpenSSL: /usr/lib/x86_64-linux-gnu/libssl.so;/usr/lib/x86_64-linux-gnu/libcrypto.so
+</code></pre>
+<hr />
+<h2 id="fase-22-headers-y-estructuras">🔧 FASE 2.2: Headers y Estructuras</h2>
+<h3 id="maincpp-o-archivo-principal-headers-section">main.cpp (o archivo principal) - Headers Section</h3>
+<pre><code class="language-cpp">// Standard includes
+#include &lt;iostream&gt;
+#include &lt;string&gt;
+#include &lt;vector&gt;
+#include &lt;memory&gt;
+#include &lt;csignal&gt;
+#include &lt;thread&gt;
+#include &lt;chrono&gt;
+#include &lt;cstring&gt;
+
+// Third-party includes
+#include &lt;zmq.hpp&gt;
+#include &lt;spdlog/spdlog.h&gt;
+#include &lt;nlohmann/json.hpp&gt;
+
+// Protobuf
+#include &quot;packet.pb.h&quot;
+
+// NEW: Crypto/Compression includes
+#include &quot;etcd_client.h&quot;
+#include &lt;lz4.h&gt;
+#include &lt;openssl/evp.h&gt;
+#include &lt;openssl/rand.h&gt;
+
+using json = nlohmann::json;
+</code></pre>
+<h3 id="estructuras-de-configuracion">Estructuras de Configuración</h3>
+<pre><code class="language-cpp">// Transport configuration structure
+struct TransportConfig {
+    bool compression_enabled = false;
+    bool decompression_only = true;
+    std::string compression_algorithm = &quot;lz4&quot;;
+
+    bool encryption_enabled = false;
+    bool decryption_only = true;
+    bool etcd_token_required = true;
+    std::string encryption_algorithm = &quot;chacha20-poly1305&quot;;
+    std::string fallback_mode = &quot;compressed_only&quot;;
+};
+
+// etcd configuration structure (extend existing if present)
+struct EtcdConfig {
+    bool enabled = false;
+    std::vector&lt;std::string&gt; endpoints;
+    int connection_timeout_ms = 5000;
+    std::string crypto_token_path = &quot;/crypto/firewall/tokens&quot;;
+    std::string config_sync_path = &quot;/config/firewall&quot;;
+    int heartbeat_interval_seconds = 30;
+    // ... existing fields ...
+};
+
+// Global variables (if needed)
+static TransportConfig g_transport_config;
+static EtcdConfig g_etcd_config;
+static bool g_running = true;
+</code></pre>
+<hr />
+<h2 id="fase-23-inicializacion">🔧 FASE 2.3: Inicialización</h2>
+<h3 id="load-configuration">Load Configuration</h3>
+<pre><code class="language-cpp">void load_transport_config(const json&amp; config) {
+    if (config.contains(&quot;transport&quot;)) {
+        auto transport = config[&quot;transport&quot;];
+
+        if (transport.contains(&quot;compression&quot;)) {
+            g_transport_config.compression_enabled = 
+                transport[&quot;compression&quot;].value(&quot;enabled&quot;, false);
+            g_transport_config.decompression_only = 
+                transport[&quot;compression&quot;].value(&quot;decompression_only&quot;, true);
+            g_transport_config.compression_algorithm = 
+                transport[&quot;compression&quot;].value(&quot;algorithm&quot;, &quot;lz4&quot;);
+        }
+
+        if (transport.contains(&quot;encryption&quot;)) {
+            g_transport_config.encryption_enabled = 
+                transport[&quot;encryption&quot;].value(&quot;enabled&quot;, false);
+            g_transport_config.decryption_only = 
+                transport[&quot;encryption&quot;].value(&quot;decryption_only&quot;, true);
+            g_transport_config.etcd_token_required = 
+                transport[&quot;encryption&quot;].value(&quot;etcd_token_required&quot;, true);
+            g_transport_config.encryption_algorithm = 
+                transport[&quot;encryption&quot;].value(&quot;algorithm&quot;, &quot;chacha20-poly1305&quot;);
+        }
+
+        spdlog::info(&quot;Transport config loaded:&quot;);
+        spdlog::info(&quot;  Compression: {}&quot;, g_transport_config.compression_enabled);
+        spdlog::info(&quot;  Encryption: {}&quot;, g_transport_config.encryption_enabled);
+    }
+}
+
+void load_etcd_config(const json&amp; config) {
+    if (config.contains(&quot;etcd&quot;)) {
+        auto etcd = config[&quot;etcd&quot;];
+
+        g_etcd_config.enabled = etcd.value(&quot;enabled&quot;, false);
+        g_etcd_config.endpoints = etcd.value(&quot;endpoints&quot;, std::vector&lt;std::string&gt;{&quot;localhost:2379&quot;});
+        g_etcd_config.connection_timeout_ms = etcd.value(&quot;connection_timeout_ms&quot;, 5000);
+        g_etcd_config.crypto_token_path = etcd.value(&quot;crypto_token_path&quot;, &quot;/crypto/firewall/tokens&quot;);
+        // ... load other fields ...
+
+        spdlog::info(&quot;etcd config loaded:&quot;);
+        spdlog::info(&quot;  Enabled: {}&quot;, g_etcd_config.enabled);
+        spdlog::info(&quot;  Endpoints: {}&quot;, g_etcd_config.endpoints[0]);
+        spdlog::info(&quot;  Crypto token path: {}&quot;, g_etcd_config.crypto_token_path);
+    }
+}
+</code></pre>
+<h3 id="initialize-etcd-client">Initialize etcd-client</h3>
+<pre><code class="language-cpp">void initialize_etcd_client() {
+    if (!g_etcd_config.enabled) {
+        spdlog::warn(&quot;etcd is disabled in config&quot;);
+        return;
+    }
+
+    try {
+        int result = etcd_client_init(
+            g_etcd_config.config_sync_path.c_str(),
+            &quot;firewall-01&quot;,  // component_id
+            g_etcd_config.endpoints[0].c_str()
+        );
+
+        if (result == 0) {
+            spdlog::info(&quot;✅ etcd-client initialized successfully&quot;);
+        } else {
+            spdlog::error(&quot;❌ etcd-client initialization failed: {}&quot;, result);
+            throw std::runtime_error(&quot;etcd-client init failed&quot;);
+        }
+    } catch (const std::exception&amp; e) {
+        spdlog::error(&quot;Exception initializing etcd-client: {}&quot;, e.what());
+        throw;
+    }
+}
+</code></pre>
+<h3 id="main-function-initialization">Main Function Initialization</h3>
+<pre><code class="language-cpp">int main(int argc, char* argv[]) {
+    // Existing initialization...
+    spdlog::set_level(spdlog::level::info);
+
+    // Load config
+    std::ifstream config_file(&quot;config/firewall.json&quot;);
+    json config;
+    config_file &gt;&gt; config;
+
+    // Load transport config (NEW)
+    load_transport_config(config);
+
+    // Load etcd config (NEW)
+    load_etcd_config(config);
+
+    // Initialize etcd-client (NEW)
+    if (g_etcd_config.enabled) {
+        initialize_etcd_client();
+    }
+
+    // Continue with existing initialization...
+    // ZMQ setup, IPSet setup, etc.
+
+    // ... rest of main ...
+}
+</code></pre>
+<hr />
+<h2 id="fase-24-helper-functions">🔧 FASE 2.4: Helper Functions</h2>
+<h3 id="decryption-function">Decryption Function</h3>
+<pre><code class="language-cpp">std::vector&lt;uint8_t&gt; decrypt_chacha20_poly1305(
+    const std::vector&lt;uint8_t&gt;&amp; encrypted_data,
+    const std::string&amp; key_hex
+) {
+    spdlog::debug(&quot;Decrypting {} bytes with ChaCha20-Poly1305&quot;, encrypted_data.size());
+
+    // Validate input
+    if (encrypted_data.size() &lt; 12 + 16) {  // nonce(12) + tag(16)
+        spdlog::error(&quot;Encrypted data too small: {} bytes&quot;, encrypted_data.size());
+        throw std::runtime_error(&quot;Invalid encrypted data size&quot;);
+    }
+
+    // Extract nonce (first 12 bytes)
+    std::vector&lt;uint8_t&gt; nonce(encrypted_data.begin(), encrypted_data.begin() + 12);
+
+    // Extract ciphertext + tag (rest)
+    std::vector&lt;uint8_t&gt; ciphertext_and_tag(
+        encrypted_data.begin() + 12,
+        encrypted_data.end()
+    );
+
+    // Convert hex key to bytes
+    std::vector&lt;uint8_t&gt; key;
+    key.reserve(key_hex.length() / 2);
+    for (size_t i = 0; i &lt; key_hex.length(); i += 2) {
+        std::string byte_str = key_hex.substr(i, 2);
+        key.push_back(static_cast&lt;uint8_t&gt;(std::stoi(byte_str, nullptr, 16)));
+    }
+
+    // Prepare output buffer
+    std::vector&lt;uint8_t&gt; plaintext(ciphertext_and_tag.size() - 16);  // -16 for tag
+
+    // Create decryption context
+    EVP_CIPHER_CTX* ctx = EVP_CIPHER_CTX_new();
+    if (!ctx) {
+        throw std::runtime_error(&quot;Failed to create EVP context&quot;);
+    }
+
+    try {
+        // Initialize decryption
+        if (EVP_DecryptInit_ex(ctx, EVP_chacha20_poly1305(), nullptr, key.data(), nonce.data()) != 1) {
+            throw std::runtime_error(&quot;EVP_DecryptInit_ex failed&quot;);
+        }
+
+        // Decrypt
+        int len = 0;
+        if (EVP_DecryptUpdate(ctx, plaintext.data(), &amp;len, 
+                              ciphertext_and_tag.data(), ciphertext_and_tag.size() - 16) != 1) {
+            throw std::runtime_error(&quot;EVP_DecryptUpdate failed&quot;);
+        }
+
+        // Set expected tag
+        if (EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_AEAD_SET_TAG, 16,
+                                const_cast&lt;uint8_t*&gt;(ciphertext_and_tag.data() + ciphertext_and_tag.size() - 16)) != 1) {
+            throw std::runtime_error(&quot;EVP_CIPHER_CTX_ctrl failed&quot;);
+        }
+
+        // Finalize (verifies tag)
+        int final_len = 0;
+        if (EVP_DecryptFinal_ex(ctx, plaintext.data() + len, &amp;final_len) != 1) {
+            throw std::runtime_error(&quot;Decryption failed - authentication tag mismatch&quot;);
+        }
+
+        plaintext.resize(len + final_len);
+
+        EVP_CIPHER_CTX_free(ctx);
+
+        spdlog::debug(&quot;✅ Decrypted successfully: {} bytes&quot;, plaintext.size());
+        return plaintext;
+
+    } catch (...) {
+        EVP_CIPHER_CTX_free(ctx);
+        throw;
+    }
+}
+</code></pre>
+<h3 id="decompression-function">Decompression Function</h3>
+<pre><code class="language-cpp">std::vector&lt;uint8_t&gt; decompress_lz4(const std::vector&lt;uint8_t&gt;&amp; compressed_data) {
+    spdlog::debug(&quot;Decompressing {} bytes with LZ4&quot;, compressed_data.size());
+
+    // Validate input
+    if (compressed_data.size() &lt; 4) {
+        spdlog::error(&quot;Compressed data too small: {} bytes&quot;, compressed_data.size());
+        throw std::runtime_error(&quot;Invalid compressed data size&quot;);
+    }
+
+    // Extract decompressed size (first 4 bytes, little-endian)
+    uint32_t decompressed_size;
+    std::memcpy(&amp;decompressed_size, compressed_data.data(), sizeof(uint32_t));
+
+    spdlog::debug(&quot;Expected decompressed size: {} bytes&quot;, decompressed_size);
+
+    // Validate decompressed size
+    if (decompressed_size == 0 || decompressed_size &gt; 10 * 1024 * 1024) {  // 10MB limit
+        spdlog::error(&quot;Invalid decompressed size: {}&quot;, decompressed_size);
+        throw std::runtime_error(&quot;Invalid decompressed size&quot;);
+    }
+
+    // Prepare output buffer
+    std::vector&lt;uint8_t&gt; decompressed(decompressed_size);
+
+    // Decompress (skip first 4 bytes which contain the size)
+    int result = LZ4_decompress_safe(
+        reinterpret_cast&lt;const char*&gt;(compressed_data.data() + 4),
+        reinterpret_cast&lt;char*&gt;(decompressed.data()),
+        compressed_data.size() - 4,
+        decompressed_size
+    );
+
+    if (result &lt; 0) {
+        spdlog::error(&quot;LZ4 decompression failed: error code {}&quot;, result);
+        throw std::runtime_error(&quot;LZ4 decompression failed&quot;);
+    }
+
+    if (static_cast&lt;uint32_t&gt;(result) != decompressed_size) {
+        spdlog::warn(&quot;Decompressed size mismatch: expected {}, got {}&quot;, decompressed_size, result);
+    }
+
+    spdlog::debug(&quot;✅ Decompressed successfully: {} bytes&quot;, result);
+    return decompressed;
+}
+</code></pre>
+<h3 id="get-crypto-token-from-etcd">Get Crypto Token from etcd</h3>
+<pre><code class="language-cpp">std::string get_crypto_token_from_etcd(const std::string&amp; sender_component) {
+    if (!g_etcd_config.enabled) {
+        throw std::runtime_error(&quot;etcd is disabled, cannot get crypto token&quot;);
+    }
+
+    // Build token path: /crypto/firewall/tokens/ml-detector
+    std::string token_path = g_etcd_config.crypto_token_path + &quot;/&quot; + sender_component;
+
+    spdlog::debug(&quot;Retrieving crypto token from etcd: {}&quot;, token_path);
+
+    try {
+        char token_buffer[1024] = {0};
+        int result = etcd_client_get_token(token_path.c_str(), token_buffer, sizeof(token_buffer));
+
+        if (result != 0) {
+            spdlog::error(&quot;Failed to get token from etcd: error {}&quot;, result);
+            throw std::runtime_error(&quot;etcd_client_get_token failed&quot;);
+        }
+
+        std::string token(token_buffer);
+
+        if (token.empty()) {
+            spdlog::error(&quot;Retrieved empty token from etcd&quot;);
+            throw std::runtime_error(&quot;Empty crypto token&quot;);
+        }
+
+        spdlog::debug(&quot;✅ Retrieved crypto token: {} chars&quot;, token.length());
+        return token;
+
+    } catch (const std::exception&amp; e) {
+        spdlog::error(&quot;Exception getting crypto token: {}&quot;, e.what());
+        throw;
+    }
+}
+</code></pre>
+<hr />
+<h2 id="fase-25-integracion-en-loop-zmq">🔧 FASE 2.5: Integración en Loop ZMQ</h2>
+<h3 id="modified-zmq-receive-loop">Modified ZMQ Receive Loop</h3>
+<pre><code class="language-cpp">void zmq_receive_loop(zmq::socket_t&amp; socket) {
+    spdlog::info(&quot;Starting ZMQ receive loop&quot;);
+    spdlog::info(&quot;  Encryption: {}&quot;, g_transport_config.encryption_enabled ? &quot;ON&quot; : &quot;OFF&quot;);
+    spdlog::info(&quot;  Compression: {}&quot;, g_transport_config.compression_enabled ? &quot;ON&quot; : &quot;OFF&quot;);
+
+    // Cache crypto token (refresh periodically in production)
+    std::string crypto_token;
+    if (g_transport_config.encryption_enabled &amp;&amp; g_transport_config.etcd_token_required) {
+        try {
+            crypto_token = get_crypto_token_from_etcd(&quot;ml-detector&quot;);
+            spdlog::info(&quot;✅ Crypto token cached for decryption&quot;);
+        } catch (const std::exception&amp; e) {
+            spdlog::error(&quot;Failed to get crypto token: {}&quot;, e.what());
+            if (g_transport_config.fallback_mode != &quot;compressed_only&quot;) {
+                throw;
+            }
+            spdlog::warn(&quot;Continuing in compressed_only fallback mode&quot;);
+            g_transport_config.encryption_enabled = false;
+        }
+    }
+
+    while (g_running) {
+        try {
+            zmq::message_t message;
+
+            // Receive message (with timeout)
+            auto result = socket.recv(message, zmq::recv_flags::none);
+            if (!result) {
+                continue;  // Timeout or no message
+            }
+
+            spdlog::debug(&quot;Received ZMQ message: {} bytes&quot;, message.size());
+
+            // Copy to vector for processing
+            std::vector&lt;uint8_t&gt; data(
+                static_cast&lt;uint8_t*&gt;(message.data()),
+                static_cast&lt;uint8_t*&gt;(message.data()) + message.size()
+            );
+
+            // STEP 1: Decrypt if enabled
+            if (g_transport_config.encryption_enabled) {
+                try {
+                    auto start = std::chrono::high_resolution_clock::now();
+
+                    data = decrypt_chacha20_poly1305(data, crypto_token);
+
+                    auto end = std::chrono::high_resolution_clock::now();
+                    auto duration = std::chrono::duration_cast&lt;std::chrono::microseconds&gt;(end - start);
+
+                    spdlog::debug(&quot;✅ Decrypted: {} µs&quot;, duration.count());
+
+                } catch (const std::exception&amp; e) {
+                    spdlog::error(&quot;❌ Decryption failed: {}&quot;, e.what());
+                    continue;  // Skip this message
+                }
+            }
+
+            // STEP 2: Decompress if enabled
+            if (g_transport_config.compression_enabled) {
+                try {
+                    auto start = std::chrono::high_resolution_clock::now();
+
+                    data = decompress_lz4(data);
+
+                    auto end = std::chrono::high_resolution_clock::now();
+                    auto duration = std::chrono::duration_cast&lt;std::chrono::microseconds&gt;(end - start);
+
+                    spdlog::debug(&quot;✅ Decompressed: {} µs&quot;, duration.count());
+
+                } catch (const std::exception&amp; e) {
+                    spdlog::error(&quot;❌ Decompression failed: {}&quot;, e.what());
+                    continue;  // Skip this message
+                }
+            }
+
+            // STEP 3: Parse Protobuf (now data is plaintext)
+            PacketEvent event;
+            if (!event.ParseFromArray(data.data(), data.size())) {
+                spdlog::error(&quot;❌ Failed to parse protobuf ({} bytes)&quot;, data.size());
+                continue;
+            }
+
+            spdlog::debug(&quot;✅ Parsed PacketEvent: src={}, dst={}, threat_level={}&quot;,
+                         event.src_ip(), event.dst_ip(), event.threat_level());
+
+            // STEP 4: Process firewall action (existing code)
+            process_firewall_action(event);
+
+        } catch (const zmq::error_t&amp; e) {
+            if (e.num() == EINTR) {
+                spdlog::info(&quot;ZMQ interrupted, shutting down&quot;);
+                break;
+            }
+            spdlog::error(&quot;ZMQ error: {}&quot;, e.what());
+        } catch (const std::exception&amp; e) {
+            spdlog::error(&quot;Unexpected error in receive loop: {}&quot;, e.what());
+        }
+    }
+
+    spdlog::info(&quot;ZMQ receive loop exited&quot;);
+}
+</code></pre>
+<hr />
+<h2 id="fase-26-cleanup-y-refinamiento">🔧 FASE 2.6: Cleanup y Refinamiento</h2>
+<h3 id="cleanup-function">Cleanup Function</h3>
+<pre><code class="language-cpp">void cleanup() {
+    spdlog::info(&quot;Cleaning up...&quot;);
+
+    // Cleanup etcd-client
+    if (g_etcd_config.enabled) {
+        spdlog::info(&quot;Cleaning up etcd-client&quot;);
+        etcd_client_cleanup();
+    }
+
+    // Existing cleanup code...
+    // (ZMQ context, IPSet cleanup, etc.)
+
+    spdlog::info(&quot;Cleanup complete&quot;);
+}
+</code></pre>
+<h3 id="signal-handler">Signal Handler</h3>
+<pre><code class="language-cpp">void signal_handler(int signal) {
+    if (signal == SIGINT || signal == SIGTERM) {
+        spdlog::info(&quot;Received signal {}, shutting down gracefully&quot;, signal);
+        g_running = false;
+    }
+}
+
+int main(int argc, char* argv[]) {
+    // Install signal handlers
+    std::signal(SIGINT, signal_handler);
+    std::signal(SIGTERM, signal_handler);
+
+    // ... rest of main ...
+
+    // Before exit
+    cleanup();
+
+    return 0;
+}
+</code></pre>
+<hr />
+<h2 id="checklist-completo-de-implementacion">✅ Checklist Completo de Implementación</h2>
+<h3 id="cmakeliststxt">CMakeLists.txt</h3>
+<ul>
+<li>[ ] find_library(ETCD_CLIENT_LIB ...)</li>
+<li>[ ] find_library(LZ4_LIB ...)</li>
+<li>[ ] find_package(OpenSSL REQUIRED)</li>
+<li>[ ] target_link_libraries(... etcd_client lz4 ssl crypto)</li>
+<li>[ ] target_include_directories(... etcd-client/include)</li>
+<li>[ ] set_target_properties(... BUILD_RPATH ...)</li>
+</ul>
+<h3 id="headers">Headers</h3>
+<ul>
+<li>[ ] #include "etcd_client.h"</li>
+<li>[ ] #include <lz4.h></li>
+<li>[ ] #include <openssl/evp.h></li>
+</ul>
+<h3 id="config-loading">Config Loading</h3>
+<ul>
+<li>[ ] load_transport_config()</li>
+<li>[ ] load_etcd_config()</li>
+<li>[ ] Log configuration at startup</li>
+</ul>
+<h3 id="initialization">Initialization</h3>
+<ul>
+<li>[ ] initialize_etcd_client()</li>
+<li>[ ] Error handling if etcd unavailable</li>
+</ul>
+<h3 id="helper-functions">Helper Functions</h3>
+<ul>
+<li>[ ] decrypt_chacha20_poly1305()</li>
+<li>[ ] decompress_lz4()</li>
+<li>[ ] get_crypto_token_from_etcd()</li>
+<li>[ ] Error handling in all functions</li>
+</ul>
+<h3 id="zmq-loop">ZMQ Loop</h3>
+<ul>
+<li>[ ] Cache crypto token before loop</li>
+<li>[ ] Decrypt if encryption_enabled</li>
+<li>[ ] Decompress if compression_enabled</li>
+<li>[ ] Parse protobuf</li>
+<li>[ ] Process firewall action</li>
+<li>[ ] Timing metrics (optional)</li>
+</ul>
+<h3 id="cleanup">Cleanup</h3>
+<ul>
+<li>[ ] etcd_client_cleanup()</li>
+<li>[ ] Existing cleanup code preserved</li>
+</ul>
+<h3 id="config-file">Config File</h3>
+<ul>
+<li>[ ] Backup original firewall.json</li>
+<li>[ ] Apply new integrated config</li>
+<li>[ ] Verify JSON syntax</li>
+</ul>
+<hr />
+<h2 id="plan-de-testing">🧪 Plan de Testing</h2>
+<h3 id="test-1-compilacion">Test 1: Compilación</h3>
+<pre><code class="language-bash">cd /vagrant/firewall-acl-agent/build
+rm -rf *
+cmake ..
+make
+# Debe compilar sin errores
+</code></pre>
+<h3 id="test-2-startup-sin-pipeline">Test 2: Startup Sin Pipeline</h3>
+<pre><code class="language-bash">./firewall-acl-agent
+# Debe:
+# - Inicializar etcd-client
+# - Cargar config transport
+# - No crashear
+# Ctrl+C para salir
+</code></pre>
+<h3 id="test-3-con-etcd-server-solo">Test 3: Con etcd-server Solo</h3>
+<pre><code class="language-bash"># Terminal 1: etcd-server
+make etcd-server-start
+
+# Terminal 2: firewall
+make run-firewall
+
+# Debe:
+# - Conectar a etcd
+# - Registrar heartbeat
+# - Esperar mensajes ZMQ
+</code></pre>
+<h3 id="test-4-pipeline-completo">Test 4: Pipeline Completo</h3>
+<pre><code class="language-bash">make run-lab-dev-day23
+make status-lab-day23
+
+# Verificar logs:
+tail -f /vagrant/logs/lab/firewall-agent.log
+
+# Buscar:
+# ✅ &quot;Received ZMQ message&quot;
+# ✅ &quot;Decrypted: X µs&quot;
+# ✅ &quot;Decompressed: X µs&quot;
+# ✅ &quot;Parsed PacketEvent&quot;
+</code></pre>
+<hr />
+<h2 id="troubleshooting">🐛 Troubleshooting</h2>
+<h3 id="error-undefined-reference-to-etcd_client_init">Error: "undefined reference to etcd_client_init"</h3>
+<pre><code class="language-bash"># Verificar linkage
+ldd /vagrant/firewall-acl-agent/build/firewall-acl-agent | grep etcd
+# Debe mostrar: libetcd_client.so =&gt; /vagrant/etcd-client/build/...
+
+# Si no aparece, revisar CMakeLists.txt
+grep etcd_client /vagrant/firewall-acl-agent/CMakeLists.txt
+</code></pre>
+<h3 id="error-failed-to-get-token-from-etcd">Error: "Failed to get token from etcd"</h3>
+<pre><code class="language-bash"># Verificar etcd-server running
+curl http://localhost:2379/version
+
+# Verificar token existe
+vagrant ssh -c &quot;etcdctl get /crypto/firewall/tokens/ml-detector&quot;
+</code></pre>
+<h3 id="error-decryption-failed-authentication-tag-mismatch">Error: "Decryption failed - authentication tag mismatch"</h3>
+<pre><code class="language-bash"># Verificar que ml-detector y firewall usan MISMO token
+# Check ml-detector token:
+vagrant ssh -c &quot;etcdctl get /crypto/ml-detector/tokens/firewall&quot;
+# Check firewall token:
+vagrant ssh -c &quot;etcdctl get /crypto/firewall/tokens/ml-detector&quot;
+# Deben ser el mismo valor
+</code></pre>
+<h3 id="error-lz4-decompression-failed">Error: "LZ4 decompression failed"</h3>
+<pre><code class="language-bash"># Verificar datos están comprimidos
+# Añadir log hex dump (debug):
+spdlog::debug(&quot;First 16 bytes: {:02x}&quot;, fmt::join(data.begin(), data.begin()+16, &quot; &quot;));
+</code></pre>
+<hr />
+<h2 id="metricas-de-exito">📊 Métricas de Éxito</h2>
+<h3 id="compilacion">Compilación</h3>
+<ul>
+<li>✅ cmake success</li>
+<li>✅ make success</li>
+<li>✅ No warnings críticos</li>
+</ul>
+<h3 id="startup">Startup</h3>
+<ul>
+<li>✅ Config cargado correctamente</li>
+<li>✅ etcd-client inicializado</li>
+<li>✅ Crypto token obtenido</li>
+</ul>
+<h3 id="runtime">Runtime</h3>
+<ul>
+<li>✅ Mensajes ZMQ recibidos</li>
+<li>✅ Descifrado exitoso (si enabled)</li>
+<li>✅ Descompresión exitosa (si enabled)</li>
+<li>✅ Protobuf parseado</li>
+<li>✅ Reglas firewall aplicadas</li>
+</ul>
+<h3 id="performance">Performance</h3>
+<ul>
+<li>✅ Descifrado &lt; 100 µs</li>
+<li>✅ Descompresión &lt; 50 µs</li>
+<li>✅ Procesamiento total &lt; 1 ms</li>
+</ul>
+<hr />
+<h2 id="siguiente-sesion-manana">🎯 Siguiente Sesión (Mañana)</h2>
+<p><strong>Objetivo</strong>: Implementar FASE 2.1 a 2.6</p>
+<p><strong>Preparación</strong>:
+1. Leer esta guía completamente
+2. Tener editor abierto con firewall source
+3. Tener terminal con VM conectada
+4. Tener backup de archivos críticos</p>
+<p><strong>Primera tarea</strong>: CMakeLists.txt (15 minutos)</p>
+<p><strong>Si hay problemas</strong>: Parar, documentar, y continuar al día siguiente. Sin prisa. Via Appia Quality. 🏛️</p>
+<hr />
+<p>¡Tranquilo, paso a paso, lo dejamos fino catalino! 😊</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.tabs", "navigation.top", "search.highlight"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

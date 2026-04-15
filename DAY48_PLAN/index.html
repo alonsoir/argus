@@ -1,0 +1,1347 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source embedded-ML NDR for hospitals and schools">
+      
+      
+        <meta name="author" content="Alonso Isidoro Roman">
+      
+      
+        <link rel="canonical" href="https://alonsoir.github.io/argus/DAY48_PLAN/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>DAY 48: TSAN Baseline & Contract Validation - PHASE 0 COMPLETE ✅ - ML Defender (aRGus NDR)</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#day-48-tsan-baseline-contract-validation-phase-0-complete" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="ML Defender (aRGus NDR)" class="md-header__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ML Defender (aRGus NDR)
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              DAY 48: TSAN Baseline &amp; Contract Validation - PHASE 0 COMPLETE ✅
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../README.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../docs/ARCHITECTURE.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../docs/BACKLOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Backlog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../docs/SECURITY_MODEL.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Security Model
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../docs/adr/ADR-013 seed distribution component authentication.md" class="md-tabs__link">
+          
+  
+  
+  ADRs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../docs/contracts/Protobuf contracts.md" class="md-tabs__link">
+          
+  
+  
+  Contracts
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="ML Defender (aRGus NDR)" class="md-nav__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ML Defender (aRGus NDR)
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../README.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/ARCHITECTURE.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/BACKLOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/SECURITY_MODEL.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADRs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ADRs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/adr/ADR-013 seed distribution component authentication.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013 Seed Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/adr/ADR-021-deployment-topology-seed-families.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-021 Topology SSOT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/adr/ADR-022-threat-model-opcion2-descartada.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-022 Threat Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/contracts/Protobuf contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protobuf
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/contracts/JSON contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JSON
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/contracts/Rag security commands.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#phase-0-tsan-baseline-completado-30-enero-2026" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🎉 PHASE 0: TSAN Baseline - COMPLETADO (30 Enero 2026)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🎉 PHASE 0: TSAN Baseline - COMPLETADO (30 Enero 2026)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#achievement-thread-safe-confirmado" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Achievement: THREAD-SAFE CONFIRMADO
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#componentes-validados" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Componentes Validados:
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#archivos-generados" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Archivos Generados:
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#resultados-destacados" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Resultados Destacados:
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#via-appia-quality" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Via Appia Quality:
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#phase-1-contract-validation-pendiente-31-enero-2026" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ⏳ PHASE 1: Contract Validation (PENDIENTE - 31 Enero 2026)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="⏳ PHASE 1: Contract Validation (PENDIENTE - 31 Enero 2026)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#objetivo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Objetivo:
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#plan-phase-1-2-3-horas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Plan Phase 1 (2-3 horas):
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#success-criteria-phase-1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Success Criteria Phase 1:
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#phase-2-cmakeliststxt-refactoring-post-phase-1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🔧 PHASE 2: CMakeLists.txt Refactoring (POST-Phase 1)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🔧 PHASE 2: CMakeLists.txt Refactoring (POST-Phase 1)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#problema-identificado" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Problema Identificado:
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#plan-de-refactoring-day-49-50" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Plan de Refactoring (Day 49-50):
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#componentes-a-limpiar" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Componentes a Limpiar:
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#estado-general-ml-defender" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        📊 Estado General ML Defender
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#proximos-pasos-prioridad" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🎯 Próximos Pasos (Prioridad)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🎯 Próximos Pasos (Prioridad)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#manana-31-enero-2026" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Mañana (31 Enero 2026):
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#esta-semana-febrero-1-2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Esta Semana (Febrero 1-2):
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#via-appia-quality-day-48" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🏛️ Via Appia Quality - Day 48
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="day-48-tsan-baseline-contract-validation-phase-0-complete">DAY 48: TSAN Baseline &amp; Contract Validation - PHASE 0 COMPLETE ✅</h1>
+<h2 id="phase-0-tsan-baseline-completado-30-enero-2026">🎉 PHASE 0: TSAN Baseline - COMPLETADO (30 Enero 2026)</h2>
+<h3 id="achievement-thread-safe-confirmado"><strong>Achievement: THREAD-SAFE CONFIRMADO</strong></h3>
+<pre><code>╔════════════════════════════════════════════════════════════╗
+║  ✅ TSAN Baseline Validation - RESULTADO PERFECTO          ║
+╚════════════════════════════════════════════════════════════╝
+
+📊 Componentes:       4/4 compilados con TSAN ✅
+✅ Unit Tests:        ml-detector 6/6 PASS ✅
+✅ Integration Test:  300s estable, 0 crashes ✅
+✅ Race Conditions:   0
+✅ Deadlocks:         0
+✅ TSAN Warnings:     0
+✅ TSAN Errors:       0
+
+🎯 Conclusión: Sistema THREAD-SAFE validado
+</code></pre>
+<h3 id="componentes-validados"><strong>Componentes Validados:</strong></h3>
+<table>
+<thead>
+<tr>
+<th>Componente</th>
+<th>Build</th>
+<th>Unit Tests</th>
+<th>Integration</th>
+<th>Estado</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>sniffer</strong></td>
+<td>✅ 23MB</td>
+<td>-</td>
+<td>✅ 300s</td>
+<td>✅ CLEAN</td>
+</tr>
+<tr>
+<td><strong>ml-detector</strong></td>
+<td>✅ 25MB</td>
+<td>✅ 6/6</td>
+<td>✅ 300s</td>
+<td>✅ CLEAN</td>
+</tr>
+<tr>
+<td><strong>rag-ingester</strong></td>
+<td>✅ 13MB</td>
+<td>⚠️ 0/2†</td>
+<td>✅ 300s</td>
+<td>✅ CLEAN</td>
+</tr>
+<tr>
+<td><strong>etcd-server</strong></td>
+<td>✅ 13MB</td>
+<td>-</td>
+<td>✅ 300s</td>
+<td>✅ CLEAN</td>
+</tr>
+</tbody>
+</table>
+<p><strong>†</strong> rag-ingester tests fallan por test setup issues, NO por race conditions</p>
+<h3 id="archivos-generados"><strong>Archivos Generados:</strong></h3>
+<pre><code>/vagrant/tsan-reports/day48/
+├── TSAN_SUMMARY.md                    # Reporte consolidado
+├── NOTES.md                           # Metodología y conclusiones
+├── sniffer-tsan-tests.log             # Unit test logs
+├── ml-detector-tsan-tests.log         # Unit test logs
+├── rag-ingester-tsan-tests.log        # Unit test logs
+├── etcd-server-tsan-tests.log         # Unit test logs
+├── sniffer-integration.log            # Integration test
+├── ml-detector-integration.log        # Integration test
+├── rag-ingester-integration.log       # Integration test
+└── etcd-server-integration.log        # Integration test
+
+/vagrant/tsan-reports/baseline/        # Symlink → day48
+</code></pre>
+<h3 id="resultados-destacados"><strong>Resultados Destacados:</strong></h3>
+<ol>
+<li><strong>ShardedFlowManager Validation:</strong></li>
+<li>800K ops/sec sin race conditions ✅</li>
+<li>16 shards concurrentes sin colisiones ✅</li>
+<li>
+<p>Hash-based sharding thread-safe ✅</p>
+</li>
+<li>
+<p><strong>Pipeline Stability:</strong></p>
+</li>
+<li>5 minutos operación continua ✅</li>
+<li>Todos los componentes estables ✅</li>
+<li>
+<p>Shutdown graceful exitoso ✅</p>
+</li>
+<li>
+<p><strong>Zero Critical Issues:</strong></p>
+</li>
+<li>0 race conditions detectadas</li>
+<li>0 deadlocks encontrados</li>
+<li>0 memory corruption issues</li>
+</ol>
+<h3 id="via-appia-quality"><strong>Via Appia Quality:</strong></h3>
+<ul>
+<li>✅ Evidence-based: TSAN reports con 0 warnings</li>
+<li>✅ Methodical: Unit tests → Integration → Analysis</li>
+<li>✅ Foundation-first: Baseline ANTES de contract validation</li>
+<li>✅ Scientific: Measured results, not assumptions</li>
+</ul>
+<hr />
+<h2 id="phase-1-contract-validation-pendiente-31-enero-2026">⏳ PHASE 1: Contract Validation (PENDIENTE - 31 Enero 2026)</h2>
+<h3 id="objetivo"><strong>Objetivo:</strong></h3>
+<p>Validar que 142 features fluyen sin pérdidas: sniffer → ml-detector → rag-ingester</p>
+<h3 id="plan-phase-1-2-3-horas"><strong>Plan Phase 1 (2-3 horas):</strong></h3>
+<p><strong>1.1 Input Validation (ml-detector):</strong></p>
+<pre><code class="language-cpp">// Agregar en ml-detector/src/ml_detector.cpp
+void validate_input_contract(const SecurityEvent&amp; event) {
+    int feature_count = count_valid_features(event);
+
+    if (feature_count &lt; 142) {
+        LOG_ERROR(&quot;Contract violation: expected 142, got {}&quot;, 
+                  feature_count);
+        log_missing_features(event);
+    }
+}
+</code></pre>
+<p><strong>1.2 Feature Count Tracking:</strong></p>
+<pre><code class="language-cpp">// Logging periódico cada 1000 eventos
+LOG_INFO(&quot;[CONTRACT] Features: {} received, {} processed, {} forwarded&quot;,
+         stats.received, stats.processed, stats.forwarded);
+</code></pre>
+<p><strong>1.3 End-to-End Test:</strong></p>
+<pre><code class="language-bash"># Replay CTU-13 dataset
+tcpreplay -i eth1 --mbps=10 datasets/ctu13/smallFlows.pcap
+
+# Validar logs
+grep &quot;CONTRACT&quot; /vagrant/logs/ml-detector/*.log
+grep &quot;142 features&quot; /vagrant/logs/rag-ingester/*.log
+</code></pre>
+<p><strong>1.4 Contract Assertions:</strong>
+- [ ] ml-detector confirma 142 features en input
+- [ ] rag-ingester confirma 142 features en output
+- [ ] 0 pérdidas detectadas en replay
+- [ ] Logs demuestran integridad end-to-end</p>
+<h3 id="success-criteria-phase-1"><strong>Success Criteria Phase 1:</strong></h3>
+<pre><code>✅ ml-detector logs: &quot;142/142 features validated&quot;
+✅ rag-ingester logs: &quot;142/142 features received&quot;
+✅ Contract test: 0 features lost
+✅ Evidence: Logs + test results
+</code></pre>
+<hr />
+<h2 id="phase-2-cmakeliststxt-refactoring-post-phase-1">🔧 PHASE 2: CMakeLists.txt Refactoring (POST-Phase 1)</h2>
+<h3 id="problema-identificado"><strong>Problema Identificado:</strong></h3>
+<p>Flags hardcoded en CMakeLists.txt interfieren con control del Makefile raíz.</p>
+<p><strong>Ejemplos:</strong></p>
+<pre><code class="language-cmake"># ml-detector/CMakeLists.txt (línea 30)
+set(CMAKE_CXX_FLAGS_DEBUG &quot;-g -O0 -fsanitize=address ...&quot;) # ❌ HARDCODED
+
+# Conflicto con:
+make tsan-build-ml-detector  # Intenta usar -fsanitize=thread
+# Resultado: error: -fsanitize=thread incompatible with -fsanitize=address
+</code></pre>
+<h3 id="plan-de-refactoring-day-49-50"><strong>Plan de Refactoring (Day 49-50):</strong></h3>
+<p><strong>Objetivo:</strong> Single Source of Truth en Makefile raíz</p>
+<p><strong>1. Auditar todos los CMakeLists.txt:</strong></p>
+<pre><code class="language-bash">find /vagrant -name &quot;CMakeLists.txt&quot; -exec grep -l &quot;CMAKE_CXX_FLAGS&quot; {} \;
+# Encontrar todos los hardcoded flags
+</code></pre>
+<p><strong>2. Eliminar flags hardcoded:</strong></p>
+<pre><code class="language-cmake"># ANTES (ml-detector/CMakeLists.txt):
+set(CMAKE_CXX_FLAGS_DEBUG &quot;-g -O0 -fsanitize=address ...&quot;)
+
+# DESPUÉS:
+# (removed - controlled by root Makefile)
+</code></pre>
+<p><strong>3. Consolidar en Makefile raíz:</strong></p>
+<pre><code class="language-makefile"># Build profiles
+PROFILE_PRODUCTION := -O3 -march=native -DNDEBUG -flto
+PROFILE_DEBUG := -g -O0 -fno-omit-frame-pointer
+PROFILE_TSAN := -fsanitize=thread -g -O1 -fno-omit-frame-pointer
+PROFILE_ASAN := -fsanitize=address -g -O1 -fno-omit-frame-pointer
+
+# Usage
+sniffer-production:
+    cmake -DCMAKE_CXX_FLAGS=&quot;$(PROFILE_PRODUCTION)&quot; ...
+</code></pre>
+<p><strong>4. Validar builds:</strong></p>
+<pre><code class="language-bash">make clean &amp;&amp; make production  # Should use -O3
+make clean &amp;&amp; make tsan        # Should use -fsanitize=thread
+make clean &amp;&amp; make debug       # Should use -g -O0
+</code></pre>
+<h3 id="componentes-a-limpiar"><strong>Componentes a Limpiar:</strong></h3>
+<ul>
+<li>[ ] sniffer/CMakeLists.txt</li>
+<li>[x] ml-detector/CMakeLists.txt (líneas 29-30 comentadas)</li>
+<li>[ ] rag-ingester/CMakeLists.txt</li>
+<li>[ ] etcd-server/CMakeLists.txt</li>
+<li>[ ] crypto-transport/CMakeLists.txt</li>
+<li>[ ] etcd-client/CMakeLists.txt</li>
+</ul>
+<hr />
+<h2 id="estado-general-ml-defender">📊 Estado General ML Defender</h2>
+<pre><code>╔════════════════════════════════════════════════════════════╗
+║  ML Defender - Post Day 48 Phase 0                         ║
+╚════════════════════════════════════════════════════════════╝
+
+Foundation (ISSUE-003):
+├─ Sniffer:          ✅ 142/142 features, 800K ops/sec
+├─ ShardedFlowMgr:   ✅ Thread-safe validated (TSAN)
+├─ Tests:            ✅ 14/14 passing (100%)
+├─ Concurrency:      ✅ 0 race conditions (TSAN)
+└─ Integration:      ✅ 300s stable under TSAN
+
+Phase 1 Validation:
+├─ ml-detector:      ⏳ Contract validation pending
+├─ rag-ingester:     ⏳ End-to-end validation pending
+└─ Pipeline:         ⏳ 142 features flow verification pending
+
+Build System:
+├─ TSAN:             ✅ Working (Phase 0 complete)
+├─ CMakeLists.txt:   ⚠️  Needs refactoring (hardcoded flags)
+└─ Makefile:         ⚠️  Needs consolidation (profiles)
+
+Post-ISSUE-003:
+├─ Bug JSONL:        ⏳ Pending (rag-ingester)
+├─ Watcher:          ⏳ Not implemented
+└─ etcd HA:          ⏳ Not implemented
+</code></pre>
+<hr />
+<h2 id="proximos-pasos-prioridad">🎯 Próximos Pasos (Prioridad)</h2>
+<h3 id="manana-31-enero-2026"><strong>Mañana (31 Enero 2026):</strong></h3>
+<p><strong>Morning - Phase 1 Contract Validation (2-3h):</strong>
+1. [ ] Instrumentar ml-detector con contract logging
+2. [ ] Replay CTU-13 smallFlows.pcap
+3. [ ] Validar logs: "142/142 features"
+4. [ ] Documentar resultados</p>
+<p><strong>Afternoon - Opcional:</strong>
+- [ ] Integration test con dataset grande (NERIS)
+- [ ] Performance profiling
+- [ ] O iniciar CMakeLists.txt refactoring</p>
+<h3 id="esta-semana-febrero-1-2"><strong>Esta Semana (Febrero 1-2):</strong></h3>
+<ol>
+<li>[ ] CMakeLists.txt cleanup (Day 49)</li>
+<li>[ ] Build system consolidation (Day 50)</li>
+<li>[ ] Bug JSONL fix (rag-ingester)</li>
+<li>[ ] Documentation update</li>
+</ol>
+<hr />
+<h2 id="via-appia-quality-day-48">🏛️ Via Appia Quality - Day 48</h2>
+<p><strong>Metodología Aplicada:</strong>
+1. ✅ <strong>Baseline PRIMERO:</strong> TSAN validation antes de contract testing
+2. ✅ <strong>Evidence-based:</strong> 0 warnings medidos, no asumidos
+3. ✅ <strong>Systematic:</strong> Unit → Integration → Analysis
+4. ✅ <strong>Documented:</strong> TSAN_SUMMARY.md + NOTES.md</p>
+<p><strong>Lecciones Aprendidas:</strong>
+- ✅ Hardcoded flags causan conflictos (ml-detector ASAN vs TSAN)
+- ✅ Integration tests encuentran config issues (detector.json vs ml_detector_config.json)
+- ✅ Test setup failures ≠ race conditions (rag-ingester false alarm)</p>
+<p><strong>Próximas Mejoras:</strong>
+- [ ] Centralizar build flags en Makefile raíz
+- [ ] Mejorar test isolation (rag-ingester cleanup)
+- [ ] Automatizar TSAN validation en CI/CD</p>
+<hr />
+<p><strong>End of Day 48 Phase 0</strong></p>
+<p><strong>Status:</strong> THREAD-SAFE VALIDATED ✅<br />
+<strong>Reports:</strong> /vagrant/tsan-reports/day48/<br />
+<strong>Next:</strong> Phase 1 - Contract Validation (142 features)<br />
+<strong>Quality:</strong> Via Appia maintained 🏛️<br />
+<strong>Foundation:</strong> SOLID 🏗️</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.tabs", "navigation.top", "search.highlight"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

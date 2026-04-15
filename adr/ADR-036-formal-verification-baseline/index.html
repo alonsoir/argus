@@ -1,0 +1,1464 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source embedded-ML NDR for hospitals and schools">
+      
+      
+        <meta name="author" content="Alonso Isidoro Roman">
+      
+      
+        <link rel="canonical" href="https://alonsoir.github.io/argus/adr/ADR-036-formal-verification-baseline/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>ADR-036: Formal Verification Baseline - ML Defender (aRGus NDR)</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#adr-036-formal-verification-baseline" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-header__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ML Defender (aRGus NDR)
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              ADR-036: Formal Verification Baseline
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../README.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/BACKLOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Backlog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Security Model
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-tabs__link">
+          
+  
+  
+  ADRs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/contracts/Protobuf contracts.md" class="md-tabs__link">
+          
+  
+  
+  Contracts
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-nav__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ML Defender (aRGus NDR)
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../README.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/BACKLOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADRs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ADRs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013 Seed Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-021-deployment-topology-seed-families.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-021 Topology SSOT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-022-threat-model-opcion2-descartada.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-022 Threat Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Protobuf contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protobuf
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/JSON contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JSON
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Rag security commands.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#contexto" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Contexto
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#decision" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Decisión
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#alcance-de-verificacion-por-componente" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Alcance de verificación por componente
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#checklist-de-baseline-adaptado-de-hugo-vazquez-carames" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Checklist de baseline (adaptado de Hugo Vázquez Caramés)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Checklist de baseline (adaptado de Hugo Vázquez Caramés)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-definir-alcance-de-verificacion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Definir alcance de verificación
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-fijar-modelo-de-ejecucion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Fijar modelo de ejecución
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-restringir-perfil-de-cc" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Restringir perfil de C/C++
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-normalizar-el-codigo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Normalizar el código
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5-limpiar-semantica" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Limpiar semántica
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#6-modelar-hipotesis-del-entorno" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Modelar hipótesis del entorno
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#7-aislar-logica-funcional" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Aislar lógica funcional
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#8-anotar-con-contratos-formales" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. Anotar con contratos formales
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#9-refinar-bucles" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9. Refinar bucles
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#10-fijar-entorno-de-compilacion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10. Fijar entorno de compilación
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#11-ejecutar-chequeos-previos-automaticos" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        11. Ejecutar chequeos previos automáticos
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#12-congelar-linea-base-de-verificacion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        12. Congelar línea base de verificación
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#diferencias-entre-variante-a-y-variante-c" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Diferencias entre Variante A y Variante C
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#propiedades-a-demostrar-preliminar" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Propiedades a demostrar (preliminar)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#preguntas-abiertas-para-el-consejo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Preguntas abiertas para el Consejo
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#consecuencias" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Consecuencias
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#estado-de-implementacion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Estado de implementación
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="adr-036-formal-verification-baseline">ADR-036: Formal Verification Baseline</h1>
+<table>
+<thead>
+<tr>
+<th>Metadata</th>
+<th>Valor</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Estado</strong></td>
+<td>BORRADOR — pendiente revisión Consejo</td>
+</tr>
+<tr>
+<td><strong>Fecha</strong></td>
+<td>14 Abril 2026</td>
+</tr>
+<tr>
+<td><strong>Autor</strong></td>
+<td>Alonso Isidoro Román</td>
+</tr>
+<tr>
+<td><strong>Inspiración</strong></td>
+<td>Hugo Vázquez Caramés — Firewall Numantia 25A checklist</td>
+</tr>
+<tr>
+<td><strong>Pre-requisitos</strong></td>
+<td>ADR-029 (variantes hardened) + ADR-034 (topología) + ADR-035 (etcd HA)</td>
+</tr>
+<tr>
+<td><strong>Feature destino</strong></td>
+<td>feature/formal-verification (última feature del proyecto)</td>
+</tr>
+<tr>
+<td><strong>Aplica a</strong></td>
+<td>Variante A (AppArmor+eBPF/XDP) + Variante C (seL4+libpcap)</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="contexto">Contexto</h2>
+<p>aRGus NDR protege infraestructura crítica — hospitales, escuelas, municipios.
+En ese dominio, "funciona en mis tests" no es suficiente. En algún punto del
+roadmap, el software debe poder demostrar que funciona correctamente bajo
+cualquier entrada válida, no solo bajo las entradas que hemos probado.</p>
+<p>La verificación formal es el instrumento que permite hacer esa demostración.
+No es el primer paso del desarrollo — es el último. Requiere que el código
+esté estabilizado, que los contratos estén claros, y que la arquitectura
+no cambie de forma significativa. Por eso este ADR es el punto y final
+del desarrollo activo, tanto para la Variante A como para la Variante C.</p>
+<p>Hugo Vázquez Caramés (Firewall Numantia 25A) ha documentado públicamente
+un checklist de 12 pasos para establecer una baseline de verificación formal
+sobre C puro. Este ADR adapta ese checklist a la realidad de aRGus NDR:
+C++20 + componentes críticos en C puro (seed_client, crypto-transport) +
+dos variantes de despliegue con perfiles de riesgo distintos.</p>
+<hr />
+<h2 id="decision">Decisión</h2>
+<p>Establecer una <strong>Formal Verification Baseline</strong> en dos fases:</p>
+<ul>
+<li><strong>Fase A:</strong> componentes críticos en C puro — verificación con Frama-C/WP</li>
+<li><strong>Fase B:</strong> componentes C++20 — verificación con clang-tidy + ASan + UBSan</li>
+<li>contratos informales anotados (precondiciones/postcondiciones en código)</li>
+</ul>
+<p>La Variante C (seL4) tiene un perfil de verificación más estricto que la
+Variante A (AppArmor), dado que seL4 ya está formalmente verificado y los
+componentes que corren sobre él deben cumplir las mismas garantías.</p>
+<hr />
+<h2 id="alcance-de-verificacion-por-componente">Alcance de verificación por componente</h2>
+<table>
+<thead>
+<tr>
+<th>Componente</th>
+<th>Lenguaje</th>
+<th>Herramienta</th>
+<th>Prioridad</th>
+<th>Variante</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>seed_client.cpp</td>
+<td>C++20/C</td>
+<td>Frama-C (partes C) + UBSan</td>
+<td>P0</td>
+<td>A + C</td>
+</tr>
+<tr>
+<td>crypto-transport</td>
+<td>C++20/C</td>
+<td>Frama-C (partes C) + ASan</td>
+<td>P0</td>
+<td>A + C</td>
+</tr>
+<tr>
+<td>plugin_loader.cpp</td>
+<td>C++20</td>
+<td>clang-tidy + contratos</td>
+<td>P0</td>
+<td>A + C</td>
+</tr>
+<tr>
+<td>etcd-server</td>
+<td>C++20</td>
+<td>UBSan + contratos</td>
+<td>P1</td>
+<td>A + C</td>
+</tr>
+<tr>
+<td>sniffer (eBPF/XDP)</td>
+<td>C++20 + eBPF C</td>
+<td>Frama-C parcial + verificación eBPF</td>
+<td>P1</td>
+<td>A</td>
+</tr>
+<tr>
+<td>sniffer (libpcap)</td>
+<td>C++20</td>
+<td>UBSan + contratos</td>
+<td>P1</td>
+<td>C</td>
+</tr>
+<tr>
+<td>ml-detector</td>
+<td>C++20</td>
+<td>UBSan + contratos + invariantes ML</td>
+<td>P1</td>
+<td>A + C</td>
+</tr>
+<tr>
+<td>firewall-acl-agent</td>
+<td>C++20</td>
+<td>UBSan + contratos</td>
+<td>P2</td>
+<td>A + C</td>
+</tr>
+<tr>
+<td>rag-ingester</td>
+<td>C++20</td>
+<td>UBSan + contratos</td>
+<td>P2</td>
+<td>A + C</td>
+</tr>
+<tr>
+<td>rag-security</td>
+<td>C++20</td>
+<td>UBSan + contratos</td>
+<td>P2</td>
+<td>A + C</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="checklist-de-baseline-adaptado-de-hugo-vazquez-carames">Checklist de baseline (adaptado de Hugo Vázquez Caramés)</h2>
+<h3 id="1-definir-alcance-de-verificacion">1. Definir alcance de verificación</h3>
+<p>Por cada componente P0:
+- Delimitar funciones a verificar (no todo el componente)
+- Definir estados relevantes y propiedades a demostrar
+- Documentar qué queda <strong>fuera</strong> del alcance y por qué</p>
+<h3 id="2-fijar-modelo-de-ejecucion">2. Fijar modelo de ejecución</h3>
+<p>Declarar explícitamente para cada componente:
+- Monohilo vs multihilo (sniffer es multihilo — ShardedFlowManager)
+- Presencia de interrupciones (sniffer eBPF — sí)
+- Concurrencia asíncrona relevante para la lógica funcional</p>
+<h3 id="3-restringir-perfil-de-cc">3. Restringir perfil de C/C++</h3>
+<p>Para las partes C puro (seed_client, crypto-transport):
+- Evitar construcciones opacas
+- Limitar aliasing de punteros
+- Controlar aritmética de punteros
+- Minimizar macros complejas
+- Eliminar dependencias innecesarias del compilador</p>
+<p>Para C++20:
+- Evitar UB conocido (signed overflow, null deref, out-of-bounds)
+- Limitar templates a instanciaciones verificables
+- Controlar <code>reinterpret_cast</code> y <code>void*</code></p>
+<h3 id="4-normalizar-el-codigo">4. Normalizar el código</h3>
+<ul>
+<li>Hacer explícitos tipos y conversiones</li>
+<li>Descomponer expresiones complejas</li>
+<li>Separar lectura, decisión y escritura</li>
+<li>Reducir efectos laterales</li>
+<li>Normalizar bucles y salidas</li>
+</ul>
+<h3 id="5-limpiar-semantica">5. Limpiar semántica</h3>
+<ul>
+<li>Inicializar todo estado persistente</li>
+<li>Acotar índices y longitudes (ya tenemos MAX_PLUGIN_PAYLOAD_SIZE = 64KB)</li>
+<li>Revisar conversiones signed/unsigned</li>
+<li>Controlar shifts y overflows</li>
+<li>Validar punteros y buffers</li>
+<li>Evitar depender del orden de evaluación</li>
+</ul>
+<h3 id="6-modelar-hipotesis-del-entorno">6. Modelar hipótesis del entorno</h3>
+<ul>
+<li>Especificar qué comportamientos externos se asumen</li>
+<li>Para el sniffer: qué garantiza el kernel sobre los paquetes recibidos</li>
+<li>Para plugin_loader: qué garantiza el OS sobre dlopen/fstat</li>
+<li>Para seed_client: qué garantiza el filesystem sobre seed.bin</li>
+</ul>
+<h3 id="7-aislar-logica-funcional">7. Aislar lógica funcional</h3>
+<p>Separar con claridad:
+- Lógica interna (verificable)
+- Acceso a recursos externos (no verificable formalmente)
+- Gestión de buffers
+- Transiciones de estado
+- Tratamiento de error</p>
+<h3 id="8-anotar-con-contratos-formales">8. Anotar con contratos formales</h3>
+<p>Para cada función crítica añadir:</p>
+<pre><code class="language-cpp">// @requires: seed_path != nullptr &amp;&amp; strlen(seed_path) &gt; 0
+// @ensures: seed_.size() == 32 || throws(std::runtime_error)
+// @invariant: seed_ permanece zeroed hasta load() completo
+// @terminates: siempre (no bucles infinitos)
+</code></pre>
+<h3 id="9-refinar-bucles">9. Refinar bucles</h3>
+<ul>
+<li>Distinguir espera acotada de espera potencialmente infinita</li>
+<li>Introducir límites o timeouts verificables</li>
+<li>Definir condición de salida normal y de error</li>
+<li>Crítico para: sniffer (RingBufferConsumer), rag-ingester (FAISS queries)</li>
+</ul>
+<h3 id="10-fijar-entorno-de-compilacion">10. Fijar entorno de compilación</h3>
+<p>Congelar para cada variante:
+- Compilador y versión (GCC 12.x para Variante A, configuración seL4 para C)
+- Flags: <code>-Wall -Wextra -Wpedantic -fstack-protector-strong</code>
+- Arquitectura objetivo: x86-64 (Variante A) + ARM64 (Variante C)
+- Tamaños de tipos explícitos (<code>uint32_t</code>, no <code>int</code>)
+- Modelo de memoria documentado</p>
+<h3 id="11-ejecutar-chequeos-previos-automaticos">11. Ejecutar chequeos previos automáticos</h3>
+<p>Antes de congelar la baseline:</p>
+<pre><code class="language-bash"># Warnings estrictos (ya tenemos -Wall -Wextra -Wpedantic)
+make pipeline-build 2&gt;&amp;1 | grep -c warning
+
+# Address Sanitizer
+cmake -DCMAKE_CXX_FLAGS=&quot;-fsanitize=address&quot; ...
+make test-all
+
+# Undefined Behavior Sanitizer
+cmake -DCMAKE_CXX_FLAGS=&quot;-fsanitize=undefined&quot; ...
+make test-all
+
+# Static analysis
+clang-tidy --checks='*' src/*.cpp
+
+# Valgrind (sin leaks en componentes críticos)
+valgrind --leak-check=full ./build-debug/etcd-server
+</code></pre>
+<p>Gate de entrada a verificación formal: <strong>0 warnings + 0 ASan + 0 UBSan + 0 Valgrind leaks</strong>
+en componentes P0.</p>
+<h3 id="12-congelar-linea-base-de-verificacion">12. Congelar línea base de verificación</h3>
+<p>Fijar exactamente:
+- Commit hash de la baseline (tag <code>v-formal-baseline</code>)
+- Contratos anotados en código
+- Hipótesis del entorno documentadas en <code>docs/formal/assumptions.md</code>
+- Configuración de compilación en <code>docs/formal/build-config.md</code>
+- Propiedades a demostrar en <code>docs/formal/properties.md</code></p>
+<hr />
+<h2 id="diferencias-entre-variante-a-y-variante-c">Diferencias entre Variante A y Variante C</h2>
+<table>
+<thead>
+<tr>
+<th>Aspecto</th>
+<th>Variante A (AppArmor+eBPF/XDP)</th>
+<th>Variante C (seL4+libpcap)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Nivel de verificación requerido</td>
+<td>Alto</td>
+<td>Muy alto</td>
+</tr>
+<tr>
+<td>Herramienta principal</td>
+<td>Frama-C + UBSan + ASan</td>
+<td>Frama-C + seL4 proof obligations</td>
+</tr>
+<tr>
+<td>Componente más complejo</td>
+<td>sniffer eBPF/XDP</td>
+<td>plugin_loader sobre seL4</td>
+</tr>
+<tr>
+<td>Modelo de memoria</td>
+<td>Linux kernel guarantees</td>
+<td>seL4 capability model</td>
+</tr>
+<tr>
+<td>Certificación objetivo</td>
+<td>IEC 62443 (industrial)</td>
+<td>Common Criteria EAL4+</td>
+</tr>
+<tr>
+<td>Bucles críticos</td>
+<td>RingBufferConsumer</td>
+<td>seL4 IPC message loops</td>
+</tr>
+<tr>
+<td>Hipótesis del entorno</td>
+<td>AppArmor + Linux kernel</td>
+<td>seL4 microkernel (ya verificado)</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="propiedades-a-demostrar-preliminar">Propiedades a demostrar (preliminar)</h2>
+<p>Las siguientes propiedades deben demostrarse antes de cerrar este ADR:</p>
+<p><strong>P1 — Ausencia de buffer overflow en seed_client</strong>
+<code>∀ input: load(path) → seed_.size() == 32 ∨ throws(runtime_error)</code></p>
+<p><strong>P2 — Fail-closed garantizado en plugin_loader</strong>
+<code>∀ plugin: signature_invalid(plugin) → std::terminate() (never returns)</code></p>
+<p><strong>P3 — INVARIANTE-SEED-001 formal</strong>
+<code>∀ component ∈ COMPONENTS: seed(component) == seed_family</code></p>
+<p><strong>P4 — Ausencia de data race en ShardedFlowManager</strong>
+<code>∀ packet: process(packet) → no concurrent write to same shard</code></p>
+<p><strong>P5 — Terminación del pipeline bajo carga</strong>
+<code>∀ input_rate ≤ MAX_MBPS: pipeline terminates within bounded time</code></p>
+<hr />
+<h2 id="preguntas-abiertas-para-el-consejo">Preguntas abiertas para el Consejo</h2>
+<p><strong>OQ-1:</strong> ¿Frama-C/WP es la herramienta correcta para las partes C puro, o
+preferís CBMC (bounded model checking) para propiedades de seguridad específicas?</p>
+<p><strong>OQ-2:</strong> Para C++20 puro, ¿hay herramientas de verificación formal maduras
+en 2026, o nos limitamos a ASan + UBSan + contratos informales anotados?</p>
+<p><strong>OQ-3:</strong> ¿Qué certificación es realista para hospitales europeos?
+IEC 62443-4-2 (componentes industriales) vs Common Criteria vs ENS (España)?</p>
+<p><strong>OQ-4:</strong> ¿El delta de esfuerzo entre Variante A y Variante C justifica
+mantener ambas en el roadmap de verificación formal, o Variante C es
+exclusivamente investigación/paper?</p>
+<hr />
+<h2 id="consecuencias">Consecuencias</h2>
+<p><strong>Positivas:</strong>
+- aRGus NDR puede aspirar a certificación formal para hospitales europeos
+- La Variante C (seL4) se convierte en contribución científica publicable
+  independiente del paper principal
+- El checklist es reutilizable para cualquier componente nuevo</p>
+<p><strong>Negativas:</strong>
+- Coste temporal muy alto — estimación: 6-12 meses de trabajo en solitario
+- Requiere aprendizaje de Frama-C/WP (curva de entrada significativa)
+- El código C++20 tiene soporte limitado en herramientas de verificación formal</p>
+<p><strong>Neutras:</strong>
+- La baseline ASan + UBSan se puede implementar progresivamente,
+  empezando por componentes P0, sin bloquear el desarrollo de otras features</p>
+<hr />
+<h2 id="estado-de-implementacion">Estado de implementación</h2>
+<table>
+<thead>
+<tr>
+<th>Elemento</th>
+<th>Estado</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Checklist adaptado</td>
+<td>✅ Este documento</td>
+</tr>
+<tr>
+<td>Gate ASan + UBSan en CI</td>
+<td>⏳ feature/formal-verification</td>
+</tr>
+<tr>
+<td>Contratos anotados (seed_client)</td>
+<td>⏳ feature/formal-verification</td>
+</tr>
+<tr>
+<td>Frama-C baseline seed_client</td>
+<td>⏳ feature/formal-verification</td>
+</tr>
+<tr>
+<td>Propiedades P1-P5 demostradas</td>
+<td>⏳ feature/formal-verification</td>
+</tr>
+<tr>
+<td>Certificación IEC 62443</td>
+<td>⏳ post-verificación</td>
+</tr>
+</tbody>
+</table>
+<p><em>Borrador — DAY 117 — 14 Abril 2026</em>
+<em>Pendiente revisión Consejo de Sabios</em></p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.top", "search.highlight"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

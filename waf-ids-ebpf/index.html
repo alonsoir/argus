@@ -1,0 +1,2283 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source embedded-ML NDR for hospitals and schools">
+      
+      
+        <meta name="author" content="Alonso Isidoro Roman">
+      
+      
+        <link rel="canonical" href="https://alonsoir.github.io/argus/waf-ids-ebpf/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>Waf ids ebpf - ML Defender (aRGus NDR)</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#vamos-a-especular-un-poco-que-conllevaria-integrar-mi-pipeline-con-un-waf-decente" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="ML Defender (aRGus NDR)" class="md-header__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ML Defender (aRGus NDR)
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Waf ids ebpf
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../README.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../docs/ARCHITECTURE.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../docs/BACKLOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Backlog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../docs/SECURITY_MODEL.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Security Model
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../docs/adr/ADR-013 seed distribution component authentication.md" class="md-tabs__link">
+          
+  
+  
+  ADRs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../docs/contracts/Protobuf contracts.md" class="md-tabs__link">
+          
+  
+  
+  Contracts
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="ML Defender (aRGus NDR)" class="md-nav__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ML Defender (aRGus NDR)
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../README.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/ARCHITECTURE.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/BACKLOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/SECURITY_MODEL.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADRs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ADRs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/adr/ADR-013 seed distribution component authentication.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013 Seed Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/adr/ADR-021-deployment-topology-seed-families.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-021 Topology SSOT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/adr/ADR-022-threat-model-opcion2-descartada.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-022 Threat Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/contracts/Protobuf contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protobuf
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/contracts/JSON contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JSON
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/contracts/Rag security commands.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#vamos-a-especular-un-poco-que-conllevaria-integrar-mi-pipeline-con-un-waf-decente" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Vamos a especular un poco. Qué conllevaría integrar mi pipeline con un WAF decente?
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1-proposito-de-la-integracion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🧬 1. Propósito de la integración
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-que-implicaria-tecnicamente" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ⚙️ 2. Qué implicaría técnicamente
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="⚙️ 2. Qué implicaría técnicamente">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#a-insercion-en-el-pipeline" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🔹 a) Inserción en el pipeline
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#b-integracion-operativa" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🔹 b) Integración operativa
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-interoperabilidad-con-un-waf-existente" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🧩 3. Interoperabilidad con un WAF existente
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-beneficios-de-la-integracion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🧠 4. Beneficios de la integración
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-riesgos-y-precauciones" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🧨 5. Riesgos y precauciones
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-evolucion-natural-adaptive-waf-intelligence-layer" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🔐 6. Evolución natural: “Adaptive WAF Intelligence Layer”
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-camino-recomendado-para-ti" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🧭 7. Camino recomendado para ti
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#donde-va-el-waf-en-tu-pipeline" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ¿DÓNDE va el WAF en tu pipeline?
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#que-necesita-hacer-exactamente-el-waf" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ¿Qué necesita hacer exactamente el WAF?
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#integracion-con-tus-sniffers-y-modelos-ml" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Integración con tus sniffers y modelos ML
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#latencia-consideraciones-practicas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Latencia: consideraciones prácticas
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#enfoque-distribuido-por-que-y-como" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Enfoque distribuido: por qué y cómo
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#flujo-concreto-end-to-end" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Flujo concreto (end-to-end)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#ejemplo-de-mensajes-zmq-simplificado" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Ejemplo de mensajes ZMQ (simplificado)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#evento-desde-waf" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        evento desde WAF
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#snippet-de-regla-dinamica-pseudocmd" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Snippet de “regla dinámica” (pseudocmd)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#tecnologias-buenas-para-tu-stack-orientativo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Tecnologías “buenas” para tu stack (orientativo)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#riesgos-operativos-y-contramedidas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Riesgos operativos y contramedidas
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Riesgos operativos y contramedidas">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#plantilla-minima-para-arrancar-playbook" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Plantilla mínima para arrancar (playbook)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#1-el-contexto-lo-que-ya-estas-construyendo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ⚙️ 1. El contexto: lo que ya estás construyendo
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-que-te-permite-un-waf-from-scratch-sobre-ebpf" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🧬 2. Qué te permite un WAF “from scratch” sobre eBPF
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🧬 2. Qué te permite un WAF “from scratch” sobre eBPF">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#a-visibilidad-total-sin-overhead" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🔹 a) Visibilidad total, sin overhead
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#b-politicas-dinamicas-gestionadas-por-el-user-space-zmq-etcd" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🔹 b) Políticas dinámicas gestionadas por el user space (ZMQ + etcd)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#c-integracion-nativa-con-ml" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🔹 c) Integración nativa con ML
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#d-bypass-de-limitaciones-del-user-space-waf" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🔹 d) Bypass de limitaciones del user-space WAF
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-latencia-rendimiento-y-escalabilidad" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ⚡️ 3. Latencia, rendimiento y escalabilidad
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-el-valor-estrategico-diferenciarse-de-los-waf-clasicos" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🧠 4. El valor estratégico: diferenciarse de los WAF clásicos
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5-lo-que-requeriria-en-la-practica" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🧩 5. Lo que requeriría en la práctica
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#6-riesgos-y-precauciones" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🧩 6. Riesgos y precauciones
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#7-conclusion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🚀 7. Conclusión
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#resumen-rapido-en-una-linea" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Resumen rápido (en una línea)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#que-puedes-reutilizar-exactamente-sin-o-con-pocos-cambios" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Qué puedes reutilizar exactamente (sin o con pocos cambios)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#que-adaptar-o-anadir-tecnicamente" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Qué adaptar o añadir (técnicamente)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#que-features-nuevas-conviene-anadir-prioritarias" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Qué features nuevas conviene añadir (prioritarias)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#flujo-concreto-por-peticion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Flujo concreto (por petición)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#prioridades-y-roadmap-minimo-viable-5-hitos" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Prioridades y roadmap mínimo viable (5 hitos)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#riesgos-practicos-a-vigilar-y-como-mitigarlos-rapido" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Riesgos prácticos a vigilar (y cómo mitigarlos rápido)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#resultado-esperado-valor" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Resultado esperado (valor)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#resumen-corto" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Resumen corto
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#por-que-dos-sniffers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ¿Por qué dos sniffers?
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#contratos-de-mensajes-zmq-topics" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Contratos de mensajes (ZMQ topics)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#logica-de-correlacion-merger" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Lógica de correlación (merger)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#decision-sync-vs-async-fast-path-slow-path" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Decisión sync vs async (fast-path / slow-path)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#formato-y-serializacion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Formato y serialización
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#backpressure-y-resistencia" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Backpressure y resistencia
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#metricas-y-alertas-a-monitorear" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Métricas y alertas a monitorear
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#tamano-de-ventana-y-por-que-importan" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Tamaño de ventana y por qué importan
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#diseno-minimo-viable-mvp-pasos-concretos" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Diseño mínimo viable (MVP) — pasos concretos
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#ejemplo-completo-de-mensaje-merged-que-recibira-tu-ml" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Ejemplo completo de mensaje merged que recibirá tu ML
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#reglas-de-seguridad-privacidad" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reglas de seguridad / privacidad
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#operativa-de-despliegue" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Operativa de despliegue
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h2 id="vamos-a-especular-un-poco-que-conllevaria-integrar-mi-pipeline-con-un-waf-decente">Vamos a especular un poco. Qué conllevaría integrar mi pipeline con un WAF decente?</h2>
+<h2 id="1-proposito-de-la-integracion">🧬 1. Propósito de la integración</h2>
+<p>Tu pipeline hoy cubre niveles <strong>L2–L4 (red/transporte)</strong> y <strong>parte del L7 (detección ML de eventos, protocolos, comportamiento, ataques genéricos)</strong>.
+Un <strong>WAF</strong> vive exclusivamente en <strong>L7 (aplicación web)</strong> y protege de:</p>
+<ul>
+<li>Inyecciones (SQLi, NoSQLi, LDAPi)</li>
+<li>XSS, CSRF, RFI, LFI</li>
+<li>Path traversal</li>
+<li>Deserializaciones inseguras</li>
+<li>Payloads anómalos (con ML o firmas)</li>
+<li>Bypass por codificación (Unicode, doble encoding, chunked transfer, etc.)</li>
+</ul>
+<p>Integrarlo significaría <strong>extender tu sistema inmune digital desde la capa de red hasta la capa de aplicación</strong>.
+Esto convierte tu arquitectura en un <strong>IDS/IPS híbrido + WAF adaptativo</strong>.</p>
+<hr />
+<h2 id="2-que-implicaria-tecnicamente">⚙️ 2. Qué implicaría técnicamente</h2>
+<h3 id="a-insercion-en-el-pipeline">🔹 a) Inserción en el pipeline</h3>
+<p>Tu arquitectura actual (captura → feature extraction → clasificación ML → decisión → acción) podría ampliarse con un <strong>"módulo WAF bridge"</strong>:</p>
+<pre><code>[Promiscuous Agent] 
+     ↓
+[GeoIP + Feature Extractor]
+     ↓
+[Inference Layer ML]
+     ↓
+[WAF Bridge Layer]
+     ↓
+[Firewall / Honeypot / Ejector Layer]
+</code></pre>
+<p>Este bridge tendría funciones clave:</p>
+<ul>
+<li>Interceptar y analizar tráfico HTTP(S)</li>
+<li>Extraer features semánticas (parámetros, headers, URI, body)</li>
+<li>Correlacionar con los eventos de red previos (del IDS)</li>
+<li>Reenviar alertas al core ML para reentrenar modelos con contexto L7</li>
+</ul>
+<hr />
+<h3 id="b-integracion-operativa">🔹 b) Integración operativa</h3>
+<p>Opciones según el grado de integración:</p>
+<table>
+<thead>
+<tr>
+<th>Modo</th>
+<th>Descripción</th>
+<th>Nivel de intervención</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Pasivo (Mirror)</strong></td>
+<td>El WAF sólo exporta logs (por ejemplo, ModSecurity JSON audit logs) al pipeline para correlación y detección contextual.</td>
+<td>Bajo riesgo</td>
+</tr>
+<tr>
+<td><strong>Activo (Inline)</strong></td>
+<td>Tu pipeline puede “ordenar” al WAF bloquear o liberar peticiones dinámicamente (API REST o socket).</td>
+<td>Control adaptativo</td>
+</tr>
+<tr>
+<td><strong>Híbrido/Feedback</strong></td>
+<td>El IDS alimenta al WAF con inteligencia predictiva (patrones sospechosos, IPs, hashes), y el WAF devuelve evidencias detalladas.</td>
+<td>Inteligencia colectiva</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="3-interoperabilidad-con-un-waf-existente">🧩 3. Interoperabilidad con un WAF existente</h2>
+<p>Podrías integrarte con:</p>
+<ul>
+<li><strong>ModSecurity / OWASP CRS</strong> → clásico, muy configurable, logs detallados.</li>
+<li><strong>NAXSI (Nginx)</strong> → ligero, ideal para alto rendimiento.</li>
+<li><strong>Cloudflare / Fastly / F5</strong> → APIs ricas, permiten feedback ML.</li>
+<li><strong>Custom Python WAF microservice</strong> → total control, integración nativa con tu pipeline.</li>
+</ul>
+<p>Para tu caso (pipeline distribuido + ZeroMQ + ML adaptable), <strong>ModSecurity con CRS 4.x y output en JSON vía auditlog</strong> sería el mejor punto de partida.
+Podrías leer esos logs en tiempo real y alimentar eventos al bus ZeroMQ como “nivel aplicación”.</p>
+<hr />
+<h2 id="4-beneficios-de-la-integracion">🧠 4. Beneficios de la integración</h2>
+<ol>
+<li>
+<p><strong>Visión unificada L2–L7</strong> → Correlas comportamiento de red y de aplicación.
+   Ejemplo: una IP realiza un scan y, minutos después, intenta SQLi → riesgo = máximo.</p>
+</li>
+<li>
+<p><strong>Aprendizaje contextual</strong> → El modelo aprende qué tipo de payloads acompañan ciertos patrones de tráfico.</p>
+</li>
+<li>
+<p><strong>Bloqueo adaptativo</strong> → El IDS puede “convencer” al WAF de activar reglas temporales sobre patrones emergentes.</p>
+</li>
+<li>
+<p><strong>Evidencia enriquecida</strong> → Los logs del WAF contienen headers, cookies, cuerpos parcialmente decodificados, todo útil para forense ML.</p>
+</li>
+</ol>
+<hr />
+<h2 id="5-riesgos-y-precauciones">🧨 5. Riesgos y precauciones</h2>
+<ul>
+<li><strong>Latencia y throughput</strong>: un WAF inline añade milisegundos; deberías usar colas y batchs inteligentes.</li>
+<li><strong>TLS termination</strong>: si analizas HTTPS, necesitas o certificados o mirror de tráfico antes del cifrado.</li>
+<li><strong>Falsos positivos</strong>: combinar detección heurística + ML requiere mecanismos de rollback (listas blancas temporales).</li>
+<li><strong>Gestión de estado y sincronización</strong>: correlacionar sesiones TCP con peticiones HTTP requiere un mapeo temporal eficiente.</li>
+</ul>
+<hr />
+<h2 id="6-evolucion-natural-adaptive-waf-intelligence-layer">🔐 6. Evolución natural: “Adaptive WAF Intelligence Layer”</h2>
+<p>Tu pipeline podría <strong>generar reglas dinámicas CRS o ModSecurity</strong> basadas en eventos ML:</p>
+<pre><code class="language-bash">if score_attack &gt; 0.95 and type == &quot;SQLi&quot;:
+   wafctl add-rule &quot;SecRule REQUEST_URI|ARGS 'pattern_here' 'id:900001,phase:2,deny,msg:DynamicRuleFromAI'&quot;
+</code></pre>
+<p>Y rotarlas cada hora.
+Esto te da una <strong>malla inmunitaria autoactualizable</strong>, donde el WAF ejecuta las “órdenes locales” derivadas del razonamiento global del IDS.</p>
+<hr />
+<h2 id="7-camino-recomendado-para-ti">🧭 7. Camino recomendado para ti</h2>
+<ol>
+<li>Empieza con <strong>ModSecurity en modo pasivo</strong>, enviando logs JSON al bus ZMQ.</li>
+<li>Añade un <strong>módulo correlador L4-L7</strong> en tu pipeline.</li>
+<li>Crea un <strong>modelo ML de contexto HTTP</strong>, entrenado con los logs del WAF.</li>
+<li>Activa modo híbrido → bloqueo adaptativo con retroalimentación.</li>
+</ol>
+<hr />
+<p>A ver, que aún no lo veo, no se en que parte del pipeline está. Por un lado, veo que tiene que capturar peticiones, 
+datagramas, algo que ya hace el sniffer-ebpf. Podría configurar uno exclusivo para tráfico web, no? luego, necesita 
+también un clasificador ml, podría ser uno exclusivo especializado en los ataques que suele sufrir un WAF, aunque, 
+el clasificador ml que estamos construyendo, aunque por ahora esta siendo especializado en DDOS/Ransomware, tráfico web 
+normal/anormal, tráfico interno normal/anormal, seguramente seguiremos añadiendo más modelos especializados en otro 
+tipo de ataques, si Dios quiere. 
+Es su evolución natural, por lo que, el WAF, perfectamente podría usar el clasificador ml. 
+Entonces, el WAF, que necesitaría hacer especificamente? la latencia tambien es importante, no? y el enfoque distribuido
+también podría irle bien, no?</p>
+<p>Buenísimo — vamos a aterrizarlo y ponerlo en el pipeline con detalles prácticos. Te doy <strong>dónde</strong> va el WAF, <strong>qué hace exactamente</strong>, cómo <strong>encaja con tus sniffers/ML</strong> y <strong>cómo minimizar latencia</strong> en un despliegue distribuido. Al final te dejo un <strong>flujo concreto + snippets</strong> (pseudocódigo / reglas) que puedes usar como plantilla.</p>
+<h1 id="donde-va-el-waf-en-tu-pipeline">¿DÓNDE va el WAF en tu pipeline?</h1>
+<p>Piensa en el WAF como una <strong>capa L7</strong> que puede vivir en tres posiciones según objetivo y riesgo:</p>
+<ol>
+<li><strong>Edge / Near client (CDN / LB / reverse proxy)</strong> — inspección temprana, bloqueos rápidos, reduce carga upstream.</li>
+<li><strong>Origin / Pre-app (junto a la app, antes de llegar al backend)</strong> — inspección profunda, logs completos, contextos de sesión.</li>
+<li><strong>Paralelo / Pasivo (mirror / tapping)</strong> — solo observación y enriquecimiento para ML, sin impacto en latencia.</li>
+</ol>
+<p>Para tu arquitectura (ya distribuida, ZMQ, sniffer-ebpf, agentes), lo ideal es <strong>combinar</strong>:</p>
+<ul>
+<li><strong>Instancias WAF ligeras en cada nodo de entrada (Nginx/Envoy+WAF o ModSecurity en modo embedded)</strong> en modo <em>activo</em> donde la latencia importa.</li>
+<li><strong>Modo pasivo centralizado</strong> para inspección profunda y reentrenamiento (espejos de tráfico o logs JSON).</li>
+<li>Un <strong>WAF-bridge</strong> (microservicio) que conecta WAFs locales con el bus ZMQ y con tu motor de decisión ML.</li>
+</ul>
+<h1 id="que-necesita-hacer-exactamente-el-waf">¿Qué necesita hacer exactamente el WAF?</h1>
+<p>Funciones concretas y necesarias para integrar con tu pipeline IDS:</p>
+<ul>
+<li><strong>Parsing &amp; Normalización HTTP(S)</strong>: URI, headers, cookies, chunked body, multi-part, encodings, parámetros JSON/XML form.</li>
+<li><strong>Decodificación segura</strong> (double-encoding, unicode tricks).</li>
+<li><strong>Signature / Rule Engine</strong>: aplicar CRS/firmas y reglas dinámicas.</li>
+<li><strong>Anomaly Detection (ML)</strong>: recibir scoring desde tu modelo ML (per-request or per-session) y combinarlo con firmas.</li>
+<li><strong>Rate limiting &amp; connection throttling</strong> (mitigación de DDoS a nivel de app).</li>
+<li><strong>Bot / Credential stuffing detection</strong> (fingerprinting, velocity).</li>
+<li><strong>Virtual patching</strong> (bloquear vulnerabilidades conocidas sin tocar app).</li>
+<li><strong>Audit &amp; Forensic Logs</strong> (JSON estructurado exportable).</li>
+<li><strong>Action API</strong>: aceptar órdenes (block, challenge, monitor) desde el Decision Engine.</li>
+<li><strong>TLS handling</strong>: offload o mirroring para tráfico HTTPS.</li>
+<li><strong>Session correlation</strong>: mapear IP/flow &lt;-&gt; HTTP session, sincronizar con eventos L2–L4 del IDS.</li>
+</ul>
+<h1 id="integracion-con-tus-sniffers-y-modelos-ml">Integración con tus sniffers y modelos ML</h1>
+<p>Tienes dos caminos compatibles:</p>
+<ol>
+<li>
+<p><strong>Usar el mismo pipeline ML</strong> (modelo global) pero con <em>sub-modelos especializados</em>:</p>
+<ul>
+<li>Un modelo global para DDoS/Ransomware/Anomalía general.</li>
+<li>Modelos especializados L7 para SQLi/XSS/LFI, bot detection, etc.</li>
+<li>Los WAFs piden score al <strong>Inference API</strong> (sincronizado con tus modelos), o reciben reglas derivadas del ML.</li>
+</ul>
+</li>
+<li>
+<p><strong>Modelos embebidos en el WAF (edge)</strong>:</p>
+<ul>
+<li>Modelos ligeros (Tiny RF / LightGBM exportado a C) para scoring local y decisiones rápidas.</li>
+<li>Modelos complejos en inference cluster (más latencia) para validación o reentrenamiento.</li>
+</ul>
+</li>
+</ol>
+<p>Recomendación: <strong>híbrido</strong> — quick-score local + validate/learn central. Eso te da baja latencia y retroalimentación para mejorar modelos pesados.</p>
+<h1 id="latencia-consideraciones-practicas">Latencia: consideraciones prácticas</h1>
+<p>La latencia es crítica para L7. Técnicas para mantenerla baja:</p>
+<ul>
+<li><strong>Fast path vs slow path</strong>: reglas heurísticas rápidas (IP blacklists, rate limits) en el fast path; análisis profundo (deep signature + ML) en slow path solo si triggerea.</li>
+<li><strong>Modelos ligeros on-node</strong> para decisiones en &lt;1 ms; modelos pesados en asíncrono para confirmación.</li>
+<li><strong>Batching &amp; async logging</strong>: no bloquees la petición por escritura de logs a largo plazo — hazlo asíncrono.</li>
+<li><strong>TLS offload / hardware accel</strong> o usar un proxy que haga terminación TLS (Nginx/Envoy) y pase texto plano al WAF.</li>
+<li><strong>No blocking I/O en la cadena crítica</strong> — usa worker pools y circuit-breakers.</li>
+<li><strong>Ejecución en kernel/eBPF</strong> para prefiltrado (por ejemplo, descartar grandes scans o filtrar tráfico obvio) antes de llegar al WAF userland.</li>
+</ul>
+<h1 id="enfoque-distribuido-por-que-y-como">Enfoque distribuido: por qué y cómo</h1>
+<p>Beneficios: baja latencia local, distribución de carga, resilience, y fuente de datos locales para modelos. Riesgos: consistencia de reglas y sincronización.</p>
+<p>Diseño recomendado:</p>
+<ul>
+<li>
+<p><strong>WAF Agent local (en cada borde)</strong>:</p>
+<ul>
+<li>Regla local mínima + ML ligero.</li>
+<li>Exporta eventos a ZMQ (<code>waf.events</code>).</li>
+<li>Acepta comandos (<code>waf.commands</code>) para bloquear/rotar reglas.</li>
+<li>
+<p><strong>Control Plane central</strong> (tu cluster de políticas):</p>
+</li>
+<li>
+<p>Genera reglas dinámicas (basadas en ML), las firma y distribuye via etcd/consul.</p>
+</li>
+<li>Mantiene versión/TTL de reglas (rotación automática).</li>
+<li>Consolida logs y alimenta el retrain pipeline.</li>
+<li>
+<p><strong>Decision Engine</strong> (ML orchestration):</p>
+</li>
+<li>
+<p>Consume eventos L2–L7, produce acciones recomendadas con razones (explainability).</p>
+</li>
+<li>Emite reglas con ids y expiración.</li>
+</ul>
+</li>
+</ul>
+<p>Sincronización: usa <strong>etcd</strong> o similar (ya lo tenías en contexto) + ZeroMQ para eventos en tiempo real. Cada regla distribuida lleva TTL y versión.</p>
+<h1 id="flujo-concreto-end-to-end">Flujo concreto (end-to-end)</h1>
+<ol>
+<li><code>sniffer-ebpf</code> capta tráfico y envía metadatos L2–L4 al bus ZMQ (<code>sniffer.flows</code>).</li>
+<li>
+<p>WAF local (reverse-proxy) recibe petición HTTP(S).</p>
+<ul>
+<li>Fast-path checks (IP, rate-limit).</li>
+<li>Normaliza payload y extrae features L7.</li>
+<li>
+<p>WAF llama al <strong>Inference API local</strong> o calcula score con modelo ligero:</p>
+</li>
+<li>
+<p><code>POST /infer {features}</code> → <code>{score:0.03,tag:"normal"}</code></p>
+</li>
+<li>
+<p>Decision Engine recibe score + metadata L2–L4 (correlación) y decide acción:</p>
+</li>
+<li>
+<p>Si <code>score &gt; 0.95</code> → <code>block</code> (WAF aplica <code>deny</code>).</p>
+</li>
+<li>Si <code>0.6 &lt; score &lt;= 0.95</code> → <code>challenge</code> (captcha) o <code>monitor</code>.</li>
+<li>WAF aplica la acción y emite log JSON al collector + al bus ZMQ (<code>waf.audit</code>).</li>
+<li>Logs/pcaps relevantes van al retraining dataset y al módulo forense.</li>
+</ul>
+</li>
+</ol>
+<h1 id="ejemplo-de-mensajes-zmq-simplificado">Ejemplo de mensajes ZMQ (simplificado)</h1>
+<h1 id="evento-desde-waf">evento desde WAF</h1>
+<pre><code class="language-json">{
+  &quot;topic&quot;: &quot;waf.audit&quot;,
+  &quot;ts&quot;: &quot;2025-10-14T09:43:00Z&quot;,
+  &quot;src_ip&quot;: &quot;1.2.3.4&quot;,
+  &quot;uri&quot;: &quot;/login&quot;,
+  &quot;method&quot;: &quot;POST&quot;,
+  &quot;score_ml&quot;: 0.97,
+  &quot;action&quot;: &quot;blocked&quot;,
+  &quot;rule_id&quot;: 900001,
+  &quot;flow_id&quot;: &quot;flow-xxxx&quot;
+}
+</code></pre>
+<h1 id="snippet-de-regla-dinamica-pseudocmd">Snippet de “regla dinámica” (pseudocmd)</h1>
+<pre><code class="language-bash"># Decision Engine decide bloquear patrón y lo publica al Control Plane
+curl -X POST https://controlplane.local/rules \
+  -d '{&quot;id&quot;:900001, &quot;expr&quot;:&quot;ARGS|REQUEST_URI contains \&quot;UNSAFE_PATTERN\&quot;&quot;, &quot;action&quot;:&quot;deny&quot;, &quot;ttl&quot;:3600}'
+# Control plane escribe en etcd y publica evento zmq para que WAFs se actualicen
+</code></pre>
+<h1 id="tecnologias-buenas-para-tu-stack-orientativo">Tecnologías “buenas” para tu stack (orientativo)</h1>
+<ul>
+<li><strong>ModSecurity</strong> (flexible, CRS) — buen punto de partida para logs JSON y reglas custom.</li>
+<li><strong>Nginx/OpenResty</strong> o <strong>Envoy</strong> + filtros para baja latencia.</li>
+<li><strong>eBPF/sniffer</strong> para prefiltrado y correlación L2-L7.</li>
+<li><strong>etcd</strong> para reglas distribuidas/TTL (ya en tu radar).</li>
+<li><strong>ZeroMQ</strong> para eventos en tiempo real entre agentes (encaja con tu arquitectura).</li>
+<li><strong>Modelos</strong>: Random Forest ligero exportado, o ONNX para portabilidad a C/C++.</li>
+</ul>
+<h1 id="riesgos-operativos-y-contramedidas">Riesgos operativos y contramedidas</h1>
+<ul>
+<li><strong>Falsos positivos</strong> → implementar safelists, challenge flows y rollback automático, además de métricas A/B para medir impacto.</li>
+<li><strong>TLS legal/privacidad</strong> → gestionar certificados y políticas de inspección (mirroring vs termination).</li>
+<li><strong>Complejidad</strong> → empezar con WAF pasivo + ML offline; luego evolucionar a híbrido.</li>
+</ul>
+<hr />
+<h2 id="plantilla-minima-para-arrancar-playbook">Plantilla mínima para arrancar (playbook)</h2>
+<ol>
+<li>Despliegue ModSecurity en modo <strong>pasivo</strong> junto al reverse-proxy.</li>
+<li>Haz que ModSecurity emita <strong>audit logs JSON</strong> a tu collector (ZMQ consumer).</li>
+<li>Implementa un <strong>Inference API</strong> simple que reciba features HTTP y devuelva score (modelo RF pequeño).</li>
+<li>
+<p>Crea un <strong>WAF bridge</strong> que:</p>
+<ul>
+<li>Reciba logs ModSecurity.</li>
+<li>Envíe features a Inference API.</li>
+<li>Publique decisiones en <code>waf.commands</code>.</li>
+<li>Activa <strong>reglas dinámicas</strong> en un nodo de pruebas (TTL corto) y mide FPR/TPR.</li>
+</ul>
+</li>
+</ol>
+<hr />
+<p>Si quieres, te hago <strong>una arquitectura concreta</strong> en diagrama + pseudocódigo y un ejemplo de <code>modsecurity.conf</code> 
+con <code>SecAuditEngine</code> en JSON y un ejemplo de <code>waf-bridge.py</code> que consuma esos JSON, pida inference y 
+publique acciones por ZeroMQ. ¿Lo hago ahora y te lo dejo montado como plantilla para tus repos?</p>
+<p>Estamos explorando. Merece la pena crear algo de cero que aproveche la última versión del kernel linux como estamos 
+haciendo ahora?</p>
+<p>Sí.
+Y no solo “merece la pena”: <strong>es probablemente el camino más potente y futurista que podrías tomar</strong>, Alonso.
+Te explico por qué, con una mirada técnica y estratégica, no solo práctica.</p>
+<hr />
+<h2 id="1-el-contexto-lo-que-ya-estas-construyendo">⚙️ 1. El contexto: lo que ya estás construyendo</h2>
+<p>Tu sistema <strong>ya está operando al nivel del kernel (eBPF)</strong> para capturar tráfico, procesar features, y comunicarte por <strong>ZeroMQ</strong> con un pipeline ML distribuido.
+Eso ya te da una base que <strong>ningún WAF tradicional tiene</strong>: observabilidad, velocidad y control desde el plano más bajo, con capacidad de decisión adaptativa en tiempo real.</p>
+<p><strong>Extender esa lógica hacia un WAF nativo del kernel (o semi-kernel)</strong> es, básicamente, <strong>la evolución natural</strong> de tu arquitectura.</p>
+<hr />
+<h2 id="2-que-te-permite-un-waf-from-scratch-sobre-ebpf">🧬 2. Qué te permite un WAF “from scratch” sobre eBPF</h2>
+<p>Al construir tu propio WAF modular, no estás reinventando ModSecurity; estás <strong>redefiniendo qué significa proteger una aplicación web</strong> en un entorno moderno (containers, microservicios, edge, ML adaptativo).
+Esto se traduce en capacidades únicas:</p>
+<h3 id="a-visibilidad-total-sin-overhead">🔹 a) Visibilidad total, sin overhead</h3>
+<p>El kernel moderno (5.15–6.10+) te permite:</p>
+<ul>
+<li>Hookear syscalls <code>sendmsg</code>, <code>recvmsg</code>, <code>tcp_sendmsg</code>, <code>tls_sendmsg</code>, etc.</li>
+<li>Observar tráfico HTTP(S) <em>después</em> del handshake TLS (si hay offload).</li>
+<li>Asociar flujos L4 con contextos L7 mediante BPF maps (hashmaps LRU por conntrack ID).</li>
+<li>Extraer features de cabeceras HTTP sin pasar al user space si no es necesario.</li>
+</ul>
+<p>👉 Esto te da <strong>mínima latencia, sin copiar memoria, sin context switch</strong>.</p>
+<hr />
+<h3 id="b-politicas-dinamicas-gestionadas-por-el-user-space-zmq-etcd">🔹 b) Políticas dinámicas gestionadas por el user space (ZMQ + etcd)</h3>
+<p>Tu <strong>control plane</strong> puede:</p>
+<ul>
+<li>Generar y rotar reglas (por patrón, IP, score ML).</li>
+<li>Cargar esas reglas directamente en BPF maps desde el user space (actualización instantánea, sin reiniciar nada).</li>
+<li>Distribuir esas reglas entre nodos mediante etcd/ZeroMQ, con TTL rotativo.</li>
+</ul>
+<p>Esto es una <strong>malla adaptativa de defensa kernel-space</strong>, sincronizada por AI.</p>
+<hr />
+<h3 id="c-integracion-nativa-con-ml">🔹 c) Integración nativa con ML</h3>
+<p>Nada te impide:</p>
+<ul>
+<li>Exportar features HTTP en tiempo real al ML inferencer.</li>
+<li>Recibir respuesta (<code>allow</code>, <code>block</code>, <code>quarantine</code>, <code>slowdown</code>) y actualizar counters o maps del eBPF.</li>
+<li>Aprender automáticamente patrones legítimos en cada host (auto-baselining local).</li>
+</ul>
+<p>Así el <strong>modelo ML no solo predice ataques</strong>, sino que <strong>reconfigura el comportamiento de la capa de red y aplicación en caliente</strong>.</p>
+<hr />
+<h3 id="d-bypass-de-limitaciones-del-user-space-waf">🔹 d) Bypass de limitaciones del user-space WAF</h3>
+<p>Los WAF tradicionales:</p>
+<ul>
+<li>Reparsean el tráfico en user-space → lentos y frágiles.</li>
+<li>No ven contexto de kernel (sockets, syscalls, namespaces).</li>
+<li>No correlacionan L2–L7 ni entienden comportamiento, solo payloads.</li>
+</ul>
+<p>Tú puedes diseñar uno que:</p>
+<ul>
+<li>Detecte ataques correlando flags TCP malformados con headers HTTP anómalos.
+  <em>(por ejemplo, indicio de evasión IDS o ataque de capa mixta)</em></li>
+<li>Identifique técnicas evasivas (transfer-encoding chunked maliciosas, encoding doble Unicode, etc.) antes de que lleguen a la app.</li>
+<li>Aplique mitigaciones inmediatas (drop, throttle, redirect-to-honeypot) directamente en eBPF/XDP.</li>
+</ul>
+<hr />
+<h2 id="3-latencia-rendimiento-y-escalabilidad">⚡️ 3. Latencia, rendimiento y escalabilidad</h2>
+<ul>
+<li><strong>Latencia:</strong> &lt;10 µs (in-kernel), frente a 1–5 ms (user-space WAF).</li>
+<li><strong>Throughput:</strong> line rate incluso en 100 Gbps si usas XDP hooks.</li>
+<li><strong>Zero-copy:</strong> eBPF y AF_XDP pueden procesar paquetes sin overhead de syscalls.</li>
+<li><strong>Distribución:</strong> cada nodo edge puede ser autónomo, pero aprende colectivamente mediante los modelos distribuidos.</li>
+</ul>
+<p>Tienes así un <strong>WAF distribuido, sin cuello de botella</strong>, con aprendizaje federado si lo deseas.</p>
+<hr />
+<h2 id="4-el-valor-estrategico-diferenciarse-de-los-waf-clasicos">🧠 4. El valor estratégico: diferenciarse de los WAF clásicos</h2>
+<p>Construir un WAF kernel-native no es un proyecto, es una <strong>plataforma</strong>.
+Lo que estás haciendo (el “Sistema Autoinmune Digital”) puede, literalmente, convertirse en un <strong>framework universal de defensa adaptativa</strong>.</p>
+<p>Ventajas frente a WAFs convencionales:</p>
+<table>
+<thead>
+<tr>
+<th>Aspecto</th>
+<th>WAF clásico</th>
+<th>WAF kernel-native + ML</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Nivel de inspección</td>
+<td>L7 puro</td>
+<td>L2–L7 correlado</td>
+</tr>
+<tr>
+<td>Overhead</td>
+<td>Alto (context switches)</td>
+<td>Mínimo (in-kernel)</td>
+</tr>
+<tr>
+<td>Aprendizaje</td>
+<td>Reglas estáticas</td>
+<td>Aprendizaje adaptativo</td>
+</tr>
+<tr>
+<td>Distribución</td>
+<td>Centralizado</td>
+<td>Federado/distribuido</td>
+</tr>
+<tr>
+<td>Respuesta</td>
+<td>Reglas manuales</td>
+<td>Reacción autónoma + TTL dinámico</td>
+</tr>
+<tr>
+<td>Integración con IDS</td>
+<td>Limitada</td>
+<td>Nativa, una sola malla</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="5-lo-que-requeriria-en-la-practica">🧩 5. Lo que requeriría en la práctica</h2>
+<ul>
+<li>Un <strong>programa eBPF</strong> con hooks en <code>sock_ops</code>, <code>sk_msg</code>, <code>xdp</code> y <code>tracepoints/net</code>.</li>
+<li>
+<p>Un <strong>user-space agent</strong> que:</p>
+<ul>
+<li>Hable con tu control plane (ZMQ/etcd).</li>
+<li>Envíe features al ML inferencer.</li>
+<li>Actualice mapas BPF (rules, scores, stats).</li>
+<li>Un <strong>parser HTTP básico en kernel-space</strong>, limitado pero suficiente para patrones de ataque.</li>
+<li>Un <strong>conector ML local</strong> (tiny runtime para RF/ONNX simplificado) para decisiones rápidas.</li>
+<li>Un <strong>canal seguro (gRPC/ZeroMQ)</strong> para reportar anomalías y recibir políticas nuevas.</li>
+<li>Una <strong>API REST</strong> para exponer métricas y decisiones al dashboard.</li>
+</ul>
+</li>
+</ul>
+<hr />
+<h2 id="6-riesgos-y-precauciones">🧩 6. Riesgos y precauciones</h2>
+<ul>
+<li>Desarrollo de parser HTTP robusto en kernel-space es delicado → mejor mantener parsing mínimo + validaciones superficiales.</li>
+<li>Evitar overfitting: modelos demasiado agresivos podrían bloquear tráfico legítimo.</li>
+<li>Mantenimiento del bytecode eBPF y compatibilidad entre kernels (usar libbpf, CO-RE, etc.).</li>
+<li>Monitoreo constante de rendimiento y fallback seguro al modo pasivo si algo falla.</li>
+</ul>
+<hr />
+<h2 id="7-conclusion">🚀 7. Conclusión</h2>
+<p>Sí, <strong>merece absolutamente la pena construirlo desde cero</strong>, siempre que mantengas:</p>
+<ul>
+<li>Un <strong>núcleo de control ligero</strong> (in-kernel),</li>
+<li>Un <strong>user-space de coordinación inteligente</strong> (ZMQ/ML),</li>
+<li>Y una <strong>capa de aprendizaje federado</strong> (para no depender de reglas estáticas).</li>
+</ul>
+<p>Lo que estás planteando es el <strong>siguiente salto evolutivo del concepto de WAF</strong>:</p>
+<blockquote>
+<p>No un firewall de aplicación, sino un <strong>Sistema Inmunitario Kernel-Nativo</strong> con adaptación evolutiva en tiempo real.</p>
+</blockquote>
+<hr />
+<p>¿Quieres que te bosqueje cómo sería la <strong>arquitectura base</strong> de ese WAF kernel-native (los módulos eBPF, 
+el bridge user-space y el control-plane ML)?
+Podemos dibujarlo como blueprint técnico — ideal para empezar a prototipar el “primer nodo inmunitario de capa 7”.</p>
+<p>Suena todo muy interesante, la verdad, y si, parece la evolución natural del pipeline actual. 
+Incluso, el proceso de reentrenamiento para los modelos en producción le vendrían muy bien al pipeline IDS/WAF híbrido. 
+El mecanismo de actualizacion etcd, el control plane, es algo de lo que ya hemos hablado incluso diseñado, no lo hemos 
+construido porque decidimos que se alejaba del proposito de la demo inicial, pero ahora vemos que quiere volver. 
+Realmente, lo que estamos hablando es que podríamos perfectamente encajar algunas de las piezas existentes del actual 
+pipeline, cuando esté terminado, claro está, como el sniffer-ebpf, configurarlos especificamente para tráfico http/s 
+con hooks sock_ops, sk_msg, xdp y tracepoints/net, eso es ampliar la lista de features a recoger, 
+modificar un poquito el sniffer, decidir donde queremos meter esas features, si en espacio de kernel o de usuario, 
+modificar algo el clasificador ml para aceptar esas nuevas features, entrenar a lo mejor nuevos modelos, es que, 
+parece todo muy parecido a lo que estamos haciendo no?</p>
+<p>Sí — exactamente: <strong>es todo la misma familia de problemas</strong> y muchas piezas encajan sin reescribirlo todo. Te doy un mapa práctico y accionable para que veas <em>qué reutilizas</em>, <em>qué adaptas</em>, <em>qué añades</em> y <em>qué priorizar</em> para pasar de tu pipeline IDS actual a ese WAF kernel-native híbrido que estás dibujando.</p>
+<h1 id="resumen-rapido-en-una-linea">Resumen rápido (en una línea)</h1>
+<p>Tu <strong>sniffer-ebpf + promiscuous_agent + control plane (etcd/ZMQ) + ML</strong> ya son el 70% de la base: hay que añadir parsers/feature-extractors L7, decidir qué vive en kernel vs user, exponer un inference API local ligero y orquestar reentrenamientos automáticos.</p>
+<hr />
+<h1 id="que-puedes-reutilizar-exactamente-sin-o-con-pocos-cambios">Qué puedes <strong>reutilizar</strong> exactamente (sin o con pocos cambios)</h1>
+<ul>
+<li><strong>sniffer-ebpf</strong>: base para hooks (xdp, sk_msg, sock_ops, tracepoints/net). Ya captura L2–L4; ampliar a L7 es una extensión natural.</li>
+<li><strong>promiscuous_agent</strong>: punto de extracción / serialización / enrich (GeoIP) — puede especializarse para HTTP(S).</li>
+<li><strong>bus ZMQ</strong>: canal de eventos L2–L7 / comandos (waf.events, waf.commands).</li>
+<li><strong>control plane</strong> (diseñado): etcd para reglas/TTL/versionado + API para distribuir políticas.</li>
+<li><strong>pipeline ML actual</strong> (RFs, retraining infra): puede añadir submodelos L7 y servir scores vía inference API.</li>
+</ul>
+<hr />
+<h1 id="que-adaptar-o-anadir-tecnicamente">Qué adaptar o añadir (técnicamente)</h1>
+<ol>
+<li>
+<p><strong>Hooks adicionales en tu eBPF</strong></p>
+<ul>
+<li><code>xdp</code> para prefiltrado (drop/fastpath).</li>
+<li><code>sk_msg</code> / <code>sock_ops</code> para observar datos TCP/stream y contadores.</li>
+<li><code>tracepoints/net</code> para métricas y correlación con syscalls.</li>
+</ul>
+</li>
+<li>
+<p><strong>Parser HTTP liviano</strong></p>
+<ul>
+<li>En kernel: <em>sólo</em> reglas/firmas/thresholds muy simples (URI pattern match, method, content-length, chunked flag).</li>
+<li>En userland: parsing completo (headers, JSON/XML bodies, params).</li>
+<li>Razonamiento: minimizas riesgo/complexidad en kernel y colocas lógica pesada en userland.</li>
+</ul>
+</li>
+<li>
+<p><strong>Estructura de BPF maps</strong> (ejemplo):</p>
+<ul>
+<li><code>map_rules</code> (rule_id → pattern/meta/ttl)</li>
+<li><code>map_scores</code> (flow_id → latest_score, timestamp)</li>
+<li><code>map_conn2flow</code> (sockfd/tuple → flow_id)</li>
+<li><code>map_counters</code> (rule_id → hits, last_seen)</li>
+</ul>
+</li>
+<li>
+<p><strong>Inference API local</strong></p>
+<ul>
+<li>Modelo ligero (ONNX / RF exportado) corriendo on-node para respuestas &lt;1 ms.</li>
+<li>Modelos pesados en cluster: validación/feedback asíncrono.</li>
+</ul>
+</li>
+<li>
+<p><strong>WAF Bridge (user-space)</strong></p>
+<ul>
+<li>Consume logs/features desde eBPF or promiscuous_agent, llama al inference local/central, publica decisiones en <code>waf.commands</code> (ZMQ) y actualiza etcd.</li>
+</ul>
+</li>
+<li>
+<p><strong>Retraining pipeline integrado</strong></p>
+<ul>
+<li>Marca eventos "alta confianza ataque" y los envia al dataset de reentrenamiento.</li>
+<li>Versionado modelos + canary rollout del nuevo modelo a nodos (controlado vía etcd).</li>
+</ul>
+</li>
+</ol>
+<hr />
+<h1 id="que-features-nuevas-conviene-anadir-prioritarias">Qué <strong>features nuevas</strong> conviene añadir (prioritarias)</h1>
+<p>Divide por dónde se calculan:</p>
+<p>Kernel-friendly (Rápidas, pequeñas):</p>
+<ul>
+<li>method (GET/POST/PUT/…)</li>
+<li>request URI (hash) + length</li>
+<li>content-type (header fingerprint)</li>
+<li>content-length / chunked flag</li>
+<li>host header hash</li>
+<li>transfer encoding flags</li>
+<li>per-flow request rate (RPS)</li>
+<li>small signatures (regex hashes) para SQLi/XSS patterns</li>
+<li>TCP anomalies (window size odd, flag combos)</li>
+</ul>
+<p>User-space (completo, más caro):</p>
+<ul>
+<li>URI decoded, params (ARGS) parsed</li>
+<li>POST body parsed JSON/XML/form</li>
+<li>cookies, session tokens fingerprint</li>
+<li>header sequences / order</li>
+<li>user agent tokenization + fingerprint</li>
+<li>JSON schema anomalies</li>
+<li>entropy metrics of fields / payload</li>
+<li>long-tail parameter behavior (frequency per account)</li>
+</ul>
+<hr />
+<h1 id="flujo-concreto-por-peticion">Flujo concreto (por petición)</h1>
+<ol>
+<li><code>xdp</code> fastfilter descarta tráfico obvio (botnets, malformed).</li>
+<li>Paquete pasa a <code>sk_msg</code> → assembler de stream → extrae features kernel-friendly en BPF maps.</li>
+<li>WAF Bridge lee map, envía features a <code>Inference API local</code> → recibe <code>{score, tag}</code>.</li>
+<li>Si <code>score &gt; threshold_block</code> → WAF Bridge escribe acción en <code>waf.commands</code> → eBPF aplica <code>drop</code>/<code>reset</code>/<code>mirror-to-honeypot</code>.</li>
+<li>Evento (audit) se publica en <code>waf.audit</code> para retraining y forense.</li>
+</ol>
+<hr />
+<h1 id="prioridades-y-roadmap-minimo-viable-5-hitos">Prioridades y roadmap mínimo viable (5 hitos)</h1>
+<ol>
+<li><strong>PoC 0 (fast wins)</strong> — Modificar <code>sniffer-ebpf</code> para extraer y emitir URI + method + conn_id → publicar en ZMQ. (1–2 sprints cortos)</li>
+<li><strong>PoC 1 (inference local)</strong> — Servir un modelo RF pequeño como microservicio local; WAF Bridge que consuma eventos y devuelva acciones sin tocar kernel. (2–3 sprints)</li>
+<li><strong>PoC 2 (kernel maps dinámicos)</strong> — Introducir BPF maps para reglas y counters; Control plane actualiza maps vía user-space bridge. (2 sprints)</li>
+<li><strong>PoC 3 (fastpath in-kernel actions)</strong> — Implementar drop/throttle con XDP/sk_msg based on map decisions (seguridad y rollback). (2–4 sprints)</li>
+<li><strong>Prod readiness</strong> — Retraining automático, canary rollout modelos via etcd, dashboard métricas, rollback segura. (continuo)</li>
+</ol>
+<blockquote>
+<p>Nota: “sprints” = bloques de trabajo: estimación conceptual; tú decides ritmo.</p>
+</blockquote>
+<hr />
+<h1 id="riesgos-practicos-a-vigilar-y-como-mitigarlos-rapido">Riesgos prácticos a vigilar (y cómo mitigarlos rápido)</h1>
+<ul>
+<li><strong>Parseo en kernel = bug crítico</strong> → mantener parser mínimo en kernel; mayor parsing en user space.</li>
+<li><strong>Falsos positivos</strong> → safelists locales, challenge flows (captcha/302) en vez de block inmediato.</li>
+<li><strong>Compatibilidad kernel</strong> → usar CO-RE y libbpf para evitar recompilar por cada versión.</li>
+<li><strong>Visibilidad y debugging</strong> → instrumentar métricas, counters y modo “pasivo” para validar reglas.</li>
+</ul>
+<hr />
+<h1 id="resultado-esperado-valor">Resultado esperado (valor)</h1>
+<ul>
+<li><strong>Latencia reducida</strong> para mitigaciones críticas.</li>
+<li><strong>Mayor precisión</strong> (correlación L2–L7).</li>
+<li><strong>Capacidad adaptativa</strong>: reglas dinámicas que se propagan y expiran.</li>
+<li><strong>Pipeline único</strong>: tus modelos ML alimentan tanto IDS como WAF y reentrenan mutuamente.</li>
+</ul>
+<hr />
+<p>Si quieres, te entrego <strong>ahora</strong> (en el mismo mensaje) cualquiera de estas piezas:</p>
+<ul>
+<li>Esqueleto de <strong>BPF maps</strong> y estructuras (C/eBPF) para reglas y scores.</li>
+<li>Pseudocódigo de <strong>waf-bridge.py</strong> (consume ZMQ, llama a inference local, actualiza etcd).</li>
+<li>Esquema de <strong>Inference API</strong> (input features, output).</li>
+<li>Plantilla de <strong>workflow de reentrenamiento</strong> (qué almacenar, tags, versionado).</li>
+</ul>
+<p>Dime cuál de esas piezas prefieres que te deje ya montada y te lo preparo al momento (sin esperas).</p>
+<p>hum, el caso es que veo una cosa, si añadimos features nuevas a capturar al sniffer-ebpf actual, comprometemos el lag 
+actual, sin duda. No pasa nada por tener un sniffer-ebpf-waf especifico corriendo en paralelo, incluso puede estar en 
+una máquina distinta en la que estaría localizado el sniffer original junto con los otros componentes, pero, puesto que 
+tiene que operar a la velocidad de la luz, mejor un componente especifico que capture lo justo, para así no comprometer 
+el rendimiento de los dos. Que necesitamos los dos? podemos agregar perfectamente los dos payloads cuando salgan de sus 
+respectivos sniffers y alimentar con los dos de manera asíncrona el clasificador.</p>
+<p>Perfecto — tu idea es la correcta y es la opción <strong>más segura y escalable</strong>: mantener el <code>sniffer-ebpf</code> general y desplegar un <code>sniffer-ebpf-waf</code> paralelo, pequeño y especializado. Abajo te dejo un plan técnico claro, decisiones de diseño, mensajes/contratos, pseudocódigo y recomendaciones operativas para implementarlo ya sin tocar lo que ya funciona.</p>
+<h1 id="resumen-corto">Resumen corto</h1>
+<ul>
+<li>Mantén <strong>dos sniffers</strong>: uno general (ya en producción) y otro <em>ligero, dedicado a L7/HTTP(s)</em>.</li>
+<li>Ambos publican <strong>payloads/features</strong> al bus (ZMQ) con <code>flow_id</code> + <code>ts</code>.</li>
+<li>Un <strong>merger/bridge</strong> (user-space) correlaciona ambos streams asíncronamente en una ventana temporal y forma la entrada para el clasificador.</li>
+<li>Decisión en dos niveles: <strong>fast local</strong> (modelos ligeros / reglas) para acciones instantáneas; <strong>deep async</strong> (modelos pesados) para blocking definitivo, retraining y reglas dinámicas.</li>
+</ul>
+<h1 id="por-que-dos-sniffers">¿Por qué dos sniffers?</h1>
+<p>Pros:</p>
+<ul>
+<li>No degradarás el sniffer general ni su performance.</li>
+<li>El sniffer WAF puede tener hooks adicionales (<code>sk_msg</code>, <code>sock_ops</code>, <code>xdp</code>) y parsers más agresivos sin riesgo.</li>
+<li>Despliegue flexible (mismo host, NIC secundario o host distinto/edge).</li>
+</ul>
+<p>Contras (controlables):</p>
+<ul>
+<li>Necesitas correlación y deduplicación — resuelto por <code>flow_id</code> y ventanas.</li>
+</ul>
+<h1 id="contratos-de-mensajes-zmq-topics">Contratos de mensajes (ZMQ topics)</h1>
+<p>Usa topics claros para facilitar el enrutado y debugging.</p>
+<ol>
+<li><code>sniffer.core</code> — flujo general L2–L4 (actual).</li>
+</ol>
+<pre><code class="language-json">{
+  &quot;topic&quot;:&quot;sniffer.core&quot;,
+  &quot;ts&quot;:&quot;2025-10-14T10:23:45.123Z&quot;,
+  &quot;flow_id&quot;:&quot;sha256(src:dst:srcp:dstp:proto:conn_start)[:16]&quot;,
+  &quot;src_ip&quot;:&quot;10.0.0.1&quot;,
+  &quot;dst_ip&quot;:&quot;10.0.0.2&quot;,
+  &quot;src_port&quot;:12345,
+  &quot;dst_port&quot;:80,
+  &quot;proto&quot;:&quot;TCP&quot;,
+  &quot;l4_flags&quot;:&quot;SYN,ACK&quot;,
+  &quot;bytes_sent&quot;:512,
+  &quot;packets&quot;:4
+}
+</code></pre>
+<ol>
+<li><code>sniffer.waf</code> — sniffer HTTP/S minimal y especializado.</li>
+</ol>
+<pre><code class="language-json">{
+  &quot;topic&quot;:&quot;sniffer.waf&quot;,
+  &quot;ts&quot;:&quot;2025-10-14T10:23:45.125Z&quot;,
+  &quot;flow_id&quot;:&quot;same-as-core&quot;,
+  &quot;http_method&quot;:&quot;POST&quot;,
+  &quot;uri_hash&quot;:&quot;sha1(/login?user=...)[8]&quot;,
+  &quot;uri_len&quot;:64,
+  &quot;host_hash&quot;:&quot;h(host.example)[4]&quot;,
+  &quot;content_type&quot;:&quot;application/json&quot;,
+  &quot;content_len&quot;:1024,
+  &quot;chunked&quot;:false,
+  &quot;user_agent_hash&quot;:&quot;h(Ua)[4]&quot;,
+  &quot;small_regex_flags&quot;:[&quot;SQLI_SIG&quot;,&quot;XSS_SIG&quot;],   // strings or bitmask
+  &quot;first_200_bytes_base64&quot;:&quot;...&quot;                // optional, only if policy allows
+}
+</code></pre>
+<blockquote>
+<p><strong>Nota:</strong> Mantén <code>sniffer.waf</code> lo más compacto posible (hashes, flags, counters). Evita enviar bodies completos salvo que sea estrictamente necesario.</p>
+</blockquote>
+<ol>
+<li><code>merge.features</code> — salida del merger hacia <code>inference</code>.</li>
+</ol>
+<pre><code class="language-json">{
+  &quot;topic&quot;:&quot;merge.features&quot;,
+  &quot;ts&quot;:&quot;2025-10-14T10:23:45.130Z&quot;,
+  &quot;flow_id&quot;:&quot;same&quot;,
+  &quot;features&quot;:{
+    &quot;rps_5s&quot;:12,
+    &quot;avg_payload_entropy&quot;:4.2,
+    &quot;uri_hash&quot;:&quot;..&quot;,
+    &quot;host_hash&quot;:&quot;..&quot;,
+    &quot;tcp_anomaly_score&quot;:0.12,
+    &quot;waf_small_regex_flags&quot;:[&quot;SQLI_SIG&quot;],
+    &quot;geo_src&quot;:&quot;ES&quot;,
+    &quot;is_internal&quot;:false
+  }
+}
+</code></pre>
+<ol>
+<li>
+<p><code>inference.requests</code> &amp; <code>inference.responses</code> for async scoring.</p>
+</li>
+<li>
+<p><code>waf.commands</code> — control-plane commands to nodes (<code>block</code>, <code>challenge</code>, <code>mirror</code>).</p>
+</li>
+</ol>
+<h1 id="logica-de-correlacion-merger">Lógica de correlación (merger)</h1>
+<p>Requisitos:</p>
+<ul>
+<li>Correlacionar por <code>flow_id</code>.</li>
+<li>Soportar <em>out-of-order</em> y latencia variable entre sniffers.</li>
+<li>Ventana de correlación configurable (ej. 2–10s).</li>
+<li>TTL + LRU cache para estados no completados.</li>
+<li>Emitir <code>merge.features</code> cuando: (a) reciba ambos payloads, o (b) expire la ventana → emitir lo que haya.</li>
+</ul>
+<p>Pseudocódigo (merger.py):</p>
+<pre><code class="language-python">from collections import defaultdict, deque
+import time
+import zmq
+import threading
+
+WINDOW = 5.0  # segundos
+CACHE = {}    # flow_id -&gt; { 'first_ts':, 'core':..., 'waf':... }
+
+def on_message(topic, msg):
+    fid = msg['flow_id']
+    now = time.time()
+    ent = CACHE.get(fid)
+    if not ent:
+        ent = {'first_ts': now, 'core': None, 'waf': None}
+        CACHE[fid] = ent
+    if topic == 'sniffer.core':
+        ent['core'] = msg
+    elif topic == 'sniffer.waf':
+        ent['waf'] = msg
+    # decide if ready
+    if ent['core'] and ent['waf']:
+        emit_merged(fid, ent)
+        del CACHE[fid]
+
+def eviction_loop():
+    while True:
+        now = time.time()
+        for fid, ent in list(CACHE.items()):
+            if now - ent['first_ts'] &gt; WINDOW:
+                emit_merged(fid, ent)  # may be partial
+                del CACHE[fid]
+        time.sleep(0.5)
+
+def emit_merged(fid, ent):
+    features = build_features(ent.get('core'), ent.get('waf'))
+    publish('merge.features', {'flow_id': fid, 'ts': iso_ts(), 'features': features})
+</code></pre>
+<h1 id="decision-sync-vs-async-fast-path-slow-path">Decisión sync vs async (fast-path / slow-path)</h1>
+<ul>
+<li>
+<p><strong>Fast-path (sync, &lt;1 ms):</strong></p>
+<ul>
+<li>Local rules (blacklist, rate-limit), tiny model (RF compressed/ONNX) que puede correr en inference local.</li>
+<li>Acción: <code>block/reset/challenge</code> inmediata por <code>waf.commands</code> y se aplica en eBPF map o proxy local.</li>
+</ul>
+</li>
+<li>
+<p><strong>Slow-path (async, 10s–100s ms):</strong></p>
+<ul>
+<li>Envío a cluster de inferencia pesado.</li>
+<li>Acción: confirmar bloqueo (si es necesario), generar regla dinámica con <code>ttl</code> y <code>id</code> y distribuir via etcd.</li>
+<li>Eventos de alta confianza se usan para reentrenamiento.</li>
+</ul>
+</li>
+</ul>
+<p>Regla práctica: <strong>si score_local &gt; 0.98</strong> → bloquear localmente y notificar; <strong>0.7–0.98</strong> → challenge/ratelimit; <strong>&lt;0.7</strong> → monitor.</p>
+<h1 id="formato-y-serializacion">Formato y serialización</h1>
+<ul>
+<li>Usa <strong>Protobuf</strong> (ya lo usas) para mensajes binarios en ZMQ o <strong>MessagePack</strong> si quieres agilidad.</li>
+<li>Fija HWM (high-water mark) en sockets ZMQ, y límites de cola para no quedarte sin memoria.</li>
+<li>Extras: usa <code>compress=gzip</code> solo para logs almacenados, <strong>no</strong> para tráfico en tiempo real.</li>
+</ul>
+<h1 id="backpressure-y-resistencia">Backpressure y resistencia</h1>
+<ul>
+<li>Define <code>HWM</code> y <code>queue_limit</code> en publishers/subscribers.</li>
+<li>Si el merger detecta <code>drop_count &gt; thresh</code> → degradar sniffer.waf a sampling mode (ej.: 1:10) y mandar alerta.</li>
+<li>Mantén métricas: <code>sniffer.latency</code>, <code>merge.latency</code>, <code>inference.latency</code>, <code>queue_depth</code>.</li>
+</ul>
+<h1 id="metricas-y-alertas-a-monitorear">Métricas y alertas a monitorear</h1>
+<ul>
+<li>Latencia por componente (p99, p50).</li>
+<li>Ratio de mensajes parciales vs completos en merger.</li>
+<li>Colas ZMQ en uso.</li>
+<li>RPS por flow y por host.</li>
+<li>FPR/TPR tras rollouts de modelos (A/B).</li>
+<li>Contadores de acciones (blocks, challenges, mirrors).</li>
+</ul>
+<h1 id="tamano-de-ventana-y-por-que-importan">Tamaño de ventana y por qué importan</h1>
+<ul>
+<li>Ventana pequeña (1–3s): menor latencia, pero más parcialidad.</li>
+<li>Ventana grande (5–10s): mayor correlación, pero más latencia y memoria.
+  Recomendación inicial: <strong>WINDOW = 3s</strong> y monitoriza <code>partial_emit_rate</code>. Ajusta según resultados.</li>
+</ul>
+<h1 id="diseno-minimo-viable-mvp-pasos-concretos">Diseño mínimo viable (MVP) — pasos concretos</h1>
+<ol>
+<li>Desplegar <code>sniffer-ebpf-waf</code> paralelo en 1 o 2 nodos (mismo rack/host si quieres baja latencia).</li>
+<li>Publicar <code>sniffer.waf</code> con hashes y small-regex flags (no bodies).</li>
+<li>Implementar <code>merger</code> básico (WINDOW 3s) que publique <code>merge.features</code>.</li>
+<li>Tener un <code>inference_local</code> con RF tiny y <code>waf.bridge</code> que interprete respuestas y emita <code>waf.commands</code>.</li>
+<li>Medir latencias y ajustar thresholds. Mantener <code>sniffer-ebpf</code> original intacto.</li>
+</ol>
+<h1 id="ejemplo-completo-de-mensaje-merged-que-recibira-tu-ml">Ejemplo completo de mensaje merged que recibirá tu ML</h1>
+<pre><code class="language-json">{
+  &quot;flow_id&quot;:&quot;abc123...&quot;,
+  &quot;ts&quot;:&quot;2025-10-14T10:23:45.130Z&quot;,
+  &quot;src&quot;:&quot;10.0.0.1:12345&quot;,
+  &quot;dst&quot;:&quot;10.0.0.2:80&quot;,
+  &quot;features&quot;: {
+    &quot;rps_5s&quot;:12,
+    &quot;avg_pkt_size&quot;:420,
+    &quot;tcp_flags_bits&quot;:18,
+    &quot;uri_hash&quot;:&quot;abcd12&quot;,
+    &quot;uri_len&quot;:64,
+    &quot;content_type_hash&quot;:&quot;ef01&quot;,
+    &quot;first_200_entropy&quot;:5.4,
+    &quot;small_regex_flags&quot;:[&quot;SQLI_SIG&quot;],
+    &quot;geo_src&quot;:&quot;ES&quot;,
+    &quot;is_internal&quot;:false
+  }
+}
+</code></pre>
+<h1 id="reglas-de-seguridad-privacidad">Reglas de seguridad / privacidad</h1>
+<ul>
+<li>Evita enviar bodies completos por defecto (cumple GDPR/RGPD).</li>
+<li>Si necesitas payloads para forense, usa <code>mirror-to-forensics</code> con TTL y cifrado, y hazlo asíncrono.</li>
+</ul>
+<h1 id="operativa-de-despliegue">Operativa de despliegue</h1>
+<ul>
+<li>Deploy inicial en entorno staging con tráfico re-replay.</li>
+<li>Canary rollout del inference local y de las reglas dinámicas.</li>
+<li>Modo <code>monitor</code> por 48–72h antes de permitir <code>block</code> automático en producción.</li>
+</ul>
+<hr />
+<p>Si quieres, ahora mismo te puedo:</p>
+<ul>
+<li>Generar el <strong>esqueleto del <code>sniffer-ebpf-waf</code></strong> (eBPF C + user-space loader) con outputs compactos;</li>
+<li>Escribir <strong>merger.py</strong> completo con ZMQ, caching LRU, métricas Prometheus;</li>
+<li>Crear <strong>waf-bridge.py</strong> (consume <code>merge.features</code>, llama a inference local, publica <code>waf.commands</code>) y un </li>
+<li><code>inference_local</code> sample (sklearn RF exportado a ONNX).</li>
+</ul>
+<p><img alt="IDS-WAF-EBPF.png" src="../IDS-WAF-EBPF.png" /></p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.tabs", "navigation.top", "search.highlight"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

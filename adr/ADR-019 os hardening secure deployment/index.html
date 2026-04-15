@@ -1,0 +1,1404 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source embedded-ML NDR for hospitals and schools">
+      
+      
+        <meta name="author" content="Alonso Isidoro Roman">
+      
+      
+        <link rel="canonical" href="https://alonsoir.github.io/argus/adr/ADR-019%20os%20hardening%20secure%20deployment/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>ADR-019: OS Hardening y Secure Deployment - ML Defender (aRGus NDR)</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#adr-019-os-hardening-y-secure-deployment" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-header__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ML Defender (aRGus NDR)
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              ADR-019: OS Hardening y Secure Deployment
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../README.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/BACKLOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Backlog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Security Model
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-tabs__link">
+          
+  
+  
+  ADRs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/contracts/Protobuf contracts.md" class="md-tabs__link">
+          
+  
+  
+  Contracts
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-nav__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ML Defender (aRGus NDR)
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../README.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/BACKLOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADRs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ADRs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013 Seed Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-021-deployment-topology-seed-families.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-021 Topology SSOT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-022-threat-model-opcion2-descartada.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-022 Threat Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Protobuf contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protobuf
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/JSON contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JSON
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Rag security commands.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#contexto" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Contexto
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#principio-rector" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Principio rector
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#decision-stack-de-hardening" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Decisión — Stack de hardening
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Decisión — Stack de hardening">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#capa-1-cifrado-de-disco-en-reposo-luks2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Capa 1 — Cifrado de disco en reposo (LUKS2)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#capa-2-so-minimo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Capa 2 — SO mínimo
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#capa-3-politica-de-puertos" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Capa 3 — Política de puertos
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#capa-4-apparmor-un-perfil-por-componente-y-por-plugin" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Capa 4 — AppArmor — un perfil por componente y por plugin
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#capa-5-kernel-hardening-sysctl" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Capa 5 — Kernel hardening (sysctl)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#capa-6-ssh-hardening" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Capa 6 — SSH hardening
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#compatibilidad-con-provisionsh-adr-013" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Compatibilidad con provision.sh (ADR-013)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#ansible-playbook-estructura" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Ansible playbook — estructura
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#modelo-de-amenaza-cubierto" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Modelo de amenaza cubierto
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#lo-que-este-adr-no-cubre" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Lo que este ADR NO cubre
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#consecuencias" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Consecuencias
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#referencias" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Referencias
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="adr-019-os-hardening-y-secure-deployment">ADR-019: OS Hardening y Secure Deployment</h1>
+<p><strong>Estado:</strong> PROPUESTO — implementación pre-producción (post bare-metal stress test)
+<strong>Fecha:</strong> 2026-03-22 (DAY 94)
+<strong>Autor:</strong> Alonso Isidoro Román + Claude (Anthropic)
+<strong>Revisado por:</strong> Consejo de Sabios — ML Defender (aRGus NDR)
+<strong>Componentes afectados:</strong> todos — capa de infraestructura bajo el pipeline
+<strong>Depende de:</strong> ADR-013 (provisioning), ADR-017 (plugins), ADR-018 (eBPF plugins)
+<strong>Relacionado con:</strong> ADR-001 (deployment stack — Systemd + Ansible)</p>
+<hr />
+<h2 id="contexto">Contexto</h2>
+<p>ML Defender protege hospitales, escuelas y pymes — infraestructura crítica donde
+un compromiso del sistema de detección es peor que no tener detección: un atacante
+que controla el detector puede cegarlo o usarlo para legitimar su actividad.</p>
+<p>El pipeline es tan seguro como el SO que lo ejecuta. Los ADR anteriores
+(013, 015, 016, 017, 018) establecen autenticación entre componentes, integridad
+de programas eBPF, y keypairs por plugin. Todo ese trabajo se invalida si el
+atacante puede leer <code>/etc/ml-defender/</code> porque el disco no está cifrado, o puede
+modificar un binario porque AppArmor no está configurado.</p>
+<p>Este ADR define la <strong>capa de infraestructura</strong> sobre la que el pipeline opera.
+No sustituye ningún ADR anterior — los complementa como la roca sobre la que
+se asienta la calzada romana.</p>
+<p><strong>Estamos lejos de implementar esto</strong> — el target es producción real, que requiere
+primero bare-metal stress test, arXiv, y validación empírica. Se documenta ahora
+porque las decisiones de provisioning (ADR-013, DAY 95-96) deben ser compatibles
+con este entorno desde el principio. Un <code>provision.sh</code> que asuma acceso universal
+al filesystem será difícil de adaptar a AppArmor después.</p>
+<hr />
+<h2 id="principio-rector">Principio rector</h2>
+<blockquote>
+<p>La seguridad no es una feature que se añade al final.
+Es una restricción que se diseña desde el principio y se implementa en capas.
+Cada capa asume que la anterior puede estar comprometida.</p>
+</blockquote>
+<hr />
+<h2 id="decision-stack-de-hardening">Decisión — Stack de hardening</h2>
+<h3 id="capa-1-cifrado-de-disco-en-reposo-luks2">Capa 1 — Cifrado de disco en reposo (LUKS2)</h3>
+<p><strong>Por qué:</strong> Las claves criptográficas del pipeline (<code>/etc/ml-defender/</code>)
+deben ser inaccesibles si el atacante tiene acceso físico al hardware.
+En un hospital, el servidor puede estar en un armario de red sin protección
+física adecuada. LUKS2 con Argon2id como KDF protege contra ataques offline.</p>
+<pre><code class="language-bash"># Durante instalación del SO (Ansible playbook)
+cryptsetup luksFormat \
+    --type luks2 \
+    --cipher aes-xts-plain64 \
+    --key-size 512 \
+    --hash sha512 \
+    --pbkdf argon2id \
+    /dev/sda2
+
+cryptsetup luksOpen /dev/sda2 ml_defender_root
+</code></pre>
+<p><strong>Particionado mínimo:</strong></p>
+<pre><code>/dev/sda1  →  /boot     (no cifrado — necesario para arranque)
+/dev/sda2  →  LUKS2  →  LVM
+                          ├── /          (sistema raíz)
+                          ├── /var       (logs del pipeline)
+                          └── /etc       (configuración + claves)
+</code></pre>
+<p><strong>Gestión de la passphrase:</strong> El operador introduce la passphrase en el
+arranque. En entornos donde el arranque desatendido es necesario (hospitales
+sin personal IT 24/7), se puede usar TPM2 + PCR binding — documentado como
+opción avanzada, no requisito inicial.</p>
+<hr />
+<h3 id="capa-2-so-minimo">Capa 2 — SO mínimo</h3>
+<p><strong>Distribución recomendada:</strong> Debian 12 Bookworm (stable, LTS)
+o Ubuntu 24.04 LTS Server — ambas bien soportadas con AppArmor.</p>
+<p><strong>Principio de mínima superficie de ataque:</strong></p>
+<pre><code class="language-bash"># Solo lo estrictamente necesario
+apt install --no-install-recommends \
+    apparmor apparmor-utils \
+    libsodium23 liblz4-1 \
+    libzmq5 \
+    protobuf-compiler \
+    openssh-server \
+    systemd \
+    libbpf1
+
+# Eliminar todo lo innecesario
+apt purge --auto-remove \
+    avahi-daemon \
+    cups \
+    bluetooth \
+    snapd \
+    whoopsie
+</code></pre>
+<p><strong>Sin entorno gráfico. Sin gestor de paquetes de usuario (snap, flatpak).
+Sin servicios de red innecesarios.</strong></p>
+<hr />
+<h3 id="capa-3-politica-de-puertos">Capa 3 — Política de puertos</h3>
+<p><strong>Todos los puertos cerrados excepto SSH.</strong></p>
+<pre><code class="language-bash"># ufw como frontend de iptables/nftables
+ufw default deny incoming
+ufw default deny outgoing
+ufw allow in  22/tcp    # SSH — único canal de gestión
+ufw allow out 22/tcp    # SSH saliente (para Ansible)
+
+# Comunicación interna del pipeline — solo localhost
+# Los componentes se comunican en loopback, no en interfaces externas
+ufw allow in  on lo
+ufw allow out on lo
+
+ufw enable
+</code></pre>
+<p><strong>Los puertos ZeroMQ del pipeline (5570-5575) solo escuchan en loopback.</strong>
+Un componente externo no puede inyectar mensajes en el bus del pipeline
+porque los sockets no están expuestos en interfaces de red externas.</p>
+<pre><code class="language-json">// sniffer.json — ejemplo correcto
+&quot;transport&quot;: {
+    &quot;bind_address&quot;: &quot;tcp://127.0.0.1:5570&quot;  // NOT 0.0.0.0
+}
+</code></pre>
+<hr />
+<h3 id="capa-4-apparmor-un-perfil-por-componente-y-por-plugin">Capa 4 — AppArmor — un perfil por componente y por plugin</h3>
+<p><strong>Por qué AppArmor y no SELinux:</strong> AppArmor usa perfiles por ruta de binario,
+más fácil de escribir y mantener para un equipo pequeño. SELinux es más potente
+pero su curva de aprendizaje es prohibitiva sin un equipo de seguridad dedicado.
+Para los targets de despliegue (hospitales, escuelas), AppArmor es el balance
+correcto entre seguridad y mantenibilidad.</p>
+<p><strong>Perfil por componente — ejemplo sniffer:</strong></p>
+<pre><code># /etc/apparmor.d/usr.lib.ml-defender.sniffer
+#include &lt;tunables/global&gt;
+
+/usr/lib/ml-defender/sniffer {
+    #include &lt;abstractions/base&gt;
+
+    # Binario propio
+    /usr/lib/ml-defender/sniffer  mr,
+
+    # Solo sus propias claves — no puede leer las de ml-detector
+    /etc/ml-defender/sniffer/**   r,
+
+    # Solo su configuración
+    /etc/ml-defender/sniffer/sniffer.json  r,
+
+    # Logs propios
+    /vagrant/logs/lab/sniffer.log  w,
+
+    # Plugins autorizados — solo los declarados en su JSON
+    /usr/lib/ml-defender/plugins/libplugin_ja4_v1.so  mr,
+    /usr/lib/ml-defender/plugins/libplugin_dns_dga_v1.so  mr,
+
+    # eBPF — necesita acceder a interfaces de red
+    capability net_admin,
+    capability sys_admin,  # solo para carga eBPF/XDP — scoped
+    network,
+
+    # ZeroMQ — solo loopback
+    network tcp,
+    /run/ml-defender/sniffer.sock  rw,
+
+    # Denegar explícitamente
+    deny /etc/ml-defender/ml-detector/**  r,
+    deny /etc/ml-defender/firewall/**     r,
+    deny /proc/*/mem                      r,
+    deny /sys/kernel/debug/**             r,
+}
+</code></pre>
+<p><strong>Perfil por plugin — ejemplo libplugin_ja4:</strong></p>
+<pre><code># /etc/apparmor.d/usr.lib.ml-defender.plugins.libplugin_ja4_v1.so
+/usr/lib/ml-defender/plugins/libplugin_ja4_v1.so {
+    #include &lt;abstractions/base&gt;
+
+    # Solo su propio JSON de contrato
+    /etc/ml-defender/plugins/ja4_v1.json  r,
+
+    # Sin acceso a red directa — depende del sniffer
+    deny network,
+
+    # Sin acceso a otros secrets
+    deny /etc/ml-defender/**  r,
+}
+</code></pre>
+<p><strong>Un plugin no puede leer las claves de otro plugin ni del componente host.</strong>
+Si un plugin está comprometido, AppArmor limita el blast radius al propio plugin.</p>
+<hr />
+<h3 id="capa-5-kernel-hardening-sysctl">Capa 5 — Kernel hardening (sysctl)</h3>
+<pre><code class="language-bash"># /etc/sysctl.d/99-ml-defender.conf
+
+# Deshabilitar IP forwarding (el pipeline no es un router)
+net.ipv4.ip_forward = 0
+net.ipv6.conf.all.forwarding = 0
+
+# Protección contra SYN flood (ironía proteger el detector de SYN floods)
+net.ipv4.tcp_syncookies = 1
+
+# Deshabilitar IPv6 si no se usa
+net.ipv6.conf.all.disable_ipv6 = 1
+
+# Deshabilitar ICMP redirect
+net.ipv4.conf.all.accept_redirects = 0
+net.ipv6.conf.all.accept_redirects = 0
+
+# Protección contra martian packets
+net.ipv4.conf.all.log_martians = 1
+
+# Deshabilitar core dumps (evitar leak de claves en memoria)
+kernel.core_pattern = |/bin/false
+fs.suid_dumpable = 0
+
+# Restringir acceso a dmesg (información del kernel)
+kernel.dmesg_restrict = 1
+
+# Restringir acceso a kptr (punteros del kernel)
+kernel.kptr_restrict = 2
+
+# Protección ptrace — solo procesos padre pueden usar ptrace
+kernel.yama.ptrace_scope = 1
+</code></pre>
+<hr />
+<h3 id="capa-6-ssh-hardening">Capa 6 — SSH hardening</h3>
+<p>SSH es el único canal de entrada. Debe ser lo más restrictivo posible.</p>
+<pre><code># /etc/ssh/sshd_config.d/ml-defender.conf
+
+# Solo autenticación por clave — no passwords
+PasswordAuthentication no
+PubkeyAuthentication yes
+PermitRootLogin no
+
+# Solo el usuario de gestión del pipeline
+AllowUsers ml-defender-admin
+
+# Timeout agresivo
+LoginGraceTime 30
+MaxAuthTries 3
+ClientAliveInterval 300
+ClientAliveCountMax 2
+
+# Deshabilitar features innecesarias
+X11Forwarding no
+AllowTcpForwarding no
+AllowAgentForwarding no
+PermitTunnel no
+
+# Solo cifrados modernos
+Ciphers chacha20-poly1305@openssh.com,aes256-gcm@openssh.com
+MACs hmac-sha2-512-etm@openssh.com
+KexAlgorithms curve25519-sha256,curve25519-sha256@libssh.org
+</code></pre>
+<hr />
+<h2 id="compatibilidad-con-provisionsh-adr-013">Compatibilidad con provision.sh (ADR-013)</h2>
+<p><code>provision.sh</code> debe diseñarse desde el principio para ser compatible con
+este entorno endurecido. Implicaciones concretas:</p>
+<p><strong>1. Paths de claves fijos y conocidos:</strong></p>
+<pre><code class="language-bash"># provision.sh escribe en paths que AppArmor permite
+/etc/ml-defender/{componente}/          # claves de componentes
+/etc/ml-defender/plugins/              # claves de plugins userspace
+/etc/ml-defender/ebpf-plugins/         # claves de plugins eBPF
+
+# chmod obligatorio tras cada escritura
+chmod 0600 /etc/ml-defender/*/          # privadas y HMACs
+chmod 0644 /etc/ml-defender/*_public*   # públicas
+</code></pre>
+<p><strong>2. El script se ejecuta como root, una única vez, bajo SSH:</strong></p>
+<pre><code class="language-bash">ssh ml-defender-admin@hospital-server \
+    &quot;sudo /opt/ml-defender/scripts/provision.sh&quot;
+</code></pre>
+<p>Tras el provisioning, la cuenta de admin puede desactivarse o limitarse
+a operaciones de lectura. Las claves generadas son estables hasta
+re-provisioning explícito.</p>
+<p><strong>3. Re-provisioning explícito para actualizaciones:</strong>
+Actualizar un plugin (v1 → v2) requiere ejecutar provision.sh de nuevo.
+No hay actualizaciones silenciosas — el operador es consciente de cada
+cambio en las credenciales del sistema.</p>
+<hr />
+<h2 id="ansible-playbook-estructura">Ansible playbook — estructura</h2>
+<pre><code class="language-yaml"># playbooks/deploy_ml_defender.yml
+---
+- name: Deploy ML Defender (aRGus NDR)
+  hosts: ml_defender_nodes
+  become: yes
+
+  roles:
+    - role: base_os_hardening      # sysctl, paquetes mínimos, ufw
+    - role: apparmor_profiles      # perfiles por componente y plugin
+    - role: ssh_hardening          # sshd_config
+    - role: ml_defender_install    # binarios, configs, systemd units
+    - role: ml_defender_provision  # provision.sh — keypairs y seeds
+    - role: ml_defender_start      # systemctl enable + start
+
+  vars:
+    ml_defender_version: &quot;{{ lookup('env', 'ML_DEFENDER_VERSION') }}&quot;
+    luks_passphrase:     &quot;{{ vault_luks_passphrase }}&quot;  # Ansible Vault
+</code></pre>
+<p>Las contraseñas y passphrases viajan en <strong>Ansible Vault</strong> — nunca en texto
+claro en el playbook ni en el inventario.</p>
+<hr />
+<h2 id="modelo-de-amenaza-cubierto">Modelo de amenaza cubierto</h2>
+<table>
+<thead>
+<tr>
+<th>Amenaza</th>
+<th>Mitigación</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Acceso físico al servidor</td>
+<td>LUKS2 — disco inaccesible sin passphrase</td>
+</tr>
+<tr>
+<td>Malware que lee /etc/ml-defender/</td>
+<td>AppArmor — solo el proceso autorizado puede leer sus propias claves</td>
+</tr>
+<tr>
+<td>Plugin malicioso que escalona privilegios</td>
+<td>AppArmor por plugin — blast radius limitado</td>
+</tr>
+<tr>
+<td>Inyección de mensajes ZeroMQ desde red</td>
+<td>ufw — puertos ZMQ solo en loopback</td>
+</tr>
+<tr>
+<td>Brute force SSH</td>
+<td>PasswordAuthentication no + MaxAuthTries 3</td>
+</tr>
+<tr>
+<td>Leak de claves vía core dump</td>
+<td>kernel.core_pattern + fs.suid_dumpable = 0</td>
+</tr>
+<tr>
+<td>Rootkit via módulo kernel</td>
+<td>ADR-016 (kernel-telemetry) + kernel.dmesg_restrict</td>
+</tr>
+<tr>
+<td>Compromiso de plugin eBPF</td>
+<td>ADR-015 + ADR-018 — HMAC + keypairs</td>
+</tr>
+<tr>
+<td>Actualización silenciosa de binario</td>
+<td>AppArmor mr (map+read, no write) en binarios</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="lo-que-este-adr-no-cubre">Lo que este ADR NO cubre</h2>
+<ul>
+<li><strong>TPM2 + PCR binding</strong> para arranque desatendido — opción avanzada,
+  requiere hardware compatible, documentar como extensión futura</li>
+<li><strong>Secure Boot</strong> — importante pero requiere gestión de claves de arranque,
+  fuera del scope inicial</li>
+<li><strong>Auditoría centralizada (auditd → SIEM)</strong> — relevante en enterprise,
+  ENT-7 (OpenTelemetry + Grafana) lo contempla</li>
+<li><strong>Gestión de certificados X.509</strong> — el pipeline usa ZMQ CURVE y ChaCha20,
+  no TLS/X.509; si en el futuro se añade TLS, este ADR se actualiza</li>
+<li><strong>Multi-nodo HA</strong> — ADR-001 descartó K8s; HA es enterprise territory</li>
+</ul>
+<hr />
+<h2 id="consecuencias">Consecuencias</h2>
+<p><strong>Positivas:</strong>
+- El pipeline es tan seguro como puede ser en el hardware objetivo sin
+  infraestructura enterprise (HSM, PKI dedicada, SIEM)
+- AppArmor por plugin hace que el blast radius de un plugin comprometido
+  sea mínimo — no puede leer claves de otros componentes
+- LUKS protege las claves en reposo — un atacante con acceso físico
+  no puede extraer el material criptográfico del disco
+- Compatible con el target de despliegue (hospitales, escuelas, pymes)
+  sin requerir personal de seguridad especializado para operar</p>
+<p><strong>Negativas / limitaciones:</strong>
+- LUKS requiere intervención manual en cada arranque (passphrase)
+  a menos que se use TPM2 — trade-off aceptado en esta fase
+- AppArmor en modo enforce puede romper cosas inesperadamente durante
+  el desarrollo — usar aa-complain primero, enforce después de validación
+- La superficie de mantenimiento crece: además del pipeline, hay perfiles
+  AppArmor que actualizar cuando cambia un binario o se añade un plugin</p>
+<p><strong>Modo de transición:</strong></p>
+<pre><code>Desarrollo (ahora):    sin AppArmor enforce, sin LUKS
+Pre-producción:        AppArmor en modo complain — observar, no bloquear
+Producción:            AppArmor en modo enforce + LUKS
+</code></pre>
+<hr />
+<h2 id="referencias">Referencias</h2>
+<ul>
+<li>ADR-001: Deployment Stack (Systemd + Ansible) — este ADR complementa</li>
+<li>ADR-013: Seed Distribution — provision.sh debe ser compatible</li>
+<li>ADR-015: eBPF Program Integrity — AppArmor complementa la verificación HMAC</li>
+<li>ADR-017: Plugin Interface Hierarchy — perfiles AppArmor por plugin</li>
+<li>ADR-018: eBPF Kernel Plugin Loader — CAP_BPF confinado por AppArmor</li>
+<li>CIS Benchmark Debian/Ubuntu — referencia para hardening de SO</li>
+<li>NIST SP 800-123: Guide to General Server Security</li>
+</ul>
+<hr />
+<p><em>Co-authored-by: Alonso Isidoro Román + Claude (Anthropic)</em>
+<em>Consejo de Sabios — ML Defender (aRGus NDR)</em>
+<em>DAY 94 — 22 marzo 2026</em></p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.top", "search.highlight"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

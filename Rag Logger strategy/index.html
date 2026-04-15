@@ -1,0 +1,1628 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source embedded-ML NDR for hospitals and schools">
+      
+      
+        <meta name="author" content="Alonso Isidoro Roman">
+      
+      
+        <link rel="canonical" href="https://alonsoir.github.io/argus/Rag%20Logger%20strategy/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>📊 RAGLogger - Estrategia de Logging - ML Defender (aRGus NDR)</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#raglogger-estrategia-de-logging" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="ML Defender (aRGus NDR)" class="md-header__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ML Defender (aRGus NDR)
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              📊 RAGLogger - Estrategia de Logging
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../README.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../docs/ARCHITECTURE.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../docs/BACKLOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Backlog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../docs/SECURITY_MODEL.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Security Model
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../docs/adr/ADR-013 seed distribution component authentication.md" class="md-tabs__link">
+          
+  
+  
+  ADRs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../docs/contracts/Protobuf contracts.md" class="md-tabs__link">
+          
+  
+  
+  Contracts
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="ML Defender (aRGus NDR)" class="md-nav__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ML Defender (aRGus NDR)
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../README.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/ARCHITECTURE.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/BACKLOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/SECURITY_MODEL.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADRs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ADRs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/adr/ADR-013 seed distribution component authentication.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013 Seed Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/adr/ADR-021-deployment-topology-seed-families.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-021 Topology SSOT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/adr/ADR-022-threat-model-opcion2-descartada.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-022 Threat Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/contracts/Protobuf contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protobuf
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/contracts/JSON contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JSON
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/contracts/Rag security commands.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#la-pregunta-fundamental" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🤔 LA PREGUNTA FUNDAMENTAL
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#analisis-comparativo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        📋 ANÁLISIS COMPARATIVO
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="📋 ANÁLISIS COMPARATIVO">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#opcion-a-solo-eventos-interesantes-actual" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Opción A: Solo Eventos Interesantes (ACTUAL ✅)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Opción A: Solo Eventos Interesantes (ACTUAL ✅)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#criterios-de-filtrado" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Criterios de Filtrado
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#configuracion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Configuración
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datos-reales-estimados" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Datos Reales Estimados
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ventajas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ✅ Ventajas
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#desventajas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ❌ Desventajas
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#casos-de-uso-ideales" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        💡 Casos de Uso Ideales
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#opcion-b-muestreo-inteligente" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Opción B: Muestreo Inteligente
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Opción B: Muestreo Inteligente">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#criterios-de-filtrado_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Criterios de Filtrado
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#configuracion_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Configuración
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datos-reales-estimados_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Datos Reales Estimados
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ventajas_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ✅ Ventajas
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#desventajas_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ❌ Desventajas
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#casos-de-uso-ideales_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        💡 Casos de Uso Ideales
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#opcion-c-todo-con-flag-testing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Opción C: Todo con Flag Testing
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Opción C: Todo con Flag Testing">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#criterios-de-filtrado_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Criterios de Filtrado
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#configuracion_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Configuración
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datos-reales-estimados_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Datos Reales Estimados
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ventajas_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ✅ Ventajas
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#desventajas_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ❌ Desventajas
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#casos-de-uso-ideales_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        💡 Casos de Uso Ideales
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#recomendacion-final" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🎯 RECOMENDACIÓN FINAL
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🎯 RECOMENDACIÓN FINAL">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#para-day-15-testing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Para Day 15 (Testing):
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#para-produccion-post-day-16" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Para Producción (Post-Day 16):
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#implementacion-practica" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🔧 IMPLEMENTACIÓN PRÁCTICA
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🔧 IMPLEMENTACIÓN PRÁCTICA">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#day-15-morning-smallflows-quick-test" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Day 15 Morning - SmallFlows (Quick Test)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#day-15-afternoon-neris-f1-score-validation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Day 15 Afternoon - Neris (F1-Score Validation)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#day-16-produccion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Day 16+ - Producción
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#comparativa-visual" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        📊 COMPARATIVA VISUAL
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#decision-estrategica" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        💡 DECISIÓN ESTRATÉGICA
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="💡 DECISIÓN ESTRATÉGICA">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#mi-recomendacion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Mi Recomendación:
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#razones" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Razones:
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#roadmap" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Roadmap:
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#conclusion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🎯 CONCLUSIÓN
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="raglogger-estrategia-de-logging">📊 RAGLogger - Estrategia de Logging</h1>
+<h2 id="la-pregunta-fundamental">🤔 LA PREGUNTA FUNDAMENTAL</h2>
+<p><strong>"¿Guardamos todo o solo lo interesante?"</strong></p>
+<p>Esta decisión afecta:
+- 💾 Almacenamiento (GB/día)
+- 🔍 Calidad del RAG (ruido vs señal)
+- 📈 Capacidad de validación (F1-scores)
+- ⚡ Performance del sistema</p>
+<hr />
+<h2 id="analisis-comparativo">📋 ANÁLISIS COMPARATIVO</h2>
+<h3 id="opcion-a-solo-eventos-interesantes-actual">Opción A: Solo Eventos Interesantes (ACTUAL ✅)</h3>
+<h4 id="criterios-de-filtrado">Criterios de Filtrado</h4>
+<pre><code class="language-cpp">bool should_log_event() {
+    // Se registra si cumple CUALQUIERA:
+    return decision_metadata.requires_rag_analysis ||
+           overall_threat_score &gt;= 0.70 ||
+           score_divergence &gt;= 0.30;
+}
+</code></pre>
+<h4 id="configuracion">Configuración</h4>
+<pre><code class="language-json">{
+  &quot;min_score_to_log&quot;: 0.70,
+  &quot;min_divergence_to_log&quot;: 0.30,
+  &quot;save_protobuf_artifacts&quot;: true,
+  &quot;save_json_artifacts&quot;: true
+}
+</code></pre>
+<h4 id="datos-reales-estimados">Datos Reales Estimados</h4>
+<p><strong>SmallFlows (1,207 eventos):</strong>
+- RAG events: <strong>87</strong> (~7.2%)
+- Motivo: Divergencia Fast=0.70 vs ML=0.39
+- Logs: <strong>~500 KB</strong>
+- Artifacts: <strong>87 .pb + 87 .json</strong> = <strong>~3 MB</strong></p>
+<p><strong>Neris (492,358 eventos):</strong>
+- RAG events: <strong>~15,000</strong> (~3%)
+- Botnet IPs: <strong>~800-1,200</strong> eventos
+- Logs: <strong>~75 MB</strong>
+- Artifacts: <strong>~300 MB</strong></p>
+<p><strong>Producción (10M eventos/día):</strong>
+- RAG events: <strong>~300,000</strong> (~3%)
+- Logs: <strong>~1.5 GB/día</strong>
+- Artifacts: <strong>~6 GB/día</strong>
+- <strong>Total: 7.5 GB/día</strong>
+- <strong>Retención 30 días: 225 GB</strong></p>
+<h4 id="ventajas">✅ Ventajas</h4>
+<ol>
+<li><strong>Almacenamiento manejable</strong> - Solo 3% del total</li>
+<li><strong>Alta calidad RAG</strong> - Foco en eventos críticos</li>
+<li><strong>Performance óptimo</strong> - Overhead &lt;2%</li>
+<li><strong>Logs navegables</strong> - Fácil de analizar manualmente</li>
+<li><strong>Producción-ready</strong> - Escalable a largo plazo</li>
+</ol>
+<h4 id="desventajas">❌ Desventajas</h4>
+<ol>
+<li><strong>No hay true negatives</strong> - Dificulta F1-score perfecto</li>
+<li><strong>Pierde contexto benigno</strong> - No vemos "normalidad"</li>
+<li><strong>Sesgo hacia amenazas</strong> - RAG solo aprende de "malo"</li>
+</ol>
+<h4 id="casos-de-uso-ideales">💡 Casos de Uso Ideales</h4>
+<ul>
+<li>✅ Investigación de amenazas</li>
+<li>✅ Análisis de divergencias Fast vs ML</li>
+<li>✅ Debugging de falsos positivos</li>
+<li>✅ Entrenamiento de analistas</li>
+<li>✅ Producción long-term</li>
+</ul>
+<hr />
+<h3 id="opcion-b-muestreo-inteligente">Opción B: Muestreo Inteligente</h3>
+<h4 id="criterios-de-filtrado_1">Criterios de Filtrado</h4>
+<pre><code class="language-cpp">bool should_log_event() {
+    // 100% eventos interesantes
+    if (overall_threat_score &gt;= 0.70 || score_divergence &gt;= 0.30) {
+        return true;
+    }
+
+    // 1% eventos benignos (muestreo)
+    if (overall_threat_score &lt; 0.30 &amp;&amp; random(0, 100) &lt; 1) {
+        return true;
+    }
+
+    return false;
+}
+</code></pre>
+<h4 id="configuracion_1">Configuración</h4>
+<pre><code class="language-json">{
+  &quot;mode&quot;: &quot;production_with_sampling&quot;,
+  &quot;min_score_to_log&quot;: 0.70,
+  &quot;min_divergence_to_log&quot;: 0.30,
+  &quot;sample_benign_rate&quot;: 0.01,  // 1% benignos
+  &quot;sample_medium_rate&quot;: 0.10   // 10% medios (0.30-0.70)
+}
+</code></pre>
+<h4 id="datos-reales-estimados_1">Datos Reales Estimados</h4>
+<p><strong>Neris (492,358 eventos):</strong>
+- Interesantes: <strong>~15,000</strong> (3%)
+- Benignos muestreados: <strong>~4,800</strong> (1% de ~480K)
+- Medios muestreados: <strong>~50</strong> (casos edge)
+- <strong>Total: ~20,000</strong> (~4%)
+- Logs: <strong>~100 MB</strong>
+- Artifacts: <strong>~400 MB</strong></p>
+<p><strong>Producción (10M eventos/día):</strong>
+- Interesantes: <strong>~300,000</strong>
+- Benignos: <strong>~97,000</strong> (1% muestreo)
+- <strong>Total: ~400,000</strong> (~4%)
+- <strong>Storage: ~10 GB/día</strong>
+- <strong>Retención 30 días: 300 GB</strong></p>
+<h4 id="ventajas_1">✅ Ventajas</h4>
+<ol>
+<li><strong>True negatives disponibles</strong> - F1-score completo</li>
+<li><strong>Contexto benigno</strong> - RAG aprende "normalidad"</li>
+<li><strong>Balance amenaza/normal</strong> - Dataset balanceado</li>
+<li><strong>Validación robusta</strong> - Métricas más confiables</li>
+</ol>
+<h4 id="desventajas_1">❌ Desventajas</h4>
+<ol>
+<li><strong>Más almacenamiento</strong> - +33% vs Opción A</li>
+<li><strong>Más complejo</strong> - Lógica de muestreo añadida</li>
+<li><strong>Random noise</strong> - Algunos benignos poco útiles</li>
+</ol>
+<h4 id="casos-de-uso-ideales_1">💡 Casos de Uso Ideales</h4>
+<ul>
+<li>✅ Validación F1-score</li>
+<li>✅ Reentrenamiento de modelos</li>
+<li>✅ Análisis de drift</li>
+<li>✅ Research papers con métricas completas</li>
+</ul>
+<hr />
+<h3 id="opcion-c-todo-con-flag-testing">Opción C: Todo con Flag Testing</h3>
+<h4 id="criterios-de-filtrado_2">Criterios de Filtrado</h4>
+<pre><code class="language-cpp">bool should_log_event() {
+    if (mode == &quot;testing&quot;) {
+        // Log EVERYTHING
+        return true;
+    } else {
+        // Production mode (Opción A)
+        return overall_threat_score &gt;= 0.70 || score_divergence &gt;= 0.30;
+    }
+}
+</code></pre>
+<h4 id="configuracion_2">Configuración</h4>
+<pre><code class="language-json">{
+  &quot;mode&quot;: &quot;testing&quot;,  // &quot;production&quot; o &quot;testing&quot;
+  &quot;testing_max_events&quot;: 100000,  // Safety limit
+  &quot;production&quot;: {
+    &quot;min_score_to_log&quot;: 0.70,
+    &quot;min_divergence_to_log&quot;: 0.30
+  }
+}
+</code></pre>
+<h4 id="datos-reales-estimados_2">Datos Reales Estimados</h4>
+<p><strong>Neris en modo TESTING (492,358 eventos):</strong>
+- <strong>Total: 492,358</strong> (100%)
+- Logs: <strong>~2.5 GB</strong>
+- Artifacts: <strong>~10 GB</strong>
+- Tiempo adicional: <strong>+10-15 minutos</strong> (I/O disk)</p>
+<p><strong>Producción en modo TESTING:</strong>
+- ❌ <strong>NO RECOMENDADO</strong>
+- <strong>Storage: ~50 GB/día</strong>
+- <strong>Insostenible a largo plazo</strong></p>
+<h4 id="ventajas_2">✅ Ventajas</h4>
+<ol>
+<li><strong>Datos completos</strong> - Nada se pierde</li>
+<li><strong>F1-score perfecto</strong> - Todas las métricas disponibles</li>
+<li><strong>Flexibilidad</strong> - Switch on/off fácil</li>
+</ol>
+<h4 id="desventajas_2">❌ Desventajas</h4>
+<ol>
+<li><strong>Almacenamiento masivo</strong> - 20x más que Opción A</li>
+<li><strong>I/O overhead</strong> - +15% latencia</li>
+<li><strong>Solo para testing</strong> - No escalable</li>
+</ol>
+<h4 id="casos-de-uso-ideales_2">💡 Casos de Uso Ideales</h4>
+<ul>
+<li>✅ Validation runs (Neris, CTU-13)</li>
+<li>✅ Paper experiments con F1-scores</li>
+<li>✅ Debugging exhaustivo</li>
+<li>❌ <strong>NUNCA en producción</strong></li>
+</ul>
+<hr />
+<h2 id="recomendacion-final">🎯 RECOMENDACIÓN FINAL</h2>
+<h3 id="para-day-15-testing">Para Day 15 (Testing):</h3>
+<p><strong>Usar Opción A + Flag Testing:</strong></p>
+<pre><code class="language-json">{
+  &quot;mode&quot;: &quot;testing&quot;,
+  &quot;testing_max_events&quot;: 500000,
+  &quot;production&quot;: {
+    &quot;min_score_to_log&quot;: 0.70,
+    &quot;min_divergence_to_log&quot;: 0.30,
+    &quot;save_protobuf_artifacts&quot;: false,
+    &quot;save_json_artifacts&quot;: false
+  }
+}
+</code></pre>
+<p><strong>Justificación:</strong>
+- Necesitamos <strong>F1-scores reales</strong> para el paper
+- Neris tiene <strong>ground truth</strong> (IPs conocidas)
+- Es un <strong>test único</strong>, no producción
+- Podemos permitirnos <strong>2.5 GB</strong> por una vez</p>
+<h3 id="para-produccion-post-day-16">Para Producción (Post-Day 16):</h3>
+<p><strong>Usar Opción A (Solo Interesantes):</strong></p>
+<pre><code class="language-json">{
+  &quot;mode&quot;: &quot;production&quot;,
+  &quot;min_score_to_log&quot;: 0.70,
+  &quot;min_divergence_to_log&quot;: 0.30,
+  &quot;save_protobuf_artifacts&quot;: true,
+  &quot;save_json_artifacts&quot;: false
+}
+</code></pre>
+<p><strong>Justificación:</strong>
+- <strong>Escalable</strong> - 7.5 GB/día sostenible
+- <strong>Alta calidad</strong> - RAG se enfoca en amenazas
+- <strong>Performance</strong> - &lt;2% overhead
+- <strong>Sufficient</strong> - Suficiente para investigación</p>
+<hr />
+<h2 id="implementacion-practica">🔧 IMPLEMENTACIÓN PRÁCTICA</h2>
+<h3 id="day-15-morning-smallflows-quick-test">Day 15 Morning - SmallFlows (Quick Test)</h3>
+<p><strong>Config para SmallFlows:</strong></p>
+<pre><code class="language-json">{
+  &quot;mode&quot;: &quot;production&quot;,
+  &quot;min_score_to_log&quot;: 0.70,
+  &quot;min_divergence_to_log&quot;: 0.30,
+  &quot;save_protobuf_artifacts&quot;: true,
+  &quot;save_json_artifacts&quot;: true
+}
+</code></pre>
+<p><strong>Resultado esperado:</strong> ~87 eventos, ~3 MB</p>
+<h3 id="day-15-afternoon-neris-f1-score-validation">Day 15 Afternoon - Neris (F1-Score Validation)</h3>
+<p><strong>Config para Neris:</strong></p>
+<pre><code class="language-json">{
+  &quot;mode&quot;: &quot;testing&quot;,
+  &quot;testing_max_events&quot;: 500000,
+  &quot;save_protobuf_artifacts&quot;: true,
+  &quot;save_json_artifacts&quot;: false
+}
+</code></pre>
+<p><strong>Resultado esperado:</strong> ~492K eventos, ~2.5 GB</p>
+<p><strong>Post-procesamiento:</strong></p>
+<pre><code class="language-bash"># Después del test, filtrar solo interesantes para RAG
+cat /vagrant/logs/rag/events/*.jsonl | \
+  jq 'select(.detection.scores.final_score &gt;= 0.70 or 
+             .detection.scores.divergence &gt;= 0.30)' \
+  &gt; /vagrant/logs/rag/events/neris_filtered.jsonl
+
+# Resultado: ~15K eventos, ~75 MB
+</code></pre>
+<h3 id="day-16-produccion">Day 16+ - Producción</h3>
+<p><strong>Config para Producción:</strong></p>
+<pre><code class="language-json">{
+  &quot;mode&quot;: &quot;production&quot;,
+  &quot;min_score_to_log&quot;: 0.70,
+  &quot;min_divergence_to_log&quot;: 0.30,
+  &quot;save_protobuf_artifacts&quot;: true,
+  &quot;save_json_artifacts&quot;: false,
+  &quot;max_events_per_file&quot;: 10000,
+  &quot;max_file_size_mb&quot;: 100
+}
+</code></pre>
+<hr />
+<h2 id="comparativa-visual">📊 COMPARATIVA VISUAL</h2>
+<pre><code>Dataset: Neris (492K eventos)
+
+┌─────────────────────────────────────────────────────────────┐
+│ Opción A: Solo Interesantes                                 │
+├─────────────────────────────────────────────────────────────┤
+│ RAG Events:    ████ 15K (3%)                                │
+│ Storage:       ██ 375 MB (logs + artifacts)                 │
+│ F1-Score:      ⚠️  Parcial (solo positivos)                  │
+│ Production:    ✅ Ready                                      │
+└─────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────┐
+│ Opción B: Muestreo Inteligente                              │
+├─────────────────────────────────────────────────────────────┤
+│ RAG Events:    █████ 20K (4%)                               │
+│ Storage:       ███ 500 MB (logs + artifacts)                │
+│ F1-Score:      ✅ Completo (positivos + negativos)          │
+│ Production:    ⚠️  Viable con trade-offs                     │
+└─────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────┐
+│ Opción C: Todo (Testing Mode)                               │
+├─────────────────────────────────────────────────────────────┤
+│ RAG Events:    ████████████████████ 492K (100%)             │
+│ Storage:       ████████████ 12.5 GB (logs + artifacts)      │
+│ F1-Score:      ✅ Completo                                   │
+│ Production:    ❌ NO viable                                  │
+└─────────────────────────────────────────────────────────────┘
+</code></pre>
+<hr />
+<h2 id="decision-estrategica">💡 DECISIÓN ESTRATÉGICA</h2>
+<h3 id="mi-recomendacion">Mi Recomendación:</h3>
+<ol>
+<li><strong>Day 15 SmallFlows:</strong> Opción A (baseline test)</li>
+<li><strong>Day 15 Neris:</strong> Opción C/Testing (F1-score completo)</li>
+<li><strong>Day 16+:</strong> Opción A (producción sostenible)</li>
+</ol>
+<h3 id="razones">Razones:</h3>
+<ol>
+<li><strong>Neris es único</strong> - Solo lo hacemos una vez para el paper</li>
+<li><strong>F1-scores necesarios</strong> - Para validación científica</li>
+<li><strong>Producción diferente</strong> - No necesitamos 100% en real-time</li>
+<li><strong>Storage temporal OK</strong> - 2.5 GB por una vez es aceptable</li>
+</ol>
+<h3 id="roadmap">Roadmap:</h3>
+<pre><code>Day 15:
+  Morning:  SmallFlows (Opción A) → Validar sistema
+  Afternoon: Neris (Opción C) → F1-scores completos
+
+Day 16:
+  Filtrar Neris → Solo interesantes para RAG ingestion
+  Cambiar a Opción A para producción
+
+Day 17+:
+  Opción A permanente
+  Re-evaluar thresholds basados en métricas reales
+</code></pre>
+<hr />
+<h2 id="conclusion">🎯 CONCLUSIÓN</h2>
+<p><strong>¿Qué guardamos en producción?</strong>
+<strong>Respuesta: Solo lo interesante (Opción A)</strong></p>
+<p><strong>¿Por qué?</strong>
+- ✅ Sostenible (7.5 GB/día vs 50 GB/día)
+- ✅ Alta calidad RAG (foco en amenazas)
+- ✅ Performance óptimo (&lt;2% overhead)
+- ✅ Suficiente para investigación</p>
+<p><strong>¿Y los F1-scores?</strong>
+- Usamos modo "testing" solo para validation runs
+- Guardamos datos completos una vez
+- Documentamos métricas en paper
+- Producción no necesita 100% de eventos</p>
+<p><strong>Storage final recomendado:</strong></p>
+<pre><code>Production (30 días retención):
+  - Logs RAG: 45 GB
+  - Artifacts: 180 GB
+  - Total: 225 GB
+
+Backup validation runs:
+  - Neris completo: 12.5 GB (keepforever)
+  - CTU-13 otros: ~50 GB (opcional)
+</code></pre>
+<p><strong>💪 LISTO PARA IMPLEMENTAR</strong> 🚀</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.tabs", "navigation.top", "search.highlight"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

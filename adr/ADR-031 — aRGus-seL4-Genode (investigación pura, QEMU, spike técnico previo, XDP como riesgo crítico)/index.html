@@ -1,0 +1,1561 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source embedded-ML NDR for hospitals and schools">
+      
+      
+        <meta name="author" content="Alonso Isidoro Roman">
+      
+      
+        <link rel="canonical" href="https://alonsoir.github.io/argus/adr/ADR-031%20%E2%80%94%20aRGus-seL4-Genode%20%28investigaci%C3%B3n%20pura%2C%20QEMU%2C%20spike%20t%C3%A9cnico%20previo%2C%20XDP%20como%20riesgo%20cr%C3%ADtico%29/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>ADR-031: aRGus-seL4-Genode Variant (Investigación Pura) - ML Defender (aRGus NDR)</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#adr-031-argus-sel4-genode-variant-investigacion-pura" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-header__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ML Defender (aRGus NDR)
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              ADR-031: aRGus-seL4-Genode Variant (Investigación Pura)
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../README.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/BACKLOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Backlog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Security Model
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-tabs__link">
+          
+  
+  
+  ADRs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/contracts/Protobuf contracts.md" class="md-tabs__link">
+          
+  
+  
+  Contracts
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-nav__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ML Defender (aRGus NDR)
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../README.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/BACKLOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADRs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ADRs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013 Seed Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-021-deployment-topology-seed-families.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-021 Topology SSOT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-022-threat-model-opcion2-descartada.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-022 Threat Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Protobuf contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protobuf
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/JSON contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JSON
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Rag security commands.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#contexto" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Contexto
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Contexto">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#axioma-operativo-compartido-con-adr-030" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Axioma operativo (compartido con ADR-030)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#limite-fundamental-de-la-arquitectura-declaracion-critica" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Límite fundamental de la arquitectura (declaración crítica)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#decision" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Decisión
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#trusted-computing-base-tcb" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Trusted Computing Base (TCB)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#hipotesis-formales" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Hipótesis formales
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#alternativas-consideradas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Alternativas consideradas
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#riesgo-critico-xdpebpf" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Riesgo crítico: XDP/eBPF
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#spike-tecnico-previo-condicion-gono-go" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Spike técnico previo (condición GO/NO-GO)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Spike técnico previo (condición GO/NO-GO)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#preguntas-a-responder" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Preguntas a responder
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#deliverables-del-spike" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Deliverables del spike
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#condicion-gono-go" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Condición GO/NO-GO
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#infraestructura-de-validacion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Infraestructura de validación
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#baseline-de-referencia" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Baseline de referencia
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#workload-de-benchmarks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Workload de benchmarks
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#metricas-de-evaluacion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Métricas de evaluación
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#consecuencias" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Consecuencias
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#dependencias" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Dependencias
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#estado-en-el-roadmap" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Estado en el roadmap
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#resultados-placeholder" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Resultados (placeholder)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#referencias" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Referencias
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#notas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Notas
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="adr-031-argus-sel4-genode-variant-investigacion-pura">ADR-031: aRGus-seL4-Genode Variant (Investigación Pura)</h1>
+<p><strong>Status:</strong> BACKLOG — RESEARCH — No bloqueante para roadmap actual<br />
+<strong>Fecha:</strong> DAY 109 (2026-04-09)<br />
+<strong>Versión:</strong> v3 — aprobada por Consejo de Sabios, sesión DAY 109<br />
+<strong>Autor:</strong> Alonso Isidoro Román<br />
+<strong>Revisores:</strong> Consejo de Sabios (ChatGPT5, DeepSeek, Gemini, Grok, Qwen) — unanimidad 5/5<br />
+<strong>Relacionado con:</strong> ADR-030 (variante AppArmor, baseline de producción)</p>
+<hr />
+<h2 id="contexto">Contexto</h2>
+<p>Ver ADR-030 §Contexto para motivación completa. Este ADR aborda la pregunta
+científica que ADR-030 no puede responder:</p>
+<blockquote>
+<p><strong>¿Cuánto cuesta realmente la seguridad formal en rendimiento medible
+para un NDR como aRGus corriendo en hardware modesto?</strong></p>
+</blockquote>
+<p>Mythos Preview demostró que el kernel Linux, con todas sus mitigaciones activas,
+es vulnerable a encadenamiento de exploits que obtienen root completo. La única
+arquitectura con garantías formales de corrección del kernel disponible hoy es
+seL4, verificado en Isabelle/HOL con ~12.000 líneas de C probadas. El proyecto
+Genode permite ejecutar Linux como guest no privilegiado supervisado por seL4.</p>
+<p>Esta ADR es <strong>investigación pura</strong>. No es una variante de producción. El resultado
+del benchmark — favorable o no — es la contribución científica.</p>
+<h3 id="axioma-operativo-compartido-con-adr-030">Axioma operativo (compartido con ADR-030)</h3>
+<blockquote>
+<p>En entornos de amenaza avanzada, no puede asumirse la integridad del kernel Linux.
+aRGus define sus garantías como válidas dentro de su capa de detección.</p>
+<p>seL4 reduce el TCB del supervisor a ~12.000 líneas verificadas formalmente.
+Pero el guest Linux sigue siendo Linux: si el guest está comprometido, un
+atacante no puede escapar de la jaula seL4, pero las garantías de detección
+de aRGus se invalidan dentro del guest.</p>
+<p><strong>seL4 garantiza aislamiento, no integridad del guest.</strong></p>
+</blockquote>
+<hr />
+<h2 id="limite-fundamental-de-la-arquitectura-declaracion-critica">Límite fundamental de la arquitectura (declaración crítica)</h2>
+<p>Este punto debe entenderse antes de leer el resto del ADR:</p>
+<blockquote>
+<p>seL4 garantiza que un guest comprometido no puede escapar a otros guests
+ni al supervisor. Pero <strong>no garantiza la integridad del guest mismo</strong>.</p>
+<p>Para aRGus, cuya misión es detección de comportamiento anómalo <em>dentro
+del guest</em>, esta distinción es crítica:</p>
+<ul>
+<li>Si el guest Linux es comprometido, el atacante puede inyectar paquetes
+    &gt;   falsos en el datapath libpcap, corromper la memoria del ml-detector,
+    &gt;   o manipular el firewall-acl-agent para generar reglas incorrectas.</li>
+<li>En todos estos casos, <strong>las garantías de detección de aRGus se invalidan</strong>,
+    &gt;   aunque el atacante permanezca confinado en el guest.</li>
+</ul>
+<p>Por tanto, seL4/Genode <strong>no resuelve el threat model de aRGus</strong> — reduce
+el blast radius de un compromiso. El hardening del guest (ADR-030) sigue
+siendo necesario incluso en esta arquitectura.</p>
+<p>Esta limitación se documentará explícitamente en el paper.</p>
+</blockquote>
+<hr />
+<h2 id="decision">Decisión</h2>
+<p>Crear la variante <strong>aRGus-seL4-Genode</strong> como experimento académico:</p>
+<pre><code>┌─────────────────────────────────────────┐
+│      aRGus NDR pipeline                 │
+│      (adaptaciones documentadas)        │
+│      Red: fallback libpcap / virtio-net │
+├─────────────────────────────────────────┤
+│  Linux guest (Debian 13 minimal)        │
+│  kernel 6.12 LTS hardened               │
+│  (VM via Seoul VMM u equivalente)       │
+│  XDP: ver §Hipótesis H1 — probablemente │
+│  inviable, fallback libpcap obligatorio │
+├─────────────────────────────────────────┤
+│      Genode OS Framework 24.02+         │
+│      (capability-based, sandboxing)     │
+│      supervisor no verificado form.     │
+├─────────────────────────────────────────┤
+│         seL4 Microkernel                │
+│    (~12.000 líneas C, Isabelle/HOL)     │
+│    plataforma: hw (ARM64 / x86-64)      │
+└─────────────────────────────────────────┘
+</code></pre>
+<p><strong>El Linux guest se ejecuta como VM no privilegiada.</strong> El supervisor
+Genode+seL4 proporciona aislamiento fuerte, pero el datapath de red pasa
+por virtualización. Esto tiene consecuencias críticas para XDP — ver
+§Hipótesis y §Riesgo crítico.</p>
+<p>Arquitecturas objetivo: <strong>ARM64</strong> (Raspberry Pi 5 preferida) y <strong>x86-64</strong>.<br />
+Validación inicial: <strong>QEMU directamente</strong> — Vagrant no es viable aquí.<br />
+Benchmarks definitivos: bare-metal Raspberry Pi.</p>
+<p>Nota: Se unifica en kernel 6.12 LTS para consistencia con ADR-030.</p>
+<hr />
+<h2 id="trusted-computing-base-tcb">Trusted Computing Base (TCB)</h2>
+<pre><code>TCB del supervisor (verificado formalmente):
+  - seL4 microkernel (~12.000 líneas C, proof en Isabelle/HOL)
+
+TCB del supervisor (NO verificado formalmente):
+  - Genode OS Framework (supervisor de componentes)
+
+Guest (NO parte del TCB verificado):
+  - Kernel Linux 6.12 LTS (guest no privilegiado)
+  - aRGus runtime + dependencias
+  - Debian 13 minimal userspace
+
+Garantía real que ofrece seL4:
+  Si el guest Linux es comprometido, el atacante está confinado
+  en la jaula seL4/Genode. No puede afectar al supervisor ni a
+  otros guests.
+
+  Lo que seL4 NO garantiza:
+  La integridad del pipeline aRGus dentro del guest comprometido.
+  Un atacante dentro del guest puede manipular detección, memoria
+  del ml-detector, y reglas del firewall.
+</code></pre>
+<hr />
+<h2 id="hipotesis-formales">Hipótesis formales</h2>
+<p>Estas hipótesis serán validadas en el spike técnico.</p>
+<p><strong>H1 — XDP inviable en guest:</strong></p>
+<blockquote>
+<p>XDP no es funcional en el guest Linux bajo Genode porque el datapath
+de red pasa por el supervisor (virtio-net), sin acceso directo a
+los descriptores DMA de la NIC física.</p>
+</blockquote>
+<p><strong>H2 — Overhead de fallback libpcap:</strong></p>
+<blockquote>
+<p>El fallback a libpcap introduce una degradación de throughput del
+40-60% respecto al baseline libpcap en Linux nativo, atribuible
+principalmente al overhead de virtualización Genode.</p>
+</blockquote>
+<p><strong>H3 — Pipeline ejecutable con adaptaciones mínimas:</strong></p>
+<blockquote>
+<p>aRGus puede ejecutarse en el guest Linux con adaptaciones limitadas
+al mecanismo de captura (XDP→libpcap). ZeroMQ, ONNX Runtime y los
+plugins no requieren cambios funcionales dentro del guest.</p>
+</blockquote>
+<p>Cada hipótesis tiene resultado binario GO/NO-GO en el spike.</p>
+<hr />
+<h2 id="alternativas-consideradas">Alternativas consideradas</h2>
+<p><strong>1. Componentes nativos Genode (sin Linux guest)</strong>
+- Pros: TCB mínimo real, máximo aislamiento por componente
+- Contras: reescritura completa del pipeline en C++ Genode, años de trabajo
+- Decisión: descartada. Objetivo futuro a largo plazo si los benchmarks
+  justifican la inversión.</p>
+<p><strong>2. Linux guest completo (esta decisión)</strong>
+- Pros: pipeline aRGus ejecutable con adaptaciones mínimas
+- Contras: TCB del guest sigue siendo Linux, XDP inviable (H1), overhead</p>
+<p><strong>3. Linux DDE (Driver Development Environment de Genode)</strong>
+- Pros: drivers Linux en userspace sin VM completa, overhead potencialmente menor
+- Contras: no ejecuta Debian completo, complejidad similar a reescritura parcial
+- Decisión: evaluar como opción en el spike si VM completa es inviable</p>
+<p><strong>4. KVM sobre Linux hardened</strong>
+- Pros: aislamiento fuerte, tooling maduro
+- Contras: TCB mayor (kernel Linux + KVM), sin garantías formales
+- Decisión: fuera de scope</p>
+<hr />
+<h2 id="riesgo-critico-xdpebpf">Riesgo crítico: XDP/eBPF</h2>
+<p><strong>Este es el punto técnico más importante del ADR.</strong></p>
+<p>El sniffer de aRGus usa XDP hooks en el kernel Linux. En la variante seL4/Genode,
+el kernel Linux guest no tiene acceso directo a la NIC física — el datapath
+pasa por el supervisor Genode (virtio-net). Consecuencias:</p>
+<ul>
+<li>XDP en el guest <strong>fallará</strong> sin acceso directo a descriptores DMA — H1</li>
+<li>El fallback obligatorio es <strong>libpcap</strong> sobre la interfaz virtualizada</li>
+<li>Overhead esperado: 40-60% en throughput según benchmarks publicados
+  de arquitecturas similares (papers Genode Foundation, L4Ka)</li>
+</ul>
+<p>Esto invalida la afirmación "sin cambios en el código". Las adaptaciones
+necesarias son:</p>
+<pre><code>1. sniffer: detección en runtime de disponibilidad XDP;
+   fallback automático a libpcap si XDP no disponible
+2. ZeroMQ: verificar comportamiento sobre socket virtualizado Genode
+3. ONNX Runtime: verificar en guest ARM64 con kernel hardened
+</code></pre>
+<p><code>dlopen()</code> dentro del guest Linux funciona con normalidad —
+no es un punto de riesgo. Los plugins son accesibles desde el
+filesystem del guest sin adaptación.</p>
+<hr />
+<h2 id="spike-tecnico-previo-condicion-gono-go">Spike técnico previo (condición GO/NO-GO)</h2>
+<p><strong>Obligatorio antes de cualquier implementación.</strong> Duración estimada: 2-3 semanas.
+Si el spike da GO/NO-GO negativo, el ADR se archiva como "inviable" con
+conclusiones publicables — ese también es un resultado científico válido.</p>
+<h3 id="preguntas-a-responder">Preguntas a responder</h3>
+<ol>
+<li>¿Arranca un Linux guest minimal sobre Genode+seL4 en x86-64 con QEMU+KVM?</li>
+<li>¿Confirma H1? ¿XDP inviable en el guest — fallback libpcap definitivo?</li>
+<li>¿Confirma H3? ¿ZeroMQ, ONNX Runtime, dlopen() funcionales en el guest?</li>
+<li>¿Qué versión de Genode tiene mejor soporte Linux guest en ARM64 (Pi 5)?</li>
+<li>¿Es viable Linux DDE como alternativa a VM completa?</li>
+<li>¿Cuál es el jitter de context switches bajo ZeroMQ? ¿Afecta al ml-detector?</li>
+</ol>
+<h3 id="deliverables-del-spike">Deliverables del spike</h3>
+<ul>
+<li>Script QEMU funcional reproducible que arranque Linux guest sobre Genode+seL4 x86-64</li>
+<li>Informe de viabilidad XDP (confirmación H1) con evidencia técnica</li>
+<li>Medición baseline de red en guest: <code>iperf3</code> + <code>pktgen</code> guest vs nativo</li>
+<li>Benchmark libpcap vs XDP en Linux nativo (baseline de comparación)</li>
+<li>Análisis de ZeroMQ latency y jitter bajo carga en guest virtualizado</li>
+<li>Confirmación de dlopen() y ONNX Runtime funcionales</li>
+<li>Informe GO/NO-GO con recomendación explícita</li>
+</ul>
+<h3 id="condicion-gono-go">Condición GO/NO-GO</h3>
+<p><strong>GO</strong> si:
+- Linux guest arranca y el pipeline es ejecutable con adaptaciones ≤ H3
+- Overhead estimado &lt; 5x baseline en latencia
+- libpcap viable con &gt; 10k PPS en hardware objetivo</p>
+<p><strong>NO-GO</strong> (archivar como "inviable") si:
+- Overhead &gt; 10x o libpcap &lt; 1k PPS en hardware objetivo
+- Pipeline fundamentalmente no ejecutable sin reescritura mayor</p>
+<p>En caso de NO-GO: publicar el informe del spike como contribución científica.
+"Las garantías formales cuestan X en rendimiento hoy y no son viables para
+hardware de 150-200 USD" es un resultado honesto y publicable.</p>
+<hr />
+<h2 id="infraestructura-de-validacion">Infraestructura de validación</h2>
+<p><strong>Vagrant NO es viable para esta variante.</strong> Genode+seL4 requiere QEMU con
+KVM habilitado y configuración específica del hipervisor. Vagrant abstrae
+estas capas de forma incompatible.</p>
+<pre><code class="language-bash"># Validación x86-64 (portátil desarrollo, primera fase)
+qemu-system-x86_64 \
+  -machine q35 \
+  -enable-kvm \
+  -cpu host \
+  -m 4G \
+  -kernel genode-image.elf \
+  -nographic
+
+# Validación ARM64 bare-metal (segunda fase, tras spike x86)
+# Imagen Genode compilada para hw/rpi4 o hw/rpi5
+# Pi 5 preferida por soporte EL2 (virtualización ARM)
+# NIC: Gigabit Ethernet integrada (Pi 5) o USB3 Gigabit (Pi 4)
+</code></pre>
+<p><strong>Estrategia de plataforma:</strong>
+- Fase 1: x86-64 con QEMU — validar concepto antes de comprar hardware
+- Fase 2: Raspberry Pi 4 si soporte Genode estable en ARM64
+- Fase 3: Raspberry Pi 5 si soporte EL2 maduro — mejor virtualización</p>
+<p>Plataformas seL4 verificadas con soporte Genode:
+- <code>x86-64</code> (verificación completa, más maduro)
+- <code>ARM64 Raspberry Pi 4</code> (hw_rpi4, soporte parcial)
+- <code>ARM64 Raspberry Pi 5</code> (virtualización EL2 más capaz, soporte en maduración)</p>
+<hr />
+<h2 id="baseline-de-referencia">Baseline de referencia</h2>
+<p>Para atribuir correctamente el overhead observado, se medirán <strong>tres puntos</strong>:</p>
+<pre><code>Punto A: aRGus + XDP    en Linux nativo x86/ARM  → baseline máximo
+Punto B: aRGus + libpcap en Linux nativo x86/ARM  → baseline libpcap
+Punto C: aRGus + libpcap en Linux guest Genode/seL4 → experimento
+
+Overhead XDP→libpcap     = (A - B) / A
+Overhead de virtualización = (B - C) / B
+Overhead total seL4        = (A - C) / A
+</code></pre>
+<p>Esto permite separar el coste del cambio de mecanismo de captura del coste
+real de la virtualización seL4. Es esencial para la honestidad científica.</p>
+<hr />
+<h2 id="workload-de-benchmarks">Workload de benchmarks</h2>
+<p>Idéntico a ADR-030 para comparabilidad directa:</p>
+<ul>
+<li><strong>Dataset:</strong> CTU-13 Neris pcap replay (Sebastian Garcia, stratosphereips.org)</li>
+<li><strong>Tráfico sintético:</strong> 60% TCP / 30% UDP / 10% ICMP, tamaño medio 512 bytes</li>
+<li><strong>PPS objetivo:</strong> 10k–100k (ajustado a capacidad hardware)</li>
+<li><strong>Herramienta de replay:</strong> tcpreplay en modo timing preciso</li>
+<li><strong>Duración:</strong> mínimo 10 minutos por run, 3 runs por métrica</li>
+</ul>
+<hr />
+<h2 id="metricas-de-evaluacion">Métricas de evaluación</h2>
+<table>
+<thead>
+<tr>
+<th>Métrica</th>
+<th>Herramienta</th>
+<th>Umbral orientativo</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Latencia paquete E2E (p50)</td>
+<td>tcpreplay + timestamp</td>
+<td>documentar (esperado 2-4x)</td>
+</tr>
+<tr>
+<td>Latencia paquete E2E (p99)</td>
+<td>tcpreplay + timestamp</td>
+<td>documentar</td>
+</tr>
+<tr>
+<td>Throughput libpcap (p50)</td>
+<td>pktgen + iperf3</td>
+<td>documentar (esperado 40-60%)</td>
+</tr>
+<tr>
+<td>Latencia ZeroMQ (p50)</td>
+<td>benchmark interno</td>
+<td>documentar</td>
+</tr>
+<tr>
+<td>Jitter ZeroMQ bajo carga</td>
+<td>benchmark interno</td>
+<td>documentar</td>
+</tr>
+<tr>
+<td>Inferencia ONNX</td>
+<td>ml-detector benchmark</td>
+<td>documentar</td>
+</tr>
+<tr>
+<td>IPC latency Genode</td>
+<td>genode benchmark</td>
+<td>documentar</td>
+</tr>
+<tr>
+<td>Context switches/s</td>
+<td>perf stat en guest</td>
+<td>documentar</td>
+</tr>
+<tr>
+<td>Memoria RSS total</td>
+<td>/proc/meminfo guest</td>
+<td>documentar</td>
+</tr>
+<tr>
+<td>Boot time total</td>
+<td>cronómetro externo</td>
+<td>documentar</td>
+</tr>
+<tr>
+<td>Packet drop rate bajo carga</td>
+<td>tcpreplay stats</td>
+<td>documentar</td>
+</tr>
+<tr>
+<td>Tamaño TCB supervisor</td>
+<td>LOC seL4 + componentes Genode críticos</td>
+<td>documentar</td>
+</tr>
+<tr>
+<td>Complejidad de porting</td>
+<td>person-days reales</td>
+<td>documentar</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Los umbrales son orientativos, no vinculantes.</strong> El objetivo es documentar
+la realidad, no pasar un test.</p>
+<p><strong>Criterio de clasificación del resultado:</strong>
+- Overhead total &lt; 2x Y libpcap &gt; 50% baseline → "Viable con restricciones"
+- Overhead 2-5x → "Experimental, solo hardware dedicado de alta gama"
+- Overhead &gt; 5x o pipeline inviable → "Research only, no recomendado
+  para producción en hardware modesto"</p>
+<p>En todos los casos: publicar. Esta clasificación se incluirá explícitamente
+en el paper y documentación pública.</p>
+<hr />
+<h2 id="consecuencias">Consecuencias</h2>
+<p><strong>Positivas:</strong>
+- Primer NDR open source con benchmark documentado sobre kernel formalmente verificado
+- Contribución científica independiente del resultado — especialmente si confirma
+  inviabilidad para hardware modesto (resultado honesto y publicable)
+- Respuesta directa y medible a las implicaciones de Mythos Preview
+- Desglose científico del overhead: virtualización vs cambio XDP→libpcap
+- Posiciona aRGus en comunidades cs.CR, sistemas embebidos seguros,
+  infraestructura crítica, y potencialmente comunidad Genode
+- Potencial segundo paper independiente</p>
+<p><strong>Negativas / Riesgos:</strong>
+- XDP probablemente inviable — fallback libpcap con overhead significativo
+- Complejidad de setup Genode+seL4 con Linux guest (documentación escasa
+  para este caso de uso específico)
+- Overhead esperado 40-60% hace inviable para hardware de 150-200 USD
+- Comunidad Genode pequeña (&lt; 10k usuarios activos) — soporte limitado
+- Mantenimiento: actualizaciones Genode/seL4 requieren recompilación y
+  revalidación manual completa
+- Soporte ARM64 (Pi 5) en Genode en maduración — puede requerir Pi 4 como
+  primera plataforma ARM64
+- Pérdida de tooling de debug dentro del guest
+- Fragmentación potencial de codebase</p>
+<p><strong>Oportunidad:</strong> el trabajo de aRGus puede ser un caso de estudio relevante
+para la comunidad Genode en cargas de trabajo de red intensivas. Colaboración
+potencial con Genode Foundation.</p>
+<hr />
+<h2 id="dependencias">Dependencias</h2>
+<ul>
+<li>ADR-030 completado — baseline AppArmor necesario para comparación</li>
+<li>ADR-025 (Plugin Integrity Verification) — DONE</li>
+<li>ADR-023 (Multi-Layer Plugin Architecture) — DONE</li>
+<li>Spike técnico (2-3 semanas) — MUST antes de implementación</li>
+<li>Hardware Raspberry Pi 5 (preferida) — BLOCKED</li>
+<li>Genode OS Framework 24.02+ — disponible, open source</li>
+</ul>
+<hr />
+<h2 id="estado-en-el-roadmap">Estado en el roadmap</h2>
+<pre><code>FASE ACTUAL:    PHASE 2b (rag-ingester integration)
+FASE SIGUIENTE: PHASE 3 (fleet telemetry, XGBoost)
+ADR-030:        BACKLOG — activar post PHASE 3
+ESTA ADR:       BACKLOG/RESEARCH — activar post ADR-030 + spike GO
+</code></pre>
+<p>Se activa cuando:
+1. Paper arXiv publicado y estabilizado
+2. ADR-030 completado y baseline medido
+3. Hardware Raspberry Pi disponible
+4. Spike técnico completado con resultado GO</p>
+<hr />
+<h2 id="resultados-placeholder">Resultados (placeholder)</h2>
+<p><em>Esta sección se completará tras el spike técnico y los benchmarks.</em></p>
+<table>
+<thead>
+<tr>
+<th>Punto</th>
+<th>Métrica</th>
+<th>Valor</th>
+<th>Delta vs A</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A: XDP nativo</td>
+<td>Throughput</td>
+<td>—</td>
+<td>baseline</td>
+</tr>
+<tr>
+<td>B: libpcap nativo</td>
+<td>Throughput</td>
+<td>—</td>
+<td>—</td>
+</tr>
+<tr>
+<td>C: libpcap guest</td>
+<td>Throughput</td>
+<td>—</td>
+<td>—</td>
+</tr>
+<tr>
+<td>Clasificación final</td>
+<td>—</td>
+<td>—</td>
+<td>—</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="referencias">Referencias</h2>
+<ul>
+<li>Claude Mythos Preview: https://red.anthropic.com/2026/mythos-preview</li>
+<li>seL4 Foundation: https://sel4.systems</li>
+<li>Genode OS Framework: https://genode.org</li>
+<li>CTU-13 dataset: https://www.stratosphereips.org/datasets-ctu13</li>
+<li>seL4 formal verification paper: Klein et al., SOSP 2009</li>
+<li>AppArmor confused deputy analysis: Hugo Vázquez Caramés (LinkedIn, abril 2026)</li>
+<li>ADR-025: Plugin Integrity Verification</li>
+<li>ADR-030: aRGus-AppArmor-Hardened Variant</li>
+</ul>
+<hr />
+<h2 id="notas">Notas</h2>
+<p>Esta ADR nació de la misma conversación del DAY 108 que ADR-030. La pregunta
+que motivó ambas es la misma — ¿qué significa asumir el kernel inseguro? —
+pero las respuestas son diferentes:</p>
+<ul>
+<li>ADR-030 responde con ingeniería pragmática para el mundo real</li>
+<li>ADR-031 responde con ciencia honesta sobre el límite teórico alcanzable hoy</li>
+</ul>
+<p>Si el spike muestra overhead &gt; 5x y XDP inviable sin reescritura mayor, ese
+resultado es igualmente valioso: demuestra que las garantías formales tienen
+un coste real que el hardware de infraestructura crítica modesta no puede
+pagar hoy. Eso es verdad medible y publicable.</p>
+<p>Si el resultado sorprende — overhead aceptable, fallback libpcap funcional —
+eso cambia la conversación completa sobre seguridad en infraestructura crítica
+de organizaciones sin recursos.</p>
+<p>Al publicar estos resultados — sean los que sean — estaremos definiendo el
+coste real de la verdad. Eso es más que el 90% de los vendors comerciales.</p>
+<p><em>"La verdad por delante, siempre."</em></p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.top", "search.highlight"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

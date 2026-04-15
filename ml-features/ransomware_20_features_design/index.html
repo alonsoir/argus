@@ -1,0 +1,1524 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source embedded-ML NDR for hospitals and schools">
+      
+      
+        <meta name="author" content="Alonso Isidoro Roman">
+      
+      
+        <link rel="canonical" href="https://alonsoir.github.io/argus/ml-features/ransomware_20_features_design/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>Ransomware Detection Features - v1.0 (RPi Version) - ML Defender (aRGus NDR)</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#ransomware-detection-features-v10-rpi-version" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-header__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ML Defender (aRGus NDR)
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Ransomware Detection Features - v1.0 (RPi Version)
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../README.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/BACKLOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Backlog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Security Model
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-tabs__link">
+          
+  
+  
+  ADRs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/contracts/Protobuf contracts.md" class="md-tabs__link">
+          
+  
+  
+  Contracts
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-nav__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ML Defender (aRGus NDR)
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../README.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/BACKLOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADRs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ADRs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013 Seed Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-021-deployment-topology-seed-families.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-021 Topology SSOT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-022-threat-model-opcion2-descartada.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-022 Threat Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Protobuf contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protobuf
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/JSON contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JSON
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Rag security commands.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#20-critical-features-for-real-time-detection" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        20 Critical Features for Real-Time Detection
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#feature-categories" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Feature Categories
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Feature Categories">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#category-1-cc-communication-6-features" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🔴 CATEGORY 1: C&amp;C Communication (6 features)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#category-2-lateral-movement-4-features" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🟠 CATEGORY 2: Lateral Movement (4 features)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#category-3-data-exfiltration-prep-4-features" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🟡 CATEGORY 3: Data Exfiltration Prep (4 features)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#category-4-behavioral-anomalies-6-features" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🟢 CATEGORY 4: Behavioral Anomalies (6 features)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#feature-extraction-requirements" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Feature Extraction Requirements
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Feature Extraction Requirements">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#data-needed-from-sniffer" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Data Needed from Sniffer
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#implementation-strategy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Implementation Strategy
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Implementation Strategy">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#phase-1-immediate-this-week" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 1: Immediate (This Week)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#phase-2-next-week" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 2: Next Week
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#phase-3-week-3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 3: Week 3
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#phase-4-week-4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 4: Week 4
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#dataset-requirements" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Dataset Requirements
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Dataset Requirements">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#malicious-samples-ransomware" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ✅ Malicious Samples (Ransomware)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#benign-samples-normal-traffic" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ✅ Benign Samples (Normal Traffic)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#training-split" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Training Split
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#expected-performance" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Expected Performance
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#enterprise-version-83-features-future" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Enterprise Version (83 Features) - Future
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#critical-implementation-notes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Critical Implementation Notes
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Critical Implementation Notes">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#state-management" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ⚠️ State Management
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#performance-considerations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ⚠️ Performance Considerations
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#false-positive-mitigation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ⚠️ False Positive Mitigation
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#next-steps" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Next Steps
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="ransomware-detection-features-v10-rpi-version">Ransomware Detection Features - v1.0 (RPi Version)</h1>
+<h2 id="20-critical-features-for-real-time-detection">20 Critical Features for Real-Time Detection</h2>
+<p><strong>Target Hardware:</strong> Raspberry Pi 4 (1GB-4GB RAM)<br />
+<strong>Detection Goal:</strong> Catch ransomware BEFORE encryption starts<br />
+<strong>Inference Budget:</strong> &lt;500 µs<br />
+<strong>False Positive Rate:</strong> &lt;1%  </p>
+<hr />
+<h2 id="feature-categories">Feature Categories</h2>
+<h3 id="category-1-cc-communication-6-features">🔴 CATEGORY 1: C&amp;C Communication (6 features)</h3>
+<p><strong>Rationale:</strong> Ransomware MUST communicate with C&amp;C before encryption</p>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Feature Name</th>
+<th>Type</th>
+<th>Calculation</th>
+<th>Why It Matters</th>
+<th>Evasion Difficulty</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><code>dns_query_entropy</code></td>
+<td>float</td>
+<td>Shannon entropy of DNS queries in 30s window</td>
+<td>DGA domains have high entropy (random chars)</td>
+<td>HARD - legitimate domains have low entropy</td>
+</tr>
+<tr>
+<td>2</td>
+<td><code>new_external_ips_30s</code></td>
+<td>int</td>
+<td>Count of never-seen-before external IPs in 30s</td>
+<td>Ransomware contacts new C&amp;C servers</td>
+<td>MEDIUM - normal browsing also contacts new IPs</td>
+</tr>
+<tr>
+<td>3</td>
+<td><code>dns_query_rate_per_min</code></td>
+<td>float</td>
+<td>DNS queries/minute</td>
+<td>Beaconing behavior (periodic check-ins)</td>
+<td>MEDIUM - can slow down beaconing</td>
+</tr>
+<tr>
+<td>4</td>
+<td><code>failed_dns_queries_ratio</code></td>
+<td>float</td>
+<td>Failed DNS / Total DNS</td>
+<td>DGA generates many failed queries</td>
+<td>HARD - legitimate apps rarely fail DNS</td>
+</tr>
+<tr>
+<td>5</td>
+<td><code>tls_self_signed_cert_count</code></td>
+<td>int</td>
+<td>Self-signed TLS certs in 30s window</td>
+<td>C&amp;C often uses self-signed certs</td>
+<td>MEDIUM - some apps use self-signed</td>
+</tr>
+<tr>
+<td>6</td>
+<td><code>non_standard_port_http_count</code></td>
+<td>int</td>
+<td>HTTP traffic on non-80/443 ports</td>
+<td>C&amp;C often on odd ports (8443, 9443)</td>
+<td>EASY - can use standard ports</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Total C&amp;C features: 6</strong></p>
+<hr />
+<h3 id="category-2-lateral-movement-4-features">🟠 CATEGORY 2: Lateral Movement (4 features)</h3>
+<p><strong>Rationale:</strong> Ransomware spreads to other devices before encrypting</p>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Feature Name</th>
+<th>Type</th>
+<th>Calculation</th>
+<th>Why It Matters</th>
+<th>Evasion Difficulty</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>7</td>
+<td><code>smb_connection_diversity</code></td>
+<td>int</td>
+<td>Unique internal IPs contacted via SMB</td>
+<td>Worm-like spreading via file shares</td>
+<td>HARD - legitimate SMB is usually to 1-2 servers</td>
+</tr>
+<tr>
+<td>8</td>
+<td><code>rdp_failed_auth_count</code></td>
+<td>int</td>
+<td>Failed RDP authentication attempts</td>
+<td>Brute force / credential stuffing</td>
+<td>MEDIUM - can slow down attempts</td>
+</tr>
+<tr>
+<td>9</td>
+<td><code>new_internal_connections_30s</code></td>
+<td>int</td>
+<td>New internal IPs contacted in 30s</td>
+<td>Devices that never talked now talking</td>
+<td>MEDIUM - depends on network topology</td>
+</tr>
+<tr>
+<td>10</td>
+<td><code>port_scan_pattern_score</code></td>
+<td>float</td>
+<td>Sequential port attempts / total connections</td>
+<td>Port scanning to find vulnerable services</td>
+<td>HARD - random scanning is less effective</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Total Lateral Movement features: 4</strong></p>
+<hr />
+<h3 id="category-3-data-exfiltration-prep-4-features">🟡 CATEGORY 3: Data Exfiltration Prep (4 features)</h3>
+<p><strong>Rationale:</strong> Some ransomware exfiltrates data before encryption (double extortion)</p>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Feature Name</th>
+<th>Type</th>
+<th>Calculation</th>
+<th>Why It Matters</th>
+<th>Evasion Difficulty</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>11</td>
+<td><code>upload_download_ratio_30s</code></td>
+<td>float</td>
+<td>Upload bytes / Download bytes in 30s</td>
+<td>Massive uploads indicate exfiltration</td>
+<td>MEDIUM - can slow down exfil</td>
+</tr>
+<tr>
+<td>12</td>
+<td><code>burst_connections_count</code></td>
+<td>int</td>
+<td>Connections started in &lt;5s window</td>
+<td>Sudden activity spike</td>
+<td>MEDIUM - can spread over time</td>
+</tr>
+<tr>
+<td>13</td>
+<td><code>unique_destinations_30s</code></td>
+<td>int</td>
+<td>Unique external IPs contacted in 30s</td>
+<td>Trying multiple exfil channels</td>
+<td>HARD - normal traffic goes to few destinations</td>
+</tr>
+<tr>
+<td>14</td>
+<td><code>large_upload_sessions_count</code></td>
+<td>int</td>
+<td>Uploads &gt;10MB in single session</td>
+<td>Stealing large files</td>
+<td>EASY - can split into small uploads</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Total Exfiltration features: 4</strong></p>
+<hr />
+<h3 id="category-4-behavioral-anomalies-6-features">🟢 CATEGORY 4: Behavioral Anomalies (6 features)</h3>
+<p><strong>Rationale:</strong> Ransomware behaves differently than normal applications</p>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Feature Name</th>
+<th>Type</th>
+<th>Calculation</th>
+<th>Why It Matters</th>
+<th>Evasion Difficulty</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>15</td>
+<td><code>nocturnal_activity_flag</code></td>
+<td>bool</td>
+<td>Activity between 00:00-05:00 local time</td>
+<td>Ransomware often waits for off-hours</td>
+<td>EASY - can adjust timing</td>
+</tr>
+<tr>
+<td>16</td>
+<td><code>connection_rate_stddev</code></td>
+<td>float</td>
+<td>Std deviation of connections/min over 5min</td>
+<td>Normal traffic is steady, ransomware bursts</td>
+<td>MEDIUM - can emulate steady rate</td>
+</tr>
+<tr>
+<td>17</td>
+<td><code>protocol_diversity_score</code></td>
+<td>float</td>
+<td>Unique protocols used / time window</td>
+<td>Ransomware uses many protocols (SMB+HTTP+DNS+TLS)</td>
+<td>HARD - legitimate apps stick to 1-2 protocols</td>
+</tr>
+<tr>
+<td>18</td>
+<td><code>avg_flow_duration_seconds</code></td>
+<td>float</td>
+<td>Average connection duration</td>
+<td>Ransomware has short, bursty connections</td>
+<td>MEDIUM - can keep connections alive longer</td>
+</tr>
+<tr>
+<td>19</td>
+<td><code>tcp_rst_ratio</code></td>
+<td>float</td>
+<td>RST packets / Total TCP packets</td>
+<td>Scanning/probing causes many RSTs</td>
+<td>MEDIUM - can handle RSTs gracefully</td>
+</tr>
+<tr>
+<td>20</td>
+<td><code>syn_without_ack_ratio</code></td>
+<td>float</td>
+<td>SYN without corresponding ACK</td>
+<td>Failed connection attempts (scanning)</td>
+<td>MEDIUM - can complete handshakes</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Total Behavioral features: 6</strong></p>
+<hr />
+<h2 id="feature-extraction-requirements">Feature Extraction Requirements</h2>
+<h3 id="data-needed-from-sniffer">Data Needed from Sniffer</h3>
+<p><strong>Per-Packet Level:</strong>
+- TCP flags (SYN, ACK, RST, FIN)
+- DNS query names (for entropy calculation)
+- TLS certificate info (self-signed detection)
+- Protocol type (HTTP, SMB, RDP, DNS)
+- Ports (source, destination)</p>
+<p><strong>Flow-Level Aggregation (30s windows):</strong>
+- Flow 5-tuple: (src_ip, dst_ip, src_port, dst_port, protocol)
+- Bytes sent/received per flow
+- Connection duration
+- Connection count per IP pair
+- Protocol transitions</p>
+<p><strong>Historical State (needed for "new" detection):</strong>
+- IP whitelist (seen in last 24h)
+- Internal IP topology (who talks to whom normally)
+- Baseline connection rates per device</p>
+<hr />
+<h2 id="implementation-strategy">Implementation Strategy</h2>
+<h3 id="phase-1-immediate-this-week">Phase 1: Immediate (This Week)</h3>
+<p>Features <strong>1-6</strong> (C&amp;C Detection) - Highest priority, easiest to implement
+- These catch ransomware at the EARLIEST stage (initial infection)
+- Only need DNS and TLS inspection</p>
+<h3 id="phase-2-next-week">Phase 2: Next Week</h3>
+<p>Features <strong>7-10</strong> (Lateral Movement) - Medium priority, requires flow tracking
+- Catches ransomware BEFORE it spreads widely
+- Needs SMB/RDP protocol detection</p>
+<h3 id="phase-3-week-3">Phase 3: Week 3</h3>
+<p>Features <strong>11-14</strong> (Exfiltration) - Medium priority, requires byte counting
+- Catches double-extortion ransomware
+- Needs accurate byte accounting per flow</p>
+<h3 id="phase-4-week-4">Phase 4: Week 4</h3>
+<p>Features <strong>15-20</strong> (Behavioral) - Nice-to-have, polish layer
+- Reduces false positives
+- Needs longer time windows (5min)</p>
+<hr />
+<h2 id="dataset-requirements">Dataset Requirements</h2>
+<p>To train a model with these 20 features, we need:</p>
+<h3 id="malicious-samples-ransomware">✅ Malicious Samples (Ransomware)</h3>
+<ol>
+<li><strong>CTU-13 Dataset</strong> - Botnet traffic including ransomware</li>
+<li><strong>CIC-IDS2017</strong> - Labeled ransomware captures</li>
+<li><strong>Stratosphere IPS</strong> - Real malware PCAPs</li>
+</ol>
+<h3 id="benign-samples-normal-traffic">✅ Benign Samples (Normal Traffic)</h3>
+<ol>
+<li><strong>Your own network</strong> - 7 days of capture for baseline</li>
+<li><strong>UNSW-NB15</strong> - Normal traffic samples</li>
+<li><strong>ISCX-VPN</strong> - VPN/encrypted normal traffic</li>
+</ol>
+<h3 id="training-split">Training Split</h3>
+<ul>
+<li>70% training</li>
+<li>15% validation  </li>
+<li>15% test (MUST include zero-day ransomware not seen in training)</li>
+</ul>
+<hr />
+<h2 id="expected-performance">Expected Performance</h2>
+<p>Based on literature review:</p>
+<table>
+<thead>
+<tr>
+<th>Metric</th>
+<th>Target</th>
+<th>Rationale</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Accuracy</strong></td>
+<td>&gt;95%</td>
+<td>High enough to trust automated blocking</td>
+</tr>
+<tr>
+<td><strong>False Positive Rate</strong></td>
+<td>&lt;1%</td>
+<td>1 false alarm per 100 connections is tolerable</td>
+</tr>
+<tr>
+<td><strong>False Negative Rate</strong></td>
+<td>&lt;5%</td>
+<td>Miss rate - acceptable if we catch 95% of ransomware</td>
+</tr>
+<tr>
+<td><strong>Inference Time</strong></td>
+<td>&lt;500 µs</td>
+<td>Fits Parallels.ai budget for RPi</td>
+</tr>
+<tr>
+<td><strong>Memory Footprint</strong></td>
+<td>&lt;50 MB</td>
+<td>For model + feature cache</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="enterprise-version-83-features-future">Enterprise Version (83 Features) - Future</h2>
+<p>Add these categories to reach 83 features:</p>
+<ul>
+<li><strong>Advanced TLS Fingerprinting:</strong> JA3/JA4 hashes (20 features)</li>
+<li><strong>DNS Tunneling Detection:</strong> Subdomain analysis, query patterns (15 features)</li>
+<li><strong>Advanced Lateral Movement:</strong> Kerberos analysis, LDAP queries (10 features)</li>
+<li><strong>File Operation Patterns:</strong> SMB file ops, deletions, renames (12 features)</li>
+<li><strong>Timing Analysis:</strong> Weekday vs weekend, hourly patterns (8 features)</li>
+<li><strong>Process Lineage:</strong> Parent-child process relationships (requires endpoint agent) (10 features)</li>
+<li><strong>Cryptographic Activity:</strong> Entropy of traffic payloads (8 features)</li>
+</ul>
+<p><strong>Total: 20 (base) + 63 (advanced) = 83 features</strong></p>
+<hr />
+<h2 id="critical-implementation-notes">Critical Implementation Notes</h2>
+<h3 id="state-management">⚠️ State Management</h3>
+<ul>
+<li><strong>IP Whitelist:</strong> LRU cache of 10k IPs, evict after 24h</li>
+<li><strong>Flow Table:</strong> Hash table of 100k flows, evict after 5min</li>
+<li><strong>DNS Cache:</strong> Ring buffer of 1k queries, for entropy calc</li>
+</ul>
+<h3 id="performance-considerations">⚠️ Performance Considerations</h3>
+<ul>
+<li>Use <strong>SIMD</strong> for entropy calculations (AVX2/NEON)</li>
+<li>Use <strong>lock-free queues</strong> for feature aggregation</li>
+<li>Use <strong>memory pools</strong> for flow objects</li>
+</ul>
+<h3 id="false-positive-mitigation">⚠️ False Positive Mitigation</h3>
+<ul>
+<li><strong>Whitelist:</strong> Known good IPs (Google, Microsoft, CDNs)</li>
+<li><strong>Time-of-day:</strong> Suppress nocturnal flag during backups</li>
+<li><strong>Thresholds:</strong> Tune per-network (residential vs office)</li>
+</ul>
+<hr />
+<h2 id="next-steps">Next Steps</h2>
+<ol>
+<li>✅ Create JSON schema for these 20 features</li>
+<li>⏳ Design feature extraction code for sniffer</li>
+<li>⏳ Download and prepare training datasets</li>
+<li>⏳ Train RandomForest model</li>
+<li>⏳ Export to ONNX</li>
+<li>⏳ Integrate into ml-detector</li>
+<li>⏳ Test with real ransomware samples</li>
+</ol>
+<p><strong>Estimated time to operational model:</strong> 2-3 weeks</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.top", "search.highlight"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

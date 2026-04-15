@@ -1,0 +1,1831 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source embedded-ML NDR for hospitals and schools">
+      
+      
+        <meta name="author" content="Alonso Isidoro Roman">
+      
+      
+        <link rel="canonical" href="https://alonsoir.github.io/argus/BUILD_SYSTEM/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>🏗️ ML Defender Build System: Single Source of Truth - ML Defender (aRGus NDR)</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#ml-defender-build-system-single-source-of-truth" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="ML Defender (aRGus NDR)" class="md-header__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ML Defender (aRGus NDR)
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              🏗️ ML Defender Build System: Single Source of Truth
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../README.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../docs/ARCHITECTURE.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../docs/BACKLOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Backlog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../docs/SECURITY_MODEL.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Security Model
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../docs/adr/ADR-013 seed distribution component authentication.md" class="md-tabs__link">
+          
+  
+  
+  ADRs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../docs/contracts/Protobuf contracts.md" class="md-tabs__link">
+          
+  
+  
+  Contracts
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="ML Defender (aRGus NDR)" class="md-nav__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ML Defender (aRGus NDR)
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../README.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/ARCHITECTURE.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/BACKLOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/SECURITY_MODEL.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADRs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ADRs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/adr/ADR-013 seed distribution component authentication.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013 Seed Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/adr/ADR-021-deployment-topology-seed-families.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-021 Topology SSOT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/adr/ADR-022-threat-model-opcion2-descartada.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-022 Threat Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/contracts/Protobuf contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protobuf
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/contracts/JSON contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JSON
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/contracts/Rag security commands.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#the-core-principle" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🎯 The Core Principle
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#build-profiles" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🛠️ Build Profiles
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🛠️ Build Profiles">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-production-profileproduction" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Production (PROFILE=production)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-debug-profiledebug" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Debug (PROFILE=debug)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-threadsanitizer-profiletsan" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. ThreadSanitizer (PROFILE=tsan)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-addresssanitizer-profileasan" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. AddressSanitizer (PROFILE=asan)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#directory-structure" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        📂 Directory Structure
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#validation-how-to-verify-a-build" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🧪 Validation: How to verify a build?
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🧪 Validation: How to verify a build?">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#check-binary-size-production-vs-debug" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Check Binary Size (Production vs Debug)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#check-for-sanitizers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Check for Sanitizers
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#developer-rules-the-donts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ⚠️ Developer Rules (The "Don'ts")
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#perfiles-disponibles" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Perfiles disponibles
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#uso" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Uso
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#documentacion-actualizada" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        📚 DOCUMENTACIÓN ACTUALIZADA
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="📚 DOCUMENTACIÓN ACTUALIZADA">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-day48_summarymd" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. DAY48_SUMMARY.md ✅
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#flujo-de-trabajo-habilitado" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🔄 FLUJO DE TRABAJO HABILITADO
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#calidad-via-appia" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🎨 CALIDAD VIA APPIA
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#impacto-en-el-pipeline-ml-defender" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        📈 IMPACTO EN EL PIPELINE ML-DEFENDER
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#proximos-pasos" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🚀 PRÓXIMOS PASOS
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🚀 PRÓXIMOS PASOS">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#2-debug-profiledebug_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Debug (PROFILE=debug)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-tsan-profiletsan" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. TSAN (PROFILE=tsan)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-asan-profileasan" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. ASAN (PROFILE=asan)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#uso-practico" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🛠️ USO PRÁCTICO
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🛠️ USO PRÁCTICO">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#comandos-esenciales" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Comandos Esenciales:
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ejemplos-de-workflow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Ejemplos de Workflow:
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#estructura-de-directorios" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        📁 ESTRUCTURA DE DIRECTORIOS
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#integracion-cmake" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🔧 INTEGRACIÓN CMAKE
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🔧 INTEGRACIÓN CMAKE">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#antes-problema" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Antes (Problema):
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#despues-solucion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Después (Solución):
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#validacion-y-verificacion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🧪 VALIDACIÓN Y VERIFICACIÓN
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🧪 VALIDACIÓN Y VERIFICACIÓN">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#verificacion-de-perfiles" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Verificación de Perfiles:
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#metricas-de-validacion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Métricas de Validación:
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#troubleshooting" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🐛 TROUBLESHOOTING
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🐛 TROUBLESHOOTING">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#problema-flags-no-se-aplican" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Problema: Flags no se aplican
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#problema-protobuf-missing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Problema: Protobuf missing
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#problema-dependencias-cruzadas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Problema: Dependencias cruzadas
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#mantenimiento-y-extension" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🚀 MANTENIMIENTO Y EXTENSIÓN
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🚀 MANTENIMIENTO Y EXTENSIÓN">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#agregar-nuevo-componente" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Agregar nuevo componente:
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#agregar-nuevo-perfil" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Agregar nuevo perfil:
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#comparacion-antesdespues" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        📊 COMPARACIÓN ANTES/DESPUÉS
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#buenas-practicas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🎯 BUENAS PRÁCTICAS
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🎯 BUENAS PRÁCTICAS">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#para-desarrolladores" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Para Desarrolladores:
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#para-cicd" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Para CI/CD:
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="ml-defender-build-system-single-source-of-truth">🏗️ ML Defender Build System: Single Source of Truth</h1>
+<p><strong>Last Updated:</strong> 2026-02-01 - Day 48 Phase 1</p>
+<p><strong>Authority:</strong> Root <code>Makefile</code></p>
+<p><strong>Philosophy:</strong> [Via Appia Quality] - Evidence-based, deterministic, and lean.</p>
+<hr />
+<h2 id="the-core-principle">🎯 The Core Principle</h2>
+<p><strong>The root Makefile is the ONLY place where compiler flags (<code>-O</code>, <code>-g</code>, <code>-fsanitize</code>) are defined.</strong></p>
+<p>Individual <code>CMakeLists.txt</code> files in component directories (sniffer, ml-detector, etc.) must remain <strong>agnostic</strong> to the build profile. They only handle file organization and dependency linking.</p>
+<hr />
+<h2 id="build-profiles">🛠️ Build Profiles</h2>
+<p>We have established four distinct profiles to balance performance, debugging, and safety.</p>
+<h3 id="1-production-profileproduction">1. Production (<code>PROFILE=production</code>)</h3>
+<ul>
+<li><strong>Flags:</strong> <code>-O3 -march=native -DNDEBUG -flto</code></li>
+<li><strong>Goal:</strong> Maximum performance and minimum binary size.</li>
+<li><strong>Result:</strong> ~1.4MB binary (91% reduction).</li>
+<li><strong>Usage:</strong> <code>make PROFILE=production all</code></li>
+</ul>
+<h3 id="2-debug-profiledebug">2. Debug (<code>PROFILE=debug</code>)</h3>
+<ul>
+<li><strong>Flags:</strong> <code>-g -O0 -fno-omit-frame-pointer -DDEBUG</code></li>
+<li><strong>Goal:</strong> Full symbol visibility for GDB/LLDB.</li>
+<li><strong>Result:</strong> ~17MB binary.</li>
+<li><strong>Usage:</strong> <code>make PROFILE=debug all</code></li>
+</ul>
+<h3 id="3-threadsanitizer-profiletsan">3. ThreadSanitizer (<code>PROFILE=tsan</code>)</h3>
+<ul>
+<li><strong>Flags:</strong> <code>-fsanitize=thread -g -O1 -DTSAN_ENABLED</code></li>
+<li><strong>Goal:</strong> Detect data races and deadlocks.</li>
+<li><strong>Requirement:</strong> Requires all linked libraries to be TSAN-compatible.</li>
+<li><strong>Usage:</strong> <code>make PROFILE=tsan all</code></li>
+</ul>
+<h3 id="4-addresssanitizer-profileasan">4. AddressSanitizer (<code>PROFILE=asan</code>)</h3>
+<ul>
+<li><strong>Flags:</strong> <code>-fsanitize=address -g -O1 -DASAN_ENABLED</code></li>
+<li><strong>Goal:</strong> Detect memory leaks, buffer overflows, and use-after-free.</li>
+<li><strong>Usage:</strong> <code>make PROFILE=asan all</code></li>
+</ul>
+<hr />
+<h2 id="directory-structure">📂 Directory Structure</h2>
+<p>To avoid artifact contamination, each profile uses its own build and binary directory:</p>
+<pre><code class="language-bash">/vagrant/
+├── build-production/  # Temporary CMake files for Production
+├── build-debug/       # Temporary CMake files for Debug
+├── bin-production/    # Final binaries (lean)
+└── bin-debug/         # Final binaries (with symbols)
+
+</code></pre>
+<hr />
+<h2 id="validation-how-to-verify-a-build">🧪 Validation: How to verify a build?</h2>
+<h3 id="check-binary-size-production-vs-debug">Check Binary Size (Production vs Debug)</h3>
+<pre><code class="language-bash">ls -lh bin-production/sniffer bin-debug/sniffer
+# Expected: 1.4M vs 17M
+
+</code></pre>
+<h3 id="check-for-sanitizers">Check for Sanitizers</h3>
+<pre><code class="language-bash"># For TSAN
+nm bin-tsan/ml-detector | grep tsan
+# For ASAN
+nm bin-asan/ml-detector | grep asan
+
+</code></pre>
+<hr />
+<h2 id="developer-rules-the-donts">⚠️ Developer Rules (The "Don'ts")</h2>
+<ol>
+<li><strong>❌ DO NOT</strong> add <code>set(CMAKE_CXX_FLAGS "-O3")</code> to any <code>CMakeLists.txt</code>.</li>
+<li><strong>❌ DO NOT</strong> hardcode <code>-fsanitize</code> in component files.</li>
+<li><strong>❌ DO NOT</strong> use <code>docker-compose</code> for building; the environment is now Vagrant-native.</li>
+<li><strong>✅ ALWAYS</strong> use the root Makefile to trigger builds.</li>
+</ol>
+<hr />
+<h2 id="perfiles-disponibles">Perfiles disponibles</h2>
+<table>
+<thead>
+<tr>
+<th>Perfil</th>
+<th>Uso</th>
+<th>Flags</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>production</code></td>
+<td>Despliegue</td>
+<td><code>-O3 -flto</code></td>
+</tr>
+<tr>
+<td><code>debug</code></td>
+<td>Desarrollo</td>
+<td><code>-g -O0</code></td>
+</tr>
+<tr>
+<td><code>tsan</code></td>
+<td>Concurrencia</td>
+<td><code>-fsanitize=thread</code></td>
+</tr>
+<tr>
+<td><code>asan</code></td>
+<td>Memoria</td>
+<td><code>-fsanitize=address</code></td>
+</tr>
+</tbody>
+</table>
+<h2 id="uso">Uso</h2>
+<pre><code class="language-bash">make PROFILE=production all
+make PROFILE=tsan test-hardening
+
+# 🚀 **DÍA 48 COMPLETADO - REFACTORIZACIÓN DEL SISTEMA DE CONSTRUCCIÓN**
+
+## 📦 **COMMIT REALIZADO Y PUSHED**
+
+```bash
+# Verificación del estado
+git status
+# On branch feature/build-system-single-source-of-truth
+# nothing to commit, working tree clean
+
+# Push exitoso a la rama remota
+git push origin feature/build-system-single-source-of-truth
+</code></pre>
+<hr />
+<h2 id="documentacion-actualizada">📚 <strong>DOCUMENTACIÓN ACTUALIZADA</strong></h2>
+<h3 id="1-day48_summarymd"><strong>1. DAY48_SUMMARY.md</strong> ✅</h3>
+<pre><code class="language-markdown"># DÍA 48: REFACTORIZACIÓN DEL SISTEMA DE CONSTRUCCIÓN
+
+## 🎯 OBJETIVO ALCANZADO
+Establecer el Makefile raíz como **Single Source of Truth** para el sistema de construcción.
+
+## 🔧 PROBLEMAS RESUELTOS
+- **Conflictos de flags**: Eliminados flags hardcodeados en 9 CMakeLists.txt
+- **Consistencia**: Configuraciones uniformes en todos los perfiles
+- **Dependencias obsoletas**: Eliminadas referencias a Docker/docker-compose
+- **Distribución Protobuf**: Corregido para builds con perfiles específicos
+
+## 🏗️ ARQUITECTURA DEL NUEVO SISTEMA
+
+### **Jerarquía de Configuración:**
+</code></pre>
+<p>Makefile (raíz) → Flags de compilación → CMake → Binarios
+↓
+Perfiles:
+- production: -O3 -flto -DNDEBUG
+- debug: -g -O0 -DDEBUG
+- tsan: -fsanitize=thread
+- asan: -fsanitize=address</p>
+<pre><code>
+### **Validación de Perfiles:**
+| Perfil | Tamaño | Optimización | Sanitizer | Status |
+|--------|--------|--------------|-----------|--------|
+| production | 1.4M | -O3 -flto | None | ✅ |
+| debug | 17M | -O0 | None | ✅ |
+| tsan | 23M | -O1 | ThreadSanitizer v2 | ✅ |
+| asan | ~25M | -O1 | AddressSanitizer | ✅ |
+
+## 📊 MÉTRICAS DE CALIDAD
+
+### **Eficiencia de Tamaño:**
+- **Reducción del 91%** en producción vs debug
+- **Compresión LTO**: Optimización de enlace completo
+- **Flags consistentes**: Mismo set en todos los componentes
+
+### **Validación Sanitizadores:**
+- **TSAN**: ThreadSanitizer activo y funcional
+- **ASAN**: AddressSanitizer listo para pruebas
+- **Aislamiento**: Build directories separados por perfil
+
+## 🛠️ COMPONENTES REFACTORIZADOS (9/9)
+1. ✅ ml-detector
+2. ✅ sniffer
+3. ✅ rag-ingester
+4. ✅ common-rag-ingester
+5. ✅ firewall-acl-agent
+6. ✅ etcd-server
+7. ✅ tools
+8. ✅ crypto-transport
+9. ✅ etcd-client
+
+## 🧪 PRUEBAS REALIZADAS
+```bash
+# Builds exitosos en todos los perfiles
+make PROFILE=production all
+make PROFILE=debug all
+make PROFILE=tsan all
+make PROFILE=asan all
+
+# Clean operations específicas
+make clean-production
+make clean-tsan
+</code></pre>
+<h2 id="flujo-de-trabajo-habilitado">🔄 FLUJO DE TRABAJO HABILITADO</h2>
+<pre><code class="language-bash"># Desarrollo diario
+make PROFILE=debug sniffer
+make PROFILE=debug test
+
+# Testing de concurrencia
+make PROFILE=tsan all
+./build-tsan/tests/concurrency_test
+
+# Producción
+make PROFILE=production all
+strip build-production/bin/*
+</code></pre>
+<h2 id="calidad-via-appia">🎨 CALIDAD VIA APPIA</h2>
+<ul>
+<li>✅ <strong>Basado en evidencia</strong>: Tamaños medidos, sanitizadores validados</li>
+<li>✅ <strong>Refactorización sistemática</strong>: Patrón idéntico en 9 archivos</li>
+<li>✅ <strong>Fundamentos sólidos</strong>: Sistema de construcción predecible</li>
+<li>✅ <strong>Multiplataforma</strong>: Testeado en macOS → Vagrant → Ubuntu 22.04</li>
+</ul>
+<h2 id="impacto-en-el-pipeline-ml-defender">📈 IMPACTO EN EL PIPELINE ML-DEFENDER</h2>
+<pre><code>ANTES:
+├── Flags inconsistentes
+├── Builds no reproducibles
+├── Sanitizadores conflictivos
+└── Docker dependencies
+
+AHORA:
+├── Single Source of Truth ✅
+├── 4 perfiles validados ✅
+├── Builds aislados por perfil ✅
+└── Preparado para producción ✅
+</code></pre>
+<h2 id="proximos-pasos">🚀 PRÓXIMOS PASOS</h2>
+<ol>
+<li><strong>Day 49 Mañana</strong>: Documentación final + integración CI</li>
+<li><strong>Day 49 Tarde</strong>: Opcional - stress test de contratos</li>
+<li><strong>Day 50+</strong>: Hardening de producción</li>
+</ol>
+<hr />
+<p><strong>STATUS: DÍA 48 COMPLETADO EXITOSAMENTE</strong> 🎉</p>
+<pre><code>
+### **2. BUILD_SYSTEM.md** ✅
+```markdown
+# SISTEMA DE CONSTRUCCIÓN - DOCUMENTACIÓN TÉCNICA
+
+## 📋 VISIÓN GENERAL
+El sistema de construcción ha sido refactorizado para tener **una única fuente de verdad**: el Makefile raíz. Todos los flags de compilación y configuraciones de perfil se definen ahora en el Makefile y se propagan a CMake.
+
+## 🎭 PERFILES SOPORTADOS
+
+### **1. Production (`PROFILE=production`)**
+```makefile
+CXXFLAGS = -O3 -march=native -DNDEBUG -flto
+</code></pre>
+<ul>
+<li><strong>Propósito</strong>: Builds de producción, tamaño optimizado</li>
+<li><strong>Uso</strong>: Releases, deployments, benchmarks</li>
+<li><strong>Directorio</strong>: <code>build-production/</code></li>
+</ul>
+<h3 id="2-debug-profiledebug_1"><strong>2. Debug (<code>PROFILE=debug</code>)</strong></h3>
+<pre><code class="language-makefile">CXXFLAGS = -g -O0 -fno-omit-frame-pointer -DDEBUG
+</code></pre>
+<ul>
+<li><strong>Propósito</strong>: Desarrollo, debugging con símbolos completos</li>
+<li><strong>Uso</strong>: Desarrollo diario, troubleshooting</li>
+<li><strong>Directorio</strong>: <code>build-debug/</code></li>
+</ul>
+<h3 id="3-tsan-profiletsan"><strong>3. TSAN (<code>PROFILE=tsan</code>)</strong></h3>
+<pre><code class="language-makefile">CXXFLAGS = -fsanitize=thread -g -O1 -DTSAN_ENABLED
+</code></pre>
+<ul>
+<li><strong>Propósito</strong>: Detección de race conditions y problemas de concurrencia</li>
+<li><strong>Uso</strong>: Testing de thread-safety, validación concurrente</li>
+<li><strong>Directorio</strong>: <code>build-tsan/</code></li>
+</ul>
+<h3 id="4-asan-profileasan"><strong>4. ASAN (<code>PROFILE=asan</code>)</strong></h3>
+<pre><code class="language-makefile">CXXFLAGS = -fsanitize=address -g -O1 -DASAN_ENABLED
+</code></pre>
+<ul>
+<li><strong>Propósito</strong>: Detección de memory leaks y buffer overflows</li>
+<li><strong>Uso</strong>: Validación de seguridad de memoria</li>
+<li><strong>Directorio</strong>: <code>build-asan/</code></li>
+</ul>
+<h2 id="uso-practico">🛠️ USO PRÁCTICO</h2>
+<h3 id="comandos-esenciales"><strong>Comandos Esenciales:</strong></h3>
+<pre><code class="language-bash"># Build específico de componente con perfil
+make PROFILE=production sniffer
+make PROFILE=debug ml-detector
+make PROFILE=tsan firewall-acl-agent
+
+# Build completo con perfil
+make PROFILE=production all
+make PROFILE=tsan all
+
+# Limpieza específica por perfil
+make clean-production
+make clean-tsan
+
+# Limpieza completa (todos los perfiles)
+make clean
+</code></pre>
+<h3 id="ejemplos-de-workflow"><strong>Ejemplos de Workflow:</strong></h3>
+<pre><code class="language-bash"># Desarrollo normal
+make PROFILE=debug all
+./build-debug/bin/sniffer --config config.yaml
+
+# Testing de concurrencia
+make PROFILE=tsan all
+./build-tsan/tests/concurrency_test --gtest_repeat=10
+
+# Preparación para producción
+make PROFILE=production all
+strip build-production/bin/*
+ls -lh build-production/bin/
+</code></pre>
+<h2 id="estructura-de-directorios">📁 ESTRUCTURA DE DIRECTORIOS</h2>
+<pre><code>ml-defender/
+├── Makefile                    # Single Source of Truth
+├── CMakeLists.txt             # Configuración raíz CMake
+├── build-production/          # Builds de producción
+│   ├── bin/
+│   ├── lib/
+│   └── tests/
+├── build-debug/               # Builds de debug
+├── build-tsan/                # Builds con ThreadSanitizer
+├── build-asan/                # Builds con AddressSanitizer
+└── [componentes]/
+    └── CMakeLists.txt         # Sin flags hardcodeados
+</code></pre>
+<h2 id="integracion-cmake">🔧 INTEGRACIÓN CMAKE</h2>
+<h3 id="antes-problema"><strong>Antes (Problema):</strong></h3>
+<pre><code class="language-cmake"># En cada CMakeLists.txt (9 archivos)
+set(CMAKE_CXX_FLAGS &quot;-O2 -g -Wall -Wextra -fsanitize=address&quot;)
+# ↑ Conflictos con Makefile, inconsistencia entre componentes
+</code></pre>
+<h3 id="despues-solucion"><strong>Después (Solución):</strong></h3>
+<pre><code class="language-cmake"># Ningún flag hardcodeado en CMakeLists.txt
+add_executable(ml-detector src/main.cpp)
+target_link_libraries(ml-detector ${LIBRARIES})
+# ↑ Flags inyectados por Makefile según perfil
+</code></pre>
+<h2 id="validacion-y-verificacion">🧪 VALIDACIÓN Y VERIFICACIÓN</h2>
+<h3 id="verificacion-de-perfiles"><strong>Verificación de Perfiles:</strong></h3>
+<pre><code class="language-bash"># Verificar que los sanitizadores estén activos
+make PROFILE=tsan ml-detector
+ldd build-tsan/bin/ml-detector | grep tsan
+# Debe mostrar: libtsan.so
+
+# Verificar optimizaciones
+make PROFILE=production ml-detector
+objdump -d build-production/bin/ml-detector | head -20
+# Debe mostrar instrucciones optimizadas
+</code></pre>
+<h3 id="metricas-de-validacion"><strong>Métricas de Validación:</strong></h3>
+<pre><code class="language-bash"># Tamaños esperados por perfil (aproximados)
+du -h build-*/bin/ml-detector | sort -h
+# 1.4M   build-production/bin/ml-detector
+# 17M    build-debug/bin/ml-detector
+# 23M    build-tsan/bin/ml-detector
+# 25M    build-asan/bin/ml-detector
+</code></pre>
+<h2 id="troubleshooting">🐛 TROUBLESHOOTING</h2>
+<h3 id="problema-flags-no-se-aplican"><strong>Problema: Flags no se aplican</strong></h3>
+<pre><code class="language-bash"># Síntoma: Los bins tienen tamaño similar en todos los perfiles
+# Solución:
+make clean  # Limpiar todos los builds
+make PROFILE=production all  # Rebuild completo
+</code></pre>
+<h3 id="problema-protobuf-missing"><strong>Problema: Protobuf missing</strong></h3>
+<pre><code class="language-bash"># Síntoma: Error &quot;pb.h: No such file&quot;
+# Solución: El Makefile ahora copia automáticamente
+# Los archivos generados van a build-PROFILE/protobuf/
+</code></pre>
+<h3 id="problema-dependencias-cruzadas"><strong>Problema: Dependencias cruzadas</strong></h3>
+<pre><code class="language-bash"># Síntoma: Componentes linkean con versión incorrecta
+# Solución: Cada perfil tiene su propio directorio de build
+# No hay contaminación entre perfiles
+</code></pre>
+<h2 id="mantenimiento-y-extension">🚀 MANTENIMIENTO Y EXTENSIÓN</h2>
+<h3 id="agregar-nuevo-componente"><strong>Agregar nuevo componente:</strong></h3>
+<ol>
+<li>Crear <code>nuevo-componente/CMakeLists.txt</code> sin flags</li>
+<li>Agregar target al Makefile raíz</li>
+<li>El sistema de perfiles se aplica automáticamente</li>
+</ol>
+<h3 id="agregar-nuevo-perfil"><strong>Agregar nuevo perfil:</strong></h3>
+<ol>
+<li>Agregar definición en Makefile:</li>
+</ol>
+<pre><code class="language-makefile">PROFILE_NUEVO_CXX := -flags-especificos
+</code></pre>
+<ol>
+<li>Agregar reglas de clean:</li>
+</ol>
+<pre><code class="language-makefile">clean-nuevo:
+    rm -rf build-nuevo
+</code></pre>
+<ol>
+<li>Actualizar documentación</li>
+</ol>
+<h2 id="comparacion-antesdespues">📊 COMPARACIÓN ANTES/DESPUÉS</h2>
+<table>
+<thead>
+<tr>
+<th>Aspecto</th>
+<th>Antes</th>
+<th>Después</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Fuente de verdad</strong></td>
+<td>9 CMakeLists.txt + Makefile</td>
+<td>Solo Makefile</td>
+</tr>
+<tr>
+<td><strong>Consistencia</strong></td>
+<td>Conflictos frecuentes</td>
+<td>Perfectamente consistente</td>
+</tr>
+<tr>
+<td><strong>Reproducibilidad</strong></td>
+<td>Dependía del último editado</td>
+<td>Determinista por perfil</td>
+</tr>
+<tr>
+<td><strong>Mantenimiento</strong></td>
+<td>Cambiar flags en 10 lugares</td>
+<td>Cambiar en 1 lugar</td>
+</tr>
+<tr>
+<td><strong>Testing</strong></td>
+<td>Manual por componente</td>
+<td>Automático por perfil</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="buenas-practicas">🎯 BUENAS PRÁCTICAS</h2>
+<h3 id="para-desarrolladores"><strong>Para Desarrolladores:</strong></h3>
+<pre><code class="language-bash"># Usar debug para desarrollo diario
+make PROFILE=debug all
+./build-debug/bin/componente
+
+# Usar tsan antes de commits importantes
+make PROFILE=tsan all
+./build-tsan/tests/*
+
+# Usar production para benchmarks
+make PROFILE=production all
+./build-production/bin/componente --benchmark
+</code></pre>
+<h3 id="para-cicd"><strong>Para CI/CD:</strong></h3>
+<pre><code class="language-bash"># Pipeline típico
+make PROFILE=debug all &amp;&amp; make test
+make PROFILE=tsan all &amp;&amp; make test
+make PROFILE=production all
+# Build final: build-production/
+</code></pre>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.tabs", "navigation.top", "search.highlight"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

@@ -1,0 +1,1657 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source embedded-ML NDR for hospitals and schools">
+      
+      
+        <meta name="author" content="Alonso Isidoro Roman">
+      
+      
+        <link rel="canonical" href="https://alonsoir.github.io/argus/ROADMAP-temprano/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>🗺️ ROADMAP-TEMPRANO.md - ML Defender Platform - ML Defender (aRGus NDR)</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#roadmap-tempranomd-ml-defender-platform" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="ML Defender (aRGus NDR)" class="md-header__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ML Defender (aRGus NDR)
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              🗺️ ROADMAP-TEMPRANO.md - ML Defender Platform
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../README.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../docs/ARCHITECTURE.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../docs/BACKLOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Backlog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../docs/SECURITY_MODEL.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Security Model
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../docs/adr/ADR-013 seed distribution component authentication.md" class="md-tabs__link">
+          
+  
+  
+  ADRs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../docs/contracts/Protobuf contracts.md" class="md-tabs__link">
+          
+  
+  
+  Contracts
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="ML Defender (aRGus NDR)" class="md-nav__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ML Defender (aRGus NDR)
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../README.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/ARCHITECTURE.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/BACKLOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/SECURITY_MODEL.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADRs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ADRs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/adr/ADR-013 seed distribution component authentication.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013 Seed Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/adr/ADR-021-deployment-topology-seed-families.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-021 Topology SSOT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/adr/ADR-022-threat-model-opcion2-descartada.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-022 Threat Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/contracts/Protobuf contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protobuf
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/contracts/JSON contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JSON
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/contracts/Rag security commands.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#estado-actual-fase-1-completada-transicion-a-fase-2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        📋 ESTADO ACTUAL: FASE 1 COMPLETADA - TRANSICIÓN A FASE 2
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="📋 ESTADO ACTUAL: FASE 1 COMPLETADA - TRANSICIÓN A FASE 2">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#logros-validados-nov-20-2025" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🏆 LOGROS VALIDADOS (Nov 20, 2025)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#fase-2-beta-operacional-plan-inmediato" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🚀 FASE 2: BETA OPERACIONAL - PLAN INMEDIATO
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🚀 FASE 2: BETA OPERACIONAL - PLAN INMEDIATO">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#semana-actual-resolucion-critica" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🎯 SEMANA ACTUAL: RESOLUCIÓN CRÍTICA
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🎯 SEMANA ACTUAL: RESOLUCIÓN CRÍTICA">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#jueves-dia-critico-firewall-agent-integracion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        JUEVES - DÍA CRÍTICO: Firewall Agent &amp; Integración
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#viernes-integracion-avanzada" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        VIERNES - INTEGRACIÓN AVANZADA
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#componentes-beta-especificacion-tecnica" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        COMPONENTES BETA - ESPECIFICACIÓN TÉCNICA
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="COMPONENTES BETA - ESPECIFICACIÓN TÉCNICA">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-firewall-agent-critico" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Firewall Agent - CRÍTICO
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-manager-commands-integracion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Manager Commands - INTEGRACIÓN
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-vector-db-integration-consultas-naturales" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Vector DB Integration - CONSULTAS NATURALES
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#hito-beta-definicion-de-terminado" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🎯 HITO BETA: DEFINICIÓN DE TERMINADO
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🎯 HITO BETA: DEFINICIÓN DE TERMINADO">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#criterios-beta-operacional" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CRITERIOS BETA OPERACIONAL
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#comandos-operacionales-en-beta" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        COMANDOS OPERACIONALES EN BETA
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#fase-3-validacion-cientifica-papers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        📊 FASE 3: VALIDACIÓN CIENTÍFICA &amp; PAPERS
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="📊 FASE 3: VALIDACIÓN CIENTÍFICA &amp; PAPERS">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#primer-trimestre-2026-produccion-academica" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        PRIMER TRIMESTRE 2026 - PRODUCCIÓN ACADÉMICA
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="PRIMER TRIMESTRE 2026 - PRODUCCIÓN ACADÉMICA">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#paper-1-the-academic-dataset-trap" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Paper 1: "The Academic Dataset Trap"
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#paper-2-digital-immune-system-architecture" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Paper 2: "Digital Immune System Architecture"
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#experimentos-planificados" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        EXPERIMENTOS PLANIFICADOS
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#fase-4-despliegue-produccion-hardware" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🔬 FASE 4: DESPLIEGUE PRODUCCIÓN &amp; HARDWARE
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🔬 FASE 4: DESPLIEGUE PRODUCCIÓN &amp; HARDWARE">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#mid-2026-escalado-operacional" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        MID 2026 - ESCALADO OPERACIONAL
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="MID 2026 - ESCALADO OPERACIONAL">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#estrategia-hardware" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Estrategia Hardware
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#integracion-kernel-fibra-optica" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Integración Kernel &amp; Fibra Óptica
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#arquitectura-cloud-k8s" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ARQUITECTURA CLOUD &amp; K8S
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#modelo-de-negocio-comunidad" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        💰 MODELO DE NEGOCIO &amp; COMUNIDAD
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="💰 MODELO DE NEGOCIO &amp; COMUNIDAD">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#estrategia-dual-open-source-commercial" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ESTRATEGIA DUAL: OPEN SOURCE + COMMERCIAL
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cronograma-comercial" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CRONOGRAMA COMERCIAL
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#metricas-de-exito-vision-2026" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🎯 MÉTRICAS DE ÉXITO - VISIÓN 2026
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🎯 MÉTRICAS DE ÉXITO - VISIÓN 2026">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#objetivos-tecnicos" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        OBJETIVOS TÉCNICOS
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#impacto-cientifico" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        IMPACTO CIENTÍFICO
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#proceso-iterativo-mejora-continua" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🔄 PROCESO ITERATIVO &amp; MEJORA CONTINUA
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🔄 PROCESO ITERATIVO &amp; MEJORA CONTINUA">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#ciclo-de-desarrollo-actual" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CICLO DE DESARROLLO ACTUAL
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#principios-de-calidad" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        PRINCIPIOS DE CALIDAD
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#riesgos-identificados-mitigacion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🚨 RIESGOS IDENTIFICADOS &amp; MITIGACIÓN
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🚨 RIESGOS IDENTIFICADOS &amp; MITIGACIÓN">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#riesgos-inmediatos" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        RIESGOS INMEDIATOS
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#riesgos-medio-plazo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        RIESGOS MEDIO PLAZO
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#conclusion-proximos-pasos-inmediatos" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🎪 CONCLUSIÓN &amp; PRÓXIMOS PASOS INMEDIATOS
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🎪 CONCLUSIÓN &amp; PRÓXIMOS PASOS INMEDIATOS">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#estado-actual-transicion-critica" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ESTADO ACTUAL: TRANSICIÓN CRÍTICA
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#proximos-7-dias-plan-concreto" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        PRÓXIMOS 7 DÍAS - PLAN CONCRETO
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#vision-final" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        VISIÓN FINAL
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="roadmap-tempranomd-ml-defender-platform">🗺️ ROADMAP-TEMPRANO.md - ML Defender Platform</h1>
+<h2 id="estado-actual-fase-1-completada-transicion-a-fase-2">📋 <strong>ESTADO ACTUAL: FASE 1 COMPLETADA - TRANSICIÓN A FASE 2</strong></h2>
+<h3 id="logros-validados-nov-20-2025"><strong>🏆 LOGROS VALIDADOS (Nov 20, 2025)</strong></h3>
+<pre><code class="language-yaml">Arquitectura Base:
+  ✅ WhiteListManager como router central operacional
+  ✅ 4 detectores ML C++20 embebidos (0.24-1.06μs, F1=1.00)
+  ✅ Sistema RAG + LLAMA real integrado
+  ✅ 17h estabilidad, 35K eventos, zero crashes
+  ✅ Arquitectura KISS consolidada
+
+Metodología Probada:
+  ✅ Synthetic-first: F1=1.00 sin datasets académicos
+  ✅ Academic Dataset Trap: Identificado y evitado
+  ✅ Via Appia Quality: Sistemas construidos para durar
+</code></pre>
+<hr />
+<h2 id="fase-2-beta-operacional-plan-inmediato">🚀 <strong>FASE 2: BETA OPERACIONAL - PLAN INMEDIATO</strong></h2>
+<h3 id="semana-actual-resolucion-critica"><strong>🎯 SEMANA ACTUAL: RESOLUCIÓN CRÍTICA</strong></h3>
+<h4 id="jueves-dia-critico-firewall-agent-integracion"><strong>JUEVES - DÍA CRÍTICO: Firewall Agent &amp; Integración</strong></h4>
+<pre><code class="language-bash"># MAÑANA (9:00-13:00) - BUG PROTOBUF
+1. 🔧 Debug protobuf deserialization con Claude
+2. 🛠️ Fix decodificación payload firewall-agent  
+3. 🧪 Test end-to-end con tráfico real
+4. ✅ Implementar dry-run mode + directory logging
+
+# TARDE (16:00-19:00) - MANAGER COMMANDS
+5. 📝 Definir ManagerCommands proto (3 componentes)
+6. 🔄 Integración RAG → etcd → componentes
+7. 👀 Implementar watchers para runtime updates
+</code></pre>
+<h4 id="viernes-integracion-avanzada"><strong>VIERNES - INTEGRACIÓN AVANZADA</strong></h4>
+<pre><code class="language-bash"># COMPLETAR BETA PIPELINE
+1. 🗄️ Base de datos vectorial para logs (ChromaDB)
+2. 🔍 Embedder para búsqueda semántica
+3. 💬 RAG con consultas lenguaje natural
+4. 🧪 Validación beta end-to-end
+</code></pre>
+<h3 id="componentes-beta-especificacion-tecnica"><strong>COMPONENTES BETA - ESPECIFICACIÓN TÉCNICA</strong></h3>
+<h4 id="1-firewall-agent-critico"><strong>1. Firewall Agent - CRÍTICO</strong></h4>
+<pre><code class="language-proto">// PRIORIDAD: Fix protobuf + dry-run + logs
+message FireWallManagerCommand {
+    string command = 1;  // &quot;dry_run&quot;, &quot;add_rule&quot;, &quot;remove_rule&quot;
+    bool dry_run = 2;
+    string rule_json = 3;
+    string log_directory = 4;  // &quot;/var/log/ml-defender/&quot;
+}
+</code></pre>
+<h4 id="2-manager-commands-integracion"><strong>2. Manager Commands - INTEGRACIÓN</strong></h4>
+<pre><code class="language-proto">// ARQUITECTURA COMANDOS DISTRIBUIDOS
+message ManagerMessage {
+    oneof command {
+        SnifferManagerCommand sniffer_cmd = 1;
+        MLDetectorManagerCommand ml_cmd = 2; 
+        FireWallManagerCommand firewall_cmd = 3;
+    }
+    string source = 4;  // &quot;rag&quot;, &quot;cli&quot;, &quot;api&quot;
+    string timestamp = 5;
+}
+</code></pre>
+<h4 id="3-vector-db-integration-consultas-naturales"><strong>3. Vector DB Integration - CONSULTAS NATURALES</strong></h4>
+<pre><code class="language-python"># CAPACIDADES BETA RAG
+query_examples = [
+    &quot;¿qué ha pasado en el sistema durante la última hora?&quot;,
+    &quot;activa el modo dry-run del firewall&quot;,
+    &quot;muestra eventos críticos últimos 30 minutos&quot;,
+    &quot;cambia interfaz sniffer a eth2&quot;
+]
+</code></pre>
+<hr />
+<h2 id="hito-beta-definicion-de-terminado">🎯 <strong>HITO BETA: DEFINICIÓN DE TERMINADO</strong></h2>
+<h3 id="criterios-beta-operacional"><strong>CRITERIOS BETA OPERACIONAL</strong></h3>
+<pre><code class="language-yaml">Comunicación Distribuida:
+  ✅ RAG → etcd → componentes funcionando
+  ✅ 3 ManagerCommands implementados y operativos
+  ✅ Watchers escuchando en todos los componentes
+
+Consultas Inteligentes:
+  ✅ Vector DB almacenando logs con embeddings
+  ✅ Búsqueda semántica por lenguaje natural
+  ✅ Contexto temporal (última hora, 30min, etc)
+
+Respuesta Automatizada:
+  ✅ Firewall agent con dry-run y bloqueo real
+  ✅ Configuración runtime vía etcd
+  ✅ Logs persistentes en directorio dedicado
+</code></pre>
+<h3 id="comandos-operacionales-en-beta"><strong>COMANDOS OPERACIONALES EN BETA</strong></h3>
+<pre><code class="language-bash"># SISTEMA BETA COMPLETO
+SECURITY_SYSTEM&gt; rag ask &quot;¿qué ha pasado en la última hora?&quot;
+# → Respuesta con eventos semánticamente relevantes
+
+SECURITY_SYSTEM&gt; rag ask &quot;activa dry-run en firewall&quot;  
+# → Comando via etcd → firewall agent
+
+SECURITY_SYSTEM&gt; rag ask &quot;cambia sniffer a interfaz eth2&quot;
+# → Comando via etcd → sniffer component
+</code></pre>
+<hr />
+<h2 id="fase-3-validacion-cientifica-papers">📊 <strong>FASE 3: VALIDACIÓN CIENTÍFICA &amp; PAPERS</strong></h2>
+<h3 id="primer-trimestre-2026-produccion-academica"><strong>PRIMER TRIMESTRE 2026 - PRODUCCIÓN ACADÉMICA</strong></h3>
+<h4 id="paper-1-the-academic-dataset-trap"><strong>Paper 1: "The Academic Dataset Trap"</strong></h4>
+<pre><code class="language-markdown">Contribución Principal:
+  • Evidencia empírica: datasets académicos crean sesgos en producción
+  • Metodología synthetic-first: F1=1.00 validado
+  • 4 detectores operacionales con latencia sub-μs
+
+Metodología:
+  • Comparativa: academic vs synthetic training
+  • Métricas: 0.24-1.06μs latency, 17h stability
+  • Validación: 35K eventos reales procesados
+
+Target: IEEE S&amp;P, USENIX Security, arXiv
+</code></pre>
+<h4 id="paper-2-digital-immune-system-architecture"><strong>Paper 2: "Digital Immune System Architecture"</strong></h4>
+<pre><code class="language-markdown">Contribución Principal:
+  • Arquitectura bio-inspirada operacional
+  • WhiteListManager como &quot;sistema nervioso central&quot;
+  • RAG + LLAMA para análisis contextual
+
+Innovaciones:
+  • KISS architecture con componentes autónomos
+  • Coordinación distribuida via etcd
+  • Detección multi-nivel sub-microsegundo
+
+Target: ACM CCS, NDSS, Journal of Cybersecurity
+</code></pre>
+<h3 id="experimentos-planificados"><strong>EXPERIMENTOS PLANIFICADOS</strong></h3>
+<pre><code class="language-yaml">Validación Red Team:
+  • Laboratorio controlado con herramientas ofensivas
+  • Métricas: Time-to-Detect vs Time-to-Compromise
+  • Escenarios: DDoS, ransomware, lateral movement
+
+Comparativa Competitiva:
+  • vs Firewalla, CrowdStrike, Pi-hole
+  • Métricas: latency, accuracy, resource usage
+  • Precio/performance analysis
+</code></pre>
+<hr />
+<h2 id="fase-4-despliegue-produccion-hardware">🔬 <strong>FASE 4: DESPLIEGUE PRODUCCIÓN &amp; HARDWARE</strong></h2>
+<h3 id="mid-2026-escalado-operacional"><strong>MID 2026 - ESCALADO OPERACIONAL</strong></h3>
+<h4 id="estrategia-hardware"><strong>Estrategia Hardware</strong></h4>
+<pre><code class="language-yaml">Opciones de Despliegue:
+  • Raspberry Pi 5: $149 box (COGS: $100)
+  • Orange Pi/Rock Pi: Mitigación supply chain
+  • x86_64 Servers: Enterprise deployment
+  • Cloud Native: K8s, containers, orchestration
+
+Especificaciones Técnicas:
+  • RAM: 200MB operacional (4GB hardware)
+  • CPU: &lt;20% usage (quad-core ARM)
+  • Storage: 64GB microSD + logs persistentes
+</code></pre>
+<h4 id="integracion-kernel-fibra-optica"><strong>Integración Kernel &amp; Fibra Óptica</strong></h4>
+<pre><code class="language-bash"># REQUISITOS KERNEL PARA DEPLOYMENT REAL
+Kernel ≥ 5.15:  # Para eBPF/XDP completo
+Distro: Debian/Ubuntu Server
+Network: Fibra óptica compatible
+Interfaces: Múltiples NICs para segmentación
+</code></pre>
+<h3 id="arquitectura-cloud-k8s"><strong>ARQUITECTURA CLOUD &amp; K8S</strong></h3>
+<pre><code class="language-yaml">Kubernetes Deployment:
+  components:
+    - sniffer: DaemonSet (each node)
+    - ml-detector: Deployment + HPA
+    - rag-system: StatefulSet + Vector DB
+    - firewall-agent: DaemonSet
+    - whitelist-manager: Service + LoadBalancer
+
+Cloud Integration:
+  - AWS/GCP/Azure marketplace
+  - Terraform/Ansible deployment
+  - Multi-region high availability
+</code></pre>
+<hr />
+<h2 id="modelo-de-negocio-comunidad">💰 <strong>MODELO DE NEGOCIO &amp; COMUNIDAD</strong></h2>
+<h3 id="estrategia-dual-open-source-commercial"><strong>ESTRATEGIA DUAL: OPEN SOURCE + COMMERCIAL</strong></h3>
+<pre><code class="language-yaml">Community Edition (OSS):
+  ✅ Gratis forever - AGPLv3
+  ✅ Auto-despliegue en hardware propio
+  ✅ Soporte comunidad + documentación
+
+Hardware Appliance:
+  ✅ $149 precio retail ($100 COGS)
+  ✅ Plug-and-play para no técnicos
+  ✅ 90 días soporte incluido
+
+Enterprise Edition:
+  ✅ $999-4999/año (según escala)
+  ✅ Características enterprise
+  ✅ Soporte 24/7 + SLA
+</code></pre>
+<h3 id="cronograma-comercial"><strong>CRONOGRAMA COMERCIAL</strong></h3>
+<pre><code class="language-bash">Q1 2026: Comunidad OSS + Documentación
+Q2 2026: Crowdfunding Hardware (Kickstarter)  
+Q3 2026: Primeras unidades shipping
+Q4 2026: Enterprise pilots + Cloud offering
+</code></pre>
+<hr />
+<h2 id="metricas-de-exito-vision-2026">🎯 <strong>MÉTRICAS DE ÉXITO - VISIÓN 2026</strong></h2>
+<h3 id="objetivos-tecnicos"><strong>OBJETIVOS TÉCNICOS</strong></h3>
+<pre><code class="language-yaml">Rendimiento:
+  • Mantener &lt;2μs latencia en todos los detectores
+  • &lt;1% false positive rate en producción
+  • 99.9% uptime en deployments reales
+
+Adopción:
+  • 1,000+ usuarios OSS en Year 1
+  • 500+ unidades hardware vendidas
+  • 5+ empresas enterprise Year 2
+</code></pre>
+<h3 id="impacto-cientifico"><strong>IMPACTO CIENTÍFICO</strong></h3>
+<pre><code class="language-yaml">Publicaciones:
+  • 2+ papers en conferencias tier-1
+  • 50+ citaciones académicas en 2 años
+  • 1+ premio mejor paper potencial
+
+Contribución Comunidad:
+  • 100+ contribuidores GitHub
+  • 10+ integraciones terceros
+  • 5+ forks significativos
+</code></pre>
+<hr />
+<h2 id="proceso-iterativo-mejora-continua">🔄 <strong>PROCESO ITERATIVO &amp; MEJORA CONTINUA</strong></h2>
+<h3 id="ciclo-de-desarrollo-actual"><strong>CICLO DE DESARROLLO ACTUAL</strong></h3>
+<pre><code class="language-mermaid">graph TD
+    A[Fase 1 Completada] --&gt; B[Debug Crítico Firewall]
+    B --&gt; C[Integración Manager Commands]
+    C --&gt; D[Beta RAG + Vector DB]
+    D --&gt; E[Validación Red Team]
+    E --&gt; F[Papers Académicos]
+    F --&gt; G[Despliegue Producción]
+    G --&gt; H[Escalado Comercial]
+</code></pre>
+<h3 id="principios-de-calidad"><strong>PRINCIPIOS DE CALIDAD</strong></h3>
+<pre><code class="language-bash"># VIA APPIA - CONSTRUIR PARA DURAR
+1. &quot;No me rindo&quot; - Persistencia técnica
+2. Transparencia radical - Bugs documentados
+3. KISS sobre complejidad - Arquitectura simple
+4. Synthetic-first - Evitar sesgos académicos
+5. Privacy-by-default - Datos locales siempre
+</code></pre>
+<hr />
+<h2 id="riesgos-identificados-mitigacion">🚨 <strong>RIESGOS IDENTIFICADOS &amp; MITIGACIÓN</strong></h2>
+<h3 id="riesgos-inmediatos"><strong>RIESGOS INMEDIATOS</strong></h3>
+<pre><code class="language-yaml">Protobuf Bug:
+  • Impacto: Bloquea toda cadena respuesta
+  • Mitigación: Debug jueves con Claude + tests
+
+Integración etcd:
+  • Impacto: Comandos no entregados
+  • Mitigación: Watchers + health checks
+
+Vector DB Performance:
+  • Impacto: Consultas lentas en RAG
+  • Mitigación: ChromaDB optimizado + caching
+</code></pre>
+<h3 id="riesgos-medio-plazo"><strong>RIESGOS MEDIO PLAZO</strong></h3>
+<pre><code class="language-yaml">Hardware Supply:
+  • Raspberry Pi escasez
+  • Mitigación: Multi-SBC strategy
+
+Competencia:
+  • Google/Amazon lanzan producto similar
+  • Mitigación: Open source defensivo + comunidad
+
+Adopción:
+  • Usuarios no técnicos no adoptan
+  • Mitigación: UX simplificada + documentación clara
+</code></pre>
+<hr />
+<h2 id="conclusion-proximos-pasos-inmediatos">🎪 <strong>CONCLUSIÓN &amp; PRÓXIMOS PASOS INMEDIATOS</strong></h2>
+<h3 id="estado-actual-transicion-critica"><strong>ESTADO ACTUAL: TRANSICIÓN CRÍTICA</strong></h3>
+<pre><code class="language-yaml">Logro: &quot;Tenemos arquitectura que funciona&quot;
+Desafío: &quot;Hacerla operacional para beta&quot;
+Objetivo: &quot;Sistema auto-gestionado con RAG inteligente&quot;
+</code></pre>
+<h3 id="proximos-7-dias-plan-concreto"><strong>PRÓXIMOS 7 DÍAS - PLAN CONCRETO</strong></h3>
+<ol>
+<li><strong>JUEVES</strong>: Arreglar bug firewall agent con Claude</li>
+<li><strong>VIERNES</strong>: Completar integración RAG + Vector DB</li>
+<li><strong>FIN DE SEMANA</strong>: Validación beta interna</li>
+<li><strong>PRÓXIMA SEMANA</strong>: Inicio red team testing + paper drafting</li>
+</ol>
+<h3 id="vision-final"><strong>VISIÓN FINAL</strong></h3>
+<blockquote>
+<p><strong>"Sistema autoinmune digital que protege desde Raspberry Pi hasta datacenter, con detección sub-microsegundo y análisis contextual inteligente via RAG + LLAMA."</strong></p>
+</blockquote>
+<hr />
+<p><strong>🔗 DOCUMENTOS RELACIONADOS:</strong>
+- <code>ARCHITECTURE.md</code> - Diseño técnico detallado
+- <code>BUSINESS-MODEL.md</code> - Estrategia comercial
+- <code>PAPER-OUTLINE.md</code> - Esquema publicaciones académicas
+- <code>DEPLOYMENT-GUIDE.md</code> - Guías despliegue producción</p>
+<p><em>"De la visión a la realidad en tiempo récord - Fase 1 completada, Fase 2 en marcha."</em> 🚀</p>
+<p><strong>¿Listo para el jueves crítico con Claude?</strong> 🔧</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.tabs", "navigation.top", "search.highlight"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

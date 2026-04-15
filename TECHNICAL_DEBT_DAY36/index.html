@@ -1,0 +1,1798 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source embedded-ML NDR for hospitals and schools">
+      
+      
+        <meta name="author" content="Alonso Isidoro Roman">
+      
+      
+        <link rel="canonical" href="https://alonsoir.github.io/argus/TECHNICAL_DEBT_DAY36/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>TECHNICAL DEBT - Day 36 Discovery - ML Defender (aRGus NDR)</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#technical-debt-day-36-discovery" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="ML Defender (aRGus NDR)" class="md-header__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ML Defender (aRGus NDR)
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              TECHNICAL DEBT - Day 36 Discovery
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../README.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../docs/ARCHITECTURE.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../docs/BACKLOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Backlog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../docs/SECURITY_MODEL.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Security Model
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../docs/adr/ADR-013 seed distribution component authentication.md" class="md-tabs__link">
+          
+  
+  
+  ADRs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../docs/contracts/Protobuf contracts.md" class="md-tabs__link">
+          
+  
+  
+  Contracts
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="ML Defender (aRGus NDR)" class="md-nav__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ML Defender (aRGus NDR)
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../README.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/ARCHITECTURE.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/BACKLOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/SECURITY_MODEL.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADRs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ADRs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/adr/ADR-013 seed distribution component authentication.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013 Seed Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/adr/ADR-021-deployment-topology-seed-families.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-021 Topology SSOT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/adr/ADR-022-threat-model-opcion2-descartada.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-022 Threat Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/contracts/Protobuf contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protobuf
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/contracts/JSON contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JSON
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/contracts/Rag security commands.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#executive-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Executive Summary
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#the-gap-sistemas-desconectados" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The Gap - Sistemas Desconectados
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="The Gap - Sistemas Desconectados">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#sistema-1-feature-extraction-legacy-83-features-nunca-usado" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Sistema 1: Feature Extraction Legacy (83 features) - NUNCA USADO
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#sistema-2-ml-defender-extractor-40-features-en-uso-pero-incompleto" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Sistema 2: ML Defender Extractor (40 features) - EN USO PERO INCOMPLETO
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#sistema-3-embedders-onnx-83-features-placeholder" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Sistema 3: Embedders ONNX (83 features) - PLACEHOLDER
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#root-cause-analysis" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Root Cause Analysis
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Root Cause Analysis">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#por-que-paso-esto" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ¿Por qué pasó esto?
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#current-state-what-works-vs-what-doesnt" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Current State - What Works vs What Doesn't
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Current State - What Works vs What Doesn&#39;t">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#sistema-de-deteccion-funciona-perfectamente" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ✅ Sistema de Detección (FUNCIONA PERFECTAMENTE)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pipeline-ragfaiss-incompleto" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ❌ Pipeline RAG/FAISS (INCOMPLETO)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#impact-assessment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Impact Assessment
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Impact Assessment">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#sistema-de-deteccion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Sistema de Detección
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#sistema-ragfaiss" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Sistema RAG/FAISS
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#timeline-impact" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Timeline Impact
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#solution-strategy-plan-aba" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Solution Strategy - Plan A→B→A'
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Solution Strategy - Plan A→B→A&#39;">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#plan-a-synthetic-data-workaround-day-36-4-6h" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Plan A: Synthetic Data Workaround (Day 36 - 4-6h)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#plan-b-implement-real-feature-processing-day-37-38-2-3-days" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Plan B: Implement Real Feature Processing (Day 37-38 - 2-3 days)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Plan B: Implement Real Feature Processing (Day 37-38 - 2-3 days)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#option-b1-activate-mldefenderextractor-40-features-recommended" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Option B1: Activate MLDefenderExtractor (40 features) - RECOMMENDED
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#option-b2-implement-full-83-feature-processor" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Option B2: Implement Full 83-Feature Processor
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#option-b3-extend-ring-consumer-to-save-full-features" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Option B3: Extend Ring Consumer to Save Full Features
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#plan-a-re-train-with-real-data-day-36-bis-2h" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Plan A': Re-train with Real Data (Day 36 BIS - 2h)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#decision-matrix" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Decision Matrix
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#timeline-with-solution" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Timeline with Solution
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#lessons-learned" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Lessons Learned
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Lessons Learned">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#what-went-right" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What Went Right ✅
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#what-went-wrong" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What Went Wrong ❌
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#how-to-prevent" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How to Prevent 🛡️
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#action-items" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Action Items
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Action Items">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#immediate-day-36" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Immediate (Day 36)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#short-term-day-37-38" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Short-term (Day 37-38)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#medium-term-week-6-7" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Medium-term (Week 6-7)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#long-term-phase-3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Long-term (Phase 3+)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#communication" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Communication
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Communication">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#stakeholder-impact" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Stakeholder Impact
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#references" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        References
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="References">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#code-locations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Code Locations
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#related-documents" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Related Documents
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#conclusion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Conclusion
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="technical-debt-day-36-discovery">TECHNICAL DEBT - Day 36 Discovery</h1>
+<p><strong>Date:</strong> 09-Enero-2026<br />
+<strong>Discovered During:</strong> Day 36 PCA Training Pipeline Planning<br />
+<strong>Severity:</strong> 🟡 MEDIUM - System functional but RAG/FAISS pipeline incomplete<br />
+<strong>Impact:</strong> FAISS ingestion pipeline blocked until resolved</p>
+<hr />
+<h2 id="executive-summary">Executive Summary</h2>
+<p>Durante la planificación de Day 36 (training pipeline PCA), descubrimos una <strong>desconexión arquitectural</strong> entre los sistemas de extracción de features y los embedders ONNX creados para FAISS. El sistema de detección en tiempo real funciona correctamente (20+ horas estables), pero los eventos guardados para RAG/FAISS no contienen las features necesarias para los embedders.</p>
+<p><strong>Estado Actual:</strong>
+- ✅ Sistema de detección: FUNCIONAL
+- ❌ Pipeline RAG/FAISS: INCOMPLETO
+- 🔄 Solución: Plan A→B→A' (3-4 días)</p>
+<hr />
+<h2 id="the-gap-sistemas-desconectados">The Gap - Sistemas Desconectados</h2>
+<h3 id="sistema-1-feature-extraction-legacy-83-features-nunca-usado">Sistema 1: Feature Extraction Legacy (83 features) - NUNCA USADO</h3>
+<pre><code>Componente: FeatureExtractor (sniffer/src/userspace/feature_extractor.cpp)
+Propósito:  Extracción completa de 83 features para datasets CTU-13
+Estado:     ✅ CÓDIGO EXISTE - ❌ NUNCA SE USA EN PRODUCCIÓN
+
+Features extraídas (83):
+├─ Original 23: duration, spkts, dpkts, sbytes, dbytes, sload, smean, dmean, 
+│               flow_iat_mean, flow_iat_std, fwd_psh_flags, bwd_psh_flags, 
+│               fwd_urg_flags, bwd_urg_flags, packet_len_mean, packet_len_std,
+│               packet_len_var, fin/syn/rst/psh/ack/urg_flag_count
+├─ Phase 1 (20): dload, rate, srate, drate, ratios, IAT max/min, 
+│                 packet lengths, headers, ECE/CWR flags
+├─ Phase 2 (15): forward/backward IAT stats, active/idle times, fwd_len_std
+├─ Phase 3 (20): subflow stats, bulk transfer, window sizes, headers
+└─ Phase 4 (5):  avg packet/segment sizes, bulk packets
+
+Entrada:  FlowStatistics (con vectores completos de timestamps, lengths, etc.)
+Salida:   std::array&lt;double, 83&gt;
+
+Uso real: ❌ NUNCA llamado desde ring_consumer.cpp
+</code></pre>
+<p><strong>Razón de NO uso:</strong> Diseñado para datasets offline. El pipeline en tiempo real usa otro sistema.</p>
+<hr />
+<h3 id="sistema-2-ml-defender-extractor-40-features-en-uso-pero-incompleto">Sistema 2: ML Defender Extractor (40 features) - EN USO PERO INCOMPLETO</h3>
+<pre><code>Componente: MLDefenderExtractor (sniffer/src/userspace/ml_defender_features.cpp)
+Propósito:  Features para 4 detectores C++20 embebidos (tiempo real)
+Estado:     ✅ CÓDIGO EXISTE - ⚠️ NO SE GUARDA EN .pb
+
+Features extraídas (40):
+├─ DDoS (10):        syn_ack_ratio, packet_symmetry, source_ip_dispersion, etc.
+├─ Ransomware (10):  io_intensity, entropy, resource_usage, network_activity, etc.
+├─ Traffic (10):     packet_rate, connection_rate, tcp_udp_ratio, avg_packet_size, etc.
+└─ Internal (10):    connection_rate, service_port_consistency, lateral_movement, etc.
+
+Entrada:  FlowStatistics (mismo que FeatureExtractor)
+Salida:   4 submensajes protobuf (DDoSFeatures, RansomwareEmbeddedFeatures, etc.)
+
+Código en ring_consumer.cpp línea 693:
+    ml_extractor_.populate_ml_defender_features(*flow_stats, proto_event);
+
+Estado en .pb guardados:
+    ❌ Submensajes VACÍOS (ddos_embedded, ransomware_embedded, etc.)
+    ❌ Solo 11 campos básicos guardados
+    ✅ Tag &quot;requires_processing&quot; presente (sabíamos que faltaba algo)
+</code></pre>
+<hr />
+<h3 id="sistema-3-embedders-onnx-83-features-placeholder">Sistema 3: Embedders ONNX (83 features) - PLACEHOLDER</h3>
+<pre><code>Componente: chronos_embedder.onnx, sbert_embedder.onnx, attack_embedder.onnx
+Propósito:  Generar embeddings para FAISS vector search
+Estado:     ✅ MODELOS EXISTEN - ❌ NUNCA RECIBEN DATOS REALES
+
+Arquitectura:
+├─ chronos_embedder.onnx:  83 features → 512-d embedding
+├─ sbert_embedder.onnx:    83 features → 384-d embedding
+└─ attack_embedder.onnx:   83 features → 256-d embedding
+
+Creación: PyTorch MLP sintéticos (create_*_embedder.py)
+Training: Datos sintéticos (torch.randn(1, 83))
+Validación: Test C++ PASSED (Day 34)
+
+Estado actual:
+    ✅ ONNX models operacionales
+    ✅ C++ inference funciona
+    ❌ Esperan 83 features que NO existen en .pb guardados
+    ❌ Gap: .pb tiene 11 campos, embedders esperan 83
+</code></pre>
+<hr />
+<h2 id="root-cause-analysis">Root Cause Analysis</h2>
+<h3 id="por-que-paso-esto">¿Por qué pasó esto?</h3>
+<p><strong>1. Evolución del proyecto en fases:</strong></p>
+<pre><code>Fase 1 (CTU-13):    FeatureExtractor (83) diseñado para datasets offline
+Fase 2 (Tiempo Real): MLDefenderExtractor (40) para detección instantánea
+Fase 3 (FAISS/RAG):   Embedders ONNX (83) como placeholders para validar pipeline
+</code></pre>
+<p><strong>2. Sistemas paralelos nunca se conectaron:</strong>
+- FeatureExtractor (83) ← legacy, nunca integrado
+- MLDefenderExtractor (40) ← funciona en tiempo real, no se guarda
+- Embedders ONNX (83) ← creados para futuro, esperan features inexistentes</p>
+<p><strong>3. Tag "requires_processing" dejado como recordatorio:</strong></p>
+<pre><code class="language-cpp">// ring_consumer.cpp línea 678
+proto_event.add_event_tags(&quot;requires_processing&quot;);
+</code></pre>
+<p><strong>Sabíamos</strong> que faltaba procesamiento adicional, pero nunca se implementó.</p>
+<hr />
+<h2 id="current-state-what-works-vs-what-doesnt">Current State - What Works vs What Doesn't</h2>
+<h3 id="sistema-de-deteccion-funciona-perfectamente">✅ Sistema de Detección (FUNCIONA PERFECTAMENTE)</h3>
+<pre><code>Pipeline en tiempo real:
+    eBPF Sniffer → 11 campos básicos → ZeroMQ → ml-detector
+                                                    ↓
+                                        FeatureExtractor (ml-detector)
+                                                    ↓
+                                        Extrae features de 11 campos:
+                                        ├─ Level 1: 23 features → ONNX
+                                        ├─ Level 2: 10 features → DDoS C++20
+                                        ├─ Level 2: 10 features → Ransomware C++20
+                                        ├─ Level 3: 10 features → Traffic C++20
+                                        └─ Level 3: 10 features → Internal C++20
+                                                    ↓
+                                        Dual-Score Decision System
+                                                    ↓
+                                        Detection Output ✅
+
+Estado: 20+ horas de operación continua sin fallos
+Performance: Detectando ataques correctamente
+Problema: NINGUNO - Este sistema está completo
+</code></pre>
+<hr />
+<h3 id="pipeline-ragfaiss-incompleto">❌ Pipeline RAG/FAISS (INCOMPLETO)</h3>
+<pre><code>Pipeline FAISS (planeado):
+    Eventos históricos → .pb guardados (11 campos) ❌
+                              ↓
+                      &quot;requires_processing&quot; tag
+                              ↓
+                      ??? PROCESADOR FALTANTE ???
+                              ↓
+                      83 features completas ❌
+                              ↓
+                      ONNX Embedders (512/384/256-d) ❌
+                              ↓
+                      PCA Reduction (128-d) ❌
+                              ↓
+                      FAISS Index ❌
+
+Estado actual:
+    .pb files: Solo 11 campos básicos de NetworkFeatures
+    Esperado: 83 features o 40 features completas
+    Gap: 72-79 features faltantes
+    Bloqueado: Cannot train PCA without proper features
+</code></pre>
+<hr />
+<h2 id="impact-assessment">Impact Assessment</h2>
+<h3 id="sistema-de-deteccion">Sistema de Detección</h3>
+<p><strong>Impact:</strong> ✅ NONE - System functional
+- Detectores funcionan correctamente
+- Performance dentro de expectativas
+- Sin cambios necesarios</p>
+<h3 id="sistema-ragfaiss">Sistema RAG/FAISS</h3>
+<p><strong>Impact:</strong> 🔴 BLOCKING - Pipeline incomplete
+- Cannot train PCA reducers with real data
+- Cannot populate FAISS indices
+- Cannot perform semantic search on historical events
+- Day 36-40 blocked until resolved</p>
+<h3 id="timeline-impact">Timeline Impact</h3>
+<pre><code>Original Plan:
+    Day 36: Train PCA with real data (4-6h) ❌ BLOCKED
+    Day 37-38: Integration testing
+    Day 39-40: FAISS ingester implementation
+
+With workaround (Plan A→B→A'):
+    Day 36: Train PCA with synthetic data (4-6h) ✅ UNBLOCKED
+    Day 37-38: Implement feature processing (2-3 days)
+    Day 36 BIS: Re-train PCA with real data (2h)
+    Day 39-40: Continue as planned
+</code></pre>
+<p><strong>Net delay:</strong> 1-2 days (if Plan B takes 2 days instead of 3)</p>
+<hr />
+<h2 id="solution-strategy-plan-aba">Solution Strategy - Plan A→B→A'</h2>
+<h3 id="plan-a-synthetic-data-workaround-day-36-4-6h">Plan A: Synthetic Data Workaround (Day 36 - 4-6h)</h3>
+<p><strong>Objective:</strong> Validate pipeline end-to-end with synthetic data</p>
+<pre><code class="language-python"># Generate synthetic 83-feature events
+synthetic_features = np.random.randn(20000, 83).astype(np.float32)
+
+# Pass through ONNX embedders
+chronos_emb = chronos_model(synthetic_features)  # 20K × 512
+sbert_emb = sbert_model(synthetic_features)      # 20K × 384
+attack_emb = attack_model(synthetic_features)    # 20K × 256
+
+# Train PCA reducers
+pca_chronos.fit(chronos_emb)  # 512 → 128, target ≥96% variance
+pca_sbert.fit(sbert_emb)      # 384 → 128, target ≥96% variance
+pca_attack.fit(attack_emb)    # 256 → 128, target ≥96% variance
+
+# Save models
+save_models(&quot;/shared/models/pca/&quot;)
+</code></pre>
+<p><strong>Deliverables:</strong>
+- ✅ 3 PCA models trained and saved
+- ✅ Training pipeline code validated
+- ✅ End-to-end architecture proven
+- ✅ Documentation and tests written
+- ⚠️ Variance may be lower (synthetic data has no semantic structure)</p>
+<p><strong>Advantages:</strong>
+- Unblocks Day 36-40 FAISS work
+- Validates training code before real data
+- Provides baseline for comparison
+- Scientifically honest (we document it's synthetic)</p>
+<p><strong>Via Appia Quality:</strong> Foundation first, even if temporary</p>
+<hr />
+<h3 id="plan-b-implement-real-feature-processing-day-37-38-2-3-days">Plan B: Implement Real Feature Processing (Day 37-38 - 2-3 days)</h3>
+<p><strong>Objective:</strong> Get real 83 or 40 features into .pb files</p>
+<h4 id="option-b1-activate-mldefenderextractor-40-features-recommended">Option B1: Activate MLDefenderExtractor (40 features) - RECOMMENDED</h4>
+<pre><code>Status:  Code exists but output not saved to .pb
+Effort:  ~1 day
+Quality: ⭐⭐⭐⭐⭐ (uses proven extraction code)
+
+Implementation:
+1. Verify ml_extractor_.populate_ml_defender_features() is called
+2. Debug why submessages are empty in .pb
+3. Fix serialization issue
+4. Validate .pb contains 4 submessages with 10 features each
+
+Result: .pb files with 40 real features
+
+Challenge: 40 ≠ 83
+Solutions:
+  a) Retrain embedders for 40 features (3h)
+  b) Pad/derive 83 features from 40 (engineering effort)
+  c) Use 40 for now, add 83 later (incremental)
+</code></pre>
+<h4 id="option-b2-implement-full-83-feature-processor">Option B2: Implement Full 83-Feature Processor</h4>
+<pre><code>Status:  FeatureExtractor exists but not connected
+Effort:  ~2-3 days
+Quality: ⭐⭐⭐⭐ (reuses existing extraction logic)
+
+Implementation:
+1. Create processor that reads .pb raw
+2. Extract FlowStatistics from events
+3. Call FeatureExtractor::extract_features(flow) → 83 features
+4. Save to new format or update .pb
+
+Result: .pb files or separate files with 83 features
+
+Challenge: FlowStatistics reconstruction
+- .pb raw has 11 basic fields
+- FeatureExtractor needs vectors (timestamps, lengths, etc.)
+- May need to aggregate multiple packets into flows
+</code></pre>
+<h4 id="option-b3-extend-ring-consumer-to-save-full-features">Option B3: Extend Ring Consumer to Save Full Features</h4>
+<pre><code>Status:  Requires changes to production sniffer
+Effort:  ~2 days
+Quality: ⭐⭐⭐ (cleaner but riskier)
+Risk:    May impact production stability
+
+Implementation:
+1. Modify ring_consumer.cpp to call FeatureExtractor
+2. Populate NetworkFeatures with all 83 fields
+3. Ensure serialization works
+4. Test thoroughly before deployment
+
+Result: Future .pb files have 83 features
+
+Challenge: Backward compatibility, testing burden
+</code></pre>
+<p><strong>RECOMMENDATION:</strong> Start with Option B1 (40 features) as lowest risk, fastest path.</p>
+<hr />
+<h3 id="plan-a-re-train-with-real-data-day-36-bis-2h">Plan A': Re-train with Real Data (Day 36 BIS - 2h)</h3>
+<p><strong>Objective:</strong> Validate real data pipeline using same training code</p>
+<pre><code class="language-python"># EXACT SAME CODE as Plan A, only data source changes:
+
+# Load real features from processed .pb
+real_features = load_from_processed_pb(
+    &quot;/vagrant/logs/rag/processed/*.pb&quot;,
+    num_samples=20000,
+    balanced=True
+)  # Now shape (20000, 40) or (20000, 83)
+
+# Rest is IDENTICAL to Plan A
+chronos_emb = chronos_model(real_features)
+pca_chronos.fit(chronos_emb)
+# ... etc ...
+</code></pre>
+<p><strong>Deliverables:</strong>
+- ✅ 3 PCA models trained with REAL data
+- ✅ Variance comparison: synthetic vs real
+- ✅ Same code reused (validation of Plan A)
+- ✅ Ready for production FAISS ingestion</p>
+<p><strong>Scientific Value:</strong>
+- Documents evolution: synthetic → real
+- Shows variance improvement with real data
+- Validates both pipeline stages independently</p>
+<hr />
+<h2 id="decision-matrix">Decision Matrix</h2>
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Effort</th>
+<th>Risk</th>
+<th>Quality</th>
+<th>Timeline</th>
+<th>Recommendation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Plan A (Synthetic)</strong></td>
+<td>4-6h</td>
+<td>🟢 Low</td>
+<td>⭐⭐⭐</td>
+<td>Day 36</td>
+<td>✅ DO THIS FIRST</td>
+</tr>
+<tr>
+<td><strong>Plan B1 (40 feat)</strong></td>
+<td>1 day</td>
+<td>🟢 Low</td>
+<td>⭐⭐⭐⭐⭐</td>
+<td>Day 37</td>
+<td>✅ RECOMMENDED</td>
+</tr>
+<tr>
+<td><strong>Plan B2 (83 proc)</strong></td>
+<td>2-3d</td>
+<td>🟡 Medium</td>
+<td>⭐⭐⭐⭐</td>
+<td>Day 37-38</td>
+<td>🔄 IF B1 INSUFFICIENT</td>
+</tr>
+<tr>
+<td><strong>Plan B3 (Sniffer)</strong></td>
+<td>2d</td>
+<td>🔴 High</td>
+<td>⭐⭐⭐</td>
+<td>Day 37-38</td>
+<td>❌ AVOID (prod risk)</td>
+</tr>
+<tr>
+<td><strong>Plan A' (Real)</strong></td>
+<td>2h</td>
+<td>🟢 Low</td>
+<td>⭐⭐⭐⭐⭐</td>
+<td>After B</td>
+<td>✅ VALIDATION</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="timeline-with-solution">Timeline with Solution</h2>
+<pre><code>┌─────────────────────────────────────────────────────────────┐
+│ WEEK 5-6: FAISS INFRASTRUCTURE (Days 31-40)                 │
+├─────────────────────────────────────────────────────────────┤
+│ Day 31-34: Infrastructure + ONNX validation      ✅ DONE    │
+│ Day 35:    DimensionalityReducer library         ✅ DONE    │
+│ Day 36:    Plan A - Train PCA (synthetic)        🔥 NEXT    │
+│ Day 37:    Plan B1 - Activate 40 features        📅 PLANNED │
+│ Day 38:    Plan A' - Re-train PCA (real)         📅 PLANNED │
+│ Day 39-40: Buffer / FAISS ingester start         📅 PLANNED │
+└─────────────────────────────────────────────────────────────┘
+
+Net Impact: 1 day delay (if B1 takes 1 day instead of planned buffer)
+Result: Foundation validated twice (synthetic + real)
+Quality: Via Appia - methodical, documented, reproducible
+</code></pre>
+<hr />
+<h2 id="lessons-learned">Lessons Learned</h2>
+<h3 id="what-went-right">What Went Right ✅</h3>
+<ol>
+<li><strong>Detection system:</strong> Fully functional, no technical debt here</li>
+<li><strong>Early discovery:</strong> Found issue during planning, not during execution</li>
+<li><strong>Code exists:</strong> Both extractors written, just not connected</li>
+<li><strong>Workaround viable:</strong> Synthetic data validates architecture</li>
+</ol>
+<h3 id="what-went-wrong">What Went Wrong ❌</h3>
+<ol>
+<li><strong>Parallel development:</strong> Two feature systems never integrated</li>
+<li><strong>Incomplete testing:</strong> Embedders validated with synthetic, never checked real data path</li>
+<li><strong>Tag ignored:</strong> "requires_processing" left as TODO without follow-up</li>
+</ol>
+<h3 id="how-to-prevent">How to Prevent 🛡️</h3>
+<ol>
+<li><strong>End-to-end validation:</strong> Always test full pipeline with real data</li>
+<li><strong>TODO tracking:</strong> Every "requires_processing" needs a ticket</li>
+<li><strong>Integration tests:</strong> Don't just unit test components in isolation</li>
+<li><strong>Documentation:</strong> Architecture diagrams showing data flow</li>
+</ol>
+<hr />
+<h2 id="action-items">Action Items</h2>
+<h3 id="immediate-day-36">Immediate (Day 36)</h3>
+<ul>
+<li>[ ] Execute Plan A (synthetic PCA training)</li>
+<li>[ ] Document training pipeline code</li>
+<li>[ ] Validate architecture end-to-end</li>
+<li>[ ] Create Plan B implementation tickets</li>
+</ul>
+<h3 id="short-term-day-37-38">Short-term (Day 37-38)</h3>
+<ul>
+<li>[ ] Execute Plan B1 (activate 40 features)</li>
+<li>[ ] Debug why MLDefenderExtractor output not saved</li>
+<li>[ ] Validate .pb files contain submessages</li>
+<li>[ ] Execute Plan A' (re-train with real data)</li>
+</ul>
+<h3 id="medium-term-week-6-7">Medium-term (Week 6-7)</h3>
+<ul>
+<li>[ ] Consider Plan B2 if 40 features insufficient</li>
+<li>[ ] Document feature extraction architecture</li>
+<li>[ ] Create integration tests for feature pipeline</li>
+<li>[ ] Remove "requires_processing" tag once complete</li>
+</ul>
+<h3 id="long-term-phase-3">Long-term (Phase 3+)</h3>
+<ul>
+<li>[ ] Unify feature extraction (single source of truth)</li>
+<li>[ ] Evaluate if 83 features needed or 40 sufficient</li>
+<li>[ ] Consider feature engineering for better embeddings</li>
+<li>[ ] Performance optimization of feature extraction</li>
+</ul>
+<hr />
+<h2 id="communication">Communication</h2>
+<h3 id="stakeholder-impact">Stakeholder Impact</h3>
+<p><strong>Alonso (Project Lead):</strong>
+- System functional, no production impact
+- 1 day timeline slip (acceptable for quality)
+- Foundation-first approach validated
+- Scientific honesty maintained (document synthetic→real)</p>
+<p><strong>Future Developers:</strong>
+- Clear documentation of why two systems exist
+- Path forward documented
+- Workarounds explained with rationale</p>
+<hr />
+<h2 id="references">References</h2>
+<h3 id="code-locations">Code Locations</h3>
+<pre><code>Feature Extraction Legacy (83):
+├─ /vagrant/sniffer/include/feature_extractor.hpp
+└─ /vagrant/sniffer/src/userspace/feature_extractor.cpp
+
+ML Defender Extractor (40):
+├─ /vagrant/sniffer/include/ml_defender_features.hpp
+└─ /vagrant/sniffer/src/userspace/ml_defender_features.cpp
+
+Ring Consumer Integration:
+└─ /vagrant/sniffer/src/userspace/ring_consumer.cpp (line 693)
+
+ONNX Embedders:
+├─ /vagrant/rag/models/chronos_embedder.onnx
+├─ /vagrant/rag/models/sbert_embedder.onnx
+└─ /vagrant/rag/models/attack_embedder.onnx
+
+Protobuf Schema:
+└─ /vagrant/protobuf/network_security.proto
+</code></pre>
+<h3 id="related-documents">Related Documents</h3>
+<ul>
+<li><code>BACKLOG.md</code> - Updated with Plan A→B→A'</li>
+<li><code>PROMPT_CONTINUE_CLAUDE.md</code> - Day 36 context</li>
+<li><code>journal.txt</code> - Day 36 discovery log</li>
+</ul>
+<hr />
+<h2 id="conclusion">Conclusion</h2>
+<p>This is <strong>NOT a critical bug</strong> - it's an <strong>incomplete feature</strong> discovered during planning. The detection system works perfectly. The FAISS/RAG pipeline needs connection work.</p>
+<p><strong>Via Appia Philosophy Applied:</strong></p>
+<blockquote>
+<p>"Better to build foundation twice (synthetic + real) than to rush and build poorly once."</p>
+</blockquote>
+<p><strong>Plan A→B→A'</strong> allows us to:
+1. Validate architecture NOW (unblock progress)
+2. Fix data pipeline PROPERLY (no hacks)
+3. Re-validate with real data (scientific rigor)
+4. Document journey (transparency)</p>
+<p><strong>Timeline Impact:</strong> Minimal (1 day)<br />
+<strong>Quality Impact:</strong> Positive (double validation)<br />
+<strong>Risk Mitigation:</strong> Excellent (incremental approach)</p>
+<p>🏛️ <strong>Via Appia Quality: Foundation First</strong> 🏛️</p>
+<hr />
+<p><strong>Document Version:</strong> 1.0<br />
+<strong>Author:</strong> Claude (Anthropic) + Alonso<br />
+<strong>Date:</strong> 09-Enero-2026<br />
+<strong>Status:</strong> 📋 DOCUMENTED - Ready for Day 36 execution<br />
+<strong>Next Review:</strong> After Plan B completion</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.tabs", "navigation.top", "search.highlight"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

@@ -1,0 +1,1468 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source embedded-ML NDR for hospitals and schools">
+      
+      
+        <meta name="author" content="Alonso Isidoro Roman">
+      
+      
+        <link rel="canonical" href="https://alonsoir.github.io/argus/engineering_decisions/DAY81_ml_training_data_analysis/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>ML Training Data Crisis & Retraining Hypothesis - ML Defender (aRGus NDR)</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#ml-training-data-crisis-retraining-hypothesis" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-header__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ML Defender (aRGus NDR)
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              ML Training Data Crisis &amp; Retraining Hypothesis
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../README.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/BACKLOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Backlog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Security Model
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-tabs__link">
+          
+  
+  
+  ADRs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/contracts/Protobuf contracts.md" class="md-tabs__link">
+          
+  
+  
+  Contracts
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-nav__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ML Defender (aRGus NDR)
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../README.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/BACKLOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADRs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ADRs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013 Seed Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-021-deployment-topology-seed-families.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-021 Topology SSOT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-022-threat-model-opcion2-descartada.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-022 Threat Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Protobuf contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protobuf
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/JSON contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JSON
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Rag security commands.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#engineering-decision-day-81" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Engineering Decision — DAY 81
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#docsengineering_decisionsday81_ml_training_data_analysismd" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        docs/engineering_decisions/DAY81_ml_training_data_analysis.md
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1-el-hallazgo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. El hallazgo
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-nomenclatura-tres-categorias-distintas-no-dos" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Nomenclatura — tres categorías distintas, no dos
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2. Nomenclatura — tres categorías distintas, no dos">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#categoria-a-datos-academicos" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Categoría A — Datos académicos
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#categoria-b-datos-sinteticos-estadisticos-generador-propio" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Categoría B — Datos sintéticos estadísticos (generador propio)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#categoria-c-datos-nativos-del-pipeline-propuesta-day-81" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Categoría C — Datos nativos del pipeline (propuesta DAY 81)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-historia-de-los-entrenamientos-dos-fracasos-documentados" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Historia de los entrenamientos — dos fracasos documentados
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. Historia de los entrenamientos — dos fracasos documentados">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#entrenamiento-1-datos-academicos-categoria-a" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Entrenamiento 1: Datos académicos — Categoría A
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#entrenamiento-2-datos-sinteticos-estadisticos-categoria-b" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Entrenamiento 2: Datos sintéticos estadísticos — Categoría B
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#comparativa-de-los-tres-enfoques" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Comparativa de los tres enfoques
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-por-que-ocurre-esto-analisis-tecnico" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Por qué ocurre esto — análisis técnico
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. Por qué ocurre esto — análisis técnico">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#feature-drift-entrenamiento-academico" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Feature drift (entrenamiento académico)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datos-sinteticos-demasiado-perfectos" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Datos sintéticos demasiado perfectos
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-la-hipotesis-reentrenamiento-con-datos-pipeline-native-categoria-c" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. La hipótesis — reentrenamiento con datos pipeline-native (Categoría C)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4. La hipótesis — reentrenamiento con datos pipeline-native (Categoría C)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#premisa" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Premisa
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mecanismo-disponible" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Mecanismo disponible
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#propuesta-de-dataset-de-reentrenamiento" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Propuesta de dataset de reentrenamiento
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#hipotesis-verificable" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Hipótesis verificable
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-por-que-esto-es-importante-para-el-paper" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Por qué esto es importante para el paper
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5. Por qué esto es importante para el paper">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#lo-que-hay-que-escribir-en-discussion-sin-maquillaje" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Lo que hay que escribir en Discussion (sin maquillaje)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lo-que-no-hay-que-escribir" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Lo que NO hay que escribir
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#la-oportunidad-cientifica" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        La oportunidad científica
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-plan-de-implementacion-enterprise-roadmap" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Plan de implementación — enterprise roadmap
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-compromiso-cientifico-documentar-todo-incluso-el-fracaso" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Compromiso científico — documentar todo, incluso el fracaso
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-estado-actual" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. Estado actual
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-nota-del-consejo-de-sabios-day-81" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. Nota del Consejo de Sabios (DAY 81)
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="ml-training-data-crisis-retraining-hypothesis">ML Training Data Crisis &amp; Retraining Hypothesis</h1>
+<h2 id="engineering-decision-day-81">Engineering Decision — DAY 81</h2>
+<h2 id="docsengineering_decisionsday81_ml_training_data_analysismd">docs/engineering_decisions/DAY81_ml_training_data_analysis.md</h2>
+<p><strong>Fecha:</strong> 10 marzo 2026
+<strong>Autores:</strong> Alonso Isidoro Roman + Consejo de Sabios
+<strong>Estado:</strong> Hallazgo documentado — hipótesis de reentrenamiento pendiente validación</p>
+<hr />
+<h2 id="1-el-hallazgo">1. El hallazgo</h2>
+<p>Durante la comparativa controlada de DAY 81 (mismo PCAP, dos condiciones de
+threshold), se descubrió que el RandomForest embedded <strong>nunca supera 0.6607</strong>
+de score, quedando siempre por debajo de cualquier threshold razonable (0.70).</p>
+<p><strong>El 100% del trabajo de detección reseñable lo hace el Fast Detector.</strong></p>
+<pre><code>Fast Detector (heurísticas):  4712 activaciones ≥ 0.70  →  F1=1.0000
+ML RandomForest (embedded):      0 activaciones ≥ 0.70  →  max score 0.6607
+</code></pre>
+<p>Esto no es un fallo del pipeline — el pipeline funciona. Es un fallo de los
+datos de entrenamiento.</p>
+<hr />
+<h2 id="2-nomenclatura-tres-categorias-distintas-no-dos">2. Nomenclatura — tres categorías distintas, no dos</h2>
+<p>Antes de documentar los fracasos, es necesario establecer que "datos sintéticos"
+no es una categoría uniforme. El proyecto ha trabajado con tres tipos de datos
+fundamentalmente distintos que merecen nombres distintos:</p>
+<h3 id="categoria-a-datos-academicos">Categoría A — Datos académicos</h3>
+<p>Datasets producidos por otros grupos de investigación (CTU-13, CIC-IDS2017,
+UNSW-NB15). Features calculadas con otros pipelines (CICFlowMeter, etc.).
+Etiquetas asignadas en condiciones de laboratorio controladas.</p>
+<p><strong>Problema estructural:</strong> las features académicas y las features del pipeline
+C++20 tienen el mismo nombre pero definiciones distintas — rangos distintos,
+normalización distinta, definición de flujo distinta. El modelo aprende reglas
+que no existen en nuestro tráfico.</p>
+<h3 id="categoria-b-datos-sinteticos-estadisticos-generador-propio">Categoría B — Datos sintéticos estadísticos (generador propio)</h3>
+<p>Muestras generadas algorítmicamente a partir de distribuciones estadísticas.
+Sin tráfico real de red. Distribuciones artificialmente perfectas, sin jitter,
+sin retransmisiones, sin correlaciones temporales reales.</p>
+<p><strong>Problema estructural:</strong> el modelo aprende el generador, no el tráfico. Los
+datos son "demasiado limpios" para generalizar al caos del mundo real.</p>
+<h3 id="categoria-c-datos-nativos-del-pipeline-propuesta-day-81">Categoría C — Datos nativos del pipeline (propuesta DAY 81)</h3>
+<p>Features generadas por el propio extractor C++20 durante operación real,
+correlacionadas via <code>trace_id</code> entre ml-detector y firewall-acl-agent,
+mezcladas con tráfico de relay PCAP académico + tráfico interno lab.</p>
+<p><strong>Por qué es fundamentalmente distinto:</strong></p>
+<pre><code>features entrenamiento = features producción  (por construcción)
+</code></pre>
+<p>No hay feature drift posible. El modelo aprende exactamente lo que verá
+en inferencia. Esto <strong>no es sintético</strong> en ningún sentido relevante — es
+entrenamiento nativo del pipeline.</p>
+<p><strong>Nombre propuesto para el paper:</strong> <em>pipeline-native training data</em></p>
+<hr />
+<h2 id="3-historia-de-los-entrenamientos-dos-fracasos-documentados">3. Historia de los entrenamientos — dos fracasos documentados</h2>
+<h3 id="entrenamiento-1-datos-academicos-categoria-a">Entrenamiento 1: Datos académicos — Categoría A</h3>
+<ul>
+<li>F1 en validación offline: <strong>F1=0.0000</strong> (el modelo predecía todo como benigno)</li>
+<li>Causa raíz: dataset con 99% benigno → el modelo aprendió "siempre predecir
+  benigno = alta accuracy". F1=1.0000 en training era engañoso por imbalance.</li>
+<li>F1 en producción con pcap replay: <strong>~0.0061</strong> — prácticamente cero detecciones</li>
+<li><strong>Impacto en el proyecto:</strong> decepción brutal que forzó un cambio de dirección
+  completo hacia datos sintéticos estadísticos. Documentado en sesiones
+  noviembre 2025.</li>
+</ul>
+<p>La confusion matrix de ese momento:</p>
+<pre><code>True Positives (TP):  0
+False Positives (FP): 53
+False Negatives (FN): 556,556
+True Negatives (TN):  2,271,267
+</code></pre>
+<p>El modelo no detectó literalmente ningún ataque.</p>
+<h3 id="entrenamiento-2-datos-sinteticos-estadisticos-categoria-b">Entrenamiento 2: Datos sintéticos estadísticos — Categoría B</h3>
+<ul>
+<li>F1 en validación offline: moderado</li>
+<li>F1 en producción: <strong>score máximo 0.6607</strong> — nunca supera threshold 0.70</li>
+<li>Causa: distribuciones artificiales sin ruido real, sin estructura temporal
+  de ataque, 11 sentinels reducen señal disponible</li>
+<li><strong>Posición relativa:</strong> considerablemente mejor que Categoría A (al menos
+  el modelo ve algo), pero insuficiente para producción</li>
+</ul>
+<h3 id="comparativa-de-los-tres-enfoques">Comparativa de los tres enfoques</h3>
+<table>
+<thead>
+<tr>
+<th>Categoría</th>
+<th>Nombre</th>
+<th>F1 offline</th>
+<th>F1 producción</th>
+<th>Causa del gap</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A</td>
+<td>Académico (CTU-13)</td>
+<td>~0.99*</td>
+<td>~0.006</td>
+<td>Feature drift severo + imbalance</td>
+</tr>
+<tr>
+<td>B</td>
+<td>Sintético estadístico</td>
+<td>moderado</td>
+<td>max 0.6607</td>
+<td>Distribución irreal</td>
+</tr>
+<tr>
+<td>C</td>
+<td>Pipeline-native</td>
+<td><strong>pendiente</strong></td>
+<td><strong>hipótesis &gt;0.70</strong></td>
+<td>Sin drift por construcción</td>
+</tr>
+</tbody>
+</table>
+<p>*F1=0.99 académico era espurio — artefacto del imbalance 99% benigno.</p>
+<p><strong>Paradoja documentada y confirmada:</strong> el entrenamiento académico producía
+métricas offline perfectas que eran completamente inútiles en producción.
+Es citable como demostración del "academic dataset trap" — un problema
+conocido en la literatura pero raramente documentado con datos propios tan
+explícitos.</p>
+<hr />
+<h2 id="3-por-que-ocurre-esto-analisis-tecnico">3. Por qué ocurre esto — análisis técnico</h2>
+<h3 id="feature-drift-entrenamiento-academico">Feature drift (entrenamiento académico)</h3>
+<pre><code>Features entrenamiento ≠ Features producción
+</code></pre>
+<p>Los datasets académicos tienen sus propias definiciones de features
+(CIC-IDS2017 usa CICFlowMeter, por ejemplo). Nuestro pipeline C++20 calcula
+las mismas features con implementaciones distintas — rangos distintos,
+normalización distinta, definición de flujo distinta. El modelo aprendió
+reglas que no existen en nuestro tráfico.</p>
+<h3 id="datos-sinteticos-demasiado-perfectos">Datos sintéticos demasiado perfectos</h3>
+<p>El generador sintético produce:
+- Sin jitter, sin retransmisiones, sin paquetes perdidos
+- Correlaciones independientes por evento (sin estructura temporal real)
+- Distribuciones uniformes artificiales</p>
+<p>Un modelo entrenado con datos perfectos falla cuando ve el caos del tráfico
+real. Los 11 sentinels (-9999.0f) en features no extraídas también degradan
+la señal disponible para el RandomForest.</p>
+<hr />
+<h2 id="4-la-hipotesis-reentrenamiento-con-datos-pipeline-native-categoria-c">4. La hipótesis — reentrenamiento con datos pipeline-native (Categoría C)</h2>
+<h3 id="premisa">Premisa</h3>
+<p>El único dataset que garantiza <strong>cero feature drift</strong> es el generado por el
+propio pipeline en producción. Las features que genera el extractor C++20 son
+exactamente las que verá el modelo en inferencia.</p>
+<h3 id="mecanismo-disponible">Mecanismo disponible</h3>
+<p>El <code>trace_id</code> (SHA256 de src_ip + dst_ip + attack_type + temporal_bucket)
+permite cruzar eventos de dos fuentes:</p>
+<pre><code>ml-detector CSV  ──┐
+                   ├──[trace_id]──→ dataset combinado
+firewall-acl CSV ──┘
+</code></pre>
+<p>Cada registro combinado tendría:</p>
+<pre><code>trace_id | timestamp | src_ip | dst_ip |
+features[28] | ml_score | ml_label |
+firewall_action | firewall_result | ground_truth_label
+</code></pre>
+<h3 id="propuesta-de-dataset-de-reentrenamiento">Propuesta de dataset de reentrenamiento</h3>
+<p>Proporción objetivo para generalización real:</p>
+<pre><code>30% tráfico interno benigno (DNS, SMB, SSH, RDP, backups)
+20% tráfico web benigno (HTTP/HTTPS, APIs, CDN)
+25% ataques internos (scan, lateral movement, brute force, beaconing)
+25% ataques externos (DDoS, C&amp;C, exfiltración)
+</code></pre>
+<p>Fuentes:
+1. <strong>Pipeline real</strong> (trace_id correlation) — features exactas, sin drift
+2. <strong>CTU-13 otros escenarios</strong> — variedad de patrones de ataque
+3. <strong>MAWI backbone</strong> — tráfico benigno real de Internet
+4. <strong>Tráfico interno simulado</strong> — generado en el lab (VM defender + client)</p>
+<h3 id="hipotesis-verificable">Hipótesis verificable</h3>
+<blockquote>
+<p>Un modelo RandomForest entrenado con datos generados por el propio pipeline
+(via trace_id correlation), en proporción ~50% benigno / 50% malicioso,
+debería producir scores &gt; 0.70 en producción para tráfico de ataque real,
+activándose de forma complementaria al Fast Detector.</p>
+</blockquote>
+<p><strong>Si se confirma:</strong> el sistema pasa de detección heurística pura a detección
+híbrida real (Fast Detector para patrones obvios + ML para patrones sutiles).</p>
+<p><strong>Si no se confirma:</strong> los 11 sentinels (features faltantes en Phase 2) son
+el bloqueante real — el modelo no tiene suficiente señal independientemente
+de los datos de entrenamiento.</p>
+<hr />
+<h2 id="5-por-que-esto-es-importante-para-el-paper">5. Por qué esto es importante para el paper</h2>
+<h3 id="lo-que-hay-que-escribir-en-discussion-sin-maquillaje">Lo que hay que escribir en Discussion (sin maquillaje)</h3>
+<blockquote>
+<p>"The embedded RandomForest models, trained on synthetic data, consistently
+scored below detection threshold (max score 0.6607) during CTU-13 Neris
+replay. All attributable detections were produced by the Fast Detector
+heuristics. This result is consistent with known feature drift between
+synthetic training distributions and real traffic generated by the C++20
+pipeline. We document this as a known limitation of Phase 1 and propose
+pipeline-native retraining as the primary mitigation for Phase 2."</p>
+</blockquote>
+<h3 id="lo-que-no-hay-que-escribir">Lo que NO hay que escribir</h3>
+<p>No hay que presentar F1=1.0000 como si viniera del ML ensemble. Viene del
+Fast Detector. Esa distinción es la que separa un paper honesto de uno que
+no sobrevive peer review.</p>
+<h3 id="la-oportunidad-cientifica">La oportunidad científica</h3>
+<p>El hallazgo de que entrenamiento académico produce F1≈0.99 offline pero
+F1≈0.006 en producción es <strong>citable por sí mismo</strong> como demostración del
+problema de feature drift en IDS. Es una contribución al estado del arte,
+no solo una limitación a esconder.</p>
+<hr />
+<h2 id="6-plan-de-implementacion-enterprise-roadmap">6. Plan de implementación — enterprise roadmap</h2>
+<p>Este reentrenamiento es una feature enterprise por tres razones:</p>
+<ol>
+<li><strong>Requiere datos de producción real</strong> — no disponible en open source sin
+   consentimiento explícito del operador</li>
+<li><strong>Requiere CsvEventLoader</strong> (pendiente) — para consumir los CSV del pipeline</li>
+<li><strong>Requiere ciclo completo:</strong> captura → features → label → train → validate → deploy</li>
+</ol>
+<p>Se implementa como parte del ciclo de aprendizaje continuo:</p>
+<pre><code>pipeline
+   ↓
+event CSV logs (trace_id correlation)
+   ↓
+dataset builder (balanced, labeled)
+   ↓
+model retraining (RandomForest C++20)
+   ↓
+model ranking (f1_replay_log.csv)
+   ↓
+hot-deploy (ENT-4 hot-reload)
+</code></pre>
+<p><strong>Relación con ENT items:</strong>
+- ENT-4 (hot-reload): necesario para desplegar modelos sin downtime
+- ENT-1 (federated learning): una vez validado localmente, escalar a federado</p>
+<hr />
+<h2 id="7-compromiso-cientifico-documentar-todo-incluso-el-fracaso">7. Compromiso científico — documentar todo, incluso el fracaso</h2>
+<p>Este proyecto se compromete a publicar el camino completo de descubrimiento,
+incluyendo los fracasos. Esto incluye:</p>
+<ul>
+<li>El fracaso del entrenamiento académico (F1~0 en producción) — documentado y confirmado</li>
+<li>El fracaso del entrenamiento sintético estadístico (max 0.6607) — documentado</li>
+<li>La hipótesis pipeline-native (Categoría C) — a validar en DAY 82+</li>
+<li>Si la hipótesis pipeline-native también falla — documentar causas y consecuencias</li>
+</ul>
+<p>Si los experimentos demuestran que el pipeline ha tomado decisiones de diseño
+incorrectas que impiden su uso en producción real, eso también se publica.
+La honestidad científica no es selectiva.</p>
+<p>El valor del paper no depende de que el sistema sea perfecto. Depende de:
+1. El camino de descubrimiento del problema del feature drift
+2. La metodología de detección en capas (Fast Detector + ML ensemble)
+3. La distinción entre datos académicos / sintéticos / pipeline-native
+4. La hipótesis de reentrenamiento nativo y su validación honesta
+5. La infraestructura de experimentación reproducible (f1_replay_log.csv)</p>
+<p>Un paper que documente honestamente por qué algo no funcionó y proponga
+un camino de solución fundamentado es más valioso que uno que presente
+solo victorias. Los reviewers lo saben. Los practitioners también.</p>
+<hr />
+<h2 id="8-estado-actual">8. Estado actual</h2>
+<table>
+<thead>
+<tr>
+<th>Item</th>
+<th>Estado</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Hallazgo Fast Detector dominance</td>
+<td>✅ Documentado DAY 81</td>
+</tr>
+<tr>
+<td>Causa feature drift identificada</td>
+<td>✅ Documentado DAY 81</td>
+</tr>
+<tr>
+<td>Hipótesis reentrenamiento pipeline-native</td>
+<td>📋 Hipótesis — pendiente validación</td>
+</tr>
+<tr>
+<td>CsvEventLoader (prerequisito)</td>
+<td>⏳ 0% — pendiente</td>
+</tr>
+<tr>
+<td>Dataset builder con trace_id</td>
+<td>⏳ 0% — pendiente</td>
+</tr>
+<tr>
+<td>Validación hipótesis</td>
+<td>⏳ 0% — enterprise roadmap</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="8-nota-del-consejo-de-sabios-day-81">8. Nota del Consejo de Sabios (DAY 81)</h2>
+<blockquote>
+<p>"El sistema funciona. El Fast Detector demuestra que la arquitectura de
+detección en capas es correcta. El ML necesita datos del mundo real para
+ser útil — exactamente como cualquier modelo de producción. Esto no es un
+fracaso; es el paso natural de prototipo a producto. El pipeline ya genera
+esos datos. Solo falta cerrar el ciclo."</p>
+</blockquote>
+<hr />
+<p><em>Documento generado: DAY 81 — 10 marzo 2026</em>
+<em>Co-authored-by: Alonso Isidoro Roman + Claude (Anthropic) + Consejo de Sabios</em></p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.top", "search.highlight"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

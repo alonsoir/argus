@@ -1,0 +1,1008 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source embedded-ML NDR for hospitals and schools">
+      
+      
+        <meta name="author" content="Alonso Isidoro Roman">
+      
+      
+        <link rel="canonical" href="https://alonsoir.github.io/argus/engineering_decisions/DAY79_sentinel_analysis_CLAUDE_responde_DeepSeek/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>DAY79_sentinel_analysis_CLAUDE_responde_DeepSeek.md - ML Defender (aRGus NDR)</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#day79_sentinel_analysis_claude_responde_deepseekmd" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-header__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ML Defender (aRGus NDR)
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              DAY79_sentinel_analysis_CLAUDE_responde_DeepSeek.md
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../README.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/BACKLOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Backlog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Security Model
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-tabs__link">
+          
+  
+  
+  ADRs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/contracts/Protobuf contracts.md" class="md-tabs__link">
+          
+  
+  
+  Contracts
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-nav__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ML Defender (aRGus NDR)
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../README.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/BACKLOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADRs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ADRs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013 Seed Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-021-deployment-topology-seed-families.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-021 Topology SSOT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-022-threat-model-opcion2-descartada.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-022 Threat Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Protobuf contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protobuf
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/JSON contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JSON
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Rag security commands.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="day79_sentinel_analysis_claude_responde_deepseekmd">DAY79_sentinel_analysis_CLAUDE_responde_DeepSeek.md</h1>
+<h1 id="ml-defender-prompt-de-continuidad-day-80">ML Defender — Prompt de Continuidad DAY 80</h1>
+<p><strong>Generado:</strong> Cierre DAY 79 (8 marzo 2026)
+<strong>Branch activa:</strong> <code>feature/ring-consumer-real-features</code>
+<strong>Estado del pipeline:</strong> 6/6 componentes RUNNING ✅
+<strong>Último hito:</strong> F1=0.9921 en CTU-13 Neris (Recall=1.0000, FN=0)</p>
+<hr />
+<h2 id="que-se-hizo-en-day-79-completado">Qué se hizo en DAY 79 — COMPLETADO ✅</h2>
+<p><strong>Archivos modificados:</strong>
+- <code>sniffer/src/userspace/ml_defender_features.cpp</code>
+- <code>Makefile</code> (logging estándar para todos los componentes)
+- <code>README.md</code>
+- <code>docs/engineering_decisions/DAY79_sentinel_analysis.md</code> (nuevo)</p>
+<h3 id="resumen-de-cambios">Resumen de cambios</h3>
+<ol>
+<li>
+<p><strong>Sentinela unificado – corrección de 8 placeholders <code>0.5f</code></strong></p>
+<ul>
+<li>8 funciones que devolvían <code>0.5f</code> como placeholder fueron cambiadas a <code>MISSING_FEATURE_SENTINEL = -9999.0f</code>.</li>
+<li>Se preservaron 2 usos semánticos de <code>0.5f</code> (TCP half‑open y comparación de CV).</li>
+<li>Recuento final: 21 sentinelas, 2 semánticos.</li>
+<li><strong>Razón:</strong> <code>0.5f</code> está dentro del dominio de splits del RandomForest y genera varianza espuria no documentada; el sentinel fuera de dominio produce rutas deterministas y auditables.</li>
+</ul>
+</li>
+<li>
+<p><strong>Logging estándar para todos los componentes</strong></p>
+<ul>
+<li>Todos los servicios ahora escriben log a <code>/vagrant/logs/lab/COMPONENT.log</code> mediante redirección en el Makefile.</li>
+<li>Nuevos targets: <code>make logs-all</code> (tail de todos), <code>make logs-lab-clean</code> (rotado).</li>
+<li>Soluciona una deuda de ~40 días: el sistema ahora es observable.</li>
+</ul>
+</li>
+<li>
+<p><strong>Validación F1 contra CTU-13 Neris</strong></p>
+<ul>
+<li>Replay de 492k paquetes, 6810 eventos clasificados.</li>
+<li><strong>F1 = 0.9921</strong> | Precision = 0.9844 | Recall = 1.0000 | FN = 0 | FP = 106 (sobre 134 benignos → FPR 79%).</li>
+<li>Análisis detallado en <code>DAY79_sentinel_analysis.md</code> (material para el paper).</li>
+</ul>
+</li>
+</ol>
+<hr />
+<h2 id="estado-real-de-features-tras-day-79">📊 Estado real de features tras DAY 79</h2>
+<table>
+<thead>
+<tr>
+<th>Submensaje</th>
+<th>Reales</th>
+<th>Sentinel</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>ddos_embedded</td>
+<td>10/10</td>
+<td>0</td>
+</tr>
+<tr>
+<td>ransomware_embedded</td>
+<td>10/10</td>
+<td>0</td>
+</tr>
+<tr>
+<td>traffic_classification</td>
+<td>3/10</td>
+<td>7</td>
+</tr>
+<tr>
+<td>internal_anomaly</td>
+<td>5/10</td>
+<td>5</td>
+</tr>
+<tr>
+<td><strong>Total</strong></td>
+<td><strong>28/40</strong></td>
+<td><strong>12</strong></td>
+</tr>
+</tbody>
+</table>
+<p><em>(Nota: la cifra de reales bajó de 29 a 28 porque 8 placeholders 0.5f pasaron a sentinel – es más honesto.)</em></p>
+<p><strong>Pendientes (12 sentinelas):</strong>
+- traffic: <code>tcp_udp_ratio</code>, <code>flow_duration_std</code>, <code>port_entropy</code>, <code>protocol_variety</code>, <code>connection_rate</code>, <code>src_ip_entropy</code>, <code>dst_ip_concentration</code> (7)
+- internal: <code>internal_connection_rate</code>, <code>service_port_consistency</code>, <code>connection_duration_std</code>, <code>lateral_movement_score</code>, <code>service_discovery_patterns</code> (5)</p>
+<p><em>(Nota: <code>port_entropy</code> y otros podrían ser implementados con el agregador, pero aún no están hechos.)</em></p>
+<hr />
+<h2 id="analisis-critico-de-los-resultados">🔍 Análisis crítico de los resultados</h2>
+<ul>
+<li><strong>Recall perfecto</strong> en CTU-13 Neris: el sistema detecta todos los flujos de la máquina infectada. Bueno.</li>
+<li>
+<p><strong>FPR del 79% sobre tráfico benigno</strong>: debido al fuerte desequilibrio del dataset (solo 2% benigno) y al threshold de ransomware (0.75) que genera falsos positivos sobre un único flujo similar a C2.<br />
+<strong>Implicación</strong>: en un entorno balanceado, este FPR sería inaceptable. La calibración de thresholds (Tarea 1) debe priorizarse.</p>
+</li>
+<li>
+<p><strong>Patrón de divergencia</strong>: en logs se observa <code>fast=0.7000, ml=0.1454</code> y el sistema usa <code>DETECTOR_SOURCE_DIVERGENCE</code> tomando el score fast. Esto indica que el fast detector y el modelo ML tienen calibraciones distintas. Habrá que investigar en DAY 80‑81.</p>
+</li>
+<li>
+<p><strong>Necesidad de un dataset balanceado</strong>: para validar el sistema en condiciones realistas, necesitamos una mezcla de tráfico normal, DDoS y ransomware actualizados. Esto es un proyecto en sí mismo; se puede planificar como hito post‑paper o como trabajo futuro.</p>
+</li>
+</ul>
+<hr />
+<h2 id="objetivos-day-80">🎯 Objetivos DAY 80</h2>
+<h3 id="tarea-1-cargar-thresholds-desde-json-todo-phase1-day4-critical">Tarea 1 — Cargar thresholds desde JSON (TODO Phase1-Day4-CRITICAL)</h3>
+<p>Actualmente los umbrales (<code>ddos_threshold = 0.7f</code>, <code>ransomware_threshold = 0.75f</code>, <code>suspicious_threshold = 0.4f</code>) están hardcodeados en <code>run_ml_detection()</code>.</p>
+<p><strong>Acción:</strong>
+- Crear archivo <code>/etc/ml-defender/thresholds.json</code> con estructura:
+  <code>json
+  {
+    "ddos_threshold": 0.7,
+    "ransomware_threshold": 0.75,
+    "suspicious_threshold": 0.4
+  }</code>
+- Modificar <code>ring_consumer.cpp</code> para leerlo una vez al arrancar (o recargar con SIGHUP) y usar esos valores.
+- Añadir logging de los thresholds al inicio.</p>
+<p><strong>Beneficio:</strong> permite ajustar el balance precision/recall sin recompilar, y es un paso hacia la externalización completa de la configuración.</p>
+<hr />
+<h3 id="tarea-2-investigar-divergencia-fastdetector-vs-ml">Tarea 2 — Investigar divergencia fast‑detector vs ML</h3>
+<p>Ejecuta el replay con logging detallado y extrae los eventos donde <code>abs(fast_score - ml_score) &gt; 0.5</code>. Analiza qué flujos son y por qué el fast detector da 0.7 mientras el ML da 0.14.</p>
+<p>Posibles causas:
+- El fast detector usa reglas heurísticas (ej. puertos conocidos) que disparan sobre tráfico benigno.
+- El modelo ML no ha visto suficientes ejemplos de ese patrón.
+- El sentinel en algunas features está afectando al ML.</p>
+<p><strong>Acción:</strong>
+- Añadir un campo <code>divergence_reason</code> en el proto (opcional).
+- Documentar el hallazgo.</p>
+<hr />
+<h3 id="tarea-3-opcional-implementar-uno-o-dos-extractores-pendientes">Tarea 3 — (Opcional) Implementar uno o dos extractores pendientes</h3>
+<p>Si el tiempo lo permite, elige uno de los 12 sentinelas que pueda implementarse con el <code>TimeWindowAggregator</code> actual, por ejemplo:
+- <code>connection_rate</code> (event_count / window_seconds)
+- <code>src_ip_entropy</code> (usando unique_ips y fórmula de Shannon)</p>
+<p>Esto requiere que el agregador exponga los datos necesarios. Si no están disponibles, añádelos.</p>
+<p><strong>Prioridad:</strong> baja, porque los thresholds tienen más impacto en el FPR.</p>
+<hr />
+<h3 id="tarea-4-actualizar-documentacion-y-preparar-material-para-el-paper">Tarea 4 — Actualizar documentación y preparar material para el paper</h3>
+<ul>
+<li>Refinar la sección de resultados con el análisis del FPR.</li>
+<li>Añadir la tabla de features reales vs sentinel.</li>
+<li>Incluir la decisión de sentinel fuera de dominio como lección aprendida.</li>
+<li>Planificar la obtención de un dataset balanceado (puede ser un hito separado).</li>
+</ul>
+<hr />
+<h2 id="comandos-para-empezar-day-80">🔧 Comandos para empezar DAY 80</h2>
+<pre><code class="language-bash"># Ver estado actual
+vagrant ssh -c &quot;grep -c 'MISSING_FEATURE_SENTINEL' /vagrant/sniffer/src/userspace/ml_defender_features.cpp&quot;
+# Debería ser 21
+
+# Ver logs de ml-detector durante replay
+make logs-all
+
+# Replay con logging detallado (si se necesita)
+make test-replay-neris
+
+# Ver eventos con divergencia (ejemplo)
+vagrant ssh -c &quot;grep 'DETECTOR_SOURCE_DIVERGENCE' /vagrant/logs/ml-detector/ml-detector.log&quot;
+</code></pre>
+<hr />
+<h2 id="notas-para-el-paper-actualizacion">📝 Notas para el paper (actualización)</h2>
+<ul>
+<li>El FPR del 79% en benigno debe ir acompañado de una explicación clara del desequilibrio del dataset y de la necesidad de calibrar thresholds en producción.</li>
+<li>La distinción entre sentinel fuera de dominio y placeholder dentro del dominio es una contribución metodológica que puede citarse.</li>
+<li>La divergencia entre fast detector y ML sugiere la importancia de un ensemble con votación ponderada; puede ser un punto de discusión.</li>
+</ul>
+<hr />
+<h2 id="consejo-de-sabios">🧠 Consejo de Sabios</h2>
+<p>Has llegado a un hito importante: el sistema funciona end‑to‑end con métricas sólidas en un dataset real. Los problemas restantes son de calibración y configuración, no de arquitectura. El FPR alto es esperable dado el desequilibrio; la prioridad ahora es externalizar thresholds para poder ajustarlos. No te distraigas con más extractores hasta que tengas un mecanismo para sintonizar el sistema. El paper necesita mostrar que el sistema es configurable, no solo que funciona en un caso concreto.</p>
+<p><em>Consejo de Sabios — Cierre DAY 79, 8 marzo 2026</em><br />
+<em>Branch: feature/ring-consumer-real-features</em><br />
+<strong>DAY 80</strong>: JSON thresholds, análisis de divergencia, y preparación para el paper.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.top", "search.highlight"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>
