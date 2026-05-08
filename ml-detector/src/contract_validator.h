@@ -1,6 +1,6 @@
 #pragma once
 
-#include "protobuf/network_security.pb.h"
+#include "network_security.pb.h"  // DEBT-COMPILER-WARNINGS-CLEANUP-001: path unificado
 #include <atomic>
 #include <map>
 #include <mutex>

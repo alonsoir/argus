@@ -61,7 +61,7 @@ float MLDefenderExtractor::extract_ddos_packet_symmetry(const FlowStatistics& fl
     return asymmetry;
 }
 
-float MLDefenderExtractor::extract_ddos_source_ip_dispersion(const FlowStatistics& flow) const {
+float MLDefenderExtractor::extract_ddos_source_ip_dispersion(const FlowStatistics& /*flow*/) const {
     if (!aggregator_) return MISSING_FEATURE_SENTINEL;
     auto now = TimeWindowAggregator::get_current_time_ns();
     auto start = now - 30'000'000'000ULL;
@@ -209,7 +209,7 @@ void MLDefenderExtractor::extract_ransomware_features(
     ransomware->set_behavior_consistency(extract_ransomware_behavior_consistency(flow));
 }
 
-float MLDefenderExtractor::extract_ransomware_io_intensity(const FlowStatistics& flow) const {
+float MLDefenderExtractor::extract_ransomware_io_intensity(const FlowStatistics& /*flow*/) const {
     // TODO(Phase 2): Requires system-level I/O metrics
     //
     // This feature measures file system I/O operations (reads/writes per second).
@@ -234,7 +234,7 @@ float MLDefenderExtractor::extract_ransomware_entropy(const FlowStatistics& flow
     return std::min(normalized, 1.0f);
 }
 
-float MLDefenderExtractor::extract_ransomware_resource_usage(const FlowStatistics& flow) const {
+float MLDefenderExtractor::extract_ransomware_resource_usage(const FlowStatistics& /*flow*/) const {
     // TODO(Phase 2): Requires CPU/memory metrics from system
     //
     // Ransomware typically shows high CPU usage during encryption phase.
@@ -256,7 +256,7 @@ float MLDefenderExtractor::extract_ransomware_network_activity(const FlowStatist
     return (pps_normalized + bps_normalized) / 2.0f;
 }
 
-float MLDefenderExtractor::extract_ransomware_file_operations(const FlowStatistics& flow) const {
+float MLDefenderExtractor::extract_ransomware_file_operations(const FlowStatistics& /*flow*/) const {
     // TODO(Phase 2): Requires protocol inspection for SMB/CIFS
     //
     // File operations require deep packet inspection to identify:
@@ -273,7 +273,7 @@ float MLDefenderExtractor::extract_ransomware_file_operations(const FlowStatisti
     return MISSING_FEATURE_SENTINEL;
 }
 
-float MLDefenderExtractor::extract_ransomware_process_anomaly(const FlowStatistics& flow) const {
+float MLDefenderExtractor::extract_ransomware_process_anomaly(const FlowStatistics& /*flow*/) const {
     // TODO(Phase 2): Requires process-level monitoring
     //
     // Process anomaly detection requires:
@@ -368,7 +368,7 @@ float MLDefenderExtractor::extract_traffic_packet_rate(const FlowStatistics& flo
     return std::min(normalized, 1.0f);
 }
 
-float MLDefenderExtractor::extract_traffic_connection_rate(const FlowStatistics& flow) const {
+float MLDefenderExtractor::extract_traffic_connection_rate(const FlowStatistics& /*flow*/) const {
     if (!aggregator_) return MISSING_FEATURE_SENTINEL;
     auto now = TimeWindowAggregator::get_current_time_ns();
     auto start = now - 30'000'000'000ULL;
@@ -378,7 +378,7 @@ float MLDefenderExtractor::extract_traffic_connection_rate(const FlowStatistics&
     return std::min(rate / 100.0f, 1.0f);
 }
 
-float MLDefenderExtractor::extract_traffic_tcp_udp_ratio(const FlowStatistics& flow) const {
+float MLDefenderExtractor::extract_traffic_tcp_udp_ratio(const FlowStatistics& /*flow*/) const {
     // TODO(Phase 2): Requires protocol field in FlowStatistics
     //
     // Current FlowStatistics doesn't store protocol type.
@@ -404,7 +404,7 @@ float MLDefenderExtractor::extract_traffic_avg_packet_size(const FlowStatistics&
     return std::min(normalized, 1.0f);
 }
 
-float MLDefenderExtractor::extract_traffic_port_entropy(const FlowStatistics& flow) const {
+float MLDefenderExtractor::extract_traffic_port_entropy(const FlowStatistics& /*flow*/) const {
     if (!aggregator_) return MISSING_FEATURE_SENTINEL;
     auto now = TimeWindowAggregator::get_current_time_ns();
     auto start = now - 30'000'000'000ULL;
@@ -416,7 +416,7 @@ float MLDefenderExtractor::extract_traffic_port_entropy(const FlowStatistics& fl
         1.0f);
 }
 
-float MLDefenderExtractor::extract_traffic_flow_duration_std(const FlowStatistics& flow) const {
+float MLDefenderExtractor::extract_traffic_flow_duration_std(const FlowStatistics& /*flow*/) const {
     // TODO(Phase 2): Requires multi-flow aggregator
     //
     // Standard deviation of flow durations requires multiple flows.
@@ -426,7 +426,7 @@ float MLDefenderExtractor::extract_traffic_flow_duration_std(const FlowStatistic
     return MISSING_FEATURE_SENTINEL;  // Phase 2: implement with TimeWindowAggregator
 }
 
-float MLDefenderExtractor::extract_traffic_src_ip_entropy(const FlowStatistics& flow) const {
+float MLDefenderExtractor::extract_traffic_src_ip_entropy(const FlowStatistics& /*flow*/) const {
     if (!aggregator_) return MISSING_FEATURE_SENTINEL;
     auto now = TimeWindowAggregator::get_current_time_ns();
     auto start = now - 30'000'000'000ULL;
@@ -439,7 +439,7 @@ float MLDefenderExtractor::extract_traffic_src_ip_entropy(const FlowStatistics& 
         1.0f);
 }
 
-float MLDefenderExtractor::extract_traffic_dst_ip_concentration(const FlowStatistics& flow) const {
+float MLDefenderExtractor::extract_traffic_dst_ip_concentration(const FlowStatistics& /*flow*/) const {
     if (!aggregator_) return MISSING_FEATURE_SENTINEL;
     auto now = TimeWindowAggregator::get_current_time_ns();
     auto start = now - 30'000'000'000ULL;
@@ -452,7 +452,7 @@ float MLDefenderExtractor::extract_traffic_dst_ip_concentration(const FlowStatis
         1.0f);
 }
 
-float MLDefenderExtractor::extract_traffic_protocol_variety(const FlowStatistics& flow) const {
+float MLDefenderExtractor::extract_traffic_protocol_variety(const FlowStatistics& /*flow*/) const {
     // TODO(Phase 2): Requires multi-flow aggregator
     //
     // Protocol variety = number of unique protocols in time window.
@@ -491,7 +491,7 @@ void MLDefenderExtractor::extract_internal_features(
     internal->set_access_pattern_entropy(extract_internal_access_pattern_entropy(flow));
 }
 
-float MLDefenderExtractor::extract_internal_connection_rate(const FlowStatistics& flow) const {
+float MLDefenderExtractor::extract_internal_connection_rate(const FlowStatistics& /*flow*/) const {
     if (!aggregator_) return MISSING_FEATURE_SENTINEL;
     auto now = TimeWindowAggregator::get_current_time_ns();
     auto start = now - 30'000'000'000ULL;
@@ -500,7 +500,7 @@ float MLDefenderExtractor::extract_internal_connection_rate(const FlowStatistics
     return std::min(rate / 100.0f, 1.0f);
 }
 
-float MLDefenderExtractor::extract_internal_service_port_consistency(const FlowStatistics& flow) const {
+float MLDefenderExtractor::extract_internal_service_port_consistency(const FlowStatistics& /*flow*/) const {
     if (!aggregator_) return MISSING_FEATURE_SENTINEL;
     auto now = TimeWindowAggregator::get_current_time_ns();
     auto start = now - 30'000'000'000ULL;
@@ -536,7 +536,7 @@ float MLDefenderExtractor::extract_internal_packet_size_consistency(const FlowSt
     return consistency;
 }
 
-float MLDefenderExtractor::extract_internal_connection_duration_std(const FlowStatistics& flow) const {
+float MLDefenderExtractor::extract_internal_connection_duration_std(const FlowStatistics& /*flow*/) const {
     // TODO(Phase 2): Requires multi-flow aggregator
     //
     // Standard deviation of connection durations requires multiple flows.
@@ -545,7 +545,7 @@ float MLDefenderExtractor::extract_internal_connection_duration_std(const FlowSt
     return MISSING_FEATURE_SENTINEL;  // Phase 2: implement with TimeWindowAggregator
 }
 
-float MLDefenderExtractor::extract_internal_lateral_movement_score(const FlowStatistics& flow) const {
+float MLDefenderExtractor::extract_internal_lateral_movement_score(const FlowStatistics& /*flow*/) const {
     if (!aggregator_) return MISSING_FEATURE_SENTINEL;
     auto now = TimeWindowAggregator::get_current_time_ns();
     auto start = now - 30'000'000'000ULL;
@@ -558,7 +558,7 @@ float MLDefenderExtractor::extract_internal_lateral_movement_score(const FlowSta
         1.0f);
 }
 
-float MLDefenderExtractor::extract_internal_service_discovery_patterns(const FlowStatistics& flow) const {
+float MLDefenderExtractor::extract_internal_service_discovery_patterns(const FlowStatistics& /*flow*/) const {
     if (!aggregator_) return MISSING_FEATURE_SENTINEL;
     auto now = TimeWindowAggregator::get_current_time_ns();
     auto start = now - 30'000'000'000ULL;

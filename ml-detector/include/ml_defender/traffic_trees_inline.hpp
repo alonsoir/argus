@@ -11,6 +11,8 @@
 #include <array>
 #include <cstdint>
 
+// DEBT-COMPILER-WARNINGS-CLEANUP-001: anonymous namespace — ODR fix (LTO)
+namespace {
 struct TrafficNode {
     int16_t feature_idx;     // Feature index for split
     float threshold;         // Split threshold (NORMALIZADO 0.0-1.0)
@@ -1684,3 +1686,5 @@ inline float traffic_predict(const std::array<float, TRAFFIC_NUM_FEATURES>& feat
 }
 
 #endif // TRAFFIC_TREES_INLINE_HPP
+
+}  // anonymous namespace

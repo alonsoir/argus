@@ -93,7 +93,7 @@ void test_performance() {
 
     // Warm-up
     for (int i = 0; i < 100; ++i) {
-        detector.predict(features);
+        (void)detector.predict(features);
     }
 
     // Benchmark: 10,000 predictions

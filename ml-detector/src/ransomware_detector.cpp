@@ -35,7 +35,7 @@ RansomwareDetector::Prediction RansomwareDetector::predict(const Features& featu
         while (tree[node_idx].feature_idx >= 0) [[likely]] {
             const int16_t feature_idx = tree[node_idx].feature_idx;
             const float threshold = tree[node_idx].threshold;
-            const float feature_value = feature_array[feature_idx];
+            const float feature_value = feature_array[static_cast<size_t>(feature_idx)];
 
             // Branch prediction hint: left branch more common in trained model
             if (feature_value <= threshold) [[likely]] {

@@ -20,6 +20,9 @@
 //===----------------------------------------------------------------------===//
 
 #include "firewall/batch_processor.hpp"
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <unistd.h>
 #include "firewall_observability_logger.hpp"
 #include "crash_diagnostics.hpp"
 
@@ -97,6 +100,9 @@ void BatchProcessor::add_detection(const protobuf::Detection& detection) {
         "src_ip", detection.src_ip(),
         "confidence", detection.confidence(),
         "type", static_cast<int>(detection.type()));
+
+    // ADR-042: auto-isolate multi-señal (antes de cualquier otra decisión)
+    check_auto_isolate(detection);
 
     // Check if detection should be blocked
     if (!should_block(detection)) {
@@ -607,6 +613,70 @@ void BatchProcessor::set_backpressure_callback(std::function<void(size_t)> callb
 //===----------------------------------------------------------------------===//
 // Internal Helper Methods (Day 50: Enhanced)
 //===----------------------------------------------------------------------===//
+
+// ── should_auto_isolate — lógica de decisión pura (testeable sin fork) ──
+bool BatchProcessor::should_auto_isolate(const protobuf::Detection& detection) const {
+    if (!irp_config_.auto_isolate) return false;
+    std::string event_type;
+    switch (detection.type()) {
+        case protobuf::DetectionType::DETECTION_RANSOMWARE:
+            event_type = "ransomware"; break;
+        case protobuf::DetectionType::DETECTION_INTERNAL_THREAT:
+            event_type = "lateral_movement"; break;
+        case protobuf::DetectionType::DETECTION_SUSPICIOUS_TRAFFIC:
+            event_type = "c2_beacon"; break;
+        default:
+            return false;
+    }
+    // Comparación con tolerancia: float confidence vs double threshold
+    // static_cast<double>(0.95f) = 0.9499... por precisión IEEE 754
+    if (static_cast<double>(detection.confidence()) < irp_config_.threat_score_threshold - 1e-6)
+        return false;
+    const auto& types = irp_config_.auto_isolate_event_types;
+    return std::find(types.begin(), types.end(), event_type) != types.end();
+}
+
+// ── check_auto_isolate — ADR-042 IRP (DAY 143) ───────────────────────────
+// fork()+execv(): el firewall NO puede morir — operación atómica
+void BatchProcessor::check_auto_isolate(const protobuf::Detection& detection) {
+    if (!should_auto_isolate(detection)) return;
+    FIREWALL_LOG_WARN("IRP TRIGGER: auto-isolate activado",
+        "src_ip",     detection.src_ip(),
+        "score",      detection.confidence(),
+        "type",       static_cast<int>(detection.type()),
+        "interface",  irp_config_.isolate_interface);
+
+    // ── fork()+execv(): el firewall sigue vivo ────────────────────────────
+    pid_t pid = fork();
+    if (pid < 0) {
+        FIREWALL_LOG_ERROR("IRP fork() failed", "errno", errno);
+        return;
+    }
+    if (pid == 0) {
+        // Proceso hijo — execv argus-network-isolate
+        const std::string& bin  = irp_config_.isolate_binary_path;
+        const std::string& cfg  = irp_config_.isolate_config_path;
+        const std::string& iface = irp_config_.isolate_interface;
+        char* argv[] = {
+            const_cast<char*>(bin.c_str()),
+            const_cast<char*>("isolate"),
+            const_cast<char*>("--interface"),
+            const_cast<char*>(iface.c_str()),
+            const_cast<char*>("--config"),
+            const_cast<char*>(cfg.c_str()),
+            nullptr
+        };
+        execv(bin.c_str(), argv);
+        // execv solo retorna si falla
+        _exit(127);
+    }
+    // Proceso padre — no wait(), no bloqueamos el pipeline
+    // El hijo es recogido por el init process (SIGCHLD ignorado por defecto)
+    FIREWALL_LOG_INFO("IRP: argus-network-isolate lanzado",
+        "pid",       static_cast<int>(pid),
+        "interface", irp_config_.isolate_interface);
+}
+
 
 bool BatchProcessor::should_block(const protobuf::Detection& detection) const {
     // Check detection type

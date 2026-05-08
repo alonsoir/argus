@@ -1,0 +1,157 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+#
+# aRGus NDR — Vagrant: hardened-arm64 (ADR-030 Variant B — libpcap)
+# Production-hardened VM: Debian 12 + AppArmor enforcing + NO compiler
+# Variant B: libpcap capture (NO eBPF/XDP). Delta vs Variant A es contribución científica.
+#
+# ADR-039 BSR Axiom: this VM contains NO build toolchain.
+# ADR-029 Variant B: libpcap-dev presente, clang/llvm/bpftool AUSENTES.
+# Binaries are copied from dist/ (built in the dev VM) and verified
+# via SHA256SUMS before execution.
+#
+# Usage:
+#   cd vagrant/hardened-x86
+#   vagrant up
+#   vagrant ssh
+#   make -C /vagrant check-prod-no-compiler
+#   make -C /vagrant verify-production
+#
+# DAY 137 — 30 April 2026
+
+VAGRANTFILE_API_VERSION = "2"
+
+# ── Configuration ────────────────────────────────────────────────────────────
+VM_NAME     = "argus-hardened-arm64"
+VM_BOX      = "debian/bookworm64"   # Debian 12 — closest stable to Debian 13
+VM_BOX_VER  = ">= 12.0"
+VM_CPUS     = 2
+VM_RAM_MB   = 2048
+
+# Production network (host-only — adjust to match deployment topology)
+MGMT_IP     = "192.168.57.11"       # management NIC (NIC 2) — Variant B
+# NIC 1 (monitored) is bridged — configure in the provisioner for bare-metal
+
+Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
+
+  # ── Box ────────────────────────────────────────────────────────────────────
+  config.vm.box         = VM_BOX
+  config.vm.box_version = VM_BOX_VER
+  config.vm.hostname    = VM_NAME
+
+  # ── Network ────────────────────────────────────────────────────────────────
+  # Management NIC — host-only, fixed IP
+  config.vm.network "private_network", ip: MGMT_IP
+
+  # Monitored NIC — bridged to physical NIC in bare-metal deployments.
+  # Disabled by default in Vagrant (no physical NIC in dev host).
+  # Uncomment and set the correct interface for bare-metal validation:
+  # config.vm.network "public_network", bridge: "eth0", auto_config: false
+
+  # ── VirtualBox provider ────────────────────────────────────────────────────
+  config.vm.provider "virtualbox" do |vb|
+    vb.name   = VM_NAME
+    vb.cpus   = VM_CPUS
+    vb.memory = VM_RAM_MB
+    vb.gui    = false
+
+    # Enable nested virtualization (required for eBPF/XDP in some hosts)
+    vb.customize ["modifyvm", :id, "--nested-hw-virt", "on"]
+
+    # Paravirtualized NIC for better XDP generic mode performance
+    vb.customize ["modifyvm", :id, "--nictype1", "virtio"]
+    vb.customize ["modifyvm", :id, "--nictype2", "virtio"]
+  end
+
+  # ── Shared folder ──────────────────────────────────────────────────────────
+  # The repo root is mounted at /vagrant (read-only in production VM).
+  # Binaries come from dist/, not from a build inside this VM.
+  config.vm.synced_folder "../../", "/vagrant", type: "virtualbox"
+
+  # ── Provisioner ────────────────────────────────────────────────────────────
+  config.vm.provision "shell", name: "production-hardened", inline: <<-SHELL
+    set -euo pipefail
+    echo "=== aRGus hardened-x86 provisioner (ADR-030 Variant A) ==="
+
+    # ── System update ────────────────────────────────────────────────────────
+    export DEBIAN_FRONTEND=noninteractive
+    apt-get update -qq
+    apt-get upgrade -y -qq
+
+    # ── Runtime dependencies ONLY — no compiler, no dev headers ─────────────
+    # ADR-039 BSR axiom: build toolchain must NOT be present in this VM.
+    # ADR-029 Variant B: libpcap0.8 runtime (NO libpcap-dev, NO clang, NO bpftool).
+    apt-get install -y --no-install-recommends \
+      apparmor \
+      apparmor-utils \
+      apparmor-profiles \
+      ipset \
+      iptables \
+      curl \
+      ca-certificates \
+      libsodium23 \
+      libzmq5 \
+      libprotobuf32 \
+      checksec \
+      procps \
+      net-tools \
+      iproute2 \
+      tcpdump \
+      libpcap0.8 \
+      jq
+
+    # ── AppArmor: enable enforcing mode ─────────────────────────────────────
+    echo "=== Enabling AppArmor ==="
+    systemctl enable apparmor
+    systemctl start apparmor
+    aa-enforce /etc/apparmor.d/* 2>/dev/null || true
+
+    # ── Verify: no compiler present (ADR-039 BSR axiom) ─────────────────────
+    echo "=== BSR check: verifying no compiler in production VM ==="
+    if dpkg -l 2>/dev/null | grep -qE '^ii\s+(gcc|g\+\+|clang|cmake|build-essential)'; then
+      echo "FAIL: compiler found in production VM — BSR axiom violated"
+      exit 1
+    else
+      echo "OK: no compiler present — BSR axiom satisfied"
+    fi
+
+    # ── Create runtime user ──────────────────────────────────────────────────
+    if ! id -u ml-defender &>/dev/null; then
+      useradd --system --no-create-home --shell /usr/sbin/nologin ml-defender
+      echo "Created system user: ml-defender"
+    fi
+
+    # ── Directories ──────────────────────────────────────────────────────────
+    mkdir -p /etc/ml-defender
+    mkdir -p /var/log/ml-defender
+    mkdir -p /usr/lib/ml-defender/plugins
+    mkdir -p /usr/lib/ml-defender/models
+    chown -R ml-defender:ml-defender /etc/ml-defender /var/log/ml-defender \
+                                     /usr/lib/ml-defender
+
+    echo "=== Provisioning complete ==="
+    echo "Next steps:"
+    echo "  1. Copy binaries from dist/ to /usr/local/bin/"
+    echo "  2. Run: make -C /vagrant verify-production"
+    echo "  3. Run: make -C /vagrant check-prod-no-compiler"
+    echo "  4. Run: make -C /vagrant check-prod-checksec"
+    echo "  5. Run: make -C /vagrant pipeline-start"
+  SHELL
+
+  # ── Post-up message ────────────────────────────────────────────────────────
+  config.vm.post_up_message = <<-MSG
+    ╔══════════════════════════════════════════════════════════╗
+    ║  aRGus NDR — hardened-x86 VM ready (ADR-030 Variant A) ║
+    ╠══════════════════════════════════════════════════════════╣
+    ║  Management IP : #{MGMT_IP}                        ║
+    ║  AppArmor      : enforcing                               ║
+    ║  Compiler      : ABSENT (ADR-039 BSR axiom)             ║
+    ╠══════════════════════════════════════════════════════════╣
+    ║  NEXT STEPS:                                             ║
+    ║  vagrant ssh                                             ║
+    ║  make -C /vagrant check-prod-no-compiler                 ║
+    ║  make -C /vagrant verify-production                      ║
+    ╚══════════════════════════════════════════════════════════╝
+  MSG
+
+end

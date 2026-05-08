@@ -1,0 +1,143 @@
+{
+  "_header": "aRGus NDR \u2014 Sniffer Variant B (libpcap) \u2014 ADR-029",
+  "_variant": "libpcap \u2014 monohilo por dise\u00f1o de pcap_dispatch (ADR-029, Consejo DAY 138 8/8)",
+  "_hardcoded_binary": {
+    "_comment": "Estos valores NO aparecen en este JSON porque est\u00e1n hardcodeados en el binario. Cambiarlos requerir\u00eda modificar PcapBackend.",
+    "snaplen": "65535 \u2014 fijo, requerido por parser ETH/IP/TCP/UDP",
+    "promiscuous": "1 \u2014 fijo, requerido para captura completa",
+    "zmq_sender_threads": "1 \u2014 monohilo por dise\u00f1o libpcap, no configurable",
+    "io_thread_pools": "1 \u2014 monohilo",
+    "pcap_dispatch_batch": "64 \u2014 paquetes por llamada a pcap_dispatch"
+  },
+  "component": {
+    "name": "argus-sniffer-libpcap",
+    "version": "1.0.0",
+    "mode": "libpcap_userspace",
+    "adr": "ADR-029 Variant B"
+  },
+  "node_id": "argus_sniffer_libpcap_v1",
+  "cluster_name": "ml-defender-libpcap",
+  "capture": {
+    "_comment": "Par\u00e1metros de captura libpcap. snaplen y promiscuous hardcodeados en binario.",
+    "interface": "eth1",
+    "timeout_ms": 1000,
+    "_timeout_note": "Pasado a pcap_open_live(). pcap_dispatch usa este valor como timeout de espera.",
+    "buffer_size_mb": 8,
+    "_buffer_size_note": "closed DAY 142 \u2014 pcap_create()+pcap_set_buffer_size()+pcap_activate()",
+    "sampling": {
+      "mode": "none",
+      "_mode_options": [
+        "none",
+        "1_in_N",
+        "rate_limit_pps"
+      ],
+      "rate": 1,
+      "_sampling_note": "DEBT-VARIANT-B-SAMPLING-001: reservado. No implementado en esta versi\u00f3n."
+    },
+    "filter": {
+      "_comment": "BPF filter aplicado via pcap_setfilter(). Significativo en libpcap \u2014 reduce carga de procesamiento.",
+      "version": "1.0",
+      "bpf_expression": "",
+      "_bpf_note": "Vac\u00edo = captura todo. Ejemplo: 'tcp or udp or icmp'. Excluir SSH: 'not port 22'.",
+      "excluded_ports": [
+        22
+      ],
+      "included_ports": [],
+      "default_action": "capture"
+    }
+  },
+  "network": {
+    "output_socket": {
+      "_comment": "ZeroMQ PUSH \u2014 wire format id\u00e9ntico a Variant A (ring_consumer.cpp DAY 98)",
+      "address": "127.0.0.1",
+      "port": 5571,
+      "socket_type": "PUSH"
+    }
+  },
+  "zmq": {
+    "_comment": "Variant B monohilo \u2014 no hay socket pools ni load balancing.",
+    "connection_settings": {
+      "sndhwm": 10000,
+      "linger_ms": 100,
+      "send_timeout_ms": 250,
+      "tcp_keepalive": 1,
+      "sndbuf": 2621440,
+      "rcvbuf": 2621440,
+      "reconnect_interval_ms": 1000,
+      "max_reconnect_attempts": 10
+    }
+  },
+  "transport": {
+    "compression": {
+      "enabled": true,
+      "algorithm": "lz4",
+      "level": 1,
+      "min_compress_size": 0
+    },
+    "encryption": {
+      "enabled": true,
+      "etcd_token_required": true,
+      "algorithm": "chacha20-poly1305",
+      "key_size": 256,
+      "key_rotation_hours": 24,
+      "fallback_mode": "compression_only"
+    }
+  },
+  "etcd": {
+    "enabled": true,
+    "endpoints": [
+      "localhost:2379"
+    ],
+    "connection_timeout_ms": 5000,
+    "retry_attempts": 3,
+    "retry_interval_ms": 1000,
+    "crypto_token_path": "/crypto/sniffer/tokens",
+    "config_sync_path": "/config/sniffer",
+    "required_for_encryption": true,
+    "fallback_mode": "standalone_unencrypted",
+    "heartbeat_interval_seconds": 30,
+    "lease_ttl_seconds": 60
+  },
+  "monitoring": {
+    "stats_interval_seconds": 30,
+    "alerts": {
+      "_comment": "send_failures expuesto como m\u00e9trica \u2014 Consejo DAY 138 dontwait policy",
+      "max_drop_rate_percent": 0.1,
+      "max_send_failures_per_minute": 100
+    }
+  },
+  "logging": {
+    "level": "INFO",
+    "file": "/vagrant/logs/lab/sniffer-libpcap.log",
+    "max_file_size_mb": 200,
+    "backup_count": 10,
+    "include_performance_logs": true,
+    "include_compression_stats": true
+  },
+  "protobuf": {
+    "schema_version": "v3.1.0",
+    "validate_before_send": true,
+    "max_event_size_bytes": 100000,
+    "serialization_timeout_ms": 50
+  },
+  "security": {
+    "input_validation": {
+      "enabled": true,
+      "max_packet_size_bytes": 65535,
+      "validate_ip_addresses": true,
+      "validate_ports": true
+    }
+  },
+  "identity": {
+    "_comment": "ADR-013 \u2014 Misma identidad criptogr\u00e1fica que Variant A. provision.sh crea las claves bajo /etc/ml-defender/sniffer/.",
+    "_variant_note": "Variant A y Variant B comparten keypair Ed25519 y seed.bin \u2014 son la misma identidad de componente con distinto backend de captura.",
+    "component_id": "sniffer",
+    "keys_dir": "/etc/ml-defender/sniffer",
+    "public_key": "/etc/ml-defender/sniffer/public.pem",
+    "private_key": "/etc/ml-defender/sniffer/private.pem",
+    "seed_bin": "/etc/ml-defender/sniffer/seed.bin"
+  },
+  "plugins": {
+    "enabled": []
+  }
+}

@@ -80,6 +80,9 @@ target_link_libraries(test_csv_file_watcher
         csv_file_watcher
         Threads::Threads
 )
+# DEBT-COMPILER-WARNINGS-CLEANUP-001: -UNDEBUG garantiza assert() activo
+# independientemente del PROFILE. Tests SIEMPRE con asserts.
+target_compile_options(test_csv_file_watcher PRIVATE -UNDEBUG)
 add_test(NAME test_csv_file_watcher COMMAND test_csv_file_watcher)
 
 # ============================================================================
@@ -98,6 +101,8 @@ target_link_libraries(test_csv_event_loader
         csv_event_loader
         OpenSSL::Crypto
 )
+# DEBT-COMPILER-WARNINGS-CLEANUP-001: -UNDEBUG garantiza assert() activo
+target_compile_options(test_csv_event_loader PRIVATE -UNDEBUG)
 add_test(NAME test_csv_event_loader COMMAND test_csv_event_loader)
 
 # ============================================================================

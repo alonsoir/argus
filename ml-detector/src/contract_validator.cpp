@@ -32,7 +32,7 @@ int ContractValidator::count_features(const protobuf::NetworkSecurityEvent& even
             const google::protobuf::Reflection* sub_reflection = sub_msg.GetReflection();
             std::vector<const google::protobuf::FieldDescriptor*> sub_fields;
             sub_reflection->ListFields(sub_msg, &sub_fields);
-            count += sub_fields.size();
+            count += static_cast<int>(sub_fields.size());
         } else {
             // Campo escalar simple
             count++;
@@ -86,7 +86,7 @@ void ContractValidator::log_missing_features(const protobuf::NetworkSecurityEven
         const google::protobuf::Reflection* reflection = ddos.GetReflection();
         std::vector<const google::protobuf::FieldDescriptor*> fields;
         reflection->ListFields(ddos, &fields);
-        ddos_fields = fields.size();
+        ddos_fields = static_cast<int>(fields.size());
         
         if (ddos_fields < 10) {
             logger->warn("  ddos_embedded incomplete: {} / 10 fields", ddos_fields);
@@ -102,7 +102,7 @@ void ContractValidator::log_missing_features(const protobuf::NetworkSecurityEven
         const google::protobuf::Reflection* reflection = ransomware.GetReflection();
         std::vector<const google::protobuf::FieldDescriptor*> fields;
         reflection->ListFields(ransomware, &fields);
-        ransomware_fields = fields.size();
+        ransomware_fields = static_cast<int>(fields.size());
         
         if (ransomware_fields < 10) {
             logger->warn("  ransomware_embedded incomplete: {} / 10 fields", ransomware_fields);
@@ -118,7 +118,7 @@ void ContractValidator::log_missing_features(const protobuf::NetworkSecurityEven
         const google::protobuf::Reflection* reflection = traffic.GetReflection();
         std::vector<const google::protobuf::FieldDescriptor*> fields;
         reflection->ListFields(traffic, &fields);
-        traffic_fields = fields.size();
+        traffic_fields = static_cast<int>(fields.size());
         
         if (traffic_fields < 10) {
             logger->warn("  traffic_classification incomplete: {} / 10 fields", traffic_fields);
@@ -134,7 +134,7 @@ void ContractValidator::log_missing_features(const protobuf::NetworkSecurityEven
         const google::protobuf::Reflection* reflection = internal.GetReflection();
         std::vector<const google::protobuf::FieldDescriptor*> fields;
         reflection->ListFields(internal, &fields);
-        internal_fields = fields.size();
+        internal_fields = static_cast<int>(fields.size());
         
         if (internal_fields < 10) {
             logger->warn("  internal_anomaly incomplete: {} / 10 fields", internal_fields);

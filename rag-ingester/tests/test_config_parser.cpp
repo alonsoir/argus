@@ -10,7 +10,7 @@ int main() {
     try {
         // Load config
         auto config = rag_ingester::ConfigParser::load(
-            "/vagrant/rag-ingester/config/rag-ingester.json"
+            "/etc/ml-defender/rag-ingester/rag-ingester.json"
         );
         
         // Validate values

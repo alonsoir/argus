@@ -1,5 +1,5 @@
 # aRGus NDR — BACKLOG
-*Última actualización: DAY 133 — 27 Abril 2026*
+*Última actualización: DAY 145 — 8 Mayo 2026*
 
 ---
 
@@ -34,6 +34,23 @@
 - **REGLA PERMANENTE (DAY 134 — Consejo 8/8):** Las semillas criptográficas NO se transfieren en el procedimiento EMECAS. La hardened VM arranca sin seeds. Target `prod-deploy-seeds` explícito para el momento del deploy real. Los WARNs de `seed.bin no existe` en `check-prod-permissions` son estado correcto por diseño.
 - **REGLA PERMANENTE (DAY 134 — Consejo 8/8):** Falco .deb y artefactos binarios de terceros van en `dist/vendor/` (gitignored). El hash SHA-256 se committea en `dist/vendor/CHECKSUMS`. `make vendor-download` descarga y verifica. Si hash no coincide → abort.
 - **REGLA PERMANENTE (DAY 134 — Consejo 8/8):** DEBT-ADR040-002 (`confidence_score` en ml-detector) es prerequisito bloqueante de DEBT-ADR040-006 (IPW). No implementar IPW sin verificar primero que el campo existe y varía en runtime.
+- **REGLA PERMANENTE (DAY 138 — Consejo 8/8):** Variant B (libpcap) es monohilo por diseño de pcap_dispatch. Los campos de multihilo no aparecen en sniffer-libpcap.json — se hardcodean en el binario con comentario explícito. No configurable, no negociable.
+- **REGLA PERMANENTE (DAY 138 — Consejo 8/8):** ODR violations en C++20 son Undefined Behaviour bloqueante. Sub-tarea P0 de DEBT-COMPILER-WARNINGS-CLEANUP-001. Ningún tag posterior sin resolver ODR primero.
+- **REGLA PERMANENTE (DAY 140 — Consejo 8/8):** `-Werror` activo en todos los CMakeLists. 0 warnings es un invariante permanente — ningún merge sin `make all 2>&1 | grep -c 'warning:'` = 0.
+- **REGLA PERMANENTE (DAY 140 — Consejo 8/8):** Código de terceros con API deprecated → suprimir por fichero en CMake + entrada en `docs/THIRDPARTY-MIGRATIONS.md`. Nunca suprimir warnings en código propio.
+- **REGLA PERMANENTE (DAY 140 — Consejo 7/8):** En C++20, usar `[[maybe_unused]]` para parámetros no usados en interfaces virtuales y código nuevo. `/*param*/` solo en stubs temporales con DEBT asociada. Migrar progresivamente (DEBT-MAYBE-UNUSED-MIGRATION-001).
+- **REGLA PERMANENTE (DAY 140 — Consejo 8/8):** Gate ODR pre-merge obligatorio: `make PROFILE=production all` antes de cualquier merge a main. Jenkinsfile documenta el gate CI cuando el servidor FEDER esté disponible (DEBT-ODR-CI-GATE-001).
+- **REGLA PERMANENTE (DAY 141 — Consejo 8/8):** Variant A y Variant B nunca corren simultáneamente en el mismo hardware. Exclusión mutua via script de arranque (bash/python en Makefile), pre-FEDER. La lógica de detección NO entra en los binarios — separación de responsabilidades.
+- **REGLA PERMANENTE (DAY 141 — Consejo 8/8):** `buffer_size_mb` es variable por diseño en sniffer-libpcap.json — permite trazar la curva de optimización de buffer en hardware real. Implementación pcap_create()+pcap_set_buffer_size() pre-FEDER obligatoria antes del benchmark ARM64.
+- **REGLA PERMANENTE (DAY 141 — Consejo 8/8):** Clasificadores de warnings de build: script grep/awk determinista. Un LLM no determinista no hace trabajo determinista.
+- **REGLA PERMANENTE (DAY 142 — Consejo 8/8 + founder):** El criterio de disparo del IRP nunca se basa en una señal única. Para FEDER: `threat_score >= 0.95 AND event_type IN (ransomware, lateral_movement, c2_beacon)`. En entornos hospitalarios, un falso positivo sobre un equipo médico crítico (ventilador, bomba de infusión) conectado a la intranet/DMZ es inaceptable. La señal debe ser explicable, auditable y multi-componente.
+- **REGLA PERMANENTE (DAY 142 — Consejo 8/8 + founder):** `auto_isolate: true` por defecto en `isolate.json`. El sistema protege sin que el administrador toque nada. Desactivar el aislamiento automático es un acto explícito y consciente. Instalar y funcionar.
+- **REGLA PERMANENTE (DAY 142 — Consejo 8/8):** Todo trigger de aislamiento automático usa `fork()+execv()`. El proceso padre (firewall-acl-agent) nunca muere. El agente debe sobrevivir al aislamiento para continuar registrando evidencia forense. Un agente muerto durante un ataque activo es exactamente lo que el atacante busca.
+- **REGLA PERMANENTE (DAY 142 — Consejo 8/8):** AppArmor `enforce` desde el primer deploy de cualquier nuevo componente. La fase `complain` no es una característica de seguridad — es deuda de validación. Si el perfil bloquea algo legítimo, se descubre en dev, no en producción.
+- **REGLA PERMANENTE (DAY 144 — Consejo 8/8):** `isolate.json` es la ÚNICA fuente de verdad para `auto_isolate`. Campo obligatorio — sin fallback silencioso. Si falta el fichero o el campo, el arranque falla ruidosamente con mensaje claro. Sin excepciones.
+- **REGLA PERMANENTE (DAY 144 — Consejo 8/8):** `assert()` debe estar activo en todos los tests independientemente del PROFILE. Usar `target_compile_options(test_target PRIVATE -UNDEBUG)` en CMakeLists de tests. `-DNDEBUG` de producción no debe silenciar la cobertura de tests.
+- **REGLA PERMANENTE (DAY 144 — gate ODR confirmado):** `make PROFILE=production all` detecta ODR violations reales bajo `-flto`. Confirmado en DAY 144: 3 categorías de violations encontradas y corregidas. El gate es obligatorio pre-merge sin excepciones.
+- **REGLA PERMANENTE (DAY 142 — macOS):** zsh intercepta `!` en heredocs. Para código C++ con emojis o caracteres especiales: siempre `vagrant ssh << 'SSHEOF'` con Python dentro. Nunca heredoc directo desde zsh para código complejo.
 
 ---
 
@@ -47,294 +64,559 @@
 
 ---
 
+## ✅ CERRADO DAY 144
+## ✅ COMPLETADO DAY 145
+
+### ADR-029 Variant A vs B — Primer experimento comparativo x86 (DAY 145)
+- **Status:** ✅ COMPLETADO DAY 145
+- **Branch:** `feature/variant-b-libpcap @ e52870d5` → merge → `v0.7.0-variant-b`
+- **Experimento:** CTU-13 Neris (320,524 paquetes, 19,135 flows) via `tcpreplay` a 10/50/100 Mbps. Pipeline completo 6/6. Solo el sniffer binario cambia entre runs.
+- **Invariante:** mutex `CHECK_SNIFFER_MUTEX` — Variant A y B nunca simultáneas.
+
+| Variante | Target | Mbps real | PPS | Duración (s) | exit |
+|----------|--------|-----------|-----|--------------|------|
+| A — eBPF | 10 Mbps | 8.86 | 8,040 | 39.86 | 0 |
+| A — eBPF | 50 Mbps | 9.78 | 8,867 | 36.14 | 0 |
+| A — eBPF | 100 Mbps | 10.12 | 9,178 | 34.92 | 0 |
+| B — libpcap | 10 Mbps | 9.99 | 9,064 | 35.36 | 0 |
+| B — libpcap | 50 Mbps | 19.43 | 17,614 | 18.19 | 0 |
+| B — libpcap | 100 Mbps | 18.82 | 17,066 | 18.78 | 0 |
+
+- **Hallazgo clave:** Variant B (libpcap) ~2× throughput de Variant A (eBPF) a 50/100 Mbps en VirtualBox virtio. Inversión del orden esperado — artefacto de emulación, no del pipeline. Causa: virtio no expone driver XDP nativo → eBPF cae a modo SKB genérico con overhead por paquete que libpcap no tiene. En hardware real con NIC XDP nativa (Intel ixgbe, Mellanox mlx5), se espera la inversión: eBPF > libpcap. **Este dato es la motivación empírica de la adquisición de hardware FEDER.**
+- **Failed packets (2,630 en todos los runs):** Artefacto fijo del pcap CTU-13 Neris. Son frames jumbo del pcap original que superan el MTU 1500 de VirtualBox (`errno=90 EMSGSIZE`). Evidencias: (1) conteo idéntico en los 6 runs — si fuera saturación variaría; (2) los 320,524 successful son idénticos — propiedad del fichero, no de la red; (3) el rechazo ocurre en el cliente antes de llegar al defender — el sniffer nunca ve esos frames. **No son errores del pipeline.**
+- **Equivalencia funcional A/B confirmada:** ambas variantes procesan el corpus Neris sin errores de pipeline.
+
+### Bootstrap múltiple — DAY 145
+- **Status:** ✅ COMPLETADO DAY 145
+- `bootstrap` → alias de `bootstrap-x86-ebpf` (Variant A, referencia)
+- `bootstrap-x86-ebpf` — pipeline completo con sniffer eBPF/XDP
+- `bootstrap-x86-libpcap` — pipeline completo con sniffer libpcap (compila también `sniffer-libpcap`)
+- `pipeline-start-x86-libpcap` — variante de pipeline-start que arranca Variant B
+
+### Relay targets mejorados — DAY 145
+- **Status:** ✅ COMPLETADO DAY 145
+- `test-replay-neris-x86-ebpf` y `test-replay-neris-x86-libpcap` muestran resumen inline tras cada velocidad (grep de líneas relevantes del log). El banner final lista las 4 rutas de log generadas. Nota sobre MTU integrada en el output — no confunde al usuario.
+- `pipeline-status` distingue: `RUNNING [Variant A — eBPF]`, `RUNNING [Variant B — libpcap]`, `INVARIANT VIOLATION` (ambos simultáneos), `STOPPED`.
+
+### Paper Draft v19 — DAY 145
+- **Status:** ✅ COMPLETADO DAY 145
+- Nueva subsección §6 (ADR-029 Variant A vs B, tabla comparativa, interpretación virtio/SKB, valor científico).
+- §10.9 actualizado con el artefacto virtio/XDP como limitación documentada.
+- §11.17 extendido con el dato empírico como motivación FEDER hardware.
+- §12 Reproducibility — comandos exactos para reproducir el experimento ADR-029.
+- Abstract actualizado con párrafo nuevo sobre el hallazgo ADR-029.
+- Acknowledgments: "132 days" → "145 days".
+
+
+
+### DEBT-IRP-SIGCHLD-001 — Zombie reaper SA_NOCLDWAIT
+- **Status:** ✅ CERRADO DAY 144 — **Commits:** `a44b7ab3`
+- **Fix:** `sigaction(SIGCHLD, SA_NOCLDWAIT)` en `setup_signal_handlers()`. El kernel recoge hijos automáticamente sin handler ni polling. Una línea.
+- **Test de cierre:** `SigchldTest.NoZombiesAfterNForks` — 20 forks con `/bin/true`, 500ms, cero `defunct` en `/proc`. PASSED.
+
+### DEBT-IRP-AUTOISO-FALSE-001 — auto_isolate false por defecto
+- **Status:** ✅ CERRADO DAY 144 — **Commits:** `a44b7ab3`
+- **Fix:** `isolate.json` es la ÚNICA fuente de verdad. Campo `auto_isolate` obligatorio — si falta, `parse_irp()` lanza `runtime_error` con mensaje claro. Sin fallback silencioso. `provision.sh` falla con `exit 1` si el fichero fuente no existe. `parse_irp()` movida a `public` para testabilidad directa.
+- **Consejo 8/8 unánime:** un FP sobre ventilador mecánico es un evento clínico, no un bug.
+- **Tests de cierre:** `DefaultStructIsFalse`, `FileMissingThrows`, `MissingFieldThrows`, `ExplicitFalseIsRespected`, `ExplicitTrueIsRespected` — 5/5 PASSED.
+
+### DEBT-IRP-BACKUP-DIR-001 — /tmp peligroso para artefactos IRP
+- **Status:** ✅ CERRADO DAY 144 — **Commits:** `646713e7`
+- **Fix:** artefactos nftables migrados a `/run/argus/irp/` (tmpfs, 0700 argus:argus). AppArmor actualizado: eliminadas reglas `/tmp/argus-*.nft`, añadidas `/run/argus/irp/**` y `/var/lib/argus/irp/**`. `provision.sh` crea ambos directorios. `isolate.hpp` default actualizado.
+- **Deudas derivadas:** `DEBT-IRP-TMPFILES-001` (tmpfiles.d reboot) + `DEBT-IRP-IPSET-TMP-001` (ipset_wrapper.cpp).
+- **Test de cierre:** dry-run → `backup=/run/argus/irp/argus-backup-*.nft`. `ls /tmp/argus-*` vacío. PASSED.
+
+### DEBT-COMPILER-WARNINGS-CLEANUP-001 — ODR violations bajo LTO (parcial)
+- **Status:** ✅ PARCIALMENTE CERRADO DAY 144 — **Commits:** `e52870d5`
+- **Gate:** `make PROFILE=production all` detectó 4 categorías de ODR violations reales bajo `-flto -Werror`.
+- **Fix 1:** anonymous namespace en `internal_trees_inline.hpp` + `traffic_trees_inline.hpp` — `tree_0[]`..`tree_99[]` con tipos distintos visibles cross-módulo.
+- **Fix 2:** `contract_validator.h` incluía protobuf stale (`src/protobuf/`, noviembre 2025). Path corregido + `src/protobuf/` eliminado (40k líneas de código generado fuera del repo).
+- **Fix 3:** `-UNDEBUG` en targets de test de rag-ingester, rag y etcd-server — `assert()` siempre activo en tests independientemente del PROFILE.
+- **Nuevo invariante:** `make PROFILE=production all` — gate ODR pre-merge obligatorio. Confirmado: `ALL COMPONENTS BUILT [production]`.
+- **Test de cierre:** `make PROFILE=production all` PASSED — 0 ODR violations.
+
+### DEBT-EMECAS-VERIFICATION-001 — P2 post-merge
+- **Status:** ✅ REGISTRADA — P2 post-merge
+- **Descripción:** El protocolo EMECAS en sí es correcto. El checklist de verificación post-EMECAS debe documentar explícitamente que el banner `ALL TESTS COMPLETE` + `FAILED=0` son el veredicto autoritativo. Errores intermedios de bootstrap son transientes esperados por diseño. Añadir párrafo en README para desarrolladores.
+- **Estimación:** 30 minutos post-merge.
+
+## ✅ CERRADO DAY 143
+
+### DEBT-IRP-NFTABLES-001 — sesión 3/3 (integración firewall-acl-agent + AppArmor)
+- **Status:** ✅ CERRADO DAY 143 — **Commits:** `c6e3f4ab` `888bfcbd` `f1ab0c79` `e08f394d` `f00b1809` `7716423b`
+- **Bloque 1:** `isolate.json` + `IsolateConfig` — campos `auto_isolate`, `threat_score_threshold`, `auto_isolate_event_types`, `isolate_interface`. Test `test_isolate_config` 9/9.
+- **Bloque 2:** `firewall-acl-agent` — `IrpConfig`, `should_auto_isolate()` (función pura testeable), `check_auto_isolate()` con `fork()+execv()`. Mapeo `DetectionType→string`. Bug IEEE 754 detectado por tests y corregido con tolerancia `1e-6`.
+- **Bloque 3:** AppArmor profile `argus.argus-network-isolate` — sintaxis validada, 7/7 perfiles enforce en hardened VM. `setup-apparmor.sh` actualizado.
+- **Bloque 4:** `test_auto_isolate` 12/12 PASSED (10 unitarios + 2 integración fork/exec).
+- **Regresiones EMECAS resueltas:** DEBT-BOOTSTRAP-ORDER-001 (check-build-artifacts separado) + firma `PcapBackend::open()` en 5 test files.
+- **Invariante:** EMECAS verde. `make test-all` ALL TESTS COMPLETE.
+
+
+---
+
+## ✅ CERRADO DAY 142
+
+### Regresión test_config_parser — safe_path path no compliant
+- **Status:** ✅ CERRADO DAY 142 — **Commit:** `4bbc98ee`
+- **Fix:** `test_config_parser` pasaba `/vagrant/rag-ingester/config/rag-ingester.json` a `ConfigParser::load()`. ADR-037 (safe_path) bloqueaba correctamente el path de dev. Fix: usar path de producción `/etc/ml-defender/rag-ingester/rag-ingester.json`. `test_config_parser_traversal` (ataques path traversal) ya pasaba — no tocado.
+- **Invariante:** EMECAS verde — 8/8 tests rag-ingester PASSED.
+
+### DEBT-IRP-NFTABLES-001 — sesiones 1/3 y 2/3
+- **Status:** 🟡 60% — sesiones 1 y 2 cerradas — **Commits:** `6480e234` + `e8928612`
+- **Sesión 1:** Binario `argus-network-isolate` C++20 creado en `tools/argus-network-isolate/`. Pasos 1-3: snapshot selectivo (solo tabla `argus_isolate`, excluye tablas iptables-managed con `xt match` incompatibles), generate_rules con whitelist IP/port configurable, validate_dry_run (`nft -c`). Config: `tools/argus-network-isolate/config/isolate.json`. Forense JSONL en `/var/log/argus/network-isolate-forensic.jsonl`.
+- **Sesión 2:** Pasos 4-6: apply atómico (`nft -f`), timer `systemd-run --on-active=300s` idempotente (stop+reset-failed antes de crear), rollback robusto (elimina tabla `argus_isolate`, no toca tablas del sistema). Ciclo completo verificado en dev VM (eth2): NORMAL→ISOLATED→STATUS→ROLLBACK→NORMAL. SSH sobrevivió en todo momento (eth0 + whitelist).
+- **Pendiente sesión 3:** integración `firewall-acl-agent` + AppArmor profile.
+- **Makefile:** `argus-network-isolate-build`, `argus-network-isolate-install`, `argus-network-isolate-test`, `argus-network-isolate-clean`.
+
+### EMECAS reproducibility — argus-network-isolate en pipeline-build + provision
+- **Status:** ✅ CERRADO DAY 142 — **Commit:** `e3f5f9c4`
+- **Fix:** Vagrantfile: `nftables` declarado explícitamente. `provision.sh`: instala `isolate.json` en `/etc/ml-defender/firewall-acl-agent/` + crea `/var/log/argus/`. Makefile: `argus-network-isolate-build` + `argus-network-isolate-install` en `pipeline-build`. `check-system-deps` verifica nftables + binario instalado.
+
+### DEBT-VARIANT-B-BUFFER-SIZE-001 — pcap_create()+pcap_set_buffer_size()
+- **Status:** ✅ CERRADO DAY 142 — **Commit:** `7c4dba58`
+- **Fix:** `PcapBackend::open()` refactorizado de `pcap_open_live()` a `pcap_create()+pcap_set_buffer_size()+pcap_activate()`. `buffer_size_mb` del JSON ahora se aplica realmente. `CaptureBackend` interfaz actualizada con el parámetro. Crítico en ARM64/RPi donde el kernel default es 2MB vs 8MB configurado.
+- **Test de cierre:** `[pcap] Variant B opened on eth1 buffer=8MB` verificado. `make test-all` sin regresión.
+
+### DEBT-VARIANT-B-MUTEX-001 — exclusión mutua Variant A/B (Nivel 1)
+- **Status:** ✅ CERRADO DAY 142 Nivel 1 — **Commit:** `9458a90d`
+- **Fix:** `scripts/check-sniffer-mutex.sh` via sesiones tmux. Detecta si hay variant activa antes de arrancar otra. Variant A session: `sniffer`. Variant B session: `sniffer-libpcap`. Conflicto detectado → detiene variant activa + exit 1. Makefile: `sniffer-start` y `sniffer-libpcap-start` llaman al mutex. Nuevo target `sniffer-libpcap-start`.
+- **NOTA:** Nivel 1 provisional. Ver `DEBT-MUTEX-ROBUST-001` post-FEDER.
+- **Test de cierre:** Variant B activa + intento Variant A → violación detectada, Variant B detenida, exit 1. ✅
+
+---
+
+## ✅ CERRADO DAY 141
+
+### Bug Makefile — dependencia seed-client-build implícita
+- **Status:** ✅ CERRADO DAY 141 — **Commit:** `63a37d9d`
+
+### DEBT-PCAP-CALLBACK-LIFETIME-DOC-001 — Contrato lifetime PcapCallbackData
+- **Status:** ✅ CERRADO DAY 141 — **Commit:** `63a37d9d`
+
+### DEBT-VARIANT-B-CONFIG-001 — JSON propio sniffer-libpcap + config-driven main
+- **Status:** ✅ CERRADO DAY 141
+- **Test de cierre:** `make sniffer-libpcap` — 0 warnings. `make test-all` — 9/9 PASSED. ✅
+
+---
+
+## ✅ CERRADO DAY 138
+
+### DEBT-CAPTURE-BACKEND-ISP-001 — CaptureBackend interfaz mínima (ISP)
+- **Status:** ✅ CERRADO DAY 138 — **Commit:** `1a7f723a`
+
+### DEBT-VARIANT-B-PCAP-IMPL-001 — Pipeline completo libpcap
+- **Status:** ✅ CERRADO DAY 138 — **Commits:** `22df0099` + `da1badf7`
+- **Suite 8 tests — 8/8 PASSED en make test-all.**
+
+---
+
 ## ✅ CERRADO DAY 134
 
 ### Pipeline E2E en hardened VM — check-prod-all PASSED
-- **Status:** ✅ CERRADO DAY 134
-- **Fix:** Primer pipeline end-to-end en hardened VM con 5/5 gates verdes. 15 problemas de integración resueltos (vagrant --cwd, AppArmor tunables/global, Falco offline via .deb, macros inline Falco 0.43, cmake flags, pipeline-build PROFILE=production, firewall-build faltante en pipeline-build, prod-sign PEM canónico, ownership root:argus, getcap path, check caps post-Consejo, check-prod-falco API 0.43, permisos sudo).
-- **Commits:** `f256e6f0` + `2e9a5b39`
+- **Status:** ✅ CERRADO DAY 134 — **Commits:** `f256e6f0` + `2e9a5b39`
 
-### DEBT-KERNEL-COMPAT-001
+### DEBT-KERNEL-COMPAT-001 · DEBT-PAPER-FUZZING-METRICS-001 · ADR-040 + ADR-041
 - **Status:** ✅ CERRADO DAY 134
-- **Fix:** `cap_bpf` funciona correctamente con XDP en kernel 6.1.0-44-amd64 (Debian bookworm). `sniffer: cap_net_admin,cap_net_raw,cap_ipc_lock,cap_bpf=eip` — verificado en hardened VM.
-- **Commit:** `2e9a5b39`
-
-### DEBT-PAPER-FUZZING-METRICS-001
-- **Status:** ✅ CERRADO DAY 134
-- **Fix:** Tabla §6.8 con datos reales de tres campañas libFuzzer (DAY 130). `validate_chain_name`: 2.4M runs, 0 crashes, corpus 67, ~80K exec/s. `safe_exec`: 2.6M runs, 0 crashes, corpus 37, 42K exec/s. `validate_filepath`: 282K runs, 0 crashes, corpus 111, 4.6K exec/s. Análisis delta exec/s documentado. Paper actualizado a Draft v18.
-- **Commit:** post-`2e9a5b39`
-
-### ADR-040 + ADR-041 — Integración en BACKLOG + README
-- **Status:** ✅ CERRADO DAY 134
-- **Fix:** ADR-040 ML Plugin Retraining Contract v2 (8/8, 17 enmiendas) + ADR-041 Hardware Acceptance Metrics FEDER (8/8) integrados en BACKLOG.md y README.md. 25 ficheros, 4648 inserciones.
-- **Commit:** `87680d83`
 
 ---
 
 ## ✅ CERRADO DAY 133
 
-### Paper Draft v18 — §6.12 métricas BSR reales
+### Paper Draft v18 · DEBT-PROD-APPARMOR-COMPILER-BLOCK-001 · DEBT-PROD-FALCO-EXOTIC-PATHS-001 · Linux Capabilities
 - **Status:** ✅ CERRADO DAY 133
-- **Fix:** Tabla BSR con métricas medidas: Dev VM (719 pkgs / 5.9 GB / compiladores) vs Hardened VM (304 pkgs / 1.3 GB / NONE). Reducción 58% paquetes, 78% disco. Nota al pie honesta sobre suelo Vagrant (~250 pkgs).
-- **Commit:** `c6e0c9f1` + post-Consejo
-
-### Paper Draft v18 — §6.8 reformulación fuzzing (post-Consejo DAY 133)
-- **Status:** ✅ CERRADO DAY 133
-- **Fix:** Eliminada "Fuzzing misses nothing within CPU time" (Consejo 8/8 unánime — científicamente incorrecta). Sustituida por formulación que reconoce naturaleza estocástica, guía por cobertura, sin garantía de completitud. Añadida `\cite{libfuzzer2016}`.
-- **Commit:** post-Consejo DAY 133
-
-### DEBT-PROD-APPARMOR-COMPILER-BLOCK-001
-- **Status:** ✅ CERRADO DAY 133
-- **Fix:** 6 perfiles AppArmor enforce en `security/apparmor/` (uno por componente). Default-deny con allowlists mínimas. `deny` explícitos mantenidos — claridad auditiva para auditores hospitalarios (decisión founder). Post-Consejo: `cap_sys_admin` → `cap_bpf` en sniffer.
-- **Commit:** `c6e0c9f1` + post-Consejo
-
-### DEBT-PROD-FALCO-EXOTIC-PATHS-001
-- **Status:** ✅ CERRADO DAY 133
-- **Fix:** Falco instalado en hardened VM con `modern_ebpf` driver. 10 reglas aRGus: 7 originales + 3 post-Consejo (`argus_config_modified_unexpected`, `argus_model_or_plugin_replaced`, `argus_apparmor_profile_modified`). Estrategia maduración 3 fases.
-- **Commit:** `c6e0c9f1` + post-Consejo
-
-### DEBT-PROD-FS-MINIMIZATION-001 (parcial)
-- **Status:** ✅ CERRADO DAY 133 (parcial — minbase es deuda futura)
-- **Fix:** Usuario `argus` (system, nologin, no home). `/opt/argus/` ownership estricto. `/tmp` y `/var/tmp` noexec,nosuid,nodev. `seed.bin` 0400. Sin SUID — capabilities via `setcap`. Gate `check-prod-permissions` automatizado.
-- **Pendiente:** imagen minbase x86+ARM (DEBT-PROD-FS-MINIMIZATION-001 → post-FEDER)
-
-### Makefile — targets de producción ADR-030 Variant A
-- **Status:** ✅ CERRADO DAY 133
-- **Fix:** `prod-build-x86`, `prod-collect-libs`, `prod-sign`, `prod-checksums`, `prod-deploy-x86`, `prod-full-x86`. Provisioning: `hardened-provision-all`. Gates: `check-prod-no-compiler` (dpkg+PATH), `check-prod-apparmor`, `check-prod-capabilities`, `check-prod-permissions`, `check-prod-falco`, `check-prod-all`. Scripts en `tools/prod/`.
-- **Commit:** `c6e0c9f1`
-
-### Linux Capabilities — setcap mínimo (post-Consejo DAY 133)
-- **Status:** ✅ CERRADO DAY 133
-- **Decisiones Consejo 8/8:** sniffer: `cap_bpf` reemplaza `cap_sys_admin` (Linux ≥5.8). etcd-server: `cap_net_bind_service` ELIMINADA (2379 > 1024). etcd-server: `cap_ipc_lock` + `LimitMEMLOCK=16M` en systemd. ml-detector, rag-ingester, rag-security: sin capabilities (no-root real).
 
 ---
 
-## ✅ CERRADO DAY 132
+## ✅ CERRADO DAY 130–132
 
-### DEBT-PROD-COMPAT-BASELINE-001
-- **Status:** ✅ CERRADO DAY 132
-- **Fix:** `docs/HARDWARE-REQUIREMENTS.md` — especificaciones mínimas y recomendadas, compatibilidad XDP por driver NIC, paquetes runtime vs prohibidos en producción.
-- **Commit:** `9b3438fb`
-
-### vagrant/hardened-x86/Vagrantfile — ADR-030 Variant A
-- **Status:** ✅ COMPLETADO DAY 133
-- **Fix:** VM Debian 12 + AppArmor enforcing + sin compilador + BSR verificado. Makefile targets completos. AppArmor 6 perfiles. Falco 10 reglas.
-- **Commit:** `c6e0c9f1`
-
-### Paper Draft v17 → v18
-- **Status:** ✅ Draft v18 COMPLETADO DAY 133
-- **Fix:** v18 = v17 + tabla BSR métricas reales (§6.12) + reformulación fuzzing (§6.8 post-Consejo). Compilado Overleaf, 42 páginas.
-
-### README — Prerequisites
-- **Status:** ✅ CERRADO DAY 132
-- **Commit:** `18d8e101` en `main`
-
----
-
-## ✅ CERRADO DAY 130
-
-### DEBT-SYSTEMD-AUTOINSTALL-001
-- **Status:** ✅ CERRADO DAY 130 — **Commit:** `8e57aad2`
-
-### DEBT-SAFE-EXEC-NULLBYTE-001
-- **Status:** ✅ CERRADO DAY 130 — 17/17 GREEN — **Commit:** `c8e293a8`
-
-### DEBT-GITGUARDIAN-YAML-001
-- **Status:** ✅ CERRADO DAY 130 — **Commit:** `06228a67`
-
-### DEBT-FUZZING-LIBFUZZER-001
-- **Status:** ✅ CERRADO DAY 130 (baseline) — 2.4M runs, 0 crashes, corpus 67 ficheros — **Commit:** `f5994c4a`
-
-### DEBT-MARKDOWN-HOOK-001
-- **Status:** ✅ CERRADO DAY 130 — **Commit:** `aab08daa`
-
-### REGLA EMECAS — Keypair activo post-rebuild DAY 133
-`b5b6cbdf67dad75cdd7e3169d837d1d6d4c938b720e34331f8a73f478ee85daa`
-Pipeline 6/6 RUNNING · TEST-INTEG-SIGN 7/7 PASSED · ALL TESTS COMPLETE
+DAY 132: DEBT-PROD-COMPAT-BASELINE-001 · README Prerequisites
+DAY 130: DEBT-SYSTEMD-AUTOINSTALL-001 · DEBT-SAFE-EXEC-NULLBYTE-001 · DEBT-FUZZING-LIBFUZZER-001 · REGLA EMECAS
+**Keypair activo:** `b5b6cbdf67dad75cdd7e3169d837d1d6d4c938b720e34331f8a73f478ee85daa`
 
 ---
 
 ## ✅ CERRADO DAY 124–129
 
 DAY 124: ADR-037 safe_path → v0.5.1-hardened
-DAY 125-126: 8 deudas cerradas · lstat() pre-resolution · prefix fijo · v0.5.2-hardened
-DAY 127: resolve_config() · dev/prod parity · taxonomía safe_path
-DAY 128: Snyk 18 findings triados · 5 property tests · provision portability
-DAY 129: CWE-78 CERRADO · EtcdClientHmac 9/9 · FEDER scope
+DAY 125-126: 8 deudas cerradas · lstat() pre-resolution · prefix fijo
+DAY 127: resolve_config() · taxonomía safe_path
+DAY 128: Snyk 18 findings · 5 property tests
+DAY 129: CWE-78 CERRADO · EtcdClientHmac 9/9
 
 ---
 
-## 🔴 DEUDA ABIERTA — Seguridad imagen de producción (ADR-030)
+## 🔴 DEUDAS ABIERTAS — Seguridad y arquitectura
+
+### DEBT-IRP-NFTABLES-001 — sesión 3/3 pendiente
+**Severidad:** 🔴 Alta — P0 pre-FEDER
+**Estado:** 🟡 60% — sesiones 1/3 y 2/3 CERRADAS — DAY 142
+**Componente:** `firewall-acl-agent` + `tools/argus-network-isolate/` + AppArmor
+
+Pasos 1-6 implementados y verificados en dev VM. Pendiente sesión 3:
+1. Añadir a `isolate.json`: `auto_isolate` (default true), `threat_score_threshold` (0.95), `auto_isolate_event_types` (ransomware, lateral_movement, c2_beacon).
+2. En `firewall-acl-agent`: detectar umbral + tipo superado → `fork()+execv()` a `argus-network-isolate isolate --interface <iface>`.
+3. Test integración: evento sintético score >= 0.95 + tipo correcto → aislamiento automático.
+4. AppArmor profile `enforce` para `argus-network-isolate` (combinar perfiles Gemini + Kimi DAY 142).
+5. Instalar binario en `provision.sh` para hardened VM.
+
+**Decisiones de diseño aprobadas (Consejo 8/8 + founder DAY 142):**
+- `auto_isolate: true` por defecto — instalar y funcionar.
+- Criterio disparo: `threat_score >= 0.95 AND event_type IN (ransomware, lateral_movement, c2_beacon)` — señal multi-componente, nunca umbral único.
+- `fork()+execv()` — el firewall-acl-agent nunca muere.
+- AppArmor `enforce` desde el primer deploy.
+- Rollback actual (eliminar solo `argus_isolate`) suficiente para FEDER.
+
+**ADR relacionado:** ADR-042 IRP
+**Estimación:** 1 sesión (sesión 3/3)
+
+---
+
+### DEBT-IRP-SIGCHLD-001 — Zombie reaper SA_NOCLDWAIT
+**Severidad:** ✅ CERRADA DAY 144
+**Estado:** CERRADO — ver sección DAY 144
+**Componente:** `firewall-acl-agent/src/main.cpp`
+
+`fork()+execv()` sin `wait()` genera zombies acumulados en ataques persistentes.
+Fix: `sigaction(SIGCHLD, SA_NOCLDWAIT)` al inicializar `firewall-acl-agent` —
+el kernel recoge los hijos automáticamente sin handler ni polling.
+Es el mecanismo más cercano al kernel. Una línea. Sin threads adicionales.
+
+**Consejo 8/8 DAY 143:** SA_NOCLDWAIT (Qwen) es la solución más kernel-centric.
+**Test de cierre:** N disparos IRP en loop → `ps aux | grep -c defunct` = 0.
+**Estimación:** 30 minutos pre-merge.
+
+---
+
+### DEBT-IRP-AUTOISO-FALSE-001 — auto_isolate false por defecto
+**Severidad:** ✅ CERRADA DAY 144
+**Estado:** CERRADO — ver sección DAY 144
+**Componente:** `tools/argus-network-isolate/config/isolate.json` + documentación
+
+**Consejo 8/8 DAY 143 — UNÁNIME:** `auto_isolate: false` por defecto en producción
+hospitalaria. Un ventilador mecánico o bomba de infusión no puede quedar aislado
+por señal única sin confirmación humana explícita. "Instalar y funcionar" es válido
+para entornos SOHO — inaceptable para hospitales sin onboarding explícito.
+
+Cambio: `isolate.json` default → `false`. Añadir WARNING prominente al arrancar
+`firewall-acl-agent` con IRP desactivado. Activar requiere acto explícito y consciente
+del administrador tras configurar `whitelist_ips` con activos críticos.
+
+La regla DAY 142 ("auto_isolate: true por defecto") queda **REEMPLAZADA** por esta.
+
+**Test de cierre:** `vagrant destroy && vagrant up && make bootstrap` → IRP arranca
+con `auto_isolate: false` y loguea WARNING visible.
+**Estimación:** 1 hora pre-merge.
+
+---
+
+### DEBT-IRP-BACKUP-DIR-001 — /tmp peligroso para artefactos IRP
+**Severidad:** ✅ CERRADA DAY 144
+**Estado:** CERRADO — ver sección DAY 144
+**Componente:** `tools/argus-network-isolate/isolate.cpp` + AppArmor profile
+
+**Consejo 8/8 DAY 143 — UNÁNIME:** `/tmp/argus-*.nft` es un vector.
+Glob en `/tmp` permite interferencia por race condition o symlink attack.
+
+Fix:
+- Artefactos transaccionales volátiles → `/run/argus/irp/` (tmpfs, desaparece en reboot)
+- Estado persistente → `/var/lib/argus/irp/`
+- Permisos: `0700 argus:argus`
+- AppArmor: eliminar reglas `/tmp/**`, añadir `/run/argus/irp/**` y `/var/lib/argus/irp/**`
+- Falco: vigilar ambas rutas — escritura por proceso no autorizado = alerta
+
+**Test de cierre:** AppArmor en enforce + dry-run IRP → artefactos en `/run/argus/irp/`.
+`ls /tmp/argus-*` vacío.
+**Estimación:** 2 horas pre-merge.
+
+---
+
+### DEBT-IRP-TMPFILES-001 — tmpfiles.d para /run/argus/irp/
+**Severidad:** 🟡 P1 post-merge
+**Estado:** ABIERTO — DAY 144
+**Componente:** `tools/provision.sh` + configuración systemd
+
+`/run/argus/irp/` es tmpfs — desaparece en cada reboot. En producción, el directorio debe recrearse automáticamente al arrancar. Fix: fichero `tmpfiles.d` en `/etc/tmpfiles.d/argus-irp.conf`:d /run/argus/irp 0700 argus argus -O en `provision.sh`: `systemd-tmpfiles --create` tras instalación.
+
+**Test de cierre:** reboot → `/run/argus/irp/` existe con permisos correctos → dry-run IRP PASSED.
+**Estimación:** 30 minutos post-merge.
+
+---
+
+### DEBT-IRP-IPSET-TMP-001 — ipset_wrapper.cpp usa /tmp
+**Severidad:** 🟡 P1 post-merge
+**Estado:** ABIERTO — DAY 144
+**Componente:** `firewall-acl-agent/src/core/ipset_wrapper.cpp`
+
+`ipset_wrapper.cpp` usa `/tmp/ipset_restore.tmp` y `/tmp/ipset_delete.tmp`. Scope distinto al IRP (ipset, no nftables) pero mismo problema de seguridad. Migrar a `/run/argus/` con permisos apropiados.
+
+**Test de cierre:** `grep -r '/tmp' firewall-acl-agent/src/` = 0 resultados (excluir .old/.backup).
+**Estimación:** 1 hora post-merge.
+
+---
+
+### DEBT-IRP-FLOAT-TYPES-001 — Unificar tipos score float/double
+**Severidad:** 🟡 P1 pre-FEDER
+**Estado:** ABIERTO — DAY 143
+**Componente:** `firewall-acl-agent/include/firewall/config_loader.hpp` + `batch_processor.cpp`
+
+El bug IEEE 754 detectado por los tests DAY 143: `static_cast<double>(0.95f)` = `0.9499...`
+Corregido con tolerancia `1e-6` — parche funcional pero no la solución de raíz.
+
+El problema real: `IsolateConfig::threat_score_threshold` es `double` pero
+`Detection::confidence` es `float`. Mezcla de tipos en lógica de decisión crítica.
+
+Preguntas a responder antes del fix:
+1. ¿Qué tipo produce exactamente el ml-detector? ¿float 32-bit o double 64-bit?
+2. ¿Qué precisión tiene el score en el pipeline ZMQ → protobuf → BatchProcessor?
+3. ¿Qué tipo es matemáticamente correcto para el score de un clasificador ML?
+
+**Consejo DAY 143:** Dividido — Claude/Gemini/Grok/DeepSeek prefieren `float` consistente;
+Mistral/Qwen prefieren `double` + tolerancia. ChatGPT propone enteros escalados (uint32_t)
+para sistemas críticos. Resolver con análisis del pipeline completo antes de FEDER
+porque los tests MITRE pueden revelar comportamientos en distribuciones fuera de CIC-IDS-2017.
+
+**Test de cierre:** stress test con CTU-13 + pcap relay + MITRE → 0 disparos IRP
+inesperados por error de precisión numérica.
+**Estimación:** 1 sesión pre-FEDER.
+
+---
+
+### DEBT-IRP-PROB-CONJUNTA-001 — Función probabilidad conjunta multi-señal
+**Severidad:** 🟡 P1 post-FEDER
+**Estado:** ABIERTO — DAY 143
+**Componente:** `firewall-acl-agent/src/core/` — nuevo módulo IrpDecisionEngine
+
+**Consejo 8/8 DAY 143:** Dos señales AND no son suficientes para producción hospitalaria.
+Arquitectura acordada: función de decisión que combina TODAS las señales disponibles
+con sus pesos, produce una probabilidad conjunta, y la decisión queda completamente
+auditada — se sabe exactamente qué señales contribuyeron y con qué peso.
+
+Señales candidatas (no todas obligatorias):
+- score >= threshold (necesaria)
+- event_type IN lista (necesaria)
+- src_ip NOT IN whitelist_assets_criticos (gate de seguridad)
+- N eventos en ventana T segundos (correlación temporal — Qwen)
+- confirmación segundo sensor ±5s (Falco, Suricata — Mistral)
+- segmento de red del activo (Gemini — no escala globalmente)
+
+La función de decisión debe ser: explicable, auditable, publicable en paper.
+La probabilidad conjunta de todas las señales disponibles elimina el umbral binario.
+
+**No implementar Gemini's topología por quirófano** — inviable mantener catálogo
+de todos los hospitales del mundo.
+
+**Registrado como:** IDEA-IRP-DECISION-MATRIX-001 (referencia cruzada DEBT-IRP-MULTI-SIGNAL-001)
+**Test de cierre:** decisión IRP con ≥3 señales → log JSON con contribución de cada señal.
+**Estimación:** 3 sesiones post-FEDER.
+
+---
+
+### DEBT-PROTO-DETECTION-TYPES-001 — Ampliar enum DetectionType
+**Severidad:** 🟢 Baja — post-fase-MITRE/CTF
+**Estado:** ABIERTO — DAY 143
+**Componente:** `protobuf/network_security.proto`
+
+`DetectionType` solo modela 4 tipos: DDOS, RANSOMWARE, SUSPICIOUS_TRAFFIC, INTERNAL_THREAT.
+El mapeo actual en `should_auto_isolate()` usa aproximaciones:
+`DETECTION_INTERNAL_THREAT → "lateral_movement"` y
+`DETECTION_SUSPICIOUS_TRAFFIC → "c2_beacon"`.
+
+Ampliar cuando el pipeline enfrente MITRE ATT&CK y CTFs reales y se observen
+tipos de ataque no modelados. No antes — sin datos no hay diseño.
+
+Opción B (ampliar proto) descartada conscientemente DAY 143 para no romper
+compatibilidad con v0.6.0-hardened-variant-a.
+
+**Test de cierre:** pipeline contra MITRE ATT&CK → 0 eventos "tipo no mapeado" en logs IRP.
+**Estimación:** 1 sesión post-MITRE.
+
+
+---
+
+### DEBT-ETCD-HA-QUORUM-001 — etcd-server en HA con quorum
+**Severidad:** 🔴 Alta — P0 post-FEDER (OBLIGATORIO, no opcional)
+**Estado:** ABIERTO — DAY 142
+**Componente:** `etcd-server/` — arquitectura multi-nodo
+
+etcd-server actual es single-node. Si cae, ningún componente puede registrarse ni coordinarse — y ningún mecanismo de mutex entre componentes puede ser robusto. Diseño requerido:
+- Múltiples instancias etcd-server con quorum (Raft o equivalente).
+- Componentes se registran ante el primer etcd disponible al arrancar.
+- Al recuperarse un nodo etcd caído, se une al quorum y sincroniza estado.
+- Quorum garantiza que todos los componentes registrados y vivos compartan el mismo estado.
+- Líder elegido — si cae, quorum inmediato para elegir nuevo líder.
+- Nuevo etcd que llega se une al quorum y, cuando le toque, es el nuevo líder.
+
+**Nota:** No es deuda "eterna" — es deuda crítica que hay que cerrar. Es prerequisito de `DEBT-MUTEX-ROBUST-001` y de cualquier coordinación fiable entre componentes en producción.
+
+**Test de cierre:** `make hardened-full` con 3 instancias etcd. Kill del líder → quorum en < 5s → componentes siguen operativos → nuevo líder elegido.
+**Estimación:** 3-4 sesiones post-FEDER
+
+---
+
+### DEBT-MUTEX-ROBUST-001 — Mutex robusto entre variantes sniffer
+**Severidad:** 🟡 P1 post-FEDER
+**Estado:** ABIERTO — DAY 142 (Nivel 1 via tmux cerrado)
+**Componente:** `scripts/check-sniffer-mutex.sh` + coordinación etcd
+
+La implementación actual via sesiones tmux (Nivel 1) es provisional. No es robusta en producción — depende de una herramienta de usuario, no de un mecanismo de coordinación del sistema. Alternativas a evaluar para Nivel 2: `flock` (lockfile), PID file en `/var/run/argus/`, o coordinación via etcd cuando esté en HA (`DEBT-ETCD-HA-QUORUM-001`). La solución definitiva no puede depender de una única fuente de verdad que pueda caer.
+
+**Test de cierre:** exclusión mutua funciona incluso si tmux no está disponible o etcd está caído.
+**Estimación:** 1 sesión post-FEDER (tras DEBT-ETCD-HA-QUORUM-001)
+
+---
+
+### DEBT-IRP-MULTI-SIGNAL-001 — Criterio de disparo multi-señal IRP
+**Severidad:** 🟡 P1 post-FEDER
+**Estado:** ABIERTO — DAY 142
+**Componente:** `firewall-acl-agent` + `isolate.json`
+
+Para FEDER: dos condiciones AND mínimas (score + event_type). Para producción hospitalaria real: señal más rica. Contexto: monitores de quirófano, bombas de infusión y ventiladores mecánicos pueden estar en la intranet/DMZ del hospital — `firewall-acl-agent` en esos nodos tiene sentido. Un falso positivo que aísle un equipo médico es inaceptable. El criterio de disparo debe ser explicable, auditable y resistente a falsos positivos transitorios.
+
+**Diseño futuro (IDEA-IRP-DECISION-MATRIX-001):** matriz de decisión con score + tipo + ventana temporal + potencialmente whitelist de dispositivos críticos.
+
+**Nota sobre Platt scaling:** Qwen (Consejo DAY 142) advierte que sin calibración del score (Platt scaling o isotonic regression), el valor 0.95 no tiene significado estadístico real. Registrar como sub-tarea de DEBT-ADR040-002.
+
+**Estimación:** 2 sesiones post-FEDER
+
+---
+
+### DEBT-IRP-LAST-KNOWN-GOOD-001 — Rollback con estado persistente
+**Severidad:** 🟢 Baja post-FEDER
+**Estado:** ABIERTO — DAY 142
+**Componente:** `tools/argus-network-isolate/isolate.cpp`
+
+El rollback actual elimina solo la tabla `argus_isolate` — correcto y suficiente para FEDER. En entornos con rulesets nftables propios del cliente (hospitales con segmentación VLAN, QoS, reglas personalizadas), el rollback podría dejar el sistema en estado inconsistente. Solución: `/etc/ml-defender/firewall-acl-agent/last-known-good.nft` actualizado periódicamente, firmado Ed25519. Restauración selectiva en rollback.
+
+**Estimación:** 1 sesión post-FEDER
+
+---
+
+### DEBT-IRP-QUEUE-PROCESSOR-001
+**Severidad:** 🔴 Alta — post-merge
+**Estado:** ABIERTO — DAY 136
+**Componente:** ADR-042 IRP
+**Descripción:** Cola irp-queue sin límites ni procesador systemd dedicado.
+**Estimación:** 1 sesión (junto a IRP-NFTABLES sesión 3)
+
+---
+
+### DEBT-EMECAS-AUTOMATION-001
+**Severidad:** 🟡 Media
+**Estado:** ABIERTO — DAY 140
+**Componente:** Makefile raíz + directorio logs/
+Targets `make emecas-dev/prod-x86/prod-arm64` con log automático fechado.
+**Estimación:** 1 sesión
+
+---
+
+### DEBT-LLAMA-API-UPGRADE-001
+**Severidad:** 🟡 Media — API deprecated, no CVE activo
+**Estado:** ABIERTO — DAY 140
+**Componente:** `rag/src/llama_integration_real.cpp:29`
+**Estimación:** 1 sesión post-FEDER (salvo CVE)
+
+---
+
+### DEBT-ODR-CI-GATE-001
+**Severidad:** 🔴 Alta
+**Estado:** ABIERTO — DAY 140
+**Componente:** Jenkinsfile + `make check-odr`
+**Estimación:** 1 sesión post-hardware FEDER
+
+---
+
+### DEBT-GENERATED-CODE-CI-001
+**Severidad:** 🟡 Media
+**Estado:** ABIERTO — DAY 140
+**Estimación:** 1 sesión post-hardware
+
+---
+
+### DEBT-MAYBE-UNUSED-MIGRATION-001
+**Severidad:** 🟢 Baja
+**Estado:** ABIERTO — DAY 140
+**Estimación:** 1 sesión
+
+---
+
+### DEBT-JENKINS-SEED-DISTRIBUTION-001
+**Severidad:** 🔴 Alta | **Estado:** ABIERTO — DAY 136
+
+### DEBT-CRYPTO-MATERIAL-STORAGE-001
+**Severidad:** 🔴 Alta | **Estado:** ABIERTO — DAY 136
 
 ### DEBT-PROD-APT-SOURCES-INTEGRITY-001
-**Severidad:** 🔴 Crítica | **Bloqueante:** Sí | **Target:** feature/adr030-variant-a
+**Severidad:** 🔴 Crítica | **Estado:** ABIERTO
 
-SHA-256 de `sources.list` firmado en imagen. Si cambia → fail-closed (default) o fail-warn configurable. AppArmor deny de escritura en `/etc/apt/`. Falco alerta si cualquier proceso escribe en `/etc/apt/`.
+### DEBT-SEEDS-SECURE-TRANSFER-001 · DEBT-SEEDS-LOCAL-GEN-001 · DEBT-SEEDS-BACKUP-001
+**Severidad:** 🔴 Alta | **Corrección:** post-FEDER
 
-**Test de cierre:** Modificar `sources.list` en VM hardened → pipeline no arranca. Restaurar → arranca normalmente.
+### DEBT-KEY-SEPARATION-001 · DEBT-DEBIAN13-UPGRADE-001 · DEBT-PROD-APPARMOR-PORTS-001
+**Severidad:** 🟡 Media | **Target:** post-FEDER
 
----
-
-### DEBT-DEBIAN13-UPGRADE-001
-**Severidad:** 🟡 Media | **Bloqueante:** No | **Target:** post-FEDER
-
-Documentar y validar upgrade path Debian 12 (bookworm) → Debian 13 (trixie) para bare-metal hospitalario.
+### DEBT-PROD-FALCO-RULES-EXTENDED-001 · DEBT-APT-TIMEOUT-CONFIG-001 · DEBT-FEDER-DEMO-SCRIPT-001 · DEBT-CHECK-PROD-SEED-CONDITIONAL-001
+**Severidad:** 🟡 Media | **Target:** varios
 
 ---
-
-### DEBT-PAPER-FUZZING-METRICS-001
-**Severidad:** 🟡 Media | **Bloqueante:** Sí (pre-arXiv) | **Target:** DAY 134
-
-Tabla completa de métricas §6.8 con datos reales DAY 130. Reformulación de la frase: CERRADA (post-Consejo DAY 133). Pendiente: recuperar métricas exactas de `validate_filepath` y `safe_exec`.
-
----
-
-### DEBT-KEY-SEPARATION-001 *(nueva — DAY 133)*
-**Severidad:** 🟡 Media | **Bloqueante:** No | **Target:** post-FEDER
-**Origen:** Consejo 8/8 DAY 133 — unánime
-
-Separar keypairs Ed25519: `pipeline-signing.sk/pk` (binarios) vs `plugin-signing.sk/pk` (plugins). Actualmente mismo keypair para ambos dominios. Blast radius reducido. Rotación independiente.
-
-**Fix:** Generar `pipeline-signing.sk/pk` en `provision.sh`. Documentar en `docs/SECURITY-KEY-MANAGEMENT.md`.
-
----
-
-### DEBT-KERNEL-COMPAT-001 *(nueva — DAY 133)*
-**Severidad:** 🟡 Media | **Bloqueante:** No | **Target:** DAY 134
-**Origen:** Consejo 8/8 DAY 133
-
-Verificar que `cap_bpf` funciona correctamente para XDP en hardened VM (Debian bookworm kernel 6.1). `deploy-hardened.sh` tiene detección automática y fallback documentado.
-
-**Test de cierre:** `ip link set dev eth1 xdp obj sniffer.bpf.o` exitoso con `cap_bpf+cap_net_admin` sin `cap_sys_admin`.
-
----
-
-### DEBT-PROD-APPARMOR-PORTS-001 *(nueva — DAY 133)*
-**Severidad:** 🟢 Baja | **Bloqueante:** No | **Target:** post-estabilización JSON
-**Decisión founder:** No implementar hasta que los puertos sean fuente de verdad compartida entre JSON y perfil AA. "JSON es la ley."
-
----
-
-### DEBT-PROD-FALCO-RULES-EXTENDED-001 *(nueva — DAY 133)*
-**Severidad:** 🟡 Media | **Bloqueante:** No | **Target:** DAY 135
-
-Reglas Falco propuestas en Consejo DAY 133 no adoptadas: ptrace (Gemini), DNS tunneling (Kimi), conexiones salientes inesperadas (ChatGPT, Mistral), `/dev/mem` (Mistral), fork bombs (Mistral).
-
----
-
-
----
-
-### DEBT-ADR040-001 a 012 — ML Plugin Retraining Contract *(nuevas — DAY 134)*
-**Severidad:** 🟡 Media | **Bloqueante:** No | **Target:** post-FEDER (implementación Año 1)
-**Origen:** ADR-040 v2 — Consejo 8/8 DAY 134 (17 enmiendas, aprobado unánime)
-
-| ID | Descripción | Target |
-|----|-------------|--------|
-| DEBT-ADR040-001 | Golden set v1 (≥50K flows, 70/30, Parquet, SHA-256 embebido en plugin) | v1.0 — pre-FEDER si posible |
-| DEBT-ADR040-002 | Verificar que ml-detector emite `confidence_score ∈ [0,1]` en salida ZeroMQ | v1.0 |
-| DEBT-ADR040-003 | `walk_forward_split.py` — `--split-field timestamp_first_packet`, mín. 3 ventanas, KS drift | v1.1 |
-| DEBT-ADR040-004 | `check_guardrails.py` — Recall −0.5pp / F1 −2pp / FPR +1pp / latencia p99 +10% → exit 1 | v1.1 |
-| DEBT-ADR040-005 | Integrar guardrail en proceso de firma Ed25519 (ADR-025) — `prod-sign` invoca guardrail | v1.1 |
-| DEBT-ADR040-006 | IPW + uncertainty sampling (P≈0.5) en rag-ingester, ratio adaptativo [3%-10%] por drift | v1.2 |
-| DEBT-ADR040-007 | Interfaz web revisión exploración en rag-security — etiquetado manual del 5% (Año 1) | v1.2 |
-| DEBT-ADR040-008 | Informe diversidad por ciclo: Shannon entropy, MITRE ATT&CK coverage %, novelty score | v1.2 |
-| DEBT-ADR040-009 | Competición algoritmos: XGBoost vs CatBoost vs LightGBM vs RF (multicriterio, una vez) | pre-lock-in |
-| DEBT-ADR040-010 | Dataset lineage en metadatos del plugin (hash dataset + golden set + git commits) | v1.1 |
-| DEBT-ADR040-011 | Canary deployment: 5-10% tráfico 24h antes de 100% (manual Año 1, flota Año 2) | v1.2 |
-| DEBT-ADR040-012 | `docs/GOLDEN-SET-REGISTRY.md` con hash v1 + proceso evolución controlada | v1.0 |
-
-**Prerequisito crítico (enmienda Claude, DAY 134):** IPW no es implementable sin `confidence_score`. DEBT-ADR040-002 debe resolverse antes de DEBT-ADR040-006.
-
-**Test de cierre DEBT-ADR040-004:** `make retrain-eval PLUGIN=candidate.ubj` → exit 1 ante regresión. `make prod-sign` no ejecuta si guardrail falla.
-
----
-
-### DEBT-ADR041-001 a 006 — Hardware Acceptance Metrics FEDER *(nuevas — DAY 134)*
-**Severidad:** 🟡 Media | **Bloqueante:** No | **Target:** pre-FEDER, deadline 22 sep 2026
-**Origen:** ADR-041 — Consejo 8/8 DAY 134
-
-| ID | Descripción | Estado |
-|----|-------------|--------|
-| DEBT-ADR041-001 | Subconjunto pcap CTU-13 benchmark versionado con SHA-256 (`ctu13-neris-benchmark.pcap`) | ⏳ PENDIENTE |
-| DEBT-ADR041-002 | `make golden-set-eval ARCH=$(uname -m)` — exit 0 dentro de tolerancia, exit 1 regresión | ⏳ PENDIENTE (depende ADR-040) |
-| DEBT-ADR041-003 | `make feder-demo` — suite completa desde VM fría, <30 min, sin trucos pregrabados | ⏳ PENDIENTE |
-| DEBT-ADR041-004 | Compra hardware x86 (NUC/mini-PC ~300€, NIC con soporte XDP nativo — mlx5/i40e/ixgbe) | ⏳ post-métricas definidas |
-| DEBT-ADR041-005 | Compra Raspberry Pi 4/5 | ⏳ post-métricas definidas |
-| DEBT-ADR041-006 | Primera ejecución protocolo completo en hardware físico | ⏳ post-compra hardware |
-
-**Nota DeepSeek:** Verificar driver NIC antes de comprar x86. Sin XDP nativo el delta científico A/B se distorsiona.
-**Nota DeepSeek:** Temperatura ARM ≤75°C sin ventilador — gate no negociable para armarios hospitalarios 24/7.
-**Tolerancias ML:** x86 TOLERANCE=0.0000 · ARM TOLERANCE=0.0005 (NEON vs AVX2).
-
----
-
-### DEBT-EMECAS-HARDENED-001 *(nueva — DAY 134, Consejo síntesis)*
-**Severidad:** 🔴 Crítica | **Bloqueante:** Sí | **Target:** DAY 135
-**Origen:** Consejo síntesis 8/8 DAY 134
-
-Implementar `make hardened-full` como EMECAS sagrado de la hardened VM:
-- Fail-fast obligatorio (`set -e`)
-- Siempre incluye `vagrant destroy -f` al inicio
-- Gates `check-prod-all` siempre completos, nunca cacheados
-- Target paralelo `make hardened-redeploy` (sin destroy, para iteración en desarrollo de perfiles AppArmor/Falco)
-- Documentar en `docs/EMECAS-hardened.md`: cuándo usar cada target
-
-**Test de cierre:** `make hardened-full` desde VM destruida → check-prod-all PASSED en <45 min. Segunda ejecución de `make hardened-full` también PASSED (reproducibilidad).
-
----
-
-### DEBT-VENDOR-FALCO-001 *(nueva — DAY 134, Consejo síntesis)*
-**Severidad:** 🟡 Media | **Bloqueante:** No | **Target:** DAY 135
-**Origen:** Consejo síntesis 8/8 DAY 134
-
-Formalizar gestión de artefactos binarios de terceros:
-- Directorio `dist/vendor/` gitignored
-- `dist/vendor/CHECKSUMS` committeado con SHA-256 de cada artefacto
-- `make vendor-download` descarga y verifica hash — si no coincide → abort
-- Falco .deb actual (`falco_0.43.1_amd64.deb`) mover a `dist/vendor/`
-- Documentar en `docs/VENDOR-ARTIFACTS.md`
-
-**Test de cierre:** `make vendor-download` en repo limpio descarga y verifica Falco .deb. Hash incorrecto → exit 1.
-
----
-
-### DEBT-SEEDS-DEPLOY-001 *(nueva — DAY 134, Consejo síntesis)*
-**Severidad:** 🟡 Media | **Bloqueante:** No | **Target:** DAY 135
-**Origen:** Consejo síntesis 7/8 DAY 134
-
-Crear target `make prod-deploy-seeds` para transferencia explícita de semillas desde dev VM a hardened VM en el momento del deploy real:
-- Usar `scp -F vagrant-ssh-config` (REGLA PERMANENTE DAY 129)
-- Permisos `0400 argus:argus` en destino
-- Convertir WARNs de `seed.bin no existe` en `check-prod-permissions` a INFO documentados
-- La ausencia de seeds en EMECAS es estado correcto por diseño
-
-**Test de cierre:** `make prod-deploy-seeds` → seeds en `/etc/ml-defender/*/seed.bin` con permisos correctos → `check-prod-permissions` sin WARNs.
-
----
-
-### DEBT-CONFIDENCE-SCORE-001 *(nueva — DAY 134, Consejo síntesis)*
-**Severidad:** 🔴 Crítica | **Bloqueante:** Sí (prerequisito ADR-040 Regla 4) | **Target:** DAY 135
-**Origen:** Consejo síntesis 8/8 DAY 134
-
-Verificar que ml-detector emite `confidence_score ∈ [0,1]` en salida ZeroMQ antes de implementar IPW (DEBT-ADR040-006):
-- **Paso 1 — Inspección estática:** `scripts/check-confidence-score.sh` — verifica campo en `.proto` y asignación en código fuente
-- **Paso 2 — Test de integración:** `tests/integration/test_confidence_score.py` — captura mensaje ZeroMQ real con golden pcap determinista, verifica presencia + rango + variabilidad (no constante entre benign/attack)
-- Si el campo no existe → DEBT-ADR040-002 abierto, IPW bloqueado
-- Si el campo existe pero es constante → bug de implementación, requiere fix antes de IPW
-
-**Test de cierre:** Ambos scripts pasan. Score varía entre flows benignos y maliciosos. DEBT-ADR040-002 marcado como CERRADO solo cuando ambos pasen.
-
-
 
 ## 🔵 BACKLOG — Deuda de seguridad crítica (pre-producción)
 
 | ID | Tarea | Test de cierre | Feature destino |
 |----|-------|---------------|----------------|
-| **DEBT-SAFE-PATH-RESOLVE-MODEL-001** | `resolve_model()` — primitiva futura para modelos firmados Ed25519 | `resolve_model()` + test RED→GREEN | feature/adr038-acrl |
-| **DEBT-CRYPTO-003a** | mlock() + explicit_bzero(seed) post-derivación HKDF | Valgrind/ASan: seed no permanece en heap | feature/crypto-hardening |
+| **DEBT-SAFE-PATH-RESOLVE-MODEL-001** | `resolve_model()` para modelos firmados Ed25519 | test RED→GREEN | feature/adr038-acrl |
+| **DEBT-CRYPTO-003a** | mlock() + explicit_bzero(seed) post-derivación HKDF | Valgrind/ASan | feature/crypto-hardening |
 | **DEBT-SNIFFER-SEED** | Unificar sniffer bajo SeedClient | sniffer arranca con SeedClient | feature/crypto-hardening |
-| **DEBT-NATIVE-LINUX-BOOTSTRAP-001** | README + make deps-native para bootstrap sin Vagrant | make deps-native verde en Ubuntu 22.04 | post-FEDER |
+| **DEBT-NATIVE-LINUX-BOOTSTRAP-001** | README + make deps-native sin Vagrant | make deps-native verde en Ubuntu 22.04 | post-FEDER |
+
+---
+
+## 📋 BACKLOG — ADR-040 y ADR-041
+
+### DEBT-ADR040-001 a 012 — ML Plugin Retraining Contract
+**Target:** post-FEDER (implementación Año 1) | **Consejo 8/8 DAY 134**
+
+| ID | Descripción | Target |
+|----|-------------|--------|
+| DEBT-ADR040-001 | Golden set v1 (≥50K flows, Parquet, SHA-256 embebido en plugin) | v1.0 |
+| DEBT-ADR040-002 | confidence_score ∈ [0,1] en salida ZeroMQ + Platt scaling | v1.0 |
+| DEBT-ADR040-003 | walk_forward_split.py — mín. 3 ventanas, KS drift | v1.1 |
+| DEBT-ADR040-004 | check_guardrails.py — Recall −0.5pp / F1 −2pp → exit 1 | v1.1 |
+| DEBT-ADR040-005 | Guardrail integrado en firma Ed25519 (ADR-025) | v1.1 |
+| DEBT-ADR040-006 | IPW + uncertainty sampling (P≈0.5), ratio [3%-10%] | v1.2 |
+| DEBT-ADR040-007 | Interfaz web revisión exploración en rag-security | v1.2 |
+| DEBT-ADR040-008 | Informe diversidad por ciclo: Shannon entropy, ATT&CK coverage | v1.2 |
+| DEBT-ADR040-009 | Competición algoritmos: XGBoost vs CatBoost vs LightGBM vs RF | pre-lock-in |
+| DEBT-ADR040-010 | Dataset lineage en metadatos del plugin | v1.1 |
+| DEBT-ADR040-011 | Canary deployment: 5-10% tráfico 24h antes de 100% | v1.2 |
+| DEBT-ADR040-012 | docs/GOLDEN-SET-REGISTRY.md | v1.0 |
+
+### DEBT-ADR041-001 a 006 — Hardware Acceptance Metrics FEDER
+**Target:** pre-FEDER, deadline 22 sep 2026 | **Consejo 8/8 DAY 134**
+
+| ID | Descripción | Estado |
+|----|-------------|--------|
+| DEBT-ADR041-001 | pcap CTU-13 benchmark versionado con SHA-256 | ⏳ |
+| DEBT-ADR041-002 | make golden-set-eval ARCH=$(uname -m) | ⏳ |
+| DEBT-ADR041-003 | make feder-demo — suite completa <30 min | ⏳ |
+| DEBT-ADR041-004 | Compra hardware x86 (NUC, NIC XDP nativo) | ⏳ |
+| DEBT-ADR041-005 | Compra Raspberry Pi 4/5 | ⏳ |
+| DEBT-ADR041-006 | Ejecución protocolo completo en hardware físico | ⏳ |
+
+---
+
+## 📋 BACKLOG — Benchmarks Empíricos (FEDER Year 1)
+
+### BACKLOG-ZMQ-TUNING-001
+**Estado:** ⏳ BACKLOG | **Prioridad:** P1 — Prerequisito de BENCHMARK-CAPACITY
+**Bloqueado por:** ADR-029 Variant A + Variant B estables
+
+### BACKLOG-BENCHMARK-CAPACITY-001
+**Estado:** ⏳ BACKLOG | **Prioridad:** P1 — FEDER Year 1 Deliverable
+**Bloqueado por:** BACKLOG-ZMQ-TUNING-001 + hardware físico
+
+### BACKLOG-BUILD-WARNING-CLASSIFIER-001
+**Estado:** ⏳ BACKLOG | **Prioridad:** Post-FEDER
+**Decisión Consejo DAY 141:** script grep/awk determinista. Workaround actual: `grep 'warning:' output.md | grep -v 'defender:'`
 
 ---
 
@@ -344,24 +626,41 @@ Verificar que ml-detector emite `confidence_score ∈ [0,1]` en salida ZeroMQ an
 
 | ID | Tarea | Gates mínimos |
 |----|-------|--------------|
-| **DEBT-PENTESTER-LOOP-001** | ACRL: Caldera → eBPF capture → XGBoost warm-start → Ed25519 sign → hot-swap | G1: reproducibilidad · G2: ground-truth · G3: ≥3 ATT&CK · G4: RFC-válido · G5: sandbox |
+| **DEBT-PENTESTER-LOOP-001** | ACRL: Caldera → eBPF → XGBoost warm-start → Ed25519 → hot-swap | G1–G5 sandbox |
 | **ADR-038** | ACRL ADR formal | Aprobado por Consejo |
-| **ADR-025-EXT-001** | Emergency Patch Protocol — Plugin Unload vía mensaje firmado | TEST-INTEG-SIGN-8/9/10 RED→GREEN | post-FEDER |
+| **ADR-025-EXT-001** | Emergency Patch Protocol — Plugin Unload vía mensaje firmado | TEST-INTEG-SIGN-8/9/10 RED→GREEN |
 
 ### Variantes de producción
 
 | Variante | Tarea | Feature destino |
 |----------|-------|----------------|
-| **aRGus-production x86** | Pipeline E2E en hardened VM · check-prod-all verde | feature/adr030-variant-a |
+| **aRGus-production x86** | Pipeline E2E hardened · check-prod-all verde | feature/adr030-variant-a |
 | **aRGus-production arm64** | Imagen Debian arm64 + AppArmor + Vagrantfile | feature/production-images |
-| **aRGus-seL4** | kernel seL4, libpcap, sniffer monohilo. Branch independiente. | feature/sel4-research |
+| **aRGus-seL4** | Kernel seL4, libpcap, sniffer monohilo. Branch independiente. | feature/sel4-research |
 
-### Paper arXiv:2604.04952
+---
 
-| Tarea | Target |
-|-------|--------|
-| Tabla métricas fuzzing §6.8 (datos reales DAY 130) | DAY 134 |
-| arXiv replace v15 → v18 | post DAY 134 |
+## BACKLOG-FEDER-001
+
+**Estado:** PENDIENTE — bloqueado por prerequisites técnicos
+**Contacto:** Andrés Caro Lindo — UEx/INCIBE — andresc@unex.es
+**Deadline límite:** 22 septiembre 2026 | **Go/no-go técnico:** 1 agosto 2026
+**Emails enviados DAY 141:** hardware FEDER (RPi5+N100+switch) + scope standalone vs federado
+
+### Gate de entrada
+
+- [x] ADR-026 mergeado a main (XGBoost F1=0.9978)
+- [x] ADR-030 Variant A infraestructura completa (DAY 133)
+- [x] Pipeline E2E en hardened VM verde (`make check-prod-all`) — DAY 134 ✅
+- [x] DEBT-VARIANT-B-BUFFER-SIZE-001 implementada ✅ DAY 142
+- [ ] ADR-030 Variant B (ARM64) estable
+- [ ] DEBT-IRP-NFTABLES-001 sesión 3/3 — integración firewall-acl-agent
+- [ ] Demo técnica grabable < 10 minutos (`scripts/feder-demo.sh`)
+- [ ] ADR-041 protocolo hardware: métricas validadas en x86 + ARM (`make feder-demo`)
+- [ ] Golden set v1 creado y versionado (DEBT-ADR040-001)
+- [ ] BACKLOG-ZMQ-TUNING-001 concluido
+- [ ] BACKLOG-BENCHMARK-CAPACITY-001 concluido (FEDER Year 1 Deliverable)
+- [ ] Clarificación scope con Andrés: NDR standalone vs federación (antes julio 2026)
 
 ---
 
@@ -369,40 +668,48 @@ Verificar que ml-detector emite `confidence_score ∈ [0,1]` en salida ZeroMQ an
 
 | Decisión | Resolución | DAY |
 |---|---|---|
-| **Test RED→GREEN obligatorio** | Todo fix de seguridad requiere test de demostración antes del merge. Sin excepciones. | Consejo 7/7 · DAY 124 |
-| **Property test obligatorio** | Todo fix de seguridad incluye property test de invariante si aplica. | Consejo 8/8 · DAY 125 |
-| **Symlinks en seeds: NO** | resolve_seed(): lstat() ANTES de resolve(). Sin symlinks, sin flag. | Consejo 8/8 · DAY 125-126 |
-| **ConfigParser prefix fijo** | allowed_prefix explícito, default /etc/ml-defender/. Nunca derivado del input. | Consejo 8/8 · DAY 125-126 |
+| **Test RED→GREEN obligatorio** | Todo fix de seguridad requiere test antes del merge. | Consejo 7/7 · DAY 124 |
+| **Property test obligatorio** | Todo fix de seguridad incluye property test si aplica. | Consejo 8/8 · DAY 125 |
+| **Symlinks en seeds: NO** | resolve_seed(): lstat() ANTES de resolve(). | Consejo 8/8 · DAY 125-126 |
+| **ConfigParser prefix fijo** | allowed_prefix explícito, default /etc/ml-defender/. | Consejo 8/8 · DAY 125-126 |
 | **resolve_config() para configs** | lexically_normal() verifica prefix ANTES de seguir symlinks. | DAY 127 |
 | **Taxonomía safe_path: 3 primitivas activas** | resolve() · resolve_seed() · resolve_config(). | Consejo 8/8 · DAY 127 |
 | **CWE-78 execve()** | execv() sin shell. | Consejo 8/8 · DAY 128 |
 | **RULE-SCP-VM-001** | scp/vagrant scp. Prohibido pipe zsh. | Consejo 8/8 · DAY 129 |
 | **REGLA EMECAS** | vagrant destroy -f && vagrant up && make bootstrap && make test-all. | DAY 130 |
-| **AppArmor como primera línea BSR** | AppArmor bloquea compiladores. check-prod-no-compiler es auditoría, no defensa. | DAY 132 — founder |
-| **Falco para paths exóticos** | AppArmor previene; Falco detecta. | DAY 132 — founder |
-| **FS de producción mínimo** | /tmp noexec. Usuario argus no-root. | DAY 132 — founder |
-| **apt sources integrity** | SHA-256 firmado. Si cambia: fail-closed. | DAY 132 — founder |
-| **Makefile raíz con prefijo prod-** | Guard _check-dev-env. | Consejo 8/8 · DAY 132 |
-| **cap_bpf reemplaza cap_sys_admin** | Linux ≥5.8: cap_bpf para eBPF. cap_sys_admin prohibida si evitable. | Consejo 8/8 · DAY 133 |
+| **AppArmor como primera línea BSR** | AppArmor bloquea compiladores. check-prod-no-compiler es auditoría. | DAY 132 — founder |
+| **cap_bpf reemplaza cap_sys_admin** | Linux ≥5.8: cap_bpf para eBPF. | Consejo 8/8 · DAY 133 |
 | **cap_net_bind_service eliminada** | Puerto 2379 > 1024. Innecesaria. | Consejo 8/8 · DAY 133 |
-| **LimitMEMLOCK en systemd** | etcd-server: LimitMEMLOCK=16M. No cap_sys_resource para seed de 32 bytes. | Consejo 8/8 · DAY 133 |
-| **deny explícitos en AppArmor** | Mantener — claridad auditiva + defensa ante cambios futuros en abstractions/base. | Founder · DAY 133 |
-| **network inet tcp sin restricción** | ZeroMQ usa puertos configurables via JSON. DEBT-PROD-APPARMOR-PORTS-001. | Founder · DAY 133 |
-| **Keypairs separados post-FEDER** | DEBT-KEY-SEPARATION-001. No bloquea DAY 134. | Consejo 8/8 · DAY 133 |
-| **"Fuzzing misses nothing" ELIMINADA** | Frase incorrecta. Fuzzing es estocástico, no exhaustivo. | Consejo 8/8 · DAY 133 |
-| **Walk-forward obligatorio (ADR-040)** | K-fold prohibido. Split sobre `timestamp_first_packet` ordenado. Mín. 3 ventanas. | ADR-040 · Consejo 8/8 · DAY 134 |
-| **Golden set inmutable (ADR-040)** | ≥50K flows, SHA-256 embebido en plugin firmado. Evolución controlada, solapamiento 6 meses. | ADR-040 · Consejo 8/8 · DAY 134 |
-| **Guardrail asimétrico Ed25519 (ADR-040)** | Recall −0.5pp (más restrictivo). F1 −2pp. FPR +1pp. Latencia p99 +10%. Exit 1 = no firma. | ADR-040 · Consejo 8/8 · DAY 134 |
-| **IPW + uncertainty sampling (ADR-040)** | 5% exploración (P≈0.5). Ratio adaptativo [3%-10%] por drift. Memory replay buffer. | ADR-040 · Consejo 8/8 · DAY 134 |
-| **Competición algoritmos pre-lock-in (ADR-040)** | Multicriterio: Recall 40% + F1 25% + latencia 20% + tamaño 10% + carga 5%. Una sola vez. | ADR-040 · Consejo 8/8 · DAY 134 |
-| **Dataset lineage obligatorio (ADR-040)** | Hash dataset + golden set + features_version + git commits. Sin lineage = no firma. | ADR-040 · Consejo 8/8 · DAY 134 |
-| **Niveles despliegue FEDER (ADR-041)** | Nivel 1 (RPi4/5, ≤50 usuarios) + Nivel 2 (x86, 50-200). Demo mínima: ambos simultáneos. | ADR-041 · Consejo 8/8 · DAY 134 |
-| **Latencia end-to-end como métrica primaria (ADR-041)** | Captura → alerta → iptables efectiva. Más relevante que latencia de detección aislada. | ADR-041 · DeepSeek · DAY 134 |
-| **Temperatura ARM como gate (ADR-041)** | ≤75°C sin ventilador. Crítica para armarios hospitalarios 24/7. | ADR-041 · DeepSeek · DAY 134 |
-| **Pipeline evaluación híbrido (ADR-040)** | Scripts en repo (local Vagrant). CI = mismo código, segunda entrada. Opción A recomendada FEDER. | ADR-040 · Consejo 6/7 · DAY 134 |
-| **Falco modern_ebpf driver** | Correcto para 2026. kmod en deprecación. | Consejo 8/8 · DAY 133 |
-| **10 reglas Falco aRGus** | 7 originales + config tamper + model/plugin replace + AA profile tamper. | Consejo 8/8 · DAY 133 |
-| **Estrategia maduración AppArmor+Falco** | complain→enforce en paralelo. 30 min sin FP antes de pasar a enforce+CRITICAL. | Consejo 8/8 · DAY 133 |
+| **LimitMEMLOCK en systemd** | etcd-server: LimitMEMLOCK=16M. | Consejo 8/8 · DAY 133 |
+| **deny explícitos en AppArmor** | Mantener — claridad auditiva hospitalaria. | Founder · DAY 133 |
+| **Walk-forward obligatorio (ADR-040)** | K-fold prohibido. Split sobre timestamp_first_packet. Mín. 3 ventanas. | ADR-040 · Consejo 8/8 · DAY 134 |
+| **Golden set inmutable (ADR-040)** | ≥50K flows, SHA-256 embebido en plugin firmado. | ADR-040 · Consejo 8/8 · DAY 134 |
+| **Guardrail asimétrico Ed25519 (ADR-040)** | Recall −0.5pp. F1 −2pp. FPR +1pp. Latencia p99 +10%. Exit 1 = no firma. | ADR-040 · Consejo 8/8 · DAY 134 |
+| **IPW + uncertainty sampling (ADR-040)** | 5% exploración (P≈0.5). Ratio adaptativo [3%-10%]. | ADR-040 · Consejo 8/8 · DAY 134 |
+| **CaptureBackend mínima (ISP)** | 5 métodos puros. EbpfBackend tiene métodos eBPF. main.cpp usa EbpfBackend directamente. | Consejo 5-2-1 · DAY 137 → Cerrado DAY 138 |
+| **Variant B monohilo permanente** | libpcap no es thread-safe sobre mismo handle. zmq_sender_threads=1 hardcodeado, no configurable. | Consejo 8/8 · DAY 138 |
+| **dontwait policy NDR** | Mejor perder paquete que bloquear loop captura. Exponer send_failures como métrica. | Consejo 8/8 · DAY 138 |
+| **nftables transaccional para IRP** | nft -f atómico. Snapshot + rollback 300s. Fallback ip link down. iptables rechazado en Debian 12. | Consejo 8/8 · DAY 138 |
+| **ODR es P0 bloqueante** | ODR violations en C++20 = UB. Bloqueante para cualquier tag posterior. | Consejo 8/8 · DAY 138 |
+| **-Werror invariante permanente** | 0 warnings es invariante. Ningún merge sin grep -c warning: = 0. | Consejo 8/8 · DAY 140 |
+| **Terceros deprecated: suprimir + doc** | APIs deprecated de terceros → suprimir por fichero + THIRDPARTY-MIGRATIONS.md. Nunca suprimir código propio. | Consejo 8/8 · DAY 140 |
+| **[[maybe_unused]] en C++20** | Interfaces virtuales y código nuevo → [[maybe_unused]]. Stubs temporales → /*param*/ con DEBT. | Consejo 7/8 · DAY 140 |
+| **Gate ODR pre-merge obligatorio** | make PROFILE=production all antes de merge a main. Jenkinsfile cuando haya servidor. | Consejo 8/8 · DAY 140 |
+| **seL4 no diseñar ahora** | CaptureBackend (5 métodos) es reutilizable. Todo lo demás reescritura. YAGNI hasta equipo especializado. | Consejo 8/8 · DAY 138 |
+| **seed-client-build dependencia explícita** | firewall y pipeline-build deben declarar seed-client-build. En VM limpia sin binarios previos el build falla silenciosamente. | DAY 141 |
+| **Exclusión mutua Variant A/B** | Nunca simultáneas en el mismo hardware. Nivel 1: script bash via tmux (pre-FEDER). Nivel 2: robusto post-FEDER (DEBT-MUTEX-ROBUST-001). Lógica NO en binarios. | Consejo 8/8 · DAY 141-142 |
+| **buffer_size_mb variable por diseño** | Permite trazar curva de optimización. pcap_create()+pcap_set_buffer_size() implementado DAY 142. | Consejo 8/8 · DAY 141 → Cerrado DAY 142 |
+| **Warning classifier: grep/awk** | Script determinista. Un LLM no determinista no hace trabajo determinista. | Consejo 8/8 · DAY 141 |
+| **auto_isolate: true por defecto** | El sistema protege sin configuración manual. Desactivar es acto explícito. | Consejo 8/8 + founder · DAY 142 |
+| **IRP criterio multi-señal** | score >= 0.95 solo no es suficiente. FEDER: score AND event_type. Producción: señal más rica. | Consejo 8/8 + founder · DAY 142 |
+| **fork()+execv() en IRP** | firewall-acl-agent nunca muere al disparar aislamiento. Operación atómica. | Consejo 8/8 · DAY 142 |
+| **AppArmor enforce desde primer deploy** | Nuevos componentes: enforce desde el commit inicial. complain máximo 1 día en dev. | Consejo 8/8 · DAY 142 |
+| **auto_isolate: false por defecto** | REEMPLAZA regla DAY 142. En hospitales, default false + WARNING. Activar es acto explícito. | Consejo 8/8 · DAY 143 |
+| **SA_NOCLDWAIT para IRP** | fork()+execv() → sigaction SA_NOCLDWAIT. Kernel recoge hijos. Sin zombies. | Consejo 8/8 · DAY 143 |
+| **/run/argus/irp/ para IRP** | Artefactos nftables fuera de /tmp. /run/ (volátil) + /var/lib/ (persistente). Falco vigila. | Consejo 8/8 · DAY 143 |
+| **DEBT-PROTO-DETECTION-TYPES-001** | No ampliar enum sin datos MITRE reales. Sin datos no hay diseño. | Founder · DAY 143 |
+| **IRP prob. conjunta multi-señal** | No topología por quirófano (inviable). Función de decisión con todas las señales disponibles + pesos. | Consejo 8/8 · DAY 143 |
+| **etcd-server HA es deuda crítica** | Single-node etcd no es robusta. DEBT-ETCD-HA-QUORUM-001 obligatoria post-FEDER. | Founder · DAY 142 |
 
 ---
 
@@ -420,104 +727,190 @@ PHASE 3 v0.4.0:                         100% ✅
 PHASE 4 v0.5.0-preprod:                 100% ✅
 ADR-026 XGBoost Prec=0.9945:            100% ✅
 ADR-037 safe_path v0.5.1-hardened:      100% ✅  DAY 124
-DEBT-SAFE-PATH-SEED-SYMLINK-001:        100% ✅  DAY 126
-DEBT-CONFIG-PARSER-FIXED-PREFIX-001:    100% ✅  DAY 126
-DEBT-DEV-PROD-SYMLINK-001:              100% ✅  DAY 127
-DEBT-SNYK-WEB-VERIFICATION-001:         100% ✅  DAY 128
-DEBT-PROPERTY-TESTING-PATTERN-001:      100% ✅  DAY 128
-DEBT-PROVISION-PORTABILITY-001:         100% ✅  DAY 128
-DEBT-IPTABLES-INJECTION-001:            100% ✅  DAY 129
-DEBT-FEDER-SCOPE-DOC-001:              100% ✅  DAY 129
-DEBT-SYSTEMD-AUTOINSTALL-001:           100% ✅  DAY 130
-DEBT-SAFE-EXEC-NULLBYTE-001:            100% ✅  DAY 130
-DEBT-FUZZING-LIBFUZZER-001:             100% ✅  DAY 130 (baseline)
-DEBT-PROD-COMPAT-BASELINE-001:          100% ✅  DAY 132
 DEBT-PROD-APPARMOR-COMPILER-BLOCK-001:  100% ✅  DAY 133
-DEBT-PROD-FALCO-EXOTIC-PATHS-001:       100% ✅  DAY 133 (10 reglas)
-DEBT-PROD-FS-MINIMIZATION-001:           60% 🟡  DAY 133 (parcial — minbase post-FEDER)
-Paper Draft v18 §6.12 BSR:              100% ✅  DAY 133
-Paper Draft v18 §6.8 fuzzing:           100% ✅  DAY 133 (post-Consejo)
-Makefile prod-* targets:                100% ✅  DAY 133
-AppArmor 6 perfiles enforce:            100% ✅  DAY 133
-Linux Capabilities mínimas:             100% ✅  DAY 133 (post-Consejo)
-Falco 10 reglas aRGus:                  100% ✅  DAY 133 (post-Consejo)
+DEBT-PROD-FALCO-EXOTIC-PATHS-001:       100% ✅  DAY 133
+DEBT-PROD-FS-MINIMIZATION-001:           60% 🟡  DAY 133 (parcial)
 vagrant/hardened-x86/ completo:         100% ✅  DAY 133
-DEBT-PROD-APT-SOURCES-INTEGRITY-001:      0% ⏳  feature/adr030-variant-a
-DEBT-PAPER-FUZZING-METRICS-001:         100% ✅  DAY 134 CERRADO
-DEBT-KEY-SEPARATION-001:                  0% ⏳  post-FEDER
-DEBT-KERNEL-COMPAT-001:                 100% ✅  DAY 134 CERRADO — cap_bpf ok en kernel 6.1
-DEBT-PROD-APPARMOR-PORTS-001:             0% ⏳  post-JSON-estabilización
-DEBT-PROD-FALCO-RULES-EXTENDED-001:       0% ⏳  DAY 135
-DEBT-DEBIAN13-UPGRADE-001:                0% ⏳  post-FEDER
-DEBT-SAFE-PATH-RESOLVE-MODEL-001:         0% ⏳  feature/adr038-acrl
-DEBT-CRYPTO-003a (mlock+bzero):           0% ⏳
-DEBT-SEED-CAPABILITIES-001:               0% ⏳  v0.6+
-DEBT-PENTESTER-LOOP-001 (ACRL):           0% ⏳  POST-DEUDA
-ADR-031 aRGus-seL4:                       0% ⏳  branch independiente
-ADR-040 ML Retraining Contract (def.):    100% ✅  DAY 134 (Consejo 8/8, 17 enmiendas)
-ADR-041 HW Acceptance Metrics (def.):     100% ✅  DAY 134 (Consejo 8/8)
-DEBT-EMECAS-HARDENED-001 (make hardened-full): 0% ⏳  DAY 135
-DEBT-VENDOR-FALCO-001 (dist/vendor/CHECKSUMS): 0% ⏳  DAY 135
-DEBT-SEEDS-DEPLOY-001 (prod-deploy-seeds):     0% ⏳  DAY 135
-DEBT-CONFIDENCE-SCORE-001 (prerequisito IPW):  0% ⏳  DAY 135
-DEBT-ADR040-001 (golden set v1):            0% ⏳  v1.0 post-FEDER
-DEBT-ADR040-002 (confidence_score):         0% ⏳  v1.0
-DEBT-ADR040-003 (walk_forward_split.py):    0% ⏳  v1.1
-DEBT-ADR040-004 (check_guardrails.py):      0% ⏳  v1.1
-DEBT-ADR040-005 (guardrail + Ed25519):      0% ⏳  v1.1
-DEBT-ADR040-006 (IPW + uncertainty):        0% ⏳  v1.2
-DEBT-ADR040-007 (interfaz web exploración): 0% ⏳  v1.2 Año 1
-DEBT-ADR040-008 (informe diversidad):       0% ⏳  v1.2
-DEBT-ADR040-009 (competición algoritmos):   0% ⏳  pre-lock-in XGBoost
-DEBT-ADR040-010 (dataset lineage):          0% ⏳  v1.1
-DEBT-ADR040-011 (canary deployment):        0% ⏳  Año 2 flota
-DEBT-ADR040-012 (GOLDEN-SET-REGISTRY.md):  0% ⏳  v1.0
-DEBT-ADR041-001 (pcap CTU-13 versionado):   0% ⏳  pre-FEDER
-DEBT-ADR041-002 (make golden-set-eval):     0% ⏳  depende ADR-040
-DEBT-ADR041-003 (make feder-demo):          0% ⏳  pre-FEDER
-DEBT-ADR041-004 (compra hardware x86):      0% ⏳  post-métricas
-DEBT-ADR041-005 (compra Raspberry Pi 4/5):  0% ⏳  post-métricas
-DEBT-ADR041-006 (ejecución hw físico):      0% ⏳  post-compra
+DEBT-PAPER-FUZZING-METRICS-001:         100% ✅  DAY 134
+DEBT-KERNEL-COMPAT-001:                 100% ✅  DAY 134
+ADR-040 ML Retraining Contract (def.):  100% ✅  DAY 134
+ADR-041 HW Acceptance Metrics (def.):   100% ✅  DAY 134
+make hardened-full EMECAS:              100% ✅  DAY 135
+DEBT-PROD-APT-SOURCES-INTEGRITY-001:    100% ✅  DAY 135
+DEBT-CONFIDENCE-SCORE-001:              100% ✅  DAY 135
+arXiv replace v15→v18:                  100% ✅  DAY 135
+v0.6.0-hardened-variant-a mergeado:     100% ✅  DAY 136
+docs/KNOWN-DEBTS-v0.6.md:              100% ✅  DAY 136 (actualizado DAY 138)
+DEBT-CAPTURE-BACKEND-ISP-001:           100% ✅  DAY 138
+DEBT-VARIANT-B-PCAP-IMPL-001:          100% ✅  DAY 138 (8/8 tests)
+DEBT-COMPILER-WARNINGS-CLEANUP-001:    100% ✅  DAY 144 (ODR LTO production gate PASSED)
+ADR-029 Variant A vs B x86 (DAY 145):  100% ✅  DAY 145 (experimento comparativo completo)
+Paper Draft v19:                        100% ✅  DAY 145 (§6 ADR-029 + §10.9 + §11.17 + §12)
+Bootstrap múltiple x86 A/B:            100% ✅  DAY 145 (bootstrap-x86-ebpf + bootstrap-x86-libpcap)
+feature/variant-b-libpcap mergeado:    100% ✅  DAY 145 → v0.7.0-variant-b
+DEBT-PCAP-CALLBACK-LIFETIME-DOC-001:   100% ✅  DAY 141
+DEBT-VARIANT-B-CONFIG-001:             100% ✅  DAY 141 (9/9 tests, 0 warnings)
+Bug Makefile seed-client-build:         100% ✅  DAY 141 (commit 63a37d9d)
+DEBT-VARIANT-B-BUFFER-SIZE-001:        100% ✅  DAY 142 (commit 7c4dba58)
+DEBT-VARIANT-B-MUTEX-001 (Nivel 1):    100% ✅  DAY 142 (commit 9458a90d)
+DEBT-IRP-NFTABLES-001:                 100% ✅  DAY 143 — CERRADA (sesión 3/3 completa)
+DEBT-IRP-SIGCHLD-001:                 100% ✅  DAY 144 (SA_NOCLDWAIT + test NoZombiesAfterNForks)
+DEBT-IRP-AUTOISO-FALSE-001:           100% ✅  DAY 144 (única fuente verdad + 5 tests)
+DEBT-IRP-BACKUP-DIR-001:             100% ✅  DAY 144 (/run/argus/irp/ + AppArmor)
+DEBT-IRP-TMPFILES-001:                  0% ⏳  P1 post-merge (tmpfiles.d reboot)
+DEBT-IRP-IPSET-TMP-001:                  0% ⏳  P1 post-merge (ipset_wrapper /tmp)
+DEBT-EMECAS-VERIFICATION-001:             0% ⏳  P2 post-merge (README devs)
+DEBT-IRP-FLOAT-TYPES-001:              0% ⏳  P1 pre-FEDER (unificar tipos score float/double)
+DEBT-IRP-PROB-CONJUNTA-001:             0% ⏳  P1 post-FEDER (función prob. conjunta multi-señal)
+DEBT-PROTO-DETECTION-TYPES-001:         0% ⏳  Baja post-MITRE/CTF (ampliar enum DetectionType)
+DEBT-ETCD-HA-QUORUM-001:                0% ⏳  P0 post-FEDER (OBLIGATORIO)
+DEBT-MUTEX-ROBUST-001:                   0% ⏳  post-FEDER (tras HA etcd)
+DEBT-IRP-MULTI-SIGNAL-001:              0% ⏳  post-FEDER
+DEBT-IRP-LAST-KNOWN-GOOD-001:           0% ⏳  post-FEDER
+DEBT-IRP-QUEUE-PROCESSOR-001:           0% ⏳  post-merge
+BACKLOG-ZMQ-TUNING-001:                  0% ⏳  pre-FEDER
+BACKLOG-BENCHMARK-CAPACITY-001:           0% ⏳  FEDER Year 1 Deliverable
+BACKLOG-BUILD-WARNING-CLASSIFIER-001:    0% ⏳  post-FEDER (grep/awk script)
+DEBT-LLAMA-API-UPGRADE-001:              0% ⏳  post-FEDER (salvo CVE)
+DEBT-ODR-CI-GATE-001:                    0% ⏳  requiere servidor CI/CD
+DEBT-GENERATED-CODE-CI-001:              0% ⏳  requiere servidor CI/CD
+DEBT-MAYBE-UNUSED-MIGRATION-001:         0% ⏳  cosmético, post deudas P0
+DEBT-EMECAS-AUTOMATION-001:              0% ⏳  post deudas P0
+DEBT-JENKINS-SEED-DISTRIBUTION-001:      0% ⏳  pre-FEDER
+DEBT-CRYPTO-MATERIAL-STORAGE-001:        0% ⏳  pre-FEDER
+DEBT-KEY-SEPARATION-001:                 0% ⏳  post-FEDER
+DEBT-ADR040-001..012:                    0% ⏳  post-FEDER Año 1
+DEBT-ADR041-001..006:                    0% ⏳  pre-FEDER
+ADR-031 aRGus-seL4:                      0% ⏳  branch independiente
 ```
+
+---
+
+## 📝 Notas del Consejo de Sabios — DAY 144 (8/8)
+## 📝 Notas del Consejo de Sabios — DAY 145 (8/8)
+
+> "DAY 145 — Primer experimento comparativo ADR-029 Variant A (eBPF) vs Variant B (libpcap) en x86-64 VirtualBox. Resultado contraintuitivo: libpcap ~2× throughput que eBPF a 50/100 Mbps. Causa identificada: virtio no expone driver XDP nativo, eBPF cae a modo SKB genérico. En hardware físico con NIC XDP nativa, se espera inversión.
+>
+> **Sobre los 2,630 failed packets:** artefacto fijo del pcap CTU-13 Neris. Frames jumbo que superan MTU VirtualBox (errno=90 EMSGSIZE). Conteo idéntico en los 6 runs confirma origen en el fichero, no en el pipeline. El sniffer nunca ve esos frames — no son pérdidas de captura. Documentado en README, BACKLOG y paper v19 para evitar confusión futura.
+>
+> **Equivalencia funcional A/B confirmada:** ambas variantes procesan el corpus Neris completo sin errores de pipeline. La comparación de rendimiento real queda pendiente de hardware físico — que es exactamente el argumento FEDER.
+>
+> **Bootstrap múltiple:** `bootstrap-x86-ebpf` (Variant A, referencia) y `bootstrap-x86-libpcap` (Variant B). `bootstrap` queda como alias de A — el EMECAS habitual no cambia. `pipeline-status` distingue variante activa e impide invariant violation.
+>
+> **Paper v19:** §6 nueva subsección con tabla comparativa, interpretación virtio/SKB, y valor científico. El hallazgo es publicable tal cual: el delta A/B depende críticamente del hardware subyacente.
+>
+> 'Hacer ciencia es esto: observar algo contraintuitivo, identificar la causa, y convertirlo en evidencia empírica para el siguiente argumento.' — Founder DAY 145"
+> — Consejo de Sabios (8/8) · DAY 145
+
+
+
+> "DAY 144 — Tres deudas P0 IRP cerradas en una sesión de madrugada (04:00-08:00). Gate ODR production superado tras corregir tres categorías de violaciones reales bajo `-flto -Werror`.
+>
+> **DEBT-IRP-SIGCHLD-001 (8/8):** `SA_NOCLDWAIT` en `setup_signal_handlers()`. El kernel recoge hijos muertos automáticamente. `SigchldTest.NoZombiesAfterNForks` — 20 forks, 500ms, cero zombies. PASSED.
+>
+> **DEBT-IRP-AUTOISO-FALSE-001 (8/8 unánime):** `isolate.json` es la única fuente de verdad. Campo `auto_isolate` obligatorio. Fallo ruidoso si falta. Sin fallback silencioso. Un FP sobre ventilador mecánico es un evento clínico, no un bug. 5 tests nuevos PASSED.
+>
+> **DEBT-IRP-BACKUP-DIR-001 (8/8 unánime):** `/tmp` eliminado de la ruta IRP. `/run/argus/irp/` (tmpfs, 0700). AppArmor actualizado. provision.sh actualizado. Dry-run PASSED.
+>
+> **Gate ODR (confirmación empírica):** `make PROFILE=production all` encontró 3 ODR violations reales que el build debug nunca habría detectado: (1) `tree_0[]`..`tree_99[]` con tipos distintos en dos headers incluidos en distintas unidades de compilación → anonymous namespace; (2) protobuf stale de noviembre 2025 en `src/protobuf/` → eliminado (40k líneas); (3) `assert()` desactivado por `-DNDEBUG` en tests → `-UNDEBUG` en targets de test.
+>
+> **Consenso sobre experimento comparativo (P4):** No es una competición. Es una caracterización de paradigmas complementarios. La afirmación publicable es: 'Los sistemas basados en firmas y los basados en comportamiento son complementarios. Un despliegue hospitalario óptimo combinaría ambos.' aRGus como cooperador, no como sustituto.
+>
+> **Consenso P3 multi-señal:** Qwen propone acumulador de evidencia con decadencia exponencial — determinista, sin reentrenamiento, auditable, estándar NIST/MITRE. Superior a regresión logística para infraestructura crítica. Adoptado.
+>
+> 65/65 tests verdes. Gate ODR: ALL COMPONENTS BUILT [production].
+>
+> 'El gate ODR no es burocracia — es la única herramienta que ve lo que el compilador diario no ve.' — ChatGPT"
+> — Consejo de Sabios (8/8) · DAY 144
+
+## 📝 Notas del Consejo de Sabios — DAY 143 (8/8)
+
+> "DAY 143 — DEBT-IRP-NFTABLES-001 sesión 3/3 CERRADA. IRP completo: config → disparo → fork()+execv() → AppArmor enforce → 12 tests. Bug IEEE 754 encontrado por tests — `float 0.95f → double 0.9499...` — corregido. 7/7 perfiles AppArmor enforce en hardened VM.
+>
+> Cinco deudas nuevas registradas tras Consejo:
+>
+> **DEBT-IRP-SIGCHLD-001 (8/8 unánime):** SA_NOCLDWAIT — el kernel recoge hijos muertos automáticamente. Sin zombies en ataques persistentes. P0 pre-merge.
+>
+> **DEBT-IRP-AUTOISO-FALSE-001 (8/8 unánime):** auto_isolate: false por defecto. La regla DAY 142 queda reemplazada. En hospitales, la automatización sin onboarding explícito es un riesgo de vida. P0 pre-merge.
+>
+> **DEBT-IRP-BACKUP-DIR-001 (8/8 unánime):** /tmp es peligroso para artefactos IRP. Migrar a /run/argus/irp/ (volátil) + /var/lib/argus/irp/ (persistente). Falco vigila ambas rutas. P0 pre-merge.
+>
+> **DEBT-IRP-FLOAT-TYPES-001 (dividido):** Mezcla float/double en lógica de decisión es un error de diseño. La tolerancia 1e-6 es un parche. Unificar tipos. Investigar qué produce exactamente el ml-detector antes de decidir el tipo correcto. P1 pre-FEDER.
+>
+> **DEBT-IRP-PROB-CONJUNTA-001 (8/8):** Dos señales AND no son suficientes para hospital. Función probabilidad conjunta sobre todas las señales disponibles — explicable, auditable, publicable. No implementar topología por quirófano (Gemini) — inviable a escala global. P1 post-FEDER.
+>
+> 'Un escudo que corta sin medir no protege: amputa.' — Qwen"
+> — Consejo de Sabios (8/8) · DAY 143
+
+
+## 📝 Notas del Consejo de Sabios — DAY 142 (8/8)
+
+> "DAY 142 — Seis commits. Tres DEBTs cerradas. El IRP pasa de arquitectura a sistema ejecutable y verificable.
+>
+> P1 (8/8 + founder): Umbral único `score >= 0.95` para FEDER, pero nunca como señal única. Mínimo dos condiciones AND: score + event_type. En entornos hospitalarios, equipos médicos conectados a intranet/DMZ (monitores de quirófano, bombas de infusión) son activos que `firewall-acl-agent` debe proteger — un falso positivo que los aísle es inaceptable. La señal debe ser explicable, auditable y multi-componente. Platt scaling registrado como sub-tarea de DEBT-ADR040-002.
+>
+> P2 (8/8): `fork()+execv()` obligatorio. El firewall-acl-agent nunca puede morir durante un incidente. Es el único componente que puede registrar evidencia y ejecutar rollback. `FD_CLOEXEC` en descriptores heredados. `prctl(PR_SET_PDEATHSIG, SIGTERM)` en el hijo.
+>
+> P3 (8/8): AppArmor `enforce` desde el primer deploy. Perfiles aportados por Gemini y Kimi para combinar en sesión 3.
+>
+> P4 (8/8): Diseño actual de rollback correcto para FEDER. `DEBT-IRP-LAST-KNOWN-GOOD-001` registrada post-FEDER.
+>
+> Founder: el mutex via tmux es provisional — `DEBT-MUTEX-ROBUST-001` post-FEDER. La raíz del problema es etcd single-node — `DEBT-ETCD-HA-QUORUM-001` es deuda crítica obligatoria, no opcional. Un sistema de coordinación que depende de una única fuente de verdad que puede caer no es robusto en producción hospitalaria.
+>
+> 'auto_isolate: true por defecto. Instalar y funcionar. Un hospital que no toca la configuración debe estar protegido.' — Founder
+>
+> 'El agente de firewall debe sobrevivir al aislamiento. Un agente muerto durante un ataque activo es exactamente lo que el atacante busca.' — Claude, Grok, DeepSeek, Gemini, Kimi, Mistral, Qwen, ChatGPT (8/8)"
+> — Consejo de Sabios (8/8) · DAY 142
+
+---
+
+## 📝 Notas del Consejo de Sabios — DAY 141 (8/8)
+
+> "DAY 141 — Bug Makefile seed-client-build cerrado. DEBT-PCAP-CALLBACK-LIFETIME-DOC-001 cerrado. DEBT-VARIANT-B-CONFIG-001 cerrado — sniffer-libpcap.json propio + main_libpcap.cpp config-driven. 9/9 tests PASSED. 0 warnings. Emails FEDER enviados a Andrés Caro Lindo.
+>
+> Q1 (8/8 + founder): Exclusión mutua obligatoria. DEBT-VARIANT-B-MUTEX-001 registrada. Nivel 1 via script bash/python en Makefile, pre-FEDER. La lógica de detección NO entra en los binarios.
+>
+> Q2 (8/8 + founder): buffer_size_mb pre-FEDER obligatorio. Variable por diseño — script de barrido paramétrico para trazar curva de optimización.
+>
+> Q3 (8/8 + founder): Script grep/awk determinista para clasificar warnings de build.
+>
+> 'buffer_size_mb no es una opción de confort — es una variable experimental. Sin ella, el benchmark ARM64 mide el default del kernel, no el hardware.' — Claude"
+> — Consejo de Sabios (8/8) · DAY 141
+
+---
+
+## 📝 Notas del Consejo de Sabios — DAY 140 (8/8)
+
+> "DAY 140 — 192 → 0 warnings. `-Werror` activo como invariante permanente. ODR limpio con LTO."
+> — Consejo de Sabios (8/8) · DAY 140
+
+---
+
+## 📝 Notas del Consejo de Sabios — DAY 138 (8/8)
+
+> "DAY 138 — ISP cerrado. Pipeline Variant B completo. ODR P0 bloqueante confirmado."
+> — Consejo de Sabios (8/8) · DAY 138
+
+---
+
+## 📝 Notas del Consejo de Sabios — DAY 136 (8/8)
+
+> "DAY 136 — v0.6.0-hardened-variant-a mergeado. DEBT-IRP-NFTABLES-001 es P0 pre-FEDER. argus-network-isolate inexistente = fail catastrófico en demo."
+> — Consejo de Sabios (8/8) · DAY 136
+
+---
+
+## 📝 Notas del Consejo de Sabios — DAY 134 (8/8)
+
+> "ADR-040 + ADR-041: contratos de calidad ML y métricas de aceptación hardware. Walk-forward obligatorio. Golden set inmutable. Temperatura ARM ≤75°C gate no negociable."
+> — Consejo de Sabios (8/8) · DAY 134
 
 ---
 
 ## 📝 Notas del Consejo de Sabios — DAY 133 (8/8)
 
-> "DAY 133 — Transición de 'diseño correcto' a 'comportamiento real verificable'.
->
-> Decisiones vinculantes (8/8 unánime):
-> D1: cap_sys_admin → cap_bpf (Linux ≥5.8). cap_sys_admin es root disfrazado.
-> D2: cap_net_bind_service eliminada de etcd-server (2379 > 1024).
-> D3: LimitMEMLOCK=16M en systemd. No cap_sys_resource.
-> D4: Keypairs separados pipeline vs plugins — post-FEDER.
-> D5: modern_ebpf driver Falco correcto para 2026.
-> D6: 'Fuzzing misses nothing' — INCORRECTA, reformulada.
-> D7: 3 reglas Falco adicionales adoptadas.
->
-> Decisiones del founder:
-> deny explícitos mantenidos (claridad auditiva hospitalaria).
-> network inet tcp sin restricción (JSON es la ley).
-> Keypair único mantenido hasta post-FEDER.
->
-> Q5 educativa respondida (8/8): Fuzzing es estocástico, no exhaustivo.
-> Proporciona evidencia empírica de robustez, no prueba de corrección.
->
-> 'Un escudo que no se prueba contra el ataque real es un escudo de teatro.
->  Vosotros estáis construyendo acero.' — Qwen"
+> "Transición de 'diseño correcto' a 'comportamiento real verificable'. cap_bpf. AppArmor 6/6. 'Un escudo que no se prueba contra el ataque real es un escudo de teatro.' — Qwen"
 > — Consejo de Sabios (8/8) · DAY 133
-
----
-
-## 📝 Notas del Consejo de Sabios — DAY 132 (8/8)
-
-> "La superficie de ataque de la imagen de producción se define hoy como principio estructural.
-> D1 (8/8): Makefile raíz con prefijo prod- y guard _check-dev-env.
-> D2 (8/8): debian/bookworm64. Trixie como upgrade path.
-> D3 (8/8): Dos capas BSR check. AppArmor+Falco es la defensa real.
-> D4 (8/8): Paper Draft v17 no sube a arXiv hasta tener métricas reales.
-> 'La superficie de ataque mínima no es una aspiración. Es una decisión de diseño.'"
-> — Consejo de Sabios (8/8) · DAY 132
 
 ---
 
@@ -525,247 +918,9 @@ DEBT-ADR041-006 (ejecución hw físico):      0% ⏳  post-compra
 
 **Formulada:** DAY 128 | **Estado:** Pendiente demostración (DEBT-PENTESTER-LOOP-001)
 
-Un sistema con ACRL converge hacia cobertura de técnicas ATT&CK en tiempo polinomial. Un sistema estático no converge nunca. La analogía con el sistema inmune adaptativo es estructuralmente correcta.
-
-**Experimento mínimo viable:** Caldera → eBPF capture → XGBoost warm-start → Ed25519 sign → hot-swap → medición de mejora en variantes del mismo ataque.
+Un sistema con ACRL converge hacia cobertura de técnicas ATT&CK en tiempo polinomial. Un sistema estático no converge nunca.
 
 ---
 
-
-## DEBT-JENKINS-SEED-DISTRIBUTION-001 — Jenkins/CI para distribución de seeds
-**Severidad:** 🔴 Alta
-**Estado:** ABIERTO — DAY 136
-**Origen:** Consejo 8/8 DAY 136 — convergencia unánime
-**Contexto:** Actualmente los seeds se distribuyen desde el portátil Mac del
-founder via /vagrant (shared folder VirtualBox). Esto es inaceptable en
-producción real: el portátil del founder no puede ser parte de la cadena
-criptográfica de producción de un sistema hospitalario.
-**Propuesta:** Jenkins (o equivalente CI open source — Gitea Actions, Forgejo)
-gestiona el ciclo: generación local en nodo hardened → distribución out-of-band
-→ verificación de permisos. El Mac nunca toca el material criptográfico.
-**Prerrequisito para:** DEBT-SEEDS-LOCAL-GEN-001, despliegue hardware físico.
-**Plazo:** pre-FEDER (mecanismo mínimo viable en Vagrant antes de demo)
-**Test de cierre:** `make ci-deploy-seeds` desde pipeline Jenkins sin
-intervención del portátil del founder. Seeds verificados con check-prod-permissions.
-
-## DEBT-CRYPTO-MATERIAL-STORAGE-001 — Almacenamiento material criptográfico open source
-**Severidad:** 🔴 Alta
-**Estado:** ABIERTO — DAY 136
-**Origen:** Consejo 8/8 DAY 136 — convergencia unánime
-**Contexto:** Seeds ChaCha20, keypairs Ed25519 (plugin-signing, pipeline-signing)
-no tienen solución de almacenamiento robusta más allá de ficheros con permisos
-0400. En producción hospitalaria un fallo de disco = pérdida del material
-criptográfico = pipeline inoperable.
-**Propuesta implementación demo:** HashiCorp Vault (open source, Vagrant-deployable).
-Vault como backend para seeds + keypairs. Acceso via AppRole (sin contraseña humana).
-**Propuesta objetivo final:** TPM 2.0 (presente en servidores hospitalarios modernos).
-tpm2-tools + clevis para binding de seeds al hardware.
-**Candidatos evaluados:**
-- HashiCorp Vault OSS — portable, Vagrant-friendly, demo FEDER ✅
-- YubiKey — offline vault, requiere hardware adicional 🟡
-- TPM 2.0 — hardware presente, no portable entre nodos 🟡 (objetivo final)
-**Plazo:** propuesta + prototipo Vault antes de demo FEDER (1 agosto 2026)
-**Test de cierre:** `make vault-init && make vault-deploy-seeds` → seeds en
-Vault → check-prod-permissions PASSED sin ficheros en disco del host.
-
-## DEBT-COMPILER-WARNINGS-CLEANUP-001 — Resolver TODOS los warnings de compilación
-**Severidad:** 🔴 Alta (en infraestructura crítica ODR violation = UB = inaceptable)
-**Estado:** ABIERTO — DAY 136
-**Origen:** Consejo 8/8 DAY 136 — TODOS los modelos, convergencia unánime
-**Contexto:** Durante EMECAS DAY 136 se observaron warnings de compilación
-en múltiples componentes. El Consejo es unánime: en C++ un ODR violation
-es Undefined Behaviour. UB en producción hospitalaria no es hipotético,
-es inevitable bajo carga o condiciones de hardware específicas.
-**Categorías a resolver (por orden de riesgo):**
-1. 🔴 ODR violations: internal_trees_inline.hpp vs traffic_trees_inline.hpp
-   (InternalNode vs TrafficNode — mismo nombre, tipo diferente) — UB real
-2. 🔴 Protobuf ODR: network_security.pb.h copia dual en ml-detector
-   (build-production/proto vs src/protobuf) — versiones incompatibles
-3. 🟡 Conversiones signed/unsigned: ml-detector, rag-ingester, sniffer
-4. 🟡 Deprecated API: SHA256_Init/Update/Final OpenSSL 3.0 → EVP_DigestInit
-5. 🟡 Wreorder: ZMQHandler, RingBufferConsumer, DualNICManager
-6. 🟡 test_etcd_client_hmac_grace_period DISABLED (requires GTest)
-7. 🟢 lto-wrapper serial compilation warnings (informativo, no crítico)
-**Rama:** `fix/compiler-warnings-cleanup-001`
-**Plazo:** DAY 137+ — rama dedicada. Bloqueante para certificación formal.
-**Test de cierre:** `make hardened-full 2>&1 | grep -E "^.*warning:" | wc -l` = 0
-
-## BACKLOG-FEDER-001
-
-## DEBT-APT-TIMEOUT-CONFIG-001 — Timeout apt-integrity configurable
-**Severidad:** 🟡 Media
-**Estado:** ABIERTO — DAY 135
-**Contexto:** `FailureAction=poweroff` inmediato (Voto de Oro Alonso DAY 135).
-Timeout hardcoded por decisión de seguridad. Post-FEDER, los admins del sistema
-pueden necesitar ajustarlo para entornos con latencia alta (hospitales rurales).
-Mínimo hardcoded nunca inferior a 0 — poweroff siempre inmediato.
-**Prerequisito para:** Operación en entornos con SIEM remoto lento.
-**Plazo:** post-FEDER
-
-## DEBT-SEEDS-LOCAL-GEN-001 — Generación local de seeds en hardened VM
-**Severidad:** 🔴 Alta
-**Estado:** ABIERTO — DAY 135
-**Contexto:** Actualmente los seeds se transfieren desde dev VM via /vagrant
-(shared folder VirtualBox). Aceptable en Vagrant. En producción real (Jenkins +
-hardware físico) hay que eliminar el canal de transferencia por completo.
-Opción C (generación local en hardened VM) aprobada por Consejo 7/7 (DAY 135).
-No viola ADR-013. Elimina el vector de transferencia en origen.
-**Prerequisito para:** Despliegue en hardware físico, certificación formal.
-**Plazo:** post-FEDER
-
-## DEBT-SEEDS-BACKUP-001 — Backup offline obligatorio de seeds
-**Severidad:** 🔴 Alta
-**Estado:** ABIERTO — DAY 135
-**Contexto:** Con generación local (DEBT-SEEDS-LOCAL-GEN-001), la pérdida del
-seed = pérdida del nodo. Backup obligatorio en almacenamiento aislado
-(YubiKey / offline vault) inmediatamente post-generación. Señalado por Qwen
-como crítico en Consejo DAY 135.
-**Prerequisito para:** DEBT-SEEDS-LOCAL-GEN-001
-**Plazo:** post-FEDER
-
-## DEBT-FEDER-DEMO-SCRIPT-001 — Script de demo reproducible para FEDER
-**Severidad:** 🟡 Media
-**Estado:** ABIERTO — DAY 135
-**Contexto:** La presentación a Andrés Caro Lindo (deadline 22 Sep 2026)
-requiere una demo pcap reproducible del pipeline completo. Necesita
-ADR-029 Variants A/B estables. Script: scripts/feder-demo.sh
-**Prerequisito para:** BACKLOG-FEDER-001
-**Plazo:** DAY 136+
-
-## DEBT-CHECK-PROD-SEED-CONDITIONAL-001 — check-prod-all verifica seeds condicionalmente
-**Severidad:** 🟡 Media
-**Estado:** ABIERTO — DAY 135
-**Contexto:** Propuesta Kimi (Consejo DAY 135). check-prod-all debe verificar
-que si encryption_enabled=true, entonces seed existe. En EMECAS el check
-pasa (componentes no activos). En operación real fallaría explícitamente
-si falta el seed. Actualmente los WARNs de seeds desaparecen tras
-prod-deploy-seeds pero no hay gate condicional formal.
-**Plazo:** post-merge
-
-## DEBT-COMPILER-WARNINGS-001 — Eliminar todos los warnings de compilación
-**Severidad:** 🟡 Media
-**Estado:** ABIERTO — DAY 135
-**Contexto:** ODR violations (RF inline trees), Protobuf dual-copy en
-ml-detector, conversiones signed/unsigned, Wreorder en ZMQHandler.
-No bloqueantes para merge. Bloqueantes para certificación formal.
-**Prerequisito para:** Verificación formal, auditoría, FEDER fase final.
-**Plazo:** post-FEDER
-
-## DEBT-COMPILER-WARNINGS-001 — Eliminar todos los warnings de compilación
-**Severidad:** 🟡 Media (potencial puerta de entrada a vulnerabilidades)
-**Estado:** ABIERTO — DAY 135
-**Contexto:** Durante `make hardened-full` (DAY 135) se observaron warnings de compilación
-pre-existentes en múltiples componentes. No son regresiones nuevas pero deben eliminarse
-antes de cualquier proceso de verificación formal (certificación, auditoría, FEDER).
-**Categorías identificadas:**
-- ODR violations: `internal_trees_inline.hpp` vs `traffic_trees_inline.hpp` (RF inline, ml-detector + sniffer)
-- Protobuf ODR: `network_security.pb.h` copia dual en ml-detector (build-production vs src/protobuf)
-- Conversiones signed/unsigned: múltiples componentes (ml-detector, rag-ingester, sniffer)
-- Deprecated API: SHA256_Init/Update/Final OpenSSL 3.0 en rag_logger.cpp
-- Wreorder: ZMQHandler, RingBufferConsumer, DualNICManager
-**Impacto bloqueante:** NO para merge actual. SÍ para certificación formal / auditoría.
-**Prerequisito para:** Verificación formal, proceso FEDER fase final.
-**Rama sugerida:** `fix/debt-compiler-warnings-001`
-
-**Estado:** PENDIENTE — bloqueado por prerequisites técnicos
-**Contacto:** Andrés Caro Lindo — UEx/INCIBE
-**Deadline límite:** 22 septiembre 2026 | **Go/no-go técnico:** 1 agosto 2026
-
-### Gate de entrada
-
-- [x] ADR-026 mergeado a main (XGBoost F1=0.9978)
-- [x] ADR-030 Variant A infraestructura completa (DAY 133)
-- [x] Pipeline E2E en hardened VM verde (`make check-prod-all`) — DAY 134 ✅
-- [ ] ADR-030 Variant B (ARM64) estable
-- [ ] Demo técnica grabable < 10 minutos (`scripts/feder-demo.sh`)
-- [ ] ADR-041 protocolo hardware: métricas validadas en x86 + ARM (`make feder-demo`)
-- [ ] Golden set v1 creado y versionado (DEBT-ADR040-001)
-- [ ] Clarificación scope con Andrés: NDR standalone vs federación (antes julio 2026)
-
----
-
-
----
-
-## 📝 Notas del Consejo de Sabios — DAY 134 (8/8)
-
-> "DAY 134 — ADR-040 + ADR-041: contratos de calidad ML y métricas de aceptación hardware.
->
-> ADR-040 — 17 enmiendas, aprobado 8/8:
-> D1: Walk-forward obligatorio. K-fold prohibido en NDR temporal.
-> D2: Golden set inmutable con SHA-256 embebido en plugin firmado (Gemini).
-> D3: Guardrail asimétrico — Recall más restrictivo que F1 (infraestructura crítica).
-> D4: IPW + uncertainty sampling (P≈0.5), no exploración aleatoria pura (Gemini).
-> D5: Ratio exploración adaptativo [3%-10%] por drift detectado (ChatGPT-5).
-> D6: Memory replay buffer como complemento al golden set (Grok).
-> D7: Competición algoritmos multicriterio — XGBoost no asumido ganador a priori.
-> D8: Dataset lineage obligatorio — prerequisito de firma Ed25519.
-> D9: Canary 5-10% / 24h antes de despliegue completo (ChatGPT-5).
-> D10: Pipeline evaluación híbrido — mismo código, dos entradas (local + CI).
-> Enmienda crítica (Claude): confidence_score es prerequisito de IPW.
->
-> ADR-041 — aprobado 8/8:
-> D1: Tres niveles despliegue con métricas proporcionales (Qwen).
-> D2: Latencia end-to-end (→ iptables) como métrica operacional primaria (DeepSeek).
-> D3: Temperatura ARM ≤75°C — gate no negociable para armarios hospitalarios (DeepSeek).
-> D4: Delta XDP/libpcap es contribución científica independiente publicable.
-> D5: Demo FEDER reproducible por evaluador externo — sin trucos pregrabados.
-> Pregunta abierta: Opción A (Vagrant) recomendada demo FEDER. Opción B (CI) post-FEDER.
->
-> 'El contrato de calidad ML no termina en el deploy. Termina cuando el modelo
->  aprende sin olvidar, sin retroalimentarse y sin regresionar en silencio.' — Consejo (8/8)"
-> — Consejo de Sabios (8/8) · DAY 134
-
-*DAY 134 — 28 Abril 2026 · check-prod-all PASSED · Draft v18 completo · feature/adr030-variant-a*
-*"Via Appia Quality — Un escudo que aprende de su propia sombra."*
-*"La superficie de ataque mínima no es una aspiración. Es una decisión de diseño."*
-## DEBT-IRP-SYSTEMD-FIX-001 — BUG CRÍTICO: ExecStopPre no existe en systemd
-**Severidad:** 🔴 Crítica
-**Estado:** CORREGIDO — DAY 135
-**Identificado por:** Kimi (Consejo adversarial ADR-042 v2)
-**Contexto:** `ExecStopPre` no es una directiva válida de systemd. Con este
-bug, los pasos de notificación (argus-irp-notify) y aislamiento de red
-(argus-network-isolate) definidos en argus-apt-integrity.service NUNCA
-se habrían ejecutado antes del poweroff — exactamente lo contrario de lo
-que el protocolo IRP-A requiere.
-**Fix:** Reemplazar `ExecStopPre=` por `ExecStartPre=` en ADR-042.
-La directiva `ExecStartPre` se ejecuta en orden ANTES de `ExecStart`.
-**Lección:** Los ADRs con código systemd deben pasar por revisión adversarial
-antes de implementación. El Consejo de Sabios atrapó este bug en revisión
-de documento, no en producción.
-
-## 📝 Notas del Consejo de Sabios — DAY 136 (8/8)
-
-> "DAY 136 — v0.6.0-hardened-variant-a mergeado. El pipeline respira solo.
->
-> Convergencias unánimes (8/8):
-> D1: DEBT-IRP-NFTABLES-001 es P0 pre-FEDER. argus-network-isolate inexistente
->     = fail catastrófico en demo ante evaluadores FEDER.
-> D2: Jenkins para distribución de seeds — el Mac del founder no puede ser
->     parte de la cadena criptográfica de producción hospitalaria.
-> D3: Material criptográfico necesita solución open source. Propuesta:
->     HashiCorp Vault (demo) + TPM 2.0 (objetivo final).
-> D4: Compiler warnings — ODR violation en C++ es UB. UB en hospital
->     es inaceptable. Rama dedicada fix/compiler-warnings-cleanup-001.
-> D5: DEBT-SEEDS-BACKUP-001 — el más preocupante para infraestructura crítica.
->     Protocolo ejecutable sin conocimientos de criptografía.
->
-> Delta científico XDP vs libpcap:
-> - Punto de captura (antes/después del stack de red)
-> - CPU por paquete bajo carga sostenida
-> - Hardware mínimo para F1≥0.9985 con 0 paquetes perdidos
-> - Temperatura ARM ≤75°C sin ventilador (armarios hospitalarios 24/7)
->
-> 'Los warnings ODR en C++ son bombas de reloj. En infraestructura crítica,
->  el comportamiento indefinido no es hipotético — es inevitable.' — Grok
->
-> 'Un hospital no tiene un DevOps team. El protocolo de backup de seeds
->  debe ser ejecutable por el administrador que también gestiona las
->  impresoras.' — Kimi
->
-> 'Jenkins no es lujo. Es el mínimo de profesionalismo para cualquier
->  sistema que procese datos de pacientes.' — ChatGPT"
-> — Consejo de Sabios (8/8) · DAY 136
-
-*DAY 136 — 29 Abril 2026 · v0.6.0-hardened-variant-a · merge completo*
+*DAY 144 — 7 Mayo 2026 · feature/variant-b-libpcap @ e52870d5*
 *"Via Appia Quality — Un escudo que aprende de su propia sombra."*

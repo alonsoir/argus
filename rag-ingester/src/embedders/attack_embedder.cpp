@@ -60,7 +60,7 @@ std::vector<std::vector<float>> AttackEmbedder::embed_batch(const std::vector<Ev
     return results;
 }
 
-bool AttackEmbedder::should_embed(const Event& event) const {
+bool AttackEmbedder::should_embed(const Event& /*event*/) const {
     // TODO: Implement sampling logic
     return true;
 }

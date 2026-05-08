@@ -227,14 +227,14 @@ std::vector<float> FeatureExtractor::extract_level2_ddos_features(
     std::vector<float> features(10);
 
     // [0] SYN/ACK Ratio
-    float total_flags = nf.fin_flag_count() + nf.syn_flag_count() +
-                       nf.rst_flag_count() + nf.psh_flag_count() +
-                       nf.ack_flag_count() + nf.urg_flag_count();
-    features[0] = safe_divide(nf.syn_flag_count(), total_flags);
+    float total_flags = static_cast<float>(nf.fin_flag_count()) + static_cast<float>(nf.syn_flag_count()) +
+                       static_cast<float>(nf.rst_flag_count()) + static_cast<float>(nf.psh_flag_count()) +
+                       static_cast<float>(nf.ack_flag_count()) + static_cast<float>(nf.urg_flag_count());
+    features[0] = safe_divide(static_cast<float>(nf.syn_flag_count()), total_flags);
 
     // [1] Packet Symmetry (forward vs backward)
-    float total_packets = nf.total_forward_packets() + nf.total_backward_packets();
-    features[1] = safe_divide(nf.total_forward_packets(), total_packets);
+    float total_packets = static_cast<float>(nf.total_forward_packets()) + static_cast<float>(nf.total_backward_packets());
+    features[1] = safe_divide(static_cast<float>(nf.total_forward_packets()), total_packets);
 
     // [2] Source IP Dispersion (using protocol variety as proxy)
     features[2] = normalize(1.0f, 0.0f, 10.0f);
@@ -244,21 +244,21 @@ std::vector<float> FeatureExtractor::extract_level2_ddos_features(
     features[3] = protocol_anomaly;
 
     // [4] Packet Size Entropy (using packet length std)
-    features[4] = normalize(nf.packet_length_std(), 0.0f, 1500.0f);
+    features[4] = normalize(static_cast<float>(nf.packet_length_std()), 0.0f, 1500.0f);
 
     // [5] Traffic Amplification Factor (response vs request size)
-    float fwd_bytes = nf.total_forward_bytes();
-    float bwd_bytes = nf.total_backward_bytes();
+    float fwd_bytes = static_cast<float>(nf.total_forward_bytes());
+    float bwd_bytes = static_cast<float>(nf.total_backward_bytes());
     features[5] = safe_divide(bwd_bytes, std::max(fwd_bytes, 1.0f));
 
     // [6] Flow Completion Rate (using FIN flags)
-    features[6] = safe_divide(nf.fin_flag_count(), total_packets);
+    features[6] = safe_divide(static_cast<float>(nf.fin_flag_count()), total_packets);
 
     // [7] Geographical Concentration (placeholder - implement if available)
     features[7] = 0.5f;  // Default neutral value
 
     // [8] Traffic Escalation Rate (using flow bytes/s)
-    float flow_bytes_per_sec = nf.flow_bytes_per_second();
+    float flow_bytes_per_sec = static_cast<float>(nf.flow_bytes_per_second());
     features[8] = normalize(flow_bytes_per_sec, 0.0f, 1e6f);  // Normalize to 1Mbps
 
     // [9] Resource Saturation Score (using packet rate)
@@ -350,7 +350,7 @@ std::vector<float> FeatureExtractor::extract_level3_traffic_features(
     std::vector<float> features(10);
 
     // [0] Packet Rate
-    float total_packets = nf.total_forward_packets() + nf.total_backward_packets();
+    float total_packets = static_cast<float>(nf.total_forward_packets()) + static_cast<float>(nf.total_backward_packets());
     features[0] = normalize(
         safe_divide(total_packets, std::max(static_cast<float>(nf.flow_duration_microseconds()) / 1e6f, 1.0f)),
         0.0f, 1000.0f
@@ -366,14 +366,14 @@ std::vector<float> FeatureExtractor::extract_level3_traffic_features(
 
     // [3] Average Packet Size
     float avg_packet_size = safe_divide(
-        nf.total_forward_bytes() + nf.total_backward_bytes(),
+        static_cast<float>(nf.total_forward_bytes()) + static_cast<float>(nf.total_backward_bytes()),
         total_packets
     );
     features[3] = normalize(avg_packet_size, 0.0f, 1500.0f);
 
     // [4] Port Entropy (high for internet, low for internal)
     // Use port variety and flow IAT std as proxy
-    float port_entropy = normalize(nf.flow_inter_arrival_time_std(), 0.0f, 1e6f);
+    float port_entropy = normalize(static_cast<float>(nf.flow_inter_arrival_time_std()), 0.0f, 1e6f);
     features[4] = std::min(port_entropy, 1.0f);
 
     // [5] Flow Duration Std (variation in connection times)
@@ -390,7 +390,7 @@ std::vector<float> FeatureExtractor::extract_level3_traffic_features(
 
     // [9] Temporal Consistency (using IAT mean/std ratio)
     float temporal_consistency = safe_divide(
-        nf.flow_inter_arrival_time_mean(),
+        static_cast<float>(nf.flow_inter_arrival_time_mean()),
         std::max(static_cast<float>(nf.flow_inter_arrival_time_std()), 0.001f)
     );
     features[9] = normalize(temporal_consistency, 0.0f, 10.0f);
@@ -407,7 +407,7 @@ std::vector<float> FeatureExtractor::extract_level3_internal_features(
     std::vector<float> features(10);
 
     // [0] Internal Connection Rate
-    float total_packets = nf.total_forward_packets() + nf.total_backward_packets();
+    float total_packets = static_cast<float>(nf.total_forward_packets()) + static_cast<float>(nf.total_backward_packets());
     features[0] = normalize(
         safe_divide(total_packets, std::max(static_cast<float>(nf.flow_duration_microseconds()) / 1e6f, 1.0f)),
         0.0f, 500.0f  // Internal typically lower than internet
@@ -428,32 +428,32 @@ std::vector<float> FeatureExtractor::extract_level3_internal_features(
 
     // [5] Lateral Movement Score (high SYN rate, low completion)
     float syn_rate = safe_divide(
-        nf.syn_flag_count(),
+        static_cast<float>(nf.syn_flag_count()),
         total_packets
     );
     float completion_rate = safe_divide(
-        nf.fin_flag_count(),
+        static_cast<float>(nf.fin_flag_count()),
         std::max(static_cast<float>(nf.syn_flag_count()), 1.0f)
     );
     features[5] = syn_rate * (1.0f - completion_rate);
 
     // [6] Service Discovery Patterns (RST flags indicate scanning)
-    features[6] = normalize(nf.rst_flag_count(), 0.0f, 100.0f);
+    features[6] = normalize(static_cast<float>(nf.rst_flag_count()), 0.0f, 100.0f);
 
     // [7] Data Exfiltration Indicators (high outbound data)
     float outbound_ratio = safe_divide(
-        nf.total_forward_bytes(),
+        static_cast<float>(nf.total_forward_bytes()),
         std::max(static_cast<float>(nf.total_backward_bytes()), 1.0f)
     );
     features[7] = (outbound_ratio > 2.0f) ? normalize(outbound_ratio, 2.0f, 10.0f) : 0.0f;
 
     // [8] Temporal Anomaly Score (using flow IAT variance)
-    float temporal_variance = safe_divide(nf.flow_inter_arrival_time_std(),
+    float temporal_variance = safe_divide(static_cast<float>(nf.flow_inter_arrival_time_std()),
                                          std::max(static_cast<float>(nf.flow_inter_arrival_time_mean()), 0.001f));
     features[8] = normalize(temporal_variance, 0.0f, 10.0f);
 
     // [9] Access Pattern Entropy (using packet size std)
-    features[9] = normalize(nf.packet_length_std(), 0.0f, 500.0f);
+    features[9] = normalize(static_cast<float>(nf.packet_length_std()), 0.0f, 500.0f);
 
     return features;
 }

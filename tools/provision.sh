@@ -1227,6 +1227,38 @@ provision_full() {
         log_warn "libcrypto_transport.so no encontrada en ${lib_path}"
     fi
 
+    # ── ADR-042 IRP: instalar isolate.json + directorio forense ─────────────
+    log_section "argus-network-isolate — ADR-042 IRP config"
+    local irp_dir="/etc/ml-defender/firewall-acl-agent"
+    local irp_config="${irp_dir}/isolate.json"
+    local src_config="/vagrant/tools/argus-network-isolate/config/isolate.json"
+    mkdir -p "${irp_dir}"
+    if [[ ! -f "${irp_config}" ]]; then
+        if [[ -f "${src_config}" ]]; then
+            cp "${src_config}" "${irp_config}"
+            chmod 640 "${irp_config}"
+            chown root:vagrant "${irp_config}" 2>/dev/null || true
+            log_item "isolate.json instalado en ${irp_config}"
+        # DEBT-IRP-BACKUP-DIR-001: directorios IRP seguros
+        mkdir -p /run/argus/irp
+        chmod 0700 /run/argus/irp
+        chown argus:argus /run/argus/irp 2>/dev/null || chown root:root /run/argus/irp
+        mkdir -p /var/lib/argus/irp
+        chmod 0700 /var/lib/argus/irp
+        chown argus:argus /var/lib/argus/irp 2>/dev/null || chown root:root /var/lib/argus/irp
+        log_item "IRP dirs: /run/argus/irp (tmpfs) + /var/lib/argus/irp (persistente)"
+        else
+            log_error "isolate.json no encontrado en ${src_config} — despliegue abortado (ADR-042)"
+            exit 1
+        fi
+    else
+        log_item "isolate.json ya presente en ${irp_config}"
+    fi
+    mkdir -p /var/log/argus
+    chmod 750 /var/log/argus
+    chown root:vagrant /var/log/argus 2>/dev/null || true
+    log_item "/var/log/argus/ listo (forense ADR-042)"
+
     # Verificación final
     log_section "Verificación post-provisioning"
     if verify_all; then

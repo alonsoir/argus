@@ -163,6 +163,11 @@ set(SOURCES
 # ============================================================================
 # EJECUTABLE PRINCIPAL - RAG SECURITY
 # ============================================================================
+# Suppress deprecated-declarations for llama.cpp external API (llama_new_context_with_model)
+# llama.cpp API change: use llama_init_from_model — tracked as future upgrade
+set_source_files_properties(src/llama_integration_real.cpp
+    PROPERTIES COMPILE_OPTIONS "-Wno-deprecated-declarations")
+
 add_executable(rag-security ${SOURCES})
 
 # ============================================================================
@@ -292,6 +297,8 @@ if(HAVE_ONNX)
     add_executable(test_onnx_basic tests/test_onnx_basic.cpp)
     target_include_directories(test_onnx_basic PRIVATE ${ONNX_INCLUDE_DIR})
     target_link_libraries(test_onnx_basic PRIVATE ${ONNX_LIB})
+    # DEBT-COMPILER-WARNINGS-CLEANUP-001: assert() activo en tests independientemente del PROFILE
+    target_compile_options(test_onnx_basic PRIVATE -UNDEBUG)
 
     message(STATUS "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
     message(STATUS "✅ test_onnx_basic configured")

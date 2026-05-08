@@ -27,7 +27,7 @@ fi
 
 echo ""
 echo "── Installing profiles ──"
-for comp in etcd-server sniffer ml-detector firewall-acl-agent rag-ingester rag-security; do
+for comp in etcd-server sniffer ml-detector firewall-acl-agent rag-ingester rag-security argus-network-isolate; do
     src="${PROFILES_DIR}/argus.${comp}"
     dst="${AA_DIR}/argus.${comp}"
 

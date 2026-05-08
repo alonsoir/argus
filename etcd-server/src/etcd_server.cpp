@@ -444,7 +444,7 @@ server.Post("/v1/heartbeat/(.*)", [this](const httplib::Request& req, httplib::R
 });
 
     // Endpoint de salud
-    server.Get("/health", [](const httplib::Request& req, httplib::Response& res) {
+    server.Get("/health", [](const httplib::Request& /*req*/, httplib::Response& res) {
         json response = {
             {"status", "healthy"},
             {"service", "etcd-server"},
@@ -454,7 +454,7 @@ server.Post("/v1/heartbeat/(.*)", [this](const httplib::Request& req, httplib::R
     });
 
     // Endpoint de información del sistema
-    server.Get("/info", [this](const httplib::Request& req, httplib::Response& res) {
+    server.Get("/info", [this](const httplib::Request& /*req*/, httplib::Response& res) {
         json response = {
             {"status", "success"},
             {"service", "etcd-server"},

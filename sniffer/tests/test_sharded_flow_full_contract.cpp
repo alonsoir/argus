@@ -273,9 +273,9 @@ TEST_F(ShardedFlowFullContractTest, NoFieldsLeftAtDefaultValues) {
     // Counters
     total_fields += 4;
     if (stats.spkts > 0) populated_fields++;
-    if (stats.dpkts >= 0) populated_fields++;  // Puede ser 0 si solo hay forward
+    populated_fields++;  // dpkts: siempre contar (puede ser 0 si solo hay forward)
     if (stats.sbytes > 0) populated_fields++;
-    if (stats.dbytes >= 0) populated_fields++;
+    populated_fields++;  // dbytes: siempre contar (puede ser 0 si solo hay forward)
 
     // Vectors
     total_fields += 7;

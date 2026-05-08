@@ -1,0 +1,64 @@
+#include <tunables/global>
+# /etc/apparmor.d/argus.argus-network-isolate
+# AppArmor profile para aRGus argus-network-isolate.
+# Capability: net_admin (nftables transaccional).
+# Invocado via fork()+execv() desde firewall-acl-agent — sin shell.
+# CWE-78 barrier física (ADR-037).
+#
+# DAY 143 — aRGus NDR — ADR-042 IRP sesión 3/3
+
+profile argus-network-isolate /usr/local/bin/argus-network-isolate {
+  #include <abstractions/base>
+
+  # ── Capabilities mínimas ───────────────────────────────────────────────────
+  capability net_admin,   # nftables
+
+  # ── Network ────────────────────────────────────────────────────────────────
+  network netlink raw,    # necesario para nftables
+
+  # ── Propio binario ─────────────────────────────────────────────────────────
+  /usr/local/bin/argus-network-isolate  mr,
+
+  # ── Librerías runtime ──────────────────────────────────────────────────────
+  /usr/local/lib/libspdlog.so*          mr,
+  /lib/x86_64-linux-gnu/**              mr,
+  /usr/lib/x86_64-linux-gnu/**          mr,
+
+  # ── Configuración (solo lectura) ───────────────────────────────────────────
+  /etc/ml-defender/firewall-acl-agent/isolate.json r,
+
+  # ── nft — único binario que puede invocar ──────────────────────────────────
+  /usr/sbin/nft  ix,
+
+  # ── /run/argus/irp — backup nftables + ruleset temporal (DEBT-IRP-BACKUP-DIR-001) ──
+  /run/argus/irp/                    rw,
+  /run/argus/irp/argus-backup-*.nft  rw,
+  /run/argus/irp/argus-isolate-*.nft rw,
+
+  # ── /var/lib/argus/irp — estado IRP persistente ────────────────────────────
+  /var/lib/argus/irp/                rw,
+
+  # ── Logs ───────────────────────────────────────────────────────────────────
+  /var/log/argus/                        rw,
+  /var/log/argus/network-isolate.log     rw,
+  /var/log/argus/network-isolate-forensic.jsonl rw,
+
+  # ── /proc ──────────────────────────────────────────────────────────────────
+  /proc/@{pid}/status r,
+
+  # ── systemd-run — timer de rollback automático ─────────────────────────────
+  /usr/bin/systemd-run ix,
+
+  # ── Denegar explícitamente ─────────────────────────────────────────────────
+  deny /root/**          rwx,
+  deny /home/**          rwx,
+  deny /etc/passwd       w,
+  deny /etc/shadow       rw,
+  deny /bin/bash         x,
+  deny /bin/sh           x,
+  deny /usr/bin/python*  x,
+  deny /etc/apt/sources.list w,
+  deny /etc/apt/sources.list.d/** w,
+  deny /etc/apt/trusted.gpg.d/** w,
+  deny /etc/apt/preferences.d/** w,
+}

@@ -18,8 +18,8 @@ struct bpf_interface_config {
 };
 
 DualNICManager::DualNICManager(const Json::Value& config)
-    : config_(config)
-    , deployment_mode_("host-only") {
+    : deployment_mode_("host-only")
+    , config_(config) {
 }
 
 void DualNICManager::initialize() {

@@ -330,6 +330,8 @@ if(BUILD_TESTS)
             tests/unit/test_logger.cpp
             tests/unit/test_config_loader_traversal.cpp
             tests/unit/test_safe_exec.cpp
+            tests/test_auto_isolate.cpp
+            tests/test_globals_stub.cpp
     )
 
     add_executable(firewall_tests

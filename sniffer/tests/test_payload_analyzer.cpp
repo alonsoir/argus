@@ -403,7 +403,7 @@ bool test_thread_local_isolation() {
     auto payload2 = create_random_payload(256, 222);
     
     auto f1_first = analyzer.analyze(payload1.data(), payload1.size());
-    auto f2 = analyzer.analyze(payload2.data(), payload2.size());
+    auto f2 = analyzer.analyze(payload2.data(), payload2.size()); (void)f2;
     auto f1_second = analyzer.analyze(payload1.data(), payload1.size());
     
     // Same payload should give same results

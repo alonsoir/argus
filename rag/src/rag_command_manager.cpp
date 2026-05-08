@@ -56,7 +56,7 @@ void RagCommandManager::processCommand(const std::vector<std::string>& args) {
     }
 }
 
-void RagCommandManager::showConfig(const std::vector<std::string>& args) {
+void RagCommandManager::showConfig(const std::vector<std::string>& /*args*/) {
     std::cout << "\n🔧 CONFIGURACIÓN RAG - MOSTRANDO..." << std::endl;
 
     try {
@@ -82,7 +82,7 @@ void RagCommandManager::showConfig(const std::vector<std::string>& args) {
     }
 }
 
-void RagCommandManager::showCapabilities(const std::vector<std::string>& args) {
+void RagCommandManager::showCapabilities(const std::vector<std::string>& /*args*/) {
     std::cout << "\n🚀 CAPACIDADES DEL SISTEMA RAG" << std::endl;
     std::cout << "===============================" << std::endl;
     std::cout << "✅ Configuración persistente en JSON" << std::endl;
@@ -303,7 +303,7 @@ void RagCommandManager::handleListEvents(const std::vector<std::string>& args) {
     std::cout << std::endl;
 }
 
-void RagCommandManager::handleStats(const std::vector<std::string>& args) {
+void RagCommandManager::handleStats(const std::vector<std::string>& /*args*/) {
     if (!metadata_reader_) {
         std::cout << "❌ Metadata not loaded" << std::endl;
         return;
@@ -331,7 +331,7 @@ void RagCommandManager::handleStats(const std::vector<std::string>& args) {
     std::cout << std::endl;
 }
 
-void RagCommandManager::handleInfo(const std::vector<std::string>& args) {
+void RagCommandManager::handleInfo(const std::vector<std::string>& /*args*/) {
     if (!chronos_index_) {
         std::cout << "❌ FAISS indices not loaded" << std::endl;
         return;

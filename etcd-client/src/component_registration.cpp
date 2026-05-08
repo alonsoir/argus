@@ -34,7 +34,7 @@ std::string build_registration_payload(const Config& config) {
 }
 
     // Build heartbeat JSON payload
-    std::string build_heartbeat_payload(const Config& config) {
+    std::string build_heartbeat_payload(const Config& /*config*/) {
     // Get timestamp in SECONDS (not milliseconds)
     auto now = std::chrono::system_clock::now();
     auto duration = now.time_since_epoch();

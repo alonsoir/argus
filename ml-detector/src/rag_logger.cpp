@@ -17,6 +17,7 @@
 #include <iomanip>
 #include <filesystem>
 #include <openssl/sha.h>
+#include <openssl/evp.h>
 
 namespace fs = std::filesystem;
 
@@ -413,7 +414,6 @@ void RAGLogger::save_artifacts(const protobuf::NetworkSecurityEvent& event,
             return;
         }
         
-        const auto& nf = event.network_features();
 
         // DAY 75 FIX: Removed proto2-style has_required_embedded guard.
         // In proto3, submessages are NEVER null pointers — accessing
@@ -451,18 +451,18 @@ void RAGLogger::save_artifacts(const protobuf::NetworkSecurityEvent& event,
                 if (artifact_tx_) {
                     int orig_size = static_cast<int>(serialized.size());
                     int max_c = LZ4_compressBound(orig_size);
-                    std::vector<uint8_t> compressed(sizeof(uint32_t) + max_c);
+                    std::vector<uint8_t> compressed(sizeof(uint32_t) + static_cast<size_t>(max_c));
                     uint32_t orig_le = static_cast<uint32_t>(orig_size);
                     std::memcpy(compressed.data(), &orig_le, sizeof(orig_le));
                     int c_size = LZ4_compress_default(serialized.data(),
                         reinterpret_cast<char*>(compressed.data() + sizeof(uint32_t)),
                         orig_size, max_c);
-                    if (c_size > 0) compressed.resize(sizeof(uint32_t) + c_size);
+                    if (c_size > 0) compressed.resize(sizeof(uint32_t) + static_cast<size_t>(c_size));
                     else compressed = std::vector<uint8_t>(serialized.begin(), serialized.end());
                     auto encrypted = artifact_tx_->encrypt(compressed);
-                    pb_file.write(reinterpret_cast<const char*>(encrypted.data()), encrypted.size());
+                    pb_file.write(reinterpret_cast<const char*>(encrypted.data()), static_cast<std::streamsize>(encrypted.size()));
                 } else {
-                    pb_file.write(serialized.data(), serialized.size());
+                    pb_file.write(serialized.data(), static_cast<std::streamsize>(serialized.size()));
                 }
                 pb_file.close();
 
@@ -483,18 +483,18 @@ void RAGLogger::save_artifacts(const protobuf::NetworkSecurityEvent& event,
                 if (artifact_tx_) {
                     int orig_size = static_cast<int>(json_str.size());
                     int max_c = LZ4_compressBound(orig_size);
-                    std::vector<uint8_t> compressed(sizeof(uint32_t) + max_c);
+                    std::vector<uint8_t> compressed(sizeof(uint32_t) + static_cast<size_t>(max_c));
                     uint32_t orig_le = static_cast<uint32_t>(orig_size);
                     std::memcpy(compressed.data(), &orig_le, sizeof(orig_le));
                     int c_size = LZ4_compress_default(json_str.data(),
                         reinterpret_cast<char*>(compressed.data() + sizeof(uint32_t)),
                         orig_size, max_c);
-                    if (c_size > 0) compressed.resize(sizeof(uint32_t) + c_size);
+                    if (c_size > 0) compressed.resize(sizeof(uint32_t) + static_cast<size_t>(c_size));
                     else compressed = std::vector<uint8_t>(json_str.begin(), json_str.end());
                     auto encrypted = artifact_tx_->encrypt(compressed);
-                    json_file.write(reinterpret_cast<const char*>(encrypted.data()), encrypted.size());
+                    json_file.write(reinterpret_cast<const char*>(encrypted.data()), static_cast<std::streamsize>(encrypted.size()));
                 } else {
-                    json_file.write(json_str.data(), json_str.size());
+                    json_file.write(json_str.data(), static_cast<std::streamsize>(json_str.size()));
                 }
                 json_file.close();
 
@@ -590,10 +590,12 @@ std::string RAGLogger::get_iso8601_timestamp() const {
 
 std::string RAGLogger::calculate_sha256(const std::string& data) {
     unsigned char hash[SHA256_DIGEST_LENGTH];
-    SHA256_CTX sha256;
-    SHA256_Init(&sha256);
-    SHA256_Update(&sha256, data.c_str(), data.size());
-    SHA256_Final(hash, &sha256);
+    EVP_MD_CTX* ctx = EVP_MD_CTX_new();
+    EVP_DigestInit_ex(ctx, EVP_sha256(), nullptr);
+    EVP_DigestUpdate(ctx, data.c_str(), data.size());
+    unsigned int hash_len = 0;
+    EVP_DigestFinal_ex(ctx, hash, &hash_len);
+    EVP_MD_CTX_free(ctx);
 
     std::ostringstream oss;
     for (int i = 0; i < SHA256_DIGEST_LENGTH; i++) {
@@ -627,8 +629,8 @@ std::unique_ptr<RAGLogger> create_rag_logger_from_config(
     config.node_id = config_json.value("node_id", "detector-01");
     config.min_score_to_log = config_json.value("min_score_to_log", 0.70);
     config.min_divergence_to_log = config_json.value("min_divergence_to_log", 0.30);
-    config.max_events_per_file = config_json.value("max_events_per_file", 10000);
-    config.max_file_size_mb = config_json.value("max_file_size_mb", 100);
+    config.max_events_per_file = static_cast<size_t>(config_json.value("max_events_per_file", 10000));
+    config.max_file_size_mb = static_cast<size_t>(config_json.value("max_file_size_mb", 100));
     config.save_protobuf_artifacts = config_json.value("save_protobuf_artifacts", true);
     config.save_json_artifacts = config_json.value("save_json_artifacts", true);
 

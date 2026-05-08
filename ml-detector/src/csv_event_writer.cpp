@@ -219,7 +219,7 @@ std::string CsvEventWriter::build_section1(
 
     // col 0: timestamp_ns
     uint64_t ts_ns = event.has_event_timestamp()
-        ? static_cast<uint64_t>(event.event_timestamp().seconds()) * 1'000'000'000ULL
+        ? static_cast<uint64_t>(event.event_timestamp().seconds()) * UINT64_C(1000000000)
           + static_cast<uint64_t>(event.event_timestamp().nanos())
         : 0ULL;
 

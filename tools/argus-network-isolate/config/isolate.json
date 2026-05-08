@@ -1,0 +1,29 @@
+{
+  "_comment": "argus-network-isolate config — ADR-042 IRP",
+  "_version": "1.0.0",
+  "nft_path": "/usr/sbin/nft",
+  "backup_dir": "/run/argus/irp",
+  "rollback_timeout_sec": 300,
+  "table_name": "argus_isolate",
+  "whitelist_ips": [
+    "127.0.0.1",
+    "10.0.2.2",
+    "10.0.2.15",
+    "192.168.56.1"
+  ],
+  "whitelist_ports": [
+    22
+  ],
+  "log_path": "/var/log/argus/network-isolate.log",
+  "forensic_log_path": "/var/log/argus/network-isolate-forensic.jsonl",
+  "auto_isolate": false,
+  "threat_score_threshold": 0.95,
+  "auto_isolate_event_types": [
+    "ransomware",
+    "lateral_movement",
+    "c2_beacon"
+  ],
+  "isolate_interface": "eth1",
+  "_comment_auto_isolate": "DEBT-IRP-AUTOISO-FALSE-001: false por defecto. Consejo 8/8 unanime. Un FP sobre ventilador mecanico es un evento clinico, no un bug. Activar solo con onboarding explicito.",
+  "_comment_backup_dir": "DEBT-IRP-BACKUP-DIR-001: tmpfs volatil. /var/lib/argus/irp/ para estado persistente futuro."
+}
