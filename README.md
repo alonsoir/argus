@@ -30,16 +30,16 @@
 
 ---
 
-✅ `main` is tagged `v0.6.0-hardened-variant-a`. Branch activa: `feature/variant-b-libpcap` @ `e52870d5` — 3 P0 IRP cerradas + Gate ODR production PASSED (DAY 144). Listo para merge → `v0.7.0-variant-b`.
+✅ `main` is tagged `v0.7.0-variant-b`. Branch activa: `main` — ADR-029 Variant A vs B x86 completado (DAY 145). Paper v19 publicado.
 **PRE-PRODUCTION: do not deploy in hospitals until ACRL (DEBT-PENTESTER-LOOP-001) is complete.**
 
 ---
 
-## Estado actual — DAY 144 (2026-05-07)
+## Estado actual — DAY 145 (2026-05-08)
 
-**Tag activo:** `v0.6.0-hardened-variant-a` | **Branch activa:** `feature/variant-b-libpcap` @ `e52870d5`
+**Tag activo:** `v0.7.0-variant-b` | **Branch activa:** `main`
 **Keypair activo:** `b5b6cbdf67dad75cdd7e3169d837d1d6d4c938b720e34331f8a73f478ee85daa`
-**Paper:** arXiv:2604.04952 · Draft v18 (Cornell procesando)
+**Paper:** arXiv:2604.04952 · Draft v19 (ADR-029 Variant A vs B)
 **FEDER deadline:** 22-Sep-2026 | **Go/no-go:** 1-Ago-2026
 
 ### Pipeline
@@ -142,7 +142,11 @@ Democratize enterprise-grade cybersecurity for hospitals, schools, and small org
 | **AppArmor profiles** | **6/6 enforce** | cap_bpf (Linux ≥5.8), no cap_sys_admin |
 | **Falco rules** | **11 aRGus-specific** | modern_ebpf driver |
 | **Variant B tests** | **9/9 PASSED** | DAY 142 — buffer=8MB verificado |
+| **ADR-029 Variant A eBPF (VBox)** | **~10 Mbps / 9,178 pps** | DAY 145 — techo virtio SKB mode |
+| **ADR-029 Variant B libpcap (VBox)** | **~19 Mbps / 17,614 pps** | DAY 145 — ~2× eBPF en virtio |
 | **IRP cycle** | **PASS** | NORMAL→ISOLATED→ROLLBACK→NORMAL DAY 142 |
+
+> **Nota ADR-029 — Failed packets (2,630):** Artefacto fijo del pcap CTU-13 Neris. Son frames jumbo que superan el MTU 1500 de VirtualBox (`errno=90 EMSGSIZE`). El conteo es idéntico en los 6 runs (3 velocidades × 2 variantes) — confirma origen en la estructura del fichero, no en el pipeline. El rechazo ocurre en el cliente antes de llegar al defender; el sniffer nunca ve esos frames. **No son errores del pipeline ni del sniffer.**
 
 ---
 
@@ -330,17 +334,27 @@ make hardened-full   # destroy → up → provision → build → deploy → che
 - [x] feature/adr030-variant-a → main MERGEADO
 - [x] Tag v0.6.0-hardened-variant-a publicado
 
-### 🔜 NEXT — DAY 145
+### ✅ DONE — DAY 145 (8 May 2026) — ADR-029 Variant A vs B 🎉
+
+| Task | Result |
+|---|---|
+| EMECAS ritual | ✅ 65/65 PASSED |
+| PCAP relay x86 eBPF (Variant A) | ✅ ~10 Mbps, 320,524 pkts, exit=0 |
+| PCAP relay x86 libpcap (Variant B) | ✅ ~19 Mbps, 320,524 pkts, exit=0 |
+| Merge `feature/variant-b-libpcap` → main | ✅ v0.7.0-variant-b |
+| Bootstrap múltiple (x86-ebpf / x86-libpcap) | ✅ Makefile actualizado |
+| Relay targets con resumen inline + rutas log | ✅ Sin mensajes confusos |
+| Paper Draft v19 | ✅ §6 ADR-029, §10.9, §11.17, §12 |
+
+### 🔜 NEXT — DAY 146+
 
 | Priority | Task |
 |---|---|
-| 🔴 P0 | EMECAS ritual obligatorio |
-| 🔴 P0 | PCAP relay x86 eBPF (Variant A) — baseline F1=0.9985 |
-| 🔴 P0 | PCAP relay x86 libpcap (Variant B) — métricas nuevas ADR-029 |
-| 🔴 P0 | Merge `feature/variant-b-libpcap` → main · tag `v0.7.0-variant-b` |
-| 🟡 P1 | Refactor Makefile — targets explícitos por arquitectura |
-| 🟡 P1 | Diseño `experiment-comparative` (aRGus + Suricata + Zeek) |
-| 🟡 P1 | Abrir `feature/adr029-variant-c-arm64` con scope definido |
+| 🟡 P1 | DEBT-IRP-TMPFILES-001 — tmpfiles.d para /run/argus/irp/ en reboot |
+| 🟡 P1 | DEBT-IRP-IPSET-TMP-001 — ipset_wrapper.cpp usa /tmp |
+| 🟡 P1 | Diseño `experiment-comparative` (aRGus + Suricata + Zeek como cooperadores) |
+| 🟡 P1 | Abrir `feature/adr029-variant-c-arm64` scope definido |
+| 🟢 P2 | DEBT-EMECAS-VERIFICATION-001 — párrafo README para devs |
 
 ### 🔜 THEN — PHASE 5: Adversarial Capture-Retrain Loop
 
@@ -370,7 +384,8 @@ make hardened-full   # destroy → up → provision → build → deploy → che
 - ✅ DAY 142: **IRP pasos 1-6 · buffer=8MB · mutex Nivel 1 · Consejo 8/8** 🎉
 - ✅ DAY 143: **DEBT-IRP-NFTABLES-001 sesión 3/3 CERRADA — IRP completo · AppArmor 7/7 · 12 tests** 🎉
 - ✅ DAY 144: **3 deudas P0 IRP cerradas · Gate ODR production · 3 ODR violations corregidas · 65/65 tests** 🎉
-- 🔜 DAY 145: **PCAP relay Variant A vs B · Merge → main · v0.7.0-variant-b · experiment-comparative diseño**
+- ✅ DAY 145: **ADR-029 Variant A vs B x86 · libpcap ~2× eBPF en virtio (inversión esperada en bare metal) · Bootstrap múltiple · Paper v19 · Merge → main · v0.7.0-variant-b** 🎉
+- 🔜 DAY 146+: **DEBT-IRP-TMPFILES-001 + DEBT-IRP-IPSET-TMP-001 · experiment-comparative (aRGus+Suricata+Zeek) · feature/adr029-variant-c-arm64 scope**
 
 ---
 

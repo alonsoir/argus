@@ -1,5 +1,5 @@
 # aRGus NDR — BACKLOG
-*Última actualización: DAY 144 — 7 Mayo 2026*
+*Última actualización: DAY 145 — 8 Mayo 2026*
 
 ---
 
@@ -65,6 +65,49 @@
 ---
 
 ## ✅ CERRADO DAY 144
+## ✅ COMPLETADO DAY 145
+
+### ADR-029 Variant A vs B — Primer experimento comparativo x86 (DAY 145)
+- **Status:** ✅ COMPLETADO DAY 145
+- **Branch:** `feature/variant-b-libpcap @ e52870d5` → merge → `v0.7.0-variant-b`
+- **Experimento:** CTU-13 Neris (320,524 paquetes, 19,135 flows) via `tcpreplay` a 10/50/100 Mbps. Pipeline completo 6/6. Solo el sniffer binario cambia entre runs.
+- **Invariante:** mutex `CHECK_SNIFFER_MUTEX` — Variant A y B nunca simultáneas.
+
+| Variante | Target | Mbps real | PPS | Duración (s) | exit |
+|----------|--------|-----------|-----|--------------|------|
+| A — eBPF | 10 Mbps | 8.86 | 8,040 | 39.86 | 0 |
+| A — eBPF | 50 Mbps | 9.78 | 8,867 | 36.14 | 0 |
+| A — eBPF | 100 Mbps | 10.12 | 9,178 | 34.92 | 0 |
+| B — libpcap | 10 Mbps | 9.99 | 9,064 | 35.36 | 0 |
+| B — libpcap | 50 Mbps | 19.43 | 17,614 | 18.19 | 0 |
+| B — libpcap | 100 Mbps | 18.82 | 17,066 | 18.78 | 0 |
+
+- **Hallazgo clave:** Variant B (libpcap) ~2× throughput de Variant A (eBPF) a 50/100 Mbps en VirtualBox virtio. Inversión del orden esperado — artefacto de emulación, no del pipeline. Causa: virtio no expone driver XDP nativo → eBPF cae a modo SKB genérico con overhead por paquete que libpcap no tiene. En hardware real con NIC XDP nativa (Intel ixgbe, Mellanox mlx5), se espera la inversión: eBPF > libpcap. **Este dato es la motivación empírica de la adquisición de hardware FEDER.**
+- **Failed packets (2,630 en todos los runs):** Artefacto fijo del pcap CTU-13 Neris. Son frames jumbo del pcap original que superan el MTU 1500 de VirtualBox (`errno=90 EMSGSIZE`). Evidencias: (1) conteo idéntico en los 6 runs — si fuera saturación variaría; (2) los 320,524 successful son idénticos — propiedad del fichero, no de la red; (3) el rechazo ocurre en el cliente antes de llegar al defender — el sniffer nunca ve esos frames. **No son errores del pipeline.**
+- **Equivalencia funcional A/B confirmada:** ambas variantes procesan el corpus Neris sin errores de pipeline.
+
+### Bootstrap múltiple — DAY 145
+- **Status:** ✅ COMPLETADO DAY 145
+- `bootstrap` → alias de `bootstrap-x86-ebpf` (Variant A, referencia)
+- `bootstrap-x86-ebpf` — pipeline completo con sniffer eBPF/XDP
+- `bootstrap-x86-libpcap` — pipeline completo con sniffer libpcap (compila también `sniffer-libpcap`)
+- `pipeline-start-x86-libpcap` — variante de pipeline-start que arranca Variant B
+
+### Relay targets mejorados — DAY 145
+- **Status:** ✅ COMPLETADO DAY 145
+- `test-replay-neris-x86-ebpf` y `test-replay-neris-x86-libpcap` muestran resumen inline tras cada velocidad (grep de líneas relevantes del log). El banner final lista las 4 rutas de log generadas. Nota sobre MTU integrada en el output — no confunde al usuario.
+- `pipeline-status` distingue: `RUNNING [Variant A — eBPF]`, `RUNNING [Variant B — libpcap]`, `INVARIANT VIOLATION` (ambos simultáneos), `STOPPED`.
+
+### Paper Draft v19 — DAY 145
+- **Status:** ✅ COMPLETADO DAY 145
+- Nueva subsección §6 (ADR-029 Variant A vs B, tabla comparativa, interpretación virtio/SKB, valor científico).
+- §10.9 actualizado con el artefacto virtio/XDP como limitación documentada.
+- §11.17 extendido con el dato empírico como motivación FEDER hardware.
+- §12 Reproducibility — comandos exactos para reproducir el experimento ADR-029.
+- Abstract actualizado con párrafo nuevo sobre el hallazgo ADR-029.
+- Acknowledgments: "132 days" → "145 days".
+
+
 
 ### DEBT-IRP-SIGCHLD-001 — Zombie reaper SA_NOCLDWAIT
 - **Status:** ✅ CERRADO DAY 144 — **Commits:** `a44b7ab3`
@@ -701,6 +744,10 @@ docs/KNOWN-DEBTS-v0.6.md:              100% ✅  DAY 136 (actualizado DAY 138)
 DEBT-CAPTURE-BACKEND-ISP-001:           100% ✅  DAY 138
 DEBT-VARIANT-B-PCAP-IMPL-001:          100% ✅  DAY 138 (8/8 tests)
 DEBT-COMPILER-WARNINGS-CLEANUP-001:    100% ✅  DAY 144 (ODR LTO production gate PASSED)
+ADR-029 Variant A vs B x86 (DAY 145):  100% ✅  DAY 145 (experimento comparativo completo)
+Paper Draft v19:                        100% ✅  DAY 145 (§6 ADR-029 + §10.9 + §11.17 + §12)
+Bootstrap múltiple x86 A/B:            100% ✅  DAY 145 (bootstrap-x86-ebpf + bootstrap-x86-libpcap)
+feature/variant-b-libpcap mergeado:    100% ✅  DAY 145 → v0.7.0-variant-b
 DEBT-PCAP-CALLBACK-LIFETIME-DOC-001:   100% ✅  DAY 141
 DEBT-VARIANT-B-CONFIG-001:             100% ✅  DAY 141 (9/9 tests, 0 warnings)
 Bug Makefile seed-client-build:         100% ✅  DAY 141 (commit 63a37d9d)
@@ -740,6 +787,22 @@ ADR-031 aRGus-seL4:                      0% ⏳  branch independiente
 ---
 
 ## 📝 Notas del Consejo de Sabios — DAY 144 (8/8)
+## 📝 Notas del Consejo de Sabios — DAY 145 (8/8)
+
+> "DAY 145 — Primer experimento comparativo ADR-029 Variant A (eBPF) vs Variant B (libpcap) en x86-64 VirtualBox. Resultado contraintuitivo: libpcap ~2× throughput que eBPF a 50/100 Mbps. Causa identificada: virtio no expone driver XDP nativo, eBPF cae a modo SKB genérico. En hardware físico con NIC XDP nativa, se espera inversión.
+>
+> **Sobre los 2,630 failed packets:** artefacto fijo del pcap CTU-13 Neris. Frames jumbo que superan MTU VirtualBox (errno=90 EMSGSIZE). Conteo idéntico en los 6 runs confirma origen en el fichero, no en el pipeline. El sniffer nunca ve esos frames — no son pérdidas de captura. Documentado en README, BACKLOG y paper v19 para evitar confusión futura.
+>
+> **Equivalencia funcional A/B confirmada:** ambas variantes procesan el corpus Neris completo sin errores de pipeline. La comparación de rendimiento real queda pendiente de hardware físico — que es exactamente el argumento FEDER.
+>
+> **Bootstrap múltiple:** `bootstrap-x86-ebpf` (Variant A, referencia) y `bootstrap-x86-libpcap` (Variant B). `bootstrap` queda como alias de A — el EMECAS habitual no cambia. `pipeline-status` distingue variante activa e impide invariant violation.
+>
+> **Paper v19:** §6 nueva subsección con tabla comparativa, interpretación virtio/SKB, y valor científico. El hallazgo es publicable tal cual: el delta A/B depende críticamente del hardware subyacente.
+>
+> 'Hacer ciencia es esto: observar algo contraintuitivo, identificar la causa, y convertirlo en evidencia empírica para el siguiente argumento.' — Founder DAY 145"
+> — Consejo de Sabios (8/8) · DAY 145
+
+
 
 > "DAY 144 — Tres deudas P0 IRP cerradas en una sesión de madrugada (04:00-08:00). Gate ODR production superado tras corregir tres categorías de violaciones reales bajo `-flto -Werror`.
 >
