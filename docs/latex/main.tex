@@ -1,7 +1,7 @@
 % ============================================================
 % ML Defender (aRGus NDR) — arXiv preprint
-% Draft v18 — DAY 134 — 28 April 2026
-% % Author: Alonso Isidoro Román
+% Draft v19 — DAY 145 — 8 May 2026
+% Author: Alonso Isidoro Román
 % Target: cs.CR
 % ============================================================
 
@@ -79,7 +79,7 @@ in Resource-Constrained Organizations}}
     \href{https://github.com/alonsoir/argus}{github.com/alonsoir/argus}
 }
 
-\date{Draft v18 --- April 2026}
+\date{Draft v19 --- May 2026}
 
 % ============================================================
 \begin{document}
@@ -118,10 +118,10 @@ in Resource-Constrained Organizations}}
 
         We further characterize the pipeline's throughput ceiling under progressive load in a
         virtualized environment. Requesting up to 100~Mbps via \texttt{tcpreplay} against the
-        VirtualBox NIC, the pipeline processes up to ${\sim}34$--38~Mbps (the emulated NIC ceiling)
+        VirtualBox NIC, the pipeline processes up to ${\sim}$34--38~Mbps (the emulated NIC ceiling)
         with zero packet drops and zero errors across 2.37 million packets. At peak load,
         \texttt{ml-detector} consumes approximately 3.2 CPU cores; total pipeline RAM remains stable
-        at ${\sim}1.28$~GB with negligible drift (${\sim}18$~MB over 8 minutes). The bottleneck is
+        at ${\sim}$1.28~GB with negligible drift (${\sim}$18~MB over 8 minutes). The bottleneck is
         VirtualBox NIC emulation, not pipeline logic. Post-replay drain behavior confirms that
         ZeroMQ queues absorb burst traffic correctly and drain asynchronously, validating the queue
         stability design. All throughput figures should be treated as conservative lower bounds;
@@ -160,6 +160,16 @@ in Resource-Constrained Organizations}}
         The architectural response --- an Adversarial Capture-Retrain Loop in which a generative
         red team agent produces attack traffic, the pipeline captures it, and the classifier is
         retrained on real flows --- is introduced as future work~(\S\ref{sec:future:acrl}).
+
+        We further report the first empirical comparison of ADR-029 Variant~A (eBPF/XDP) and
+        Variant~B (libpcap) on x86-64 (DAY~145). Under VirtualBox virtio emulation, Variant~B
+        achieves approximately twice the throughput of Variant~A at 50 and 100~Mbps nominal
+        rates (${\sim}$19~Mbps vs ${\sim}$10~Mbps), an inversion of the expected ordering on
+        physical hardware. Both variants process the complete Neris corpus without pipeline
+        errors, confirming functional equivalence at the detection layer. The inversion is
+        attributed to the absence of a native XDP driver path in the virtio NIC, causing
+        eBPF to fall back to generic SKB mode. This result provides direct empirical motivation
+        for bare-metal hardware acquisition (\S\ref{sec:future:baremetal}).
 
         ML Defender is released under the MIT license.
     \end{abstract}
@@ -1177,25 +1187,25 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
     \paragraph{Empirical results.}
     Table~\ref{tab:fuzzing-results} reports the results of three libFuzzer
     campaigns executed on the aRGus security-critical surfaces (DAY~130).
-    All campaigns ran with 	exttt{-fsanitize=address,undefined,fuzzer} and
-    	exttt{-max\_total\_time=60} seconds. No crashes or sanitizer violations
+    All campaigns ran with \texttt{-fsanitize=address,undefined,fuzzer} and
+    \texttt{-max\_total\_time=60} seconds. No crashes or sanitizer violations
     were observed in any campaign.
 
     \begin{table}[h]
-    \centering
-    \caption{libFuzzer campaign results on aRGus security-critical surfaces (DAY~130).
-    All targets compiled with \texttt{-fsanitize=address,undefined,fuzzer}.
-    No crashes or sanitizer violations observed.}
-    \label{tab:fuzzing-results}
-    \begin{tabular}{lrrrr}
-    \toprule
-    \textbf{Target} & \textbf{Runs} & \textbf{Crashes} & \textbf{Corpus} & \textbf{exec/s} \\
-    \midrule
-    \texttt{validate\_chain\_name} & 2{,}400{,}000 & 0 & 67 & $\approx$80{,}000 \\
-    \texttt{safe\_exec} & 2{,}601{,}759 & 0 & 37 & 42{,}651 \\
-    \texttt{validate\_filepath} & 282{,}226 & 0 & 111 & 4{,}626 \\
-    \bottomrule
-    \end{tabular}
+        \centering
+        \caption{libFuzzer campaign results on aRGus security-critical surfaces (DAY~130).
+        All targets compiled with \texttt{-fsanitize=address,undefined,fuzzer}.
+        No crashes or sanitizer violations observed.}
+        \label{tab:fuzzing-results}
+        \begin{tabular}{lrrrr}
+            \toprule
+            \textbf{Target} & \textbf{Runs} & \textbf{Crashes} & \textbf{Corpus} & \textbf{exec/s} \\
+            \midrule
+            \texttt{validate\_chain\_name} & 2{,}400{,}000 & 0 & 67 & $\approx$80{,}000 \\
+            \texttt{safe\_exec} & 2{,}601{,}759 & 0 & 37 & 42{,}651 \\
+            \texttt{validate\_filepath} & 282{,}226 & 0 & 111 & 4{,}626 \\
+            \bottomrule
+        \end{tabular}
     \end{table}
 
     The order-of-magnitude difference in \texttt{exec/s} between
@@ -1973,6 +1983,87 @@ check-prod-no-compiler:
     (\texttt{wednesday\_eval\_report.json}, MD5-sealed) is included in the repository
     as a permanent scientific artifact.
 
+    % ── NEW SECTION ────────────────────────────────────────────────────────────
+    \subsection{ADR-029: Capture Backend Comparison --- Variant~A (eBPF) vs Variant~B (libpcap)}
+    \label{sec:eval:adr029}
+
+    ADR-029 defines three capture backend variants for the aRGus sniffer:
+    Variant~A (eBPF/XDP, reference), Variant~B (libpcap userspace), and
+    Variant~C (seL4/libpcap, research-only). This section reports the first
+    empirical comparison of Variants~A and B on x86-64 under identical
+    conditions (DAY~145).
+
+    \paragraph{Experimental protocol.}
+    Both variants were evaluated against the full CTU-13 Neris pcap
+    (320,524 packets, 19,135 flows) replayed from a dedicated client VM
+    via \texttt{tcpreplay} at nominal rates of 10, 50, and 100~Mbps.
+    The pipeline ran in its standard 6-component configuration; only the
+    sniffer binary was swapped between runs. The mutual-exclusion invariant
+    --- Variant~A and Variant~B never active simultaneously --- was enforced
+    mechanically via a Makefile guard (\texttt{CHECK\_SNIFFER\_MUTEX}).
+
+    \begin{table}[h]
+        \centering
+        \caption{ADR-029 Variant~A (eBPF) vs Variant~B (libpcap) --- CTU-13 Neris
+        replay on x86-64 VirtualBox (DAY~145). Both variants: 320,524 packets sent,
+            2,630 failed (pre-existing pcap MTU artifact, \texttt{errno=90}), 0 pipeline
+            errors.}
+        \label{tab:adr029}
+        \begin{tabular}{llrrrl}
+            \toprule
+            \textbf{Variant} & \textbf{Target} & \textbf{Actual (Mbps)} & \textbf{PPS} & \textbf{Duration (s)} & \textbf{exit} \\
+            \midrule
+            A -- eBPF    & 10 Mbps  &  8.86 &  8,040 & 39.86 & 0 \\
+            A -- eBPF    & 50 Mbps  &  9.78 &  8,867 & 36.14 & 0 \\
+            A -- eBPF    & 100 Mbps & 10.12 &  9,178 & 34.92 & 0 \\
+            \midrule
+            B -- libpcap & 10 Mbps  &  9.99 &  9,064 & 35.36 & 0 \\
+            B -- libpcap & 50 Mbps  & 19.43 & 17,614 & 18.19 & 0 \\
+            B -- libpcap & 100 Mbps & 18.82 & 17,066 & 18.78 & 0 \\
+            \bottomrule
+        \end{tabular}
+    \end{table}
+
+    \paragraph{Result.}
+    Variant~B (libpcap) achieves approximately twice the throughput of
+    Variant~A (eBPF) at 50 and 100~Mbps nominal rates (${\sim}$19~Mbps
+    vs ${\sim}$10~Mbps). Variant~A plateaus at ${\sim}$10~Mbps regardless
+    of the requested rate.
+
+    \paragraph{Interpretation: VirtualBox virtio as the confounding factor.}
+    This result is \emph{counterintuitive} with respect to the expected
+    performance ordering. On physical hardware with a NIC supporting native
+    XDP, eBPF/XDP provides zero-copy packet delivery before the kernel
+    networking stack and is expected to outperform libpcap, which operates
+    on the standard socket path. In the VirtualBox environment, however, the
+    paravirtualized virtio NIC does not expose a native XDP driver path.
+    As a consequence, the eBPF program falls back to the \texttt{SKB}
+    (socket buffer) generic XDP mode, which introduces per-packet allocation
+    overhead that the libpcap socket path does not incur.
+    The observed inversion --- libpcap faster than eBPF in VirtualBox ---
+    is therefore a property of the emulation layer, not of the capture
+    backends themselves.
+
+    \paragraph{Scientific value.}
+    This inversion constitutes direct empirical evidence for a claim that
+    motivates the bare-metal hardware acquisition phase of this project:
+    \emph{the relative performance of eBPF/XDP vs libpcap is critically
+    dependent on the hardware and driver stack, and cannot be characterized
+    in a virtualized environment.} The VirtualBox result establishes a
+    reproducible baseline; the expected inversion on physical hardware with
+    XDP-native NIC drivers (Intel ixgbe, Mellanox mlx5) remains to be
+    measured (\S\ref{sec:future:baremetal}). This measurement is the
+    primary scientific deliverable of the FEDER Year~1 hardware
+    acquisition.
+
+    Both variants processed the complete 320,524-packet Neris corpus
+    without pipeline errors, confirming functional equivalence at the
+    detection layer. The 2,630 failed packets are a pre-existing pcap
+    artifact (jumbo frames exceeding the VirtualBox MTU,
+    \texttt{errno=90~EMSGSIZE}) present in both runs at identical count,
+    confirming origin in the pcap structure rather than in either capture
+    backend.
+
 % ============================================================
     \section{Performance Model and Throughput Analysis}
 % ============================================================
@@ -2050,10 +2141,20 @@ check-prod-no-compiler:
     \textbf{10.8 RAG Index Capacity.} FAISS event store finite capacity not mathematically
     characterized.
 
-    \textbf{10.9 Virtualization Overhead.} All latency and throughput measurements obtained
-    under VirtualBox. Reported latencies are conservative upper bounds; reported throughput
-    (${\sim}$33--38~Mbps) is a conservative lower bound imposed by NIC emulation. Bare-metal
-    characterization remains future work (\S\ref{sec:future:baremetal}).
+    \textbf{10.9 Virtualization Overhead.}
+    All latency and throughput measurements were obtained under VirtualBox
+    with a paravirtualized virtio NIC. Reported latencies are conservative
+    upper bounds; reported throughput is a conservative lower bound imposed
+    by NIC emulation.
+
+    The ADR-029 Variant~A/B comparison (DAY~145,
+    \S\ref{sec:eval:adr029}) reveals an additional virtualization artifact:
+    eBPF/XDP falls back to generic SKB mode under virtio, causing
+    Variant~A to plateau at ${\sim}$10~Mbps while Variant~B (libpcap)
+    reaches ${\sim}$19~Mbps under identical conditions. This ordering is
+    expected to invert on physical hardware with XDP-native NIC drivers.
+    Bare-metal characterization of both variants remains future
+    work~(\S\ref{sec:future:baremetal}).
 
     \textbf{10.10 BigFlows Ground Truth.} Treated as \emph{probable benign}, not
     \emph{confirmed benign}. FPR=0.0002\% is a lower bound.
@@ -2148,7 +2249,13 @@ check-prod-no-compiler:
     \label{sec:future:baremetal}
     Progressive tcpreplay at 100/250/500/1000~Mbps on physical NIC; CPU/memory/packet-drop
     monitoring per component. All throughput figures in this paper should be treated as
-    conservative lower bounds.
+    conservative lower bounds. The ADR-029 Variant~A/B comparison (DAY~145,
+    \S\ref{sec:eval:adr029}) establishes a reproducible virtualized baseline and motivates
+    the expected performance inversion on bare metal: eBPF/XDP with a native XDP driver
+    is expected to outperform libpcap, reversing the VirtualBox result.
+    Confirming this inversion on physical hardware with XDP-native NIC drivers
+    (Intel ixgbe, Mellanox mlx5) is the primary scientific deliverable of
+    FEDER Year~1 hardware acquisition.
 
     \textbf{11.12 Infiltration Vector Coverage.}
     ML Defender currently detects ransomware \emph{propagation}. Future work addresses
@@ -2262,12 +2369,20 @@ check-prod-no-compiler:
     Isabelle/HOL). Linux runs as an unprivileged guest under Genode; XDP is
     infeasible in this model (no direct DMA access from guest), so libpcap is the
     mandatory capture fallback. The performance delta between eBPF/XDP and libpcap
-    under seL4 is itself a measurable scientific contribution. Estimated overhead:
-    40--60\%. Activation: post-ADR-030 + technical spike (2--3 weeks).
+    under seL4 is itself a measurable scientific contribution. A preliminary
+    measurement on x86-64 VirtualBox (DAY~145, \S\ref{sec:eval:adr029}) reveals
+    that this delta is strongly hardware-dependent: under virtio emulation,
+    libpcap outperforms eBPF by approximately $2\times$ due to the absence of a
+    native XDP driver path. The expected ordering --- eBPF/XDP faster than libpcap
+    on bare metal --- has not yet been empirically confirmed and constitutes the
+    primary performance measurement target for FEDER Year~1 hardware.
+    Estimated overhead of seL4 variant: 40--60\%. Activation: post-ADR-030 +
+    technical spike (2--3 weeks).
 
     Both variants will be validated in Vagrant first, then on bare-metal. Results
     will be published with measured honesty; ADR-031 will not be merged into
     \texttt{main} regardless of outcome.
+
     \textbf{11.18 Adversarial Capture-Retrain Loop (ACRL).}
     \label{sec:future:acrl}
     The out-of-distribution finding documented in \S\ref{sec:eval:xgboost:ood} motivates
@@ -2338,6 +2453,14 @@ check-prod-no-compiler:
     from their actual deployment environment. The Adversarial Capture-Retrain Loop
     (\S\ref{sec:future:acrl}) is the architectural response.
 
+    The first empirical comparison of ADR-029 Variant~A (eBPF/XDP) and Variant~B (libpcap)
+    on x86-64 (DAY~145, \S\ref{sec:eval:adr029}) reveals a hardware-dependent performance
+    inversion: under VirtualBox virtio emulation, libpcap achieves approximately $2\times$
+    the throughput of eBPF/XDP due to the absence of a native XDP driver path. Both variants
+    confirm functional equivalence at the detection layer. This result provides direct
+    empirical motivation for bare-metal hardware acquisition and establishes the reproducible
+    baseline against which the expected inversion on physical hardware will be measured.
+
     ML Defender was built because a friend lost his business to ransomware, and because a
     hospital in Barcelona was paralyzed by an attack on the same day its author was leaving a
     regional hospital in Extremadura --- the hospital that had diagnosed his porphyria and saved
@@ -2393,6 +2516,17 @@ python3 scripts/calculate_f1_neris.py \
   /vagrant/logs/lab/sniffer.log --total-events 19135
     \end{lstlisting}
 
+    \paragraph{ADR-029 Variant A/B Comparison.}
+    \begin{lstlisting}[language=bash]
+# Variant A (eBPF) -- baseline
+make test-replay-neris-x86-ebpf
+# Logs: /vagrant/logs/lab/tcpreplay-ebpf-{10,50,100}mbps.log
+
+# Variant B (libpcap) -- comparison
+make test-replay-neris-x86-libpcap
+# Logs: /vagrant/logs/lab/tcpreplay-libpcap-{10,50,100}mbps.log
+    \end{lstlisting}
+
     \paragraph{Stress Test.}
     \begin{lstlisting}[language=bash]
 vagrant ssh client -c "sudo tcpreplay -i eth1 --mbps=100 --loop=3 \
@@ -2414,7 +2548,7 @@ vagrant ssh client -c "sudo tcpreplay -i eth1 --mbps=100 --loop=3 \
 
     The author engaged eight large language models --- Claude (Anthropic), Grok (xAI), ChatGPT
     (OpenAI), DeepSeek, Qwen (Alibaba), Gemini (Google), Kimi (Moonshot AI), and Mistral
-    (Mistral AI) --- as structured intellectual collaborators across 132 days of continuous
+    (Mistral AI) --- as structured intellectual collaborators across 145 days of continuous
     development. Their contributions to
     architectural decisions, failure mode identification, debugging, test scenarios, and paper
     review are documented in the project's commit history and ADRs. The \emph{Test Driven
@@ -2427,7 +2561,7 @@ vagrant ssh client -c "sudo tcpreplay -i eth1 --mbps=100 --loop=3 \
     The author wishes to acknowledge the friend whose business was destroyed by ransomware ---
     who will recognize himself in these pages. And the Hospital Universitario de Badajoz, Extremadura, whose
     physicians diagnosed a rare disease and gave the author the years needed to build something
-    worth building. Thank you Pedro Risco and Agustín Pijierro.
+    worth building. Thank you Pedro Risco and Agust\'in Pijierro.
 
     \medskip
     \noindent This work is dedicated to every hospital, school, and small organization that has

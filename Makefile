@@ -13,7 +13,7 @@
 .PHONY: clean clean-libs clean-components clean-all distclean test test-libs test-components test-all dev-setup schema-update
 .PHONY: build-unified rebuild-unified quick-fix dev-setup-unified
 .PHONY: check-libbpf verify-bpf-maps diagnose-bpf
-.PHONY: test-replay-small test-replay-neris test-replay-big
+.PHONY: test-replay-small test-replay-neris test-replay-big test-replay-neris-x86-ebpf test-replay-neris-x86-libpcap
 .PHONY: monitor-day13-tmux logs-dual-score logs-dual-score-live extract-dual-scores
 .PHONY: test-integration-day13 test-integration-day13-tmux test-dual-score-quick
 .PHONY: clean-day13-logs stats-dual-score
@@ -59,7 +59,7 @@ validate-prod-configs:
 .PHONY: day38-full day38-status day38-clean day38-pipeline
 .PHONY: tsan-all tsan-quick tsan-clean tsan-summary tsan-status
 .PHONY: etcd-server-status pipeline-start pipeline-stop pipeline-status
-.PHONY: ml-detector-start firewall-start sniffer-start rag-ingester-start
+.PHONY: ml-detector-start firewall-start sniffer-start sniffer-libpcap-start rag-ingester-start
 .PHONY: etcd-server-start rag-start rag-stop dev-setup-tools pipeline-health
 .PHONY: provision provision-status provision-check provision-reprovision test-provision-1 test-invariant-seed
 .PHONY: seed-client-build seed-client-test seed-client-clean seed-client-rebuild
@@ -81,7 +81,7 @@ validate-prod-configs:
 
 # Base flags (always applied)
 CXX_STD := -std=c++20
-CXX_WARNINGS := -Wall -Wextra -Wpedantic
+CXX_WARNINGS := -Wall -Wextra -Wpedantic -Werror
 C_STD := -std=c11
 
 # Profile-specific flags
@@ -161,10 +161,11 @@ help:
 	@echo "╚════════════════════════════════════════════════════════════╝"
 	@echo ""
 	@echo "📋 Build Profiles (PROFILE=name):"
-	@echo "  production  - Optimized (-O3, LTO, march=native)"
-	@echo "  debug       - Debug symbols (-g -O0) [DEFAULT]"
-	@echo "  tsan        - ThreadSanitizer (-fsanitize=thread)"
-	@echo "  asan        - AddressSanitizer (-fsanitize=address)"
+	@echo "  debug       - Debug symbols (-g -O0) [DEFAULT] — desarrollo diario"
+	@echo "  production  - Optimized (-O3, LTO, march=native) — ODR check + benchmarks FEDER"
+	@echo "  tsan        - ThreadSanitizer (-fsanitize=thread) — race conditions"
+	@echo "  asan        - AddressSanitizer (-fsanitize=address,undefined) — memory errors + UB"
+	@echo "  NOTE: PROFILE=production activa -flto → ODR verification cross-module (P0 bloqueante)"
 	@echo ""
 	@echo "Usage: make [PROFILE=<profile>] <target>"
 	@echo "  Example: make PROFILE=tsan all"
@@ -176,7 +177,8 @@ help:
 	@echo "  make crypto-transport-build - Build crypto-transport library"
 	@echo "  make etcd-client-build     - Build etcd-client library"
 	@echo "  make plugin-loader-build   - Build plugin-loader library (ADR-012)"
-	@echo "  make sniffer         - Build sniffer"
+	@echo "  make sniffer         - Build sniffer (Variant A, eBPF/XDP)"
+	@echo "  make sniffer-libpcap - Build sniffer (Variant B, libpcap)"
 	@echo "  make ml-detector     - Build ML detector"
 	@echo "  make rag-ingester    - Build RAG ingester"
 	@echo "  make firewall        - Build firewall agent"
@@ -227,16 +229,18 @@ help:
 # ============================================================================
 # VM Management
 # ============================================================================
-
+.PHONY: bootstrap bootstrap-x86-ebpf bootstrap-x86-libpcap pipeline-start-x86-libpcap
 # ============================================================================
 # DEBT-BOOTSTRAP-001 + DEBT-INFRA-VERIFY-001/002 — DAY 120
 # ============================================================================
 
-.PHONY: bootstrap check-system-deps post-up-verify
+.PHONY: check-system-deps check-build-artifacts post-up-verify
 
-bootstrap:
+bootstrap: bootstrap-x86-ebpf
+
+bootstrap-x86-ebpf:
 	@echo "╔════════════════════════════════════════════════════════════╗"
-	@echo "║  🚀 aRGus NDR — Bootstrap from scratch                    ║"
+	@echo "║  🚀 aRGus NDR — Bootstrap x86 Variant A (eBPF/XDP)        ║"
 	@echo "║  Ejecutar tras: git clone && make up                      ║"
 	@echo "╚════════════════════════════════════════════════════════════╝"
 	@echo "[1/8] Verificando entorno post-up..."
@@ -249,18 +253,53 @@ bootstrap:
 	@$(MAKE) install-systemd-units
 	@echo "[5/8] Compilando pipeline (incluye pubkey runtime + plugin-test-message)..."
 	@$(MAKE) pipeline-build
+	@$(MAKE) check-build-artifacts
 	@echo "[6/8] Desplegando modelos ML..."
 	@$(MAKE) deploy-models
 	@echo "[6b/8] Firmando plugins..."
 	@$(MAKE) sign-plugins
 	@echo "[7/8] Verificando provisioning..."
 	@$(MAKE) test-provision-1
-	@echo "[8/8] Arrancando pipeline..."
+	@echo "[8/8] Arrancando pipeline (Variant A — eBPF/XDP)..."
 	@$(MAKE) pipeline-start
 	@$(MAKE) pipeline-status
 	@$(MAKE) plugin-integ-test
 	@echo "╔════════════════════════════════════════════════════════════╗"
-	@echo "║  ✅ Bootstrap completado — 6/6 RUNNING                    ║"
+	@echo "║  ✅ Bootstrap x86 eBPF completado — 6/6 RUNNING           ║"
+	@echo "║  Sniffer activo: Variant A (eBPF/XDP)                     ║"
+	@echo "║  Siguiente: make test-all                                  ║"
+	@echo "╚════════════════════════════════════════════════════════════╝"
+
+bootstrap-x86-libpcap:
+	@echo "╔════════════════════════════════════════════════════════════╗"
+	@echo "║  🚀 aRGus NDR — Bootstrap x86 Variant B (libpcap)         ║"
+	@echo "║  Ejecutar tras: git clone && make up                      ║"
+	@echo "╚════════════════════════════════════════════════════════════╝"
+	@echo "[1/8] Verificando entorno post-up..."
+	@$(MAKE) post-up-verify
+	@echo "[2/8] Verificando dependencias del sistema..."
+	@$(MAKE) check-system-deps
+	@echo "[3/8] Activando perfil de build..."
+	@$(MAKE) set-build-profile
+	@echo "[4/8] Instalando systemd units..."
+	@$(MAKE) install-systemd-units
+	@echo "[5/8] Compilando pipeline (incluye Variant B sniffer-libpcap)..."
+	@$(MAKE) pipeline-build
+	@$(MAKE) sniffer-libpcap
+	@$(MAKE) check-build-artifacts
+	@echo "[6/8] Desplegando modelos ML..."
+	@$(MAKE) deploy-models
+	@echo "[6b/8] Firmando plugins..."
+	@$(MAKE) sign-plugins
+	@echo "[7/8] Verificando provisioning..."
+	@$(MAKE) test-provision-1
+	@echo "[8/8] Arrancando pipeline (Variant B — libpcap)..."
+	@$(MAKE) pipeline-start-x86-libpcap
+	@$(MAKE) pipeline-status
+	@$(MAKE) plugin-integ-test
+	@echo "╔════════════════════════════════════════════════════════════╗"
+	@echo "║  ✅ Bootstrap x86 libpcap completado — 6/6 RUNNING        ║"
+	@echo "║  Sniffer activo: Variant B (libpcap)                      ║"
 	@echo "║  Siguiente: make test-all                                  ║"
 	@echo "╚════════════════════════════════════════════════════════════╝"
 
@@ -272,7 +311,13 @@ check-system-deps:
 	@vagrant ssh -c "bash /vagrant/tools/check-xgboost-version.sh" || { echo '❌ xgboost 3.2.0 missing'; exit 1; }
 	@vagrant ssh -c "test -f /usr/local/lib/libxgboost.so || { echo '❌ libxgboost.so missing'; exit 1; }"
 	@vagrant ssh -c "test -f /usr/local/lib/libcrypto_transport.so || { echo '❌ libcrypto_transport.so missing'; exit 1; }"
+	@vagrant ssh -c "test -f /usr/sbin/nft || { echo '❌ nftables missing'; exit 1; }"
 	@echo "✅ Todas las dependencias del sistema presentes"
+
+check-build-artifacts:
+	@echo "🔍 Verificando artefactos de build..."
+	@vagrant ssh -c "test -f /usr/local/bin/argus-network-isolate || { echo '❌ argus-network-isolate missing'; exit 1; }"
+	@echo "✅ Artefactos de build presentes"
 
 post-up-verify:
 	@echo "🔍 Verificando entorno post-up..."
@@ -537,14 +582,44 @@ etcd-client-test:
 # ============================================================================
 # Ajusta estas rutas a tu estructura real
 SNIFFER_DIR := /vagrant/sniffer
-SNIFFER_BIN := ./build-debug/sniffer
+SNIFFER_BIN        := ./$(notdir $(SNIFFER_BUILD_DIR))/sniffer
 SNIFFER_CFG := ../config/sniffer.json
+SNIFFER_LIBPCAP_BIN:= ./$(notdir $(SNIFFER_LIBPCAP_BUILD_DIR))/sniffer-libpcap
 
+# ── Macro de exclusión mutua (inline, sin script externo) ────────────────────
+define CHECK_SNIFFER_MUTEX
+	@vagrant ssh defender -c " \
+	  EBPF=\$$(tmux has-session -t sniffer         2>/dev/null && echo 1 || echo 0); \
+	  PCAP=\$$(tmux has-session -t sniffer-libpcap  2>/dev/null && echo 1 || echo 0); \
+	  if [ \$$EBPF -eq 1 ] || [ \$$PCAP -eq 1 ]; then \
+	    echo '❌ MUTEX VIOLATION: otro sniffer activo — para primero con pipeline-stop'; \
+	    exit 1; \
+	  fi"
+endef
+
+# ── sniffer-start — Variant A (eBPF) ─────────────────────────────────────────
 sniffer-start:
-	@echo "🚀 Starting Sniffer (SUDO + TMUX + Hybrid Mode)..."
-	@vagrant ssh -c "tmux kill-session -t sniffer 2>/dev/null || true"
-	@echo "Lanzamos tmux y dentro ejecutamos sudo env para preservar el path de las librerías..."
-	@vagrant ssh -c "tmux new-session -d -s sniffer 'mkdir -p /vagrant/logs/lab && cd $(SNIFFER_DIR)/build-debug && sudo env LD_LIBRARY_PATH=/usr/local/lib ./sniffer -c $(SNIFFER_CFG) >> /vagrant/logs/lab/sniffer.log 2>&1'"
+	@echo "🚀 Starting Sniffer Variant A (eBPF/XDP) [$(PROFILE)]..."
+	$(CHECK_SNIFFER_MUTEX)
+	@vagrant ssh defender -c "tmux kill-session -t sniffer 2>/dev/null || true"
+	@vagrant ssh defender -c "tmux new-session -d -s sniffer \
+	  'mkdir -p /vagrant/logs/lab && \
+	   cd $(SNIFFER_BUILD_DIR) && \
+	   sudo env LD_LIBRARY_PATH=/usr/local/lib ./sniffer -c /vagrant/sniffer/config/sniffer.json \
+	   >> /vagrant/logs/lab/sniffer.log 2>&1'"
+	@sleep 2
+
+# ── sniffer-libpcap-start — Variant B (libpcap) ──────────────────────────────
+sniffer-libpcap-start:
+	@echo "🚀 Starting Sniffer Variant B (libpcap) [$(PROFILE)]..."
+	$(CHECK_SNIFFER_MUTEX)
+	@vagrant ssh defender -c "tmux kill-session -t sniffer-libpcap 2>/dev/null || true"
+	@vagrant ssh defender -c "tmux new-session -d -s sniffer-libpcap \
+	  'mkdir -p /vagrant/logs/lab && \
+	   cd $(SNIFFER_LIBPCAP_BUILD_DIR) && \
+	   sudo env LD_LIBRARY_PATH=/usr/local/lib ./sniffer-libpcap \
+	   -c /etc/ml-defender/sniffer/sniffer-libpcap.json \
+	   >> /vagrant/logs/lab/sniffer-libpcap.log 2>&1'"
 	@sleep 2
 
 sniffer: proto etcd-client-build plugin-loader-build
@@ -638,7 +713,7 @@ firewall-start:
 	@vagrant ssh -c "tmux new-session -d -s firewall 'mkdir -p /vagrant/logs/lab && cd $(FIREWALL_DIR)/build-debug && sudo env LD_LIBRARY_PATH=/usr/local/lib $(FIREWALL_BIN) -c $(FIREWALL_CFG) >> /vagrant/logs/lab/firewall-agent.log 2>&1'"
 	@sleep 2
 
-firewall: proto etcd-client-build plugin-loader-build
+firewall: proto seed-client-build etcd-client-build plugin-loader-build
 	@echo ""
 	@echo "╔════════════════════════════════════════════════════════════╗"
 	@echo "║  🔨 Building Firewall ACL Agent [$(PROFILE)]              ║"
@@ -818,6 +893,23 @@ pipeline-start: test-provision-1 etcd-server-start
 	@echo "╚════════════════════════════════════════════════════════════╝"
 	@$(MAKE) pipeline-status
 
+pipeline-start-x86-libpcap: test-provision-1 etcd-server-start
+	@echo "⏳ Waiting for etcd-server to stabilize (Seed generation)..."
+	@sleep 4
+	@$(MAKE) rag-start
+	@sleep 5
+	@$(MAKE) rag-ingester-start
+	@sleep 3
+	@$(MAKE) ml-detector-start
+	@$(MAKE) firewall-start
+	@sleep 2
+	@$(MAKE) sniffer-libpcap-start
+	@echo ""
+	@echo "╔════════════════════════════════════════════════════════════╗"
+	@echo "║  ✅ FULL PIPELINE STARTED — Variant B (libpcap)           ║"
+	@echo "╚════════════════════════════════════════════════════════════╝"
+	@$(MAKE) pipeline-status
+
 pipeline-stop:
 	@echo "🛑 Stopping all pipeline components..."
 	@vagrant ssh -c "for s in sniffer ml-detector firewall rag-ingester rag-security etcd-server; do tmux kill-session -t $$s 2>/dev/null || true; done"
@@ -832,7 +924,18 @@ pipeline-status:
 	@vagrant ssh -c "tmux has-session -t rag-security 2>/dev/null && echo '  ✅ rag-security:  RUNNING' || echo '  ❌ rag-security:  STOPPED'"
 	@vagrant ssh -c "tmux has-session -t rag-ingester 2>/dev/null && echo '  ✅ rag-ingester:  RUNNING' || echo '  ❌ rag-ingester:  STOPPED'"
 	@vagrant ssh -c "tmux has-session -t ml-detector 2>/dev/null && echo '  ✅ ml-detector:   RUNNING' || echo '  ❌ ml-detector:   STOPPED'"
-	@vagrant ssh -c "tmux has-session -t sniffer 2>/dev/null && echo '  ✅ sniffer:       RUNNING' || echo '  ❌ sniffer:       STOPPED'"
+	@vagrant ssh -c " \
+	  EBPF=$$(tmux has-session -t sniffer        2>/dev/null && echo 1 || echo 0); \
+	  PCAP=$$(tmux has-session -t sniffer-libpcap 2>/dev/null && echo 1 || echo 0); \
+	  if   [ \$$EBPF -eq 1 ] && [ \$$PCAP -eq 0 ]; then \
+	    echo '  ✅ sniffer:       RUNNING [Variant A — eBPF]'; \
+	  elif [ \$$EBPF -eq 0 ] && [ \$$PCAP -eq 1 ]; then \
+	    echo '  ✅ sniffer:       RUNNING [Variant B — libpcap]'; \
+	  elif [ \$$EBPF -eq 1 ] && [ \$$PCAP -eq 1 ]; then \
+	    echo '  🚨 sniffer:       INVARIANT VIOLATION — eBPF + libpcap SIMULTANEOUS'; \
+	  else \
+	    echo '  ❌ sniffer:       STOPPED'; \
+	  fi"
 	@vagrant ssh -c "tmux has-session -t firewall 2>/dev/null && echo '  ✅ firewall:      RUNNING' || echo '  ❌ firewall:      STOPPED'"
 	@echo "╚════════════════════════════════════════════════════════════╝"
 
@@ -851,7 +954,7 @@ set-build-profile:
 # 4. sign-plugins    → firma Ed25519 (ADR-025)
 # 5. test-provision-1 → CI gate PHASE 3
 # 6. pipeline-start  → arranca los 6 componentes
-pipeline-build: crypto-transport-build etcd-client-build plugin-loader-build plugin-test-message-build etcd-server rag-build rag-ingester-build ml-detector sniffer firewall-build
+pipeline-build: crypto-transport-build seed-client-build etcd-client-build plugin-loader-build plugin-test-message-build etcd-server rag-build rag-ingester-build ml-detector sniffer firewall-build argus-network-isolate-build argus-network-isolate-install
 
 tools: proto etcd-client-build crypto-transport-build
 	@echo ""
@@ -875,6 +978,37 @@ tools: proto etcd-client-build crypto-transport-build
 	@echo ""
 	@echo "✅ Tools built ($(PROFILE))"
 
+
+# ─────────────────────────────────────────────────────────────────────────────
+# ADR-029 Variant B — sniffer compilado con libpcap (sin eBPF/XDP)
+# DEBT-VARIANT-B-PCAP-IMPL-001: stub compilable, implementación real pendiente
+# DAY 137 — 2026-04-30
+# ─────────────────────────────────────────────────────────────────────────────
+SNIFFER_LIBPCAP_BUILD_DIR := /vagrant/sniffer/build-$(PROFILE)-libpcap
+
+.PHONY: sniffer-libpcap
+
+sniffer-libpcap: proto etcd-client-build plugin-loader-build
+	@echo ""
+	@echo "╔════════════════════════════════════════════════════════════╗"
+	@echo "║  🔨 Building Sniffer Variant B [libpcap, $(PROFILE)]      ║"
+	@echo "╚════════════════════════════════════════════════════════════╝"
+	@echo ""
+	@echo "Build dir: $(SNIFFER_LIBPCAP_BUILD_DIR)"
+	@echo "Flags: $(CMAKE_FLAGS) -DUSE_LIBPCAP=ON"
+	@echo ""
+	@echo "Copying protobuf files..."
+	@vagrant ssh -c 'mkdir -p $(SNIFFER_LIBPCAP_BUILD_DIR)/proto && \
+		cp /vagrant/protobuf/network_security.pb.* $(SNIFFER_LIBPCAP_BUILD_DIR)/proto/'
+	@echo "Running CMake and build (Variant B)..."
+	@vagrant ssh -c 'cd /vagrant/sniffer && \
+		mkdir -p $(SNIFFER_LIBPCAP_BUILD_DIR) && \
+		cd $(SNIFFER_LIBPCAP_BUILD_DIR) && \
+		cmake $(CMAKE_FLAGS) -DUSE_LIBPCAP=ON .. && \
+		make sniffer-libpcap -j4'
+	@echo ""
+	@echo "✅ Sniffer Variant B built ($(PROFILE), libpcap)"
+
 # Aliases for consistency with existing workflows
 detector: ml-detector
 sniffer-build: sniffer
@@ -883,6 +1017,41 @@ rag-ingester-build: rag-ingester
 firewall-build: firewall
 etcd-server-build: etcd-server
 tools-build: tools
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# argus-network-isolate — ADR-042 Incident Response Protocol
+# DAY 142 — nftables transaccional (pasos 1-3 implementados)
+# ─────────────────────────────────────────────────────────────────────────────
+ARGUS_ISOLATE_BUILD_DIR := /vagrant/tools/build-argus-network-isolate
+
+.PHONY: argus-network-isolate-build argus-network-isolate-clean argus-network-isolate-test
+
+argus-network-isolate-build:
+	@echo ""
+	@echo "╔════════════════════════════════════════════════════════════╗"
+	@echo "║  🔨 Building argus-network-isolate [ADR-042 IRP]          ║"
+	@echo "╚════════════════════════════════════════════════════════════╝"
+	@vagrant ssh -c "rm -rf $(ARGUS_ISOLATE_BUILD_DIR) && mkdir -p $(ARGUS_ISOLATE_BUILD_DIR) && cd $(ARGUS_ISOLATE_BUILD_DIR) && cmake /vagrant/tools/argus-network-isolate -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS='-std=c++20 -Wall -Wextra -Wpedantic -Werror -g -O0' && make -j4"
+	@echo "✅ argus-network-isolate built"
+
+argus-network-isolate-test:
+	@echo "── argus-network-isolate: unit tests ──"
+	@vagrant ssh -c "cd $(ARGUS_ISOLATE_BUILD_DIR) && ctest --output-on-failure"
+	@echo "── argus-network-isolate: status ──"
+	@vagrant ssh -c "sudo $(ARGUS_ISOLATE_BUILD_DIR)/argus-network-isolate status --config /vagrant/tools/argus-network-isolate/config/isolate.json"
+	@echo "── argus-network-isolate: dry-run eth1 ──"
+	@vagrant ssh -c "sudo $(ARGUS_ISOLATE_BUILD_DIR)/argus-network-isolate isolate --interface eth1 --dry-run --config /vagrant/tools/argus-network-isolate/config/isolate.json"
+	@echo "✅ argus-network-isolate dry-run PASSED"
+
+argus-network-isolate-install:
+	@echo "── Instalando argus-network-isolate en /usr/local/bin/ ──"
+	@vagrant ssh -c "sudo cp $(ARGUS_ISOLATE_BUILD_DIR)/argus-network-isolate /usr/local/bin/argus-network-isolate && sudo chmod 755 /usr/local/bin/argus-network-isolate"
+	@echo "✅ argus-network-isolate instalado"
+
+argus-network-isolate-clean:
+	@vagrant ssh -c "rm -rf $(ARGUS_ISOLATE_BUILD_DIR)"
+	@echo "✅ argus-network-isolate cleaned"
 
 # ============================================================================
 # Clean Targets (REFACTORED - Day 57)
@@ -1016,7 +1185,7 @@ test-components:
 	@vagrant ssh -c "cd $(RAG_BUILD_DIR) && ctest --output-on-failure" || echo "⚠️  No rag-security tests configured"
 	@echo ""
 
-test-all: test-libs test-components test-provision-1 test-invariant-seed plugin-integ-test
+test-all: test-libs test-components test-provision-1 test-invariant-seed plugin-integ-test argus-network-isolate-test
 	@echo ""
 	@echo "╔════════════════════════════════════════════════════════════╗"
 	@echo "║  ✅ ALL TESTS COMPLETE                                    ║"
@@ -1337,6 +1506,109 @@ test-replay-big:
 	@echo "🧪 Replaying CTU-13 bigFlows.pcap..."
 	@vagrant ssh client -c "mkdir -p /vagrant/logs/lab && \
 		sudo tcpreplay -i eth1 --mbps=10 --stats=10 $(CTU13_BIG) 2>&1 | tee /vagrant/logs/lab/tcpreplay.log"
+
+# ── relay targets — usan tmux, no systemctl ───────────────────────────────────
+test-replay-neris-x86-ebpf:
+	@echo "🧪 [Variant A / eBPF] Parando libpcap si activo..."
+	@vagrant ssh defender -c "tmux kill-session -t sniffer-libpcap 2>/dev/null || true"
+	@echo "🔄 Reiniciando sniffer eBPF limpio para el experimento..."
+	@vagrant ssh defender -c "tmux kill-session -t sniffer 2>/dev/null || true"
+	@sleep 1
+	@$(MAKE) sniffer-start
+	@echo "📊 Iniciando captura de métricas en defender..."
+	@vagrant ssh defender -c \
+	  "mkdir -p /vagrant/logs/lab && \
+	   cat /proc/net/dev > /vagrant/logs/lab/netdev-pre-ebpf.txt && \
+	   nohup bash -c 'while true; do cat /proc/net/dev; sleep 1; done' \
+	     > /vagrant/logs/lab/netdev-ebpf.log 2>&1 &"
+	@echo "🔁 Replaying CTU-13 Neris (Variant A) — 10 Mbps..."
+	@vagrant ssh client -c "mkdir -p /vagrant/logs/lab && \
+	   sudo tcpreplay -i eth1 --mbps=10 --stats=1 $(CTU13_NERIS) \
+	     > /vagrant/logs/lab/tcpreplay-ebpf-10mbps.log 2>&1; \
+	   echo \"exit=\$$?\" >> /vagrant/logs/lab/tcpreplay-ebpf-10mbps.log" || true
+	@vagrant ssh client -c \
+	  "grep -E 'Test complete|Actual:|Successful packets|Failed packets|exit=' \
+	   /vagrant/logs/lab/tcpreplay-ebpf-10mbps.log 2>/dev/null | tail -6" || true
+	@echo "🔁 Replaying CTU-13 Neris (Variant A) — 50 Mbps..."
+	@vagrant ssh client -c \
+	  "sudo tcpreplay -i eth1 --mbps=50 --stats=1 $(CTU13_NERIS) \
+	     > /vagrant/logs/lab/tcpreplay-ebpf-50mbps.log 2>&1; \
+	   echo \"exit=\$$?\" >> /vagrant/logs/lab/tcpreplay-ebpf-50mbps.log" || true
+	@vagrant ssh client -c \
+	  "grep -E 'Test complete|Actual:|Successful packets|Failed packets|exit=' \
+	   /vagrant/logs/lab/tcpreplay-ebpf-50mbps.log 2>/dev/null | tail -6" || true
+	@echo "🔁 Replaying CTU-13 Neris (Variant A) — 100 Mbps..."
+	@vagrant ssh client -c \
+	  "sudo tcpreplay -i eth1 --mbps=100 --stats=1 $(CTU13_NERIS) \
+	     > /vagrant/logs/lab/tcpreplay-ebpf-100mbps.log 2>&1; \
+	   echo \"exit=\$$?\" >> /vagrant/logs/lab/tcpreplay-ebpf-100mbps.log" || true
+	@vagrant ssh client -c \
+	  "grep -E 'Test complete|Actual:|Successful packets|Failed packets|exit=' \
+	   /vagrant/logs/lab/tcpreplay-ebpf-100mbps.log 2>/dev/null | tail -6" || true
+	@vagrant ssh defender -c "pkill -f 'while true; do cat /proc/net' 2>/dev/null || true" || true
+	@echo ""
+	@echo "╔════════════════════════════════════════════════════════════╗"
+	@echo "║  ✅ Variant A (eBPF) DONE — ADR-029 DAY 145              ║"
+	@echo "╠════════════════════════════════════════════════════════════╣"
+	@echo "║  Logs en VM:                                              ║"
+	@echo "║  /vagrant/logs/lab/tcpreplay-ebpf-10mbps.log             ║"
+	@echo "║  /vagrant/logs/lab/tcpreplay-ebpf-50mbps.log             ║"
+	@echo "║  /vagrant/logs/lab/tcpreplay-ebpf-100mbps.log            ║"
+	@echo "║  /vagrant/logs/lab/netdev-ebpf.log                       ║"
+	@echo "║  Nota: warnings 'Message too long' son artefacto MTU     ║"
+	@echo "║  de VirtualBox — no son errores del pipeline.            ║"
+	@echo "╚════════════════════════════════════════════════════════════╝"
+
+test-replay-neris-x86-libpcap:
+	@echo "🧪 [Variant B / libpcap] Parando eBPF sniffer si activo..."
+	@vagrant ssh defender -c "tmux kill-session -t sniffer 2>/dev/null || true"
+	@echo "🔄 Reiniciando sniffer libpcap limpio para el experimento..."
+	@vagrant ssh defender -c "tmux kill-session -t sniffer-libpcap 2>/dev/null || true"
+	@sleep 1
+	@$(MAKE) sniffer-libpcap-start
+	@echo "📊 Iniciando captura de métricas en defender..."
+	@vagrant ssh defender -c \
+	  "mkdir -p /vagrant/logs/lab && \
+	   cat /proc/net/dev > /vagrant/logs/lab/netdev-pre-libpcap.txt && \
+	   nohup bash -c 'while true; do cat /proc/net/dev; sleep 1; done' \
+	     > /vagrant/logs/lab/netdev-libpcap.log 2>&1 &"
+	@echo "🔁 Replaying CTU-13 Neris (Variant B) — 10 Mbps..."
+	@vagrant ssh client -c "mkdir -p /vagrant/logs/lab && \
+	   sudo tcpreplay -i eth1 --mbps=10 --stats=1 $(CTU13_NERIS) \
+	     > /vagrant/logs/lab/tcpreplay-libpcap-10mbps.log 2>&1; \
+	   echo \"exit=\$$?\" >> /vagrant/logs/lab/tcpreplay-libpcap-10mbps.log" || true
+	@vagrant ssh client -c \
+	  "grep -E 'Test complete|Actual:|Successful packets|Failed packets|exit=' \
+	   /vagrant/logs/lab/tcpreplay-libpcap-10mbps.log 2>/dev/null | tail -6" || true
+	@echo "🔁 Replaying CTU-13 Neris (Variant B) — 50 Mbps..."
+	@vagrant ssh client -c \
+	  "sudo tcpreplay -i eth1 --mbps=50 --stats=1 $(CTU13_NERIS) \
+	     > /vagrant/logs/lab/tcpreplay-libpcap-50mbps.log 2>&1; \
+	   echo \"exit=\$$?\" >> /vagrant/logs/lab/tcpreplay-libpcap-50mbps.log" || true
+	@vagrant ssh client -c \
+	  "grep -E 'Test complete|Actual:|Successful packets|Failed packets|exit=' \
+	   /vagrant/logs/lab/tcpreplay-libpcap-50mbps.log 2>/dev/null | tail -6" || true
+	@echo "🔁 Replaying CTU-13 Neris (Variant B) — 100 Mbps..."
+	@vagrant ssh client -c \
+	  "sudo tcpreplay -i eth1 --mbps=100 --stats=1 $(CTU13_NERIS) \
+	     > /vagrant/logs/lab/tcpreplay-libpcap-100mbps.log 2>&1; \
+	   echo \"exit=\$$?\" >> /vagrant/logs/lab/tcpreplay-libpcap-100mbps.log" || true
+	@vagrant ssh client -c \
+	  "grep -E 'Test complete|Actual:|Successful packets|Failed packets|exit=' \
+	   /vagrant/logs/lab/tcpreplay-libpcap-100mbps.log 2>/dev/null | tail -6" || true
+	@vagrant ssh defender -c "pkill -f 'while true; do cat /proc/net' 2>/dev/null || true" || true
+	@echo ""
+	@echo "╔════════════════════════════════════════════════════════════╗"
+	@echo "║  ✅ Variant B (libpcap) DONE — ADR-029 DAY 145           ║"
+	@echo "╠════════════════════════════════════════════════════════════╣"
+	@echo "║  Logs en VM:                                              ║"
+	@echo "║  /vagrant/logs/lab/tcpreplay-libpcap-10mbps.log          ║"
+	@echo "║  /vagrant/logs/lab/tcpreplay-libpcap-50mbps.log          ║"
+	@echo "║  /vagrant/logs/lab/tcpreplay-libpcap-100mbps.log         ║"
+	@echo "║  /vagrant/logs/lab/netdev-libpcap.log                    ║"
+	@echo "║  Nota: warnings 'Message too long' son artefacto MTU     ║"
+	@echo "║  de VirtualBox — no son errores del pipeline.            ║"
+	@echo "╚════════════════════════════════════════════════════════════╝"
 
 # ============================================================================
 # etcd-server Control

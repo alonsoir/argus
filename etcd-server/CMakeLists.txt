@@ -277,6 +277,8 @@ if(BUILD_TESTS)
             ${OPENSSL_INCLUDE_DIR}
     )
 
+    # DEBT-COMPILER-WARNINGS-CLEANUP-001: assert() activo en tests independientemente del PROFILE
+    target_compile_options(test_secrets_manager_simple PRIVATE -UNDEBUG)
     add_test(NAME test_secrets_manager_simple COMMAND test_secrets_manager_simple)
     target_link_libraries(test_secrets_manager_simple
             PRIVATE

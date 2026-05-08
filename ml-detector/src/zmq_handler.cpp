@@ -25,19 +25,19 @@ ZMQHandler::ZMQHandler(
     std::string hmac_key_hex
 )
     : config_(config)
-    , context_(1)
     , level1_model_(level1_model)
     , ddos_detector_(ddos_detector)
     , ransomware_detector_(ransomware_detector)
     , traffic_detector_(traffic_detector)
     , internal_detector_(internal_detector)
     , extractor_(extractor)
+    , context_(1)
+    , running_(false)
+    , last_stats_report_(std::chrono::steady_clock::now())
+    , logger_(spdlog::get("ml-detector"))
+    , start_time_(std::chrono::system_clock::now())
     // DEPRECATED DAY 98 — crypto_manager ignorado
     , hmac_key_hex_(std::move(hmac_key_hex))
-    , running_(false)
-    , logger_(spdlog::get("ml-detector"))
-    , last_stats_report_(std::chrono::steady_clock::now())
-    , start_time_(std::chrono::system_clock::now())
 {
     if (!logger_) {
         logger_ = spdlog::stdout_color_mt("zmq-handler");
@@ -127,7 +127,7 @@ ZMQHandler::ZMQHandler(
             ml_defender::CsvEventWriterConfig csv_cfg;
             csv_cfg.base_dir            = csv_dir;
             csv_cfg.hmac_key_hex        = hmac_key_hex_;
-            csv_cfg.max_events_per_file = config_.csv_writer.max_events_per_file;
+            csv_cfg.max_events_per_file = static_cast<size_t>(config_.csv_writer.max_events_per_file);
             csv_cfg.min_score_threshold = config_.csv_writer.min_score_threshold;
 
 			csv_writer_ = std::make_shared<ml_defender::CsvEventWriter>(csv_cfg, logger_);
@@ -442,9 +442,9 @@ void ZMQHandler::process_event(const std::string& message) {
                 : ml_defender::to_string(ml_defender::ReasonCode::UNKNOWN)
         );
         rf_verdict->set_timestamp_ns(
-            std::chrono::duration_cast<std::chrono::nanoseconds>(
+            static_cast<uint64_t>(std::chrono::duration_cast<std::chrono::nanoseconds>(
                 std::chrono::system_clock::now().time_since_epoch()
-            ).count()
+            ).count())
         );
 
         float discrepancy = 0.0f;
@@ -457,9 +457,9 @@ void ZMQHandler::process_event(const std::string& message) {
 
         provenance->set_discrepancy_score(discrepancy);
         provenance->set_global_timestamp_ns(
-            std::chrono::duration_cast<std::chrono::nanoseconds>(
+            static_cast<uint64_t>(std::chrono::duration_cast<std::chrono::nanoseconds>(
                 std::chrono::system_clock::now().time_since_epoch()
-            ).count()
+            ).count())
         );
         provenance->set_final_decision(
             final_score >= config_.scoring.malicious_threshold ? "DROP" : "ALLOW"
@@ -481,9 +481,9 @@ void ZMQHandler::process_event(const std::string& message) {
         ml_context.events_in_last_minute   = calculate_events_per_minute();
         ml_context.memory_usage_mb         = get_memory_usage_mb();
         ml_context.cpu_usage_percent       = 0.0;
-        ml_context.uptime_seconds          = std::chrono::duration_cast<std::chrono::seconds>(
+        ml_context.uptime_seconds          = static_cast<uint64_t>(std::chrono::duration_cast<std::chrono::seconds>(
             std::chrono::system_clock::now() - start_time_
-        ).count();
+        ).count());
 
         ml_context.attack_family           = "RANSOMWARE";  // TODO: Get from detector
         ml_context.level_1_label           = label_l1 == 1 ? "MALICIOUS" : "BENIGN";
@@ -834,7 +834,7 @@ void ZMQHandler::process_event(const std::string& message) {
             std::lock_guard<std::mutex> lock(stats_mutex_);
             stats_.events_processed++;
             stats_.avg_processing_time_ms =
-                (stats_.avg_processing_time_ms * (stats_.events_processed - 1) + duration_ms) /
+                (stats_.avg_processing_time_ms * static_cast<double>(stats_.events_processed - 1) + duration_ms) /
                 static_cast<double>(stats_.events_processed);
         }
 
@@ -873,7 +873,7 @@ void ZMQHandler::send_enriched_event(const protobuf::NetworkSecurityEvent& event
         {
             int orig_size = static_cast<int>(serialized.size());
             int max_compressed = LZ4_compressBound(orig_size);
-            std::vector<uint8_t> compressed(sizeof(uint32_t) + max_compressed);
+            std::vector<uint8_t> compressed(sizeof(uint32_t) + static_cast<size_t>(max_compressed));
             uint32_t orig_le = static_cast<uint32_t>(orig_size);
             std::memcpy(compressed.data(), &orig_le, sizeof(orig_le));
             int compressed_size = LZ4_compress_default(
@@ -882,7 +882,7 @@ void ZMQHandler::send_enriched_event(const protobuf::NetworkSecurityEvent& event
                 orig_size, max_compressed
             );
             if (compressed_size > 0) {
-                compressed.resize(sizeof(uint32_t) + compressed_size);
+                compressed.resize(sizeof(uint32_t) + static_cast<size_t>(compressed_size));
                 to_encrypt = std::move(compressed);
             } else {
                 to_encrypt = std::vector<uint8_t>(serialized.begin(), serialized.end());
@@ -941,7 +941,7 @@ uint64_t ZMQHandler::calculate_events_per_minute() {
     ).count();
 
     if (uptime_s < 60) return events_processed_total_;
-    return events_processed_total_ / (uptime_s / 60);
+    return events_processed_total_ / static_cast<uint64_t>(uptime_s / 60);
 }
 
 void ZMQHandler::log_periodic_stats() {

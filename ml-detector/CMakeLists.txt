@@ -209,6 +209,18 @@ endif()
 
 set(PROTO_SOURCES ${CMAKE_BINARY_DIR}/proto/network_security.pb.cc)
 set(PROTO_HEADERS ${CMAKE_BINARY_DIR}/proto/network_security.pb.h)
+# Suprimir warnings en fichero generado por protobuf (no código nuestro)
+set_source_files_properties(${PROTO_SOURCES} PROPERTIES
+    COMPILE_OPTIONS "-Wno-sign-conversion;-Wno-conversion"
+)
+# Suprimir warnings en source files que incluyen árboles XGBoost generados
+set_source_files_properties(
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/ddos_detector.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/traffic_detector.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/internal_detector.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/ransomware_detector.cpp
+    PROPERTIES COMPILE_OPTIONS "-Wno-sign-conversion;-Wno-conversion"
+)
 
 # ============================================================================
 # SOURCE FILES

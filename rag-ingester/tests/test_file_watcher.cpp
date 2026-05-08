@@ -159,7 +159,7 @@ bool test_multiple_files_rapid() {
     
     std::atomic<int> callback_count{0};
     
-    auto callback = [&](const std::string& filepath) {
+    auto callback = [&](const std::string& /*filepath*/) {
         callback_count++;
     };
     

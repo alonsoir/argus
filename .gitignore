@@ -64,6 +64,7 @@ models/backup_*/
 
 # Build artifacts
 sniffer/build/
+sniffer/build-*/
 sniffer/cmake-build-*/
 **/CMakeCache.txt
 **/CMakeFiles/
@@ -243,3 +244,5 @@ dist/vendor/*
 */build-prod/
 */build-production/
 firewall-acl-agent/fuzz/corpus/
+ml-training/.venv/
+tools/build-argus-network-isolate/

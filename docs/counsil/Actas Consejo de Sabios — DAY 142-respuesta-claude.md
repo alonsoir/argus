@@ -1,0 +1,5 @@
+5. MIS RESPUESTAS COMO PUNTO DE PARTIDA
+   P1: Umbral único score >= 0.95 para el MVP FEDER. La matriz de decisión se registra como IDEA-IRP-DECISION-MATRIX-001 para post-FEDER. Justificación: auditabilidad y simplicidad para administradores no expertos.
+   P2: fork() + execv(). El agente de firewall debe sobrevivir al aislamiento para continuar registrando evidencia. Un agente muerto durante un ataque activo es exactamente lo que el atacante busca.
+   P3: enforce desde el primer deploy. Coherente con el axioma BSR y la política del proyecto. Si el perfil bloquea algo legítimo, lo descubrimos en dev antes de llegar a producción.
+   P4: Para FEDER, el comportamiento actual es suficiente. Registrar DEBT-IRP-LAST-KNOWN-GOOD-001 como mejora post-FEDER para entornos con rulesets nftables propios del cliente.

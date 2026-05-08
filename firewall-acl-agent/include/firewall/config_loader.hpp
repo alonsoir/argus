@@ -154,6 +154,17 @@ struct LoggingConfigNew {
     };
 
 //===----------------------------------------------------------------------===//
+// IRP Configuration (ADR-042 — auto-isolate via argus-network-isolate)
+//===----------------------------------------------------------------------===//
+struct IrpConfig {
+    bool        auto_isolate           = false;  // sin política — siempre sobreescrito por isolate.json (única fuente de verdad)
+    double      threat_score_threshold = 0.95;
+    std::string isolate_interface      = "eth0";
+    std::string isolate_config_path    = "/etc/ml-defender/firewall-acl-agent/isolate.json";
+    std::string isolate_binary_path    = "/usr/local/bin/argus-network-isolate";
+    std::vector<std::string> auto_isolate_event_types;
+};
+//===----------------------------------------------------------------------===//
 // MAIN CONFIGURATION STRUCTURE
 //===----------------------------------------------------------------------===//
 struct FirewallAgentConfig {
@@ -168,6 +179,7 @@ struct FirewallAgentConfig {
     EtcdConfig etcd;
     TransportConfig transport;  // ✅ Day 23: AÑADIR ESTA LÍNEA
     CsvBatchLoggerConfig csv_batch_logger;  // ✅ Day 59
+    IrpConfig irp;                           // ADR-042 auto-isolate
 
     bool is_valid() const { return true; }
     std::vector<std::string> validate() const { return {}; }
@@ -178,6 +190,8 @@ struct FirewallAgentConfig {
 //===----------------------------------------------------------------------===//
 class ConfigLoader {
 public:
+    // public para testabilidad directa — función pura de parseo (ADR-042, DEBT-IRP-AUTOISO-FALSE-001)
+    static IrpConfig parse_irp(const std::string& isolate_json_path);
     // Load configuration from JSON file
     static FirewallAgentConfig load_from_file(const std::string& config_path,
                                                 const std::string& allowed_prefix = "/etc/ml-defender/");

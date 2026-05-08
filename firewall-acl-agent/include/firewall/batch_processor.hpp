@@ -21,6 +21,7 @@
 //===----------------------------------------------------------------------===//
 
 #pragma once
+#include "firewall/config_loader.hpp"
 
 #include "firewall/ipset_wrapper.hpp"
 #include "network_security.pb.h"
@@ -203,6 +204,10 @@ public:
 
     /// Get current configuration
     const BatchProcessorConfig& get_config() const { return config_; }
+    void set_irp_config(const IrpConfig& irp) { irp_config_ = irp; }
+    // Testeable sin fork — lógica de decisión pura (ADR-042)
+    bool should_auto_isolate(const protobuf::Detection& detection) const;
+    void check_auto_isolate(const protobuf::Detection& detection);
 
     //===------------------------------------------------------------------===//
     // Metrics and Monitoring
@@ -242,6 +247,7 @@ private:
 
     IPSetWrapper& ipset_;                    ///< IPSet wrapper
     BatchProcessorConfig config_;            ///< Configuration
+    IrpConfig            irp_config_;         ///< ADR-042 auto-isolate config
     BatchProcessorMetrics metrics_;          ///< Performance metrics
 
     // Pending IPs accumulator

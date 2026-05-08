@@ -1,95 +1,60 @@
-# aRGus NDR — DAY 137
-# Continuación de DAY 136 — 30 Abril 2026
+Soy Alonso Isidoro Román, fundador de aRGus NDR (arXiv:2604.04952),
+sistema open-source C++20 de detección y respuesta a intrusiones para
+infraestructura crítica.
 
-## Estado del repo
-- Branch activa: main (post-merge v0.6.0-hardened-variant-a)
-- Último commit: 737ba0d5 (hardened-full-with-seeds target)
-- arXiv: 2604.04952 — v18 enviado (Cornell procesando)
-- Keypair activo: b5b6cbdf67dad75cdd7e3169d837d1d6d4c938b720e34331f8a73f478ee85daa
+Estado repo: branch feature/variant-b-libpcap @ e52870d5 (DAY 144)
+Tag main: v0.6.0-hardened-variant-a
+FEDER deadline: 22-Sep-2026 | Go/no-go: 1-Ago-2026
 
-## REGLA EMECAS DEV (obligatoria — primera acción del día)
+COMPLETADO DAY 144:
+- EMECAS verde: 65/65 tests PASSED
+- DEBT-IRP-SIGCHLD-001 CERRADA: SA_NOCLDWAIT, SigchldTest.NoZombiesAfterNForks PASSED
+- DEBT-IRP-AUTOISO-FALSE-001 CERRADA: isolate.json única fuente de verdad,
+  campo obligatorio, fallo ruidoso, parse_irp() public, 5 tests PASSED
+- DEBT-IRP-BACKUP-DIR-001 CERRADA: /tmp → /run/argus/irp/, AppArmor actualizado
+- DEBT-COMPILER-WARNINGS-CLEANUP-001 PARCIAL: Gate ODR production PASSED.
+  3 ODR violations reales corregidas bajo -flto -Werror:
+  (1) anonymous namespace en inline trees hpp
+  (2) protobuf stale src/protobuf/ eliminado (40k líneas)
+  (3) -UNDEBUG en targets de test
+- README.md + docs/BACKLOG.md actualizados
+
+PRIMER PASO DAY 145:
 vagrant destroy -f && vagrant up && make bootstrap && make test-all
 
-## REGLA EMECAS HARDENED (gate pre-merge)
-make hardened-full
+PLAN DAY 145:
+1. EMECAS verde
+2. PCAP relay x86 eBPF (Variant A) — make test-replay-neris
+   Métricas: latencia p99, throughput, F1 bajo carga
+3. PCAP relay x86 libpcap (Variant B) — make test-replay-neris con sniffer-libpcap-start
+   Mismas métricas — contribución científica ADR-029
+4. Si ambos PASSED: merge feature/variant-b-libpcap → main → tag v0.7.0-variant-b
+5. Refactor Makefile: targets explícitos production-x86, test-replay-neris-x86-ebpf,
+   test-replay-neris-x86-libpcap
+6. Diseño experiment-comparative (aRGus + Suricata + Zeek como cooperadores,
+   no competición — paradigmas complementarios)
+7. Abrir feature/adr029-variant-c-arm64 scope definido
 
-## Lo que se completó en DAY 136
+DEUDAS P1 POST-MERGE:
+- DEBT-IRP-TMPFILES-001: tmpfiles.d para /run/argus/irp/ en reboot
+- DEBT-IRP-IPSET-TMP-001: ipset_wrapper.cpp aún usa /tmp
+- DEBT-EMECAS-VERIFICATION-001: P2, párrafo README para devs
+- DEBT-IRP-FLOAT-TYPES-001: unificar tipos score float/double
 
-### Tareas técnicas ✅
-- EMECAS dev + hardened PASSED
-- PASO 0: make hardened-full + prod-deploy-seeds + check-prod-all → PASSED sin WARNs
-- PASO 1: argus-apt-integrity.service verificado (ExecStartPre ✅, FailureAction=poweroff ✅)
-- PASO 2: docs/KNOWN-DEBTS-v0.6.md creado (6 deudas)
-- PASO 3: Merge --no-ff feature/adr030-variant-a → main + tag v0.6.0-hardened-variant-a
-- PASO 4: hardened-full-with-seeds añadido al Makefile (FEDER ONLY)
-- Consejo 8/8: 3 nuevas deudas identificadas (Jenkins, Vault, compiler warnings)
-- BACKLOG.md + README.md actualizados
+DECISIONES CONSEJO DAY 144:
+- P3 multi-señal: adoptar acumulador de evidencia con decadencia exponencial
+  (Qwen) — determinista, sin reentrenamiento, auditable, NIST/MITRE estándar
+- P4 experimento: aRGus como cooperador de Suricata/Zeek, no sustituto
+- ARM64: post-FEDER, mencionado como trabajo futuro en paper v19
+- Andrés Caro Lindo: hablar este finde sobre FEDER scope
 
-## Pendientes para DAY 137 — en orden
-
-### PASO 0 — EMECAS completo (siempre primero)
-vagrant destroy -f && vagrant up && make bootstrap && make test-all
-make hardened-full
-make prod-deploy-seeds
-make check-prod-all
-
-### PASO 1 — feature/variant-b-libpcap (ADR-029 Variant B)
-git checkout -b feature/variant-b-libpcap
-cp -r vagrant/hardened-x86 vagrant/hardened-arm64
-# Modificar Vagrantfile: sin eBPF headers, con libpcap-dev
-# Objetivo: delta XDP/libpcap publicable para paper + FEDER
-
-### PASO 2 — fix/compiler-warnings-cleanup-001
-git checkout -b fix/compiler-warnings-cleanup-001
-# Prioridad 1: ODR violations internal_trees_inline vs traffic_trees_inline
-# Prioridad 2: Protobuf ODR (build-production/proto vs src/protobuf)
-# Prioridad 3: signed/unsigned, OpenSSL deprecated, Wreorder
-
-### PASO 3 — DEBT-IRP-NFTABLES-001 (P0 pre-FEDER)
-# Implementar /usr/local/bin/argus-network-isolate con nftables drop-all
-# Referenciado en argus-apt-integrity.service ExecStartPre
-
-### PASO 4 — DEBT-CRYPTO-MATERIAL-STORAGE-001 (propuesta)
-# Prototipo HashiCorp Vault en Vagrantfile
-# make vault-init && make vault-deploy-seeds
-
-## Nuevas deudas DAY 136 (Consejo 8/8)
-- DEBT-JENKINS-SEED-DISTRIBUTION-001 🔴 pre-FEDER
-- DEBT-CRYPTO-MATERIAL-STORAGE-001 🔴 pre-FEDER
-- DEBT-COMPILER-WARNINGS-CLEANUP-001 🔴 DAY 137+ rama dedicada
-
-## Decisiones vinculantes Consejo DAY 136
-
-D1: DEBT-IRP-NFTABLES-001 es P0 pre-FEDER
-D2: Jenkins para distribución de seeds (mecanismo mínimo viable)
-D3: HashiCorp Vault para demo FEDER + TPM 2.0 objetivo final
-D4: fix/compiler-warnings-cleanup-001 — rama dedicada
-D5: feature/variant-b-libpcap — DAY 137 PASO 1
-
-## Reglas permanentes
-
-- REGLA EMECAS dev: vagrant destroy -f && vagrant up && make bootstrap && make test-all
-- REGLA EMECAS hardened: make hardened-full (gate pre-merge, destroy incluido)
-- REGLA EMECAS hardened iter: make hardened-redeploy (sin destroy, iteración rápida)
-- REGLA apt-integrity: FailureAction=poweroff. Inmediato. Sin gracia. Sin excepciones.
-- REGLA vendor: dist/vendor/CHECKSUMS committeado. vendor-download solo verifica.
-- REGLA seeds: NO en EMECAS. prod-deploy-seeds explícito.
-- REGLA macOS sed: nunca sed -i sin -e ''; usar python3 para ediciones.
-- Hardened VM ssh: cd vagrant/hardened-x86 && vagrant ssh -c '...'
-- REGLA IRP systemd: nunca ExecStopPre — usar ExecStartPre.
-
-## BACKLOG-FEDER-001
-Deadline: 22 septiembre 2026
-Go/no-go técnico: 1 agosto 2026
-Prerequisites activos:
-✅ ADR-026 mergeado (XGBoost)
-✅ ADR-030 Variant A — v0.6.0-hardened-variant-a en main
-✅ Pipeline E2E hardened verde
-⏳ ADR-029 Variant B (libpcap) — DAY 137
-⏳ DEBT-IRP-NFTABLES-001 (P0)
-⏳ DEBT-CRYPTO-MATERIAL-STORAGE-001 (Vault prototipo)
-⏳ scripts/feder-demo.sh reproducible
-⏳ ADR-041 métricas validadas en x86 + ARM
-
-## Commits DAY 136 (referencia)
-b2a46836 → 23d99b60 → (merge commit) → 737ba0d5
+REGLAS PERMANENTES:
+- REGLA EMECAS: vagrant destroy -f && vagrant up && make bootstrap && make test-all
+- macOS: nunca sed -i sin -e '' — usar python3 << 'PYEOF' o vagrant ssh << 'SSHEOF'
+- zsh intercepta ! en heredocs — siempre vagrant ssh << 'SSHEOF'
+- Makefile es la única fuente de verdad
+- -Werror activo — 0 warnings propios invariante permanente
+- PROFILE=production all antes de cualquier merge a main (gate ODR)
+- Variant A y Variant B nunca simultáneas
+- isolate.json es la única fuente de verdad para auto_isolate
+- assert() activo en tests: -UNDEBUG en CMakeLists de test targets

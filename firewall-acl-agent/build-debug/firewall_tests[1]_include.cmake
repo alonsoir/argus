@@ -1,5 +1,0 @@
-if(EXISTS "/vagrant/firewall-acl-agent/build-debug/firewall_tests[1]_tests.cmake")
-  include("/vagrant/firewall-acl-agent/build-debug/firewall_tests[1]_tests.cmake")
-else()
-  add_test(firewall_tests_NOT_BUILT firewall_tests_NOT_BUILT)
-endif()
