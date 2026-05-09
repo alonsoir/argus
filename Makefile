@@ -264,6 +264,7 @@ bootstrap-x86-ebpf:
 	@$(MAKE) pipeline-start
 	@$(MAKE) pipeline-status
 	@$(MAKE) plugin-integ-test
+	@vagrant ssh defender -c "tmux has-session -t sniffer 2>/dev/null" || (echo "\n❌ Bootstrap FAILED — sniffer STOPPED (DEBT-BOOTSTRAP-SNIFFER-VERIFY-001)" && exit 1)
 	@echo "╔════════════════════════════════════════════════════════════╗"
 	@echo "║  ✅ Bootstrap x86 eBPF completado — 6/6 RUNNING           ║"
 	@echo "║  Sniffer activo: Variant A (eBPF/XDP)                     ║"
@@ -607,7 +608,7 @@ sniffer-start:
 	   cd $(SNIFFER_BUILD_DIR) && \
 	   sudo env LD_LIBRARY_PATH=/usr/local/lib ./sniffer -c /vagrant/sniffer/config/sniffer.json \
 	   >> /vagrant/logs/lab/sniffer.log 2>&1'"
-	@sleep 2
+	@sleep 4
 
 # ── sniffer-libpcap-start — Variant B (libpcap) ──────────────────────────────
 sniffer-libpcap-start:
@@ -620,7 +621,7 @@ sniffer-libpcap-start:
 	   sudo env LD_LIBRARY_PATH=/usr/local/lib ./sniffer-libpcap \
 	   -c /etc/ml-defender/sniffer/sniffer-libpcap.json \
 	   >> /vagrant/logs/lab/sniffer-libpcap.log 2>&1'"
-	@sleep 2
+	@sleep 4
 
 sniffer: proto etcd-client-build plugin-loader-build
 	@echo ""

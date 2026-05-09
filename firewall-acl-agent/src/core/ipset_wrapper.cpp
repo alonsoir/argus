@@ -319,7 +319,7 @@ IPSetResult<void> IPSetWrapper::add_batch(
     }
 
     // Write to temporary file
-    const char* tmpfile = "/tmp/ipset_restore.tmp";
+    const char* tmpfile = "/run/argus/irp/ipset_restore.tmp";  // DEBT-IRP-IPSET-TMP-001
     std::ofstream outfile(tmpfile);
     if (!outfile) {
         return IPSetResult<void>(IPSetError{
@@ -388,7 +388,7 @@ IPSetResult<void> IPSetWrapper::delete_batch(
         });
     }
 
-    const char* tmpfile = "/tmp/ipset_delete.tmp";
+    const char* tmpfile = "/run/argus/irp/ipset_delete.tmp";  // DEBT-IRP-IPSET-TMP-001
     std::ofstream outfile(tmpfile);
     if (!outfile) {
         return IPSetResult<void>(IPSetError{
