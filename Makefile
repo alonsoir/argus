@@ -13,7 +13,7 @@
 .PHONY: clean clean-libs clean-components clean-all distclean test test-libs test-components test-all dev-setup schema-update
 .PHONY: build-unified rebuild-unified quick-fix dev-setup-unified
 .PHONY: check-libbpf verify-bpf-maps diagnose-bpf
-.PHONY: test-replay-small test-replay-neris test-replay-big test-replay-neris-x86-ebpf test-replay-neris-x86-libpcap
+.PHONY: test-replay-small test-replay-neris test-replay-big test-replay-neris-x86-ebpf test-replay-neris-x86-libpcap experiment-suricata-up experiment-suricata-down experiment-suricata-run experiment-suricata-results experiment-suricata-status
 .PHONY: monitor-day13-tmux logs-dual-score logs-dual-score-live extract-dual-scores
 .PHONY: test-integration-day13 test-integration-day13-tmux test-dual-score-quick
 .PHONY: clean-day13-logs stats-dual-score
@@ -1613,6 +1613,89 @@ test-replay-neris-x86-libpcap:
 
 # ============================================================================
 # etcd-server Control
+
+# ============================================================================
+# Experiment Comparative: Suricata vs aRGus NDR (DAY 146)
+# Replicates Tables 3, 7, 8, 11 from paper v19
+# Dataset: CTU-13 Neris — ground truth: 147.32.84.165 (646 flows)
+# Topology: suricata VM (IDS) + client VM (tcpreplay) — identical to aRGus
+# Usage:
+#   make experiment-suricata-up       # arrancar VMs del experimento
+#   make experiment-suricata-run      # ejecutar los 3 runs (10/50/100 Mbps)
+#   make experiment-suricata-results  # parsear eve.json y mostrar métricas
+#   make experiment-suricata-down     # parar VMs
+# ============================================================================
+
+SURICATA_DIR := experiments/suricata-comparative
+SURICATA_EVE := /var/log/suricata/eve.json
+SURICATA_LOGS := /vagrant/logs/experiment
+MALICIOUS_IP := 147.32.84.165
+
+.PHONY: experiment-suricata-up experiment-suricata-down experiment-suricata-run
+.PHONY: experiment-suricata-replay-10 experiment-suricata-replay-50 experiment-suricata-replay-100
+.PHONY: experiment-suricata-results experiment-suricata-status
+
+experiment-suricata-up:
+	@echo "╔════════════════════════════════════════════════════════════╗"
+	@echo "║  🚀 Experiment Suricata — Arrancar VMs                    ║"
+	@echo "╚════════════════════════════════════════════════════════════╝"
+	@cd $(SURICATA_DIR) && vagrant up suricata
+	@cd $(SURICATA_DIR) && vagrant up client
+	@echo "✅ VMs del experimento arrancadas"
+	@cd $(SURICATA_DIR) && vagrant status
+
+experiment-suricata-down:
+	@echo "🛑 Parando VMs del experimento Suricata..."
+	@cd $(SURICATA_DIR) && vagrant halt
+	@echo "✅ VMs paradas"
+
+experiment-suricata-status:
+	@cd $(SURICATA_DIR) && vagrant status
+	@cd $(SURICATA_DIR) && vagrant ssh suricata -c "sudo systemctl status suricata --no-pager | head -5" 2>/dev/null || true
+
+experiment-suricata-replay-10:
+	@echo "🔁 [Suricata] Replay CTU-13 Neris — 10 Mbps..."
+	@cd $(SURICATA_DIR) && vagrant ssh suricata -c 	  "sudo systemctl stop suricata 2>/dev/null; 	   sudo rm -f $(SURICATA_EVE); 	   sudo systemctl start suricata; 	   sleep 3; 	   mkdir -p $(SURICATA_LOGS)"
+	@cd $(SURICATA_DIR) && vagrant ssh client -c 	  "mkdir -p /vagrant/logs/experiment && 	   sudo tcpreplay -i eth1 --mbps=10 --stats=1 $(CTU13_NERIS) 	     > /vagrant/logs/experiment/tcpreplay-suricata-10mbps.log 2>&1; 	   echo "exit=$$?" >> /vagrant/logs/experiment/tcpreplay-suricata-10mbps.log" || true
+	@cd $(SURICATA_DIR) && vagrant ssh client -c 	  "grep -E 'Test complete|Actual:|Successful packets|Failed packets|exit=' 	   /vagrant/logs/experiment/tcpreplay-suricata-10mbps.log 2>/dev/null | tail -6" || true
+	@echo "⏳ Esperando drain Suricata (10s)..."
+	@sleep 10
+	@cd $(SURICATA_DIR) && vagrant ssh suricata -c "sudo systemctl stop suricata"
+
+experiment-suricata-replay-50:
+	@echo "🔁 [Suricata] Replay CTU-13 Neris — 50 Mbps..."
+	@cd $(SURICATA_DIR) && vagrant ssh suricata -c 	  "sudo systemctl stop suricata 2>/dev/null; 	   sudo rm -f $(SURICATA_EVE); 	   sudo systemctl start suricata; 	   sleep 3; 	   mkdir -p $(SURICATA_LOGS)"
+	@cd $(SURICATA_DIR) && vagrant ssh client -c 	  "sudo tcpreplay -i eth1 --mbps=50 --stats=1 $(CTU13_NERIS) 	     > /vagrant/logs/experiment/tcpreplay-suricata-50mbps.log 2>&1; 	   echo "exit=$$?" >> /vagrant/logs/experiment/tcpreplay-suricata-50mbps.log" || true
+	@cd $(SURICATA_DIR) && vagrant ssh client -c 	  "grep -E 'Test complete|Actual:|Successful packets|Failed packets|exit=' 	   /vagrant/logs/experiment/tcpreplay-suricata-50mbps.log 2>/dev/null | tail -6" || true
+	@echo "⏳ Esperando drain Suricata (10s)..."
+	@sleep 10
+	@cd $(SURICATA_DIR) && vagrant ssh suricata -c "sudo systemctl stop suricata"
+
+experiment-suricata-replay-100:
+	@echo "🔁 [Suricata] Replay CTU-13 Neris — 100 Mbps..."
+	@cd $(SURICATA_DIR) && vagrant ssh suricata -c 	  "sudo systemctl stop suricata 2>/dev/null; 	   sudo rm -f $(SURICATA_EVE); 	   sudo systemctl start suricata; 	   sleep 3; 	   mkdir -p $(SURICATA_LOGS)"
+	@cd $(SURICATA_DIR) && vagrant ssh client -c 	  "sudo tcpreplay -i eth1 --mbps=100 --stats=1 $(CTU13_NERIS) 	     > /vagrant/logs/experiment/tcpreplay-suricata-100mbps.log 2>&1; 	   echo "exit=$$?" >> /vagrant/logs/experiment/tcpreplay-suricata-100mbps.log" || true
+	@cd $(SURICATA_DIR) && vagrant ssh client -c 	  "grep -E 'Test complete|Actual:|Successful packets|Failed packets|exit=' 	   /vagrant/logs/experiment/tcpreplay-suricata-100mbps.log 2>/dev/null | tail -6" || true
+	@echo "⏳ Esperando drain Suricata (10s)..."
+	@sleep 10
+	@cd $(SURICATA_DIR) && vagrant ssh suricata -c "sudo systemctl stop suricata"
+
+experiment-suricata-results:
+	@echo "📊 Parseando resultados Suricata (eve.json)..."
+	@cd $(SURICATA_DIR) && vagrant ssh suricata -c 	  "python3 /vagrant/experiments/suricata-comparative/parse_results.py 	   $(SURICATA_EVE) $(MALICIOUS_IP)" 2>/dev/null || 	  echo "⚠️  parse_results.py no disponible — revisar eve.json manualmente"
+
+experiment-suricata-run: experiment-suricata-replay-10 experiment-suricata-replay-50 experiment-suricata-replay-100
+	@echo ""
+	@echo "╔════════════════════════════════════════════════════════════╗"
+	@echo "║  ✅ Experiment Suricata COMPLETADO — 3 runs (10/50/100)   ║"
+	@echo "╠════════════════════════════════════════════════════════════╣"
+	@echo "║  Logs:                                                    ║"
+	@echo "║  logs/experiment/tcpreplay-suricata-{10,50,100}mbps.log  ║"
+	@echo "║  Ground truth: 147.32.84.165 (646 flows maliciosos)      ║"
+	@echo "║  Comparar con: Table 11 paper v19 (aRGus DAY 145)        ║"
+	@echo "╚════════════════════════════════════════════════════════════╝"
+	@$(MAKE) experiment-suricata-results
+
 # ============================================================================
 dev-setup-tools:
 	@echo "🔧 Instalando herramientas de gestión en la VM..."
