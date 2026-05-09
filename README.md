@@ -272,6 +272,10 @@ make up && make bootstrap
 vagrant destroy -f && vagrant up && make bootstrap && make test-all
 ```
 
+> **¿Por qué EMECAS?** El protocolo garantiza reproducibilidad total: cada sesión parte de una VM limpia, claves criptográficas regeneradas, pipeline compilado desde cero y suite de tests completa. Un ❌ en cualquier punto es bloqueante — no se fusiona ni avanza trabajo hasta que `make test-all` termina con exit 0 y `pipeline-status` muestra 6/6 RUNNING. El sniffer puede tardar hasta 4 segundos en estabilizar su sesión tmux tras el arranque; si `pipeline-status` muestra ❌ sniffer inmediatamente después del bootstrap, esperar 5 segundos y repetir `make pipeline-status` antes de escalar.
+
+
+
 ### Hardened VM (ADR-030 Variant A)
 
 ```bash
