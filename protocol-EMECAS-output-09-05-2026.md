@@ -1,15 +1,14 @@
 ## vagrant destroy -f
 (.venv) aironman@MacBook-Pro-de-Alonso test-zeromq-docker % vagrant destroy -f
-==> client: VM not created. Moving on...
+==> client: Destroying VM and associated drives...
 ==> defender: You assigned a static IP ending in ".1" or ":1" to this machine.
 ==> defender: This is very often used by the router and can cause the
 ==> defender: network to not work properly. If the network doesn't work
 ==> defender: properly, try changing this IP.
 ==> defender: Destroying VM and associated drives...
-## make up
-(.venv) aironman@MacBook-Pro-de-Alonso test-zeromq-docker % make up
+## vagrant up
+(.venv) aironman@MacBook-Pro-de-Alonso test-zeromq-docker % vagrant up
 Bringing machine 'defender' up with 'virtualbox' provider...
-Bringing machine 'client' up with 'virtualbox' provider...
 ==> defender: You assigned a static IP ending in ".1" or ":1" to this machine.
 ==> defender: This is very often used by the router and can cause the
 ==> defender: network to not work properly. If the network doesn't work
@@ -18,8 +17,8 @@ Bringing machine 'client' up with 'virtualbox' provider...
 ==> defender: Matching MAC address for NAT networking...
 ==> defender: You assigned a static IP ending in ".1" or ":1" to this machine.
 ==> defender: This is very often used by the router and can cause the
-==> defender: network to not work properly. If the network doesn't work                                                                                                                        
-==> defender: properly, try changing this IP.                                                                                                                                                  
+==> defender: network to not work properly. If the network doesn't work
+==> defender: properly, try changing this IP.
 ==> defender: Checking if box 'debian/bookworm64' version '12.20240905.1' is up to date...
 ==> defender: Setting the name of the VM: ml-defender-gateway-lab
 ==> defender: Clearing any previously set network interfaces...
@@ -38,6 +37,8 @@ defender: 22 (guest) => 2222 (host) (adapter 1)
 defender: SSH address: 127.0.0.1:2222
 defender: SSH username: vagrant
 defender: SSH auth method: private key
+defender: Warning: Connection reset. Retrying...
+defender: Warning: Remote connection disconnect. Retrying...
 defender:
 defender: Vagrant insecure key detected. Vagrant will automatically replace
 defender: this with a newly generated keypair for better security.
@@ -81,7 +82,7 @@ defender: Get:1 https://deb.debian.org/debian bookworm/main amd64 ethtool amd64 
 defender: Get:2 https://deb.debian.org/debian bookworm/main amd64 libpcap0.8 amd64 1.10.3-1 [157 kB]
 defender: Get:3 https://deb.debian.org/debian bookworm/main amd64 tcpdump amd64 4.99.3-1 [467 kB]
 defender: dpkg-preconfigure: unable to re-open stdin: No such file or directory
-defender: Fetched 820 kB in 0s (2007 kB/s)
+defender: Fetched 820 kB in 0s (3539 kB/s)
 defender: Selecting previously unselected package ethtool.
 (Reading database ... 25481 files and directories currently installed.)
 defender: Preparing to unpack .../ethtool_1%3a6.1-1_amd64.deb ...
@@ -136,16 +137,16 @@ defender: ═══════════════════════�
 defender:
 ==> defender: Running provisioner: all-dependencies (shell)...
 defender: Running: script: all-dependencies
-defender: ╔════════════════════════════════════════════════════════════╗
-defender: ║  Installing ALL dependencies - Phase 2A (FAISS)           ║
 defender: ++ echo ╔════════════════════════════════════════════════════════════╗
+defender: ╔════════════════════════════════════════════════════════════╗
 defender: ++ echo '║  Installing ALL dependencies - Phase 2A (FAISS)           ║'
-defender: ╚════════════════════════════════════════════════════════════╝
+defender: ║  Installing ALL dependencies - Phase 2A (FAISS)           ║
 defender: ++ echo ╚════════════════════════════════════════════════════════════╝
+defender: ╚════════════════════════════════════════════════════════════╝
 defender: ++ apt-get update
-defender: Hit:1 https://deb.debian.org/debian bookworm InRelease
-defender: Hit:2 https://deb.debian.org/debian bookworm-updates InRelease
-defender: Hit:3 https://security.debian.org/debian-security bookworm-security InRelease
+defender: Hit:1 https://security.debian.org/debian-security bookworm-security InRelease
+defender: Hit:2 https://deb.debian.org/debian bookworm InRelease
+defender: Hit:3 https://deb.debian.org/debian bookworm-updates InRelease
 defender: Hit:4 https://deb.debian.org/debian bookworm-backports InRelease
 defender: Reading package lists...
 defender: ++ apt-get install -y build-essential git wget curl vim jq make rsync locales libc-bin file tmux xxd
@@ -207,8 +208,8 @@ defender: Get:1 https://security.debian.org/debian-security bookworm-security/ma
 defender: Get:2 https://deb.debian.org/debian bookworm/main amd64 gcc-12-base amd64 12.2.0-14+deb12u1 [37.6 kB]
 defender: Get:3 https://deb.debian.org/debian bookworm/main amd64 libgcc-s1 amd64 12.2.0-14+deb12u1 [49.9 kB]
 defender: Get:4 https://deb.debian.org/debian bookworm/main amd64 libstdc++6 amd64 12.2.0-14+deb12u1 [613 kB]
-defender: Get:5 https://deb.debian.org/debian bookworm/main amd64 libc6 amd64 2.36-9+deb12u13 [2758 kB]
-defender: Get:6 https://security.debian.org/debian-security bookworm-security/main amd64 libtiff6 amd64 4.5.0-6+deb12u4 [316 kB]
+defender: Get:5 https://security.debian.org/debian-security bookworm-security/main amd64 libtiff6 amd64 4.5.0-6+deb12u4 [316 kB]
+defender: Get:6 https://deb.debian.org/debian bookworm/main amd64 libc6 amd64 2.36-9+deb12u13 [2758 kB]
 defender: Get:7 https://security.debian.org/debian-security bookworm-security/main amd64 libsodium23 amd64 1.0.18-1+deb12u1 [162 kB]
 defender: Get:8 https://deb.debian.org/debian bookworm/main amd64 libc-bin amd64 2.36-9+deb12u13 [609 kB]
 defender: Get:9 https://deb.debian.org/debian bookworm/main amd64 rsync amd64 3.2.7-1+deb12u4 [419 kB]
@@ -322,7 +323,7 @@ defender: Get:116 https://deb.debian.org/debian bookworm/main amd64 vim amd64 2:
 defender: Get:117 https://deb.debian.org/debian bookworm/main amd64 xxd amd64 2:9.0.1378-2+deb12u2 [84.1 kB]
 defender: apt-listchanges: Reading changelogs...
 defender: Preconfiguring packages ...
-defender: Fetched 120 MB in 1min 19s (1515 kB/s)
+defender: Fetched 120 MB in 5s (23.7 MB/s)
 (Reading database ... 25518 files and directories currently installed.)
 defender: Preparing to unpack .../gcc-12-base_12.2.0-14+deb12u1_amd64.deb ...
 defender: Unpacking gcc-12-base:amd64 (12.2.0-14+deb12u1) over (12.2.0-14) ...
@@ -854,13 +855,13 @@ defender: Get:6 https://security.debian.org/debian-security bookworm-security/ma
 defender: Get:7 https://deb.debian.org/debian bookworm/main amd64 libxml2 amd64 2.9.14+dfsg-1.3~deb12u5 [688 kB]
 defender: Get:8 https://deb.debian.org/debian bookworm/main amd64 libz3-4 amd64 4.8.12-3.1 [7216 kB]
 defender: Get:9 https://security.debian.org/debian-security bookworm-security/main amd64 linux-kbuild-6.1 amd64 6.1.170-1 [1382 kB]
-defender: Get:10 https://security.debian.org/debian-security bookworm-security/main amd64 linux-headers-6.1.0-45-amd64 amd64 6.1.170-1 [1655 kB]
-defender: Get:11 https://security.debian.org/debian-security bookworm-security/main amd64 linux-headers-amd64 amd64 6.1.170-1 [1420 B]
-defender: Get:12 https://security.debian.org/debian-security bookworm-security/main amd64 linux-image-6.1.0-45-amd64 amd64 6.1.170-1 [70.2 MB]
-defender: Get:13 https://deb.debian.org/debian bookworm/main amd64 libllvm14 amd64 1:14.0.6-12 [21.8 MB]
-defender: Get:14 https://deb.debian.org/debian bookworm/main amd64 libclang-cpp14 amd64 1:14.0.6-12 [11.1 MB]
-defender: Get:15 https://deb.debian.org/debian bookworm/main amd64 libgc1 amd64 1:8.2.2-3 [245 kB]
-defender: Get:16 https://deb.debian.org/debian bookworm/main amd64 libobjc4 amd64 12.2.0-14+deb12u1 [43.2 kB]
+defender: Get:10 https://deb.debian.org/debian bookworm/main amd64 libllvm14 amd64 1:14.0.6-12 [21.8 MB]
+defender: Get:11 https://security.debian.org/debian-security bookworm-security/main amd64 linux-headers-6.1.0-45-amd64 amd64 6.1.170-1 [1655 kB]
+defender: Get:12 https://deb.debian.org/debian bookworm/main amd64 libclang-cpp14 amd64 1:14.0.6-12 [11.1 MB]
+defender: Get:13 https://deb.debian.org/debian bookworm/main amd64 libgc1 amd64 1:8.2.2-3 [245 kB]
+defender: Get:14 https://deb.debian.org/debian bookworm/main amd64 libobjc4 amd64 12.2.0-14+deb12u1 [43.2 kB]
+defender: Get:15 https://security.debian.org/debian-security bookworm-security/main amd64 linux-headers-amd64 amd64 6.1.170-1 [1420 B]
+defender: Get:16 https://security.debian.org/debian-security bookworm-security/main amd64 linux-image-6.1.0-45-amd64 amd64 6.1.170-1 [70.2 MB]
 defender: Get:17 https://deb.debian.org/debian bookworm/main amd64 libobjc-12-dev amd64 12.2.0-14+deb12u1 [170 kB]
 defender: Get:18 https://deb.debian.org/debian bookworm/main amd64 libclang-common-14-dev all 1:14.0.6-12 [890 kB]
 defender: Get:19 https://deb.debian.org/debian bookworm/main amd64 llvm-14-linker-tools amd64 1:14.0.6-12 [1288 kB]
@@ -870,21 +871,21 @@ defender: Get:22 https://deb.debian.org/debian bookworm/main amd64 clang amd64 1
 defender: Get:23 https://deb.debian.org/debian bookworm/main amd64 firmware-linux-free all 20200122-1 [24.2 kB]
 defender: Get:24 https://deb.debian.org/debian bookworm/main amd64 icu-devtools amd64 72.1-3+deb12u1 [206 kB]
 defender: Get:25 https://deb.debian.org/debian bookworm/main amd64 libc6-i386 amd64 2.36-9+deb12u13 [2459 kB]
-defender: Get:26 https://security.debian.org/debian-security bookworm-security/main amd64 linux-image-amd64 amd64 6.1.170-1 [1480 B]
-defender: Get:27 https://deb.debian.org/debian bookworm/main amd64 lib32gcc-s1 amd64 12.2.0-14+deb12u1 [59.7 kB]
-defender: Get:28 https://deb.debian.org/debian bookworm/main amd64 lib32stdc++6 amd64 12.2.0-14+deb12u1 [643 kB]
-defender: Get:29 https://deb.debian.org/debian bookworm/main amd64 libclang-rt-14-dev amd64 1:14.0.6-12 [3275 kB]
-defender: Get:30 https://deb.debian.org/debian bookworm/main amd64 libnspr4 amd64 2:4.35-1 [113 kB]
-defender: Get:31 https://deb.debian.org/debian bookworm/main amd64 nss-plugin-pem amd64 1.0.8+1-1 [54.6 kB]
-defender: Get:32 https://deb.debian.org/debian bookworm/main amd64 libcurl3-nss amd64 7.88.1-10+deb12u14 [395 kB]
-defender: Get:33 https://deb.debian.org/debian bookworm/main amd64 libpkgconf3 amd64 1.8.1-1 [36.1 kB]
-defender: Get:34 https://deb.debian.org/debian bookworm/main amd64 pkgconf-bin amd64 1.8.1-1 [29.5 kB]
-defender: Get:35 https://deb.debian.org/debian bookworm/main amd64 pkgconf amd64 1.8.1-1 [25.9 kB]
-defender: Get:36 https://deb.debian.org/debian bookworm/main amd64 pkg-config amd64 1.8.1-1 [13.7 kB]
-defender: Get:37 https://deb.debian.org/debian bookworm/main amd64 xml-core all 0.18+nmu1 [23.8 kB]
-defender: Get:38 https://deb.debian.org/debian bookworm/main amd64 libdbus-1-dev amd64 1.14.10-1~deb12u1 [241 kB]
-defender: Get:39 https://deb.debian.org/debian bookworm/main amd64 libffi-dev amd64 3.4.4-1 [59.4 kB]
-defender: Get:40 https://deb.debian.org/debian bookworm/main amd64 libicu-dev amd64 72.1-3+deb12u1 [10.3 MB]
+defender: Get:26 https://deb.debian.org/debian bookworm/main amd64 lib32gcc-s1 amd64 12.2.0-14+deb12u1 [59.7 kB]
+defender: Get:27 https://deb.debian.org/debian bookworm/main amd64 lib32stdc++6 amd64 12.2.0-14+deb12u1 [643 kB]
+defender: Get:28 https://deb.debian.org/debian bookworm/main amd64 libclang-rt-14-dev amd64 1:14.0.6-12 [3275 kB]
+defender: Get:29 https://deb.debian.org/debian bookworm/main amd64 libnspr4 amd64 2:4.35-1 [113 kB]
+defender: Get:30 https://deb.debian.org/debian bookworm/main amd64 nss-plugin-pem amd64 1.0.8+1-1 [54.6 kB]
+defender: Get:31 https://deb.debian.org/debian bookworm/main amd64 libcurl3-nss amd64 7.88.1-10+deb12u14 [395 kB]
+defender: Get:32 https://deb.debian.org/debian bookworm/main amd64 libpkgconf3 amd64 1.8.1-1 [36.1 kB]
+defender: Get:33 https://deb.debian.org/debian bookworm/main amd64 pkgconf-bin amd64 1.8.1-1 [29.5 kB]
+defender: Get:34 https://deb.debian.org/debian bookworm/main amd64 pkgconf amd64 1.8.1-1 [25.9 kB]
+defender: Get:35 https://deb.debian.org/debian bookworm/main amd64 pkg-config amd64 1.8.1-1 [13.7 kB]
+defender: Get:36 https://deb.debian.org/debian bookworm/main amd64 xml-core all 0.18+nmu1 [23.8 kB]
+defender: Get:37 https://deb.debian.org/debian bookworm/main amd64 libdbus-1-dev amd64 1.14.10-1~deb12u1 [241 kB]
+defender: Get:38 https://deb.debian.org/debian bookworm/main amd64 libffi-dev amd64 3.4.4-1 [59.4 kB]
+defender: Get:39 https://deb.debian.org/debian bookworm/main amd64 libicu-dev amd64 72.1-3+deb12u1 [10.3 MB]
+defender: Get:40 https://security.debian.org/debian-security bookworm-security/main amd64 linux-image-amd64 amd64 6.1.170-1 [1480 B]
 defender: Get:41 https://deb.debian.org/debian bookworm/main amd64 libncurses6 amd64 6.4-4 [103 kB]
 defender: Get:42 https://deb.debian.org/debian bookworm/main amd64 libncurses-dev amd64 6.4-4 [349 kB]
 defender: Get:43 https://deb.debian.org/debian bookworm/main amd64 libpcap0.8-dev amd64 1.10.3-1 [281 kB]
@@ -903,7 +904,7 @@ defender: Get:55 https://deb.debian.org/debian bookworm/main amd64 python3-yaml 
 defender: Get:56 https://deb.debian.org/debian bookworm/main amd64 llvm-14-tools amd64 1:14.0.6-12 [405 kB]
 defender: Get:57 https://deb.debian.org/debian bookworm/main amd64 llvm-14-dev amd64 1:14.0.6-12 [33.9 MB]
 defender: apt-listchanges: Reading changelogs...
-defender: Fetched 214 MB in 1min 40s (2147 kB/s)
+defender: Fetched 214 MB in 39s (5515 kB/s)
 defender: Selecting previously unselected package sgml-base.
 (Reading database ... 35892 files and directories currently installed.)
 defender: Preparing to unpack .../00-sgml-base_1.31_all.deb ...
@@ -1155,9 +1156,9 @@ defender: +++ printf '%s
 defender: ' 1.2.0 0.0.0
 defender: +++ sort -V
 defender: +++ head -n1
+defender: 🔧 Upgrading libbpf to 1.4.6...
 defender: ++ '[' 0.0.0 '!=' 1.2.0 ']'
 defender: ++ echo '🔧 Upgrading libbpf to 1.4.6...'
-defender: 🔧 Upgrading libbpf to 1.4.6...
 defender: ++ apt-get install -y libelf-dev zlib1g-dev pkg-config
 defender: Reading package lists...
 defender: Building dependency tree...
@@ -1171,7 +1172,7 @@ defender: Need to get 989 kB of archives.
 defender: After this operation, 1700 kB of additional disk space will be used.
 defender: Get:1 https://deb.debian.org/debian bookworm/main amd64 zlib1g-dev amd64 1:1.2.13.dfsg-1 [916 kB]
 defender: Get:2 https://deb.debian.org/debian bookworm/main amd64 libelf-dev amd64 0.188-2.1 [72.9 kB]
-defender: Fetched 989 kB in 1s (1554 kB/s)
+defender: Fetched 989 kB in 0s (3882 kB/s)
 defender: Selecting previously unselected package zlib1g-dev:amd64.
 (Reading database ... 62197 files and directories currently installed.)
 defender: Preparing to unpack .../zlib1g-dev_1%3a1.2.13.dfsg-1_amd64.deb ...
@@ -1210,9 +1211,9 @@ defender:   MKDIR    staticobjs
 defender:   CC       staticobjs/bpf.o
 defender:   CC       staticobjs/btf.o
 defender:   CC       staticobjs/libbpf.o
+defender:   CC       staticobjs/netlink.o
 defender:   CC       staticobjs/libbpf_errno.o
 defender:   CC       staticobjs/nlattr.o
-defender:   CC       staticobjs/netlink.o
 defender:   CC       staticobjs/str_error.o
 defender:   CC       staticobjs/libbpf_probes.o
 defender:   CC       staticobjs/bpf_prog_linfo.o
@@ -1294,8 +1295,8 @@ defender:   libkrb5-3 libkrb5support0 libss2 logsave
 defender: 10 upgraded, 20 newly installed, 0 to remove and 73 not upgraded.
 defender: Need to get 4687 kB of archives.
 defender: After this operation, 13.1 MB of additional disk space will be used.
-defender: Get:1 https://security.debian.org/debian-security bookworm-security/main amd64 libsodium-dev amd64 1.0.18-1+deb12u1 [181 kB]
-defender: Get:2 https://deb.debian.org/debian bookworm/main amd64 logsave amd64 1.47.0-2+b2 [19.9 kB]
+defender: Get:1 https://deb.debian.org/debian bookworm/main amd64 logsave amd64 1.47.0-2+b2 [19.9 kB]
+defender: Get:2 https://security.debian.org/debian-security bookworm-security/main amd64 libsodium-dev amd64 1.0.18-1+deb12u1 [181 kB]
 defender: Get:3 https://deb.debian.org/debian bookworm/main amd64 libext2fs2 amd64 1.47.0-2+b2 [205 kB]
 defender: Get:4 https://deb.debian.org/debian bookworm/main amd64 e2fsprogs amd64 1.47.0-2+b2 [572 kB]
 defender: Get:5 https://deb.debian.org/debian bookworm/main amd64 krb5-locales all 1.20.1-2+deb12u4 [63.4 kB]
@@ -1325,7 +1326,7 @@ defender: Get:28 https://deb.debian.org/debian bookworm/main amd64 libjsoncpp25 
 defender: Get:29 https://deb.debian.org/debian bookworm/main amd64 libjsoncpp-dev amd64 1.9.5-4 [26.4 kB]
 defender: Get:30 https://deb.debian.org/debian bookworm/main amd64 libss2 amd64 1.47.0-2+b2 [24.8 kB]
 defender: apt-listchanges: Reading changelogs...
-defender: Fetched 4687 kB in 33s (143 kB/s)
+defender: Fetched 4687 kB in 31s (151 kB/s)
 (Reading database ... 62246 files and directories currently installed.)
 defender: Preparing to unpack .../logsave_1.47.0-2+b2_amd64.deb ...
 defender: Unpacking logsave (1.47.0-2+b2) over (1.47.0-2) ...
@@ -1464,7 +1465,7 @@ defender: Get:2 https://deb.debian.org/debian bookworm/main amd64 libprotobuf-li
 defender: Get:3 https://deb.debian.org/debian bookworm/main amd64 libprotobuf-dev amd64 3.21.12-3 [1283 kB]
 defender: Get:4 https://deb.debian.org/debian bookworm/main amd64 libprotoc32 amd64 3.21.12-3 [829 kB]
 defender: Get:5 https://deb.debian.org/debian bookworm/main amd64 protobuf-compiler amd64 3.21.12-3 [83.9 kB]
-defender: Fetched 3390 kB in 1s (2510 kB/s)
+defender: Fetched 3390 kB in 0s (9027 kB/s)
 defender: Selecting previously unselected package libprotobuf32:amd64.
 (Reading database ... 63088 files and directories currently installed.)
 defender: Preparing to unpack .../libprotobuf32_3.21.12-3_amd64.deb ...
@@ -1499,7 +1500,7 @@ defender: Need to get 438 kB of archives.
 defender: After this operation, 1538 kB of additional disk space will be used.
 defender: Get:1 https://deb.debian.org/debian bookworm/main amd64 liblz4-dev amd64 1.9.4-1 [84.3 kB]
 defender: Get:2 https://deb.debian.org/debian bookworm/main amd64 libzstd-dev amd64 1.5.4+dfsg2-5 [354 kB]
-defender: Fetched 438 kB in 1s (529 kB/s)
+defender: Fetched 438 kB in 0s (2060 kB/s)
 defender: Selecting previously unselected package liblz4-dev:amd64.
 (Reading database ... 63259 files and directories currently installed.)
 defender: Preparing to unpack .../liblz4-dev_1.9.4-1_amd64.deb ...
@@ -1529,7 +1530,7 @@ defender: Get:3 https://deb.debian.org/debian bookworm/main amd64 libfmt-dev amd
 defender: Get:4 https://deb.debian.org/debian bookworm/main amd64 libspdlog1.10 amd64 1:1.10.0+ds-0.4 [130 kB]
 defender: Get:5 https://deb.debian.org/debian bookworm/main amd64 libspdlog-dev amd64 1:1.10.0+ds-0.4 [209 kB]
 defender: Get:6 https://deb.debian.org/debian bookworm/main amd64 nlohmann-json3-dev all 3.11.2-2 [259 kB]
-defender: Fetched 1340 kB in 6s (213 kB/s)
+defender: Fetched 1340 kB in 0s (3249 kB/s)
 defender: Selecting previously unselected package catch2.
 (Reading database ... 63299 files and directories currently installed.)
 defender: Preparing to unpack .../0-catch2_2.13.10-1_amd64.deb ...
@@ -1569,7 +1570,7 @@ defender: After this operation, 467 kB of additional disk space will be used.
 defender: Get:1 https://deb.debian.org/debian bookworm/main amd64 libipset13 amd64 7.17-1 [67.5 kB]
 defender: Get:2 https://deb.debian.org/debian bookworm/main amd64 ipset amd64 7.17-1 [45.7 kB]
 defender: Get:3 https://deb.debian.org/debian bookworm/main amd64 libxtables-dev amd64 1.8.9-2 [13.2 kB]
-defender: Fetched 126 kB in 0s (717 kB/s)
+defender: Fetched 126 kB in 0s (692 kB/s)
 defender: Selecting previously unselected package libipset13:amd64.
 (Reading database ... 64022 files and directories currently installed.)
 defender: Preparing to unpack .../libipset13_7.17-1_amd64.deb ...
@@ -1602,7 +1603,7 @@ defender: Get:1 https://deb.debian.org/debian bookworm/main amd64 apparmor-profi
 defender: Get:2 https://deb.debian.org/debian bookworm/main amd64 python3-libapparmor amd64 3.0.8-3 [36.4 kB]
 defender: Get:3 https://deb.debian.org/debian bookworm/main amd64 python3-apparmor all 3.0.8-3 [87.8 kB]
 defender: Get:4 https://deb.debian.org/debian bookworm/main amd64 apparmor-utils all 3.0.8-3 [94.0 kB]
-defender: Fetched 260 kB in 0s (864 kB/s)
+defender: Fetched 260 kB in 0s (940 kB/s)
 defender: Selecting previously unselected package apparmor-profiles.
 (Reading database ... 64048 files and directories currently installed.)
 defender: Preparing to unpack .../apparmor-profiles_3.0.8-3_all.deb ...
@@ -1932,7 +1933,7 @@ defender: Get:186 https://deb.debian.org/debian bookworm/main amd64 libgtest-dev
 defender: Get:187 https://deb.debian.org/debian bookworm/main amd64 libtool all 2.4.7-7~deb12u1 [517 kB]
 defender: Get:188 https://deb.debian.org/debian bookworm/main amd64 protobuf-compiler-grpc amd64 1.51.1-3+b1 [37.8 kB]
 defender: apt-listchanges: Reading changelogs...
-defender: Fetched 99.6 MB in 1min 24s (1187 kB/s)
+defender: Fetched 99.6 MB in 39s (2536 kB/s)
 (Reading database ... 64312 files and directories currently installed.)
 defender: Preparing to unpack .../000-libssl3_3.0.19-1~deb12u2_amd64.deb ...
 defender: Unpacking libssl3:amd64 (3.0.19-1~deb12u2) over (3.0.14-1~deb12u1) ...
@@ -2722,7 +2723,7 @@ defender: Get:6 https://deb.debian.org/debian bookworm/main amd64 python3-setupt
 defender: Get:7 https://deb.debian.org/debian bookworm/main amd64 python3.11-venv amd64 3.11.2-6+deb12u6 [5896 B]
 defender: Get:8 https://deb.debian.org/debian bookworm/main amd64 python3-venv amd64 3.11.2-1+b1 [1200 B]
 defender: apt-listchanges: Reading changelogs...
-defender: Fetched 5010 kB in 2s (2909 kB/s)
+defender: Fetched 5010 kB in 1s (7308 kB/s)
 (Reading database ... 90252 files and directories currently installed.)
 defender: Preparing to unpack .../0-python3-pkg-resources_66.1.1-1+deb12u2_all.deb ...
 defender: Unpacking python3-pkg-resources (66.1.1-1+deb12u2) over (66.1.1-1) ...
@@ -2774,16 +2775,16 @@ defender:   bind9-dnsutils bind9-host bind9-libs
 defender: 3 upgraded, 17 newly installed, 0 to remove and 62 not upgraded.
 defender: Need to get 10.1 MB of archives.
 defender: After this operation, 35.8 MB of additional disk space will be used.
-defender: Get:1 https://deb.debian.org/debian bookworm/main amd64 libsctp1 amd64 1.0.19+dfsg-2 [29.7 kB]
-defender: Get:2 https://deb.debian.org/debian bookworm/main amd64 libiperf0 amd64 3.12-1+deb12u2 [91.2 kB]
-defender: Get:3 https://security.debian.org/debian-security bookworm-security/main amd64 bind9-dnsutils amd64 1:9.18.47-1~deb12u1 [156 kB]
+defender: Get:1 https://security.debian.org/debian-security bookworm-security/main amd64 bind9-dnsutils amd64 1:9.18.47-1~deb12u1 [156 kB]
+defender: Get:2 https://deb.debian.org/debian bookworm/main amd64 libsctp1 amd64 1.0.19+dfsg-2 [29.7 kB]
+defender: Get:3 https://deb.debian.org/debian bookworm/main amd64 libiperf0 amd64 3.12-1+deb12u2 [91.2 kB]
 defender: Get:4 https://deb.debian.org/debian bookworm/main amd64 iperf3 amd64 3.12-1+deb12u2 [34.0 kB]
-defender: Get:5 https://deb.debian.org/debian bookworm/main amd64 libtcl8.6 amd64 8.6.13+dfsg-2 [1035 kB]
-defender: Get:6 https://security.debian.org/debian-security bookworm-security/main amd64 bind9-host amd64 1:9.18.47-1~deb12u1 [54.8 kB]
+defender: Get:5 https://security.debian.org/debian-security bookworm-security/main amd64 bind9-host amd64 1:9.18.47-1~deb12u1 [54.8 kB]
+defender: Get:6 https://deb.debian.org/debian bookworm/main amd64 libtcl8.6 amd64 8.6.13+dfsg-2 [1035 kB]
 defender: Get:7 https://security.debian.org/debian-security bookworm-security/main amd64 bind9-libs amd64 1:9.18.47-1~deb12u1 [1180 kB]
-defender: Get:8 https://deb.debian.org/debian bookworm/main amd64 hping3 amd64 3.a2.ds2-10 [106 kB]
-defender: Get:9 https://deb.debian.org/debian bookworm/main amd64 libblas3 amd64 3.11.0-2 [149 kB]
-defender: Get:10 https://security.debian.org/debian-security bookworm-security/main amd64 dnsutils all 1:9.18.47-1~deb12u1 [11.4 kB]
+defender: Get:8 https://security.debian.org/debian-security bookworm-security/main amd64 dnsutils all 1:9.18.47-1~deb12u1 [11.4 kB]
+defender: Get:9 https://deb.debian.org/debian bookworm/main amd64 hping3 amd64 3.a2.ds2-10 [106 kB]
+defender: Get:10 https://deb.debian.org/debian bookworm/main amd64 libblas3 amd64 3.11.0-2 [149 kB]
 defender: Get:11 https://deb.debian.org/debian bookworm/main amd64 libdumbnet1 amd64 1.16.3-1 [27.5 kB]
 defender: Get:12 https://deb.debian.org/debian bookworm/main amd64 liblinear4 amd64 2.3.0+dfsg-5 [43.6 kB]
 defender: Get:13 https://deb.debian.org/debian bookworm/main amd64 liblua5.3-0 amd64 5.3.6-2 [123 kB]
@@ -2799,7 +2800,7 @@ defender: Preconfiguring packages ...
 defender: /usr/bin/deb-systemd-helper was not called from dpkg. Exiting.
 defender: /usr/bin/deb-systemd-helper was not called from dpkg. Exiting.
 defender: Failed to stop iperf3.service: Unit iperf3.service not loaded.
-defender: Fetched 10.1 MB in 34s (299 kB/s)
+defender: Fetched 10.1 MB in 31s (327 kB/s)
 defender: Selecting previously unselected package libsctp1:amd64.
 (Reading database ... 91194 files and directories currently installed.)
 defender: Preparing to unpack .../00-libsctp1_1.0.19+dfsg-2_amd64.deb ...
@@ -3444,17 +3445,17 @@ defender: ++ tar -xzf onnxruntime-linux-x64-1.17.1.tgz
 defender: ++ cp -r onnxruntime-linux-x64-1.17.1/include/cpu_provider_factory.h onnxruntime-linux-x64-1.17.1/include/onnxruntime_c_api.h onnxruntime-linux-x64-1.17.1/include/onnxruntime_cxx_api.h onnxruntime-linux-x64-1.17.1/include/onnxruntime_cxx_inline.h onnxruntime-linux-x64-1.17.1/include/onnxruntime_float16.h onnxruntime-linux-x64-1.17.1/include/onnxruntime_run_options_config_keys.h onnxruntime-linux-x64-1.17.1/include/onnxruntime_session_options_config_keys.h onnxruntime-linux-x64-1.17.1/include/onnxruntime_training_c_api.h onnxruntime-linux-x64-1.17.1/include/onnxruntime_training_cxx_api.h onnxruntime-linux-x64-1.17.1/include/onnxruntime_training_cxx_inline.h onnxruntime-linux-x64-1.17.1/include/provider_options.h /usr/local/include/          
 defender: ++ cp -r onnxruntime-linux-x64-1.17.1/lib/libonnxruntime.so onnxruntime-linux-x64-1.17.1/lib/libonnxruntime.so.1.17.1 /usr/local/lib/
 defender: ++ ldconfig
-defender: ++ echo '🔗 Creating /usr/local/lib64 symlinks for ONNX Runtime...'
 defender: 🔗 Creating /usr/local/lib64 symlinks for ONNX Runtime...
+defender: ++ echo '🔗 Creating /usr/local/lib64 symlinks for ONNX Runtime...'
 defender: ++ mkdir -p /usr/local/lib64
 defender: ++ ln -sf /usr/local/lib/libonnxruntime.so /usr/local/lib/libonnxruntime.so.1.17.1 /usr/local/lib64/
 defender: ++ ln -sf /usr/local/lib/libonnxruntime_providers_shared.so /usr/local/lib64/
 defender: ++ rm -rf onnxruntime-linux-x64-1.17.1 onnxruntime-linux-x64-1.17.1.tgz
-defender: ++ echo '✅ ONNX Runtime installed with lib64 symlinks'
 defender: ✅ ONNX Runtime installed with lib64 symlinks
+defender: 🔍 Installing FAISS v1.8.0 (CPU-only, shared library)...
+defender: ++ echo '✅ ONNX Runtime installed with lib64 symlinks'
 defender: ++ '[' '!' -f /usr/local/lib/libfaiss.so ']'
 defender: ++ echo '🔍 Installing FAISS v1.8.0 (CPU-only, shared library)...'
-defender: 🔍 Installing FAISS v1.8.0 (CPU-only, shared library)...
 defender: ++ apt-get install -y libblas-dev liblapack-dev
 defender: Reading package lists...
 defender: Building dependency tree...
@@ -3471,7 +3472,7 @@ defender: After this operation, 34.1 MB of additional disk space will be used.
 defender: Get:1 https://deb.debian.org/debian bookworm/main amd64 libblas-dev amd64 3.11.0-2 [158 kB]
 defender: Get:2 https://deb.debian.org/debian bookworm/main amd64 liblapack3 amd64 3.11.0-2 [2323 kB]
 defender: Get:3 https://deb.debian.org/debian bookworm/main amd64 liblapack-dev amd64 3.11.0-2 [4631 kB]
-defender: Fetched 7112 kB in 2s (3685 kB/s)
+defender: Fetched 7112 kB in 1s (10.7 MB/s)
 defender: Selecting previously unselected package libblas-dev:amd64.
 (Reading database ... 92513 files and directories currently installed.)
 defender: Preparing to unpack .../libblas-dev_3.11.0-2_amd64.deb ...
@@ -3541,12 +3542,12 @@ defender: -- Generating done
 defender: -- Build files have been written to: /tmp/faiss/build
 defender: +++ nproc
 defender: ++ make -j6
-defender: [  6%] Building CXX object faiss/CMakeFiles/faiss.dir/Index.cpp.o
-defender: [  6%] Building CXX object faiss/CMakeFiles/faiss.dir/Index2Layer.cpp.o
-defender: [  6%] Building CXX object faiss/CMakeFiles/faiss.dir/Clustering.cpp.o
-defender: [  6%] Building CXX object faiss/CMakeFiles/faiss.dir/IVFlib.cpp.o
-defender: [  6%] Building CXX object faiss/CMakeFiles/faiss.dir/AutoTune.cpp.o
+defender: [  3%] Building CXX object faiss/CMakeFiles/faiss.dir/Clustering.cpp.o
+defender: [  3%] Building CXX object faiss/CMakeFiles/faiss.dir/IVFlib.cpp.o
+defender: [  3%] Building CXX object faiss/CMakeFiles/faiss.dir/Index2Layer.cpp.o
+defender: [  3%] Building CXX object faiss/CMakeFiles/faiss.dir/AutoTune.cpp.o
 defender: [  6%] Building CXX object faiss/CMakeFiles/faiss.dir/IndexAdditiveQuantizer.cpp.o
+defender: [  6%] Building CXX object faiss/CMakeFiles/faiss.dir/Index.cpp.o
 defender: [  9%] Building CXX object faiss/CMakeFiles/faiss.dir/IndexBinary.cpp.o
 defender: [  9%] Building CXX object faiss/CMakeFiles/faiss.dir/IndexBinaryFlat.cpp.o
 defender: [  9%] Building CXX object faiss/CMakeFiles/faiss.dir/IndexBinaryFromFloat.cpp.o
@@ -3555,7 +3556,6 @@ defender: [ 12%] Building CXX object faiss/CMakeFiles/faiss.dir/IndexBinaryHash.
 defender: [ 12%] Building CXX object faiss/CMakeFiles/faiss.dir/IndexBinaryIVF.cpp.o
 defender: [ 16%] Building CXX object faiss/CMakeFiles/faiss.dir/IndexFlat.cpp.o
 defender: [ 16%] Building CXX object faiss/CMakeFiles/faiss.dir/IndexFlatCodes.cpp.o
-defender: [ 16%] Building CXX object faiss/CMakeFiles/faiss.dir/IndexHNSW.cpp.o
 defender: In file included from /tmp/faiss/faiss/utils/hamming_distance/hamdis-inl.h:23,
 defender:                  from /tmp/faiss/faiss/utils/hamming.h:34,
 defender:                  from /tmp/faiss/faiss/IndexBinaryHNSW.cpp:31:
@@ -3563,6 +3563,7 @@ defender: /tmp/faiss/faiss/utils/hamming_distance/generic-inl.h: In member funct
 defender: /tmp/faiss/faiss/utils/hamming_distance/generic-inl.h:312:32: warning: statement will never be executed [-Wswitch-unreachable]
 defender:   312 |                 [[fallthrough]];
 defender:       |                                ^
+defender: [ 16%] Building CXX object faiss/CMakeFiles/faiss.dir/IndexHNSW.cpp.o
 defender: In file included from /tmp/faiss/faiss/utils/hamming_distance/hamdis-inl.h:23,
 defender:                  from /tmp/faiss/faiss/utils/hamming.h:34,
 defender:                  from /tmp/faiss/faiss/IndexBinaryHash.cpp:17:
@@ -3608,6 +3609,7 @@ defender: [ 32%] Building CXX object faiss/CMakeFiles/faiss.dir/IndexNSG.cpp.o
 defender: [ 35%] Building CXX object faiss/CMakeFiles/faiss.dir/IndexPQ.cpp.o
 defender: [ 35%] Building CXX object faiss/CMakeFiles/faiss.dir/IndexFastScan.cpp.o
 defender: [ 35%] Building CXX object faiss/CMakeFiles/faiss.dir/IndexAdditiveQuantizerFastScan.cpp.o
+defender: [ 38%] Building CXX object faiss/CMakeFiles/faiss.dir/IndexIVFIndependentQuantizer.cpp.o
 defender: In file included from /tmp/faiss/faiss/utils/hamming_distance/hamdis-inl.h:23,
 defender:                  from /tmp/faiss/faiss/utils/hamming.h:34,
 defender:                  from /tmp/faiss/faiss/IndexPQ.cpp:21:
@@ -3615,7 +3617,6 @@ defender: /tmp/faiss/faiss/utils/hamming_distance/generic-inl.h: In member funct
 defender: /tmp/faiss/faiss/utils/hamming_distance/generic-inl.h:312:32: warning: statement will never be executed [-Wswitch-unreachable]
 defender:   312 |                 [[fallthrough]];
 defender:       |                                ^
-defender: [ 38%] Building CXX object faiss/CMakeFiles/faiss.dir/IndexIVFIndependentQuantizer.cpp.o
 defender: [ 38%] Building CXX object faiss/CMakeFiles/faiss.dir/IndexPQFastScan.cpp.o
 defender: [ 38%] Building CXX object faiss/CMakeFiles/faiss.dir/IndexPreTransform.cpp.o
 defender: [ 41%] Building CXX object faiss/CMakeFiles/faiss.dir/IndexRefine.cpp.o
@@ -3823,16 +3824,16 @@ defender: ++ echo '🔍 Installing XGBoost 3.2.0...'
 defender: ++ pip3 install xgboost==3.2.0 --break-system-packages --timeout=300
 defender: Collecting xgboost==3.2.0
 defender:   Downloading xgboost-3.2.0-py3-none-manylinux_2_28_x86_64.whl (131.7 MB)
-defender:      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 131.7/131.7 MB 4.4 MB/s eta 0:00:00
+defender:      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 131.7/131.7 MB 11.1 MB/s eta 0:00:00
 defender: Collecting numpy
 defender:   Downloading numpy-2.4.4-cp311-cp311-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl (16.9 MB)
-defender:      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 16.9/16.9 MB 2.2 MB/s eta 0:00:00
+defender:      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 16.9/16.9 MB 24.6 MB/s eta 0:00:00
 defender: Collecting nvidia-nccl-cu12
 defender:   Downloading nvidia_nccl_cu12-2.30.4-py3-none-manylinux_2_18_x86_64.whl (300.2 MB)
-defender:      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 300.2/300.2 MB 3.2 MB/s eta 0:00:00
+defender:      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 300.2/300.2 MB 6.1 MB/s eta 0:00:00
 defender: Collecting scipy
 defender:   Downloading scipy-1.17.1-cp311-cp311-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl (35.3 MB)
-defender:      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 35.3/35.3 MB 3.9 MB/s eta 0:00:00
+defender:      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 35.3/35.3 MB 23.8 MB/s eta 0:00:00
 defender: Installing collected packages: nvidia-nccl-cu12, numpy, scipy, xgboost
 defender: Successfully installed numpy-2.4.4 nvidia-nccl-cu12-2.30.4 scipy-1.17.1 xgboost-3.2.0
 defender: WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv                                                                                                                                                   
@@ -3852,18 +3853,18 @@ defender: ++ ldconfig
 defender: ++ pip3 install pandas scikit-learn --break-system-packages --timeout=300
 defender: Collecting pandas
 defender:   Downloading pandas-3.0.2-cp311-cp311-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl (11.3 MB)
-defender:      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 11.3/11.3 MB 4.2 MB/s eta 0:00:00
+defender:      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 11.3/11.3 MB 17.5 MB/s eta 0:00:00
 defender: Collecting scikit-learn
 defender:   Downloading scikit_learn-1.8.0-cp311-cp311-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl (9.1 MB)
-defender:      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 9.1/9.1 MB 4.8 MB/s eta 0:00:00
+defender:      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 9.1/9.1 MB 23.6 MB/s eta 0:00:00
 defender: Requirement already satisfied: numpy>=1.26.0 in /usr/local/lib/python3.11/dist-packages (from pandas) (2.4.4)
 defender: Collecting python-dateutil>=2.8.2
 defender:   Downloading python_dateutil-2.9.0.post0-py2.py3-none-any.whl (229 kB)
-defender:      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 229.9/229.9 kB 4.7 MB/s eta 0:00:00
+defender:      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 229.9/229.9 kB 2.3 MB/s eta 0:00:00
 defender: Requirement already satisfied: scipy>=1.10.0 in /usr/local/lib/python3.11/dist-packages (from scikit-learn) (1.17.1)
 defender: Collecting joblib>=1.3.0
 defender:   Downloading joblib-1.5.3-py3-none-any.whl (309 kB)
-defender:      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 309.1/309.1 kB 3.9 MB/s eta 0:00:00
+defender:      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 309.1/309.1 kB 3.5 MB/s eta 0:00:00
 defender: Collecting threadpoolctl>=3.2.0
 defender:   Downloading threadpoolctl-3.6.0-py3-none-any.whl (18 kB)
 defender: Requirement already satisfied: six>=1.5 in /usr/lib/python3/dist-packages (from python-dateutil>=2.8.2->pandas) (1.16.0)
@@ -3961,11 +3962,11 @@ defender: -- Configuring done
 defender: -- Generating done
 defender: -- Build files have been written to: /tmp/etcd-cpp-apiv3/build
 defender: ++ make -j4
-defender: [  8%] Running cpp protocol buffer compiler on auth.proto
 defender: [  8%] Running cpp protocol buffer compiler on gogoproto/gogo.proto
+defender: [  8%] Running cpp protocol buffer compiler on auth.proto
 defender: [  8%] Running cpp protocol buffer compiler on etcdserver.proto
 defender: [ 10%] Running cpp protocol buffer compiler on google/api/annotations.proto
-defender: [ 13%] Running cpp protocol buffer compiler on google/api/http.proto
+defender: [ 16%] Running cpp protocol buffer compiler on google/api/http.proto
 defender: [ 16%] Running cpp protocol buffer compiler on kv.proto
 defender: [ 18%] Running cpp protocol buffer compiler on rpc.proto
 defender: [ 21%] Running cpp protocol buffer compiler on v3election.proto
@@ -3975,9 +3976,9 @@ defender: [ 29%] Running C++ gRPC compiler on /tmp/etcd-cpp-apiv3/proto/v3electi
 defender: [ 32%] Running C++ gRPC compiler on /tmp/etcd-cpp-apiv3/proto/v3lock.proto
 defender: [ 32%] Built target protobuf_generates
 defender: [ 43%] Building CXX object src/CMakeFiles/etcd-cpp-api-core-objects.dir/Value.cpp.o
-defender: [ 43%] Building CXX object src/CMakeFiles/etcd-cpp-api-core-objects.dir/Response.cpp.o
 defender: [ 43%] Building CXX object src/CMakeFiles/etcd-cpp-api-core-objects.dir/KeepAlive.cpp.o
 defender: [ 43%] Building CXX object src/CMakeFiles/etcd-cpp-api-core-objects.dir/SyncClient.cpp.o
+defender: [ 43%] Building CXX object src/CMakeFiles/etcd-cpp-api-core-objects.dir/Response.cpp.o
 defender: [ 45%] Building CXX object src/CMakeFiles/etcd-cpp-api-core-objects.dir/Watcher.cpp.o
 defender: [ 48%] Building CXX object src/CMakeFiles/etcd-cpp-api-core-objects.dir/v3/Action.cpp.o
 defender: [ 51%] Building CXX object src/CMakeFiles/etcd-cpp-api-core-objects.dir/v3/AsyncGRPC.cpp.o
@@ -4047,7 +4048,7 @@ defender: Get:1 https://deb.debian.org/debian bookworm/main amd64 libcrypto++8 a
 defender: Get:2 https://deb.debian.org/debian bookworm/main amd64 libcrypto++-dev amd64 8.7.0+git220824-1 [1825 kB]
 defender: Get:3 https://deb.debian.org/debian bookworm/main amd64 libcrypto++-doc all 8.7.0+git220824-1 [5113 kB]
 defender: Get:4 https://deb.debian.org/debian bookworm/main amd64 libcrypto++-utils amd64 8.7.0+git220824-1 [7750 kB]
-defender: Fetched 15.8 MB in 11s (1447 kB/s)
+defender: Fetched 15.8 MB in 1s (10.7 MB/s)
 defender: Selecting previously unselected package libcrypto++8:amd64.
 (Reading database ... 92537 files and directories currently installed.)
 defender: Preparing to unpack .../libcrypto++8_8.7.0+git220824-1_amd64.deb ...
@@ -4169,10 +4170,10 @@ defender: -- Configuring done
 defender: -- Generating done
 defender: -- Build files have been written to: /vagrant/firewall-acl-agent/build
 defender: ++ make -j4
-defender: [  5%] Building CXX object CMakeFiles/firewall_core.dir/src/core/config_loader.cpp.o
-defender: [ 11%] Building CXX object CMakeFiles/firewall_core.dir/src/core/batch_processor.cpp.o
-defender: [ 16%] Building CXX object CMakeFiles/firewall_core.dir/src/core/logger.cpp.o
-defender: [ 22%] Building CXX object CMakeFiles/firewall_core.dir/src/api/zmq_subscriber.cpp.o
+defender: [  5%] Building CXX object CMakeFiles/firewall_core.dir/src/core/batch_processor.cpp.o
+defender: [ 11%] Building CXX object CMakeFiles/firewall_core.dir/src/core/config_loader.cpp.o
+defender: [ 16%] Building CXX object CMakeFiles/firewall_core.dir/src/api/zmq_subscriber.cpp.o
+defender: [ 22%] Building CXX object CMakeFiles/firewall_core.dir/src/core/logger.cpp.o
 defender: In file included from /vagrant/firewall-acl-agent/src/api/zmq_subscriber.cpp:7:
 defender: /vagrant/firewall-acl-agent/include/firewall/zmq_subscriber.hpp:54:10: fatal error: seed_client/seed_client.hpp: No such file or directory
 defender:    54 | #include <seed_client/seed_client.hpp>
@@ -4234,7 +4235,7 @@ defender: Get:2 https://deb.debian.org/debian bookworm/main amd64 libsqlite3-dev
 defender: Get:3 https://deb.debian.org/debian bookworm/main amd64 sqlite3 amd64 3.40.1-2+deb12u2 [353 kB]
 defender: apt-listchanges: Reading changelogs...
 defender: dpkg-preconfigure: unable to re-open stdin: No such file or directory
-defender: Fetched 2217 kB in 2s (1016 kB/s)
+defender: Fetched 2217 kB in 0s (7370 kB/s)
 (Reading database ... 96192 files and directories currently installed.)
 defender: Preparing to unpack .../libsqlite3-0_3.40.1-2+deb12u2_amd64.deb ...
 defender: Unpacking libsqlite3-0:amd64 (3.40.1-2+deb12u2) over (3.40.1-2) ...
@@ -4285,7 +4286,7 @@ defender:      → Plugin signing keypair generado
 defender:      → Private key: /etc/ml-defender/plugins/plugin_signing.sk (0600 -- NUNCA fuera de este host)
 defender:      → Public key:  /etc/ml-defender/plugins/plugin_signing.pk (0644)
 defender:      →
-defender:      → >>> MLD_PLUGIN_PUBKEY_HEX=f27f17a1ebe4e580f45909f47d5942bea2855bd060dbff59a31f6db40c95febb <<<
+defender:      → >>> MLD_PLUGIN_PUBKEY_HEX=1125044dd36d68ce42d79936032f9c3b82718171d0ce26e623db77caf883607f <<<
 defender:      →     Hardcodear en plugin-loader/CMakeLists.txt (ADR-025 D7)
 defender:      →     Esta es la UNICA vez que se muestra en provision.sh
 defender:      → Compilando plugin-loader...
@@ -4344,7 +4345,7 @@ defender:      → Directorio /etc/ml-defender/ebpf-plugins/ creado y listo
 defender:
 defender: ══ Plugin Signing Keypair (ADR-025) ══
 defender:   ⚠️  Plugin signing keypair ya existe -- skip (usa --reset para rotar)
-defender:      → Public key hex (MLD_PLUGIN_PUBKEY_HEX): f27f17a1ebe4e580f45909f47d5942bea2855bd060dbff59a31f6db40c95febb
+defender:      → Public key hex (MLD_PLUGIN_PUBKEY_HEX): 1125044dd36d68ce42d79936032f9c3b82718171d0ce26e623db77caf883607f
 defender:
 defender: ══ Sincronización de seed maestro (etcd-server → 5 componentes) ══
 defender:      → Seed sincronizado → sniffer
@@ -4370,7 +4371,7 @@ defender:      → Symlink creado: /usr/local/lib/libsodium.so.23 → libsodium.
 defender:      → ldconfig ejecutado
 defender:
 defender: ══ libcrypto_transport.so — verificación de fecha ══
-defender:   ✅ libcrypto_transport.so actualizada (2026-05-08)
+defender:   ✅ libcrypto_transport.so actualizada (2026-05-09)
 defender:
 defender: ══ argus-network-isolate — ADR-042 IRP config ══
 defender:      → isolate.json instalado en /etc/ml-defender/firewall-acl-agent/isolate.json
@@ -4425,256 +4426,16 @@ defender:      systemctl status ml-defender-*.service
 defender:
 defender: ═══ Instalación completada ═══
 defender: ✅ systemd units installed
-==> client: Importing base box 'debian/bookworm64'...
-==> client: Matching MAC address for NAT networking...
-==> client: Checking if box 'debian/bookworm64' version '12.20240905.1' is up to date...
-==> client: Setting the name of the VM: ml-defender-client
-==> client: Fixed port collision for 22 => 2222. Now on port 2200.
-==> client: Clearing any previously set network interfaces...
-==> client: Preparing network interfaces based on configuration...
-client: Adapter 1: nat
-client: Adapter 2: intnet
-==> client: Forwarding ports...
-client: 22 (guest) => 2200 (host) (adapter 1)
-==> client: Running 'pre-boot' VM customizations...
-==> client: Booting VM...
-==> client: Waiting for machine to boot. This may take a few minutes...
-client: SSH address: 127.0.0.1:2200
-client: SSH username: vagrant
-client: SSH auth method: private key
-client:
-client: Vagrant insecure key detected. Vagrant will automatically replace
-client: this with a newly generated keypair for better security.
-client:
-client: Inserting generated public key within guest...
-client: Removing insecure key from the guest if it's present...
-client: Key inserted! Disconnecting and reconnecting using new SSH key...
-==> client: Machine booted and ready!
-==> client: Checking for guest additions in VM...
-client: The guest additions on this VM do not match the installed version of
-client: VirtualBox! In most cases this is fine, but in rare cases it can
-client: prevent things such as shared folders from working properly. If you see
-client: shared folder errors, please make sure the guest additions within the
-client: virtual machine match the version of VirtualBox you have installed on
-client: your host and reload your VM.
-client:
-client: Guest Additions Version: 6.0.0 r127566
-client: VirtualBox Version: 7.2
-==> client: Setting hostname...
-==> client: Configuring and enabling network interfaces...
-==> client: Mounting shared folders...
-client: /Users/aironman/CLionProjects/test-zeromq-docker => /vagrant
-==> client: Running provisioner: client-setup (shell)...
-client: Running: script: client-setup
-client: ++ echo ═══════════════════════════════════════════════════════════════════
-client: ═══════════════════════════════════════════════════════════════════
-client: ++ echo '║  ML CLIENT - Traffic Generator Setup                            ║'
-client: ║  ML CLIENT - Traffic Generator Setup                            ║
-client: ++ echo ═══════════════════════════════════════════════════════════════════
-client: ═══════════════════════════════════════════════════════════════════
-client: ++ apt-get update -qq
-client: ++ apt-get install -y --no-install-recommends --allow-downgrades --allow-remove-essential --allow-change-held-packages -o Dpkg::Options::=--force-confdef -o Dpkg::Options::=--force-confold curl wget hping3 nmap iproute2 tcpdump tcpreplay netcat-openbsd dnsutils iputils-ping net-tools                                                                                      
-client: Reading package lists...
-client: Building dependency tree...
-client: Reading state information...
-client: iproute2 is already the newest version (6.1.0-3).
-client: The following additional packages will be installed:
-client:   bind9-dnsutils bind9-host bind9-libs libblas3 libcurl3-gnutls libcurl4
-client:   libdumbnet1 liblinear4 liblua5.3-0 libpcap0.8 libpcre3 libtcl8.6 lua-lpeg
-client:   nmap-common
-client: Suggested packages:
-client:   liblinear-tools liblinear-dev tcl8.6 ncat ndiff zenmap
-client: The following NEW packages will be installed:
-client:   curl dnsutils hping3 libblas3 libcurl4 libdumbnet1 liblinear4 liblua5.3-0
-client:   libpcap0.8 libpcre3 libtcl8.6 lua-lpeg net-tools netcat-openbsd nmap
-client:   nmap-common tcpdump tcpreplay
-client: The following packages will be upgraded:
-client:   bind9-dnsutils bind9-host bind9-libs iputils-ping libcurl3-gnutls wget
-client: 6 upgraded, 18 newly installed, 0 to remove and 92 not upgraded.
-client: Need to get 12.6 MB of archives.
-client: After this operation, 38.5 MB of additional disk space will be used.
-client: Get:1 https://deb.debian.org/debian bookworm/main amd64 iputils-ping amd64 3:20221126-1+deb12u1 [47.2 kB]
-client: Get:2 https://deb.debian.org/debian bookworm/main amd64 wget amd64 1.21.3-1+deb12u1 [937 kB]
-client: Get:3 https://security.debian.org/debian-security bookworm-security/main amd64 bind9-dnsutils amd64 1:9.18.47-1~deb12u1 [156 kB]
-client: Get:4 https://security.debian.org/debian-security bookworm-security/main amd64 bind9-host amd64 1:9.18.47-1~deb12u1 [54.8 kB]
-client: Get:5 https://deb.debian.org/debian bookworm/main amd64 libcurl4 amd64 7.88.1-10+deb12u14 [392 kB]
-client: Get:6 https://security.debian.org/debian-security bookworm-security/main amd64 bind9-libs amd64 1:9.18.47-1~deb12u1 [1180 kB]
-client: Get:7 https://deb.debian.org/debian bookworm/main amd64 curl amd64 7.88.1-10+deb12u14 [316 kB]
-client: Get:8 https://deb.debian.org/debian bookworm/main amd64 libpcap0.8 amd64 1.10.3-1 [157 kB]
-client: Get:9 https://deb.debian.org/debian bookworm/main amd64 libtcl8.6 amd64 8.6.13+dfsg-2 [1035 kB]
-client: Get:10 https://deb.debian.org/debian bookworm/main amd64 hping3 amd64 3.a2.ds2-10 [106 kB]
-client: Get:11 https://deb.debian.org/debian bookworm/main amd64 libblas3 amd64 3.11.0-2 [149 kB]
-client: Get:12 https://deb.debian.org/debian bookworm/main amd64 libcurl3-gnutls amd64 7.88.1-10+deb12u14 [386 kB]
-client: Get:13 https://security.debian.org/debian-security bookworm-security/main amd64 dnsutils all 1:9.18.47-1~deb12u1 [11.4 kB]
-client: Get:14 https://deb.debian.org/debian bookworm/main amd64 libdumbnet1 amd64 1.16.3-1 [27.5 kB]
-client: Get:15 https://deb.debian.org/debian bookworm/main amd64 liblinear4 amd64 2.3.0+dfsg-5 [43.6 kB]
-client: Get:16 https://deb.debian.org/debian bookworm/main amd64 liblua5.3-0 amd64 5.3.6-2 [123 kB]
-client: Get:17 https://deb.debian.org/debian bookworm/main amd64 libpcre3 amd64 2:8.39-15 [341 kB]
-client: Get:18 https://deb.debian.org/debian bookworm/main amd64 lua-lpeg amd64 1.0.2-2 [37.7 kB]
-client: Get:19 https://deb.debian.org/debian bookworm/main amd64 net-tools amd64 2.10-0.1+deb12u2 [243 kB]
-client: Get:20 https://deb.debian.org/debian bookworm/main amd64 netcat-openbsd amd64 1.219-1 [41.5 kB]
-client: Get:21 https://deb.debian.org/debian bookworm/main amd64 nmap-common all 7.93+dfsg1-1 [4148 kB]
-client: Get:22 https://deb.debian.org/debian bookworm/main amd64 nmap amd64 7.93+dfsg1-1 [1897 kB]
-client: Get:23 https://deb.debian.org/debian bookworm/main amd64 tcpdump amd64 4.99.3-1 [467 kB]
-client: Get:24 https://deb.debian.org/debian bookworm/main amd64 tcpreplay amd64 4.4.3-1 [325 kB]
-client: apt-listchanges: Reading changelogs...
-client: Fetched 12.6 MB in 3s (3732 kB/s)
-(Reading database ... 25481 files and directories currently installed.)
-client: Preparing to unpack .../00-iputils-ping_3%3a20221126-1+deb12u1_amd64.deb ...
-client: Unpacking iputils-ping (3:20221126-1+deb12u1) over (3:20221126-1) ...
-client: Preparing to unpack .../01-bind9-dnsutils_1%3a9.18.47-1~deb12u1_amd64.deb ...
-client: Unpacking bind9-dnsutils (1:9.18.47-1~deb12u1) over (1:9.18.28-1~deb12u2) ...
-client: Preparing to unpack .../02-bind9-host_1%3a9.18.47-1~deb12u1_amd64.deb ...
-client: Unpacking bind9-host (1:9.18.47-1~deb12u1) over (1:9.18.28-1~deb12u2) ...
-client: Preparing to unpack .../03-bind9-libs_1%3a9.18.47-1~deb12u1_amd64.deb ...
-client: Unpacking bind9-libs:amd64 (1:9.18.47-1~deb12u1) over (1:9.18.28-1~deb12u2) ...
-client: Preparing to unpack .../04-wget_1.21.3-1+deb12u1_amd64.deb ...
-client: Unpacking wget (1.21.3-1+deb12u1) over (1.21.3-1+b2) ...
-client: Selecting previously unselected package libcurl4:amd64.
-client: Preparing to unpack .../05-libcurl4_7.88.1-10+deb12u14_amd64.deb ...
-client: Unpacking libcurl4:amd64 (7.88.1-10+deb12u14) ...
-client: Selecting previously unselected package curl.
-client: Preparing to unpack .../06-curl_7.88.1-10+deb12u14_amd64.deb ...
-client: Unpacking curl (7.88.1-10+deb12u14) ...
-client: Selecting previously unselected package dnsutils.
-client: Preparing to unpack .../07-dnsutils_1%3a9.18.47-1~deb12u1_all.deb ...
-client: Unpacking dnsutils (1:9.18.47-1~deb12u1) ...
-client: Selecting previously unselected package libpcap0.8:amd64.
-client: Preparing to unpack .../08-libpcap0.8_1.10.3-1_amd64.deb ...
-client: Unpacking libpcap0.8:amd64 (1.10.3-1) ...
-client: Selecting previously unselected package libtcl8.6:amd64.
-client: Preparing to unpack .../09-libtcl8.6_8.6.13+dfsg-2_amd64.deb ...
-client: Unpacking libtcl8.6:amd64 (8.6.13+dfsg-2) ...
-client: Selecting previously unselected package hping3.
-client: Preparing to unpack .../10-hping3_3.a2.ds2-10_amd64.deb ...
-client: Unpacking hping3 (3.a2.ds2-10) ...
-client: Selecting previously unselected package libblas3:amd64.
-client: Preparing to unpack .../11-libblas3_3.11.0-2_amd64.deb ...
-client: Unpacking libblas3:amd64 (3.11.0-2) ...
-client: Preparing to unpack .../12-libcurl3-gnutls_7.88.1-10+deb12u14_amd64.deb ...
-client: Unpacking libcurl3-gnutls:amd64 (7.88.1-10+deb12u14) over (7.88.1-10+deb12u7) ...
-client: Selecting previously unselected package libdumbnet1:amd64.
-client: Preparing to unpack .../13-libdumbnet1_1.16.3-1_amd64.deb ...
-client: Unpacking libdumbnet1:amd64 (1.16.3-1) ...
-client: Selecting previously unselected package liblinear4:amd64.
-client: Preparing to unpack .../14-liblinear4_2.3.0+dfsg-5_amd64.deb ...
-client: Unpacking liblinear4:amd64 (2.3.0+dfsg-5) ...
-client: Selecting previously unselected package liblua5.3-0:amd64.
-client: Preparing to unpack .../15-liblua5.3-0_5.3.6-2_amd64.deb ...
-client: Unpacking liblua5.3-0:amd64 (5.3.6-2) ...
-client: Selecting previously unselected package libpcre3:amd64.
-client: Preparing to unpack .../16-libpcre3_2%3a8.39-15_amd64.deb ...
-client: Unpacking libpcre3:amd64 (2:8.39-15) ...
-client: Selecting previously unselected package lua-lpeg:amd64.
-client: Preparing to unpack .../17-lua-lpeg_1.0.2-2_amd64.deb ...
-client: Unpacking lua-lpeg:amd64 (1.0.2-2) ...
-client: Selecting previously unselected package net-tools.
-client: Preparing to unpack .../18-net-tools_2.10-0.1+deb12u2_amd64.deb ...
-client: Unpacking net-tools (2.10-0.1+deb12u2) ...
-client: Selecting previously unselected package netcat-openbsd.
-client: Preparing to unpack .../19-netcat-openbsd_1.219-1_amd64.deb ...
-client: Unpacking netcat-openbsd (1.219-1) ...
-client: Selecting previously unselected package nmap-common.
-client: Preparing to unpack .../20-nmap-common_7.93+dfsg1-1_all.deb ...
-client: Unpacking nmap-common (7.93+dfsg1-1) ...
-client: Selecting previously unselected package nmap.
-client: Preparing to unpack .../21-nmap_7.93+dfsg1-1_amd64.deb ...
-client: Unpacking nmap (7.93+dfsg1-1) ...
-client: Selecting previously unselected package tcpdump.
-client: Preparing to unpack .../22-tcpdump_4.99.3-1_amd64.deb ...
-client: Unpacking tcpdump (4.99.3-1) ...
-client: Selecting previously unselected package tcpreplay.
-client: Preparing to unpack .../23-tcpreplay_4.4.3-1_amd64.deb ...
-client: Unpacking tcpreplay (4.4.3-1) ...
-client: Setting up net-tools (2.10-0.1+deb12u2) ...
-client: Setting up lua-lpeg:amd64 (1.0.2-2) ...
-client: Setting up wget (1.21.3-1+deb12u1) ...
-client: Setting up bind9-libs:amd64 (1:9.18.47-1~deb12u1) ...
-client: Setting up netcat-openbsd (1.219-1) ...
-client: update-alternatives: using /bin/nc.openbsd to provide /bin/nc (nc) in auto mode
-client: Setting up libcurl3-gnutls:amd64 (7.88.1-10+deb12u14) ...
-client: Setting up libpcre3:amd64 (2:8.39-15) ...
-client: Setting up libblas3:amd64 (3.11.0-2) ...
-client: update-alternatives: using /usr/lib/x86_64-linux-gnu/blas/libblas.so.3 to provide /usr/lib/x86_64-linux-gnu/libblas.so.3 (libblas.so.3-x86_64-linux-gnu) in auto mode
-client: Setting up libpcap0.8:amd64 (1.10.3-1) ...
-client: Setting up libtcl8.6:amd64 (8.6.13+dfsg-2) ...
-client: Setting up libdumbnet1:amd64 (1.16.3-1) ...
-client: Setting up nmap-common (7.93+dfsg1-1) ...
-client: Setting up liblua5.3-0:amd64 (5.3.6-2) ...
-client: Setting up libcurl4:amd64 (7.88.1-10+deb12u14) ...
-client: Setting up curl (7.88.1-10+deb12u14) ...
-client: Setting up hping3 (3.a2.ds2-10) ...
-client: Setting up bind9-host (1:9.18.47-1~deb12u1) ...
-client: Setting up iputils-ping (3:20221126-1+deb12u1) ...
-client: Setting up tcpdump (4.99.3-1) ...
-client: Setting up liblinear4:amd64 (2.3.0+dfsg-5) ...
-client: Setting up tcpreplay (4.4.3-1) ...
-client: Setting up bind9-dnsutils (1:9.18.47-1~deb12u1) ...
-client: Setting up dnsutils (1:9.18.47-1~deb12u1) ...
-client: Setting up nmap (7.93+dfsg1-1) ...
-client: Processing triggers for man-db (2.11.2-2) ...
-client: Processing triggers for libc-bin (2.36-9+deb12u8) ...
-client: ++ apt-get install -y --no-install-recommends -o Dpkg::Options::=--force-confdef -o Dpkg::Options::=--force-confold iperf3
-client: Reading package lists...
-client: Building dependency tree...
-client: Reading state information...
-client: The following additional packages will be installed:
-client:   libiperf0 libsctp1
-client: Suggested packages:
-client:   lksctp-tools
-client: The following NEW packages will be installed:
-client:   iperf3 libiperf0 libsctp1
-client: 0 upgraded, 3 newly installed, 0 to remove and 92 not upgraded.
-client: Need to get 155 kB of archives.
-client: After this operation, 403 kB of additional disk space will be used.
-client: Get:1 https://deb.debian.org/debian bookworm/main amd64 libsctp1 amd64 1.0.19+dfsg-2 [29.7 kB]
-client: Get:2 https://deb.debian.org/debian bookworm/main amd64 libiperf0 amd64 3.12-1+deb12u2 [91.2 kB]
-client: Get:3 https://deb.debian.org/debian bookworm/main amd64 iperf3 amd64 3.12-1+deb12u2 [34.0 kB]
-client: Preconfiguring packages ...
-client: /usr/bin/deb-systemd-helper was not called from dpkg. Exiting.
-client: /usr/bin/deb-systemd-helper was not called from dpkg. Exiting.
-client: Failed to stop iperf3.service: Unit iperf3.service not loaded.
-client: Fetched 155 kB in 0s (901 kB/s)
-client: Selecting previously unselected package libsctp1:amd64.
-(Reading database ... 26813 files and directories currently installed.)
-client: Preparing to unpack .../libsctp1_1.0.19+dfsg-2_amd64.deb ...
-client: Unpacking libsctp1:amd64 (1.0.19+dfsg-2) ...
-client: Selecting previously unselected package libiperf0:amd64.
-client: Preparing to unpack .../libiperf0_3.12-1+deb12u2_amd64.deb ...
-client: Unpacking libiperf0:amd64 (3.12-1+deb12u2) ...
-client: Selecting previously unselected package iperf3.
-client: Preparing to unpack .../iperf3_3.12-1+deb12u2_amd64.deb ...
-client: Unpacking iperf3 (3.12-1+deb12u2) ...
-client: Setting up libsctp1:amd64 (1.0.19+dfsg-2) ...
-client: Setting up libiperf0:amd64 (3.12-1+deb12u2) ...
-client: Setting up iperf3 (3.12-1+deb12u2) ...
-client: Processing triggers for man-db (2.11.2-2) ...
-client: Processing triggers for libc-bin (2.36-9+deb12u8) ...
-client: ++ ip route del default
-client: ++ ip route add default via 192.168.100.1 dev eth1
-client: ++ echo 'nameserver 8.8.8.8'
-client: ✅ CLIENT READY
-client:    IP: 192.168.100.50
-client:    Gateway: 192.168.100.1 (defender eth2)
-client: ++ echo 'nameserver 1.1.1.1'
-client: ++ echo '✅ CLIENT READY'
-client: ++ echo '   IP: 192.168.100.50'
-client: ++ echo '   Gateway: 192.168.100.1 (defender eth2)'
 
 ==> defender: Machine 'defender' has a post `vagrant up` message. This is a message
 ==> defender: from the creator of the Vagrantfile, and not from Vagrant itself:                                                                                                                
 ==> defender:                                                                                                                                                                                  
-==> defender: Vanilla Debian box. See https://app.vagrantup.com/debian for help and bug reports
-
-==> client: Machine 'client' has a post `vagrant up` message. This is a message
-==> client: from the creator of the Vagrantfile, and not from Vagrant itself:                                                                                                                  
-==> client:                                                                                                                                                                                    
-==> client: Vanilla Debian box. See https://app.vagrantup.com/debian for help and bug reports                                                                                                  
-
+==> defender: Vanilla Debian box. See https://app.vagrantup.com/debian for help and bug reports                                                                                                
+(.venv) aironman@MacBook-Pro-de-Alonso test-zeromq-docker %
 ## make bootstrap
 (.venv) aironman@MacBook-Pro-de-Alonso test-zeromq-docker % make bootstrap
 ╔════════════════════════════════════════════════════════════╗
-║  🚀 aRGus NDR — Bootstrap from scratch                    ║
+║  🚀 aRGus NDR — Bootstrap x86 Variant A (eBPF/XDP)        ║
 ║  Ejecutar tras: git clone && make up                      ║
 ╚════════════════════════════════════════════════════════════╝
 [1/8] Verificando entorno post-up...
@@ -4740,9 +4501,9 @@ systemctl status ml-defender-*.service
 [ 12%] Building CXX object CMakeFiles/seed_client.dir/src/seed_client.cpp.o
 [ 25%] Linking CXX shared library libseed_client.so
 [ 25%] Built target seed_client
-[ 37%] Building CXX object CMakeFiles/test_seed_client.dir/tests/test_seed_client.cpp.o
+[ 37%] Building CXX object CMakeFiles/test_seed_client_traversal.dir/tests/test_seed_client_traversal.cpp.o
 [ 50%] Building CXX object CMakeFiles/test_perms_seed.dir/tests/test_perms_seed.cpp.o
-[ 62%] Building CXX object CMakeFiles/test_seed_client_traversal.dir/tests/test_seed_client_traversal.cpp.o
+[ 62%] Building CXX object CMakeFiles/test_seed_client.dir/tests/test_seed_client.cpp.o
 [ 75%] Linking CXX executable test_perms_seed
 [ 75%] Built target test_perms_seed
 [ 87%] Linking CXX executable test_seed_client_traversal
@@ -4820,15 +4581,15 @@ Install the project...
 -- Configuring done
 -- Generating done
 -- Build files have been written to: /vagrant/crypto-transport/build
-[ 20%] Building CXX object CMakeFiles/crypto_transport.dir/src/utils.cpp.o
-[ 26%] Building CXX object CMakeFiles/crypto_transport.dir/src/compression.cpp.o
+[  6%] Building CXX object CMakeFiles/crypto_transport.dir/src/utils.cpp.o
+[ 20%] Building CXX object CMakeFiles/crypto_transport.dir/src/compression.cpp.o
+[ 20%] Building CXX object CMakeFiles/crypto_transport.dir/src/transport.cpp.o
 [ 26%] Building CXX object CMakeFiles/crypto_transport.dir/src/crypto.cpp.o
-[ 26%] Building CXX object CMakeFiles/crypto_transport.dir/src/transport.cpp.o
 [ 33%] Linking CXX shared library libcrypto_transport.so
 [ 33%] Built target crypto_transport
-[ 60%] Building CXX object tests/CMakeFiles/test_crypto_transport.dir/test_crypto_transport.cpp.o
-[ 60%] Building CXX object tests/CMakeFiles/test_compression.dir/test_compression.cpp.o
-[ 60%] Building CXX object tests/CMakeFiles/test_crypto.dir/test_crypto.cpp.o
+[ 40%] Building CXX object tests/CMakeFiles/test_crypto.dir/test_crypto.cpp.o
+[ 46%] Building CXX object tests/CMakeFiles/test_compression.dir/test_compression.cpp.o
+[ 53%] Building CXX object tests/CMakeFiles/test_crypto_transport.dir/test_crypto_transport.cpp.o
 [ 60%] Building CXX object tests/CMakeFiles/test_integration.dir/test_integration.cpp.o
 [ 66%] Linking CXX executable test_crypto
 [ 73%] Linking CXX executable test_compression
@@ -4864,9 +4625,9 @@ Install the project...
 -- Up-to-date: /usr/local/include/crypto_transport/contexts.hpp
 
 ✅ crypto-transport installed to /usr/local/lib
-lrwxrwxrwx 1 root root  24 may  8 04:38 /usr/local/lib/libcrypto_transport.so -> libcrypto_transport.so.1
-lrwxrwxrwx 1 root root  28 may  8 04:38 /usr/local/lib/libcrypto_transport.so.1 -> libcrypto_transport.so.1.0.0
--rw-r--r-- 1 root root 51K may  8 04:47 /usr/local/lib/libcrypto_transport.so.1.0.0
+lrwxrwxrwx 1 root root  24 may  9 03:22 /usr/local/lib/libcrypto_transport.so -> libcrypto_transport.so.1
+lrwxrwxrwx 1 root root  28 may  9 03:22 /usr/local/lib/libcrypto_transport.so.1 -> libcrypto_transport.so.1.0.0
+-rw-r--r-- 1 root root 51K may  9 03:26 /usr/local/lib/libcrypto_transport.so.1.0.0
 🔨 Protobuf Unified System...
 ╔════════════════════════════════════════════════════════════╗
 ║  Protobuf Schema Generator                                 ║
@@ -4879,8 +4640,8 @@ lrwxrwxrwx 1 root root  28 may  8 04:38 /usr/local/lib/libcrypto_transport.so.1 
 
 🔨 Generating C++ protobuf files...
 ✅ Generated successfully:
--rwxrwxr-x 1 vagrant vagrant 916K may  8 04:47 /vagrant/protobuf/network_security.pb.cc
--rwxrwxr-x 1 vagrant vagrant 997K may  8 04:47 /vagrant/protobuf/network_security.pb.h
+-rwxrwxr-x 1 vagrant vagrant 916K may  9 03:27 /vagrant/protobuf/network_security.pb.cc
+-rwxrwxr-x 1 vagrant vagrant 997K may  9 03:27 /vagrant/protobuf/network_security.pb.h
 
 📊 Statistics:
 network_security.pb.cc: 20782 lines
@@ -4960,24 +4721,24 @@ Dependencies:
 -- Generating done
 -- Build files have been written to: /vagrant/etcd-client/build
 [  5%] Building CXX object tests/CMakeFiles/test_encryption.dir/test_encryption.cpp.o
-[ 10%] Building CXX object tests/CMakeFiles/test_pipeline.dir/test_pipeline.cpp.o
-[ 15%] Building CXX object CMakeFiles/etcd_client.dir/src/etcd_client.cpp.o
-[ 21%] Building CXX object tests/CMakeFiles/test_compression.dir/test_compression.cpp.o
-[ 26%] Linking CXX executable test_encryption
-[ 31%] Linking CXX executable test_pipeline
+[ 15%] Building CXX object tests/CMakeFiles/test_compression.dir/test_compression.cpp.o
+[ 15%] Building CXX object tests/CMakeFiles/test_pipeline.dir/test_pipeline.cpp.o
+[ 21%] Building CXX object CMakeFiles/etcd_client.dir/src/etcd_client.cpp.o
+[ 26%] Linking CXX executable test_pipeline
+[ 31%] Linking CXX executable test_encryption
+[ 31%] Built target test_pipeline
+[ 31%] Built target test_encryption
 [ 36%] Linking CXX executable test_compression
-[ 36%] Built target test_encryption
 [ 42%] Building CXX object CMakeFiles/etcd_client.dir/src/config_loader.cpp.o
-[ 42%] Built target test_pipeline
 [ 47%] Building CXX object CMakeFiles/etcd_client.dir/src/http_client.cpp.o
 [ 47%] Built target test_compression
 [ 52%] Building CXX object CMakeFiles/etcd_client.dir/src/component_registration.cpp.o
 [ 57%] Linking CXX shared library libetcd_client.so
 [ 57%] Built target etcd_client
-[ 68%] Building CXX object tests/CMakeFiles/test_put_config_integration.dir/test_put_config_integration.cpp.o
-[ 68%] Building CXX object tests/CMakeFiles/test_hmac_integration_client.dir/test_hmac_integration_client.cpp.o
+[ 63%] Building CXX object tests/CMakeFiles/test_hmac_integration_client.dir/test_hmac_integration_client.cpp.o
+[ 73%] Building CXX object tests/CMakeFiles/test_service_discovery.dir/test_service_discovery.cpp.o
 [ 73%] Building CXX object tests/CMakeFiles/test_hmac_client.dir/test_hmac_client.cpp.o
-[ 78%] Building CXX object tests/CMakeFiles/test_service_discovery.dir/test_service_discovery.cpp.o
+[ 78%] Building CXX object tests/CMakeFiles/test_put_config_integration.dir/test_put_config_integration.cpp.o
 [ 84%] Linking CXX executable test_service_discovery
 [ 84%] Built target test_service_discovery
 [ 89%] Linking CXX executable test_hmac_client
@@ -5008,10 +4769,10 @@ Install the project...
 ✅ etcd-client installed to /usr/local/lib
 
 Verifying library size and methods...
-lrwxrwxr-x 1 vagrant vagrant 19 may  8 04:47 /vagrant/etcd-client/build/libetcd_client.so -> libetcd_client.so.1
-lrwxrwxrwx 1 root root   19 may  8 04:39 /usr/local/lib/libetcd_client.so -> libetcd_client.so.1
-lrwxrwxrwx 1 root root   23 may  8 04:39 /usr/local/lib/libetcd_client.so.1 -> libetcd_client.so.1.0.0
--rw-r--r-- 1 root root 1,1M may  8 04:47 /usr/local/lib/libetcd_client.so.1.0.0
+lrwxrwxr-x 1 vagrant vagrant 19 may  9 03:27 /vagrant/etcd-client/build/libetcd_client.so -> libetcd_client.so.1
+lrwxrwxrwx 1 root root   19 may  9 03:23 /usr/local/lib/libetcd_client.so -> libetcd_client.so.1
+lrwxrwxrwx 1 root root   23 may  9 03:23 /usr/local/lib/libetcd_client.so.1 -> libetcd_client.so.1.0.0
+-rw-r--r-- 1 root root 1,1M may  9 03:27 /usr/local/lib/libetcd_client.so.1.0.0
 Public methods: 49
 
 ╔════════════════════════════════════════════════════════════╗
@@ -5067,9 +4828,9 @@ Install the project...
 -- Up-to-date: /usr/local/include/plugin_loader/plugin_loader.hpp
 
 ✅ plugin-loader installed to /usr/local/lib
-lrwxrwxrwx 1 root root  21 may  8 04:38 /usr/local/lib/libplugin_loader.so -> libplugin_loader.so.1
-lrwxrwxrwx 1 root root  25 may  8 04:38 /usr/local/lib/libplugin_loader.so.1 -> libplugin_loader.so.1.0.0
--rw-r--r-- 1 root root 71K may  8 04:48 /usr/local/lib/libplugin_loader.so.1.0.0
+lrwxrwxrwx 1 root root  21 may  9 03:23 /usr/local/lib/libplugin_loader.so -> libplugin_loader.so.1
+lrwxrwxrwx 1 root root  25 may  9 03:23 /usr/local/lib/libplugin_loader.so.1 -> libplugin_loader.so.1.0.0
+-rw-r--r-- 1 root root 71K may  9 03:28 /usr/local/lib/libplugin_loader.so.1.0.0
 
 ╔════════════════════════════════════════════════════════════╗
 ║  🔌 Building Test Message Plugin (ADR-025 integration)    ║
@@ -5150,13 +4911,10 @@ Flags: -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS=-std=c++20 -Wall -Wextra -Wped
 -- Configuring done
 -- Generating done
 -- Build files have been written to: /vagrant/etcd-server/build-debug
-[  7%] Building CXX object CMakeFiles/test_secrets_manager_simple.dir/tests/test_secrets_manager_simple.cpp.o
-[ 15%] Building CXX object CMakeFiles/test_secrets_manager_simple.dir/src/secrets_manager.cpp.o
-[ 38%] Built target test_hmac_integration
-[ 46%] Building CXX object CMakeFiles/etcd-server.dir/src/etcd_server.cpp.o
-[ 53%] Building CXX object CMakeFiles/etcd-server.dir/src/crypto_manager.cpp.o
-[ 61%] Linking CXX executable test_secrets_manager_simple
-[ 61%] Built target test_secrets_manager_simple
+[ 23%] Built target test_secrets_manager_simple
+[ 46%] Built target test_hmac_integration
+[ 53%] Building CXX object CMakeFiles/etcd-server.dir/src/etcd_server.cpp.o
+[ 61%] Building CXX object CMakeFiles/etcd-server.dir/src/crypto_manager.cpp.o
 [ 69%] Linking CXX executable etcd-server
 /usr/bin/ld: aviso: libsodium.so.26, necesario para /usr/local/lib/libcrypto_transport.so, podría entrar en conflicto con libsodium.so.23
 [100%] Built target etcd-server
@@ -5216,36 +4974,18 @@ Flags: -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS=-std=c++20 -Wall -Wextra -Wped
 -- ═══════════════════════════════════════════════════════════
 -- Configuring done
 -- Generating done
-CMake Warning:
-Manually-specified variables were not used by the project:
-
-    CMAKE_C_FLAGS                                                                                                                                                                              
-
-
 -- Build files have been written to: /vagrant/rag/build
-[  5%] Building CXX object CMakeFiles/test_faiss_basic.dir/tests/test_faiss_basic.cpp.o
-[ 10%] Building CXX object CMakeFiles/test_onnx_basic.dir/tests/test_onnx_basic.cpp.o
-[ 15%] Building CXX object CMakeFiles/test_embedder.dir/tests/test_embedder.cpp.o
-[ 20%] Building CXX object CMakeFiles/rag-security.dir/src/main.cpp.o
-[ 25%] Linking CXX executable test_faiss_basic
-[ 25%] Built target test_faiss_basic
-[ 30%] Building CXX object CMakeFiles/rag-security.dir/src/etcd_client.cpp.o
-[ 35%] Linking CXX executable test_onnx_basic
-[ 40%] Building CXX object CMakeFiles/test_embedder.dir/src/embedders/simple_embedder.cpp.o
-[ 40%] Built target test_onnx_basic
-[ 45%] Building CXX object CMakeFiles/test_embedder.dir/src/embedders/embedder_factory.cpp.o
-[ 50%] Building CXX object CMakeFiles/rag-security.dir/src/config_manager.cpp.o
-[ 55%] Linking CXX executable test_embedder
-[ 55%] Built target test_embedder
-[ 65%] Building CXX object CMakeFiles/rag-security.dir/src/whitelist_manager.cpp.o
-[ 65%] Building CXX object CMakeFiles/rag-security.dir/src/rag_command_manager.cpp.o
-[ 70%] Building CXX object CMakeFiles/rag-security.dir/src/base_validator.cpp.o
-[ 75%] Building CXX object CMakeFiles/rag-security.dir/src/rag_validator.cpp.o
-[ 80%] Building CXX object CMakeFiles/rag-security.dir/src/embedders/simple_embedder.cpp.o
-[ 85%] Building CXX object CMakeFiles/rag-security.dir/src/llama_integration_real.cpp.o
-[ 90%] Building CXX object CMakeFiles/rag-security.dir/src/embedders/embedder_factory.cpp.o
-[ 95%] Building CXX object CMakeFiles/rag-security.dir/src/metadata_reader.cpp.o
-[100%] Linking CXX executable rag-security
+[  5%] Building CXX object CMakeFiles/test_onnx_basic.dir/tests/test_onnx_basic.cpp.o
+[ 10%] Building CXX object CMakeFiles/test_faiss_basic.dir/tests/test_faiss_basic.cpp.o
+[ 30%] Built target test_embedder
+[ 35%] Building CXX object CMakeFiles/rag-security.dir/src/whitelist_manager.cpp.o
+[ 40%] Building CXX object CMakeFiles/rag-security.dir/src/main.cpp.o
+[ 45%] Linking CXX executable test_faiss_basic
+[ 45%] Built target test_faiss_basic
+[ 50%] Building CXX object CMakeFiles/rag-security.dir/src/rag_command_manager.cpp.o
+[ 55%] Linking CXX executable test_onnx_basic
+[ 55%] Built target test_onnx_basic
+[ 60%] Linking CXX executable rag-security
 [100%] Built target rag-security
 ✅ rag-security built (debug)
 ✅ Protobuf unificado generado y distribuido
@@ -5330,31 +5070,33 @@ Running CMake and build...
 -- Configuring done
 -- Generating done
 -- Build files have been written to: /vagrant/rag-ingester/build-debug
-[  4%] Built target file_watcher
+[  4%] Built target csv_event_loader
 [  8%] Built target csv_file_watcher
-[ 13%] Built target csv_event_loader
-[ 17%] Built target firewall_csv_event_loader
-[ 22%] Built target csv_dir_watcher
-[ 24%] Building CXX object CMakeFiles/event_loader.dir/src/event_loader.cpp.o
-[ 26%] Building CXX object CMakeFiles/event_loader.dir/proto/network_security.pb.cc.o
-[ 33%] Built target test_config_parser
-[ 37%] Built target test_file_watcher
-[ 44%] Built target test_config_parser_traversal
-[ 46%] Building CXX object tests/CMakeFiles/test_csv_file_watcher.dir/test_csv_file_watcher.cpp.o
-[ 48%] Building CXX object tests/CMakeFiles/test_csv_event_loader.dir/test_csv_event_loader.cpp.o
-[ 51%] Linking CXX executable test_csv_event_loader
-[ 51%] Built target test_csv_event_loader
-[ 53%] Linking CXX executable test_csv_file_watcher
-[ 57%] Built target test_csv_dir_watcher
-[ 57%] Built target test_csv_file_watcher
-[ 62%] Built target test_firewall_csv_event_loader
-[ 66%] Built target test_trace_id
+[ 13%] Built target file_watcher
+[ 15%] Building CXX object CMakeFiles/event_loader.dir/src/event_loader.cpp.o
+[ 20%] Built target firewall_csv_event_loader
+[ 24%] Built target csv_dir_watcher
+[ 26%] Building CXX object tests/CMakeFiles/test_config_parser.dir/test_config_parser.cpp.o
+[ 28%] Building CXX object tests/CMakeFiles/test_file_watcher.dir/test_file_watcher.cpp.o
+[ 35%] Built target test_config_parser_traversal
+[ 40%] Built target test_csv_file_watcher
+[ 44%] Built target test_csv_event_loader
+[ 48%] Built target test_csv_dir_watcher
+[ 53%] Built target test_firewall_csv_event_loader
+[ 57%] Built target test_trace_id
+[ 60%] Building CXX object CMakeFiles/event_loader.dir/proto/network_security.pb.cc.o
+[ 62%] Linking CXX executable test_file_watcher
+[ 62%] Built target test_file_watcher
+[ 64%] Linking CXX executable test_config_parser
+[ 66%] Built target test_config_parser
 [ 68%] Linking CXX static library libevent_loader.a
 [ 68%] Built target event_loader
+[ 71%] Building CXX object CMakeFiles/rag-ingester.dir/src/main.cpp.o
+[ 73%] Building CXX object CMakeFiles/rag-ingester.dir/src/indexers/index_health_monitor.cpp.o
 [ 75%] Building CXX object CMakeFiles/rag-ingester.dir/src/indexers/multi_index_manager.cpp.o
-[ 75%] Building CXX object CMakeFiles/rag-ingester.dir/src/main.cpp.o
-[ 75%] Building CXX object CMakeFiles/rag-ingester.dir/proto/network_security.pb.cc.o
-[ 77%] Linking CXX executable rag-ingester
+[ 77%] Building CXX object CMakeFiles/rag-ingester.dir/src/embedders/attack_embedder.cpp.o
+[ 80%] Building CXX object CMakeFiles/rag-ingester.dir/proto/network_security.pb.cc.o
+[ 82%] Linking CXX executable rag-ingester
 [100%] Built target rag-ingester
 
 ✅ RAG Ingester built (debug)
@@ -5455,47 +5197,52 @@ Running CMake and build...
 -- Configuring done
 -- Generating done
 -- Build files have been written to: /vagrant/ml-detector/build-debug
-[  1%] Linking CXX executable test_classifier
-[  5%] Built target test_feature_extractor
-[  9%] Built target ransomware_detector
-[ 11%] Linking CXX executable test_model_loader
+[  3%] Built target test_feature_extractor
+[  5%] Linking CXX executable test_classifier
+[  7%] Building CXX object CMakeFiles/ransomware_detector.dir/src/ransomware_detector.cpp.o
+[  9%] Linking CXX executable test_model_loader
+[ 11%] Built target test_classifier
 [ 13%] Building CXX object tests/CMakeFiles/test_rag_logger_artifact_save.dir/unit/test_rag_logger_artifact_save.cpp.o
-[ 15%] Built target test_classifier
+[ 15%] Built target test_model_loader
 [ 19%] Built target test_zmq_memory_overflow
-[ 21%] Built target test_model_loader
-[ 25%] Built target test_ransomware_detector_unit
-[ 26%] Linking CXX executable test_pipeline
-[ 28%] Building CXX object tests/CMakeFiles/test_detectors.dir/__/src/traffic_detector.cpp.o
-[ 30%] Built target test_pipeline
-[ 32%] Building CXX object tests/CMakeFiles/test_csv_event_writer.dir/integration/test_csv_event_writer.cpp.o
-[ 34%] Building CXX object tests/CMakeFiles/test_detectors.dir/__/src/internal_detector.cpp.o
-[ 36%] Building CXX object tests/CMakeFiles/test_csv_feature_extraction.dir/integration/test_csv_feature_extraction.cpp.o
-[ 38%] Linking CXX executable test_detectors
-[ 42%] Built target test_detectors
-[ 44%] Building CXX object tests/CMakeFiles/test_csv_feature_extraction.dir/__/src/csv_event_writer.cpp.o
-[ 46%] Building CXX object tests/CMakeFiles/test_rag_logger_artifact_save.dir/__/proto/network_security.pb.cc.o
-[ 48%] Building CXX object tests/CMakeFiles/test_csv_feature_extraction.dir/__/proto/network_security.pb.cc.o
-[ 50%] Building CXX object tests/CMakeFiles/test_csv_event_writer.dir/__/src/csv_event_writer.cpp.o
-[ 51%] Building CXX object tests/CMakeFiles/test_csv_event_writer.dir/__/proto/network_security.pb.cc.o
-[ 53%] Linking CXX executable test_rag_logger_artifact_save
-[ 53%] Built target test_rag_logger_artifact_save
-[ 55%] Linking CXX executable test_etcd_client_hmac
-[ 59%] Built target test_etcd_client_hmac
-[ 61%] Building CXX object CMakeFiles/ml-detector.dir/src/main.cpp.o
+[ 21%] Building CXX object tests/CMakeFiles/test_detectors.dir/__/src/traffic_detector.cpp.o
+[ 23%] Linking CXX executable test_pipeline
+[ 25%] Built target test_pipeline
+[ 26%] Building CXX object tests/CMakeFiles/test_detectors.dir/__/src/internal_detector.cpp.o
+[ 28%] Linking CXX static library libransomware_detector.a
+[ 30%] Building CXX object tests/CMakeFiles/test_csv_event_writer.dir/integration/test_csv_event_writer.cpp.o
+[ 30%] Built target ransomware_detector
+[ 32%] Building CXX object tests/CMakeFiles/test_csv_feature_extraction.dir/integration/test_csv_feature_extraction.cpp.o
+[ 34%] Linking CXX executable test_detectors
+[ 38%] Built target test_detectors
+[ 40%] Linking CXX executable test_etcd_client_hmac
+[ 44%] Built target test_etcd_client_hmac
+[ 46%] Building CXX object tests/CMakeFiles/test_csv_feature_extraction.dir/__/src/csv_event_writer.cpp.o
+[ 48%] Building CXX object tests/CMakeFiles/test_rag_logger_artifact_save.dir/__/proto/network_security.pb.cc.o
+[ 50%] Building CXX object tests/CMakeFiles/test_csv_feature_extraction.dir/__/proto/network_security.pb.cc.o
+[ 51%] Building CXX object tests/CMakeFiles/test_csv_event_writer.dir/__/src/csv_event_writer.cpp.o
+[ 53%] Building CXX object tests/CMakeFiles/test_csv_event_writer.dir/__/proto/network_security.pb.cc.o
+[ 55%] Linking CXX executable test_rag_logger_artifact_save
+[ 57%] Building CXX object CMakeFiles/ml-detector.dir/src/main.cpp.o
+[ 59%] Linking CXX executable test_csv_feature_extraction
+[ 59%] Built target test_rag_logger_artifact_save
+[ 61%] Building CXX object tests/CMakeFiles/test_ransomware_detector_unit.dir/unit/test_ransomware_detector.cpp.o
+[ 61%] Built target test_csv_feature_extraction
 [ 63%] Building CXX object CMakeFiles/ml-detector.dir/src/feature_extractor.cpp.o
-[ 65%] Linking CXX executable test_csv_feature_extraction
-[ 65%] Built target test_csv_feature_extraction
+[ 65%] Linking CXX executable test_ransomware_detector_unit
+[ 65%] Built target test_ransomware_detector_unit
 [ 67%] Building CXX object CMakeFiles/ml-detector.dir/src/rag_logger.cpp.o
-[ 69%] Building CXX object CMakeFiles/ml-detector.dir/src/contract_validator.cpp.o
-[ 71%] Linking CXX executable test_csv_event_writer
-[ 71%] Built target test_csv_event_writer
+[ 69%] Linking CXX executable test_csv_event_writer
+[ 69%] Built target test_csv_event_writer
+[ 71%] Building CXX object CMakeFiles/ml-detector.dir/src/contract_validator.cpp.o
 [ 73%] Building CXX object CMakeFiles/ml-detector.dir/src/zmq_handler.cpp.o
 [ 75%] Building CXX object CMakeFiles/ml-detector.dir/src/onnx_model.cpp.o
-[ 76%] Building CXX object CMakeFiles/ml-detector.dir/src/traffic_detector.cpp.o
-[ 78%] Building CXX object CMakeFiles/ml-detector.dir/src/internal_detector.cpp.o
-[ 80%] Building CXX object CMakeFiles/ml-detector.dir/src/csv_event_writer.cpp.o
-[ 82%] Building CXX object CMakeFiles/ml-detector.dir/proto/network_security.pb.cc.o
-[ 84%] Linking CXX executable ml-detector
+[ 76%] Building CXX object CMakeFiles/ml-detector.dir/src/ransomware_detector.cpp.o
+[ 78%] Building CXX object CMakeFiles/ml-detector.dir/src/traffic_detector.cpp.o
+[ 80%] Building CXX object CMakeFiles/ml-detector.dir/src/internal_detector.cpp.o
+[ 82%] Building CXX object CMakeFiles/ml-detector.dir/src/csv_event_writer.cpp.o
+[ 84%] Building CXX object CMakeFiles/ml-detector.dir/proto/network_security.pb.cc.o
+[ 86%] Linking CXX executable ml-detector
 [100%] Built target ml-detector
 
 ✅ ML Detector built (debug)
@@ -5585,53 +5332,76 @@ Running CMake and build...
 -- Generating done
 -- Build files have been written to: /vagrant/sniffer/build-debug
 [  1%] Built target bpf_program
-[  4%] Built target test_payload_analyzer
-[ 13%] Built target test_sharded_flow_full_contract
-[ 14%] Building CXX object CMakeFiles/test_proto3_embedded_serialization.dir/tests/test_proto3_embedded_serialization.cpp.o
-[ 15%] Building CXX object CMakeFiles/test_smb_scan_features.dir/tests/test_smb_scan_features.cpp.o
-[ 16%] Building CXX object CMakeFiles/test_ring_consumer_protobuf.dir/tests/test_ring_consumer_protobuf.cpp.o
-[ 17%] Building CXX object CMakeFiles/test_sharded_flow_multithread.dir/tests/test_sharded_flow_multithread.cpp.o
+[  2%] Building CXX object CMakeFiles/test_payload_analyzer.dir/tests/test_payload_analyzer.cpp.o
+[  3%] Building CXX object CMakeFiles/test_proto3_embedded_serialization.dir/tests/test_proto3_embedded_serialization.cpp.o
+[  4%] Building CXX object CMakeFiles/test_sharded_flow_full_contract.dir/tests/test_sharded_flow_full_contract.cpp.o
+[  5%] Building CXX object CMakeFiles/test_ring_consumer_protobuf.dir/tests/test_ring_consumer_protobuf.cpp.o
+[  6%] Linking CXX executable test_payload_analyzer
+[  7%] Built target test_payload_analyzer
+[  8%] Building CXX object CMakeFiles/test_smb_scan_features.dir/tests/test_smb_scan_features.cpp.o
+[  9%] Linking CXX executable test_sharded_flow_full_contract
+[ 10%] Building CXX object CMakeFiles/test_proto3_embedded_serialization.dir/proto/network_security.pb.cc.o
+[ 17%] Built target test_sharded_flow_full_contract
+[ 18%] Building CXX object CMakeFiles/test_sharded_flow_multithread.dir/tests/test_sharded_flow_multithread.cpp.o
 [ 19%] Building CXX object CMakeFiles/test_smb_scan_features.dir/proto/network_security.pb.cc.o
-[ 19%] Building CXX object CMakeFiles/test_proto3_embedded_serialization.dir/proto/network_security.pb.cc.o
-[ 20%] Building CXX object CMakeFiles/test_sharded_flow_multithread.dir/src/userspace/ml_defender_features.cpp.o
-[ 21%] Building CXX object CMakeFiles/test_ring_consumer_protobuf.dir/src/userspace/ml_defender_features.cpp.o
-[ 22%] Building CXX object CMakeFiles/test_sharded_flow_multithread.dir/proto/network_security.pb.cc.o
-[ 23%] Building CXX object CMakeFiles/test_ring_consumer_protobuf.dir/proto/network_security.pb.cc.o
-[ 25%] Linking CXX executable test_smb_scan_features
-[ 26%] Linking CXX executable test_proto3_embedded_serialization
+[ 20%] Building CXX object CMakeFiles/test_ring_consumer_protobuf.dir/src/userspace/ml_defender_features.cpp.o
+[ 21%] Building CXX object CMakeFiles/test_sharded_flow_multithread.dir/src/userspace/ml_defender_features.cpp.o
+[ 22%] Linking CXX executable test_proto3_embedded_serialization
+[ 22%] Built target test_proto3_embedded_serialization
+[ 23%] Building CXX object CMakeFiles/test_pcap_backend_lifecycle.dir/tests/test_pcap_backend_lifecycle.cpp.o
+[ 25%] Building CXX object CMakeFiles/test_sharded_flow_multithread.dir/proto/network_security.pb.cc.o
+[ 26%] Linking CXX executable test_smb_scan_features
 [ 26%] Built target test_smb_scan_features
-[ 26%] Built target test_proto3_embedded_serialization
-[ 29%] Built target test_pcap_backend_poll_null
-[ 32%] Built target test_pcap_backend_callback
-[ 35%] Built target test_pcap_backend_lifecycle
-[ 38%] Built target test_pcap_backend_error
-[ 39%] Building CXX object CMakeFiles/test_pcap_proto_parse_udp.dir/tests/test_pcap_proto_parse_udp.cpp.o
-[ 40%] Building CXX object CMakeFiles/test_pcap_proto_parse_tcp.dir/tests/test_pcap_proto_parse_tcp.cpp.o
-[ 41%] Linking CXX executable test_sharded_flow_multithread
-[ 42%] Linking CXX executable test_ring_consumer_protobuf
-[ 43%] Building CXX object CMakeFiles/test_pcap_proto_parse_udp.dir/proto/network_security.pb.cc.o
-[ 44%] Building CXX object CMakeFiles/test_pcap_proto_parse_tcp.dir/proto/network_security.pb.cc.o
-[ 52%] Built target test_ring_consumer_protobuf
-[ 59%] Built target test_sharded_flow_multithread
+[ 27%] Building CXX object CMakeFiles/test_ring_consumer_protobuf.dir/proto/network_security.pb.cc.o
+[ 28%] Building CXX object CMakeFiles/test_pcap_backend_poll_null.dir/tests/test_pcap_backend_poll_null.cpp.o
+[ 29%] Building CXX object CMakeFiles/test_pcap_backend_lifecycle.dir/src/userspace/pcap_backend.cpp.o
+[ 30%] Linking CXX executable test_pcap_backend_lifecycle
+[ 30%] Built target test_pcap_backend_lifecycle
+[ 31%] Building CXX object CMakeFiles/test_pcap_backend_callback.dir/tests/test_pcap_backend_callback.cpp.o
+[ 32%] Building CXX object CMakeFiles/test_pcap_backend_poll_null.dir/src/userspace/pcap_backend.cpp.o
+[ 33%] Linking CXX executable test_pcap_backend_poll_null
+[ 34%] Building CXX object CMakeFiles/test_pcap_backend_callback.dir/src/userspace/pcap_backend.cpp.o
+[ 34%] Built target test_pcap_backend_poll_null
+[ 35%] Building CXX object CMakeFiles/test_pcap_backend_error.dir/tests/test_pcap_backend_error.cpp.o
+[ 36%] Linking CXX executable test_pcap_backend_callback
+[ 36%] Built target test_pcap_backend_callback
+[ 37%] Linking CXX executable test_sharded_flow_multithread
+[ 38%] Building CXX object CMakeFiles/test_pcap_backend_error.dir/src/userspace/pcap_backend.cpp.o
+[ 39%] Building CXX object CMakeFiles/test_pcap_proto_parse_tcp.dir/tests/test_pcap_proto_parse_tcp.cpp.o
+[ 40%] Linking CXX executable test_ring_consumer_protobuf
+[ 41%] Linking CXX executable test_pcap_backend_error
+[ 41%] Built target test_pcap_backend_error
+[ 48%] Built target test_sharded_flow_multithread
+[ 50%] Building CXX object CMakeFiles/test_pcap_proto_parse_udp.dir/tests/test_pcap_proto_parse_udp.cpp.o
+[ 51%] Building CXX object CMakeFiles/test_pcap_backend_stress.dir/tests/test_pcap_backend_stress.cpp.o
+[ 58%] Built target test_ring_consumer_protobuf
+[ 59%] Building CXX object CMakeFiles/test_pcap_backend_regression.dir/tests/test_pcap_backend_regression.cpp.o
+[ 60%] Building CXX object CMakeFiles/test_pcap_proto_parse_tcp.dir/proto/network_security.pb.cc.o
+[ 61%] Building CXX object CMakeFiles/test_pcap_backend_stress.dir/src/userspace/pcap_backend.cpp.o
+[ 62%] Linking CXX executable test_pcap_backend_stress
 [ 62%] Built target test_pcap_backend_stress
-[ 65%] Built target test_pcap_backend_regression
-[ 66%] Building CXX object CMakeFiles/sniffer.dir/src/userspace/main.cpp.o
+[ 63%] Building CXX object CMakeFiles/test_pcap_proto_parse_udp.dir/proto/network_security.pb.cc.o
+[ 64%] Building CXX object CMakeFiles/sniffer.dir/src/userspace/main.cpp.o
+[ 65%] Building CXX object CMakeFiles/test_pcap_backend_regression.dir/src/userspace/pcap_backend.cpp.o
+[ 66%] Linking CXX executable test_pcap_backend_regression
+[ 66%] Built target test_pcap_backend_regression
 [ 67%] Building CXX object CMakeFiles/sniffer.dir/src/userspace/ebpf_loader.cpp.o
 [ 68%] Building CXX object CMakeFiles/sniffer.dir/src/userspace/ring_consumer.cpp.o
 [ 69%] Building CXX object CMakeFiles/sniffer.dir/src/userspace/thread_manager.cpp.o
 [ 70%] Linking CXX executable test_pcap_proto_parse_tcp
 [ 70%] Built target test_pcap_proto_parse_tcp
 [ 71%] Building CXX object CMakeFiles/sniffer.dir/src/userspace/feature_logger.cpp.o
-[ 72%] Building CXX object CMakeFiles/sniffer.dir/src/userspace/dual_nic_manager.cpp.o
-[ 73%] Building CXX object CMakeFiles/sniffer.dir/src/userspace/ransomware_feature_processor.cpp.o
-[ 75%] Linking CXX executable test_pcap_proto_parse_udp
+[ 72%] Linking CXX executable test_pcap_proto_parse_udp
+[ 72%] Built target test_pcap_proto_parse_udp
+[ 73%] Building CXX object CMakeFiles/sniffer.dir/src/userspace/dual_nic_manager.cpp.o
+[ 75%] Building CXX object CMakeFiles/sniffer.dir/src/userspace/ransomware_feature_processor.cpp.o
 [ 76%] Building CXX object CMakeFiles/sniffer.dir/src/userspace/bpf_map_manager.cpp.o
-[ 76%] Built target test_pcap_proto_parse_udp
 [ 77%] Building CXX object CMakeFiles/sniffer.dir/proto/network_security.pb.cc.o
 [ 78%] Building CXX object CMakeFiles/sniffer.dir/src/userspace/ml_defender_features.cpp.o
-[ 79%] Building CXX object CMakeFiles/sniffer.dir/vagrant/ml-detector/src/traffic_detector.cpp.o
-[ 80%] Building CXX object CMakeFiles/sniffer.dir/vagrant/ml-detector/src/internal_detector.cpp.o
-[ 81%] Linking CXX executable sniffer
+[ 79%] Building CXX object CMakeFiles/sniffer.dir/vagrant/ml-detector/src/ransomware_detector.cpp.o
+[ 80%] Building CXX object CMakeFiles/sniffer.dir/vagrant/ml-detector/src/traffic_detector.cpp.o
+[ 81%] Building CXX object CMakeFiles/sniffer.dir/vagrant/ml-detector/src/internal_detector.cpp.o
+[ 82%] Linking CXX executable sniffer
 [100%] Built target sniffer
 
 ✅ Sniffer built (debug)
@@ -5707,17 +5477,20 @@ Running CMake and build...
 -- Configuring done
 -- Generating done
 -- Build files have been written to: /vagrant/firewall-acl-agent/build-debug
-[ 11%] Building CXX object CMakeFiles/firewall_core.dir/src/core/logger.cpp.o
+[ 11%] Building CXX object CMakeFiles/firewall_core.dir/src/core/config_loader.cpp.o
 [ 11%] Building CXX object CMakeFiles/firewall_core.dir/src/core/batch_processor.cpp.o
-[ 16%] Building CXX object CMakeFiles/firewall_core.dir/proto/network_security.pb.cc.o
+[ 16%] Building CXX object CMakeFiles/firewall_core.dir/src/core/logger.cpp.o
 [ 22%] Building CXX object CMakeFiles/firewall_core.dir/src/api/zmq_subscriber.cpp.o
-[ 27%] Linking CXX static library libfirewall_core.a
+[ 27%] Building CXX object CMakeFiles/firewall_core.dir/proto/network_security.pb.cc.o
+[ 33%] Linking CXX static library libfirewall_core.a
 [ 50%] Built target firewall_core
 [ 55%] Building CXX object CMakeFiles/firewall-acl-agent.dir/src/main.cpp.o
 [ 61%] Building CXX object CMakeFiles/firewall_tests.dir/tests/unit/test_logger.cpp.o
-[ 66%] Building CXX object CMakeFiles/firewall_tests.dir/tests/test_auto_isolate.cpp.o
-[ 72%] Linking CXX executable firewall_tests
-[ 77%] Linking CXX executable firewall-acl-agent
+[ 66%] Building CXX object CMakeFiles/firewall_tests.dir/tests/unit/test_config_loader_traversal.cpp.o
+[ 72%] Building CXX object CMakeFiles/firewall_tests.dir/tests/test_auto_isolate.cpp.o
+[ 77%] Building CXX object CMakeFiles/firewall_tests.dir/tests/test_globals_stub.cpp.o
+[ 83%] Linking CXX executable firewall_tests
+[ 88%] Linking CXX executable firewall-acl-agent
 [100%] Built target firewall_tests
 [100%] Built target firewall-acl-agent
 
@@ -5744,14 +5517,14 @@ Running CMake and build...
 -- Configuring done
 -- Generating done
 -- Build files have been written to: /vagrant/tools/build-argus-network-isolate
-[ 16%] Building CXX object CMakeFiles/test_isolate_config.dir/test_isolate_config.cpp.o
-[ 33%] Building CXX object CMakeFiles/test_isolate_config.dir/isolate.cpp.o
-[ 66%] Building CXX object CMakeFiles/argus-network-isolate.dir/main.cpp.o
-[ 66%] Building CXX object CMakeFiles/argus-network-isolate.dir/isolate.cpp.o
+[ 16%] Building CXX object CMakeFiles/argus-network-isolate.dir/main.cpp.o
+[ 33%] Building CXX object CMakeFiles/argus-network-isolate.dir/isolate.cpp.o
+[ 50%] Building CXX object CMakeFiles/test_isolate_config.dir/test_isolate_config.cpp.o
+[ 66%] Building CXX object CMakeFiles/test_isolate_config.dir/isolate.cpp.o
 [ 83%] Linking CXX executable argus-network-isolate
 [100%] Linking CXX executable test_isolate_config
-[100%] Built target test_isolate_config
 [100%] Built target argus-network-isolate
+[100%] Built target test_isolate_config
 ✅ argus-network-isolate built
 ── Instalando argus-network-isolate en /usr/local/bin/ ──
 ✅ argus-network-isolate instalado
@@ -5821,7 +5594,7 @@ Firmando plugins (ADR-025 D1)...
 ║  ✅ TEST-PROVISION-1 PASSED — entorno listo               ║
 ╚════════════════════════════════════════════════════════════╝
 
-[8/8] Arrancando pipeline...
+[8/8] Arrancando pipeline (Variant A — eBPF/XDP)...
 
 ╔════════════════════════════════════════════════════════════╗
 ║  🔍 TEST-PROVISION-1 — CI Gate PHASE 3                   ║
@@ -5933,22 +5706,22 @@ Flags: -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS=-std=c++20 -Wall -Wextra -Wped
 -- Configuring done
 -- Generating done
 -- Build files have been written to: /vagrant/etcd-server/build-debug
-[ 30%] Built target test_hmac_integration
-[ 46%] Built target test_secrets_manager_simple
+[ 23%] Built target test_secrets_manager_simple
+[ 46%] Built target test_hmac_integration
 [100%] Built target etcd-server
 
 ✅ etcd-server built (debug)
 🚀 Starting etcd-server (Persistente)...
 ════════════════════════════════════════════════════════════
 etcd-server Status:
-59345 tmux new-session -d -s etcd-server mkdir -p /vagrant/logs/lab && cd /vagrant && sudo env LD_LIBRARY_PATH=/usr/local/lib /vagrant/etcd-server/build-debug/etcd-server >> /vagrant/logs/lab/etcd-server.log 2>&1
-59346 bash -c mkdir -p /vagrant/logs/lab && cd /vagrant && sudo env LD_LIBRARY_PATH=/usr/local/lib /vagrant/etcd-server/build-debug/etcd-server >> /vagrant/logs/lab/etcd-server.log 2>&1
-59349 sudo env LD_LIBRARY_PATH=/usr/local/lib /vagrant/etcd-server/build-debug/etcd-server
-59350 sudo env LD_LIBRARY_PATH=/usr/local/lib /vagrant/etcd-server/build-debug/etcd-server
-59351 /vagrant/etcd-server/build-debug/etcd-server
-59371 bash -l -c pgrep -a -f etcd-server && echo '✅ etcd-server: RUNNING' || echo '❌ etcd-server: STOPPED'
+59437 tmux new-session -d -s etcd-server mkdir -p /vagrant/logs/lab && cd /vagrant && sudo env LD_LIBRARY_PATH=/usr/local/lib /vagrant/etcd-server/build-debug/etcd-server >> /vagrant/logs/lab/etcd-server.log 2>&1
+59438 bash -c mkdir -p /vagrant/logs/lab && cd /vagrant && sudo env LD_LIBRARY_PATH=/usr/local/lib /vagrant/etcd-server/build-debug/etcd-server >> /vagrant/logs/lab/etcd-server.log 2>&1
+59441 sudo env LD_LIBRARY_PATH=/usr/local/lib /vagrant/etcd-server/build-debug/etcd-server
+59442 sudo env LD_LIBRARY_PATH=/usr/local/lib /vagrant/etcd-server/build-debug/etcd-server
+59443 /vagrant/etcd-server/build-debug/etcd-server
+59462 bash -l -c pgrep -a -f etcd-server && echo '✅ etcd-server: RUNNING' || echo '❌ etcd-server: STOPPED'
 ✅ etcd-server: RUNNING
-{"service":"etcd-server","status":"healthy","timestamp":1778216274}════════════════════════════════════════════════════════════
+{"service":"etcd-server","status":"healthy","timestamp":1778297795}════════════════════════════════════════════════════════════
 ⏳ Waiting for etcd-server to stabilize (Seed generation)...
 🚀 Starting rag-security (from /vagrant/rag/build-active)...
 🚀 Starting RAG Ingester (Full Context)...
@@ -5956,12 +5729,7 @@ etcd-server Status:
 Ejecución desde la raíz del componente para resolver paths relativos del config...
 🚀 Starting ML Detector (Tricapa Persistente)...
 🚀 Starting Firewall ACL (SUDO + TMUX)...
-🚀 Starting Sniffer Variant A (eBPF/XDP)...
-── [mutex] Verificando exclusion mutua Variant A/B ──
-=== [sniffer-mutex] Verificando exclusion mutua (variant=ebpf) ===
-[sniffer-mutex] Variant A (ebpf/tmux:sniffer):         inactive
-[sniffer-mutex] Variant B (libpcap/tmux:sniffer-libpcap): inactive
-[sniffer-mutex] OK — puede arrancar variant=ebpf
+🚀 Starting Sniffer Variant A (eBPF/XDP) [debug]...
 
 ╔════════════════════════════════════════════════════════════╗
 ║  ✅ FULL PIPELINE STARTED (DAY 103 — con provisioning)     ║
@@ -5974,7 +5742,7 @@ Ejecución desde la raíz del componente para resolver paths relativos del confi
 ✅ rag-security:  RUNNING
 ✅ rag-ingester:  RUNNING
 ✅ ml-detector:   RUNNING
-✅ sniffer:       RUNNING
+❌ sniffer:       STOPPED
 ✅ firewall:      RUNNING
 ╚════════════════════════════════════════════════════════════╝
 
@@ -5985,13 +5753,13 @@ Ejecución desde la raíz del componente para resolver paths relativos del confi
 ✅ rag-security:  RUNNING
 ✅ rag-ingester:  RUNNING
 ✅ ml-detector:   RUNNING
-✅ sniffer:       RUNNING
+❌ sniffer:       STOPPED
 ✅ firewall:      RUNNING
 ╚════════════════════════════════════════════════════════════╝
 TEST-INTEG-4a-PLUGIN: variantes A/B/C...
 
 === TEST VARIANT A ===
-[plugin-loader] INFO: 'test-message' SHA-256=1a13623f603305b75f9753f52d691af1b2308ae7a89fe31894f67d1a813449b8 size=15800 mtime=1778215746
+[plugin-loader] INFO: 'test-message' SHA-256=1a13623f603305b75f9753f52d691af1b2308ae7a89fe31894f67d1a813449b8 size=15800 mtime=1778297317
 [plugin-loader] INFO: 'test-message' signature OK
 [test-message] plugin_init: variant=A
 [plugin-loader] INFO: loaded plugin 'test-message' v0.1.0
@@ -6001,7 +5769,7 @@ Variant A: errors=0 result_code=0 → PASS
 [plugin-loader] INFO: shutdown plugin 'test-message' — invocations=1 overruns=0 errors=0
 
 === TEST VARIANT B ===
-[plugin-loader] INFO: 'test-message' SHA-256=1a13623f603305b75f9753f52d691af1b2308ae7a89fe31894f67d1a813449b8 size=15800 mtime=1778215746
+[plugin-loader] INFO: 'test-message' SHA-256=1a13623f603305b75f9753f52d691af1b2308ae7a89fe31894f67d1a813449b8 size=15800 mtime=1778297317
 [plugin-loader] INFO: 'test-message' signature OK
 [test-message] plugin_init: variant=B
 [plugin-loader] INFO: loaded plugin 'test-message' v0.1.0
@@ -6012,7 +5780,7 @@ Variant B: errors=1 → PASS (expect D8 VIOLATION log above)
 [plugin-loader] INFO: shutdown plugin 'test-message' — invocations=1 overruns=0 errors=1
 
 === TEST VARIANT C ===
-[plugin-loader] INFO: 'test-message' SHA-256=1a13623f603305b75f9753f52d691af1b2308ae7a89fe31894f67d1a813449b8 size=15800 mtime=1778215746
+[plugin-loader] INFO: 'test-message' SHA-256=1a13623f603305b75f9753f52d691af1b2308ae7a89fe31894f67d1a813449b8 size=15800 mtime=1778297317
 [plugin-loader] INFO: 'test-message' signature OK
 [test-message] plugin_init: variant=C
 [plugin-loader] INFO: loaded plugin 'test-message' v0.1.0
@@ -6027,7 +5795,7 @@ TEST-INTEG-4a PASSED
 TEST-INTEG-4b: plugin READ-ONLY contract (rag-ingester PHASE 2b)...
 
 === TEST-INTEG-4b CASO A: READ-ONLY payload=nullptr ===
-[plugin-loader] INFO: 'test-message' SHA-256=1a13623f603305b75f9753f52d691af1b2308ae7a89fe31894f67d1a813449b8 size=15800 mtime=1778215746
+[plugin-loader] INFO: 'test-message' SHA-256=1a13623f603305b75f9753f52d691af1b2308ae7a89fe31894f67d1a813449b8 size=15800 mtime=1778297317
 [plugin-loader] INFO: 'test-message' signature OK
 [test-message] plugin_init: variant=A
 [plugin-loader] INFO: loaded plugin 'test-message' v0.1.0
@@ -6037,7 +5805,7 @@ Caso A: errors=0 result_code=0 mode=1 → PASS
 [plugin-loader] INFO: shutdown plugin 'test-message' — invocations=1 overruns=0 errors=0
 
 === TEST-INTEG-4b CASO B: mode propagation ===
-[plugin-loader] INFO: 'test-message' SHA-256=1a13623f603305b75f9753f52d691af1b2308ae7a89fe31894f67d1a813449b8 size=15800 mtime=1778215746
+[plugin-loader] INFO: 'test-message' SHA-256=1a13623f603305b75f9753f52d691af1b2308ae7a89fe31894f67d1a813449b8 size=15800 mtime=1778297317
 [plugin-loader] INFO: 'test-message' signature OK
 [test-message] plugin_init: variant=A
 [plugin-loader] INFO: loaded plugin 'test-message' v0.1.0
@@ -6051,7 +5819,7 @@ TEST-INTEG-4b PASSED
 TEST-INTEG-4c: plugin NORMAL contract (sniffer PHASE 2c)...
 
 === TEST-INTEG-4c CASO A: NORMAL + payload real ===
-[plugin-loader] INFO: 'test-message' SHA-256=1a13623f603305b75f9753f52d691af1b2308ae7a89fe31894f67d1a813449b8 size=15800 mtime=1778215746
+[plugin-loader] INFO: 'test-message' SHA-256=1a13623f603305b75f9753f52d691af1b2308ae7a89fe31894f67d1a813449b8 size=15800 mtime=1778297317
 [plugin-loader] INFO: 'test-message' signature OK
 [test-message] plugin_init: variant=A
 [plugin-loader] INFO: loaded plugin 'test-message' v0.1.0
@@ -6061,7 +5829,7 @@ Caso A: errors=0 result_code=0 mode=0 → PASS
 [plugin-loader] INFO: shutdown plugin 'test-message' — invocations=1 overruns=0 errors=0
 
 === TEST-INTEG-4c CASO B: D8 VIOLATION campo read-only ===
-[plugin-loader] INFO: 'test-message' SHA-256=1a13623f603305b75f9753f52d691af1b2308ae7a89fe31894f67d1a813449b8 size=15800 mtime=1778215746
+[plugin-loader] INFO: 'test-message' SHA-256=1a13623f603305b75f9753f52d691af1b2308ae7a89fe31894f67d1a813449b8 size=15800 mtime=1778297317
 [plugin-loader] INFO: 'test-message' signature OK
 [test-message] plugin_init: variant=B
 [plugin-loader] INFO: loaded plugin 'test-message' v0.1.0
@@ -6072,7 +5840,7 @@ Caso B: errors=1 → D8 VIOLATION detectada → PASS
 [plugin-loader] INFO: shutdown plugin 'test-message' — invocations=1 overruns=0 errors=1
 
 === TEST-INTEG-4c CASO C: result_code=-1 no crash ===
-[plugin-loader] INFO: 'test-message' SHA-256=1a13623f603305b75f9753f52d691af1b2308ae7a89fe31894f67d1a813449b8 size=15800 mtime=1778215746
+[plugin-loader] INFO: 'test-message' SHA-256=1a13623f603305b75f9753f52d691af1b2308ae7a89fe31894f67d1a813449b8 size=15800 mtime=1778297317
 [plugin-loader] INFO: 'test-message' signature OK
 [test-message] plugin_init: variant=C
 [plugin-loader] INFO: loaded plugin 'test-message' v0.1.0
@@ -6087,7 +5855,7 @@ TEST-INTEG-4c PASSED
 TEST-INTEG-4d: plugin NORMAL contract (ml-detector PHASE 2d)...
 
 === TEST-INTEG-4d CASO A: NORMAL + score ML en annotation ===
-[plugin-loader] INFO: 'test-message' SHA-256=1a13623f603305b75f9753f52d691af1b2308ae7a89fe31894f67d1a813449b8 size=15800 mtime=1778215746
+[plugin-loader] INFO: 'test-message' SHA-256=1a13623f603305b75f9753f52d691af1b2308ae7a89fe31894f67d1a813449b8 size=15800 mtime=1778297317
 [plugin-loader] INFO: 'test-message' signature OK
 [test-message] plugin_init: variant=A
 [plugin-loader] INFO: loaded plugin 'test-message' v0.1.0
@@ -6097,7 +5865,7 @@ Caso A: errors=0 result_code=0 mode=0 → PASS
 [plugin-loader] INFO: shutdown plugin 'test-message' — invocations=1 overruns=0 errors=0
 
 === TEST-INTEG-4d CASO B: D8 VIOLATION campo read-only ===
-[plugin-loader] INFO: 'test-message' SHA-256=1a13623f603305b75f9753f52d691af1b2308ae7a89fe31894f67d1a813449b8 size=15800 mtime=1778215746
+[plugin-loader] INFO: 'test-message' SHA-256=1a13623f603305b75f9753f52d691af1b2308ae7a89fe31894f67d1a813449b8 size=15800 mtime=1778297317
 [plugin-loader] INFO: 'test-message' signature OK
 [test-message] plugin_init: variant=B
 [plugin-loader] INFO: loaded plugin 'test-message' v0.1.0
@@ -6108,7 +5876,7 @@ Caso B: errors=1 → D8 VIOLATION detectada → PASS
 [plugin-loader] INFO: shutdown plugin 'test-message' — invocations=1 overruns=0 errors=1
 
 === TEST-INTEG-4d CASO C: result_code=-1 no crash ===
-[plugin-loader] INFO: 'test-message' SHA-256=1a13623f603305b75f9753f52d691af1b2308ae7a89fe31894f67d1a813449b8 size=15800 mtime=1778215746
+[plugin-loader] INFO: 'test-message' SHA-256=1a13623f603305b75f9753f52d691af1b2308ae7a89fe31894f67d1a813449b8 size=15800 mtime=1778297317
 [plugin-loader] INFO: 'test-message' signature OK
 [test-message] plugin_init: variant=C
 [plugin-loader] INFO: loaded plugin 'test-message' v0.1.0
@@ -6123,7 +5891,7 @@ TEST-INTEG-4d PASSED
 TEST-INTEG-4e: rag-security READONLY + ADR-029 D1-D5...
 
 === TEST-INTEG-4e CASO A: READONLY + evento real ===
-[plugin-loader] INFO: 'test-message' SHA-256=1a13623f603305b75f9753f52d691af1b2308ae7a89fe31894f67d1a813449b8 size=15800 mtime=1778215746
+[plugin-loader] INFO: 'test-message' SHA-256=1a13623f603305b75f9753f52d691af1b2308ae7a89fe31894f67d1a813449b8 size=15800 mtime=1778297317
 [plugin-loader] INFO: 'test-message' signature OK
 [test-message] plugin_init: variant=A
 [plugin-loader] INFO: loaded plugin 'test-message' v0.1.0
@@ -6136,7 +5904,7 @@ Caso A: errors=0 mode=1 result_code ignorado → PASS
 Caso B: g_plugin_loader=nullptr → invoke_all no llamado → PASS
 
 === TEST-INTEG-4e CASO C: simulacion signal handler → shutdown limpio ===
-[plugin-loader] INFO: 'test-message' SHA-256=1a13623f603305b75f9753f52d691af1b2308ae7a89fe31894f67d1a813449b8 size=15800 mtime=1778215746
+[plugin-loader] INFO: 'test-message' SHA-256=1a13623f603305b75f9753f52d691af1b2308ae7a89fe31894f67d1a813449b8 size=15800 mtime=1778297317
 [plugin-loader] INFO: 'test-message' signature OK
 [test-message] plugin_init: variant=A
 [plugin-loader] INFO: loaded plugin 'test-message' v0.1.0
@@ -6150,7 +5918,7 @@ TEST-INTEG-4e PASSED
 TEST-INTEG-SIGN: Ed25519 plugin verification (ADR-025)...
 
 === TEST-INTEG-SIGN-1: firma valida → carga exitosa ===
-[plugin-loader] INFO: 'test-message' SHA-256=1a13623f603305b75f9753f52d691af1b2308ae7a89fe31894f67d1a813449b8 size=15800 mtime=1778215746
+[plugin-loader] INFO: 'test-message' SHA-256=1a13623f603305b75f9753f52d691af1b2308ae7a89fe31894f67d1a813449b8 size=15800 mtime=1778297317
 [plugin-loader] INFO: 'test-message' signature OK
 [test-message] plugin_init: variant=A
 [plugin-loader] INFO: loaded plugin 'test-message' v0.1.0
@@ -6159,7 +5927,7 @@ SIGN-1: loaded_count=1 → PASS
 [plugin-loader] INFO: shutdown plugin 'test-message' — invocations=0 overruns=0 errors=0
 
 === TEST-INTEG-SIGN-2: firma invalida → loaded_count==0 ===
-[plugin-loader] INFO: 'test-message' SHA-256=1a13623f603305b75f9753f52d691af1b2308ae7a89fe31894f67d1a813449b8 size=15800 mtime=1778215746
+[plugin-loader] INFO: 'test-message' SHA-256=1a13623f603305b75f9753f52d691af1b2308ae7a89fe31894f67d1a813449b8 size=15800 mtime=1778297317
 [plugin-loader] CRITICAL: Ed25519 INVALID for 'test-message'
 [plugin-loader] WARNING: 'test-message' skipped (sig check failed, dev mode)
 SIGN-2: loaded_count=0 (expect 0) → PASS
@@ -6180,7 +5948,7 @@ SIGN-4: symlink rejected, loaded_count=0 (expect 0) → PASS
 SIGN-5: traversal rejected, loaded_count=0 (expect 0) → PASS
 
 === TEST-INTEG-SIGN-6: clave rotada → loaded_count==0 ===
-[plugin-loader] INFO: 'test-message' SHA-256=1a13623f603305b75f9753f52d691af1b2308ae7a89fe31894f67d1a813449b8 size=15800 mtime=1778215746
+[plugin-loader] INFO: 'test-message' SHA-256=1a13623f603305b75f9753f52d691af1b2308ae7a89fe31894f67d1a813449b8 size=15800 mtime=1778297317
 [plugin-loader] CRITICAL: Ed25519 INVALID for 'test-message'
 [plugin-loader] WARNING: 'test-message' skipped (sig check failed, dev mode)
 SIGN-6: key mismatch rejected, loaded_count=0 (expect 0) → PASS
@@ -6193,7 +5961,8 @@ SIGN-7: tiny plugin rejected, loaded_count=0 (expect 0) → PASS
 === TEST-INTEG-SIGN: PASSED (0 failures) ===
 TEST-INTEG-SIGN PASSED
 ╔════════════════════════════════════════════════════════════╗
-║  ✅ Bootstrap completado — 6/6 RUNNING                    ║
+║  ✅ Bootstrap x86 eBPF completado — 6/6 RUNNING           ║
+║  Sniffer activo: Variant A (eBPF/XDP)                     ║
 ║  Siguiente: make test-all                                  ║
 ╚════════════════════════════════════════════════════════════╝
 (.venv) aironman@MacBook-Pro-de-Alonso test-zeromq-docker %
@@ -6203,31 +5972,31 @@ Testing seed-client...
 ─── seed-client tests ───────────────────────
 Test project /vagrant/libs/seed-client/build
 Start 1: seed_client_tests
-1/3 Test #1: seed_client_tests ................   Passed    0.12 sec
+1/3 Test #1: seed_client_tests ................   Passed    0.07 sec
 Start 2: perms_seed_tests
-2/3 Test #2: perms_seed_tests .................   Passed    3.22 sec
+2/3 Test #2: perms_seed_tests .................   Passed    3.92 sec
 Start 3: seed_client_traversal_tests
-3/3 Test #3: seed_client_traversal_tests ......   Passed    0.07 sec
+3/3 Test #3: seed_client_traversal_tests ......   Passed    0.06 sec
 
 100% tests passed, 0 tests failed out of 3
 
-Total Test time (real) =   3.48 sec
+Total Test time (real) =   4.21 sec
 Testing crypto-transport...
 Test project /vagrant/crypto-transport/build
 Start 1: test_crypto
-1/5 Test #1: test_crypto ......................   Passed    0.07 sec
+1/5 Test #1: test_crypto ......................   Passed    0.05 sec
 Start 2: test_compression
-2/5 Test #2: test_compression .................   Passed    0.06 sec
+2/5 Test #2: test_compression .................   Passed    0.04 sec
 Start 3: test_integration
-3/5 Test #3: test_integration .................   Passed    0.07 sec
+3/5 Test #3: test_integration .................   Passed    0.04 sec
 Start 4: test_crypto_transport
-4/5 Test #4: test_crypto_transport ............   Passed    0.10 sec
+4/5 Test #4: test_crypto_transport ............   Passed    0.08 sec
 Start 5: test_integ_contexts
-5/5 Test #5: test_integ_contexts ..............   Passed    0.10 sec
+5/5 Test #5: test_integ_contexts ..............   Passed    0.07 sec
 
 100% tests passed, 0 tests failed out of 5
 
-Total Test time (real) =   0.52 sec
+Total Test time (real) =   0.36 sec
 Testing etcd-client (HMAC only)...
 ═══════════════════════════════════════════════════════════
 EtcdClient HMAC Utilities - Unit Tests
@@ -6271,19 +6040,19 @@ Running main() from ./googletest/src/gtest_main.cc
 [----------] Global test environment set-up.
 [----------] 5 tests from SafePathPropertyTest
 [ RUN      ] SafePathPropertyTest.ResolveSeedNeverEscapesPrefix
-[       OK ] SafePathPropertyTest.ResolveSeedNeverEscapesPrefix (8 ms)
+[       OK ] SafePathPropertyTest.ResolveSeedNeverEscapesPrefix (4 ms)
 [ RUN      ] SafePathPropertyTest.ResolveSeedNeverAcceptsSymlinks
-[       OK ] SafePathPropertyTest.ResolveSeedNeverAcceptsSymlinks (1 ms)
+[       OK ] SafePathPropertyTest.ResolveSeedNeverAcceptsSymlinks (0 ms)
 [ RUN      ] SafePathPropertyTest.ResolveConfigNeverEscapesPrefixLexical
-[       OK ] SafePathPropertyTest.ResolveConfigNeverEscapesPrefixLexical (1 ms)
+[       OK ] SafePathPropertyTest.ResolveConfigNeverEscapesPrefixLexical (0 ms)
 [ RUN      ] SafePathPropertyTest.ResolveConfigAcceptsSymlinksInsidePrefix
-[       OK ] SafePathPropertyTest.ResolveConfigAcceptsSymlinksInsidePrefix (1 ms)
+[       OK ] SafePathPropertyTest.ResolveConfigAcceptsSymlinksInsidePrefix (0 ms)
 [ RUN      ] SafePathPropertyTest.ResolveGeneralPrefixNeverDerivesFromInput
-[       OK ] SafePathPropertyTest.ResolveGeneralPrefixNeverDerivesFromInput (1 ms)
-[----------] 5 tests from SafePathPropertyTest (14 ms total)
+[       OK ] SafePathPropertyTest.ResolveGeneralPrefixNeverDerivesFromInput (0 ms)
+[----------] 5 tests from SafePathPropertyTest (9 ms total)
 
 [----------] Global test environment tear-down
-[==========] 5 tests from 1 test suite ran. (16 ms total)
+[==========] 5 tests from 1 test suite ran. (11 ms total)
 [  PASSED  ] 5 tests.
 
 🧪 Testing plugin-loader...
@@ -6292,7 +6061,7 @@ No tests were found!!!
 TEST-INTEG-4a-PLUGIN: variantes A/B/C...
 
 === TEST VARIANT A ===
-[plugin-loader] INFO: 'test-message' SHA-256=1a13623f603305b75f9753f52d691af1b2308ae7a89fe31894f67d1a813449b8 size=15800 mtime=1778215746
+[plugin-loader] INFO: 'test-message' SHA-256=1a13623f603305b75f9753f52d691af1b2308ae7a89fe31894f67d1a813449b8 size=15800 mtime=1778297317
 [plugin-loader] INFO: 'test-message' signature OK
 [test-message] plugin_init: variant=A
 [plugin-loader] INFO: loaded plugin 'test-message' v0.1.0
@@ -6302,7 +6071,7 @@ Variant A: errors=0 result_code=0 → PASS
 [plugin-loader] INFO: shutdown plugin 'test-message' — invocations=1 overruns=0 errors=0
 
 === TEST VARIANT B ===
-[plugin-loader] INFO: 'test-message' SHA-256=1a13623f603305b75f9753f52d691af1b2308ae7a89fe31894f67d1a813449b8 size=15800 mtime=1778215746
+[plugin-loader] INFO: 'test-message' SHA-256=1a13623f603305b75f9753f52d691af1b2308ae7a89fe31894f67d1a813449b8 size=15800 mtime=1778297317
 [plugin-loader] INFO: 'test-message' signature OK
 [test-message] plugin_init: variant=B
 [plugin-loader] INFO: loaded plugin 'test-message' v0.1.0
@@ -6313,7 +6082,7 @@ Variant B: errors=1 → PASS (expect D8 VIOLATION log above)
 [plugin-loader] INFO: shutdown plugin 'test-message' — invocations=1 overruns=0 errors=1
 
 === TEST VARIANT C ===
-[plugin-loader] INFO: 'test-message' SHA-256=1a13623f603305b75f9753f52d691af1b2308ae7a89fe31894f67d1a813449b8 size=15800 mtime=1778215746
+[plugin-loader] INFO: 'test-message' SHA-256=1a13623f603305b75f9753f52d691af1b2308ae7a89fe31894f67d1a813449b8 size=15800 mtime=1778297317
 [plugin-loader] INFO: 'test-message' signature OK
 [test-message] plugin_init: variant=C
 [plugin-loader] INFO: loaded plugin 'test-message' v0.1.0
@@ -6328,7 +6097,7 @@ TEST-INTEG-4a PASSED
 TEST-INTEG-4b: plugin READ-ONLY contract (rag-ingester PHASE 2b)...
 
 === TEST-INTEG-4b CASO A: READ-ONLY payload=nullptr ===
-[plugin-loader] INFO: 'test-message' SHA-256=1a13623f603305b75f9753f52d691af1b2308ae7a89fe31894f67d1a813449b8 size=15800 mtime=1778215746
+[plugin-loader] INFO: 'test-message' SHA-256=1a13623f603305b75f9753f52d691af1b2308ae7a89fe31894f67d1a813449b8 size=15800 mtime=1778297317
 [plugin-loader] INFO: 'test-message' signature OK
 [test-message] plugin_init: variant=A
 [plugin-loader] INFO: loaded plugin 'test-message' v0.1.0
@@ -6338,7 +6107,7 @@ Caso A: errors=0 result_code=0 mode=1 → PASS
 [plugin-loader] INFO: shutdown plugin 'test-message' — invocations=1 overruns=0 errors=0
 
 === TEST-INTEG-4b CASO B: mode propagation ===
-[plugin-loader] INFO: 'test-message' SHA-256=1a13623f603305b75f9753f52d691af1b2308ae7a89fe31894f67d1a813449b8 size=15800 mtime=1778215746
+[plugin-loader] INFO: 'test-message' SHA-256=1a13623f603305b75f9753f52d691af1b2308ae7a89fe31894f67d1a813449b8 size=15800 mtime=1778297317
 [plugin-loader] INFO: 'test-message' signature OK
 [test-message] plugin_init: variant=A
 [plugin-loader] INFO: loaded plugin 'test-message' v0.1.0
@@ -6352,7 +6121,7 @@ TEST-INTEG-4b PASSED
 TEST-INTEG-4c: plugin NORMAL contract (sniffer PHASE 2c)...
 
 === TEST-INTEG-4c CASO A: NORMAL + payload real ===
-[plugin-loader] INFO: 'test-message' SHA-256=1a13623f603305b75f9753f52d691af1b2308ae7a89fe31894f67d1a813449b8 size=15800 mtime=1778215746
+[plugin-loader] INFO: 'test-message' SHA-256=1a13623f603305b75f9753f52d691af1b2308ae7a89fe31894f67d1a813449b8 size=15800 mtime=1778297317
 [plugin-loader] INFO: 'test-message' signature OK
 [test-message] plugin_init: variant=A
 [plugin-loader] INFO: loaded plugin 'test-message' v0.1.0
@@ -6362,7 +6131,7 @@ Caso A: errors=0 result_code=0 mode=0 → PASS
 [plugin-loader] INFO: shutdown plugin 'test-message' — invocations=1 overruns=0 errors=0
 
 === TEST-INTEG-4c CASO B: D8 VIOLATION campo read-only ===
-[plugin-loader] INFO: 'test-message' SHA-256=1a13623f603305b75f9753f52d691af1b2308ae7a89fe31894f67d1a813449b8 size=15800 mtime=1778215746
+[plugin-loader] INFO: 'test-message' SHA-256=1a13623f603305b75f9753f52d691af1b2308ae7a89fe31894f67d1a813449b8 size=15800 mtime=1778297317
 [plugin-loader] INFO: 'test-message' signature OK
 [test-message] plugin_init: variant=B
 [plugin-loader] INFO: loaded plugin 'test-message' v0.1.0
@@ -6373,7 +6142,7 @@ Caso B: errors=1 → D8 VIOLATION detectada → PASS
 [plugin-loader] INFO: shutdown plugin 'test-message' — invocations=1 overruns=0 errors=1
 
 === TEST-INTEG-4c CASO C: result_code=-1 no crash ===
-[plugin-loader] INFO: 'test-message' SHA-256=1a13623f603305b75f9753f52d691af1b2308ae7a89fe31894f67d1a813449b8 size=15800 mtime=1778215746
+[plugin-loader] INFO: 'test-message' SHA-256=1a13623f603305b75f9753f52d691af1b2308ae7a89fe31894f67d1a813449b8 size=15800 mtime=1778297317
 [plugin-loader] INFO: 'test-message' signature OK
 [test-message] plugin_init: variant=C
 [plugin-loader] INFO: loaded plugin 'test-message' v0.1.0
@@ -6388,17 +6157,18 @@ TEST-INTEG-4c PASSED
 TEST-INTEG-4d: plugin NORMAL contract (ml-detector PHASE 2d)...
 
 === TEST-INTEG-4d CASO A: NORMAL + score ML en annotation ===
-[plugin-loader] INFO: 'test-message' SHA-256=1a13623f603305b75f9753f52d691af1b2308ae7a89fe31894f67d1a813449b8 size=15800 mtime=1778215746
+[plugin-loader] INFO: 'test-message' SHA-256=1a13623f603305b75f9753f52d691af1b2308ae7a89fe31894f67d1a813449b8 size=15800 mtime=1778297317
 [plugin-loader] INFO: 'test-message' signature OK
 [test-message] plugin_init: variant=A
 [plugin-loader] INFO: loaded plugin 'test-message' v0.1.0
 [test-message] variant A: OK
+[plugin-loader] WARNING: plugin 'test-message' overrun: 660us > 500us budget
 Caso A: errors=0 result_code=0 mode=0 → PASS
 [test-message] plugin_shutdown
-[plugin-loader] INFO: shutdown plugin 'test-message' — invocations=1 overruns=0 errors=0
+[plugin-loader] INFO: shutdown plugin 'test-message' — invocations=1 overruns=1 errors=0
 
 === TEST-INTEG-4d CASO B: D8 VIOLATION campo read-only ===
-[plugin-loader] INFO: 'test-message' SHA-256=1a13623f603305b75f9753f52d691af1b2308ae7a89fe31894f67d1a813449b8 size=15800 mtime=1778215746
+[plugin-loader] INFO: 'test-message' SHA-256=1a13623f603305b75f9753f52d691af1b2308ae7a89fe31894f67d1a813449b8 size=15800 mtime=1778297317
 [plugin-loader] INFO: 'test-message' signature OK
 [test-message] plugin_init: variant=B
 [plugin-loader] INFO: loaded plugin 'test-message' v0.1.0
@@ -6409,7 +6179,7 @@ Caso B: errors=1 → D8 VIOLATION detectada → PASS
 [plugin-loader] INFO: shutdown plugin 'test-message' — invocations=1 overruns=0 errors=1
 
 === TEST-INTEG-4d CASO C: result_code=-1 no crash ===
-[plugin-loader] INFO: 'test-message' SHA-256=1a13623f603305b75f9753f52d691af1b2308ae7a89fe31894f67d1a813449b8 size=15800 mtime=1778215746
+[plugin-loader] INFO: 'test-message' SHA-256=1a13623f603305b75f9753f52d691af1b2308ae7a89fe31894f67d1a813449b8 size=15800 mtime=1778297317
 [plugin-loader] INFO: 'test-message' signature OK
 [test-message] plugin_init: variant=C
 [plugin-loader] INFO: loaded plugin 'test-message' v0.1.0
@@ -6424,7 +6194,7 @@ TEST-INTEG-4d PASSED
 TEST-INTEG-4e: rag-security READONLY + ADR-029 D1-D5...
 
 === TEST-INTEG-4e CASO A: READONLY + evento real ===
-[plugin-loader] INFO: 'test-message' SHA-256=1a13623f603305b75f9753f52d691af1b2308ae7a89fe31894f67d1a813449b8 size=15800 mtime=1778215746
+[plugin-loader] INFO: 'test-message' SHA-256=1a13623f603305b75f9753f52d691af1b2308ae7a89fe31894f67d1a813449b8 size=15800 mtime=1778297317
 [plugin-loader] INFO: 'test-message' signature OK
 [test-message] plugin_init: variant=A
 [plugin-loader] INFO: loaded plugin 'test-message' v0.1.0
@@ -6437,7 +6207,7 @@ Caso A: errors=0 mode=1 result_code ignorado → PASS
 Caso B: g_plugin_loader=nullptr → invoke_all no llamado → PASS
 
 === TEST-INTEG-4e CASO C: simulacion signal handler → shutdown limpio ===
-[plugin-loader] INFO: 'test-message' SHA-256=1a13623f603305b75f9753f52d691af1b2308ae7a89fe31894f67d1a813449b8 size=15800 mtime=1778215746
+[plugin-loader] INFO: 'test-message' SHA-256=1a13623f603305b75f9753f52d691af1b2308ae7a89fe31894f67d1a813449b8 size=15800 mtime=1778297317
 [plugin-loader] INFO: 'test-message' signature OK
 [test-message] plugin_init: variant=A
 [plugin-loader] INFO: loaded plugin 'test-message' v0.1.0
@@ -6451,7 +6221,7 @@ TEST-INTEG-4e PASSED
 TEST-INTEG-SIGN: Ed25519 plugin verification (ADR-025)...
 
 === TEST-INTEG-SIGN-1: firma valida → carga exitosa ===
-[plugin-loader] INFO: 'test-message' SHA-256=1a13623f603305b75f9753f52d691af1b2308ae7a89fe31894f67d1a813449b8 size=15800 mtime=1778215746
+[plugin-loader] INFO: 'test-message' SHA-256=1a13623f603305b75f9753f52d691af1b2308ae7a89fe31894f67d1a813449b8 size=15800 mtime=1778297317
 [plugin-loader] INFO: 'test-message' signature OK
 [test-message] plugin_init: variant=A
 [plugin-loader] INFO: loaded plugin 'test-message' v0.1.0
@@ -6460,7 +6230,7 @@ SIGN-1: loaded_count=1 → PASS
 [plugin-loader] INFO: shutdown plugin 'test-message' — invocations=0 overruns=0 errors=0
 
 === TEST-INTEG-SIGN-2: firma invalida → loaded_count==0 ===
-[plugin-loader] INFO: 'test-message' SHA-256=1a13623f603305b75f9753f52d691af1b2308ae7a89fe31894f67d1a813449b8 size=15800 mtime=1778215746
+[plugin-loader] INFO: 'test-message' SHA-256=1a13623f603305b75f9753f52d691af1b2308ae7a89fe31894f67d1a813449b8 size=15800 mtime=1778297317
 [plugin-loader] CRITICAL: Ed25519 INVALID for 'test-message'
 [plugin-loader] WARNING: 'test-message' skipped (sig check failed, dev mode)
 SIGN-2: loaded_count=0 (expect 0) → PASS
@@ -6481,7 +6251,7 @@ SIGN-4: symlink rejected, loaded_count=0 (expect 0) → PASS
 SIGN-5: traversal rejected, loaded_count=0 (expect 0) → PASS
 
 === TEST-INTEG-SIGN-6: clave rotada → loaded_count==0 ===
-[plugin-loader] INFO: 'test-message' SHA-256=1a13623f603305b75f9753f52d691af1b2308ae7a89fe31894f67d1a813449b8 size=15800 mtime=1778215746
+[plugin-loader] INFO: 'test-message' SHA-256=1a13623f603305b75f9753f52d691af1b2308ae7a89fe31894f67d1a813449b8 size=15800 mtime=1778297317
 [plugin-loader] CRITICAL: Ed25519 INVALID for 'test-message'
 [plugin-loader] WARNING: 'test-message' skipped (sig check failed, dev mode)
 SIGN-6: key mismatch rejected, loaded_count=0 (expect 0) → PASS
@@ -6501,88 +6271,88 @@ TEST-INTEG-SIGN PASSED
 Testing Sniffer...
 Test project /vagrant/sniffer/build-debug
 Start 1: test_smb_scan_features
-1/9 Test #1: test_smb_scan_features ...........   Passed    0.02 sec
+1/9 Test #1: test_smb_scan_features ...........   Passed    0.11 sec
 Start 2: test_pcap_backend_lifecycle
 2/9 Test #2: test_pcap_backend_lifecycle ......   Passed    0.06 sec
 Start 3: test_pcap_backend_poll_null
 3/9 Test #3: test_pcap_backend_poll_null ......   Passed    0.08 sec
 Start 4: test_pcap_backend_callback
-4/9 Test #4: test_pcap_backend_callback .......   Passed    0.09 sec
+4/9 Test #4: test_pcap_backend_callback .......   Passed    0.08 sec
 Start 5: test_pcap_backend_error
 5/9 Test #5: test_pcap_backend_error ..........   Passed    0.09 sec
 Start 6: test_pcap_proto_parse_tcp
-6/9 Test #6: test_pcap_proto_parse_tcp ........   Passed    0.04 sec
+6/9 Test #6: test_pcap_proto_parse_tcp ........   Passed    0.06 sec
 Start 7: test_pcap_proto_parse_udp
-7/9 Test #7: test_pcap_proto_parse_udp ........   Passed    0.04 sec
+7/9 Test #7: test_pcap_proto_parse_udp ........   Passed    0.06 sec
 Start 8: test_pcap_backend_stress
-8/9 Test #8: test_pcap_backend_stress .........   Passed    0.20 sec
+8/9 Test #8: test_pcap_backend_stress .........   Passed    0.08 sec
 Start 9: test_pcap_backend_regression
-9/9 Test #9: test_pcap_backend_regression .....   Passed    0.10 sec
+9/9 Test #9: test_pcap_backend_regression .....   Passed    0.12 sec
 
 100% tests passed, 0 tests failed out of 9
 
-Total Test time (real) =   0.86 sec
+Total Test time (real) =   0.97 sec
 
 Testing ML Detector...
 Test project /vagrant/ml-detector/build-debug
 Start  1: test_classifier
-1/10 Test  #1: test_classifier ..................   Passed    0.05 sec
+1/10 Test  #1: test_classifier ..................   Passed    0.04 sec
 Start  2: test_feature_extractor
-2/10 Test  #2: test_feature_extractor ...........   Passed    0.06 sec
+2/10 Test  #2: test_feature_extractor ...........   Passed    0.07 sec
 Start  3: test_rag_logger_artifact_save
-3/10 Test  #3: test_rag_logger_artifact_save ....   Passed    0.05 sec
+3/10 Test  #3: test_rag_logger_artifact_save ....   Passed    0.07 sec
 Start  4: test_model_loader
-4/10 Test  #4: test_model_loader ................   Passed    0.06 sec
+4/10 Test  #4: test_model_loader ................   Passed    0.24 sec
 Start  5: test_zmq_memory_overflow
-5/10 Test  #5: test_zmq_memory_overflow .........   Passed    0.06 sec
+5/10 Test  #5: test_zmq_memory_overflow .........   Passed    0.13 sec
 Start  6: RansomwareDetectorUnit
-6/10 Test  #6: RansomwareDetectorUnit ...........   Passed    0.17 sec
+6/10 Test  #6: RansomwareDetectorUnit ...........   Passed    0.16 sec
 Start  7: test_pipeline
-7/10 Test  #7: test_pipeline ....................   Passed    0.09 sec
+7/10 Test  #7: test_pipeline ....................   Passed    0.08 sec
 Start  8: test_csv_event_writer
-8/10 Test  #8: test_csv_event_writer ............   Passed    0.08 sec
+8/10 Test  #8: test_csv_event_writer ............   Passed    0.29 sec
 Start  9: test_csv_feature_extraction
-9/10 Test  #9: test_csv_feature_extraction ......   Passed    0.05 sec
+9/10 Test  #9: test_csv_feature_extraction ......   Passed    0.16 sec
 Start 10: test_etcd_client_hmac
-10/10 Test #10: test_etcd_client_hmac ............   Passed   12.36 sec
+10/10 Test #10: test_etcd_client_hmac ............   Passed   12.43 sec
 
 100% tests passed, 0 tests failed out of 10
 
-Total Test time (real) =  13.27 sec
+Total Test time (real) =  13.98 sec
 
 Testing RAG Ingester...
 Test project /vagrant/rag-ingester/build-debug
 Start 1: test_config_parser
-1/8 Test #1: test_config_parser ...............   Passed    0.05 sec
+1/8 Test #1: test_config_parser ...............   Passed    0.04 sec
 Start 2: test_config_parser_traversal
-2/8 Test #2: test_config_parser_traversal .....   Passed    0.08 sec
+2/8 Test #2: test_config_parser_traversal .....   Passed    0.12 sec
 Start 3: test_file_watcher
-3/8 Test #3: test_file_watcher ................   Passed    1.06 sec
+3/8 Test #3: test_file_watcher ................   Passed    1.01 sec
 Start 4: test_csv_file_watcher
-4/8 Test #4: test_csv_file_watcher ............   Passed    1.84 sec
+4/8 Test #4: test_csv_file_watcher ............   Passed    2.76 sec
 Start 5: test_csv_event_loader
-5/8 Test #5: test_csv_event_loader ............   Passed    0.03 sec
+5/8 Test #5: test_csv_event_loader ............   Passed    0.04 sec
 Start 6: test_csv_dir_watcher
-6/8 Test #6: test_csv_dir_watcher .............   Passed    0.64 sec
+6/8 Test #6: test_csv_dir_watcher .............   Passed    0.63 sec
 Start 7: test_firewall_csv_event_loader
-7/8 Test #7: test_firewall_csv_event_loader ...   Passed    0.04 sec
+7/8 Test #7: test_firewall_csv_event_loader ...   Passed    0.05 sec
 Start 8: test_trace_id
-8/8 Test #8: test_trace_id ....................   Passed    0.07 sec
+8/8 Test #8: test_trace_id ....................   Passed    0.11 sec
 
 100% tests passed, 0 tests failed out of 8
 
-Total Test time (real) =   3.93 sec
+Total Test time (real) =   4.96 sec
 
 Testing etcd-server...
 Test project /vagrant/etcd-server/build-debug
 Start 1: test_hmac_integration
-1/2 Test #1: test_hmac_integration ............   Passed    0.10 sec
+1/2 Test #1: test_hmac_integration ............   Passed    0.19 sec
 Start 2: test_secrets_manager_simple
-2/2 Test #2: test_secrets_manager_simple ......   Passed    9.15 sec
+2/2 Test #2: test_secrets_manager_simple ......   Passed    9.26 sec
 
 100% tests passed, 0 tests failed out of 2
 
-Total Test time (real) =   9.33 sec
+Total Test time (real) =   9.54 sec
 
 Testing RAG Security...
 Test project /vagrant/rag/build
@@ -6650,7 +6420,7 @@ Hashes únicos: 1
 TEST-INTEG-4a-PLUGIN: variantes A/B/C...
 
 === TEST VARIANT A ===
-[plugin-loader] INFO: 'test-message' SHA-256=1a13623f603305b75f9753f52d691af1b2308ae7a89fe31894f67d1a813449b8 size=15800 mtime=1778215746
+[plugin-loader] INFO: 'test-message' SHA-256=1a13623f603305b75f9753f52d691af1b2308ae7a89fe31894f67d1a813449b8 size=15800 mtime=1778297317
 [plugin-loader] INFO: 'test-message' signature OK
 [test-message] plugin_init: variant=A
 [plugin-loader] INFO: loaded plugin 'test-message' v0.1.0
@@ -6660,7 +6430,7 @@ Variant A: errors=0 result_code=0 → PASS
 [plugin-loader] INFO: shutdown plugin 'test-message' — invocations=1 overruns=0 errors=0
 
 === TEST VARIANT B ===
-[plugin-loader] INFO: 'test-message' SHA-256=1a13623f603305b75f9753f52d691af1b2308ae7a89fe31894f67d1a813449b8 size=15800 mtime=1778215746
+[plugin-loader] INFO: 'test-message' SHA-256=1a13623f603305b75f9753f52d691af1b2308ae7a89fe31894f67d1a813449b8 size=15800 mtime=1778297317
 [plugin-loader] INFO: 'test-message' signature OK
 [test-message] plugin_init: variant=B
 [plugin-loader] INFO: loaded plugin 'test-message' v0.1.0
@@ -6671,7 +6441,7 @@ Variant B: errors=1 → PASS (expect D8 VIOLATION log above)
 [plugin-loader] INFO: shutdown plugin 'test-message' — invocations=1 overruns=0 errors=1
 
 === TEST VARIANT C ===
-[plugin-loader] INFO: 'test-message' SHA-256=1a13623f603305b75f9753f52d691af1b2308ae7a89fe31894f67d1a813449b8 size=15800 mtime=1778215746
+[plugin-loader] INFO: 'test-message' SHA-256=1a13623f603305b75f9753f52d691af1b2308ae7a89fe31894f67d1a813449b8 size=15800 mtime=1778297317
 [plugin-loader] INFO: 'test-message' signature OK
 [test-message] plugin_init: variant=C
 [plugin-loader] INFO: loaded plugin 'test-message' v0.1.0
@@ -6686,7 +6456,7 @@ TEST-INTEG-4a PASSED
 TEST-INTEG-4b: plugin READ-ONLY contract (rag-ingester PHASE 2b)...
 
 === TEST-INTEG-4b CASO A: READ-ONLY payload=nullptr ===
-[plugin-loader] INFO: 'test-message' SHA-256=1a13623f603305b75f9753f52d691af1b2308ae7a89fe31894f67d1a813449b8 size=15800 mtime=1778215746
+[plugin-loader] INFO: 'test-message' SHA-256=1a13623f603305b75f9753f52d691af1b2308ae7a89fe31894f67d1a813449b8 size=15800 mtime=1778297317
 [plugin-loader] INFO: 'test-message' signature OK
 [test-message] plugin_init: variant=A
 [plugin-loader] INFO: loaded plugin 'test-message' v0.1.0
@@ -6696,7 +6466,7 @@ Caso A: errors=0 result_code=0 mode=1 → PASS
 [plugin-loader] INFO: shutdown plugin 'test-message' — invocations=1 overruns=0 errors=0
 
 === TEST-INTEG-4b CASO B: mode propagation ===
-[plugin-loader] INFO: 'test-message' SHA-256=1a13623f603305b75f9753f52d691af1b2308ae7a89fe31894f67d1a813449b8 size=15800 mtime=1778215746
+[plugin-loader] INFO: 'test-message' SHA-256=1a13623f603305b75f9753f52d691af1b2308ae7a89fe31894f67d1a813449b8 size=15800 mtime=1778297317
 [plugin-loader] INFO: 'test-message' signature OK
 [test-message] plugin_init: variant=A
 [plugin-loader] INFO: loaded plugin 'test-message' v0.1.0
@@ -6710,7 +6480,7 @@ TEST-INTEG-4b PASSED
 TEST-INTEG-4c: plugin NORMAL contract (sniffer PHASE 2c)...
 
 === TEST-INTEG-4c CASO A: NORMAL + payload real ===
-[plugin-loader] INFO: 'test-message' SHA-256=1a13623f603305b75f9753f52d691af1b2308ae7a89fe31894f67d1a813449b8 size=15800 mtime=1778215746
+[plugin-loader] INFO: 'test-message' SHA-256=1a13623f603305b75f9753f52d691af1b2308ae7a89fe31894f67d1a813449b8 size=15800 mtime=1778297317
 [plugin-loader] INFO: 'test-message' signature OK
 [test-message] plugin_init: variant=A
 [plugin-loader] INFO: loaded plugin 'test-message' v0.1.0
@@ -6720,7 +6490,7 @@ Caso A: errors=0 result_code=0 mode=0 → PASS
 [plugin-loader] INFO: shutdown plugin 'test-message' — invocations=1 overruns=0 errors=0
 
 === TEST-INTEG-4c CASO B: D8 VIOLATION campo read-only ===
-[plugin-loader] INFO: 'test-message' SHA-256=1a13623f603305b75f9753f52d691af1b2308ae7a89fe31894f67d1a813449b8 size=15800 mtime=1778215746
+[plugin-loader] INFO: 'test-message' SHA-256=1a13623f603305b75f9753f52d691af1b2308ae7a89fe31894f67d1a813449b8 size=15800 mtime=1778297317
 [plugin-loader] INFO: 'test-message' signature OK
 [test-message] plugin_init: variant=B
 [plugin-loader] INFO: loaded plugin 'test-message' v0.1.0
@@ -6731,7 +6501,7 @@ Caso B: errors=1 → D8 VIOLATION detectada → PASS
 [plugin-loader] INFO: shutdown plugin 'test-message' — invocations=1 overruns=0 errors=1
 
 === TEST-INTEG-4c CASO C: result_code=-1 no crash ===
-[plugin-loader] INFO: 'test-message' SHA-256=1a13623f603305b75f9753f52d691af1b2308ae7a89fe31894f67d1a813449b8 size=15800 mtime=1778215746
+[plugin-loader] INFO: 'test-message' SHA-256=1a13623f603305b75f9753f52d691af1b2308ae7a89fe31894f67d1a813449b8 size=15800 mtime=1778297317
 [plugin-loader] INFO: 'test-message' signature OK
 [test-message] plugin_init: variant=C
 [plugin-loader] INFO: loaded plugin 'test-message' v0.1.0
@@ -6746,7 +6516,7 @@ TEST-INTEG-4c PASSED
 TEST-INTEG-4d: plugin NORMAL contract (ml-detector PHASE 2d)...
 
 === TEST-INTEG-4d CASO A: NORMAL + score ML en annotation ===
-[plugin-loader] INFO: 'test-message' SHA-256=1a13623f603305b75f9753f52d691af1b2308ae7a89fe31894f67d1a813449b8 size=15800 mtime=1778215746
+[plugin-loader] INFO: 'test-message' SHA-256=1a13623f603305b75f9753f52d691af1b2308ae7a89fe31894f67d1a813449b8 size=15800 mtime=1778297317
 [plugin-loader] INFO: 'test-message' signature OK
 [test-message] plugin_init: variant=A
 [plugin-loader] INFO: loaded plugin 'test-message' v0.1.0
@@ -6756,7 +6526,7 @@ Caso A: errors=0 result_code=0 mode=0 → PASS
 [plugin-loader] INFO: shutdown plugin 'test-message' — invocations=1 overruns=0 errors=0
 
 === TEST-INTEG-4d CASO B: D8 VIOLATION campo read-only ===
-[plugin-loader] INFO: 'test-message' SHA-256=1a13623f603305b75f9753f52d691af1b2308ae7a89fe31894f67d1a813449b8 size=15800 mtime=1778215746
+[plugin-loader] INFO: 'test-message' SHA-256=1a13623f603305b75f9753f52d691af1b2308ae7a89fe31894f67d1a813449b8 size=15800 mtime=1778297317
 [plugin-loader] INFO: 'test-message' signature OK
 [test-message] plugin_init: variant=B
 [plugin-loader] INFO: loaded plugin 'test-message' v0.1.0
@@ -6767,7 +6537,7 @@ Caso B: errors=1 → D8 VIOLATION detectada → PASS
 [plugin-loader] INFO: shutdown plugin 'test-message' — invocations=1 overruns=0 errors=1
 
 === TEST-INTEG-4d CASO C: result_code=-1 no crash ===
-[plugin-loader] INFO: 'test-message' SHA-256=1a13623f603305b75f9753f52d691af1b2308ae7a89fe31894f67d1a813449b8 size=15800 mtime=1778215746
+[plugin-loader] INFO: 'test-message' SHA-256=1a13623f603305b75f9753f52d691af1b2308ae7a89fe31894f67d1a813449b8 size=15800 mtime=1778297317
 [plugin-loader] INFO: 'test-message' signature OK
 [test-message] plugin_init: variant=C
 [plugin-loader] INFO: loaded plugin 'test-message' v0.1.0
@@ -6782,21 +6552,20 @@ TEST-INTEG-4d PASSED
 TEST-INTEG-4e: rag-security READONLY + ADR-029 D1-D5...
 
 === TEST-INTEG-4e CASO A: READONLY + evento real ===
-[plugin-loader] INFO: 'test-message' SHA-256=1a13623f603305b75f9753f52d691af1b2308ae7a89fe31894f67d1a813449b8 size=15800 mtime=1778215746
+[plugin-loader] INFO: 'test-message' SHA-256=1a13623f603305b75f9753f52d691af1b2308ae7a89fe31894f67d1a813449b8 size=15800 mtime=1778297317
 [plugin-loader] INFO: 'test-message' signature OK
 [test-message] plugin_init: variant=A
 [plugin-loader] INFO: loaded plugin 'test-message' v0.1.0
 [test-message] variant A: OK
-[plugin-loader] WARNING: plugin 'test-message' overrun: 848us > 500us budget
 Caso A: errors=0 mode=1 result_code ignorado → PASS
 [test-message] plugin_shutdown
-[plugin-loader] INFO: shutdown plugin 'test-message' — invocations=1 overruns=1 errors=0
+[plugin-loader] INFO: shutdown plugin 'test-message' — invocations=1 overruns=0 errors=0
 
 === TEST-INTEG-4e CASO B: g_plugin_loader=nullptr, no crash ===
 Caso B: g_plugin_loader=nullptr → invoke_all no llamado → PASS
 
 === TEST-INTEG-4e CASO C: simulacion signal handler → shutdown limpio ===
-[plugin-loader] INFO: 'test-message' SHA-256=1a13623f603305b75f9753f52d691af1b2308ae7a89fe31894f67d1a813449b8 size=15800 mtime=1778215746
+[plugin-loader] INFO: 'test-message' SHA-256=1a13623f603305b75f9753f52d691af1b2308ae7a89fe31894f67d1a813449b8 size=15800 mtime=1778297317
 [plugin-loader] INFO: 'test-message' signature OK
 [test-message] plugin_init: variant=A
 [plugin-loader] INFO: loaded plugin 'test-message' v0.1.0
@@ -6810,7 +6579,7 @@ TEST-INTEG-4e PASSED
 TEST-INTEG-SIGN: Ed25519 plugin verification (ADR-025)...
 
 === TEST-INTEG-SIGN-1: firma valida → carga exitosa ===
-[plugin-loader] INFO: 'test-message' SHA-256=1a13623f603305b75f9753f52d691af1b2308ae7a89fe31894f67d1a813449b8 size=15800 mtime=1778215746
+[plugin-loader] INFO: 'test-message' SHA-256=1a13623f603305b75f9753f52d691af1b2308ae7a89fe31894f67d1a813449b8 size=15800 mtime=1778297317
 [plugin-loader] INFO: 'test-message' signature OK
 [test-message] plugin_init: variant=A
 [plugin-loader] INFO: loaded plugin 'test-message' v0.1.0
@@ -6819,7 +6588,7 @@ SIGN-1: loaded_count=1 → PASS
 [plugin-loader] INFO: shutdown plugin 'test-message' — invocations=0 overruns=0 errors=0
 
 === TEST-INTEG-SIGN-2: firma invalida → loaded_count==0 ===
-[plugin-loader] INFO: 'test-message' SHA-256=1a13623f603305b75f9753f52d691af1b2308ae7a89fe31894f67d1a813449b8 size=15800 mtime=1778215746
+[plugin-loader] INFO: 'test-message' SHA-256=1a13623f603305b75f9753f52d691af1b2308ae7a89fe31894f67d1a813449b8 size=15800 mtime=1778297317
 [plugin-loader] CRITICAL: Ed25519 INVALID for 'test-message'
 [plugin-loader] WARNING: 'test-message' skipped (sig check failed, dev mode)
 SIGN-2: loaded_count=0 (expect 0) → PASS
@@ -6840,7 +6609,7 @@ SIGN-4: symlink rejected, loaded_count=0 (expect 0) → PASS
 SIGN-5: traversal rejected, loaded_count=0 (expect 0) → PASS
 
 === TEST-INTEG-SIGN-6: clave rotada → loaded_count==0 ===
-[plugin-loader] INFO: 'test-message' SHA-256=1a13623f603305b75f9753f52d691af1b2308ae7a89fe31894f67d1a813449b8 size=15800 mtime=1778215746
+[plugin-loader] INFO: 'test-message' SHA-256=1a13623f603305b75f9753f52d691af1b2308ae7a89fe31894f67d1a813449b8 size=15800 mtime=1778297317
 [plugin-loader] CRITICAL: Ed25519 INVALID for 'test-message'
 [plugin-loader] WARNING: 'test-message' skipped (sig check failed, dev mode)
 SIGN-6: key mismatch rejected, loaded_count=0 (expect 0) → PASS
@@ -6855,48 +6624,48 @@ TEST-INTEG-SIGN PASSED
 ── argus-network-isolate: unit tests ──
 Test project /vagrant/tools/build-argus-network-isolate
 Start 1: test_isolate_config
-1/1 Test #1: test_isolate_config ..............   Passed    0.09 sec
+1/1 Test #1: test_isolate_config ..............   Passed    0.04 sec
 
 100% tests passed, 0 tests failed out of 1
 
-Total Test time (real) =   0.14 sec
+Total Test time (real) =   0.07 sec
 ── argus-network-isolate: status ──
-[2026-05-08 05:06:14.049] [info] [argus-isolate] ===========================================
-[2026-05-08 05:06:14.049] [info] [argus-isolate] aRGus NDR -- Incident Response Protocol
-[2026-05-08 05:06:14.049] [info] [argus-isolate] ADR-042 -- DAY 142
-[2026-05-08 05:06:14.049] [info] [argus-isolate] comando=status dry_run=false
-[2026-05-08 05:06:14.049] [info] [argus-isolate] ===========================================
-[2026-05-08 05:06:14.049] [info] [argus-isolate] NetworkIsolator inicializado
-[2026-05-08 05:06:14.049] [info] [argus-isolate]   tabla:            argus_isolate
-[2026-05-08 05:06:14.049] [info] [argus-isolate]   nft:              /usr/sbin/nft
-[2026-05-08 05:06:14.050] [info] [argus-isolate]   rollback_timeout: 300s
-[2026-05-08 05:06:14.087] [warning] [argus-isolate] CMD exit=1 out=Error: No such file or directory
+[2026-05-09 03:44:01.415] [info] [argus-isolate] ===========================================
+[2026-05-09 03:44:01.419] [info] [argus-isolate] aRGus NDR -- Incident Response Protocol
+[2026-05-09 03:44:01.419] [info] [argus-isolate] ADR-042 -- DAY 142
+[2026-05-09 03:44:01.420] [info] [argus-isolate] comando=status dry_run=false
+[2026-05-09 03:44:01.420] [info] [argus-isolate] ===========================================
+[2026-05-09 03:44:01.420] [info] [argus-isolate] NetworkIsolator inicializado
+[2026-05-09 03:44:01.420] [info] [argus-isolate]   tabla:            argus_isolate
+[2026-05-09 03:44:01.421] [info] [argus-isolate]   nft:              /usr/sbin/nft
+[2026-05-09 03:44:01.421] [info] [argus-isolate]   rollback_timeout: 300s
+[2026-05-09 03:44:01.446] [warning] [argus-isolate] CMD exit=1 out=Error: No such file or directory
 list table ip argus_isolate
 ^^^^^^^^^^^^^
 
-[2026-05-08 05:06:14.087] [info] [argus-isolate] STATUS: NORMAL (sin aislamiento)
+[2026-05-09 03:44:01.446] [info] [argus-isolate] STATUS: NORMAL (sin aislamiento)
 ── argus-network-isolate: dry-run eth1 ──
-[2026-05-08 05:06:18.512] [info] [argus-isolate] ===========================================
-[2026-05-08 05:06:18.513] [info] [argus-isolate] aRGus NDR -- Incident Response Protocol
-[2026-05-08 05:06:18.513] [info] [argus-isolate] ADR-042 -- DAY 142
-[2026-05-08 05:06:18.513] [info] [argus-isolate] comando=isolate dry_run=true
-[2026-05-08 05:06:18.513] [info] [argus-isolate] ===========================================
-[2026-05-08 05:06:18.513] [info] [argus-isolate] NetworkIsolator inicializado
-[2026-05-08 05:06:18.513] [info] [argus-isolate]   tabla:            argus_isolate
-[2026-05-08 05:06:18.513] [info] [argus-isolate]   nft:              /usr/sbin/nft
-[2026-05-08 05:06:18.513] [info] [argus-isolate]   rollback_timeout: 300s
-[2026-05-08 05:06:18.513] [info] [argus-isolate] === PASO 1: snapshot del ruleset ===
-[2026-05-08 05:06:18.548] [info] [argus-isolate] PASO 1 OK: backup=/run/argus/irp/argus-backup-1778216778.nft (0 bytes — primera ejecucion)
-[2026-05-08 05:06:18.549] [info] [argus-isolate] FORENSIC event=snapshot_ok details={"first_run":true,"path":"/run/argus/irp/argus-backup-1778216778.nft","size_bytes":0}
-[2026-05-08 05:06:18.549] [info] [argus-isolate] === PASO 2: generando reglas (iface=eth1) ===
-[2026-05-08 05:06:18.549] [info] [argus-isolate] PASO 2 OK: reglas=/run/argus/irp/argus-isolate-1778216778.nft
-[2026-05-08 05:06:18.549] [info] [argus-isolate] FORENSIC event=rules_generated details={"interface":"eth1","path":"/run/argus/irp/argus-isolate-1778216778.nft","whitelist_ips":["127.0.0.1","10.0.2.2","10.0.2.15","192.168.56.1"],"whitelist_ports":[22]}
-[2026-05-08 05:06:18.549] [info] [argus-isolate] === PASO 3: validacion en seco (nft -c) ===
-[2026-05-08 05:06:18.729] [info] [argus-isolate] PASO 3 OK: reglas validas (nft -c exit=0)
-[2026-05-08 05:06:18.729] [info] [argus-isolate] FORENSIC event=dry_run_ok details={"rules_path":"/run/argus/irp/argus-isolate-1778216778.nft"}
-[2026-05-08 05:06:18.729] [info] [argus-isolate] DRY-RUN completado (pasos 1-3 OK)
-[2026-05-08 05:06:18.729] [info] [argus-isolate]   backup: /run/argus/irp/argus-backup-1778216778.nft
-[2026-05-08 05:06:18.729] [info] [argus-isolate]   reglas: /run/argus/irp/argus-isolate-1778216778.nft
+[2026-05-09 03:44:04.909] [info] [argus-isolate] ===========================================
+[2026-05-09 03:44:04.909] [info] [argus-isolate] aRGus NDR -- Incident Response Protocol
+[2026-05-09 03:44:04.909] [info] [argus-isolate] ADR-042 -- DAY 142
+[2026-05-09 03:44:04.909] [info] [argus-isolate] comando=isolate dry_run=true
+[2026-05-09 03:44:04.909] [info] [argus-isolate] ===========================================
+[2026-05-09 03:44:04.909] [info] [argus-isolate] NetworkIsolator inicializado
+[2026-05-09 03:44:04.909] [info] [argus-isolate]   tabla:            argus_isolate
+[2026-05-09 03:44:04.910] [info] [argus-isolate]   nft:              /usr/sbin/nft
+[2026-05-09 03:44:04.910] [info] [argus-isolate]   rollback_timeout: 300s
+[2026-05-09 03:44:04.910] [info] [argus-isolate] === PASO 1: snapshot del ruleset ===
+[2026-05-09 03:44:04.964] [info] [argus-isolate] PASO 1 OK: backup=/run/argus/irp/argus-backup-1778298244.nft (0 bytes — primera ejecucion)
+[2026-05-09 03:44:04.967] [info] [argus-isolate] FORENSIC event=snapshot_ok details={"first_run":true,"path":"/run/argus/irp/argus-backup-1778298244.nft","size_bytes":0}
+[2026-05-09 03:44:04.967] [info] [argus-isolate] === PASO 2: generando reglas (iface=eth1) ===
+[2026-05-09 03:44:04.968] [info] [argus-isolate] PASO 2 OK: reglas=/run/argus/irp/argus-isolate-1778298244.nft
+[2026-05-09 03:44:04.968] [info] [argus-isolate] FORENSIC event=rules_generated details={"interface":"eth1","path":"/run/argus/irp/argus-isolate-1778298244.nft","whitelist_ips":["127.0.0.1","10.0.2.2","10.0.2.15","192.168.56.1"],"whitelist_ports":[22]}
+[2026-05-09 03:44:04.968] [info] [argus-isolate] === PASO 3: validacion en seco (nft -c) ===
+[2026-05-09 03:44:05.171] [info] [argus-isolate] PASO 3 OK: reglas validas (nft -c exit=0)
+[2026-05-09 03:44:05.172] [info] [argus-isolate] FORENSIC event=dry_run_ok details={"rules_path":"/run/argus/irp/argus-isolate-1778298244.nft"}
+[2026-05-09 03:44:05.172] [info] [argus-isolate] DRY-RUN completado (pasos 1-3 OK)
+[2026-05-09 03:44:05.172] [info] [argus-isolate]   backup: /run/argus/irp/argus-backup-1778298244.nft
+[2026-05-09 03:44:05.172] [info] [argus-isolate]   reglas: /run/argus/irp/argus-isolate-1778298244.nft
 ✅ argus-network-isolate dry-run PASSED
 
 ╔════════════════════════════════════════════════════════════╗

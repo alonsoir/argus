@@ -30,16 +30,16 @@
 
 ---
 
-✅ `main` is tagged `v0.7.0-variant-b`. Branch activa: `main` — ADR-029 Variant A vs B x86 completado (DAY 145). Paper v19 publicado.
+✅ `main` is tagged `v0.7.1-day146`. Branch activa: `main` — Experimento comparativo Suricata vs aRGus completado (DAY 146). Paper v20 generado.
 **PRE-PRODUCTION: do not deploy in hospitals until ACRL (DEBT-PENTESTER-LOOP-001) is complete.**
 
 ---
 
-## Estado actual — DAY 145 (2026-05-08)
+## Estado actual — DAY 146 (2026-05-09)
 
-**Tag activo:** `v0.7.0-variant-b` | **Branch activa:** `main`
+**Tag activo:** `v0.7.1-day146` | **Branch activa:** `main`
 **Keypair activo:** `b5b6cbdf67dad75cdd7e3169d837d1d6d4c938b720e34331f8a73f478ee85daa`
-**Paper:** arXiv:2604.04952 · Draft v19 (ADR-029 Variant A vs B)
+**Paper:** arXiv:2604.04952 · Draft v20 (Suricata comparative + DAY 146)
 **FEDER deadline:** 22-Sep-2026 | **Go/no-go:** 1-Ago-2026
 
 ### Pipeline
@@ -56,6 +56,13 @@
 - **Paper v19** — §6 ADR-029, §10.9, §11.17, §12, abstract actualizado.
 - **Failed packets (2,630):** artefacto fijo pcap CTU-13 Neris — frames jumbo MTU VirtualBox. No son errores del pipeline.
 
+### Hitos DAY 146 🎉
+- **EMECAS verde** — 4 deudas técnicas cerradas: DEBT-IRP-TMPFILES-001, DEBT-IRP-IPSET-TMP-001, DEBT-BOOTSTRAP-SNIFFER-VERIFY-001, DEBT-EMECAS-VERIFICATION-001.
+- **Experimento comparativo Suricata 6.0.10 vs aRGus NDR** — CTU-13 Neris, mismas condiciones. Suricata: 0 alertas (ET Open no cubre Neris 2011). aRGus: F1=0.9985, Recall=1.0000.
+- **Makefile**: `make up-argus`, `make up-suricata`, `make halt-argus`, `make halt-suricata`, `make experiment-suricata-run/results`.
+- **Paper Draft v20** generado — nueva §8.13 con comparativa directa, Tabla comparación actualizada con datos empíricos Suricata.
+- **Vagrantfile Suricata** operativo — `nictype1 virtio` (fix crítico DHCP NAT), 50,010 reglas ET Open cargadas.
+
 ### Hitos DAY 143-144 🎉
 - **DEBT-IRP-NFTABLES-001 CERRADA** — IRP completo: config → disparo → fork()+execv() → AppArmor 7/7 enforce → 12/12 tests.
 - **DEBT-IRP-SIGCHLD-001 CERRADA** — SA_NOCLDWAIT. SigchldTest.NoZombiesAfterNForks PASSED.
@@ -67,9 +74,9 @@
 
 | Deuda | Prioridad | Target |
 |-------|-----------|--------|
-| DEBT-IRP-TMPFILES-001 | 🟡 P1 | post-merge (tmpfiles.d reboot) |
-| DEBT-IRP-IPSET-TMP-001 | 🟡 P1 | post-merge (ipset_wrapper /tmp) |
-| DEBT-EMECAS-VERIFICATION-001 | 🟢 P2 | post-merge (README devs) |
+| DEBT-IRP-TMPFILES-001 | ✅ CERRADA DAY 146 | tmpfiles.d + provision.sh |
+| DEBT-IRP-IPSET-TMP-001 | ✅ CERRADA DAY 146 | ipset_wrapper /run/argus/irp/ |
+| DEBT-EMECAS-VERIFICATION-001 | ✅ CERRADA DAY 146 | README.md blockquote EMECAS |
 | DEBT-IRP-FLOAT-TYPES-001 | 🟡 P1 | pre-FEDER (tipos score float/double) |
 | DEBT-IRP-PROB-CONJUNTA-001 | 🟡 P1 | post-FEDER (señal conjunta) |
 | DEBT-ETCD-HA-QUORUM-001 | 🔴 P0 | post-FEDER (OBLIGATORIO) |
@@ -286,6 +293,15 @@ make hardened-full   # destroy → up → provision → build → deploy → che
 
 ## 🗺️ Roadmap
 
+### ✅ DONE — DAY 146 (9 May 2026) — Suricata Comparative + Deudas 🎉
+
+| Task | Result |
+|---|---|
+| EMECAS verde | ✅ 4 deudas cerradas |
+| Experimento Suricata vs aRGus | ✅ 0 alertas Suricata vs F1=0.9985 aRGus |
+| Makefile up/halt-argus/suricata | ✅ Topología dual |
+| Paper Draft v20 | ✅ §8.13 + Tabla comparativa empírica |
+
 ### ✅ DONE — DAY 145 (8 May 2026) — ADR-029 Variant A vs B 🎉
 
 | Task | Result |
@@ -368,6 +384,7 @@ make hardened-full   # destroy → up → provision → build → deploy → che
 - ✅ DAY 143: **DEBT-IRP-NFTABLES-001 sesión 3/3 CERRADA — IRP completo · AppArmor 7/7 · 12 tests** 🎉
 - ✅ DAY 144: **3 deudas P0 IRP cerradas · Gate ODR production · 65/65 tests** 🎉
 - ✅ DAY 145: **ADR-029 Variant A vs B x86 · libpcap ~2× eBPF en virtio · Bootstrap múltiple · Paper v19 · v0.7.0-variant-b** 🎉
+- ✅ DAY 146: **Experimento Suricata comparativo · 0 alertas ET Open vs F1=0.9985 aRGus · Paper v20 §8.13 · v0.7.1-day146** 🎉
 - 🔜 DAY 146+: **DEBT-IRP-TMPFILES-001 · DEBT-IRP-IPSET-TMP-001 · experiment-comparative · ARM64 scope**
 
 ---

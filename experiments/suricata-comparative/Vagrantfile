@@ -48,7 +48,17 @@ Vagrant.configure("2") do |config|
       suricata-update --no-reload
       echo "Rules: $(find /var/lib/suricata/rules -name '*.rules' 2>/dev/null | wc -l) files"
 
+      # Fix interfaz: eth2 es donde llega tráfico del cliente (suricata_experiment_lan)
       sed -i 's/- interface: eth0/- interface: eth2/' /etc/suricata/suricata.yaml
+      # Modo promiscuo en eth2 (necesario para capturar tráfico tcpreplay con MACs originales)
+      ip link set eth2 promisc on || true
+      # Registrar promisc en rc.local para persistencia post-reboot
+      echo 'ip link set eth2 promisc on' >> /etc/rc.local
+      chmod +x /etc/rc.local
+      # Reglas ET Open: apuntar al path correcto en suricata.yaml
+      sed -i '/^rule-files:/a\  - /var/lib/suricata/rules/suricata.rules' /etc/suricata/suricata.yaml
+      # Esperar carga de 50K reglas antes de dar el VM por listo
+      echo 'suricata: esperando carga de reglas (~60s)...'
 
       mkdir -p /var/log/suricata /vagrant/logs/experiment
       chown -R suricata:suricata /var/log/suricata 2>/dev/null || true
