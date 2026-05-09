@@ -1665,30 +1665,30 @@ experiment-suricata-status:
 
 experiment-suricata-replay-10:
 	@echo "🔁 [Suricata] Replay CTU-13 Neris — 10 Mbps..."
-	@cd $(SURICATA_DIR) && vagrant ssh suricata -c 	  "sudo systemctl stop suricata 2>/dev/null; 	   sudo rm -f $(SURICATA_EVE); 	   sudo systemctl start suricata; 	   sleep 3; 	   mkdir -p $(SURICATA_LOGS)"
+	@cd $(SURICATA_DIR) && vagrant ssh suricata -c 	  "sudo systemctl stop suricata 2>/dev/null; 	   sudo rm -f $(SURICATA_EVE); 	   sudo systemctl start suricata; 	   sleep 60; 	   mkdir -p $(SURICATA_LOGS)"
 	@cd $(SURICATA_DIR) && vagrant ssh client -c 	  "mkdir -p /vagrant/logs/experiment && 	   sudo tcpreplay -i eth1 --mbps=10 --stats=1 $(CTU13_NERIS) 	     > /vagrant/logs/experiment/tcpreplay-suricata-10mbps.log 2>&1; 	   echo "exit=$$?" >> /vagrant/logs/experiment/tcpreplay-suricata-10mbps.log" || true
 	@cd $(SURICATA_DIR) && vagrant ssh client -c 	  "grep -E 'Test complete|Actual:|Successful packets|Failed packets|exit=' 	   /vagrant/logs/experiment/tcpreplay-suricata-10mbps.log 2>/dev/null | tail -6" || true
 	@echo "⏳ Esperando drain Suricata (10s)..."
 	@sleep 10
-	@cd $(SURICATA_DIR) && vagrant ssh suricata -c "sudo systemctl stop suricata"
+	@cd $(SURICATA_DIR) && vagrant ssh suricata -c "sudo cp $(SURICATA_EVE) $(SURICATA_LOGS)/eve-$(notdir $@).json 2>/dev/null || true; sudo systemctl stop suricata"
 
 experiment-suricata-replay-50:
 	@echo "🔁 [Suricata] Replay CTU-13 Neris — 50 Mbps..."
-	@cd $(SURICATA_DIR) && vagrant ssh suricata -c 	  "sudo systemctl stop suricata 2>/dev/null; 	   sudo rm -f $(SURICATA_EVE); 	   sudo systemctl start suricata; 	   sleep 3; 	   mkdir -p $(SURICATA_LOGS)"
+	@cd $(SURICATA_DIR) && vagrant ssh suricata -c 	  "sudo systemctl stop suricata 2>/dev/null; 	   sudo rm -f $(SURICATA_EVE); 	   sudo systemctl start suricata; 	   sleep 60; 	   mkdir -p $(SURICATA_LOGS)"
 	@cd $(SURICATA_DIR) && vagrant ssh client -c 	  "sudo tcpreplay -i eth1 --mbps=50 --stats=1 $(CTU13_NERIS) 	     > /vagrant/logs/experiment/tcpreplay-suricata-50mbps.log 2>&1; 	   echo "exit=$$?" >> /vagrant/logs/experiment/tcpreplay-suricata-50mbps.log" || true
 	@cd $(SURICATA_DIR) && vagrant ssh client -c 	  "grep -E 'Test complete|Actual:|Successful packets|Failed packets|exit=' 	   /vagrant/logs/experiment/tcpreplay-suricata-50mbps.log 2>/dev/null | tail -6" || true
 	@echo "⏳ Esperando drain Suricata (10s)..."
 	@sleep 10
-	@cd $(SURICATA_DIR) && vagrant ssh suricata -c "sudo systemctl stop suricata"
+	@cd $(SURICATA_DIR) && vagrant ssh suricata -c "sudo cp $(SURICATA_EVE) $(SURICATA_LOGS)/eve-$(notdir $@).json 2>/dev/null || true; sudo systemctl stop suricata"
 
 experiment-suricata-replay-100:
 	@echo "🔁 [Suricata] Replay CTU-13 Neris — 100 Mbps..."
-	@cd $(SURICATA_DIR) && vagrant ssh suricata -c 	  "sudo systemctl stop suricata 2>/dev/null; 	   sudo rm -f $(SURICATA_EVE); 	   sudo systemctl start suricata; 	   sleep 3; 	   mkdir -p $(SURICATA_LOGS)"
+	@cd $(SURICATA_DIR) && vagrant ssh suricata -c 	  "sudo systemctl stop suricata 2>/dev/null; 	   sudo rm -f $(SURICATA_EVE); 	   sudo systemctl start suricata; 	   sleep 60; 	   mkdir -p $(SURICATA_LOGS)"
 	@cd $(SURICATA_DIR) && vagrant ssh client -c 	  "sudo tcpreplay -i eth1 --mbps=100 --stats=1 $(CTU13_NERIS) 	     > /vagrant/logs/experiment/tcpreplay-suricata-100mbps.log 2>&1; 	   echo "exit=$$?" >> /vagrant/logs/experiment/tcpreplay-suricata-100mbps.log" || true
 	@cd $(SURICATA_DIR) && vagrant ssh client -c 	  "grep -E 'Test complete|Actual:|Successful packets|Failed packets|exit=' 	   /vagrant/logs/experiment/tcpreplay-suricata-100mbps.log 2>/dev/null | tail -6" || true
 	@echo "⏳ Esperando drain Suricata (10s)..."
 	@sleep 10
-	@cd $(SURICATA_DIR) && vagrant ssh suricata -c "sudo systemctl stop suricata"
+	@cd $(SURICATA_DIR) && vagrant ssh suricata -c "sudo cp $(SURICATA_EVE) $(SURICATA_LOGS)/eve-$(notdir $@).json 2>/dev/null || true; sudo systemctl stop suricata"
 
 experiment-suricata-results:
 	@echo "📊 Parseando resultados Suricata (eve.json)..."
