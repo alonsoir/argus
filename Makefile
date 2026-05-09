@@ -329,11 +329,21 @@ post-up-verify:
 	@vagrant ssh -c "sudo find /etc/ml-defender -name 'seed.bin' | wc -l | tr -d ' ' | grep -q '^6$$' || { echo '❌ seeds missing (esperados 6)'; exit 1; }"
 	@echo "✅ Entorno post-up verificado"
 
-up:
+up-argus:
 	@vagrant up defender client
 
-halt:
-	@vagrant halt
+up-suricata:
+	@cd experiments/suricata-comparative && vagrant up suricata client
+
+up: up-argus
+
+halt-argus:
+	@vagrant halt defender client
+
+halt-suricata:
+	@cd experiments/suricata-comparative && vagrant halt
+
+halt: halt-argus
 
 destroy:
 	@vagrant destroy -f
