@@ -1247,6 +1247,14 @@ provision_full() {
         chmod 0700 /var/lib/argus/irp
         chown argus:argus /var/lib/argus/irp 2>/dev/null || chown root:root /var/lib/argus/irp
         log_item "IRP dirs: /run/argus/irp (tmpfs) + /var/lib/argus/irp (persistente)"
+        # DEBT-IRP-TMPFILES-001: tmpfiles.d para recrear /run/argus/irp en reboot
+        cat > /etc/tmpfiles.d/argus.conf << 'TMPEOF'
+# aRGus NDR — ADR-042 IRP runtime directories (DEBT-IRP-TMPFILES-001)
+d /run/argus     0755 root root -
+d /run/argus/irp 0700 root root -
+TMPEOF
+        systemd-tmpfiles --create /etc/tmpfiles.d/argus.conf
+        log_item "tmpfiles.d instalado: /run/argus/irp se recreará en reboot"
         else
             log_error "isolate.json no encontrado en ${src_config} — despliegue abortado (ADR-042)"
             exit 1

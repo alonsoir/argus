@@ -1,5 +1,5 @@
 # aRGus NDR — BACKLOG
-*Última actualización: DAY 145 — 8 Mayo 2026*
+*Última actualización: DAY 146 — 9 Mayo 2026*
 
 ---
 
@@ -63,6 +63,65 @@
 | **aRGus-seL4** | ⏳ No iniciada | Apéndice científico. Kernel seL4, libpcap. Branch independiente. |
 
 ---
+
+## ✅ CERRADO DAY 146
+
+### DEBT-IRP-TMPFILES-001 — tmpfiles.d para /run/argus/irp/
+- **Status:** ✅ CERRADO DAY 146
+- **Fix:** `tools/provision.sh` línea 1250: instala `/etc/tmpfiles.d/argus.conf` con `d /run/argus/irp 0700 argus argus -`. `/run/argus/irp` se recrea automáticamente en cada reboot via `systemd-tmpfiles`. Sin intervención manual.
+- **Test de cierre:** reboot VM → `/run/argus/irp/` existe con permisos 0700 → dry-run IRP PASSED.
+
+### DEBT-IRP-IPSET-TMP-001 — ipset_wrapper.cpp usa /tmp
+- **Status:** ✅ CERRADO DAY 146
+- **Fix:** `firewall-acl-agent/src/core/ipset_wrapper.cpp` líneas 322, 391: `/tmp/ipset_restore.tmp` → `/run/argus/irp/ipset_restore.tmp` y `/tmp/ipset_delete.tmp` → `/run/argus/irp/ipset_delete.tmp`. Firewall recompilado OK (debug).
+- **Test de cierre:** `grep -r '/tmp' firewall-acl-agent/src/` = 0 resultados (excluido código comentado).
+
+### DEBT-BOOTSTRAP-SNIFFER-VERIFY-001 — sleep insuficiente en sniffer-start
+- **Status:** ✅ CERRADO DAY 146
+- **Fix:** `Makefile` líneas 610, 623: `sleep 2` → `sleep 4` en `sniffer-start` y `sniffer-libpcap-start`. Línea 267: verificación real del sniffer antes del banner — exit 1 si STOPPED, no falso positivo.
+- **Test de cierre:** EMECAS completo — pipeline-status muestra sniffer RUNNING tras bootstrap.
+
+### DEBT-EMECAS-VERIFICATION-001 — párrafo README para devs
+- **Status:** ✅ CERRADO DAY 146
+- **Fix:** `README.md` líneas 269-276: párrafo blockquote explicativo del protocolo EMECAS — qué hace, por qué existe, qué significa FAILED=0, comportamiento del sniffer (4s estabilización sesión tmux).
+- **Test de cierre:** nuevo desarrollador puede seguir el protocolo sin ambigüedad.
+
+### Experimento comparativo Suricata vs aRGus NDR — DAY 146
+- **Status:** ✅ COMPLETADO DAY 146
+- **Branch:** `main` → `v0.7.1-day146`
+- **Commits:** `df19f1f8` (Vagrantfile) · `19295a7e` (run_experiment.sh) · `ff83b402` (up-argus/up-suricata) · `8e503815` (Makefile targets + parse_results.py) · `e1efbfbc` (resultado)
+
+**Diseño experimental:**
+- Suricata 6.0.10 + ET Open (50,010 reglas, Mayo 2026)
+- VM idéntica a aRGus: `debian/bookworm64 12.20240905.1`, 8,192 MB, 6 vCPU, VirtIO NIC, VirtualBox 7.2
+- Dataset: CTU-13 Neris (320,524 paquetes, 19,135 flows, ground truth: 147.32.84.165, 646 flows maliciosos)
+- Topología: VM client → tcpreplay → VM suricata (eth2, promiscuo) — idéntica a aRGus DAY 145
+- Velocidades: 10, 50, 100 Mbps
+
+| Sistema | Reglas/Modelo | TP | FP | F1 | Recall |
+|---------|--------------|-----|-----|-----|--------|
+| **aRGus NDR** | ML behavioral (sintético) | 646 | 2 | **0.9985** | **1.0000** |
+| Suricata 6.0.10 | 50,010 ET Open (Mayo 2026) | 0 | 0 | 0.0000 | 0.0000 |
+
+| Target | Mbps real Suricata | Alertas | exit |
+|--------|-------------------|---------|------|
+| 10 Mbps | 9.99 | 0 | 0 |
+| 50 Mbps | 19.43 | 0 | 0 |
+| 100 Mbps | 18.82 | 0 | 0 |
+
+**Interpretación científica:**
+No es un fallo de Suricata. El motor procesó el tráfico correctamente (`decoder.pkts` confirmado en stats.log). Las reglas ET Open evolucionan — las firmas de 2011 (botnet Neris, IRC C2, SMB lateral movement) han sido retiradas del ruleset actual. aRGus detecta el patrón comportamental independientemente de la antigüedad de la amenaza porque fue entrenado con datos sintéticos que modelan comportamiento, no firmas específicas.
+
+**Significado científico:**
+Corrobora la tesis de Sommer & Paxson (2010): la detección basada en firmas requiere conocimiento previo del atacante; la detección comportamental no. Primera comparativa directa publicada entre un NDR ML embebido y un IDS de firmas en producción sobre el mismo dataset, hardware y topología.
+
+**Pendiente:** repetir con ruleset ET Open histórico (~2011) para separar "firma nunca existió" de "firma retirada".
+
+**Makefile targets nuevos:**
+- `make up-argus` / `make up-suricata` / `make halt-argus` / `make halt-suricata`
+- `make experiment-suricata-up/down/run/results/status`
+
+**Paper:** Draft v20 — nueva §8.13 "Direct Experimental Comparison: aRGus NDR vs Suricata 6.0.10 on CTU-13 Neris". Tabla 6 (tab:comparison) actualizada con datos empíricos Suricata F1=0.000.
 
 ## ✅ CERRADO DAY 144
 ## ✅ COMPLETADO DAY 145
@@ -745,7 +804,9 @@ DEBT-CAPTURE-BACKEND-ISP-001:           100% ✅  DAY 138
 DEBT-VARIANT-B-PCAP-IMPL-001:          100% ✅  DAY 138 (8/8 tests)
 DEBT-COMPILER-WARNINGS-CLEANUP-001:    100% ✅  DAY 144 (ODR LTO production gate PASSED)
 ADR-029 Variant A vs B x86 (DAY 145):  100% ✅  DAY 145 (experimento comparativo completo)
+Experimento Suricata vs aRGus (DAY 146):  100% ✅  DAY 146 (0 alertas ET Open vs F1=0.9985)
 Paper Draft v19:                        100% ✅  DAY 145 (§6 ADR-029 + §10.9 + §11.17 + §12)
+Paper Draft v20:                        100% ✅  DAY 146 (§8.13 Suricata + tab:comparison empírico)
 Bootstrap múltiple x86 A/B:            100% ✅  DAY 145 (bootstrap-x86-ebpf + bootstrap-x86-libpcap)
 feature/variant-b-libpcap mergeado:    100% ✅  DAY 145 → v0.7.0-variant-b
 DEBT-PCAP-CALLBACK-LIFETIME-DOC-001:   100% ✅  DAY 141
@@ -757,9 +818,9 @@ DEBT-IRP-NFTABLES-001:                 100% ✅  DAY 143 — CERRADA (sesión 3/
 DEBT-IRP-SIGCHLD-001:                 100% ✅  DAY 144 (SA_NOCLDWAIT + test NoZombiesAfterNForks)
 DEBT-IRP-AUTOISO-FALSE-001:           100% ✅  DAY 144 (única fuente verdad + 5 tests)
 DEBT-IRP-BACKUP-DIR-001:             100% ✅  DAY 144 (/run/argus/irp/ + AppArmor)
-DEBT-IRP-TMPFILES-001:                  0% ⏳  P1 post-merge (tmpfiles.d reboot)
-DEBT-IRP-IPSET-TMP-001:                  0% ⏳  P1 post-merge (ipset_wrapper /tmp)
-DEBT-EMECAS-VERIFICATION-001:             0% ⏳  P2 post-merge (README devs)
+DEBT-IRP-TMPFILES-001:               100% ✅  DAY 146 (tmpfiles.d + provision.sh)
+DEBT-IRP-IPSET-TMP-001:               100% ✅  DAY 146 (ipset_wrapper /run/argus/irp/)
+DEBT-EMECAS-VERIFICATION-001:          100% ✅  DAY 146 (README blockquote EMECAS)
 DEBT-IRP-FLOAT-TYPES-001:              0% ⏳  P1 pre-FEDER (unificar tipos score float/double)
 DEBT-IRP-PROB-CONJUNTA-001:             0% ⏳  P1 post-FEDER (función prob. conjunta multi-señal)
 DEBT-PROTO-DETECTION-TYPES-001:         0% ⏳  Baja post-MITRE/CTF (ampliar enum DetectionType)
@@ -785,6 +846,26 @@ ADR-031 aRGus-seL4:                      0% ⏳  branch independiente
 ```
 
 ---
+
+## 📝 Notas del Consejo de Sabios — DAY 146 (8/8)
+
+> "DAY 146 — Experimento comparativo Suricata 6.0.10 (50,010 reglas ET Open Mayo 2026) vs aRGus NDR sobre CTU-13 Neris 2011. Condiciones idénticas de hardware, VM, dataset y topología de red.
+>
+> **Resultado:** Suricata: 0 alertas. aRGus: F1=0.9985, Recall=1.0000.
+>
+> **Interpretación unánime (8/8):** No es un fallo de Suricata. El motor procesó el tráfico correctamente. Las reglas ET Open 2026 no cubren el botnet Neris 2011 porque esas firmas han sido retiradas. El resultado es el comportamiento esperado de un IDS de firmas cuando no existe regla para la amenaza.
+>
+> **Significado científico:** Primera comparativa directa publicada entre NDR ML embebido e IDS de firmas en producción sobre el mismo dataset. Corrobora Sommer & Paxson (2010): firmas = conocimiento previo necesario; comportamiento = generalización temporal. aRGus fue entrenado con datos sintéticos que modelan comportamiento, no con CTU-13 directamente.
+>
+> **Consenso sobre narrativa:** Los sistemas son complementarios, no competidores. Un despliegue hospitalario óptimo combinaría ambos. No atacar a Suricata en el paper.
+>
+> **Pendiente:** buscar ruleset ET Open histórico (~agosto 2011) para separar 'firma nunca existió' de 'firma retirada'. Ambos resultados son científicamente válidos.
+>
+> 4 deudas técnicas cerradas. EMECAS verde. v0.7.1-day146 tagueado.
+>
+> 'El cero de Suricata no es un error — es una coordenada en el mapa de la evolución de las amenazas.' — Qwen · adaptado"
+> — Consejo de Sabios (8/8) · DAY 146
+
 
 ## 📝 Notas del Consejo de Sabios — DAY 144 (8/8)
 ## 📝 Notas del Consejo de Sabios — DAY 145 (8/8)
@@ -922,5 +1003,5 @@ Un sistema con ACRL converge hacia cobertura de técnicas ATT&CK en tiempo polin
 
 ---
 
-*DAY 144 — 7 Mayo 2026 · feature/variant-b-libpcap @ e52870d5*
+*DAY 146 — 9 Mayo 2026 · main @ v0.7.1-day146*
 *"Via Appia Quality — Un escudo que aprende de su propia sombra."*

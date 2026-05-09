@@ -1,0 +1,102 @@
+# ============================================================================
+# aRGus NDR — Experiment Comparative: Suricata vs aRGus
+# Dataset: CTU-13 Neris (botnet-capture-20110810-neris.pcap)
+# Hardware: identical to aRGus defender VM (8192MB, 6 vCPU, Debian bookworm64)
+# Speeds: 10, 50, 100 Mbps via tcpreplay
+# ============================================================================
+
+Vagrant.configure("2") do |config|
+
+  # ==========================================================================
+  # VM 1: suricata — IDS node (mirrors aRGus defender VM exactly)
+  # ==========================================================================
+  config.vm.define "suricata", primary: true do |suricata|
+    suricata.vm.box         = "debian/bookworm64"
+    suricata.vm.box_version = "12.20240905.1"
+    suricata.vm.hostname    = "suricata-ids"
+
+    suricata.vm.provider "virtualbox" do |vb|
+      vb.name   = "experiment-suricata-ids"
+      vb.memory = "8192"
+      vb.cpus   = 6
+      vb.customize ["modifyvm", :id, "--nictype1", "virtio"]
+      vb.customize ["modifyvm", :id, "--nictype2", "virtio"]
+      vb.customize ["modifyvm", :id, "--nictype3", "virtio"]
+      vb.customize ["modifyvm", :id, "--nicpromisc2", "allow-all"]
+      vb.customize ["modifyvm", :id, "--ioapic", "on"]
+      vb.customize ["modifyvm", :id, "--audio", "none"]
+      vb.customize ["modifyvm", :id, "--usb", "off"]
+      vb.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
+    end
+
+    suricata.vm.network "private_network", ip: "192.168.56.21"
+    suricata.vm.network "private_network", ip: "192.168.101.1",
+      virtualbox__intnet: "suricata_experiment_lan"
+
+    suricata.vm.synced_folder "../..", "/vagrant", type: "virtualbox",
+      mount_options: ["dmode=775,fmode=775,exec"]
+
+    suricata.vm.provision "shell", name: "install-suricata", inline: <<-SHELL
+      set -e
+      export DEBIAN_FRONTEND=noninteractive
+      echo "=== Installing Suricata + ET Open rules ==="
+      apt-get update -qq
+      apt-get install -y suricata suricata-update tcpreplay net-tools curl jq python3 procps
+
+      suricata --build-info | grep "^Version"
+
+      suricata-update --no-reload
+      echo "Rules: $(find /var/lib/suricata/rules -name '*.rules' 2>/dev/null | wc -l) files"
+
+      # Fix interfaz: eth2 es donde llega tráfico del cliente (suricata_experiment_lan)
+      sed -i 's/- interface: eth0/- interface: eth2/' /etc/suricata/suricata.yaml
+      # Modo promiscuo en eth2 (necesario para capturar tráfico tcpreplay con MACs originales)
+      ip link set eth2 promisc on || true
+      # Registrar promisc en rc.local para persistencia post-reboot
+      echo 'ip link set eth2 promisc on' >> /etc/rc.local
+      chmod +x /etc/rc.local
+      # Reglas ET Open: apuntar al path correcto en suricata.yaml
+      sed -i '/^rule-files:/a\  - /var/lib/suricata/rules/suricata.rules' /etc/suricata/suricata.yaml
+      # Esperar carga de 50K reglas antes de dar el VM por listo
+      echo 'suricata: esperando carga de reglas (~60s)...'
+
+      mkdir -p /var/log/suricata /vagrant/logs/experiment
+      chown -R suricata:suricata /var/log/suricata 2>/dev/null || true
+
+      echo "=== Suricata ready ==="
+      suricata --build-info | grep -E "Version|AF_PACKET|PCAP"
+    SHELL
+  end
+
+  # ==========================================================================
+  # VM 2: client — tcpreplay
+  # ==========================================================================
+  config.vm.define "client", autostart: false do |client|
+    client.vm.box         = "debian/bookworm64"
+    client.vm.box_version = "12.20240905.1"
+    client.vm.hostname    = "experiment-client"
+
+    client.vm.provider "virtualbox" do |vb|
+      vb.name   = "experiment-suricata-client"
+      vb.memory = "1024"
+      vb.cpus   = 2
+      vb.customize ["modifyvm", :id, "--nictype1", "virtio"]
+      vb.customize ["modifyvm", :id, "--nictype2", "virtio"]
+    end
+
+    client.vm.network "private_network", ip: "192.168.101.50",
+      virtualbox__intnet: "suricata_experiment_lan"
+
+    client.vm.synced_folder "../..", "/vagrant", type: "virtualbox",
+      mount_options: ["dmode=775,fmode=775,exec"]
+
+    client.vm.provision "shell", inline: <<-SHELL
+      set -e
+      apt-get update -qq
+      apt-get install -y tcpreplay net-tools
+      tcpreplay --version | head -1
+      echo "=== Client ready ==="
+    SHELL
+  end
+
+end
