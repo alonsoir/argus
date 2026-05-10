@@ -64,6 +64,41 @@
 
 ---
 
+## ✅ CERRADO DAY 147
+
+### Bug fix pipeline-status — pgrep fallback para procesos huérfanos
+- **Status:** ✅ CERRADO DAY 147 — **Commit:** `42c04b06`
+- **Problema:** sniffer PID visible en `pipeline-health` pero STOPPED en `pipeline-status` (proceso huérfano fuera de tmux).
+- **Fix:** OR lógico `tmux has-session || pgrep -x <binary>` para los 6 componentes. Script `fix_pipeline_status.py`.
+- **Test de cierre:** `make pipeline-status` muestra 6/6 ✅ incluyendo procesos huérfanos.
+
+### Paper v21 — §8.13 hallazgos reales DAY 147
+- **Status:** ✅ CERRADO DAY 147 — **Commit:** `a7bfa0bb`
+- **Contenido:** búsqueda infructuosa ruleset ET Open 2011 (Wayback Machine, GitHub ET, SecurityOnion/ossim). Hallazgo HTTP C2: Neris escenario 42 usa HTTP C2, no solo IRC — paradigma gap más profundo que signature aging solo. Añade @article{asad2023perspective} (Springer 2023, DOI 10.1007/s10207-023-00794-9).
+- **Script:** `upgrade_to_v21.py` — 7/7 verificaciones verdes.
+
+### Experimento comparativo Zeek 8.1.2 vs aRGus NDR — DAY 147 (tres paradigmas)
+- **Status:** ✅ COMPLETADO DAY 147 — **Commit:** `[pending git commit tras branch merge]`
+- **Infraestructura:** `experiments/zeek-comparative/` — Vagrantfile (debian/bookworm64, 8192MB, 6vCPU, VirtIO), `parse_results_zeek_v2.py`, `makefile_targets.mk`.
+- **Protocolo:** Zeek 8.1.2 en modo offline (`zeek -r neris.pcap local`), scripts por defecto, sin tuning. Tres runs (10/50/100 Mbps) — resultado determinístico idéntico en los tres.
+
+**Resultados (CTU-13 Neris, ground truth: 147.32.84.165, 646 flows maliciosos):**
+
+| Sistema | Paradigma | TP | FP | F1 | Precision | Recall |
+|---------|-----------|-----|-----|-----|-----------|--------|
+| Suricata 6.0.10 | Signature (ET Open) | 0 | 0 | 0.000 | — | 0.000 |
+| Zeek 8.1.2 (default) | Scripted behavioral | 14 | 0 | 0.042 | **1.000** | 0.022 |
+| **aRGus NDR** | ML behavioral | **646** | 2 | **0.9985** | 0.997 | **1.000** |
+
+**Hallazgos científicos clave:**
+- Zeek Precision=1.000: cada alerta identifica correctamente el host malicioso. Los 6 "FP" originales son CaptureLoss (infraestructura, excluidos de métricas corregidas).
+- `weird.log` (182 eventos en host malicioso): `irc_invalid_command:30`, `bad_HTTP_request:31`, `empty_http_request:31`, `unknown_dce_rpc_auth_type:33`, `premature_connection_reuse:28`. Zeek observa todo el perfil behavioral sin alertar.
+- `irc_invalid_command:30` confirma IRC presente en la captura — refuta parcialmente el README que describe solo HTTP C2.
+- Distinción central: Zeek es una plataforma de observabilidad de red (measurement layer). aRGus es un clasificador behavioral (classification layer). No son competidores — son capas distintas.
+
+**Paper v22:** §8.14 "Three Paradigms" — dos tablas (detección + visibilidad Zeek), análisis espectro paradigmas, §13 reproducibilidad Zeek.
+**Scripts creados:** `setup_zeek_experiment.py`, `fix_zeek_makefile.py`, `fix_zeek_offline.py`, `parse_results_zeek_v2.py`, `upgrade_to_v22.py`.
+
 ## ✅ CERRADO DAY 146
 
 ### DEBT-IRP-TMPFILES-001 — tmpfiles.d para /run/argus/irp/
@@ -807,6 +842,10 @@ ADR-029 Variant A vs B x86 (DAY 145):  100% ✅  DAY 145 (experimento comparativ
 Experimento Suricata vs aRGus (DAY 146):  100% ✅  DAY 146 (0 alertas ET Open vs F1=0.9985)
 Paper Draft v19:                        100% ✅  DAY 145 (§6 ADR-029 + §10.9 + §11.17 + §12)
 Paper Draft v20:                        100% ✅  DAY 146 (§8.13 Suricata + tab:comparison empírico)
+Paper Draft v21:                        100% ✅  DAY 147 (§8.13 hallazgos reales + HTTP C2 + Springer 2023)
+Paper Draft v22:                        100% ✅  DAY 147 (§8.14 tres paradigmas + abstract + conclusion + §13)
+Experimento Zeek 8.1.2 (DAY 147):     100% ✅  DAY 147 (offline, 3 runs determinísticos, parse_results_zeek_v2.py)
+Bug fix pipeline-status pgrep:          100% ✅  DAY 147 (commit 42c04b06)
 Bootstrap múltiple x86 A/B:            100% ✅  DAY 145 (bootstrap-x86-ebpf + bootstrap-x86-libpcap)
 feature/variant-b-libpcap mergeado:    100% ✅  DAY 145 → v0.7.0-variant-b
 DEBT-PCAP-CALLBACK-LIFETIME-DOC-001:   100% ✅  DAY 141
@@ -846,6 +885,30 @@ ADR-031 aRGus-seL4:                      0% ⏳  branch independiente
 ```
 
 ---
+
+## 📝 Notas del Consejo de Sabios — DAY 147 (8/8)
+
+> "DAY 147 — Experimento de tres paradigmas completado. CTU-13 Neris, condiciones idénticas.
+>
+> **Resultados:** Suricata 6.0.10: F1=0.000 (sin firmas, comportamiento correcto). Zeek 8.1.2 (default): F1=0.042, Precision=1.000, 14 TP (SSL::Invalid_Server_Cert). aRGus NDR: F1=0.9985, Recall=1.000, 646 TP.
+>
+> **Consenso P1 — Validez metodológica (7/8):** El modo offline de Zeek es estándar aceptado para pcaps históricos. La asimetría favorece a Zeek (100% paquetes vs Suricata live con 2,630 dropped). Declarar explícitamente en el paper — ya está hecho. Kimi (1/8): ejecutar `suricata -r neris.pcap` offline para blindar completamente la comparativa. Acción: P0 bloqueante DAY 148.
+>
+> **Consenso P2 — Framing científico (8/8):** Framing correcto y publicable. Refinamiento: usar 'measurement layer' (Zeek) vs 'classification layer' (aRGus) — más preciso que observabilidad/detección (Claude). ChatGPT: 'Observability does not imply classification' como frase del abstract. Kimi: elevar de benchmark a contribución taxonómica (arquitecturas de decisión, no ranking de rendimiento). Qwen: 'registrar el mundo vs juzgarlo automáticamente'. El experimento de tres vías es el único que produce el hallazgo — con dos sistemas sería invisible.
+>
+> **Consenso P3 — Zeek Phase 2 (7/8 → future work):** Phase 1 out-of-the-box suficiente para arXiv. Phase 2 con Intel framework, threat feeds, detect-botnets.zeek queda como future work explícito en §10. Gemini: feeds de 2026 no encontrarían nada de 2011 — Phase 2 reintroduce el paradigma de firmas. DeepSeek: si hay tiempo, un solo script IRC (detect-botnets.zeek) cierra el flanco del revisor.
+>
+> **Hallazgo adicional DAY 147:** Búsqueda ruleset ET Open agosto 2011 — no encontrado en fuentes públicas (Wayback Machine, GitHub ET, SecurityOnion, ossim). Neris escenario 42 usa HTTP C2 (no IRC según README), pero weird.log confirma IRC presente (irc_invalid_command:30). El paradigma gap es más profundo que signature aging solo.
+>
+> **Acciones DAY 148:**
+> (1) `suricata -r neris.pcap` — 10 minutos, blinda la comparativa.
+> (2) Refinar §8.14: measurement/classification layer.
+> (3) §10 Future Work: Zeek Phase 2 con detect-botnets.zeek mencionado.
+> (4) DEBT-IRP-FLOAT-TYPES-001 — aplazada de DAY 147.
+> (5) Decisión arXiv replace v22.
+>
+> 'No estamos comparando herramientas — estamos comparando filosofías: registrar el mundo vs juzgarlo automáticamente.' — Qwen · DAY 147"
+> — Consejo de Sabios (8/8) · DAY 147
 
 ## 📝 Notas del Consejo de Sabios — DAY 146 (8/8)
 
@@ -1003,5 +1066,5 @@ Un sistema con ACRL converge hacia cobertura de técnicas ATT&CK en tiempo polin
 
 ---
 
-*DAY 146 — 9 Mayo 2026 · main @ v0.7.1-day146*
+*DAY 147 — 10 Mayo 2026 · main @ v0.7.1-day147*
 *"Via Appia Quality — Un escudo que aprende de su propia sombra."*

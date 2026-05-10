@@ -1,0 +1,112 @@
+# ============================================================================
+# aRGus NDR — Experiment Comparative: Zeek vs aRGus NDR
+# Dataset: CTU-13 Neris (botnet-capture-20110810-neris.pcap)
+# Hardware: identical to aRGus defender VM (8192MB, 6 vCPU, Debian bookworm64)
+# Phase 1: default policy scripts (out-of-the-box, fair comparison)
+# Speeds: 10, 50, 100 Mbps via tcpreplay
+# Detection: notice.log (alerts) + conn.log (behavioral analysis)
+# ============================================================================
+
+Vagrant.configure("2") do |config|
+
+  # ==========================================================================
+  # VM 1: zeek — IDS node (mirrors aRGus defender VM exactly)
+  # ==========================================================================
+  config.vm.define "zeek", primary: true do |zeek|
+    zeek.vm.box         = "debian/bookworm64"
+    zeek.vm.box_version = "12.20240905.1"
+    zeek.vm.hostname    = "zeek-ids"
+
+    zeek.vm.provider "virtualbox" do |vb|
+      vb.name   = "experiment-zeek-ids"
+      vb.memory = "8192"
+      vb.cpus   = 6
+      vb.customize ["modifyvm", :id, "--nictype1", "virtio"]
+      vb.customize ["modifyvm", :id, "--nictype2", "virtio"]
+      vb.customize ["modifyvm", :id, "--nictype3", "virtio"]
+      vb.customize ["modifyvm", :id, "--nicpromisc2", "allow-all"]
+      vb.customize ["modifyvm", :id, "--ioapic", "on"]
+      vb.customize ["modifyvm", :id, "--audio", "none"]
+      vb.customize ["modifyvm", :id, "--usb", "off"]
+      vb.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
+    end
+
+    # eth1: host-only (management)  eth2: intnet (capture interface)
+    zeek.vm.network "private_network", ip: "192.168.56.22"
+    zeek.vm.network "private_network", ip: "192.168.102.1",
+      virtualbox__intnet: "zeek_experiment_lan"
+
+    zeek.vm.synced_folder "../..", "/vagrant", type: "virtualbox",
+      mount_options: ["dmode=775,fmode=775,exec"]
+
+    zeek.vm.provision "shell", name: "install-zeek", inline: <<-SHELL
+      set -e
+      export DEBIAN_FRONTEND=noninteractive
+      echo "=== Installing Zeek + dependencies ==="
+      apt-get update -qq
+      apt-get install -y curl wget gnupg2 tcpreplay net-tools python3 procps jq ca-certificates
+
+      # Add official Zeek repository for Debian 12 (bookworm)
+      echo "--- Adding Zeek OBS repository ---"
+      echo 'deb http://download.opensuse.org/repositories/security:/zeek/Debian_12/ /' \
+        > /etc/apt/sources.list.d/zeek.list
+      curl -fsSL https://download.opensuse.org/repositories/security:zeek/Debian_12/Release.key \
+        | gpg --dearmor > /etc/apt/trusted.gpg.d/zeek.gpg
+      apt-get update -qq
+      apt-get install -y zeek
+
+      # PATH permanently
+      echo 'export PATH=/opt/zeek/bin:$PATH' > /etc/profile.d/zeek.sh
+      chmod +x /etc/profile.d/zeek.sh
+      export PATH=/opt/zeek/bin:$PATH
+
+      zeek --version
+
+      # Configure capture interface: eth2 receives tcpreplay traffic
+      sed -i 's/interface=.*/interface=eth2/' /opt/zeek/etc/node.cfg
+
+      # Promiscuous mode on eth2 (persistent)
+      ip link set eth2 promisc on || true
+      echo 'ip link set eth2 promisc on' >> /etc/rc.local
+      chmod +x /etc/rc.local
+
+      # Log output directory (shared with host via /vagrant)
+      mkdir -p /vagrant/logs/experiment/zeek
+
+      echo "=== Zeek ready (Phase 1: default policy scripts) ==="
+      /opt/zeek/bin/zeek --version
+    SHELL
+  end
+
+  # ==========================================================================
+  # VM 2: client — tcpreplay (same as suricata experiment)
+  # ==========================================================================
+  config.vm.define "client", autostart: false do |client|
+    client.vm.box         = "debian/bookworm64"
+    client.vm.box_version = "12.20240905.1"
+    client.vm.hostname    = "experiment-zeek-client"
+
+    client.vm.provider "virtualbox" do |vb|
+      vb.name   = "experiment-zeek-client"
+      vb.memory = "1024"
+      vb.cpus   = 2
+      vb.customize ["modifyvm", :id, "--nictype1", "virtio"]
+      vb.customize ["modifyvm", :id, "--nictype2", "virtio"]
+    end
+
+    client.vm.network "private_network", ip: "192.168.102.50",
+      virtualbox__intnet: "zeek_experiment_lan"
+
+    client.vm.synced_folder "../..", "/vagrant", type: "virtualbox",
+      mount_options: ["dmode=775,fmode=775,exec"]
+
+    client.vm.provision "shell", inline: <<-SHELL
+      set -e
+      apt-get update -qq
+      apt-get install -y tcpreplay net-tools
+      tcpreplay --version | head -1
+      echo "=== Client ready ==="
+    SHELL
+  end
+
+end
