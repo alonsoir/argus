@@ -246,3 +246,6 @@ dist/vendor/*
 firewall-acl-agent/fuzz/corpus/
 ml-training/.venv/
 tools/build-argus-network-isolate/
+*.bak_*
+docs/latex/*.aux
+docs/latex/*.toc

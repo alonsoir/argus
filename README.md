@@ -30,16 +30,16 @@
 
 ---
 
-✅ `main` is tagged `v0.7.1-day146`. Branch activa: `main` — Experimento comparativo Suricata vs aRGus completado (DAY 146). Paper v20 generado.
+✅ `main` is tagged `v0.7.1-day147`. Branch activa: `main` — Experimento comparativo tres paradigmas completado (DAY 147). Paper v22 generado.
 **PRE-PRODUCTION: do not deploy in hospitals until ACRL (DEBT-PENTESTER-LOOP-001) is complete.**
 
 ---
 
-## Estado actual — DAY 146 (2026-05-09)
+## Estado actual — DAY 147 (2026-05-10)
 
-**Tag activo:** `v0.7.1-day146` | **Branch activa:** `main`
+**Tag activo:** `v0.7.1-day147` | **Branch activa:** `main`
 **Keypair activo:** `b5b6cbdf67dad75cdd7e3169d837d1d6d4c938b720e34331f8a73f478ee85daa`
-**Paper:** arXiv:2604.04952 · Draft v20 (Suricata comparative + DAY 146)
+**Paper:** arXiv:2604.04952 · Draft v22 (tres paradigmas: Suricata + Zeek + aRGus + DAY 147)
 **FEDER deadline:** 22-Sep-2026 | **Go/no-go:** 1-Ago-2026
 
 ### Pipeline
@@ -62,6 +62,19 @@
 - **Makefile**: `make up-argus`, `make up-suricata`, `make halt-argus`, `make halt-suricata`, `make experiment-suricata-run/results`.
 - **Paper Draft v20** generado — nueva §8.13 con comparativa directa, Tabla comparación actualizada con datos empíricos Suricata.
 - **Vagrantfile Suricata** operativo — `nictype1 virtio` (fix crítico DHCP NAT), 50,010 reglas ET Open cargadas.
+
+### Hitos DAY 147 🎉
+- **Bug fix pipeline-status** — pgrep fallback para procesos huérfanos (tmux + pgrep OR). Commit `42c04b06`.
+- **Búsqueda ruleset ET Open 2011** — no encontrado en fuentes públicas. Hallazgo clave: Neris CTU-13 escenario 42 usa HTTP C2, no solo IRC. Paper v21 §8.13 actualizado.
+- **Experimento Zeek 8.1.2 (tres paradigmas)** — modo offline (`zeek -r pcap`), scripts por defecto, determinístico:
+  - Suricata 6.0.10: F1=0.000, TP=0 (sin firmas para Neris 2011)
+  - Zeek 8.1.2 (default): F1=0.042, Precision=1.000, TP=14 (SSL::Invalid_Server_Cert)
+  - aRGus NDR: F1=0.9985, Recall=1.000, TP=646
+- **weird.log**: Zeek observa IRC, HTTP beaconing, SMB lateral movement, spam — sin alertar. Distinción observabilidad vs detección.
+- **Paper Draft v21** — §8.13 hallazgos reales DAY 147 + Springer 2023 (signature aging).
+- **Paper Draft v22** — §8.14 Three Paradigms (tablas + análisis + §13 reproducibilidad Zeek).
+- **Makefile**: `make experiment-zeek-up/run/results`. Infraestructura `experiments/zeek-comparative/`.
+- **Tag:** `v0.7.1-day147`.
 
 ### Hitos DAY 143-144 🎉
 - **DEBT-IRP-NFTABLES-001 CERRADA** — IRP completo: config → disparo → fork()+execv() → AppArmor 7/7 enforce → 12/12 tests.
@@ -130,6 +143,8 @@ Democratize enterprise-grade cybersecurity for hospitals, schools, and small org
 | **F1-score (CTU-13 Neris)** | **0.9985** | Stable across 4 replay runs |
 | **Precision** | **0.9969** | |
 | **Recall** | **1.0000** | Zero missed attacks (FN=0) |
+| **Suricata 6.0.10 F1 (CTU-13 Neris)** | **0.000** | 0 alerts — ET Open rules retired for 2011 threats |
+| **Zeek 8.1.2 F1 (CTU-13 Neris, default)** | **0.042** | Precision=1.000, 14 TP (SSL::Invalid_Server_Cert) |
 | **XGBoost Precision (CIC-IDS-2017 val)** | **0.9945** | In-distribution, threshold=0.8211 |
 | **XGBoost Wednesday OOD** | **Documented impossibility** | Structural covariate shift — §8 paper |
 | **Inference latency (XGBoost)** | **1.986 µs/sample** | Gate <2µs ✅ |
@@ -349,11 +364,13 @@ make hardened-full   # destroy → up → provision → build → deploy → che
 
 | Priority | Task |
 |---|---|
-| 🟡 P1 | DEBT-IRP-TMPFILES-001 — tmpfiles.d para /run/argus/irp/ en reboot |
-| 🟡 P1 | DEBT-IRP-IPSET-TMP-001 — ipset_wrapper.cpp usa /tmp |
-| 🟡 P1 | Diseño experiment-comparative (aRGus + Suricata + Zeek como cooperadores) |
+| 🔴 P0-bloqueante | `suricata -r neris.pcap` offline — verificar 0 alertas (blinda comparativa ante revisores) |
+| 🔴 P0-paper | Refinar §8.14: "measurement layer" vs "classification layer" (framing Consejo DAY 147) |
+| 🔴 P0-paper | §10 Future Work: añadir Zeek Phase 2 (Intel framework, detect-botnets.zeek) |
+| 🟡 P1 | DEBT-IRP-FLOAT-TYPES-001 — unificar tipos score float/double pre-FEDER |
+| 🟡 P1 | Tabla §8.2 comparison: añadir fila Zeek 8.1.2 |
+| 🟡 P1 | Decisión arXiv replace v22 (tras verificación suricata -r) |
 | 🟡 P1 | Abrir feature/adr029-variant-c-arm64 scope definido |
-| 🟢 P2 | DEBT-EMECAS-VERIFICATION-001 — párrafo README para devs |
 
 ### 🔜 THEN — PHASE 5: Adversarial Capture-Retrain Loop
 
@@ -385,6 +402,7 @@ make hardened-full   # destroy → up → provision → build → deploy → che
 - ✅ DAY 144: **3 deudas P0 IRP cerradas · Gate ODR production · 65/65 tests** 🎉
 - ✅ DAY 145: **ADR-029 Variant A vs B x86 · libpcap ~2× eBPF en virtio · Bootstrap múltiple · Paper v19 · v0.7.0-variant-b** 🎉
 - ✅ DAY 146: **Experimento Suricata comparativo · 0 alertas ET Open vs F1=0.9985 aRGus · Paper v20 §8.13 · v0.7.1-day146** 🎉
+- ✅ DAY 147: **Experimento tres paradigmas (Suricata+Zeek+aRGus) · Paper v22 §8.14 · HTTP C2 hallazgo · weird.log behavioral profile · v0.7.1-day147** 🎉
 - 🔜 DAY 146+: **DEBT-IRP-TMPFILES-001 · DEBT-IRP-IPSET-TMP-001 · experiment-comparative · ARM64 scope**
 
 ---
