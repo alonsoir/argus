@@ -1,6 +1,6 @@
 % ============================================================
 % ML Defender (aRGus NDR) — arXiv preprint
-% Draft v20 --- DAY 146 --- 9 May 2026
+% Draft v21 --- DAY 147 --- 10 May 2026
 % Author: Alonso Isidoro Román
 % Target: cs.CR
 % ============================================================
@@ -79,7 +79,7 @@ in Resource-Constrained Organizations}}
     \href{https://github.com/alonsoir/argus}{github.com/alonsoir/argus}
 }
 
-\date{Draft v20 --- May 2026}
+\date{Draft v21 --- May 2026}
 
 % ============================================================
 \begin{document}
@@ -748,12 +748,42 @@ in Resource-Constrained Organizations}}
     the Neris scenario means this indirect advantage may be modest, but it cannot be ruled out
     without an independent blind evaluation.
 
-    \paragraph{Future work: historical rulesets.}
+    \paragraph{Historical rulesets: DAY~147 search and findings.}
     A complete characterization of the signature-vs-behavior gap would require repeating the
-    Suricata experiment with the ET~Open ruleset \emph{from 2011}, to distinguish ``the rule
-    was never written'' from ``the rule existed and was later retired.'' Historical ruleset
-    archives may be available via the Emerging Threats repository; this experiment is scheduled
-    as future work.
+    Suricata experiment with the ET~Open ruleset \emph{from August~2011}, to distinguish
+    ``the rule existed and was later retired'' (signature aging) from ``the rule was never
+    written'' (coverage gap from inception).
+
+    A systematic search was conducted in DAY~147 across three independent sources: (1)~the
+    Wayback Machine CDX~API --- binary \texttt{.tar.gz} archives are not indexed as
+    retrievable snapshots; (2)~the EmergingThreats GitHub organization --- no historical
+    rule repositories are publicly available; (3)~bundled rulesets distributed with
+    SecurityOnion and alienfault/ossim --- creation timestamps are unverifiable for
+    August~2011. No public archive of the ET~Open ruleset from August~2011 was located.
+
+    The search yielded an additional finding with direct scientific relevance: the
+    official CTU-13 Neris dataset documentation~\cite{garcia2014} records the bot's C2
+    channel as \emph{HTTP-based}, not IRC. The scenario~42 README states explicitly:
+    \emph{``The bot sent spam, connected to an HTTP CC, and use HTTP to do some
+    ClickFraud.''} This implies that IRC-specific botnet signatures --- the most
+    prevalent category of 2011 ET~Open rules targeting Neris-family malware --- would
+    not have matched this specific capture regardless of ruleset vintage. The behavioral
+    paradigm gap between ML-based and signature-based detection is therefore deeper than
+    the signature aging hypothesis alone suggests: even a contemporaneous ruleset would
+    have required prior knowledge of Neris's specific HTTP~C2 patterns.
+
+    The signature aging phenomenon is independently documented in the academic
+    literature. \citet{asad2023perspective} conducted a perspective-retrospective
+    analysis of Snort and Suricata ET~Open rules over a four-year window (2017--2020),
+    finding that detection performance does not evolve linearly with ruleset updates ---
+    a quantitative confirmation that signatures for historical threat families are retired
+    as new coverage emerges~\cite{asad2023perspective}.
+
+    The inability to locate public historical ruleset archives is itself a finding: it
+    motivates the security community to maintain versioned, time-stamped public archives
+    of open-source IDS rulesets --- analogous to software package repositories with
+    locked dependency snapshots --- to enable reproducible longitudinal evaluation. This
+    infrastructure gap is noted as a community recommendation.
     % ─────────────────────────────────────────────────────────────────────────
 
 % ============================================================
@@ -937,7 +967,7 @@ vagrant ssh client -c "sudo tcpreplay -i eth1 --mbps=100 --loop=3 \
 
     The author engaged eight large language models --- Claude (Anthropic), Grok (xAI), ChatGPT
     (OpenAI), DeepSeek, Qwen (Alibaba), Gemini (Google), Kimi (Moonshot AI), and Mistral
-    (Mistral AI) --- as structured intellectual collaborators across \textbf{146 days} of
+    (Mistral AI) --- as structured intellectual collaborators across \textbf{147 days} of
     continuous development. Their contributions to architectural decisions, failure mode
     identification, debugging, test scenarios, and paper review are documented in the project's
     commit history and ADRs. The \emph{Test Driven Hardening} methodology documented in
