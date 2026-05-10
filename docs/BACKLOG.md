@@ -527,6 +527,85 @@ compatibilidad con v0.6.0-hardened-variant-a.
 
 ---
 
+### DEBT-PARQUET-SCHEMA-001 — Schema Parquet ml-detector y firewall-acl-agent
+**Severidad:** 🔴 P0 bloqueante
+**Estado:** ABIERTO — DAY 147
+**Componente:** `ml-detector` + `firewall-acl-agent` + pipeline de ingesta Neo4j
+
+Schema candidato definido en ADR-0043 v4 D4b. Debe validarse contra los CSVs reales producidos por el pipeline en entorno Vagrant. Confirmar granularidad de eventos (por flow vs. por paquete) y política de registro (todos los eventos vs. solo alertas/denies). Sin schema validado no existe contrato de interfaz y el pipeline de ingesta Neo4j no puede implementarse.
+
+**ADR relacionado:** ADR-0043 D4b
+**Test de cierre:** schema Parquet candidato validado contra CSVs reales. Tipos Arrow confirmados. Volumen estimado por nodo por mes documentado.
+**Estimación:** 1 sesión en Vagrant
+
+---
+
+### DEBT-VAULT-FEDERATION-001 — Offboarding de instalaciones GDPR
+**Severidad:** 🟡 P1 pre-FEDER
+**Estado:** ABIERTO — DAY 147
+**Componente:** Vault local + Vault central + Neo4j
+
+Procedimiento de offboarding cuando un cliente abandona la red aRGus: destrucción certificada del Vault local, política de retención de datos históricos pseudonimizados en Neo4j. La destrucción del Vault local convierte los datos en Neo4j en efectivamente irrecuperables (anonimización efectiva bajo GDPR). Requiere validación jurídica.
+
+**ADR relacionado:** ADR-0043 D7, DEBT-LEGAL-DATA-RETENTION-001
+**Test de cierre:** runbook de offboarding ejecutado en entorno de prueba. Confirmación de irrecuperabilidad de datos.
+**Estimación:** 2 sesiones + validación jurídica
+
+---
+
+### DEBT-LEGAL-DATA-RETENTION-001 — Dictamen jurídico retención datos post-cliente
+**Severidad:** 🟡 P1 pre-FEDER
+**Estado:** ABIERTO — DAY 147
+**Interlocutor:** Dr. Andrés Caro Lindo (UEx/INCIBE)
+
+Pregunta específica para el jurista: ¿cuándo exactamente los datos pseudonimizados con HMAC-SHA256 dejan de ser datos personales bajo GDPR si la clave de reversión (K_pseudo) existe pero está técnicamente aislada en un Vault destruido certificadamente? La respuesta determina la política de retención histórica post-offboarding.
+
+**ADR relacionado:** ADR-0043 D2, D7, D8
+**Test de cierre:** dictamen jurídico documentado. Política de retención registrada en ADR-0043 o ADR complementario.
+**Estimación:** gestión externa — no depende de implementación técnica
+
+---
+
+### DEBT-KPSEUDO-ROTATION-MIGRATION-001 — Migración Neo4j tras rotación K_pseudo
+**Severidad:** 🟡 P1 pre-FEDER
+**Estado:** ABIERTO — DAY 147
+**Componente:** Vault local + Neo4j + pipeline de ingesta
+
+La rotación de K_pseudo cambia todos los anon_id. El procedimiento de migración requiere: coordinación con drenado de batches en vuelo, actualización de relaciones :PREVIOUS_IDENTITY en Neo4j, atomicidad durante la migración, auditoría firmada del proceso. Las queries de evolución histórica a través de múltiples rotaciones requieren recursividad Cypher con límite de profundidad explícito.
+
+**ADR relacionado:** ADR-0043 D3, ADR-004
+**Test de cierre:** rotación K_pseudo en entorno de prueba con datos históricos. Continuidad de anon_id verificada via :PREVIOUS_IDENTITY. 0 entidades duplicadas.
+**Estimación:** 2 sesiones
+
+---
+
+### DEBT-GDPR-ERASURE-001 — Flujo derecho al olvido GDPR Art. 17
+**Severidad:** 🟡 P1 pre-FEDER
+**Estado:** ABIERTO — DAY 147
+**Componente:** instalación local + servidor central Neo4j + canal Ed25519
+
+Implementar el flujo completo: (1) instalación local calcula anon_id = HMAC(K_pseudo, identidad_real), (2) borra registros en SQLite, (3) envía comando firmado Ed25519 al servidor central, (4) servidor ejecuta DELETE en Neo4j, (5) registra auditoría inmutable, (6) instalación recibe confirmación y certifica cumplimiento. Limitación conocida: si el mismo dispositivo generó múltiples anon_id por cambio de identidad primaria, el borrado de uno no alcanza automáticamente a los demás.
+
+**ADR relacionado:** ADR-0043 D8
+**Test de cierre:** solicitud de borrado E2E en entorno de prueba. Verificación de ausencia del anon_id en Neo4j. Auditoría firmada verificable.
+**Estimación:** 2 sesiones + validación jurídica
+
+---
+
+### DEBT-KPSEUDO-HKDF-HIERARCHY-001 — Jerarquía HKDF para K_pseudo
+**Severidad:** ⏳ P3 post-FEDER
+**Estado:** ABIERTO — DAY 147
+**Componente:** Vault local + función de pseudonimización en nodo
+
+Derivar subclaves especializadas desde K_root usando HKDF (NIST SP 800-108): K_pseudo_host, K_pseudo_flow, K_pseudo_model. Reduce el radio de daño ante compromiso de subclave individual y permite rotación selectiva sin romper coherencia en otras dimensiones. Relevante especialmente para instalaciones de alto valor (hospitales universitarios, municipios grandes). Alineado con ADR-004 (cooldown y máximo 2 claves concurrentes).
+
+**ADR relacionado:** ADR-0043 D3, ADR-004
+**Test de cierre:** derivación HKDF en Vault local. Verificación de independencia entre subclaves. Rotación de K_pseudo_flow sin afectar K_pseudo_host.
+**Estimación:** 1 sesión post-FEDER
+
+---
+
+
 ### DEBT-ETCD-HA-QUORUM-001 — etcd-server en HA con quorum
 **Severidad:** 🔴 Alta — P0 post-FEDER (OBLIGATORIO, no opcional)
 **Estado:** ABIERTO — DAY 142
@@ -805,6 +884,16 @@ Targets `make emecas-dev/prod-x86/prod-arm64` con log automático fechado.
 | **IRP prob. conjunta multi-señal** | No topología por quirófano (inviable). Función de decisión con todas las señales disponibles + pesos. | Consejo 8/8 · DAY 143 |
 | **etcd-server HA es deuda crítica** | Single-node etcd no es robusta. DEBT-ETCD-HA-QUORUM-001 obligatoria post-FEDER. | Founder · DAY 142 |
 
+| **MAC unicast como identidad primaria** | `HMAC-SHA256(K_pseudo, MAC)`. Jerarquía MAC→hostname→IP. `Host` vs `NetworkPresence`. MAC nunca sale del nodo. | ADR-0043 v4 · Consejo 8/8 · DAY 147 |
+| **Pseudonimización determinista K_pseudo** | HMAC-SHA256 con clave por instalación en Vault local. Coherencia temporal garantizada. Rotación es evento excepcional. | ADR-0043 v4 · Consejo 8/8 · DAY 147 |
+| **Paquete mensual edge→central** | Parquet ×2 + plugin firmado + metadatos. idempotency_key = firma Ed25519(batch_content). Estable a N reintentos. | ADR-0043 v4 · Consejo 8/8 · DAY 147 |
+| **Cola local batches pendientes (D9)** | `/var/spool/argus/batches/pending/`. Independiente de SQLite. Retención 90 días. FIFO. Backoff exponencial. | ADR-0043 v4 · Consejo 8/8 · DAY 147 |
+| **Neo4j DAG sin ciclos** | Patrón entidad persistente + episodio temporal. Sin PRECEDES materializado — ordenamiento por Episode.period ISO 8601. | ADR-0043 v4 · Consejo 8/8 · DAY 147 |
+| **Timestamps UTC epoch nanoseconds** | int64 UTC en Parquet. ISO 8601 con sufijo Z en JSON. Sin excepciones. system_clock en C++20, nunca steady_clock. | ADR-0043 v4 · Consejo 8/8 · DAY 147 |
+| **Vault jerarquía root+operativo** | Vault central = root of trust (wrapping keys). Vault local = operativo (K_pseudo, Ed25519, seeds). | ADR-0043 v4 · Consejo 8/8 · DAY 147 |
+| **Flujo GDPR Art. 17** | Borrado via comando firmado Ed25519 desde instalación → DELETE en Neo4j → auditoría certificada inmutable. | ADR-0043 v4 · Consejo 8/8 · DAY 147 |
+| **ADR-035 OQ-2 CERRADA** | Topología etcd parametrizada por tamaño de instalación. Single-node aceptado en instalaciones pequeñas con SPOF documentado. | ADR-0043 v4 · cierra ADR-035 OQ-2 · DAY 147 |
+| **ADR-038 §Anonimización SUPERSEDIDA** | Rotating salt → HMAC determinista (ADR-0043 D2-D3). BitTorrent → ZeroMQ (ADR-0043 D4). Resto ADR-038 vigente. | ADR-0043 v4 · DAY 147 |
 ---
 
 ## 📊 Estado global del proyecto
@@ -881,11 +970,39 @@ DEBT-CRYPTO-MATERIAL-STORAGE-001:        0% ⏳  pre-FEDER
 DEBT-KEY-SEPARATION-001:                 0% ⏳  post-FEDER
 DEBT-ADR040-001..012:                    0% ⏳  post-FEDER Año 1
 DEBT-ADR041-001..006:                    0% ⏳  pre-FEDER
+ADR-0043 v4 Memoria Episódica Distribuida:  100% ✅  DAY 147 (Consejo 8/8 · ACEPTADO)
+ADR-035 OQ-2 cerrada (etcd topología):     100% ✅  DAY 147 (referenciada en ADR-0043 D6)
+DEBT-PARQUET-SCHEMA-001:                     0% ⏳  P0 bloqueante (schema Parquet ml-detector + firewall)
+DEBT-VAULT-FEDERATION-001:                   0% ⏳  P1 pre-FEDER (offboarding instalaciones GDPR)
+DEBT-LEGAL-DATA-RETENTION-001:               0% ⏳  P1 pre-FEDER (dictamen jurídico retención datos)
+DEBT-KPSEUDO-ROTATION-MIGRATION-001:         0% ⏳  P1 pre-FEDER (migración Neo4j tras rotación K_pseudo)
+DEBT-GDPR-ERASURE-001:                       0% ⏳  P1 pre-FEDER (flujo derecho al olvido Art. 17)
+DEBT-KPSEUDO-HKDF-HIERARCHY-001:             0% ⏳  P3 post-FEDER (jerarquía HKDF para K_pseudo)
 ADR-031 aRGus-seL4:                      0% ⏳  branch independiente
 ```
 
 ---
 
+## 📝 Notas del Consejo de Sabios — ADR-0043 v4 (8/8) · DAY 147
+
+> "ADR-0043 v4 — APROBADO UNÁNIMEMENTE. Cuatro versiones, tres rondas de revisión del Consejo, ocho modelos.
+>
+> **Decisiones clave:**
+> - Identidad por MAC unicast con jerarquía de fallback (MAC→hostname→IP). DHCP no rompe la coherencia del grafo.
+> - Pseudonimización determinista HMAC-SHA256 con K_pseudo por instalación en Vault local. La MAC nunca abandona el nodo.
+> - idempotency_key = firma Ed25519(batch_content). Estable a través de cualquier número de reintentos.
+> - Cola local /var/spool/argus/batches/ independiente de SQLite. Retención 90 días. OQ-1 convertida en D9.
+> - DAG Neo4j sin PRECEDES materializado. Episode.period ISO 8601 como eje temporal.
+> - Timestamps UTC epoch nanoseconds en Parquet. system_clock en C++20.
+> - ADR-035 OQ-2 cerrada: topología etcd parametrizable por tamaño de instalación.
+> - ADR-038 §Anonimización y §Canal de distribución supersedidos.
+>
+> **Deudas P0/P1 pre-FEDER registradas:** DEBT-PARQUET-SCHEMA-001 (P0 bloqueante), DEBT-VAULT-FEDERATION-001, DEBT-LEGAL-DATA-RETENTION-001, DEBT-KPSEUDO-ROTATION-MIGRATION-001, DEBT-GDPR-ERASURE-001.
+>
+> **Próximo paso:** examinar CSVs reales de ml-detector y firewall-acl-agent en entorno Vagrant para cerrar DEBT-PARQUET-SCHEMA-001. Sin schema real no hay contrato de interfaz.
+>
+> 'La memoria distribuida no es solo almacenamiento: es un pacto de confianza temporal entre el edge y el centro.' — Qwen"
+> — Consejo de Sabios (8/8) · DAY 147
 ## 📝 Notas del Consejo de Sabios — DAY 147 (8/8)
 
 > "DAY 147 — Experimento de tres paradigmas completado. CTU-13 Neris, condiciones idénticas.

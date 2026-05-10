@@ -25,6 +25,7 @@
 [![arXiv](https://img.shields.io/badge/arXiv-2604.04952_cs.CR-red)](https://arxiv.org/abs/2604.04952)
 [![TDH](https://img.shields.io/badge/Methodology-Test_Driven_Hardening-purple)](https://github.com/alonsoir/test-driven-hardening)
 [![IRP](https://img.shields.io/badge/IRP-argus--network--isolate_ADR--042-red)]()
+[![ADR-043](https://img.shields.io/badge/ADR--043-Memoria_Episódica_Distribuida-blue)](docs/adr/ADR-0043-memoria-episodica-distribuida-v4.md)
 
 📜 Living contracts: [Protobuf schema](docs/contracts/Protobuf%20contracts.md) · [Pipeline configs](docs/contracts/JSON%20contracts.md) · [RAG API](docs/contracts/Rag%20security%20commands.md)
 
@@ -100,6 +101,12 @@
 | DEBT-ADR040-001..012 | ⏳ | post-FEDER |
 | DEBT-ADR041-001..006 | ⏳ | pre-FEDER |
 
+| DEBT-PARQUET-SCHEMA-001 | 🔴 P0 bloqueante | Definir schema Parquet ml-detector y firewall-acl-agent desde CSVs reales |
+| DEBT-VAULT-FEDERATION-001 | 🟡 P1 pre-FEDER | Offboarding instalaciones: destrucción de claves, retención de datos GDPR |
+| DEBT-LEGAL-DATA-RETENTION-001 | 🟡 P1 pre-FEDER | Dictamen jurídico GDPR retención datos pseudonimizados post-cliente |
+| DEBT-KPSEUDO-ROTATION-MIGRATION-001 | 🟡 P1 pre-FEDER | Migración identidades Neo4j tras rotación K_pseudo |
+| DEBT-GDPR-ERASURE-001 | 🟡 P1 pre-FEDER | Flujo derecho al olvido Art. 17 GDPR — comando borrado firmado |
+| DEBT-KPSEUDO-HKDF-HIERARCHY-001 | ⏳ P3 post-FEDER | Jerarquía HKDF para K_pseudo (host/flow/model desde K_root) |
 ### Próxima frontera — DAY 146+
 1. DEBT-IRP-TMPFILES-001 — tmpfiles.d para /run/argus/irp/ en reboot
 2. DEBT-IRP-IPSET-TMP-001 — ipset_wrapper.cpp usa /tmp
@@ -403,6 +410,7 @@ make hardened-full   # destroy → up → provision → build → deploy → che
 - ✅ DAY 145: **ADR-029 Variant A vs B x86 · libpcap ~2× eBPF en virtio · Bootstrap múltiple · Paper v19 · v0.7.0-variant-b** 🎉
 - ✅ DAY 146: **Experimento Suricata comparativo · 0 alertas ET Open vs F1=0.9985 aRGus · Paper v20 §8.13 · v0.7.1-day146** 🎉
 - ✅ DAY 147: **Experimento tres paradigmas (Suricata+Zeek+aRGus) · Paper v22 §8.14 · HTTP C2 hallazgo · weird.log behavioral profile · v0.7.1-day147** 🎉
+- ✅ DAY 147: **ADR-0043 v4 ACEPTADO** — Memoria Episódica Distribuida, Consejo 8/8, 4 versiones 🎉
 - 🔜 DAY 146+: **DEBT-IRP-TMPFILES-001 · DEBT-IRP-IPSET-TMP-001 · experiment-comparative · ARM64 scope**
 
 ---
