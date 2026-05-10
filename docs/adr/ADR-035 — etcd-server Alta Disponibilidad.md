@@ -1,6 +1,6 @@
 # ADR-035 — etcd-server Alta Disponibilidad
 
-**Status:** DRAFT — pendiente revisión Consejo de Sabios  
+**Status:** CLOSED — ver ADR-0043 D6
 **Date:** 2026-04-15  
 **Author:** Alonso Isidoro Roman  
 **Feature destino:** `feature/bare-metal` (fase tardía)  

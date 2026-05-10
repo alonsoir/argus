@@ -1094,7 +1094,7 @@ X-MFA-User: admin@hospital.org
 - Token validation service
 
 **Timeline**: When aegisIDS has 10+ production customers or any customer with >1000 employees.
-
+referencia a ADR-0043 como constraint de K_pseudo
 ---
 
 ### 8.2. Dynamic Cooldown Based on Risk Metrics

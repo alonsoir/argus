@@ -133,7 +133,9 @@ La variante seL4 es la más potente: el entrenamiento ocurre en una partición f
 
 ## Preguntas abiertas (I+D necesario)
 
-**P1 — Anonimización:** ¿Qué nivel de privacidad diferencial (epsilon) garantiza que el dataset anonimizado no re-identifica dispositivos médicos? Necesita revisión por experto en privacidad. DPIA obligatoria antes de cualquier despliegue.
+**P1 — Anonimización:** ¿Qué nivel de privacidad diferencial (epsilon) garantiza que el dataset anonimizado no re-identifica dispositivos médicos? 
+
+SUPERSEDED — ver ADR-0043 D2/D3 y D4
 
 **P2 — Web-of-trust:** ¿Cómo se establece la identidad de un nodo aRGus central? ¿Quién firma los certificados? ¿Modelo descentralizado (similar a PGP) o PKI jerarquizada?
 
