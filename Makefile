@@ -929,15 +929,18 @@ pipeline-stop:
 pipeline-status:
 	@echo ""
 	@echo "╔════════════════════════════════════════════════════════════╗"
-	@echo "║  📊 ML Defender Pipeline Status (via TMUX)                ║"
+	@echo "║  📊 ML Defender Pipeline Status (via TMUX + pgrep)        ║"
 	@echo "╚════════════════════════════════════════════════════════════╝"
-	@vagrant ssh -c "tmux has-session -t etcd-server 2>/dev/null && echo '  ✅ etcd-server:   RUNNING' || echo '  ❌ etcd-server:   STOPPED'"
-	@vagrant ssh -c "tmux has-session -t rag-security 2>/dev/null && echo '  ✅ rag-security:  RUNNING' || echo '  ❌ rag-security:  STOPPED'"
-	@vagrant ssh -c "tmux has-session -t rag-ingester 2>/dev/null && echo '  ✅ rag-ingester:  RUNNING' || echo '  ❌ rag-ingester:  STOPPED'"
-	@vagrant ssh -c "tmux has-session -t ml-detector 2>/dev/null && echo '  ✅ ml-detector:   RUNNING' || echo '  ❌ ml-detector:   STOPPED'"
+	@vagrant ssh -c "( tmux has-session -t etcd-server 2>/dev/null || pgrep -x etcd-server >/dev/null 2>&1 ) && echo '  ✅ etcd-server:   RUNNING' || echo '  ❌ etcd-server:   STOPPED'"
+	@vagrant ssh -c "( tmux has-session -t rag-security 2>/dev/null || pgrep -x rag-security >/dev/null 2>&1 ) && echo '  ✅ rag-security:  RUNNING' || echo '  ❌ rag-security:  STOPPED'"
+	@vagrant ssh -c "( tmux has-session -t rag-ingester 2>/dev/null || pgrep -x rag-ingester >/dev/null 2>&1 ) && echo '  ✅ rag-ingester:  RUNNING' || echo '  ❌ rag-ingester:  STOPPED'"
+	@vagrant ssh -c "( tmux has-session -t ml-detector 2>/dev/null || pgrep -x ml-detector >/dev/null 2>&1 ) && echo '  ✅ ml-detector:   RUNNING' || echo '  ❌ ml-detector:   STOPPED'"
 	@vagrant ssh -c " \
-	  EBPF=$$(tmux has-session -t sniffer        2>/dev/null && echo 1 || echo 0); \
-	  PCAP=$$(tmux has-session -t sniffer-libpcap 2>/dev/null && echo 1 || echo 0); \
+	  EBPF=0; PCAP=0; \
+	  tmux has-session -t sniffer         2>/dev/null && EBPF=1; \
+	  tmux has-session -t sniffer-libpcap 2>/dev/null && PCAP=1; \
+	  pgrep -x sniffer         >/dev/null 2>&1 && EBPF=1; \
+	  pgrep -x sniffer-libpcap >/dev/null 2>&1 && PCAP=1; \
 	  if   [ \$$EBPF -eq 1 ] && [ \$$PCAP -eq 0 ]; then \
 	    echo '  ✅ sniffer:       RUNNING [Variant A — eBPF]'; \
 	  elif [ \$$EBPF -eq 0 ] && [ \$$PCAP -eq 1 ]; then \
@@ -947,7 +950,7 @@ pipeline-status:
 	  else \
 	    echo '  ❌ sniffer:       STOPPED'; \
 	  fi"
-	@vagrant ssh -c "tmux has-session -t firewall 2>/dev/null && echo '  ✅ firewall:      RUNNING' || echo '  ❌ firewall:      STOPPED'"
+	@vagrant ssh -c "( tmux has-session -t firewall 2>/dev/null || pgrep -x firewall-acl-agent >/dev/null 2>&1 ) && echo '  ✅ firewall:      RUNNING' || echo '  ❌ firewall:      STOPPED'"
 	@echo "╚════════════════════════════════════════════════════════════╝"
 
 install-systemd-units:

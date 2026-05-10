@@ -59,6 +59,7 @@ Vagrant.configure("2") do |config|
       sed -i '/^rule-files:/a\  - /var/lib/suricata/rules/suricata.rules' /etc/suricata/suricata.yaml
       # Esperar carga de 50K reglas antes de dar el VM por listo
       echo 'suricata: esperando carga de reglas (~60s)...'
+      sleep 60
 
       mkdir -p /var/log/suricata /vagrant/logs/experiment
       chown -R suricata:suricata /var/log/suricata 2>/dev/null || true
