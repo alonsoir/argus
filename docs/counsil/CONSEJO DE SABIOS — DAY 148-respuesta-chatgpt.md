@@ -1,51 +1,170 @@
-**CONSEJO DE SABIOS — DAY 148**
-*Para: Claude, Grok, ChatGPT, DeepSeek, Qwen, Gemini, Kimi, Mistral*
+# CONSEJO DE SABIOS — RESPUESTA DAY 148
 
 ---
 
-**CONTEXTO DAY 148**
+# P1 — Validez científica del framing de complementariedad
 
-Tres resultados principales:
+## Veredicto corto
 
-1. **Suricata offline irrefutable** — `suricata -r -k none`, 50,010 reglas ET Open (251 IRC, 475 botnet/C2, 853 trojan), 323,154 paquetes. 0 firmas ET disparadas. 128 alertas internas de motor únicamente. Criterio de Kimi DAY 147 satisfecho.
+Sí, el framing actual es científicamente defendible en el abstract **si se formula como observación arquitectónica y no como claim de integración operacional demostrada**.
 
-2. **Paper v23 / arXiv replace v3** — §8.13 offline validation, §8.14 framing taxonómico (decision architecture taxonomies, measurement layer, telemetry, "Observability does not imply classification"), §10 Future Work 5 subsecciones, tabla §8.2 con Zeek, abstract con complementariedad tres paradigmas.
+La frase actual:
 
-3. **DEBT-IRP-FLOAT-TYPES-001 cerrada** — `IrpConfig::threat_score_threshold` double→float, parche IEEE 754 eliminado, EMECAS PROFILE=production ALL TESTS COMPLETE.
+> *"The three paradigms are complementary..."*
 
----
+es razonable porque:
 
-**P1 — VALIDEZ DEL FRAMING DE COMPLEMENTARIEDAD (abstract v23)**
+* los experimentos ya demostraron propiedades distintas
+* cada sistema opera sobre capas semánticas diferentes
+* no afirmas mejora cuantitativa por integración
+* no afirmas ensemble validado
+* no afirmas aumento de detección
 
-El abstract v23 introduce explícitamente que los tres paradigmas son complementarios:
+Lo importante es esto:
 
-> *"The three paradigms are complementary: Zeek's telemetry layer and Suricata's signature coverage operate naturally alongside an ML behavioral classifier, each contributing at its native encoding layer."*
+> “operate naturally alongside”
 
-**Pregunta:** ¿Es este framing científicamente defendible en el abstract sin haber implementado ni demostrado empíricamente la integración? ¿Debería estar en Future Work en lugar del abstract, o es una afirmación arquitectónica suficientemente justificada por los resultados experimentales actuales?
-
----
-
-**P2 — DEBT-PARQUET-SCHEMA-001 (P0 bloqueante pre-FEDER)**
-
-El siguiente bloqueante técnico real es validar el schema Parquet de `ml-detector` y `firewall-acl-agent` contra CSVs reales producidos por el pipeline en Vagrant. Sin este schema no existe contrato de interfaz y el pipeline de ingesta Neo4j (ADR-0043) no puede implementarse.
-
-**Pregunta:** ¿Cuál es la estrategia óptima para cerrar DEBT-PARQUET-SCHEMA-001 en una sesión? Específicamente: (a) ¿granularidad por flow o por paquete?, (b) ¿registrar todos los eventos o solo alertas/denies?, (c) ¿qué tipos Arrow son los más adecuados para timestamps, scores float, e IPs?
+Eso describe compatibilidad arquitectónica, no validación empírica de fusión.
 
 ---
 
-**P3 — PRIORIDAD DAY 149**
+## Lo que NO deberías afirmar todavía
 
-Estado actual: paper en arXiv, código en verde (65/65), FEDER deadline 22-Sep-2026.
+Evitar expresiones tipo:
 
-Opciones para DAY 149:
-- **A)** DEBT-PARQUET-SCHEMA-001 — examinar CSVs reales, definir schema, cerrar el P0 bloqueante ADR-0043
-- **B)** DEBT-JENKINS-SEED-DISTRIBUTION-001 — infraestructura CI/CD pre-FEDER
-- **C)** DEBT-CRYPTO-MATERIAL-STORAGE-001 — HashiCorp Vault prototype
-- **D)** Abrir `feature/adr029-variant-c-arm64` — scope ARM64 para FEDER hardware
-- **E)** Descanso técnico — consolidar, leer feedback arXiv, preparar demo FEDER
+* “combined system improves detection”
+* “integrated architecture outperforms”
+* “fusion increases coverage”
+* “ensemble superiority”
 
-**Pregunta:** Dado el deadline FEDER (22-Sep-2026, ~4 meses) y el go/no-go técnico (1-Ago-2026, ~2.5 meses), ¿cuál es la secuencia óptima de las opciones anteriores? ¿Hay alguna dependencia crítica que cambie el orden?
+Porque eso sí requeriría:
+
+* implementación integrada
+* métricas conjuntas
+* evaluación estadística
 
 ---
 
-Pegad las respuestas del Consejo y sintetizamos antes del prompt de continuidad y el post LinkedIn.
+## Recomendación del consejo
+
+Mantener el framing en el abstract, pero reforzar precisión epistemológica.
+
+### Formulación sugerida
+
+> *"The results suggest that the three paradigms are architecturally complementary, with each operating at a distinct semantic and encoding layer..."*
+
+La palabra importante es:
+
+* “suggest”
+* “architecturally”
+
+Eso reduce superficie de ataque en peer review.
+
+---
+
+## Conclusión P1
+
+✔ Puede quedarse en abstract
+✔ También debe permanecer en Future Work
+✔ No presenta problema metodológico si se mantiene como framing arquitectónico y no claim experimental
+
+---
+
+# P2 — Estrategia óptima para cerrar DEBT-PARQUET-SCHEMA-001
+
+---
+
+# P2a — Granularidad: flow vs packet
+
+## Veredicto del consejo
+
+### Flow-level es la decisión correcta.
+
+Packet-level:
+
+* explota volumen
+* destruye escalabilidad
+* complica Neo4j
+* genera cardinalidad inmanejable
+
+Además:
+
+* tu pipeline ya es conductual
+* el modelo ML opera sobre agregación
+* Suricata ya cubre packet semantics
+
+Por tanto:
+
+> packet-level no aporta suficiente valor arquitectónico para memoria histórica.
+
+---
+
+## Recomendación concreta
+
+### Unidad mínima:
+
+```text
+flow window aggregation
+```
+
+Ejemplo:
+
+* src/dst
+* proto
+* bytes
+* packets
+* duration
+* flags aggregate
+* entropy metrics
+* anomaly score
+
+---
+
+# P2b — Registrar todo vs solo alertas
+
+## Veredicto
+
+### Episódica local:
+
+✔ registrar todo (SQLite)
+
+### Consolidada central:
+
+⚠ NO registrar todo.
+
+El consejo recomienda:
+
+| Tipo evento                      | Centralizar |
+| -------------------------------- | ----------- |
+| attack                           | Sí          |
+| anomaly                          | Sí          |
+| deny/drop                        | Sí          |
+| high-confidence normal baselines | Muestreo    |
+| tráfico normal completo          | No          |
+
+---
+
+## Motivo
+
+Si centralizas todo:
+Neo4j termina siendo:
+
+> “un SIEM caro con grafos”
+
+y no:
+
+> memoria estructural útil.
+
+---
+
+## Recomendación concreta
+
+### Política híbrida:
+
+#### Always ingest:
+
+* alerts
+* denies
+* anomalies
+* high severity
+* rare protocol

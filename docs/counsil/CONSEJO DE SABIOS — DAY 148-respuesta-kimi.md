@@ -1,51 +1,98 @@
-**CONSEJO DE SABIOS — DAY 148**
-*Para: Claude, Grok, ChatGPT, DeepSeek, Qwen, Gemini, Kimi, Mistral*
+**Consejo de Sabios — Dictamen DAY 148**
 
 ---
 
-**CONTEXTO DAY 148**
+### P1 — Framing de complementariedad en el abstract
 
-Tres resultados principales:
+**Es defendible, pero solo si matizas el verbo.**
 
-1. **Suricata offline irrefutable** — `suricata -r -k none`, 50,010 reglas ET Open (251 IRC, 475 botnet/C2, 853 trojan), 323,154 paquetes. 0 firmas ET disparadas. 128 alertas internas de motor únicamente. Criterio de Kimi DAY 147 satisfecho.
+Tu frase actual dice *"are complementary"* en presente indicativo. Eso implica una propiedad demostrada del sistema. Como no has implementado la integración operativa (Zeek + Suricata + aRGus en un mismo nodo con handoff entre capas), un reviewer escéptico puede objetar: *"¿Dónde está el experimento de integración?"*
 
-2. **Paper v23 / arXiv replace v3** — §8.13 offline validation, §8.14 framing taxonómico (decision architecture taxonomies, measurement layer, telemetry, "Observability does not imply classification"), §10 Future Work 5 subsecciones, tabla §8.2 con Zeek, abstract con complementariedad tres paradigmas.
+**La corrección es semántica, no estructural.** Cambia la afirmación de *resultado experimental* a *implicación arquitectónica*:
 
-3. **DEBT-IRP-FLOAT-TYPES-001 cerrada** — `IrpConfig::threat_score_threshold` double→float, parche IEEE 754 eliminado, EMECAS PROFILE=production ALL TESTS COMPLETE.
+> *"Architecturally, the three paradigms are complementary: Zeek's telemetry layer, Suricata's signature coverage, and an ML behavioral classifier operate at distinct encoding layers, suggesting a natural stacking in production deployments."*
 
----
+**Claves:**
+- *"Architecturally"* y *"suggesting"* desactivan la objeción empírica.
+- El abstract puede contener implicaciones arquitectónicas; lo que no puede es afirmar integración operativa sin experimento.
+- Si prefieres máxima seguridad, mueve la frase al §10 (Future Work) como: *"A unified pipeline combining Zeek telemetry, Suricata signatures, and aRGus ML classification remains to be evaluated."*
 
-**P1 — VALIDEZ DEL FRAMING DE COMPLEMENTARIEDAD (abstract v23)**
-
-El abstract v23 introduce explícitamente que los tres paradigmas son complementarios:
-
-> *"The three paradigms are complementary: Zeek's telemetry layer and Suricata's signature coverage operate naturally alongside an ML behavioral classifier, each contributing at its native encoding layer."*
-
-**Pregunta:** ¿Es este framing científicamente defendible en el abstract sin haber implementado ni demostrado empíricamente la integración? ¿Debería estar en Future Work en lugar del abstract, o es una afirmación arquitectónica suficientemente justificada por los resultados experimentales actuales?
+**Veredicto:** Mantenlo en el abstract con el matiz arquitectónico. Es una contribución válida del paper: has demostrado que cada paradigma tiene ciegos estructurales que los otros no tienen, lo cual *es* evidencia de complementariedad.
 
 ---
 
-**P2 — DEBT-PARQUET-SCHEMA-001 (P0 bloqueante pre-FEDER)**
+### P2 — Estrategia para cerrar DEBT-PARQUET-SCHEMA-001 en una sesión
 
-El siguiente bloqueante técnico real es validar el schema Parquet de `ml-detector` y `firewall-acl-agent` contra CSVs reales producidos por el pipeline en Vagrant. Sin este schema no existe contrato de interfaz y el pipeline de ingesta Neo4j (ADR-0043) no puede implementarse.
+**Objetivo de la sesión:** producir un schema Parquet firmado (v1.0) que sea contrato de interfaz para el pipeline de ingesta Neo4j.
 
-**Pregunta:** ¿Cuál es la estrategia óptima para cerrar DEBT-PARQUET-SCHEMA-001 en una sesión? Específicamente: (a) ¿granularidad por flow o por paquete?, (b) ¿registrar todos los eventos o solo alertas/denies?, (c) ¿qué tipos Arrow son los más adecuados para timestamps, scores float, e IPs?
+#### (a) Granularidad: **por flow, no por paquete**
+
+Razón: tu `ml-detector` ya opera sobre flows (características estadísticas de ventanas temporales). Registrar por paquete multiplicaría el volumen por 100-1000× sin añadir valor para análisis histórico mensual. El firewall-acl-agent también decide a nivel de flow/conn.
+
+Excepción documentada: si el CSV de firewall registra cada paquete individual (improbable), entonces agrega en el nodo antes de serializar a Parquet. El batch mensual debe contener **decisiones**, no **paquetes**.
+
+#### (b) ¿Qué registrar? **Todos los eventos evaluados, no solo alertas**
+
+Para `ml-detector`: todos los flows con su `confidence` y `event_type`. El análisis histórico en Neo4j necesita la distribución completa (baseline benigno + anomalías) para detectar deriva de comportamiento. Si solo registras alertas, pierdes la capacidad de calcular tasas de falsos positivos históricas.
+
+Para `firewall-acl-agent`: todas las decisiones (`ALLOW`, `DENY`, `DROP`). Un patrón de `ALLOW` repetido puede ser lateral movement; sin los `ALLOW` no hay contexto.
+
+#### (c) Tipos Arrow óptimos
+
+| Campo conceptual | Tipo Arrow | Justificación |
+|------------------|------------|---------------|
+| Timestamp UTC | `int64` | Epoch nanosegundos. Sin timezone, sin strings. Ocupa 8 bytes, ordenable nativamente. |
+| Score/confidence | `float32` | IEEE 754 single precision es suficiente para scores en [0,1]. Mitad de tamaño vs float64. |
+| IPs reales (en nodo, pre-pseudo) | `uint32` (IPv4) / `fixed_size_binary(16)` (IPv6) | No strings. Conversión binaria es instantánea. |
+| IDs pseudonimizados | `utf8` | Hex de HMAC-SHA256 = 64 chars. Variable length, pero Parquet comprime strings repetidos (dictionary encoding) mejor que fixed. |
+| Enums pequeños (event_type, action, direction) | `int8` | 0=normal, 1=anomaly, etc. Ocupa 1 byte. El mapping a strings es responsabilidad del lector. |
+| Contadores (bytes, packets) | `int64` / `int32` | int64 para bytes (pueden exceder 2^31 en flows largos), int32 para packets. |
+
+**Checklist de la sesión:**
+1. `vagrant ssh` al nodo, localizar `/var/log/argus/ml-detector/` y `/var/log/argus/firewall/`.
+2. `head -5` de cada CSV real. Confirmar delimitador, presencia/ausencia de headers, nombres de columnas.
+3. Mapear cada columna CSV a un campo del schema candidato v3. Documentar discrepancias.
+4. Ejecutar `python3 -c "import pyarrow.parquet as pq; pq.write_table(...)"` con el schema candidato y 1000 filas de muestra. Verificar que no hay truncamiento de floats ni overflow de timestamps.
+5. Firmar el schema como `schema-v1.0.adoc` en el repo. Este documento es inmutable una vez publicado; cambios requieren versión nueva.
+
+**Tiempo estimado:** 3-4 horas si los CSVs están limpios. 6-8 horas si hay sorpresas de formato.
 
 ---
 
-**P3 — PRIORIDAD DAY 149**
+### P3 — Secuencia óptima DAY 149–155
 
-Estado actual: paper en arXiv, código en verde (65/65), FEDER deadline 22-Sep-2026.
+**Análisis de dependencias críticas:**
 
-Opciones para DAY 149:
-- **A)** DEBT-PARQUET-SCHEMA-001 — examinar CSVs reales, definir schema, cerrar el P0 bloqueante ADR-0043
-- **B)** DEBT-JENKINS-SEED-DISTRIBUTION-001 — infraestructura CI/CD pre-FEDER
-- **C)** DEBT-CRYPTO-MATERIAL-STORAGE-001 — HashiCorp Vault prototype
-- **D)** Abrir `feature/adr029-variant-c-arm64` — scope ARM64 para FEDER hardware
-- **E)** Descanso técnico — consolidar, leer feedback arXiv, preparar demo FEDER
+```
+PARQUET-SCHEMA ──► NEO4J-INGESTA ──► MEMORIA EPISÓDICA (ADR-0043)
+       ▲                                    ▲
+       └──────────────┬─────────────────────┘
+                      │
+VAULT-PROTOTYPE ──────┘ (K_pseudo, firma Ed25519, idempotency_key)
+       ▲
+       │
+JENKINS-SEED ────────┘ (distribución automatizada de claves y modelos)
+```
 
-**Pregunta:** Dado el deadline FEDER (22-Sep-2026, ~4 meses) y el go/no-go técnico (1-Ago-2026, ~2.5 meses), ¿cuál es la secuencia óptima de las opciones anteriores? ¿Hay alguna dependencia crítica que cambie el orden?
+**Observación clave:** PARQUET-SCHEMA puede cerrarse **sin Vault implementado**. El schema define *qué* campos son pseudonimizados (`anon_host_id`, `anon_flow_id`) y su tipo (`utf8`), pero no *cómo* se calcula el HMAC. El contrato de interfaz es tipos y nombres, no valores.
+
+Por tanto, el orden no es secuencial estricto. Es paralelizable con esta secuencia:
+
+| Día | Opción | Justificación |
+|-----|--------|---------------|
+| **DAY 149** | **A) PARQUET-SCHEMA** | P0 bloqueante. Desbloquea todo el backend de ingesta. Cierra en una sesión (P2 arriba). |
+| **DAY 150** | **C) VAULT prototype** | Sin K_pseudo no hay batches firmados. Prototipo mínimo: un HashiCorp Vault dev mode en Vagrant, un script que lee `K_pseudo` y calcula HMAC. No necesita alta disponibilidad todavía. |
+| **DAY 151** | **A+C integración** | Pipeline end-to-end: CSV real → pseudonimización con Vault → Parquet → firma Ed25519 → batch. Un solo flujo completo valida el contrato. |
+| **DAY 152** | **B) JENKINS** | Automatiza lo que ya funciona manualmente. Si no tienes Jenkins aún, un Makefile riguroso es suficiente pre-FEDER. Jenkins es P1, no P0. |
+| **DAY 153–154** | **E) Descanso técnico** | Revisar feedback arXiv, consolidar ADR-0043 a estado Aprobado, preparar slide de demo FEDER. |
+| **DAY 155+** | **D) ARM64** | Solo si el hardware FEDER es ARM64. Si no lo sabes, es una pregunta para el gestor FEDER, no una decisión técnica. |
+
+**Regla de oro:** No abras ARM64 hasta que el pipeline x86_64 esté end-to-end verde. Portar antes de estabilizar es multiplicar bugs por dos arquitecturas.
+
+**Go/no-go técnico (1-Ago-2026):** Para esa fecha necesitas tener demostrado el flujo A+C (batch pseudonimizado firmado ingiriendo en Neo4j). Sin eso, no hay contribución técnica FEDER. Jenkins y ARM64 son secundarios para el go/no-go.
 
 ---
 
-Pegad las respuestas del Consejo y sintetizamos antes del prompt de continuidad y el post LinkedIn.
+**Veredicto del Consejo para DAY 149:** Ejecuta **A**. Toma los CSVs reales del Vagrant, valida el schema, publícalo como contrato v1.0. Eso desbloquea el resto de la arquitectura.
+
+*Que el commit sea limpio y los tests verdes.* 🛡️

@@ -1,95 +1,75 @@
-# aRGus NDR — DAY 148 CONTINUITY PROMPT
-# Estado: main @ v0.7.1-day147 | EMECAS DAY 147: 65/65 PASSED
-# Paper: arXiv:2604.04952 | v22 local (v19 en arXiv)
-# FEDER deadline: 22-Sep-2026
+# aRGus NDR — DAY 149 CONTINUITY PROMPT
+# Estado: main @ v0.7.1-day148 | EMECAS DAY 148: 65/65 PASSED
+# Paper: arXiv:2604.04952 | v23 local (v3 en arXiv — submit/7576269 procesando)
+# FEDER deadline: 22-Sep-2026 | Go/no-go: 1-Ago-2026
 
-## COMPLETADO DAY 147
-- pipeline-status pgrep fallback (commit 42c04b06) — 6/6 ✅
-- Paper v21: §8.13 hallazgos históricos + HTTP C2 + Springer 2023
-- Experimento Zeek 8.1.2 offline — experiments/zeek-comparative/
-  Resultados: Suricata F1=0.000 | Zeek F1=0.042 P=1.000 TP=14 | aRGus F1=0.9985
-  weird.log: IRC:30, HTTP beaconing:62, SMB:33 — Zeek ve todo, no alerta
-- Paper v22: §8.14 "Three Paradigms" (tablas, framing, reproducibility §13)
-- Consejo de Sabios (8/8): P1/P2/P3 respondidas — ver síntesis abajo
-- update_docs_day147.py — README.md + BACKLOG.md pendientes de aplicar
+## COMPLETADO DAY 148
+- Suricata offline -r -k none: 50,010 ET Open rules, 323,154 pkts → 0 firmas ET. Irrefutable.
+- Paper v23: §8.13 offline validation, §8.14 taxonomy, §10 Future Work (5 secciones), §8.2 Zeek row
+- Abstract v23: tres paradigmas + complementariedad arquitectónica
+- arXiv replace v3 submitted (submit/7576269)
+- DEBT-IRP-FLOAT-TYPES-001 CERRADA: double→float, parche IEEE 754 eliminado, PROFILE=production ALL TESTS COMPLETE
+- PR #58 (fix float) + PR #59 (docs day148) → main @ ab43c6c2
+- Tag v0.7.1-day148, ramas limpias
 
-## CONSEJO DAY 147 — SÍNTESIS PARA DAY 148
-P1 (metodología offline/live):
-- 7/8 aceptan con declaración explícita
-- KIMI DISSENTER (BLOQUEANTE): ejecutar suricata -r neris.pcap offline
-  Si da 0 alertas → conclusión irrefutable → arXiv desbloqueado
-  Si da >0 → problema de setup live, no de motor
+## CONSEJO DAY 148 — SÍNTESIS PARA DAY 149
+P1 (complementariedad abstract): 8/8 mantener. Refinamiento: añadir "architecturally" → pendiente v24
+P2 (PARQUET schema): 8/8 por flow. Política híbrida: todos ml-detector, solo DENY/DROP firewall.
+Tipos Arrow: int64 timestamps, float32 scores, utf8 dictionary IDs, int8 enums
+P3 (secuencia): A→C→B→D. No ARM64 antes de A+B+C verdes.
+DEPENDENCIA CRÍTICA: email Dr. Andrés Caro Lindo esta semana (DEBT-LEGAL-DATA-RETENTION-001)
 
-P2 (framing científico):
-- Keywords OBLIGATORIOS en §8.14: "telemetry", "measurement layer", "classification layer"
-- Frase clave ChatGPT: "Observability does not imply classification"
-- Framing Kimi: taxonomía de arquitecturas de decisión, no ranking
-- Gemini: Zeek = "passive librarian" que necesita aRGus como "cerebro"
+## PENDIENTES DAY 149 (por prioridad)
 
-P3 (Zeek Phase 2):
-- Phase 1 suficiente para arXiv — NO retrasar
-- Future work: mencionar detect-botnets.zeek específicamente (DeepSeek)
-- Gemini: Intel framework con feeds 2026 no detectaría tráfico 2011 de todas formas
+### P0 — BLOQUEANTE pre-FEDER
+1. DEBT-PARQUET-SCHEMA-001 (sesión completa):
+   a) vagrant up (defender VM)
+   b) Localizar CSVs reales: find /vagrant/logs -name "*.csv" | head -20
+   c) head -5 de ml-detector CSV y firewall-acl-agent CSV
+   d) Contar filas: wc -l *.csv → decidir política registro con datos reales
+   e) Definir schema Arrow v1.0 con tipos acordados por Consejo
+   f) Generar Parquet prueba: python3 con pyarrow, validar roundtrip
+   g) Documentar en ADR-0043 D4b, commit, cerrar deuda
+   h) Estimar volumen por nodo por mes
 
-## PENDIENTES DAY 148 (por prioridad)
+### P1 — GESTIÓN EXTERNA (iniciar hoy)
+2. Email Dr. Andrés Caro Lindo (andresc@unex.es):
+   - Asunto: DEBT-LEGAL-DATA-RETENTION-001 — consulta GDPR pseudonimización
+   - Pregunta: ¿cuándo datos HMAC-SHA256 dejan de ser PII si K_pseudo está en Vault destruido?
+   - No bloquea schema Parquet pero sí despliegue productivo — latencia jurídica externa
 
-### P0 — BLOQUEANTES pre-arXiv
-1. suricata -r offline (10 min):
-   cd experiments/suricata-comparative
-   vagrant ssh suricata -c "
-   sudo suricata -r /vagrant/datasets/ctu13/botnet-capture-20110810-neris.pcap \
-   -c /etc/suricata/suricata.yaml \
-   -l /vagrant/logs/experiment/suricata-offline/ \
-   --runmode single 2>&1 | tail -5"
-   Si 0 alertas: añadir nota metodológica al paper (una línea en §8.13)
-   Si >0 alertas: emergencia — rehacer experimento Suricata
+### P1 — TÉCNICA (si queda tiempo tras P0)
+3. DEBT-CRYPTO-MATERIAL-STORAGE-001: HashiCorp Vault dev mode en Vagrant
+   - Objetivo: prototipo mínimo K_pseudo + HMAC + firma Ed25519
+   - No necesita HA todavía — dev mode suficiente para validar contrato
 
-2. Refinar §8.14 con keywords Consejo:
-   - Reemplazar "observabilidad" por "measurement layer" / "telemetry"
-   - Añadir frase "Observability does not imply classification"
-   - Afinar framing taxonómico (arquitecturas de decisión, no benchmark)
-
-3. §10 Future Work: añadir párrafo Zeek Phase 2
-   - detect-botnets.zeek específicamente
-   - Intel framework limitation (feeds históricos no disponibles)
-   - Pregunta científica: cuánta ingeniería manual para acercarse a ML behavioral
-
-4. Tabla §8.2 (comparison with state of the art): añadir fila Zeek 8.1.2
-
-### P1 — TÉCNICA
-5. DEBT-IRP-FLOAT-TYPES-001:
-   - Investigar tipo producido por ml-detector en pipeline ZMQ→protobuf→BatchProcessor
-   - float vs double: unificar antes de tests MITRE
-   - Revisar Detection::confidence type en proto
-
-### P1 — DOCS (si no se hizo al final DAY 147)
-6. Aplicar update_docs_day147.py:
-   python3 update_docs_day147.py --dry-run
-   python3 update_docs_day147.py
-   git add README.md docs/BACKLOG.md
-   git commit -m "docs(day147): README + BACKLOG three-paradigm experiment"
-
-### P1 — DECISIÓN
-7. arXiv replace v19→v22:
-   - Esperar confirmación suricata -r offline (P0 item 1)
-   - Si verde: subir v22 como replace con abstract actualizado
-   - La diferencia v19→v22 es sustancial: ADR-029, Suricata, Zeek, §8.13, §8.14
+### P1 — PAPER (mínimo cambio, máximo blindaje)
+4. Abstract v24: "are complementary" → "are architecturally complementary by design"
+   Una palabra. Aplicar, compilar, no subir a arXiv todavía.
 
 ## ESTADO TÉCNICO
 - Keypair post-destroy DAY 133: b5b6cbdf67dad75cdd7e3169d837d1d6d4c938b720e34331f8a73f478ee85daa
-- Experimento Suricata: experiments/suricata-comparative/ (VMs pueden estar levantadas)
-- Experimento Zeek: experiments/zeek-comparative/ (VMs levantadas DAY 147)
-- Logs Zeek: logs/experiment/zeek/{10,50,100}mbps/ + zeek_metrics_v2_10mbps.json
-- Paper: docs/latex/main.tex (v22) + docs/latex/references.bib
+- CSVs ml-detector: buscar en /vagrant/logs/lab/ o /var/log/argus/
+- CSVs firewall-acl-agent: buscar en /vagrant/logs/firewall_logs/
+- Schema candidato ADR-0043 D4b: docs/adr/ADR-0043-memoria-episodica-distribuida-v4.md
+- Paper: docs/latex/main.tex (v23)
 
 ## REGLAS PERMANENTES
 - macOS: nunca sed -i sin -e ''; usar python3 inline
 - Makefile: única fuente de verdad
 - EMECAS: vagrant destroy -f && vagrant up && make bootstrap && make test-all
 - Consejo: Claude, Grok, ChatGPT, DeepSeek, Qwen, Gemini, Kimi, Mistral (8 modelos)
+- No ARM64 antes de pipeline x86 end-to-end verde (Kimi, DAY 148)
 
 ## TABLA TRES PARADIGMAS (referencia)
 Sistema              | F1     | Precision | Recall | TP  | Paradigma
 Suricata 6.0.10      | 0.000  | ---       | 0.000  | 0   | Signature (ET Open)
 Zeek 8.1.2 (default) | 0.042  | 1.000     | 0.022  | 14  | Scripted behavioral
 aRGus NDR            | 0.9985 | 0.997     | 1.000  | 646 | ML behavioral
+
+## TIPOS ARROW ACORDADOS (Consejo 8/8 DAY 148)
+timestamp_utc_ns: int64 (epoch nanoseconds UTC)
+confidence/scores: float32
+anon_host_id/flow_id: utf8 dictionary-encoded
+event_type/action: int8 o dictionary(utf8)
+bytes: int64 | packets: int32 | ports: uint16/int32
