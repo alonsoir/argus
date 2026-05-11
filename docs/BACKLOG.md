@@ -1219,6 +1219,38 @@ Un sistema con ACRL converge hacia cobertura de técnicas ATT&CK en tiempo polin
 *DAY 148 — 11 Mayo 2026 · main @ v0.7.1-day148*
 *"Via Appia Quality — Un escudo que aprende de su propia sombra."*
 
-## 📝 Notas del Consejo de Sabios — DAY 148 (pendiente)
+## 📝 Notas del Consejo de Sabios — DAY 148 (8/8)
 
-> [Ver síntesis Consejo DAY 148 — pendiente de elaborar]
+> "DAY 148 — Validación offline Suricata irrefutable. Paper v23. DEBT-IRP-FLOAT-TYPES-001 cerrada.
+>
+> **P1 — Framing de complementariedad (8/8 MANTENER EN ABSTRACT):**
+> Consenso unánime: la afirmación es una contribución arquitectónica válida. Los tres sistemas
+> operan en capas de encoding distintas (telemetría, firmas, clasificación behavioral) y sus
+> outputs son ortogonales — la complementariedad es una inferencia válida de los datos, no una
+> promesa de integración. Refinamiento recomendado (ChatGPT, DeepSeek, Kimi, Qwen convergentes):
+> cambiar 'are complementary' → 'are architecturally complementary by design'. Una palabra,
+> máximo blindaje ante revisores. Acción: aplicar en v24 / próxima revisión. No urgente.
+>
+> **P2 — DEBT-PARQUET-SCHEMA-001 (8/8 consenso técnico):**
+> Granularidad: 8/8 por flow sin excepción. Política de registro: dividido en dos posiciones —
+> (4/8: ChatGPT, Mistral, Kimi, Qwen) todos los eventos + relevance_flag para máxima flexibilidad;
+> (4/8: Claude, DeepSeek, Grok, Gemini) solo alertas/denies + muestreo 1% de normales. Decisión:
+> híbrida — todos los eventos de ml-detector, solo DENY/DROP de firewall-acl-agent. Confirmar
+> con datos reales en la sesión Vagrant.
+> Tipos Arrow acordados (8/8): int64 epoch ns para timestamps, float32 para scores, utf8
+> dictionary-encoded para IDs pseudonimizados, int8/dictionary para enums, int64/int32 para
+> contadores.
+>
+> **P3 — Secuencia DAY 149+ (8/8):**
+> DAY 149: A) DEBT-PARQUET-SCHEMA-001 — P0 bloqueante, desbloquea todo ADR-0043.
+> DAY 150-152: C) Vault prototype (K_pseudo, Ed25519) — antes que Jenkins.
+> DAY 153-155: B) Jenkins seed distribution.
+> DAY 156+: D) ARM64 scope — solo si A+B+C verdes. No portar antes de estabilizar.
+> Buffer E: ½ día cada 10 días de desarrollo intenso.
+> Dependencia oculta crítica (Qwen + DeepSeek): contactar Dr. Andrés Caro Lindo ESTA SEMANA
+> para iniciar DEBT-LEGAL-DATA-RETENTION-001 en paralelo. El proceso jurídico tiene latencia
+> externa independiente del trabajo técnico.
+>
+> 'El schema Parquet no es un detalle de implementación — es el contrato de soberanía entre
+> el edge y el centro.' — Qwen · DAY 148"
+> — Consejo de Sabios (8/8) · DAY 148

@@ -379,15 +379,15 @@ make hardened-full   # destroy → up → provision → build → deploy → che
 - [x] ADR-041 Hardware Acceptance Metrics FEDER (8/8)
 - [x] Pipeline E2E hardened · check-prod-all PASSED
 
-### 🔜 NEXT — DAY 146+
+### 🔜 NEXT — DAY 149+ (secuencia confirmada Consejo 8/8)
 
 | Priority | Task |
 |---|---|
-| 🔴 P0 | DEBT-PARQUET-SCHEMA-001 — validar schema Parquet contra CSVs reales en Vagrant |
-| 🟡 P1 | DEBT-JENKINS-SEED-DISTRIBUTION-001 — pre-FEDER |
-| 🟡 P1 | DEBT-CRYPTO-MATERIAL-STORAGE-001 — HashiCorp Vault prototype |
-| 🟡 P1 | Abrir feature/adr029-variant-c-arm64 scope definido |
-| 🟡 P1 | DEBT-IRP-PROB-CONJUNTA-001 — función probabilidad conjunta multi-señal |
+| 🔴 P0 | **DAY 149** — DEBT-PARQUET-SCHEMA-001: CSVs reales Vagrant → schema Arrow v1.0 → ADR-0043 D4b |
+| 🟡 P1 | **DAY 150-152** — DEBT-CRYPTO-MATERIAL-STORAGE-001: Vault prototype (K_pseudo + Ed25519) |
+| 🟡 P1 | **DAY 153-155** — DEBT-JENKINS-SEED-DISTRIBUTION-001: CI/CD seed distribution |
+| 🟡 P1 | **DAY 156+** — feature/adr029-variant-c-arm64: solo si A+B+C verdes |
+| 🟡 P1 | **Esta semana** — Email Dr. Andrés Caro Lindo: iniciar DEBT-LEGAL-DATA-RETENTION-001 |
 
 ### 🔜 THEN — PHASE 5: Adversarial Capture-Retrain Loop
 
