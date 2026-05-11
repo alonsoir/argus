@@ -79,7 +79,7 @@ in Resource-Constrained Organizations}}
     \href{https://github.com/alonsoir/argus}{github.com/alonsoir/argus}
 }
 
-\date{Draft v22 --- May 2026}
+\date{Draft v23 --- May 2026}
 
 % ============================================================
 \begin{document}
@@ -183,16 +183,24 @@ in Resource-Constrained Organizations}}
         Paxson~\cite{sommer2010} with reproducible experimental data. The zero-alert result is
         not a failure of Suricata: the ET~Open ruleset evolves continuously and rules for
         15-year-old threats are retired as new rules emerge.
-        % ── NEW DAY 147 ──────────────────────────────────────────────────────────
-        We extend this head-to-head to a \emph{three-paradigm comparison} by adding
+        % ── NEW DAY 148 ──────────────────────────────────────────────────────────
+        We extend this head-to-head to a three-paradigm comparison by adding
         Zeek~8.1.2 with default policy scripts (DAY~147,
         \S\ref{sec:eval:threeparadigms}): Zeek generates 14~correct detections
-        (\texttt{SSL::Invalid\_Server\_Cert}, Precision$=1.0000$, F1$=0.0424$) while
-        fully observing the botnet behavioral profile in structured logs
-        (\texttt{weird.log}, \texttt{http.log}, \texttt{smtp.log}) without generating
-        further alerts under default configuration --- placing scripted behavioral
-        detection precisely between signature-based and ML-based approaches on the
-        Recall axis (F1$=0.042$ vs F1$=0.9985$).
+        (\texttt{SSL::Invalid\_Server\_Cert}, Precision$=1.0000$, F1$=0.0424$)
+        while fully observing the botnet behavioral profile in structured logs
+        (\texttt{weird.log}, \texttt{http.log}, \texttt{smtp.log}) without
+        generating further alerts under default configuration.
+        An additional offline experiment (DAY~148) eliminates all replay artifacts:
+        Suricata~6.0.10 with 50,010 ET~Open rules --- including 251~IRC,
+        475~botnet/C2, and 853~trojan signatures --- produces zero detections on
+        323,154~packets processed directly from the pcap.
+        These results place the three systems on a taxonomy of decision architectures
+        --- signature, scripted behavioral, and ML behavioral --- that differ in the
+        layer at which network knowledge is encoded, not in engineering quality.
+        The three paradigms are complementary: Zeek's telemetry layer and
+        Suricata's signature coverage operate naturally alongside an ML behavioral
+        classifier, each contributing at its native encoding layer.
         % ─────────────────────────────────────────────────────────────────────────
 
         ML Defender is released under the MIT license.
