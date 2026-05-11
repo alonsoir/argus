@@ -1,6 +1,6 @@
 % ============================================================
 % ML Defender (aRGus NDR) — arXiv preprint
-% Draft v22 --- DAY 147 --- 10 May 2026
+% Draft v23 --- DAY 148 --- 11 May 2026
 % Author: Alonso Isidoro Román
 % Target: cs.CR
 % ============================================================
@@ -79,7 +79,7 @@ in Resource-Constrained Organizations}}
     \href{https://github.com/alonsoir/argus}{github.com/alonsoir/argus}
 }
 
-\date{Draft v22 --- May 2026}
+\date{Draft v23 --- May 2026}
 
 % ============================================================
 \begin{document}
@@ -183,16 +183,24 @@ in Resource-Constrained Organizations}}
         Paxson~\cite{sommer2010} with reproducible experimental data. The zero-alert result is
         not a failure of Suricata: the ET~Open ruleset evolves continuously and rules for
         15-year-old threats are retired as new rules emerge.
-        % ── NEW DAY 147 ──────────────────────────────────────────────────────────
-        We extend this head-to-head to a \emph{three-paradigm comparison} by adding
+        % ── NEW DAY 148 ──────────────────────────────────────────────────────────
+        We extend this head-to-head to a three-paradigm comparison by adding
         Zeek~8.1.2 with default policy scripts (DAY~147,
         \S\ref{sec:eval:threeparadigms}): Zeek generates 14~correct detections
-        (\texttt{SSL::Invalid\_Server\_Cert}, Precision$=1.0000$, F1$=0.0424$) while
-        fully observing the botnet behavioral profile in structured logs
-        (\texttt{weird.log}, \texttt{http.log}, \texttt{smtp.log}) without generating
-        further alerts under default configuration --- placing scripted behavioral
-        detection precisely between signature-based and ML-based approaches on the
-        Recall axis (F1$=0.042$ vs F1$=0.9985$).
+        (\texttt{SSL::Invalid\_Server\_Cert}, Precision$=1.0000$, F1$=0.0424$)
+        while fully observing the botnet behavioral profile in structured logs
+        (\texttt{weird.log}, \texttt{http.log}, \texttt{smtp.log}) without
+        generating further alerts under default configuration.
+        An additional offline experiment (DAY~148) eliminates all replay artifacts:
+        Suricata~6.0.10 with 50,010 ET~Open rules --- including 251~IRC,
+        475~botnet/C2, and 853~trojan signatures --- produces zero detections on
+        323,154~packets processed directly from the pcap.
+        These results place the three systems on a taxonomy of decision architectures
+        --- signature, scripted behavioral, and ML behavioral --- that differ in the
+        layer at which network knowledge is encoded, not in engineering quality.
+        The three paradigms are complementary: Zeek's telemetry layer and
+        Suricata's signature coverage operate naturally alongside an ML behavioral
+        classifier, each contributing at its native encoding layer.
         % ─────────────────────────────────────────────────────────────────────────
 
         ML Defender is released under the MIT license.
@@ -492,6 +500,7 @@ in Resource-Constrained Organizations}}
         \caption{Comparison with representative NIDS approaches. The Suricata~6.0.10 row reports
         an \emph{empirically measured} result on CTU-13 Neris (DAY~146,
             \S\ref{sec:eval:suricata}); all other rows are indicative cross-paper comparisons.
+            $^{\dagger}$~Zeek~8.1.2 with default policy scripts (DAY~147, \S\ref{sec:eval:threeparadigms}): 14 correct detections (SSL::Invalid\_Server\_Cert), Precision$=1.000$, F1$=0.042$. Empirically measured on CTU-13 Neris under identical conditions.
             $^{\S}$~Suricata~6.0.10 with 50,010 ET~Open rules (May~2026) generates zero alerts on
             CTU-13 Neris 2011. This is not a system failure --- ET~Open rules for this 15-year-old
             botnet family are no longer active in the current ruleset. \emph{Caution: non-Suricata
@@ -504,6 +513,7 @@ in Resource-Constrained Organizations}}
             \textbf{ML Defender} & CTU-13 Neris & \textbf{0.9985} & 0.24--1.06~$\mu$s & x86/ARM & Yes & Synthetic, dual-score \\
             Kitsune~\cite{mirsky2018} & Custom & ${\sim}$0.982 & ${\sim}$50~$\mu$s & x86 & No & Autoencoder ensemble \\
             Suricata~6.0.10$^{\S}$ & CTU-13 Neris & \textbf{0.000} & ${\sim}$10~$\mu$s & x86 & Yes & 0 alerts (no rule for Neris 2011) \\
+            Zeek~8.1.2$^{\dagger}$ & CTU-13 Neris & 0.042 & ${\sim}$5~$\mu$s & x86 & No & Scripted behavioral; Prec$=1.000$, Recall$=0.022$ \\
             RF~\cite{sharafaldin2018} & CIC-IDS2017 & ${\sim}$0.943 & ${\sim}$200~$\mu$s & x86 & No & Batch, not embedded \\
             Snort & N/A & N/A & 1--5~ms & x86 & Yes & Rule-based, no ML \\
             \bottomrule
@@ -789,6 +799,36 @@ in Resource-Constrained Organizations}}
     a quantitative confirmation that signatures for historical threat families are retired
     as new coverage emerges~\cite{asad2023perspective}.
 
+    \paragraph{Offline validation with full ruleset enforcement.}
+    To address the methodological concern that live-replay conditions might introduce
+    packet loss or timing artifacts affecting Suricata's detection pipeline, we conducted
+    an additional experiment in pure offline mode (\texttt{suricata -r}, DAY~148).
+    Suricata~6.0.10 was executed directly against the CTU-13 Neris pcap
+    (\texttt{botnet-capture-20110810-neris.pcap}, 323,154~packets, 53~MB) with the full
+    ET~Open ruleset loaded exclusively (\texttt{-S /var/lib/suricata/rules/suricata.rules},
+    50,010~active rules), bypassing all live-capture infrastructure. Checksum validation
+    was additionally disabled (\texttt{-k none}) to eliminate pcap offloading artifacts as
+    a confounding variable.
+
+    The active ruleset included categories directly relevant to the Neris threat family:
+    251~IRC signatures, 475~botnet/C2 signatures, and 853~trojan signatures. Despite
+    processing all 323,154~packets under these conditions, \textbf{zero ET~Open signatures
+    fired}. The complete alert log consisted exclusively of 128~internal Suricata engine
+    events --- TCP stream anomalies (\texttt{STREAM Packet with invalid ack},
+    \texttt{STREAM ESTABLISHED invalid ack}, \texttt{STREAM SHUTDOWN RST invalid ack}),
+    application-layer protocol detection notices, and SMTP parser events --- none of which
+    constitute threat detections. The \texttt{eve.json} output confirms zero events with
+    \texttt{event\_type: alert} originating from an ET~Open signature.
+
+    This result eliminates live-capture throughput, packet loss, and timing as explanations
+    for the zero-detection outcome observed in the DAY~146 replay experiment. The absence
+    of ET~Open detections is a property of the \emph{ruleset coverage gap}, not of the
+    evaluation methodology. The conclusion is irrefutable under any replay condition:
+    50,010 current ET~Open rules, including categories specifically designed for IRC
+    botnet and C2 detection, produce no detections on 15-year-old Neris traffic.
+    This is the expected and theoretically predicted outcome of the signature paradigm
+    applied to threats outside its coverage horizon.
+
     The inability to locate public historical ruleset archives is itself a finding: it
     motivates the security community to maintain versioned, time-stamped public archives
     of open-source IDS rulesets --- analogous to software package repositories with
@@ -802,8 +842,11 @@ in Resource-Constrained Organizations}}
 
     To complete the paradigm comparison initiated in \S\ref{sec:eval:suricata}, we
     extended the direct experimental comparison to include Zeek~8.1.2 with default
-    policy scripts (DAY~147). The three systems represent distinct detection philosophies
-    evaluated under identical conditions on the same corpus.
+    policy scripts (DAY~147). The three systems represent distinct \emph{decision architecture taxonomies} ---
+    not a performance benchmark --- evaluated under identical conditions on the same corpus.
+    Each architecture differs not in engineering quality but in the layer at which network
+    knowledge is encoded: as signatures, as scripted structural rules, or as learned behavioral
+    distributions.
 
     \paragraph{Experimental protocol.}
     Zeek~8.1.2 was provisioned on a dedicated VM with the same specification as the
@@ -912,8 +955,14 @@ in Resource-Constrained Organizations}}
         demonstrates that Zeek \emph{observes} the complete behavioral profile of the
         botnet --- IRC commands, HTTP beaconing to 4,199 unique destinations, SMB
         lateral movement, 82 spam sessions --- but does not convert these observations
-        to alerts under default configuration. Zeek is a high-fidelity network
-        observability platform with selective detection capability.
+        to alerts under default configuration.
+        Zeek functions as a high-fidelity \emph{measurement layer} and \emph{telemetry
+        platform}: it records complete network state into structured logs with
+        sub-flow granularity. This telemetry is the raw material for subsequent
+        classification --- by a human analyst, a SIEM, or an ML system --- but
+        Zeek itself does not perform behavioral classification under default
+        configuration. The architectural role is \emph{observe and record},
+        not \emph{classify and alert}.
 
         \item \textbf{aRGus NDR (ML behavioral):} classifies the behavioral footprint
         of the malware --- how many hosts it contacts, what protocols it abuses, the
@@ -923,8 +972,15 @@ in Resource-Constrained Organizations}}
     \end{itemize}
 
     \paragraph{Scientific significance.}
-    This three-way comparison yields a finding that no two-system comparison could
-    produce: \emph{Precision and Recall are not in fundamental tension for ML behavioral
+    This three-way comparison yields two findings that no two-system comparison could
+    produce. First: \textbf{observability does not imply classification.} Zeek records
+    the complete behavioral profile of the Neris botnet --- 31,736 flows, IRC commands,
+    HTTP beaconing to 4,199 unique destinations, SMB lateral movement --- yet generates
+    14 alerts. The telemetry is complete; the classification is absent by design.
+    This distinction is invisible in any comparison that conflates measurement
+    infrastructure with detection systems.
+
+    Second: \emph{Precision and Recall are not in fundamental tension for ML behavioral
     detection --- they are in structural tension for scripted behavioral detection.}
     Zeek achieves perfect Precision at the cost of near-zero Recall; aRGus achieves
     both simultaneously. This is not a deficiency of Zeek: it is the structural
@@ -959,7 +1015,68 @@ in Resource-Constrained Organizations}}
     \label{sec:future}
 % ============================================================
 
-    % [Unchanged from v19 --- see full source]
+
+    \subsection{Bare-Metal Evaluation}
+    \label{sec:future:baremetal}
+    All throughput and resource utilization figures reported in this paper were obtained
+    under VirtualBox~7.2 virtio emulation. Bare-metal characterization on physical hardware
+    with XDP-native NIC drivers (Intel ixgbe, Mellanox mlx5) remains the highest-priority
+    infrastructure experiment. Two specific inversions are predicted and must be empirically
+    verified: (1)~eBPF/XDP Variant~A is expected to outperform libpcap Variant~B on physical
+    hardware, reversing the VirtualBox result (\S\ref{sec:eval:adr029}); (2)~the two
+    VirtualBox host-only FPs are expected to be absent in bare-metal topologies.
+    Target hardware: Raspberry Pi~4/5 (\textasciitilde80~EUR) or commodity miniPC
+    (\textasciitilde300~EUR), consistent with the FEDER deployment model.
+
+    \subsection{Evaluation Against Modern Threat Corpora}
+    \label{sec:future:corpus}
+    The current evaluation covers a single botnet scenario from 2011 (CTU-13 Neris).
+    Generalization to post-2020 threat families --- LockBit, BlackCat/ALPHV, Cl0p ransomware;
+    modern encrypted C2 with adaptive beaconing and jitter; DDoS amplification variants ---
+    has not been empirically established. Sebastian Garcia (CTU Prague, endorser of this work)
+    has been identified as a potential collaborator for access to contemporary capture corpora.
+    This evaluation is the highest-priority scientific expansion of the current results.
+
+    \subsection{Adversarial Capture-Retrain Loop}
+    \label{sec:future:acrl}
+    The Wednesday out-of-distribution evaluation (\S\ref{sec:eval:xgboost:ood}) demonstrates
+    that static classifiers trained on academic benchmarks fail structurally on unseen attack
+    families --- corroborating Sommer and Paxson~\cite{sommer2010}. The architectural response
+    is an Adversarial Capture-Retrain Loop: a generative red team agent produces attack traffic,
+    the aRGus pipeline captures it in production, and the classifier is retrained on real flows
+    via walk-forward validation with golden-set guardrails (ADR-040). This closes the
+    closed-world assumption gap identified in \S\ref{sec:eval:xgboost:ood}.
+
+    \subsection{Hardened Deployment: AppArmor, Falco, and seL4}
+    \label{sec:future:hardened}
+    ADR-030 delivers six AppArmor enforce-mode profiles and eleven Falco rules providing
+    kernel-level confinement of all pipeline components. ADR-031 scopes a research-only
+    Variant~C (seL4 microkernel) for formal verification of the capture boundary ---
+    the last roadmap item requiring specialist collaboration. Both are direct responses
+    to the AI-augmented offensive capability trajectory documented in \S\ref{sec:background:ai}.
+
+    \subsection{Zeek Phase 2: Scripted Behavioral Detection}
+    \label{sec:future:zeek}
+    The DAY~147 experiment establishes Zeek~8.1.2 with default policy scripts as the
+    scripted behavioral baseline (F1$=0.042$, Precision$=1.000$, Recall$=0.022$).
+    A natural Phase~2 question is: how much engineering effort is required to close the
+    Recall gap via custom Zeek scripts?
+
+    The primary candidate is \texttt{detect-botnets.zeek} (DeepSeek recommendation,
+    DAY~147 Consejo), a community script implementing flow-level behavioral heuristics
+    for IRC C2 detection, connection burst analysis, and DNS anomaly scoring. A controlled
+    experiment --- Zeek~8.1.2 with \texttt{detect-botnets.zeek} loaded against the CTU-13
+    Neris pcap under identical conditions to DAY~147 --- would quantify the engineering
+    cost of scripted behavioral detection relative to ML behavioral detection.
+
+    A secondary constraint is the Intel framework temporal limitation: Zeek's threat
+    intelligence feeds are designed for contemporary indicators; 2011 Neris C2 infrastructure
+    (\texttt{1.95622.com}, \texttt{www.lddwj.com}) is not present in current feed snapshots.
+    This limitation is structural and independent of scripting effort --- it motivates
+    the scientific question: \emph{how much of Zeek's Recall gap is closeable via
+    scripting, and how much is irreducible given the temporal coverage horizon of
+    available threat intelligence?}
+
 
 % ============================================================
     \section{Conclusion}
