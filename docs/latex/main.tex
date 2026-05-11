@@ -1005,7 +1005,68 @@ in Resource-Constrained Organizations}}
     \label{sec:future}
 % ============================================================
 
-    % [Unchanged from v19 --- see full source]
+
+    \subsection{Bare-Metal Evaluation}
+    \label{sec:future:baremetal}
+    All throughput and resource utilization figures reported in this paper were obtained
+    under VirtualBox~7.2 virtio emulation. Bare-metal characterization on physical hardware
+    with XDP-native NIC drivers (Intel ixgbe, Mellanox mlx5) remains the highest-priority
+    infrastructure experiment. Two specific inversions are predicted and must be empirically
+    verified: (1)~eBPF/XDP Variant~A is expected to outperform libpcap Variant~B on physical
+    hardware, reversing the VirtualBox result (\S\ref{sec:eval:adr029}); (2)~the two
+    VirtualBox host-only FPs are expected to be absent in bare-metal topologies.
+    Target hardware: Raspberry Pi~4/5 (\textasciitilde80~EUR) or commodity miniPC
+    (\textasciitilde300~EUR), consistent with the FEDER deployment model.
+
+    \subsection{Evaluation Against Modern Threat Corpora}
+    \label{sec:future:corpus}
+    The current evaluation covers a single botnet scenario from 2011 (CTU-13 Neris).
+    Generalization to post-2020 threat families --- LockBit, BlackCat/ALPHV, Cl0p ransomware;
+    modern encrypted C2 with adaptive beaconing and jitter; DDoS amplification variants ---
+    has not been empirically established. Sebastian Garcia (CTU Prague, endorser of this work)
+    has been identified as a potential collaborator for access to contemporary capture corpora.
+    This evaluation is the highest-priority scientific expansion of the current results.
+
+    \subsection{Adversarial Capture-Retrain Loop}
+    \label{sec:future:acrl}
+    The Wednesday out-of-distribution evaluation (\S\ref{sec:eval:xgboost:ood}) demonstrates
+    that static classifiers trained on academic benchmarks fail structurally on unseen attack
+    families --- corroborating Sommer and Paxson~\cite{sommer2010}. The architectural response
+    is an Adversarial Capture-Retrain Loop: a generative red team agent produces attack traffic,
+    the aRGus pipeline captures it in production, and the classifier is retrained on real flows
+    via walk-forward validation with golden-set guardrails (ADR-040). This closes the
+    closed-world assumption gap identified in \S\ref{sec:eval:xgboost:ood}.
+
+    \subsection{Hardened Deployment: AppArmor, Falco, and seL4}
+    \label{sec:future:hardened}
+    ADR-030 delivers six AppArmor enforce-mode profiles and eleven Falco rules providing
+    kernel-level confinement of all pipeline components. ADR-031 scopes a research-only
+    Variant~C (seL4 microkernel) for formal verification of the capture boundary ---
+    the last roadmap item requiring specialist collaboration. Both are direct responses
+    to the AI-augmented offensive capability trajectory documented in \S\ref{sec:background:ai}.
+
+    \subsection{Zeek Phase 2: Scripted Behavioral Detection}
+    \label{sec:future:zeek}
+    The DAY~147 experiment establishes Zeek~8.1.2 with default policy scripts as the
+    scripted behavioral baseline (F1$=0.042$, Precision$=1.000$, Recall$=0.022$).
+    A natural Phase~2 question is: how much engineering effort is required to close the
+    Recall gap via custom Zeek scripts?
+
+    The primary candidate is \texttt{detect-botnets.zeek} (DeepSeek recommendation,
+    DAY~147 Consejo), a community script implementing flow-level behavioral heuristics
+    for IRC C2 detection, connection burst analysis, and DNS anomaly scoring. A controlled
+    experiment --- Zeek~8.1.2 with \texttt{detect-botnets.zeek} loaded against the CTU-13
+    Neris pcap under identical conditions to DAY~147 --- would quantify the engineering
+    cost of scripted behavioral detection relative to ML behavioral detection.
+
+    A secondary constraint is the Intel framework temporal limitation: Zeek's threat
+    intelligence feeds are designed for contemporary indicators; 2011 Neris C2 infrastructure
+    (\texttt{1.95622.com}, \texttt{www.lddwj.com}) is not present in current feed snapshots.
+    This limitation is structural and independent of scripting effort --- it motivates
+    the scientific question: \emph{how much of Zeek's Recall gap is closeable via
+    scripting, and how much is irreducible given the temporal coverage horizon of
+    available threat intelligence?}
+
 
 % ============================================================
     \section{Conclusion}
