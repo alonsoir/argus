@@ -492,6 +492,7 @@ in Resource-Constrained Organizations}}
         \caption{Comparison with representative NIDS approaches. The Suricata~6.0.10 row reports
         an \emph{empirically measured} result on CTU-13 Neris (DAY~146,
             \S\ref{sec:eval:suricata}); all other rows are indicative cross-paper comparisons.
+            $^{\dagger}$~Zeek~8.1.2 with default policy scripts (DAY~147, \S\ref{sec:eval:threeparadigms}): 14 correct detections (SSL::Invalid\_Server\_Cert), Precision$=1.000$, F1$=0.042$. Empirically measured on CTU-13 Neris under identical conditions.
             $^{\S}$~Suricata~6.0.10 with 50,010 ET~Open rules (May~2026) generates zero alerts on
             CTU-13 Neris 2011. This is not a system failure --- ET~Open rules for this 15-year-old
             botnet family are no longer active in the current ruleset. \emph{Caution: non-Suricata
@@ -504,6 +505,7 @@ in Resource-Constrained Organizations}}
             \textbf{ML Defender} & CTU-13 Neris & \textbf{0.9985} & 0.24--1.06~$\mu$s & x86/ARM & Yes & Synthetic, dual-score \\
             Kitsune~\cite{mirsky2018} & Custom & ${\sim}$0.982 & ${\sim}$50~$\mu$s & x86 & No & Autoencoder ensemble \\
             Suricata~6.0.10$^{\S}$ & CTU-13 Neris & \textbf{0.000} & ${\sim}$10~$\mu$s & x86 & Yes & 0 alerts (no rule for Neris 2011) \\
+            Zeek~8.1.2$^{\dagger}$ & CTU-13 Neris & 0.042 & ${\sim}$5~$\mu$s & x86 & No & Scripted behavioral; Prec$=1.000$, Recall$=0.022$ \\
             RF~\cite{sharafaldin2018} & CIC-IDS2017 & ${\sim}$0.943 & ${\sim}$200~$\mu$s & x86 & No & Batch, not embedded \\
             Snort & N/A & N/A & 1--5~ms & x86 & Yes & Rule-based, no ML \\
             \bottomrule
