@@ -64,6 +64,36 @@
 
 ---
 
+## ✅ CERRADO DAY 148
+
+### DEBT-IRP-FLOAT-TYPES-001 — Unificar tipos score float/double
+- **Status:** ✅ CERRADO DAY 148 — **Commits:** `21b52347` (fix) · `82e81c3f` (untrack symlinks)
+- **Fix:** `IrpConfig::threat_score_threshold`: `double 0.95` → `float 0.95f`. Consistente con `Detection::confidence` (protobuf `float`). Parche IEEE 754 (`static_cast<double>(...) < threshold - 1e-6`) eliminado de `batch_processor.cpp` `should_auto_isolate()`. Comparación directa `float < float`.
+- **Decisión técnica:** `float` correcto para scores de salida del clasificador ML (0.0-1.0). `double` se mantiene en features de entrada del proto (mediciones de paquetes). Contrato protobuf no modificado.
+- **EMECAS:** `make PROFILE=production test-all` — ALL TESTS COMPLETE.
+- **Rama:** `fix/debt-irp-float-types-001` → PR #58 → main.
+
+### Paper Draft v23 — DAY 148
+- **Status:** ✅ CERRADO DAY 148
+- **Cambios:** §8.13 párrafo offline validation (suricata -r -k none, 0 ET signatures). §8.14 framing taxonómico (decision architecture taxonomies, measurement layer, telemetry, observability does not imply classification). §10 Future Work 5 subsecciones (baremetal, corpus, acrl, hardened, Zeek Phase 2 detect-botnets.zeek). Tabla §8.2 fila Zeek 8.1.2. Abstract v23 con complementariedad tres paradigmas.
+- **arXiv replace:** v19→v23 submitted como v3 (submit/7576269).
+
+### Experimento Suricata offline — DAY 148 (validación irrefutable)
+- **Status:** ✅ COMPLETADO DAY 148
+- **Protocolo:** `suricata -r botnet-capture-20110810-neris.pcap -S /var/lib/suricata/rules/suricata.rules -k none`. 323,154 paquetes procesados directamente desde pcap. Sin infraestructura live-capture.
+- **Ruleset:** 50,010 reglas ET Open (suricata-update 11 Mayo 2026): 251 IRC, 475 botnet/C2, 853 trojan.
+- **Resultado:** 0 firmas ET externas disparadas. 128 alertas internas de motor (stream anomalies, protocol detection) — ninguna constituye detección de amenaza. `eve.json` confirma 0 eventos `event_type: alert` de firma ET.
+- **Significado:** Elimina throughput, packet loss y timing como explicaciones alternativas al resultado DAY 146. Conclusión irrefutable: el gap es de cobertura de ruleset, no de metodología.
+- **Satisface criterio Kimi** (P1 bloqueante Consejo DAY 147): ✅
+
+### fix(.gitignore) + untrack — DAY 148
+- **Status:** ✅ CERRADO DAY 148 — **Commit:** `69cdf144`
+- Excluir `protocol-EMECAS-output-*.md`, `docs/argus_ndr_v*.pdf`, `docs/latex/*.zip`.
+- Untrack build symlinks: `etcd-server/build`, `rag-ingester/build`, `tools/build`.
+- Vagrantfile suricata-comparative: `mkdir -p suricata-offline suricata-nochecksum` en provision.
+
+---
+
 ## ✅ CERRADO DAY 147
 
 ### Bug fix pipeline-status — pgrep fallback para procesos huérfanos
@@ -933,6 +963,9 @@ Paper Draft v19:                        100% ✅  DAY 145 (§6 ADR-029 + §10.9 
 Paper Draft v20:                        100% ✅  DAY 146 (§8.13 Suricata + tab:comparison empírico)
 Paper Draft v21:                        100% ✅  DAY 147 (§8.13 hallazgos reales + HTTP C2 + Springer 2023)
 Paper Draft v22:                        100% ✅  DAY 147 (§8.14 tres paradigmas + abstract + conclusion + §13)
+Paper Draft v23:                        100% ✅  DAY 148 (offline validation + §10 Future Work + abstract complementariedad)
+arXiv replace v3 (v19→v23):            100% ✅  DAY 148 (submit/7576269)
+Experimento Suricata offline (DAY 148): 100% ✅  DAY 148 (0 ET signatures, 323,154 pkts, irrefutable)
 Experimento Zeek 8.1.2 (DAY 147):     100% ✅  DAY 147 (offline, 3 runs determinísticos, parse_results_zeek_v2.py)
 Bug fix pipeline-status pgrep:          100% ✅  DAY 147 (commit 42c04b06)
 Bootstrap múltiple x86 A/B:            100% ✅  DAY 145 (bootstrap-x86-ebpf + bootstrap-x86-libpcap)
@@ -949,7 +982,7 @@ DEBT-IRP-BACKUP-DIR-001:             100% ✅  DAY 144 (/run/argus/irp/ + AppArm
 DEBT-IRP-TMPFILES-001:               100% ✅  DAY 146 (tmpfiles.d + provision.sh)
 DEBT-IRP-IPSET-TMP-001:               100% ✅  DAY 146 (ipset_wrapper /run/argus/irp/)
 DEBT-EMECAS-VERIFICATION-001:          100% ✅  DAY 146 (README blockquote EMECAS)
-DEBT-IRP-FLOAT-TYPES-001:              0% ⏳  P1 pre-FEDER (unificar tipos score float/double)
+DEBT-IRP-FLOAT-TYPES-001:              100% ✅  DAY 148 — CERRADA (float consistente, parche IEEE 754 eliminado)
 DEBT-IRP-PROB-CONJUNTA-001:             0% ⏳  P1 post-FEDER (función prob. conjunta multi-señal)
 DEBT-PROTO-DETECTION-TYPES-001:         0% ⏳  Baja post-MITRE/CTF (ampliar enum DetectionType)
 DEBT-ETCD-HA-QUORUM-001:                0% ⏳  P0 post-FEDER (OBLIGATORIO)
@@ -1183,5 +1216,9 @@ Un sistema con ACRL converge hacia cobertura de técnicas ATT&CK en tiempo polin
 
 ---
 
-*DAY 147 — 10 Mayo 2026 · main @ v0.7.1-day147*
+*DAY 148 — 11 Mayo 2026 · main @ v0.7.1-day148*
 *"Via Appia Quality — Un escudo que aprende de su propia sombra."*
+
+## 📝 Notas del Consejo de Sabios — DAY 148 (pendiente)
+
+> [Ver síntesis Consejo DAY 148 — pendiente de elaborar]
