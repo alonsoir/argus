@@ -1,51 +1,44 @@
-**CONSEJO DE SABIOS — DAY 148**
-*Para: Claude, Grok, ChatGPT, DeepSeek, Qwen, Gemini, Kimi, Mistral*
+**CLAUDE — CONSEJO DAY 148**
 
 ---
 
-**CONTEXTO DAY 148**
+**P1 — VALIDEZ DEL FRAMING DE COMPLEMENTARIEDAD**
 
-Tres resultados principales:
+El framing es defendible en el abstract. La afirmación no es empírica — es arquitectónica, y está directamente justificada por los resultados experimentales: los tres sistemas operan en capas distintas (telemetría, firmas, clasificación behavioral) y sus outputs son ortogonales. No hay contradicción lógica en que coexistan. El experimento de tres vías demuestra precisamente que ninguno cubre el espacio del otro.
 
-1. **Suricata offline irrefutable** — `suricata -r -k none`, 50,010 reglas ET Open (251 IRC, 475 botnet/C2, 853 trojan), 323,154 paquetes. 0 firmas ET disparadas. 128 alertas internas de motor únicamente. Criterio de Kimi DAY 147 satisfecho.
+La distinción importante: no estamos afirmando que *hemos implementado* la integración — estamos afirmando que la integración es *arquitectónicamente natural*. Es una inferencia válida de los datos, no una promesa de implementación. Si un revisor lo cuestiona, la defensa es: "los tres sistemas producen outputs en capas distintas (telemetría estructurada, alertas de firma, clasificación behavioral) que no se solapan — su combinación no requiere demostración empírica adicional más allá de lo que ya mostramos."
 
-2. **Paper v23 / arXiv replace v3** — §8.13 offline validation, §8.14 framing taxonómico (decision architecture taxonomies, measurement layer, telemetry, "Observability does not imply classification"), §10 Future Work 5 subsecciones, tabla §8.2 con Zeek, abstract con complementariedad tres paradigmas.
-
-3. **DEBT-IRP-FLOAT-TYPES-001 cerrada** — `IrpConfig::threat_score_threshold` double→float, parche IEEE 754 eliminado, EMECAS PROFILE=production ALL TESTS COMPLETE.
+Recomendación: mantener en el abstract. La frase es corta, precisa y científicamente honesta.
 
 ---
 
-**P1 — VALIDEZ DEL FRAMING DE COMPLEMENTARIEDAD (abstract v23)**
+**P2 — ESTRATEGIA DEBT-PARQUET-SCHEMA-001**
 
-El abstract v23 introduce explícitamente que los tres paradigmas son complementarios:
+(a) **Granularidad: por flow, no por paquete.** El pipeline ya opera a nivel de flow — `Detection` en el proto es por flow. Por paquete sería un cambio de contrato, no una validación. El schema debe reflejar lo que el sistema ya produce.
 
-> *"The three paradigms are complementary: Zeek's telemetry layer and Suricata's signature coverage operate naturally alongside an ML behavioral classifier, each contributing at its native encoding layer."*
+(b) **Registrar solo alertas/denies en primera versión.** Todos los eventos generaría volúmenes no caracterizados y sin ground truth para Neo4j. El schema P0 es el contrato mínimo viable: lo que dispara el IRP y lo que bloquea el firewall. El schema completo (todos los flows) es P3 post-FEDER.
 
-**Pregunta:** ¿Es este framing científicamente defendible en el abstract sin haber implementado ni demostrado empíricamente la integración? ¿Debería estar en Future Work en lugar del abstract, o es una afirmación arquitectónica suficientemente justificada por los resultados experimentales actuales?
+(c) **Tipos Arrow:**
+- Timestamps: `int64` UTC epoch nanoseconds (ya decidido en ADR-0043) — `pa.timestamp('ns', tz='UTC')`
+- Scores float: `pa.float32()` — consistente con el fix DAY 148
+- IPs: `pa.string()` o `pa.large_utf8()` — no `pa.binary()`, necesitamos legibilidad en Neo4j
+- DetectionType enum: `pa.dictionary(pa.int8(), pa.string())` — compacto y legible
+- Booleanos (auto_isolate, block): `pa.bool_()`
 
----
-
-**P2 — DEBT-PARQUET-SCHEMA-001 (P0 bloqueante pre-FEDER)**
-
-El siguiente bloqueante técnico real es validar el schema Parquet de `ml-detector` y `firewall-acl-agent` contra CSVs reales producidos por el pipeline en Vagrant. Sin este schema no existe contrato de interfaz y el pipeline de ingesta Neo4j (ADR-0043) no puede implementarse.
-
-**Pregunta:** ¿Cuál es la estrategia óptima para cerrar DEBT-PARQUET-SCHEMA-001 en una sesión? Específicamente: (a) ¿granularidad por flow o por paquete?, (b) ¿registrar todos los eventos o solo alertas/denies?, (c) ¿qué tipos Arrow son los más adecuados para timestamps, scores float, e IPs?
+Estrategia para la sesión: (1) levantar el pipeline en Vagrant, (2) capturar 5-10 minutos de tráfico CTU-13 Neris, (3) examinar los CSVs reales que produce `ml-detector` y `firewall-acl-agent`, (4) mapear cada columna a un tipo Arrow, (5) estimar volumen por nodo por mes con los datos reales.
 
 ---
 
 **P3 — PRIORIDAD DAY 149**
 
-Estado actual: paper en arXiv, código en verde (65/65), FEDER deadline 22-Sep-2026.
+Secuencia óptima considerando FEDER deadline y dependencias:
 
-Opciones para DAY 149:
-- **A)** DEBT-PARQUET-SCHEMA-001 — examinar CSVs reales, definir schema, cerrar el P0 bloqueante ADR-0043
-- **B)** DEBT-JENKINS-SEED-DISTRIBUTION-001 — infraestructura CI/CD pre-FEDER
-- **C)** DEBT-CRYPTO-MATERIAL-STORAGE-001 — HashiCorp Vault prototype
-- **D)** Abrir `feature/adr029-variant-c-arm64` — scope ARM64 para FEDER hardware
-- **E)** Descanso técnico — consolidar, leer feedback arXiv, preparar demo FEDER
+**DAY 149: opción A — DEBT-PARQUET-SCHEMA-001.** Es el P0 bloqueante de ADR-0043, que es el componente diferenciador del FEDER (memoria episódica distribuida). Sin schema validado, el pipeline de ingesta Neo4j no puede avanzar, y Neo4j es la demostración de valor añadido más visible para los evaluadores FEDER. Una sesión, resultado concreto.
 
-**Pregunta:** Dado el deadline FEDER (22-Sep-2026, ~4 meses) y el go/no-go técnico (1-Ago-2026, ~2.5 meses), ¿cuál es la secuencia óptima de las opciones anteriores? ¿Hay alguna dependencia crítica que cambie el orden?
+**DAY 150-151: opción D — ARM64 scope.** El hardware FEDER (Raspberry Pi 4/5, miniPC) es el argumento central de la propuesta. Tener un scope definido para ARM64 antes del go/no-go técnico (1-Ago) es estratégicamente prioritario. No necesita implementación completa — necesita un ADR con criterios de aceptación medibles.
 
----
+**DAY 152+: opciones B y C.** Jenkins y Vault son infraestructura de soporte. Importantes pre-FEDER pero no bloquean la demo técnica ni el argumento científico.
 
-Pegad las respuestas del Consejo y sintetizamos antes del prompt de continuidad y el post LinkedIn.
+**Opción E:** No la recomiendo como día dedicado — pero sí como práctica diaria. Leer feedback arXiv en paralelo a cualquier tarea técnica.
+
+Dependencia crítica que cambia el orden: si Dr. Andrés Caro Lindo solicita una reunión técnica antes del go/no-go, la demo FEDER (`make feder-demo`, DEBT-ADR041-003) sube a P0 inmediato independientemente de cualquier otra tarea.
