@@ -628,9 +628,8 @@ bool BatchProcessor::should_auto_isolate(const protobuf::Detection& detection) c
         default:
             return false;
     }
-    // Comparación con tolerancia: float confidence vs double threshold
-    // static_cast<double>(0.95f) = 0.9499... por precisión IEEE 754
-    if (static_cast<double>(detection.confidence()) < irp_config_.threat_score_threshold - 1e-6)
+    // float == float: tipos unificados, sin cast ni tolerancia necesaria
+    if (detection.confidence() < irp_config_.threat_score_threshold)
         return false;
     const auto& types = irp_config_.auto_isolate_event_types;
     return std::find(types.begin(), types.end(), event_type) != types.end();
