@@ -249,3 +249,11 @@ tools/build-argus-network-isolate/
 *.bak_*
 docs/latex/*.aux
 docs/latex/*.toc
+
+# EMECAS protocol outputs (generados automáticamente)
+protocol-EMECAS-output-*.md
+
+# PDFs generados (no versionar binarios grandes)
+docs/argus_ndr_v*.pdf
+docs/latex/Archivo.zip
+docs/latex/*.zip
