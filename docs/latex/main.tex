@@ -832,8 +832,11 @@ in Resource-Constrained Organizations}}
 
     To complete the paradigm comparison initiated in \S\ref{sec:eval:suricata}, we
     extended the direct experimental comparison to include Zeek~8.1.2 with default
-    policy scripts (DAY~147). The three systems represent distinct detection philosophies
-    evaluated under identical conditions on the same corpus.
+    policy scripts (DAY~147). The three systems represent distinct \emph{decision architecture taxonomies} ---
+    not a performance benchmark --- evaluated under identical conditions on the same corpus.
+    Each architecture differs not in engineering quality but in the layer at which network
+    knowledge is encoded: as signatures, as scripted structural rules, or as learned behavioral
+    distributions.
 
     \paragraph{Experimental protocol.}
     Zeek~8.1.2 was provisioned on a dedicated VM with the same specification as the
@@ -942,8 +945,14 @@ in Resource-Constrained Organizations}}
         demonstrates that Zeek \emph{observes} the complete behavioral profile of the
         botnet --- IRC commands, HTTP beaconing to 4,199 unique destinations, SMB
         lateral movement, 82 spam sessions --- but does not convert these observations
-        to alerts under default configuration. Zeek is a high-fidelity network
-        observability platform with selective detection capability.
+        to alerts under default configuration.
+        Zeek functions as a high-fidelity \emph{measurement layer} and \emph{telemetry
+        platform}: it records complete network state into structured logs with
+        sub-flow granularity. This telemetry is the raw material for subsequent
+        classification --- by a human analyst, a SIEM, or an ML system --- but
+        Zeek itself does not perform behavioral classification under default
+        configuration. The architectural role is \emph{observe and record},
+        not \emph{classify and alert}.
 
         \item \textbf{aRGus NDR (ML behavioral):} classifies the behavioral footprint
         of the malware --- how many hosts it contacts, what protocols it abuses, the
@@ -953,8 +962,15 @@ in Resource-Constrained Organizations}}
     \end{itemize}
 
     \paragraph{Scientific significance.}
-    This three-way comparison yields a finding that no two-system comparison could
-    produce: \emph{Precision and Recall are not in fundamental tension for ML behavioral
+    This three-way comparison yields two findings that no two-system comparison could
+    produce. First: \textbf{observability does not imply classification.} Zeek records
+    the complete behavioral profile of the Neris botnet --- 31,736 flows, IRC commands,
+    HTTP beaconing to 4,199 unique destinations, SMB lateral movement --- yet generates
+    14 alerts. The telemetry is complete; the classification is absent by design.
+    This distinction is invisible in any comparison that conflates measurement
+    infrastructure with detection systems.
+
+    Second: \emph{Precision and Recall are not in fundamental tension for ML behavioral
     detection --- they are in structural tension for scripted behavioral detection.}
     Zeek achieves perfect Precision at the cost of near-zero Recall; aRGus achieves
     both simultaneously. This is not a deficiency of Zeek: it is the structural
