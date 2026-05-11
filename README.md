@@ -31,16 +31,16 @@
 
 ---
 
-✅ `main` is tagged `v0.7.1-day147`. Branch activa: `main` — Experimento comparativo tres paradigmas completado (DAY 147). Paper v22 generado.
+✅ `main` is tagged `v0.7.1-day148`. Branch activa: `main` — Validación offline Suricata irrefutable (DAY 148). Paper v23. DEBT-IRP-FLOAT-TYPES-001 cerrada.
 **PRE-PRODUCTION: do not deploy in hospitals until ACRL (DEBT-PENTESTER-LOOP-001) is complete.**
 
 ---
 
-## Estado actual — DAY 147 (2026-05-10)
+## Estado actual — DAY 148 (2026-05-11)
 
-**Tag activo:** `v0.7.1-day147` | **Branch activa:** `main`
+**Tag activo:** `v0.7.1-day148` | **Branch activa:** `main`
 **Keypair activo:** `b5b6cbdf67dad75cdd7e3169d837d1d6d4c938b720e34331f8a73f478ee85daa`
-**Paper:** arXiv:2604.04952 · Draft v22 (tres paradigmas: Suricata + Zeek + aRGus + DAY 147)
+**Paper:** arXiv:2604.04952 · Draft v23 (offline validation DAY 148 + abstract tres paradigmas + complementariedad)
 **FEDER deadline:** 22-Sep-2026 | **Go/no-go:** 1-Ago-2026
 
 ### Pipeline
@@ -63,6 +63,18 @@
 - **Makefile**: `make up-argus`, `make up-suricata`, `make halt-argus`, `make halt-suricata`, `make experiment-suricata-run/results`.
 - **Paper Draft v20** generado — nueva §8.13 con comparativa directa, Tabla comparación actualizada con datos empíricos Suricata.
 - **Vagrantfile Suricata** operativo — `nictype1 virtio` (fix crítico DHCP NAT), 50,010 reglas ET Open cargadas.
+
+### Hitos DAY 148 🎉
+- **Suricata offline validation** — `suricata -r neris.pcap -k none`, 50,010 ET Open rules (251 IRC, 475 botnet/C2, 853 trojan). 323,154 paquetes. 0 firmas ET disparadas. 128 alertas internas de motor. Criterio de Kimi satisfecho — conclusión irrefutable.
+- **§8.13 paper** — párrafo "Offline validation with full ruleset enforcement" insertado (DAY 148).
+- **§8.14 paper** — framing taxonómico: "decision architecture taxonomies", "measurement layer", "telemetry platform", "Observability does not imply classification".
+- **§10 Future Work** — 5 subsecciones completas: baremetal, corpus, acrl, hardened, Zeek Phase 2 (`detect-botnets.zeek`, Intel framework temporal limitation).
+- **Tabla §8.2** — fila Zeek 8.1.2 añadida (F1=0.042, Prec=1.000, Recall=0.022).
+- **Abstract v23** — tres paradigmas + complementariedad (Zeek telemetry + Suricata signatures + aRGus ML behavioral).
+- **arXiv replace v19→v23** — submitted como v3 (submit/7576269).
+- **DEBT-IRP-FLOAT-TYPES-001 CERRADA** — `IrpConfig::threat_score_threshold` double→float. Parche IEEE 754 eliminado. EMECAS PROFILE=production ALL TESTS COMPLETE.
+- **fix(.gitignore)** — excluir protocol-EMECAS-output-*.md, docs/argus_ndr_v*.pdf, docs/latex/*.zip. Untrack build symlinks.
+- **Tag:** `v0.7.1-day148`.
 
 ### Hitos DAY 147 🎉
 - **Bug fix pipeline-status** — pgrep fallback para procesos huérfanos (tmux + pgrep OR). Commit `42c04b06`.
@@ -91,7 +103,7 @@
 | DEBT-IRP-TMPFILES-001 | ✅ CERRADA DAY 146 | tmpfiles.d + provision.sh |
 | DEBT-IRP-IPSET-TMP-001 | ✅ CERRADA DAY 146 | ipset_wrapper /run/argus/irp/ |
 | DEBT-EMECAS-VERIFICATION-001 | ✅ CERRADA DAY 146 | README.md blockquote EMECAS |
-| DEBT-IRP-FLOAT-TYPES-001 | 🟡 P1 | pre-FEDER (tipos score float/double) |
+| DEBT-IRP-FLOAT-TYPES-001 | ✅ CERRADA DAY 148 | float consistente con Detection::confidence (protobuf) |
 | DEBT-IRP-PROB-CONJUNTA-001 | 🟡 P1 | post-FEDER (señal conjunta) |
 | DEBT-ETCD-HA-QUORUM-001 | 🔴 P0 | post-FEDER (OBLIGATORIO) |
 | DEBT-IRP-QUEUE-PROCESSOR-001 | 🔴 Alta | post-merge |
@@ -371,13 +383,11 @@ make hardened-full   # destroy → up → provision → build → deploy → che
 
 | Priority | Task |
 |---|---|
-| 🔴 P0-bloqueante | `suricata -r neris.pcap` offline — verificar 0 alertas (blinda comparativa ante revisores) |
-| 🔴 P0-paper | Refinar §8.14: "measurement layer" vs "classification layer" (framing Consejo DAY 147) |
-| 🔴 P0-paper | §10 Future Work: añadir Zeek Phase 2 (Intel framework, detect-botnets.zeek) |
-| 🟡 P1 | DEBT-IRP-FLOAT-TYPES-001 — unificar tipos score float/double pre-FEDER |
-| 🟡 P1 | Tabla §8.2 comparison: añadir fila Zeek 8.1.2 |
-| 🟡 P1 | Decisión arXiv replace v22 (tras verificación suricata -r) |
+| 🔴 P0 | DEBT-PARQUET-SCHEMA-001 — validar schema Parquet contra CSVs reales en Vagrant |
+| 🟡 P1 | DEBT-JENKINS-SEED-DISTRIBUTION-001 — pre-FEDER |
+| 🟡 P1 | DEBT-CRYPTO-MATERIAL-STORAGE-001 — HashiCorp Vault prototype |
 | 🟡 P1 | Abrir feature/adr029-variant-c-arm64 scope definido |
+| 🟡 P1 | DEBT-IRP-PROB-CONJUNTA-001 — función probabilidad conjunta multi-señal |
 
 ### 🔜 THEN — PHASE 5: Adversarial Capture-Retrain Loop
 
@@ -411,6 +421,7 @@ make hardened-full   # destroy → up → provision → build → deploy → che
 - ✅ DAY 146: **Experimento Suricata comparativo · 0 alertas ET Open vs F1=0.9985 aRGus · Paper v20 §8.13 · v0.7.1-day146** 🎉
 - ✅ DAY 147: **Experimento tres paradigmas (Suricata+Zeek+aRGus) · Paper v22 §8.14 · HTTP C2 hallazgo · weird.log behavioral profile · v0.7.1-day147** 🎉
 - ✅ DAY 147: **ADR-0043 v4 ACEPTADO** — Memoria Episódica Distribuida, Consejo 8/8, 4 versiones 🎉
+- ✅ DAY 148: **Suricata offline irrefutable · Paper v23 · arXiv replace v3 · DEBT-IRP-FLOAT-TYPES-001 cerrada · v0.7.1-day148** 🎉
 - 🔜 DAY 146+: **DEBT-IRP-TMPFILES-001 · DEBT-IRP-IPSET-TMP-001 · experiment-comparative · ARM64 scope**
 
 ---
