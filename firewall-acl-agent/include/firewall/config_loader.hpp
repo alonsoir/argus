@@ -158,7 +158,7 @@ struct LoggingConfigNew {
 //===----------------------------------------------------------------------===//
 struct IrpConfig {
     bool        auto_isolate           = false;  // sin política — siempre sobreescrito por isolate.json (única fuente de verdad)
-    double      threat_score_threshold = 0.95;
+    float       threat_score_threshold = 0.95f;  // float: consistente con Detection::confidence (protobuf float)
     std::string isolate_interface      = "eth0";
     std::string isolate_config_path    = "/etc/ml-defender/firewall-acl-agent/isolate.json";
     std::string isolate_binary_path    = "/usr/local/bin/argus-network-isolate";
