@@ -1,0 +1,75 @@
+---
+# aRGus NDR -- Playbook: deploy component configs
+# Uso dev:  ansible-playbook -i ansible/inventory/dev.yml ansible/playbooks/deploy_configs.yml
+# Uso prod: ansible-playbook -i ansible/inventory/prod.yml ansible/playbooks/deploy_configs.yml
+#           -e vault_token_secret=<token>
+#
+# Requiere: ansible, jinja2
+# Jenkins: stage Deploy Configs llama este playbook con el inventario correcto
+
+- name: Deploy aRGus NDR component configurations
+  hosts: all
+  become: true
+  gather_facts: true
+
+  vars:
+    config_dest_sniffer:    "{{ argus_config_base }}/sniffer/config/sniffer.json"
+    config_dest_ml:         "{{ argus_config_base }}/ml-detector/config/ml_detector_config.json"
+    config_dest_rag_logger: "{{ argus_config_base }}/ml-detector/config/rag_logger_config.json"
+
+  tasks:
+
+    - name: "Ensure config directories exist"
+      file:
+        path: "{{ item }}"
+        state: directory
+        mode: "0750"
+      loop:
+        - "{{ argus_config_base }}/sniffer/config"
+        - "{{ argus_config_base }}/ml-detector/config"
+
+    - name: "Deploy sniffer.json"
+      template:
+        src: "../templates/sniffer.json.j2"
+        dest: "{{ config_dest_sniffer }}"
+        mode: "0640"
+      notify: restart sniffer
+
+    - name: "Deploy ml_detector_config.json"
+      template:
+        src: "../templates/ml_detector_config.json.j2"
+        dest: "{{ config_dest_ml }}"
+        mode: "0640"
+      notify: restart ml-detector
+
+    - name: "Deploy rag_logger_config.json"
+      template:
+        src: "../templates/rag_logger_config.json.j2"
+        dest: "{{ config_dest_rag_logger }}"
+        mode: "0640"
+      notify: restart ml-detector
+
+    - name: "Verify generated JSON is valid"
+      command: "python3 -m json.tool {{ item }}"
+      loop:
+        - "{{ config_dest_sniffer }}"
+        - "{{ config_dest_ml }}"
+        - "{{ config_dest_rag_logger }}"
+      changed_when: false
+
+    - name: "Report deployed configs"
+      debug:
+        msg: "Config desplegada en {{ item }}"
+      loop:
+        - "{{ config_dest_sniffer }}"
+        - "{{ config_dest_ml }}"
+        - "{{ config_dest_rag_logger }}"
+
+  handlers:
+    - name: restart sniffer
+      debug:
+        msg: "TODO: make pipeline-stop && make pipeline-start (FEAT-SYSTEMD-001)"
+
+    - name: restart ml-detector
+      debug:
+        msg: "TODO: make pipeline-stop && make pipeline-start (FEAT-SYSTEMD-001)"

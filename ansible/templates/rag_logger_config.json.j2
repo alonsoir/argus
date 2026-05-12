@@ -1,0 +1,26 @@
+{
+  "_header": "aRGus NDR -- rag-logger config -- generado por Ansible/Jinja2",
+  "_env": "{{ argus_env }}",
+  "_generated": "{{ ansible_date_time.iso8601 | default('unknown') }}",
+  "base_path": "{{ rag_base_path }}",
+  "deployment_id": "{{ rag_deployment_id }}",
+  "node_id": "{{ rag_node_id }}",
+  "log_version": "1.0",
+  "thresholds": {
+    "min_score_to_log": 0.70,
+    "min_divergence_to_log": 0.30,
+    "log_all_divergences": true,
+    "log_consensus": false
+  },
+  "performance": {
+    "max_events_per_file": 10000,
+    "max_file_size_mb": 100,
+    "save_protobuf_artifacts": true,
+    "save_json_artifacts": true,
+    "compress_on_rotate": false
+  },
+  "features": {
+    "enable_geoip": false,
+    "enable_pcap_capture": false
+  }
+}
