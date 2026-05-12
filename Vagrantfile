@@ -582,6 +582,36 @@ BASHRC_EOF
       sha256sum /vagrant/dist/vendor/falco_*.deb > /vagrant/dist/vendor/CHECKSUMS
       echo "✅ dist/vendor/CHECKSUMS actualizado"
 
+
+      # ── Ansible + Jinja2 (DEBT-VAULT-PROVISION-PROD-001) ─────────────────
+      # Ansible: controller de orquestacion (solo en dev, no en prod — ADR-039)
+      if ! command -v ansible &>/dev/null; then
+        echo "📦 Instalando Ansible + Jinja2..."
+        apt-get install -y ansible
+        pip3 install jinja2 --break-system-packages --quiet
+        echo "✅ Ansible $(ansible --version | head -1) instalado"
+        echo "✅ Jinja2 $(python3 -c 'import jinja2; print(jinja2.__version__)')"
+      else
+        echo "✅ Ansible ya instalado: $(ansible --version | head -1)"
+      fi
+
+      # ── Jenkins (DEBT-VAULT-PROVISION-PROD-001) ───────────────────────────
+      # CI/CD controller — solo en dev/central, no en nodos edge (ADR-039)
+      if ! command -v jenkins &>/dev/null && [ ! -f /etc/init.d/jenkins ]; then
+        echo "📦 Instalando Jenkins..."
+        apt-get install -y default-jdk-headless 2>&1 | tail -2
+        wget -O /usr/share/keyrings/jenkins-keyring.asc \
+          https://pkg.jenkins.io/debian-stable/jenkins.io-2023.key 2>/dev/null
+        echo "deb [signed-by=/usr/share/keyrings/jenkins-keyring.asc] https://pkg.jenkins.io/debian-stable binary/" | \
+          tee /etc/apt/sources.list.d/jenkins.list
+        apt-get update -qq
+        apt-get install -y jenkins
+        systemctl enable jenkins
+        echo "✅ Jenkins instalado (puerto 8080)"
+        echo "⚠️  Primer arranque requiere: sudo cat /var/lib/jenkins/secrets/initialAdminPassword"
+      else
+        echo "✅ Jenkins ya instalado"
+      fi
       # ── HashiCorp Vault (DEBT-CRYPTO-MATERIAL-STORAGE-001) ─────────────────
       if ! command -v vault &>/dev/null; then
         echo "📦 Instalando HashiCorp Vault..."
