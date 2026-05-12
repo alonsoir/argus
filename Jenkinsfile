@@ -38,6 +38,26 @@ pipeline {
             }
         }
 
+        stage('Deploy Configs — Ansible/Jinja2') {
+            // Renderiza templates Jinja2 con vars del ambiente y despliega JSONs
+            // dev:  inventory/dev.yml (Vagrant)
+            // prod: inventory/prod.yml (bare-metal) — requiere FEDER server
+            steps {
+                script {
+                    def inventory = (env.BRANCH_NAME == 'main') ? 'ansible/inventory/prod.yml' : 'ansible/inventory/dev.yml'
+                    sh """
+                        ansible-playbook -i ${inventory} ansible/playbooks/deploy_configs.yml \
+                            --diff \
+                            -e vault_token_secret=\${VAULT_TOKEN_SECRET:-argus-dev-token}
+                    """
+                }
+            }
+            post {
+                success { echo 'Configs desplegadas correctamente' }
+                failure  { echo 'FAIL: deploy_configs.yml — revisar templates Jinja2' }
+            }
+        }
+
         stage('ODR Verification — Production Build') {
             // Pre-merge obligatorio + nightly semanal
             // Consejo DAY 140 (8/8) — DEBT-ODR-CI-GATE-001

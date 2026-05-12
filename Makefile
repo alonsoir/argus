@@ -10,7 +10,7 @@
 .PHONY: run-lab-dev kill-lab status-lab
 .PHONY: run-lab-dev-day23 kill-lab-day23 status-lab-day23
 .PHONY: kill-all check-ports restart
-.PHONY: clean clean-libs clean-components clean-all distclean test test-libs test-components test-all dev-setup schema-update parquet-convert test-parquet
+.PHONY: clean clean-libs clean-components clean-all distclean test test-libs test-components test-all dev-setup schema-update parquet-convert test-parquet deploy-configs deploy-configs-prod
 .PHONY: build-unified rebuild-unified quick-fix dev-setup-unified
 .PHONY: check-libbpf verify-bpf-maps diagnose-bpf
 .PHONY: test-replay-small test-replay-neris test-replay-big test-replay-neris-x86-ebpf test-replay-neris-x86-libpcap experiment-suricata-up experiment-suricata-down experiment-suricata-run experiment-suricata-results experiment-suricata-status
@@ -1198,6 +1198,14 @@ test-components:
 	@echo "Testing RAG Security..."
 	@vagrant ssh -c "cd $(RAG_BUILD_DIR) && ctest --output-on-failure" || echo "⚠️  No rag-security tests configured"
 	@echo ""
+
+deploy-configs:
+	@echo "🚀 Desplegando configs Ansible/Jinja2 (dev)..."
+	@vagrant ssh defender -- -t "cd /vagrant && ansible-playbook -i ansible/inventory/dev.yml ansible/playbooks/deploy_configs.yml -e @ansible/group_vars/argus_dev.yml --diff"
+
+deploy-configs-prod:
+	@echo "🚀 Desplegando configs Ansible/Jinja2 (prod)..."
+	@ansible-playbook -i ansible/inventory/prod.yml ansible/playbooks/deploy_configs.yml -e @ansible/group_vars/argus_prod.yml -e vault_token_secret=$${VAULT_TOKEN_SECRET} --diff
 
 parquet-convert:
 	@echo "📦 Installing/upgrading pyarrow..."
