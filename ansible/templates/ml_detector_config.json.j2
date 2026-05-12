@@ -1,0 +1,72 @@
+{
+  "_header": "aRGus NDR -- ml-detector config -- generado por Ansible/Jinja2",
+  "_env": "{{ argus_env }}",
+  "_generated": "{{ ansible_date_time.iso8601 | default('unknown') }}",
+  "component": {
+    "name": "cpp_ml_detector_tricapa",
+    "version": "1.0.0",
+    "mode": "ml_inference_tricapa"
+  },
+  "profile": "{{ ml_profile }}",
+  "network": {
+    "input_socket": {
+      "endpoint": "{{ ml_zmq_input }}",
+      "mode": "connect",
+      "socket_type": "PULL",
+      "high_water_mark": 1000
+    },
+    "output_socket": {
+      "endpoint": "{{ ml_zmq_output }}",
+      "mode": "bind",
+      "socket_type": "PUB",
+      "high_water_mark": 1000
+    }
+  },
+  "etcd": {
+    "enabled": true,
+    "endpoints": {{ etcd_endpoints | to_json }},
+    "connection_timeout_ms": 5000,
+    "retry_attempts": 3,
+    "retry_interval_ms": 1000,
+    "crypto_token_path": "/crypto/ml-detector/tokens",
+    "config_sync_path": "/config/ml-detector",
+    "required_for_encryption": false,
+    "fallback_mode": "standalone_compression_only"
+  },
+  "threading": {
+    "worker_threads": {{ ml_worker_threads }},
+    "total_worker_threads": 7
+  },
+  "ml": {
+    "models_base_dir": "{{ ml_models_base_dir }}"
+  },
+  "logging": {
+    "level": "INFO",
+    "file": "{{ ml_log_file }}",
+    "max_file_size_mb": 200,
+    "backup_count": 10
+  },
+  "csv_writer": {
+    "base_dir": "{{ ml_csv_base_dir }}",
+    "min_score_threshold": 0.5,
+    "max_events_per_file": 10000
+  },
+  "rag_logger": {
+    "enabled": true,
+    "base_dir": "{{ ml_rag_base_dir }}",
+    "log_detections_only": true,
+    "min_score_threshold": 0.5
+  },
+  "identity": {
+    "component_id": "ml-detector",
+    "keys_dir": "/etc/ml-defender/ml-detector",
+    "public_key": "/etc/ml-defender/ml-detector/public.pem",
+    "private_key": "/etc/ml-defender/ml-detector/private.pem",
+    "seed_bin": "/etc/ml-defender/ml-detector/seed.bin"
+  },
+  "plugins": {
+    "directory": "/usr/lib/ml-defender/plugins",
+    "budget_us": 100,
+    "enabled": []
+  }
+}

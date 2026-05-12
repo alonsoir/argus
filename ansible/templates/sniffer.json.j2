@@ -1,0 +1,67 @@
+{
+  "_header": "aRGus NDR -- sniffer config -- generado por Ansible/Jinja2",
+  "_env": "{{ argus_env }}",
+  "_generated": "{{ ansible_date_time.iso8601 | default('unknown') }}",
+  "component": {
+    "name": "cpp_evolutionary_sniffer",
+    "version": "3.3.3",
+    "mode": "kernel_user_hybrid",
+    "kernel_version_required": "6.1.0"
+  },
+  "deployment": {
+    "mode": "dual",
+    "host_interface": {
+      "name": "{{ sniffer_host_interface }}",
+      "role": "wan",
+      "mode": "host-based",
+      "xdp_mode": "native",
+      "promiscuous": true,
+      "capture_direction": "ingress_only"
+    },
+    "gateway_interface": {
+      "name": "{{ sniffer_gateway_interface }}",
+      "role": "lan",
+      "mode": "gateway",
+      "xdp_mode": "native",
+      "promiscuous": true,
+      "capture_direction": "bidirectional"
+    }
+  },
+  "profile": "{{ sniffer_profile }}",
+  "network": {
+    "output_socket": {
+      "address": "{{ sniffer_zmq_output_address }}",
+      "port": {{ sniffer_zmq_output_port }},
+      "mode": "bind",
+      "socket_type": "PUSH",
+      "high_water_mark": 1000
+    }
+  },
+  "etcd": {
+    "enabled": true,
+    "endpoints": {{ etcd_endpoints | to_json }},
+    "connection_timeout_ms": 5000,
+    "retry_attempts": 3,
+    "retry_interval_ms": 1000,
+    "crypto_token_path": "/crypto/sniffer/tokens",
+    "config_sync_path": "/config/sniffer",
+    "required_for_encryption": true,
+    "fallback_mode": "standalone_unencrypted"
+  },
+  "logging": {
+    "level": "INFO",
+    "file": "{{ sniffer_log_file }}",
+    "max_file_size_mb": 200,
+    "backup_count": 10
+  },
+  "identity": {
+    "component_id": "sniffer",
+    "keys_dir": "/etc/ml-defender/sniffer",
+    "public_key": "/etc/ml-defender/sniffer/public.pem",
+    "private_key": "/etc/ml-defender/sniffer/private.pem",
+    "seed_bin": "/etc/ml-defender/sniffer/seed.bin"
+  },
+  "plugins": {
+    "enabled": []
+  }
+}
