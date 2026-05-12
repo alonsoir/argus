@@ -581,6 +581,21 @@ BASHRC_EOF
       fi
       sha256sum /vagrant/dist/vendor/falco_*.deb > /vagrant/dist/vendor/CHECKSUMS
       echo "✅ dist/vendor/CHECKSUMS actualizado"
+
+      # ── HashiCorp Vault (DEBT-CRYPTO-MATERIAL-STORAGE-001) ─────────────────
+      if ! command -v vault &>/dev/null; then
+        echo "📦 Instalando HashiCorp Vault..."
+        wget -O - https://apt.releases.hashicorp.com/gpg 2>/dev/null | \
+          gpg --dearmor | \
+          tee /usr/share/keyrings/hashicorp-archive-keyring.gpg > /dev/null
+        echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com bookworm main" | \
+          tee /etc/apt/sources.list.d/hashicorp.list
+        apt-get update -qq
+        apt-get install -y vault
+        echo "✅ Vault $(vault version | head -1) instalado"
+      else
+        echo "✅ Vault ya instalado: $(vault version | head -1)"
+      fi
     DEPENDENCIES_EOF
 
     # ════════════════════════════════════════════════════════════════════════
