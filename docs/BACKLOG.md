@@ -64,6 +64,43 @@
 
 ---
 
+## ✅ CERRADO DAY 149
+
+### DEBT-PARQUET-SCHEMA-001 — Schema Arrow v1.0
+- **Status:** ✅ CERRADO DAY 149 — **Tag:** `v0.7.2-parquet-schema-001` · PR #62
+- **Fix:** Schema Arrow ml_detector_events (15 fields) y firewall_acl_events (7 fields). Tipos acordados Consejo 8/8: int64 timestamps ns, float32 scores, dict(utf8) IDs, int8 enums. Converter CSV→Parquet (Snappy), validación roundtrip. 207,122 filas / 53 días. Ratio 11-12x ml-detector, 1.5x firewall. `make parquet-convert` + `make test-parquet` como dependencia de `test-all`.
+- **DEBT-PARQUET-TIMESTAMP-NS-001 registrada:** firewall-acl-agent produce ms, workaround ms×1_000_000 en writer. Fix real: modificar firewall-acl-agent para emitir ns en origen. P2.
+
+### DEBT-CRYPTO-MATERIAL-STORAGE-001 — Vault dev mode + K_pseudo
+- **Status:** ✅ CERRADO DAY 149 — **Tag:** mergeado en main · PR #64
+- **Fix:** Vault v2.0.0 instalado en Vagrantfile (all-dependencies, idempotente). `scripts/vault/prototype_k_pseudo.sh` valida: KV v2 `argus/k_pseudo`, HMAC-SHA256 determinismo OK, aislamiento K OK, post-destroy irrecuperable. Evidencia técnica para DEBT-LEGAL-DATA-RETENTION-001.
+
+### DEBT-VAULT-PROVISION-PROD-001 — Vault/Ansible/Jinja2/Jenkins en Vagrant
+- **Status:** ✅ CERRADO DAY 149 — PR #65
+- **Fix:** Vault runtime en `vagrant/hardened-x86/Vagrantfile` y `vagrant/hardened-arm64/Vagrantfile` (BSR axiom respetado, sin compiler). Ansible + Jinja2 + Jenkins en `Vagrantfile` dev (solo dev, ADR-039). Principio: Ansible/Jenkins orquestan DESDE dev HACIA prod.
+
+### Ansible + Jinja2 pipeline CI/CD — DAY 149
+- **Status:** ✅ COMPLETADO DAY 149 — PRs #66, #67
+- `ansible/inventory/{dev,prod}.yml`, `ansible/group_vars/{argus_dev,argus_prod}.yml`
+- `ansible/templates/{sniffer,ml_detector_config,rag_logger_config}.json.j2`
+- `ansible/playbooks/deploy_configs.yml` — ejecutado en VM: 9 OK, 3 changed, 0 failed
+- `make deploy-configs` (dev) + `make deploy-configs-prod` (prod)
+- Jenkins stage "Deploy Configs" entre Quick Check y ODR
+
+### ADR-044 — CI/CD Crypto Pipeline
+- **Status:** ✅ DEFINIDO DAY 149 — Consejo 8/8 aprobado
+- Jenkins como entropy orchestrator, Vault como única autoridad criptográfica
+- common/vault_client módulo C++20 interno (no plugin), cache tmpfs TTL, etcd barrera pre-arranque
+- Paths por familia (ADR-021): `argus/{env}/families/family_{A,B,C}/seed`
+- etcd-server excepción bootstrap. TODO O NADA con cache como extensión razonable.
+- Rotación manual para FEDER. FailureAction=poweroff ELIMINADO — pipeline offline + alerta CRITICAL.
+- Edge nodes autónomos: siguen operando si servidor central cae. TTL cache 72h prod.
+
+### Paper Abstract v24 — DAY 149
+- **Status:** ✅ CERRADO DAY 149 — PR #63
+- "are complementary" → "are architecturally complementary by design"
+- Consejo DAY 148 P1 refinamiento 8/8. No subido a arXiv — acumular.
+
 ## ✅ CERRADO DAY 148
 
 ### DEBT-IRP-FLOAT-TYPES-001 — Unificar tipos score float/double
@@ -636,6 +673,66 @@ Derivar subclaves especializadas desde K_root usando HKDF (NIST SP 800-108): K_p
 ---
 
 
+
+### DEBT-PARQUET-TIMESTAMP-NS-001 — firewall-acl-agent produce ms
+**Severidad:** 🟡 P2
+**Estado:** ABIERTO — DAY 149
+**Componente:** `firewall-acl-agent`
+**Descripción:** firewall-acl-agent escribe timestamps en milisegundos. ml-detector escribe nanosegundos. Workaround: writer Parquet multiplica ×1_000_000. Fix correcto: modificar firewall-acl-agent para emitir ns directamente. Revisar rag-security si en algún momento consume Parquet directamente.
+**Test de cierre:** `firewall_blocks.csv` timestamp en ns. Roundtrip sin conversión.
+**Estimación:** 1h
+
+### DEBT-VAULT-ENTROPY-MIXING-001 — Mezcla entropy externa post-FEDER
+**Severidad:** 🟢 P2 post-FEDER
+**Estado:** ABIERTO — DAY 149 (disidencia Grok/Gemini registrada)
+**Descripción:** Para prod con hardware HSM/TPM: mezclar HKDF(Vault_output, getrandom()/RDRAND/TPM) antes de almacenar seed. Para FEDER: `vault write sys/tools/random` es suficiente (NIST SP 800-90A).
+**Test de cierre:** provision_crypto.sh mezcla entropy en prod. Assert calidad entropy.
+**Estimación:** 1 sesión post-FEDER
+
+### DEBT-VAULT-HA-001 — Vault HA backend raft para producción
+**Severidad:** 🟡 P1 post-FEDER
+**Estado:** ABIERTO — DAY 149
+**Descripción:** Backend `file` suficiente para dev/FEDER. Producción real requiere Vault HA con backend `raft` (3+ nodos). Dev y prod no deben ser idénticos — diferencial se mitiga con tests específicos.
+**Test de cierre:** Vault HA 3 nodos. Kill del líder → failover < 5s → componentes siguen operativos.
+**Estimación:** 2 sesiones post-FEDER
+
+### DEBT-CRYPTO-STAMPEDE-001 — Jitter startup en vault_client
+**Severidad:** 🟡 P1
+**Estado:** ABIERTO — DAY 149 (AQ2 ChatGPT)
+**Componente:** `common/vault_client`
+**Descripción:** Si N componentes arrancan simultáneamente, todos hacen GET a Vault en el mismo instante. Necesita jitter: `component_index * 500ms + rand(0-1000ms)`.
+**Test de cierre:** 6 componentes arranque simultáneo → Vault no ve burst. Latencia P99 < 2s.
+**Estimación:** 30min al implementar vault_client
+
+### DEBT-CRYPTO-AUDIT-FINGERPRINT-001 — Fingerprint en etcd crypto_ready
+**Severidad:** 🟡 P1
+**Estado:** ABIERTO — DAY 149 (AQ3 ChatGPT + Kimi corrección)
+**Componente:** `common/vault_client` + etcd
+**Descripción:** Al registrar crypto_ready, incluir fingerprint = sha256(pk) [clave pública, no seed]. key_version, family, derivation_timestamp. NO material sensible en logs.
+**Test de cierre:** etcd contiene {component, crypto_ready, key_version, family, fingerprint, timestamp} por componente.
+**Estimación:** 1h al implementar vault_client
+
+### DEBT-CRYPTO-HEARTBEAT-001 — Heartbeat periódico post-crypto_ready
+**Severidad:** 🟡 P1
+**Estado:** ABIERTO — DAY 149 (AQ4 ChatGPT + Kimi spec)
+**Componente:** `common/vault_client` + etcd
+**Descripción:** Lease etcd TTL=10s, keepalive cada 5s. Si componente no renueva en 10s → offline. Alerta si >2 componentes pierden lease simultáneamente.
+**Test de cierre:** Kill componente → etcd detecta en ≤10s. Pipeline alerta.
+**Estimación:** 1h al implementar vault_client
+
+### DEBT-ALERTING-EDGE-SOS-001 — Webhook SOS desde edge cuando servidor central offline
+**Severidad:** 🔴 P1 pre-FEDER
+**Estado:** ABIERTO — DAY 149
+**Componente:** `scripts/alerts/sos_vault_unreachable.sh` + Ansible group_vars
+**Descripción:** Cuando Vault está caído y cache TTL se degrada, el nodo edge debe alertar via webhook configurable (Discord, Telegram, email, WhatsApp Business API) directamente desde el edge — sin depender del servidor central. Escalado por gravedad según TTL restante:
+- TTL > 48h: INFO log local
+- TTL < 48h: WARN → Discord/Telegram/email
+- TTL < 24h: CRITICAL → todos los canales + retry cada hora
+- TTL = 0h: último intento antes de exit(1)
+Configurado via `ansible/group_vars/prod.yml` por cliente (discord_webhook, telegram_bot_token, email_to, etc.).
+**Test de cierre:** Simular Vault caído → alerta llega a Discord/Telegram en < 1min.
+**Estimación:** 1 sesión pre-FEDER
+
 ### DEBT-ETCD-HA-QUORUM-001 — etcd-server en HA con quorum
 **Severidad:** 🔴 Alta — P0 post-FEDER (OBLIGATORIO, no opcional)
 **Estado:** ABIERTO — DAY 142
@@ -922,6 +1019,10 @@ Targets `make emecas-dev/prod-x86/prod-arm64` con log automático fechado.
 | **Timestamps UTC epoch nanoseconds** | int64 UTC en Parquet. ISO 8601 con sufijo Z en JSON. Sin excepciones. system_clock en C++20, nunca steady_clock. | ADR-0043 v4 · Consejo 8/8 · DAY 147 |
 | **Vault jerarquía root+operativo** | Vault central = root of trust (wrapping keys). Vault local = operativo (K_pseudo, Ed25519, seeds). | ADR-0043 v4 · Consejo 8/8 · DAY 147 |
 | **Flujo GDPR Art. 17** | Borrado via comando firmado Ed25519 desde instalación → DELETE en Neo4j → auditoría certificada inmutable. | ADR-0043 v4 · Consejo 8/8 · DAY 147 |
+| **FailureAction=poweroff ELIMINADO (DAY 149 — Consejo 8/8)** | systemd NO apaga el host en fallo crypto. Pipeline offline + alerta CRITICAL. Host sigue vivo para diagnóstico forense. En infraestructura crítica, el host offline es peor que el NDR offline. | DAY 149 |
+| **Edge nodes autónomos (DAY 149 — Consejo 8/8)** | Los nodos edge siguen operando si el servidor central (Jenkins/Vault) está caído. Keypair en memoria, ZeroMQ abierto. Servidor central gestiona lifecycle y rotación pero no bloquea protección activa. Cache tmpfs TTL=72h prod. | DAY 149 |
+| **EMECAS PROFILE=production en merge a main con código (DAY 149 — Founder)** | Cada merge a main que incluya código C++20 (no solo infra/docs) requiere `vagrant destroy -f && vagrant up && make bootstrap && make PROFILE=production test-all`. Registrado como recordatorio para DAY 150+ cuando se implemente vault_client. | DAY 149 |
+| **SOS webhook desde edge (DAY 149 — Founder)** | Cada despliegue en cliente configura webhook de alerta (Discord/Telegram/email) que dispara desde el edge directamente. Independiente del servidor central. Escalado por TTL cache restante. Sin internet = problema físico que trasciende el software. | DAY 149 |
 | **ADR-035 OQ-2 CERRADA** | Topología etcd parametrizada por tamaño de instalación. Single-node aceptado en instalaciones pequeñas con SPOF documentado. | ADR-0043 v4 · cierra ADR-035 OQ-2 · DAY 147 |
 | **ADR-038 §Anonimización SUPERSEDIDA** | Rotating salt → HMAC determinista (ADR-0043 D2-D3). BitTorrent → ZeroMQ (ADR-0043 D4). Resto ADR-038 vigente. | ADR-0043 v4 · DAY 147 |
 ---
@@ -999,18 +1100,29 @@ DEBT-GENERATED-CODE-CI-001:              0% ⏳  requiere servidor CI/CD
 DEBT-MAYBE-UNUSED-MIGRATION-001:         0% ⏳  cosmético, post deudas P0
 DEBT-EMECAS-AUTOMATION-001:              0% ⏳  post deudas P0
 DEBT-JENKINS-SEED-DISTRIBUTION-001:      0% ⏳  pre-FEDER
-DEBT-CRYPTO-MATERIAL-STORAGE-001:        0% ⏳  pre-FEDER
+DEBT-CRYPTO-MATERIAL-STORAGE-001:      100% ✅  DAY 149 (Vault dev mode + K_pseudo prototipo validado)
 DEBT-KEY-SEPARATION-001:                 0% ⏳  post-FEDER
 DEBT-ADR040-001..012:                    0% ⏳  post-FEDER Año 1
 DEBT-ADR041-001..006:                    0% ⏳  pre-FEDER
 ADR-0043 v4 Memoria Episódica Distribuida:  100% ✅  DAY 147 (Consejo 8/8 · ACEPTADO)
 ADR-035 OQ-2 cerrada (etcd topología):     100% ✅  DAY 147 (referenciada en ADR-0043 D6)
-DEBT-PARQUET-SCHEMA-001:                     0% ⏳  P0 bloqueante (schema Parquet ml-detector + firewall)
+DEBT-PARQUET-SCHEMA-001:                   100% ✅  DAY 149 (schema Arrow v1.0, 207K filas, 11-12x, roundtrip PASSED)
 DEBT-VAULT-FEDERATION-001:                   0% ⏳  P1 pre-FEDER (offboarding instalaciones GDPR)
 DEBT-LEGAL-DATA-RETENTION-001:               0% ⏳  P1 pre-FEDER (dictamen jurídico retención datos)
 DEBT-KPSEUDO-ROTATION-MIGRATION-001:         0% ⏳  P1 pre-FEDER (migración Neo4j tras rotación K_pseudo)
 DEBT-GDPR-ERASURE-001:                       0% ⏳  P1 pre-FEDER (flujo derecho al olvido Art. 17)
 DEBT-KPSEUDO-HKDF-HIERARCHY-001:             0% ⏳  P3 post-FEDER (jerarquía HKDF para K_pseudo)
+DEBT-VAULT-PROVISION-PROD-001:             100% ✅  DAY 149 (Vault/Ansible/Jinja2/Jenkins en Vagrant)
+ADR-044 CI/CD Crypto Pipeline:             100% ✅  DAY 149 (definido, Consejo 8/8, impl DAY 150+)
+Ansible+Jinja2 deploy_configs pipeline:    100% ✅  DAY 149 (3 templates, playbook, 9 OK 0 failed)
+Paper Abstract v24:                        100% ✅  DAY 149 (architecturally complementary by design)
+DEBT-PARQUET-TIMESTAMP-NS-001:               0% ⏳  P2 (firewall ms→ns en origen)
+DEBT-VAULT-ENTROPY-MIXING-001:               0% ⏳  P2 post-FEDER (mezcla entropy externa)
+DEBT-VAULT-HA-001:                           0% ⏳  P1 post-FEDER (Vault HA raft)
+DEBT-CRYPTO-STAMPEDE-001:                    0% ⏳  P1 (jitter vault_client)
+DEBT-CRYPTO-AUDIT-FINGERPRINT-001:           0% ⏳  P1 (fingerprint etcd)
+DEBT-CRYPTO-HEARTBEAT-001:                   0% ⏳  P1 (heartbeat etcd)
+DEBT-ALERTING-EDGE-SOS-001:                  0% ⏳  P1 pre-FEDER (SOS webhook edge)
 ADR-031 aRGus-seL4:                      0% ⏳  branch independiente
 ```
 
@@ -1216,8 +1328,48 @@ Un sistema con ACRL converge hacia cobertura de técnicas ATT&CK en tiempo polin
 
 ---
 
-*DAY 148 — 11 Mayo 2026 · main @ v0.7.1-day148*
+*DAY 149 — 12 Mayo 2026 · main @ v0.7.2 (múltiples PRs)*
 *"Via Appia Quality — Un escudo que aprende de su propia sombra."*
+
+
+## 📝 Notas del Consejo de Sabios — DAY 149 (8/8)
+
+> "DAY 149 — Arquitectura CI/CD criptográfica definida. ADR-044 aprobado unánimemente.
+>
+> **Consenso Q1-Q7 (síntesis):**
+> Vault RNG suficiente para FEDER (NIST SP 800-90A). Cache tmpfs no viola TODO O NADA (TTL 72h prod).
+> etcd-server excepción bootstrap (trust anchor operacional). Backend file para dev/FEDER, raft post-FEDER.
+> Rotación manual orquestada para FEDER (no automática). Stage separado 'Provision Crypto' en Jenkinsfile.
+> Paths por familia `argus/{env}/families/family_X/seed` (ADR-021 respetado).
+>
+> **Correcciones técnicas críticas (Kimi):**
+> Derivación keypairs: `crypto_kdf_derive_from_key()` → component_seed → `crypto_sign_seed_keypair()`.
+> Context string único por familia. Fingerprint = sha256(pk), no de seed ni sk.
+>
+> **Decisión D10 — FailureAction=poweroff ELIMINADO (ChatGPT, adoptado):**
+> Host sigue vivo para diagnóstico forense. Pipeline offline + alerta CRITICAL.
+> Edge nodes autónomos: siguen operando con keypair en memoria. TTL cache 72h prod.
+> Cuando servidor central cae: logs registran el impasse, rotación se pospone, servicio continúa.
+>
+> **DEBT-ALERTING-EDGE-SOS-001 (Founder):**
+> Webhook configurable por despliegue (Discord/Telegram/email) desde el edge directamente.
+> Sin internet = problema físico. Con internet = SOS llega aunque el servidor central esté quemado.
+>
+> **Logros técnicos DAY 149:**
+> DEBT-PARQUET-SCHEMA-001 cerrada (207K filas, 11-12x, roundtrip PASSED).
+> Vault dev mode + K_pseudo prototipo (determinismo, aislamiento, post-destroy irrecuperable).
+> Ansible + Jinja2 pipeline funcional (deploy_configs: 9 OK, 0 failed).
+> Jenkins stage Deploy Configs integrado. Abstract v24.
+> 5 PRs mergeados. Main limpio.
+>
+> **Mañana DAY 150:**
+> EMECAS protocolo (vagrant destroy -f && vagrant up && make bootstrap && make test-all).
+> Implementar scripts/jenkins/provision_crypto.sh (Vault backend file, seeds por familia, assert dev≠prod).
+> Crear common/vault_client.h/.cpp (GET seed, tmpfs cache, etcd register, jitter, timeout 5s).
+>
+> 'El mayor riesgo ya no es criptográfico. Ahora es complejidad operacional emergente.
+> Y eso, sinceramente, es una muy buena señal arquitectónica.' — ChatGPT · DAY 149"
+> — Consejo de Sabios (8/8) · DAY 149
 
 ## 📝 Notas del Consejo de Sabios — DAY 148 (8/8)
 
