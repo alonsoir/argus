@@ -10,7 +10,7 @@
 .PHONY: run-lab-dev kill-lab status-lab
 .PHONY: run-lab-dev-day23 kill-lab-day23 status-lab-day23
 .PHONY: kill-all check-ports restart
-.PHONY: clean clean-libs clean-components clean-all distclean test test-libs test-components test-all dev-setup schema-update
+.PHONY: clean clean-libs clean-components clean-all distclean test test-libs test-components test-all dev-setup schema-update parquet-convert test-parquet
 .PHONY: build-unified rebuild-unified quick-fix dev-setup-unified
 .PHONY: check-libbpf verify-bpf-maps diagnose-bpf
 .PHONY: test-replay-small test-replay-neris test-replay-big test-replay-neris-x86-ebpf test-replay-neris-x86-libpcap experiment-suricata-up experiment-suricata-down experiment-suricata-run experiment-suricata-results experiment-suricata-status
@@ -1199,7 +1199,16 @@ test-components:
 	@vagrant ssh -c "cd $(RAG_BUILD_DIR) && ctest --output-on-failure" || echo "⚠️  No rag-security tests configured"
 	@echo ""
 
-test-all: test-libs test-components test-provision-1 test-invariant-seed plugin-integ-test argus-network-isolate-test
+parquet-convert:
+	@echo "📦 Installing/upgrading pyarrow..."
+	@pip3 install --upgrade pyarrow --break-system-packages --quiet 2>&1 | tail -1
+	@echo "📦 Converting CSVs to Parquet..."
+	@cd /vagrant/scripts/parquet && python3 generate_parquet.py
+
+test-parquet: parquet-convert
+	@cd /vagrant/scripts/parquet && python3 validate_roundtrip.py
+
+test-all: test-libs test-components test-provision-1 test-invariant-seed plugin-integ-test argus-network-isolate-test test-parquet
 	@echo ""
 	@echo "╔════════════════════════════════════════════════════════════╗"
 	@echo "║  ✅ ALL TESTS COMPLETE                                    ║"
