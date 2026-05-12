@@ -19,7 +19,7 @@
 [![Variant B](https://img.shields.io/badge/ADR--029-Variant_B_libpcap_pipeline-blue)]()
 [![Reproducible](https://img.shields.io/badge/Infra-make_bootstrap-brightgreen)]()
 [![XGBoost](https://img.shields.io/badge/XGBoost-Prec%3D0.9945_In--Distribution-brightgreen)]()
-[![Hardened](https://img.shields.io/badge/Security-v0.7.0--variant__b-brightgreen)]()
+[![Hardened](https://img.shields.io/badge/Security-v0.7.2--day149-brightgreen)]()
 [![PRE-PRODUCTION](https://img.shields.io/badge/Status-PRE--PRODUCTION-orange)]()
 [![Crypto](https://img.shields.io/badge/Crypto-HKDF_SHA256+ChaCha20_Poly1305-orange)]()
 [![arXiv](https://img.shields.io/badge/arXiv-2604.04952_cs.CR-red)](https://arxiv.org/abs/2604.04952)
@@ -31,16 +31,16 @@
 
 ---
 
-✅ `main` is tagged `v0.7.1-day148`. Branch activa: `main` — Validación offline Suricata irrefutable (DAY 148). Paper v23. DEBT-IRP-FLOAT-TYPES-001 cerrada.
+✅ `main` is tagged `v0.7.2-day149`. Branch activa: `main` — Schema Parquet Arrow v1.0, Vault CI/CD pipeline, ADR-044 aprobado (DAY 149).
 **PRE-PRODUCTION: do not deploy in hospitals until ACRL (DEBT-PENTESTER-LOOP-001) is complete.**
 
 ---
 
-## Estado actual — DAY 148 (2026-05-11)
+## Estado actual — DAY 149 (2026-05-12)
 
-**Tag activo:** `v0.7.1-day148` | **Branch activa:** `main`
+**Tag activo:** `v0.7.2-day149` | **Branch activa:** `main`
 **Keypair activo:** `b5b6cbdf67dad75cdd7e3169d837d1d6d4c938b720e34331f8a73f478ee85daa`
-**Paper:** arXiv:2604.04952 · Draft v23 (offline validation DAY 148 + abstract tres paradigmas + complementariedad)
+**Paper:** arXiv:2604.04952 · Draft v24 local (abstract v24: architecturally complementary by design) · v3 en arXiv
 **FEDER deadline:** 22-Sep-2026 | **Go/no-go:** 1-Ago-2026
 
 ### Pipeline
@@ -48,6 +48,14 @@
 - `make test-all`: ALL TESTS COMPLETE (65/65 PASSED — 0 FAILED) ✅
 - `make PROFILE=production all`: Gate ODR — ALL COMPONENTS BUILT ✅
 - `make argus-network-isolate-test`: dry-run PASSED ✅
+
+### Hitos DAY 149 🎉
+- **DEBT-PARQUET-SCHEMA-001 CERRADA** — Schema Arrow v1.0: ml_detector_events (15 fields) + firewall_acl_events (7 fields). 207,122 filas / 53 días. Ratio 11-12x. `make parquet-convert` + `make test-parquet` en `test-all`. Tipos acordados Consejo 8/8.
+- **Vault dev mode + K_pseudo prototipo** — Vault v2.0.0. HMAC-SHA256 determinismo OK, aislamiento OK, post-destroy irrecuperable. Evidencia técnica GDPR para Dr. Andrés Caro Lindo.
+- **Ansible + Jinja2 CI/CD pipeline** — `ansible/templates/*.json.j2`, `deploy_configs.yml`. Ejecutado en VM: 9 OK, 3 changed, 0 failed. `make deploy-configs`.
+- **ADR-044 aprobado (Consejo 8/8)** — Jenkins como entropy orchestrator. Vault autoridad criptográfica. common/vault_client C++20. Paths por familia. etcd barrera pre-arranque. Rotación manual FEDER. Edge nodes autónomos con cache TTL 72h.
+- **Abstract v24** — "architecturally complementary by design". PR #63.
+- **5 PRs mergeados.** Main en 81490fcb.
 
 ### Hitos DAY 145 🎉
 - **ADR-029 Variant A vs B x86** — libpcap ~2× eBPF en VirtualBox virtio (artefacto SKB mode). Equivalencia funcional confirmada.
@@ -107,23 +115,29 @@
 | DEBT-IRP-PROB-CONJUNTA-001 | 🟡 P1 | post-FEDER (señal conjunta) |
 | DEBT-ETCD-HA-QUORUM-001 | 🔴 P0 | post-FEDER (OBLIGATORIO) |
 | DEBT-IRP-QUEUE-PROCESSOR-001 | 🔴 Alta | post-merge |
-| DEBT-JENKINS-SEED-DISTRIBUTION-001 | 🔴 Alta | pre-FEDER |
-| DEBT-CRYPTO-MATERIAL-STORAGE-001 | 🔴 Alta | pre-FEDER |
+| DEBT-JENKINS-SEED-DISTRIBUTION-001 | 🔴 Alta pre-FEDER | ADR-044 definido — implementación DAY 150+ |
+| DEBT-CRYPTO-MATERIAL-STORAGE-001 | ✅ CERRADA DAY 149 | Vault dev mode + K_pseudo prototipo |
 | DEBT-MUTEX-ROBUST-001 | 🟡 P1 | post-FEDER |
+| DEBT-PARQUET-TIMESTAMP-NS-001 | 🟡 P2 | firewall-acl-agent ms→ns en origen |
+| DEBT-ALERTING-EDGE-SOS-001 | 🔴 P1 pre-FEDER | SOS webhook edge→Discord/Telegram/email |
+| DEBT-CRYPTO-STAMPEDE-001 | 🟡 P1 | Jitter startup vault_client |
+| DEBT-CRYPTO-HEARTBEAT-001 | 🟡 P1 | Heartbeat periódico etcd post-crypto_ready |
+| DEBT-VAULT-HA-001 | 🟡 P1 post-FEDER | Vault HA backend raft para producción |
 | DEBT-ADR040-001..012 | ⏳ | post-FEDER |
 | DEBT-ADR041-001..006 | ⏳ | pre-FEDER |
 
-| DEBT-PARQUET-SCHEMA-001 | 🔴 P0 bloqueante | Definir schema Parquet ml-detector y firewall-acl-agent desde CSVs reales |
+| DEBT-PARQUET-SCHEMA-001 | ✅ CERRADA DAY 149 | Schema Arrow v1.0, 207K filas, 11-12x |
 | DEBT-VAULT-FEDERATION-001 | 🟡 P1 pre-FEDER | Offboarding instalaciones: destrucción de claves, retención de datos GDPR |
 | DEBT-LEGAL-DATA-RETENTION-001 | 🟡 P1 pre-FEDER | Dictamen jurídico GDPR retención datos pseudonimizados post-cliente |
 | DEBT-KPSEUDO-ROTATION-MIGRATION-001 | 🟡 P1 pre-FEDER | Migración identidades Neo4j tras rotación K_pseudo |
 | DEBT-GDPR-ERASURE-001 | 🟡 P1 pre-FEDER | Flujo derecho al olvido Art. 17 GDPR — comando borrado firmado |
 | DEBT-KPSEUDO-HKDF-HIERARCHY-001 | ⏳ P3 post-FEDER | Jerarquía HKDF para K_pseudo (host/flow/model desde K_root) |
-### Próxima frontera — DAY 146+
-1. DEBT-IRP-TMPFILES-001 — tmpfiles.d para /run/argus/irp/ en reboot
-2. DEBT-IRP-IPSET-TMP-001 — ipset_wrapper.cpp usa /tmp
-3. Diseño experiment-comparative (aRGus + Suricata + Zeek como cooperadores)
-4. Abrir feature/adr029-variant-c-arm64 scope definido
+### Próxima frontera — DAY 150+
+1. **EMECAS protocolo** — `vagrant destroy -f && vagrant up && make bootstrap && make test-all`
+2. **scripts/jenkins/provision_crypto.sh** — Vault backend file, seeds por familia, assert dev≠prod
+3. **common/vault_client.h/.cpp** — GET seed + tmpfs cache TTL + etcd register + jitter + timeout 5s
+4. **Integrar vault_client** en los 6 componentes C++20 (reemplazar lectura seed.bin de disco)
+5. **DEBT-ALERTING-EDGE-SOS-001** — webhook SOS configurable por despliegue
 
 ---
 
@@ -383,8 +397,9 @@ make hardened-full   # destroy → up → provision → build → deploy → che
 
 | Priority | Task |
 |---|---|
-| 🔴 P0 | **DAY 149** — DEBT-PARQUET-SCHEMA-001: CSVs reales Vagrant → schema Arrow v1.0 → ADR-0043 D4b |
-| 🟡 P1 | **DAY 150-152** — DEBT-CRYPTO-MATERIAL-STORAGE-001: Vault prototype (K_pseudo + Ed25519) |
+| ✅ | **DAY 149** — DEBT-PARQUET-SCHEMA-001: CERRADA. Schema Arrow v1.0, 207K filas, 11-12x |
+| ✅ | **DAY 149** — DEBT-CRYPTO-MATERIAL-STORAGE-001: CERRADA. Vault dev mode + K_pseudo prototipo |
+| 🔴 P0 | **DAY 150** — EMECAS + provision_crypto.sh + common/vault_client (ADR-044 implementación) |
 | 🟡 P1 | **DAY 153-155** — DEBT-JENKINS-SEED-DISTRIBUTION-001: CI/CD seed distribution |
 | 🟡 P1 | **DAY 156+** — feature/adr029-variant-c-arm64: solo si A+B+C verdes |
 | 🟡 P1 | **Esta semana** — Email Dr. Andrés Caro Lindo: iniciar DEBT-LEGAL-DATA-RETENTION-001 |
@@ -421,6 +436,7 @@ make hardened-full   # destroy → up → provision → build → deploy → che
 - ✅ DAY 146: **Experimento Suricata comparativo · 0 alertas ET Open vs F1=0.9985 aRGus · Paper v20 §8.13 · v0.7.1-day146** 🎉
 - ✅ DAY 147: **Experimento tres paradigmas (Suricata+Zeek+aRGus) · Paper v22 §8.14 · HTTP C2 hallazgo · weird.log behavioral profile · v0.7.1-day147** 🎉
 - ✅ DAY 147: **ADR-0043 v4 ACEPTADO** — Memoria Episódica Distribuida, Consejo 8/8, 4 versiones 🎉
+- ✅ DAY 149: **Schema Parquet Arrow v1.0 · Vault CI/CD pipeline · ADR-044 · Ansible+Jinja2 · 5 PRs · v0.7.2-day149** 🎉
 - ✅ DAY 148: **Suricata offline irrefutable · Paper v23 · arXiv replace v3 · DEBT-IRP-FLOAT-TYPES-001 cerrada · v0.7.1-day148** 🎉
 - 🔜 DAY 146+: **DEBT-IRP-TMPFILES-001 · DEBT-IRP-IPSET-TMP-001 · experiment-comparative · ARM64 scope**
 
