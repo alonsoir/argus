@@ -1,0 +1,37 @@
+# aRGus NDR -- group_vars dev
+# Ambiente: Vagrant/VirtualBox, dev, x86-64
+
+argus_env: dev
+argus_config_base: /vagrant
+
+# Sniffer
+sniffer_profile: dual_nic
+sniffer_host_interface: eth1
+sniffer_gateway_interface: eth2
+sniffer_log_file: /vagrant/logs/lab/sniffer.log
+sniffer_zmq_output_address: "127.0.0.1"
+sniffer_zmq_output_port: 5571
+
+# ML Detector
+ml_profile: lab
+ml_log_file: /vagrant/logs/lab/detector.log
+ml_csv_base_dir: /vagrant/logs/ml-detector/events
+ml_rag_base_dir: /vagrant/logs/rag
+ml_models_base_dir: models/production
+ml_zmq_input: "tcp://127.0.0.1:5571"
+ml_zmq_output: "tcp://0.0.0.0:5572"
+ml_worker_threads: 2
+
+# RAG Logger
+rag_base_path: /vagrant/logs/rag
+rag_deployment_id: ml-defender-dev-001
+rag_node_id: defender-node-dev-01
+
+# etcd
+etcd_endpoints:
+  - "localhost:2379"
+
+# Vault
+vault_addr: "http://127.0.0.1:8200"
+vault_token: "argus-dev-token"
+vault_k_pseudo_path: "argus/k_pseudo"
