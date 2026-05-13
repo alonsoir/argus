@@ -968,7 +968,7 @@ set-build-profile:
 # 4. sign-plugins    → firma Ed25519 (ADR-025)
 # 5. test-provision-1 → CI gate PHASE 3
 # 6. pipeline-start  → arranca los 6 componentes
-pipeline-build: crypto-transport-build seed-client-build etcd-client-build plugin-loader-build plugin-test-message-build etcd-server rag-build rag-ingester-build ml-detector sniffer firewall-build argus-network-isolate-build argus-network-isolate-install
+pipeline-build: crypto-transport-build seed-client-build etcd-client-build plugin-loader-build vault-client-build plugin-test-message-build etcd-server rag-build rag-ingester-build ml-detector sniffer firewall-build argus-network-isolate-build argus-network-isolate-install
 
 tools: proto etcd-client-build crypto-transport-build
 	@echo ""
@@ -1996,6 +1996,24 @@ provision-reprovision:
 # Biblioteca de lectura de material criptográfico base (PHASE 1, ADR-013)
 # Dependencia: nlohmann_json
 # Ejecutar ANTES de crypto-transport si se recompila desde cero.
+
+vault-client-build: seed-client-build crypto-transport-build
+	@echo ""
+	@echo "╔════════════════════════════════════════════════════════════╗"
+	@echo "║  🔨 Building vault-client Library (ADR-044)               ║"
+	@echo "╚════════════════════════════════════════════════════════════╝"
+	@vagrant ssh -c 'cd /vagrant/common && rm -rf build && mkdir -p build && cd build && cmake -DCMAKE_BUILD_TYPE=Release .. && make -j4'
+	@vagrant ssh -c 'cd /vagrant/common/build && sudo make install && sudo ldconfig'
+	@echo "✅ vault-client instalado en /usr/local/lib"
+
+vault-client-clean:
+	@vagrant ssh -c 'rm -rf /vagrant/common/build'
+	@vagrant ssh -c 'sudo rm -f /usr/local/lib/libvault_client.so*'
+	@vagrant ssh -c 'sudo ldconfig'
+	@echo "✅ vault-client limpiado"
+
+vault-client-test:
+	@vagrant ssh -c 'cd /vagrant/common/build && ctest --output-on-failure'
 
 seed-client-build:
 	@echo "╔══════════════════════════════════════════════╗"
