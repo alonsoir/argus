@@ -1962,6 +1962,15 @@ provision:
 	@echo ""
 	@echo "✅ Provisioning completo"
 
+provision-crypto:
+	@echo "╔════════════════════════════════════════════════════════════╗"
+	@echo "║  🔐 aRGus NDR — Provision Crypto (ADR-044)                ║"
+	@echo "╚════════════════════════════════════════════════════════════╝"
+	@vagrant ssh -c "bash /vagrant/scripts/jenkins/provision_crypto.sh $(if $(FORCE),--force,) $(if $(AUDIT_OUT),--audit-out $(AUDIT_OUT),)"
+
+provision-crypto-force:
+	@$(MAKE) provision-crypto FORCE=1
+
 provision-status:
 	@vagrant ssh -c "sudo bash /vagrant/tools/provision.sh status"
 
