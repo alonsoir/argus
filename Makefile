@@ -1209,12 +1209,12 @@ deploy-configs-prod:
 
 parquet-convert:
 	@echo "📦 Installing/upgrading pyarrow..."
-	@pip3 install --upgrade pyarrow --break-system-packages --quiet 2>&1 | tail -1
+	@vagrant ssh -c "pip3 install --upgrade pyarrow --break-system-packages --quiet 2>&1 | tail -1"
 	@echo "📦 Converting CSVs to Parquet..."
-	@cd /vagrant/scripts/parquet && python3 generate_parquet.py
+	@vagrant ssh -c "cd /vagrant/scripts/parquet && python3 generate_parquet.py"
 
 test-parquet: parquet-convert
-	@cd /vagrant/scripts/parquet && python3 validate_roundtrip.py
+	@vagrant ssh -c "cd /vagrant/scripts/parquet && python3 validate_roundtrip.py"
 
 test-all: test-libs test-components test-provision-1 test-invariant-seed plugin-integ-test argus-network-isolate-test test-parquet
 	@echo ""
