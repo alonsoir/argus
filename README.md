@@ -120,7 +120,7 @@
 | DEBT-MUTEX-ROBUST-001 | 🟡 P1 | post-FEDER |
 | DEBT-PARQUET-TIMESTAMP-NS-001 | 🟡 P2 | firewall-acl-agent ms→ns en origen |
 | DEBT-ALERTING-EDGE-SOS-001 | 🔴 P1 pre-FEDER | SOS webhook edge→Discord/Telegram/email |
-| DEBT-CRYPTO-STAMPEDE-001 | 🟡 P1 | Jitter startup vault_client |
+| DEBT-CRYPTO-STAMPEDE-001 | ✅ CERRADA DAY 150 | Jitter implementado en vault_client.cpp |
 | DEBT-CRYPTO-HEARTBEAT-001 | 🟡 P1 | Heartbeat periódico etcd post-crypto_ready |
 | DEBT-VAULT-HA-001 | 🟡 P1 post-FEDER | Vault HA backend raft para producción |
 | DEBT-ADR040-001..012 | ⏳ | post-FEDER |
@@ -131,13 +131,22 @@
 | DEBT-LEGAL-DATA-RETENTION-001 | 🟡 P1 pre-FEDER | Dictamen jurídico GDPR retención datos pseudonimizados post-cliente |
 | DEBT-KPSEUDO-ROTATION-MIGRATION-001 | 🟡 P1 pre-FEDER | Migración identidades Neo4j tras rotación K_pseudo |
 | DEBT-GDPR-ERASURE-001 | 🟡 P1 pre-FEDER | Flujo derecho al olvido Art. 17 GDPR — comando borrado firmado |
+| DEBT-CRYPTO-AUTONOMY-001 | 🔴 P1 pre-FEDER | Máquina de estados EXTENDED_AUTONOMY |
+| DEBT-FIREWALL-AUTONOMY-MODE-001 | 🔴 P1 pre-FEDER | Firewall default-deny en autonomía extendida |
+| DEBT-CRYPTO-RECONCILIATION-001 | 🟡 P1 pre-FEDER | Handshake validación al recuperar Vault |
+| DEBT-CRYPTO-CACHE-PERSISTENT-PROD-001 | 🟡 P1 pre-FEDER | Cache cifrada en prod edge (LUKS obligatorio) |
+| DEBT-EMECAS-DUAL-COMPILATION-001 | 🟡 P1 | CI compila ARGUS_VAULT_ENABLED=ON y OFF |
+| DEBT-CRYPTO-REVOCATION-LOCAL-001 | 🟡 P1 post-FEDER | Revocación offline sin Vault |
+| DEBT-LICENSE-VAULT-001 | ⏳ P2 post-FEDER | Servidor licencias en Vault (plugin system) |
+| DEBT-PLUGIN-ENTERPRISE-001 | ⏳ P2 post-FEDER | Definir plugins enterprise vs community |
 | DEBT-KPSEUDO-HKDF-HIERARCHY-001 | ⏳ P3 post-FEDER | Jerarquía HKDF para K_pseudo (host/flow/model desde K_root) |
-### Próxima frontera — DAY 150+
+### Próxima frontera — DAY 151+
 1. **EMECAS protocolo** — `vagrant destroy -f && vagrant up && make bootstrap && make test-all`
-2. **scripts/jenkins/provision_crypto.sh** — Vault backend file, seeds por familia, assert dev≠prod
-3. **common/vault_client.h/.cpp** — GET seed + tmpfs cache TTL + etcd register + jitter + timeout 5s
-4. **Integrar vault_client** en los 6 componentes C++20 (reemplazar lectura seed.bin de disco)
+2. **Integrar etcd-server con VaultClient** — `#ifdef ARGUS_VAULT_ENABLED`, `ICryptoProvider`, fichero local bootstrap + registro vía loopback
+3. **DEBT-CRYPTO-AUTONOMY-001** — máquina de estados EXTENDED_AUTONOMY en `vault_client.cpp`
+4. **DEBT-FIREWALL-AUTONOMY-MODE-001** — firewall default-deny en modo autonomía
 5. **DEBT-ALERTING-EDGE-SOS-001** — webhook SOS configurable por despliegue
+6. **DEBT-EMECAS-DUAL-COMPILATION-001** — CI compila community + enterprise
 
 ---
 
