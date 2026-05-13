@@ -27,6 +27,10 @@ pipeline {
             description: 'Capacity benchmark (requiere hardware físico)')
         booleanParam(name: 'DEPLOY_SEEDS', defaultValue: false,
             description: 'Deploy seeds (DEBT-JENKINS-SEED-DISTRIBUTION-001)')
+        booleanParam(name: 'PROVISION_CRYPTO', defaultValue: false,
+            description: 'Forzar stage Provision Crypto en ramas no-main (ADR-044)')
+        booleanParam(name: 'FORCE_PROVISION_CRYPTO', defaultValue: false,
+            description: 'Regenerar seeds aunque ya existan (--force)')
     }
 
     stages {
@@ -35,6 +39,44 @@ pipeline {
             steps {
                 sh 'vagrant destroy -f && vagrant up && make bootstrap && make test-all'
                 sh 'make all 2>&1 | grep -c "warning:" | xargs test 0 -eq'
+            }
+        }
+
+        stage('Provision Crypto — Vault (ADR-044)') {
+            // Genera/verifica seeds criptográficos por familia en Vault
+            // Consejo DAY 149 Q6: stage separado y condicional
+            // Idempotente: SKIP si seeds existen, --force para regenerar
+            when {
+                anyOf {
+                    branch 'main'
+                    expression { return params.PROVISION_CRYPTO }
+                }
+            }
+            steps {
+                script {
+                    def forceFlag = params.FORCE_PROVISION_CRYPTO ? '--force' : ''
+                    def envName   = (env.BRANCH_NAME == 'main') ? 'prod' : 'dev'
+                    sh """
+                        ARGUS_ENV=${envName} \\
+                        VAULT_ADDR=\${VAULT_ADDR:-http://127.0.0.1:8200} \\
+                        VAULT_TOKEN=\${VAULT_TOKEN_SECRET:-root} \\
+                        bash scripts/jenkins/provision_crypto.sh \\
+                            --env ${envName} \\
+                            --audit-out logs/crypto_audit_\${BUILD_NUMBER}.json \\
+                            ${forceFlag}
+                    """
+                }
+            }
+            post {
+                success {
+                    archiveArtifacts artifacts: 'logs/crypto_audit_*.json',
+                                     allowEmptyArchive: true
+                    echo 'Provision Crypto PASSED — seeds verificados en Vault'
+                }
+                failure {
+                    echo 'FAIL: Provision Crypto — Vault no disponible o seeds corruptos'
+                    error('Crypto provisioning failed — pipeline bloqueado')
+                }
             }
         }
 
