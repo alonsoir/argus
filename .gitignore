@@ -257,3 +257,6 @@ protocol-EMECAS-output-*.md
 docs/argus_ndr_v*.pdf
 docs/latex/Archivo.zip
 docs/latex/*.zip
+etcd-server/build
+rag-ingester/build
+scripts/parquet/schemas/__pycache__/
