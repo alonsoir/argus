@@ -64,6 +64,31 @@
 
 ---
 
+## ✅ CERRADO DAY 150
+
+### EMECAS + ADR-044 implementación — DAY 150
+- **Status:** ✅ COMPLETADO DAY 150 — main @ `93b4d39c` — 4 PRs mergeados
+- **fix/parquet-convert-vagrant-ssh (PR #69):** `parquet-convert` y `test-parquet` ejecutaban en macOS host. Patrón `vagrant ssh -c` aplicado. `make test-all` verde completo — 207,190 filas Parquet. ROUNDTRIP PASSED.
+- **feat(adr044): provision_crypto.sh (PR #70):** Script Bash. Vault KV v1 en `argus/`. Seeds 32 bytes por familia (A, B, C) + etcd bootstrap especial. Idempotente (SKIP si existe, `--force` para regenerar). Assert `seed_dev != seed_prod`. Artifact `crypto_audit.json` con fingerprints `sha256(seed)`. Targets Makefile: `provision-crypto`, `provision-crypto-force`.
+- **feat(adr044): vault_client C++20 (PR #71):** `libvault_client.so`. `VaultClient::fetch_crypto_material()`. Derivación Kimi D12: `kdf_derive → component_seed → sign_seed_keypair`. Fingerprint = `sha256(pk)` (Kimi D13). Jitter anti-stampede: `component_index * 500ms + rand(0..1000ms)`. Cache tmpfs TTL (1h dev, 72h prod), 0700. Edge autonomy: Vault KO + cache válida → `OK_FROM_CACHE` + WARN; Vault KO + cache vacía → `exit(1)`. `mlock()` opcional. 5/5 tests PASS. Targets: `vault-client-build/clean/test`.
+- **feat(adr044): Jenkinsfile stage Provision Crypto (PR #72):** Stage entre `Quick Check` y `Deploy Configs`. Condicional: main siempre, otras ramas si `PROVISION_CRYPTO=true`. `env=prod` en main, `env=dev` en ramas. Artifact `crypto_audit_${BUILD_NUMBER}.json`. `error()` bloquea pipeline si Vault KO.
+
+### Decisión arquitectónica open-core — DAY 150 (Consejo 8/8 + Founder)
+- **Un solo binario por arquitectura.** Plugin system como mecanismo de licencias. Community = seed-client. Enterprise = plugins firmados activados por licencia en Vault.
+- **`ARGUS_VAULT_ENABLED`** es el único separador compile-time. Solo controla qué `.cpp` linkea — ningún componente ve `#ifdef` en lógica de negocio.
+- **`ICryptoProvider` interfaz abstracta** con `SeedFileProvider` (community) y `VaultProvider` (enterprise). Factoría `CryptoProvider::create()` es el único punto de decisión.
+- **Cache cifrada obligatoria en producción.** Seed maestra en texto plano: JAMÁS. Sin cifrado de disco → sin cache → Vault obligatorio.
+
+### Decisión autonomía extendida Opción D — DAY 150 (Consejo 8/8)
+- **TTL = ventana de renovación preferente, nunca fecha de muerte.** La clave expira solo por revocación explícita firmada desde Vault, EMECAS, o tamper detection. Nunca por el paso del tiempo.
+- **Firewall default-deny para tráfico nuevo** en modo EXTENDED_AUTONOMY — más agresivo, no menos.
+- **Reconciliación obligatoria** al recuperar Vault — no vuelve a NORMAL sin handshake.
+- **Circuit breaker configurable** (default 30 días) con alerta progresiva.
+- **Logs firmados locales** con flag `EXTENDED_AUTONOMY=1` durante autonomía.
+
+### DEBT-CRYPTO-STAMPEDE-001 — implementada en vault_client.cpp
+- **Status:** ✅ CERRADO DAY 150 — jitter `component_index * 500ms + rand(0..1000ms)` implementado.
+
 ## ✅ CERRADO DAY 149
 
 ### DEBT-PARQUET-SCHEMA-001 — Schema Arrow v1.0
@@ -733,6 +758,162 @@ Configurado via `ansible/group_vars/prod.yml` por cliente (discord_webhook, tele
 **Test de cierre:** Simular Vault caído → alerta llega a Discord/Telegram en < 1min.
 **Estimación:** 1 sesión pre-FEDER
 
+### DEBT-CRYPTO-AUTONOMY-001 — Máquina de estados autonomía extendida
+**Severidad:** 🔴 P1 pre-FEDER
+**Estado:** ABIERTO — DAY 150 (Opción D Consejo 8/8)
+**Componente:** `common/vault_client.cpp` + todos los componentes
+
+Implementar máquina de estados formal:
+```
+NORMAL → EXTENDED_AUTONOMY → RECONCILIATION → REVOKED
+```
+- `NORMAL`: Vault responde, clave vigente, renovación periódica.
+- `EXTENDED_AUTONOMY`: Vault inaccesible > TTL. Continúa operando. Log CRITICAL cada 15 min. Webhook SOS. Intentos renovación cada 5 min en background.
+- `RECONCILIATION`: Vault recuperado. Envía `key_version` actual. Valida antes de volver a NORMAL.
+- `REVOKED`: Revocación explícita firmada recibida. Descarga nueva clave. EMECAS si necesario.
+
+Invalidación de clave SOLO por: revocación explícita firmada desde Vault, EMECAS, tamper detection. NUNCA por TTL.
+Circuit breaker configurable (default 30 días) con alerta progresiva.
+Logs firmados locales con flag `EXTENDED_AUTONOMY=1` para cadena forense.
+
+**Test de cierre:** Kill Vault → componente entra en EXTENDED_AUTONOMY + SOS webhook. Recuperar Vault → RECONCILIATION → NORMAL. Revocación explícita → REVOKED.
+**Estimación:** 2 sesiones
+
+---
+
+### DEBT-FIREWALL-AUTONOMY-MODE-001 — Firewall default-deny en EXTENDED_AUTONOMY
+**Severidad:** 🔴 P1 pre-FEDER
+**Estado:** ABIERTO — DAY 150 (Consejo 8/8 + Founder)
+**Componente:** `firewall-acl-agent`
+
+Cuando `vault_client` entra en `EXTENDED_AUTONOMY`, `firewall-acl-agent` debe:
+1. Cambiar política a default-deny para tráfico nuevo (solo flujos establecidos permitidos)
+2. Umbral ML más sensible (más FP aceptables, cero FN)
+3. Logging en nivel DEBUG — retención máxima local
+4. Todos los eventos Parquet con `EXTENDED_AUTONOMY=1`
+5. Al volver a NORMAL: restaurar política original + sincronizar logs
+
+La pérdida de Vault es un indicador de ataque inminente, no una razón para relajar la defensa.
+
+**Test de cierre:** Vault KO → firewall en default-deny → tráfico nuevo bloqueado → flujos establecidos pasan. Vault recuperado → política restaurada.
+**Estimación:** 1 sesión
+
+---
+
+### DEBT-CRYPTO-REVOCATION-LOCAL-001 — Revocación offline sin Vault
+**Severidad:** 🟡 P1 post-FEDER
+**Estado:** ABIERTO — DAY 150 (Founder + Claude)
+**Componente:** `common/vault_client` + herramienta administrador
+
+Si Vault es inaccesible y el administrador del hospital necesita invalidar claves comprometidas, necesita mecanismo local: fichero firmado con clave offline del administrador (air-gapped) que el pipeline reconoce como orden de revocación. Complemento simétrico a la autonomía edge.
+
+Formato: `/var/lib/argus/emergency-revocation.json` firmado con clave Ed25519 del administrador.
+El pipeline verifica firma antes de procesar la revocación.
+
+**Test de cierre:** Vault KO → fichero de revocación firmado → pipeline entra en REVOKED → descarga nueva clave cuando Vault vuelve.
+**Estimación:** 1 sesión post-FEDER
+
+---
+
+### DEBT-CRYPTO-RECONCILIATION-001 — Handshake de validación al recuperar Vault
+**Severidad:** 🟡 P1 pre-FEDER
+**Estado:** ABIERTO — DAY 150 (Kimi/Consejo 8/8)
+**Componente:** `common/vault_client`
+
+Al detectar que Vault vuelve a estar disponible:
+1. El nodo envía su `key_version` actual a Vault
+2. Vault responde: `VALID` → vuelve a NORMAL; `REVOKED` → descarga nueva clave y rota; `UNKNOWN` → EMECAS
+3. No vuelve a NORMAL sin handshake completado
+4. Logs del período de autonomía se sincronizan al central
+5. Operador recibe resumen del período de autonomía extendida
+
+Previene que un atacante que suplante Vault induzca fin prematuro del modo seguro.
+
+**Test de cierre:** Vault KO → EXTENDED_AUTONOMY → Vault recuperado → RECONCILIATION → `key_version` validada → NORMAL. Vault suplantado → RECONCILIATION rechazada → sigue en EXTENDED_AUTONOMY.
+**Estimación:** 1 sesión
+
+---
+
+### DEBT-CRYPTO-CACHE-PERSISTENT-PROD-001 — Cache persistente cifrada en producción edge
+**Severidad:** 🔴 P1 pre-FEDER
+**Estado:** ABIERTO — DAY 150 (Consejo 8/8)
+**Componente:** `common/vault_client` + Ansible/Jinja2
+
+- **Dev / EMECAS:** `/run/argus/crypto-cache/` — tmpfs, se pierde en destroy. Correcto por diseño.
+- **Prod edge:** `/var/lib/argus/{component}/crypto-cache/` — persistente, permisos 0600, propietario `argus:argus`.
+
+**Precondición obligatoria:** Ansible verifica que el filesystem está cifrado (LUKS/dm-crypt) antes de habilitar cache persistente. Si no hay cifrado → despliegue falla con error explícito. Seed maestra en texto plano es inaceptable bajo cualquier circunstancia.
+
+**Advertencia en docs:** sin TPM/LUKS, cache persistente = seed en disco plano. La opción de Vault obligatorio en cada arranque es preferible en ese caso.
+
+`VaultClientConfig.cache_dir` ya es configurable — solo requiere Ansible/Jinja2 que inyecte el path correcto según ambiente.
+
+**Test de cierre:** deploy prod → Ansible verifica LUKS → cache en `/var/lib/argus/` → reboot → pipeline arranca sin Vault → cache válida usada → WARN en log.
+**Estimación:** 1 sesión
+
+---
+
+### DEBT-EMECAS-DUAL-COMPILATION-001 — CI compila ARGUS_VAULT_ENABLED ON y OFF
+**Severidad:** 🟡 P1
+**Estado:** ABIERTO — DAY 150 (DeepSeek/Consejo 8/8)
+**Componente:** Jenkinsfile + Makefile
+
+El pipeline EMECAS debe compilar AMBAS variantes en cada build:
+- `ARGUS_VAULT_ENABLED=OFF` (community, seed-client)
+- `ARGUS_VAULT_ENABLED=ON` (enterprise, VaultClient)
+
+Cualquier error de compilación o enlace en la rama enterprise aparecerá inmediatamente.
+Elimina la divergencia silenciosa — si un PR rompe community, el build rojo lo detecta.
+
+Jenkinsfile: dos stages paralelos `Test Community` y `Test Enterprise`.
+Makefile: targets `vault-client-build-community` y `vault-client-build-enterprise`.
+
+**Test de cierre:** PR que rompe community → CI rojo. PR que rompe enterprise → CI rojo. Ambas variantes compilan y tests pasan → CI verde.
+**Estimación:** 1 sesión
+
+---
+
+### DEBT-LICENSE-VAULT-001 — Servidor de licencias en Vault
+**Severidad:** 🟡 P2 post-FEDER
+**Estado:** ABIERTO — DAY 150 (Founder + DeepSeek)
+**Componente:** Vault + plugin system
+
+Junto con las seeds, Vault contiene `argus/{env}/features/license` — objeto firmado que habilita/deshabilita plugins enterprise. El binario es el mismo; lo que cambia es qué plugins se descargan y activan según la licencia.
+
+```json
+{
+  "edition": "enterprise",
+  "features": ["vault_crypto", "neo4j_graph", "opencanary", "falco_actuation"],
+  "valid_until": "2027-12-31",
+  "installation_id": "hospital-badajoz-001"
+}
+```
+
+Licencia firmada con clave Ed25519 offline del vendor. El plugin-loader verifica firma antes de cargar cualquier plugin enterprise.
+
+**Test de cierre:** licencia community → plugins enterprise no se cargan. Licencia enterprise → plugins enterprise disponibles. Licencia expirada → plugins enterprise deshabilitados + alerta SOS.
+**Estimación:** 2 sesiones post-FEDER
+
+---
+
+### DEBT-PLUGIN-ENTERPRISE-001 — Definir plugins enterprise vs community
+**Severidad:** 🟡 P2 post-FEDER
+**Estado:** ABIERTO — DAY 150
+**Componente:** plugin system + docs/OPEN_CORE.md
+
+Definir formalmente qué módulos van detrás de licencia enterprise:
+- **Community:** pipeline C++20 completo, seed-client, AppArmor básico, Falco reglas básicas, argus-network-isolate
+- **Enterprise (plugins firmados):** VaultClient (governance criptográfico), Neo4j connector (graph analytics), OpenCanary (honeypot/deception), Falco actuation avanzado (JA3/JA4, forensic chain)
+
+La detección ML (F1=0.9985) es idéntica en ambas ediciones. La separación es governance, operabilidad y escalabilidad — nunca capacidad de detección.
+
+Crear `docs/OPEN_CORE.md` con la matriz de funcionalidades y la regla de diseño:
+> "Todo lo que afecta a la precisión de detección debe ser idéntico en community y enterprise."
+
+**Test de cierre:** docs/OPEN_CORE.md creado. Matrix de features documentada. ADR-045 Open-Core Feature Flags creado.
+**Estimación:** 1 sesión
+
+
 ### DEBT-ETCD-HA-QUORUM-001 — etcd-server en HA con quorum
 **Severidad:** 🔴 Alta — P0 post-FEDER (OBLIGATORIO, no opcional)
 **Estado:** ABIERTO — DAY 142
@@ -906,6 +1087,100 @@ Targets `make emecas-dev/prod-x86/prod-arm64` con log automático fechado.
 
 ## 📋 BACKLOG — Benchmarks Empíricos (FEDER Year 1)
 
+
+### BACKLOG-PAPER-METHODOLOGY-001 — Paper arXiv: TDH + Consejo de Sabios
+**Estado:** ⏳ BACKLOG — cuando aRGus pueda dejarse solo unos días
+**Prioridad:** P2 post-FEDER
+**Target:** arXiv cs.SE
+**Co-autor natural:** Dr. Andrés Caro Lindo (UEx/INCIBE)
+**Título tentativo:** "Test-Driven Hardening and Multi-Model Peer Review:
+A Methodology for Human-AI Collaborative Engineering of Security-Critical Systems"
+
+**Contribución:** La metodología — no el sistema técnico (ya en arXiv:2604.04952).
+Cómo un investigador independiente, sin institución ni financiación, construyó
+un sistema de seguridad para infraestructura crítica en 150+ días usando:
+- Consejo de Sabios (8 modelos IA como peer review adversarial)
+- Test-Driven Hardening (TDH) como disciplina de calidad
+- EMECAS como invariante de reproducibilidad
+- ADRs como separación intent/spec/implementation
+- Prompts de continuidad como memoria externa estructurada
+
+**Datos disponibles:** 150+ días de commits públicos, ADRs, decisiones rechazadas
+por el Consejo, bugs encontrados por tests, momentos en que EMECAS salvó merges.
+
+**Ángulo principal:** democratización del peer review experto via LLMs.
+Históricamente, un investigador solo no tiene acceso a 8 expertos adversariales.
+
+**Conexión con Kapil Viren Ahuja (Medium):** su "three-layer schematic" (intent/spec/
+implementation) es exactamente lo que ADRs + tests + código implementan por
+construcción en aRGus. El paper de metodología es el antídoto empírico a los
+frameworks SDD que él critica.
+
+**Nota:** Las notas se están tomando solas. Prompts de continuidad, notas del
+Consejo, ADRs — todo es material primario. El paper casi se escribe solo.
+
+
+### BACKLOG-DEPLOY-CALCULATOR-001 — Calculadora deployment.yml → configs óptimas
+**Estado:** ⏳ BACKLOG — requiere hardware físico para calibrar
+**Prioridad:** P1 cuando lleguen RPi + N100
+**Descripción:** Lee `deployment.yml` (topología declarativa) + `hardware_profile.yml`
+(RAM, CPU, NIC disponibles en cada nodo) y genera los JSONs de configuración
+óptimos para cada componente.
+
+Calcula automáticamente:
+- `worker_threads` según CPU disponible
+- `buffer_size_mb` según RAM
+- `queue_depth` según latencia de red medida
+- familias criptográficas según topología de canal
+
+Es el "optimizador de hardware" que conecta con las templates Jinja2.
+Jenkins llama al calculador antes de Ansible para inyectar valores óptimos.
+
+**Conexión con ADR-021 (seed families) y ADR-034 (Declarative Deployment):**
+deployment.yml ya esbozado en ADR-021. El calculador es la implementación.
+
+**Prerequisito:** hardware físico real (RPi + N100) para calibrar los valores.
+Sin datos reales, cualquier fórmula es especulativa.
+
+**Tiers de despliegue que el calculador debe soportar:**
+- Tier 1: RPi5 (~80€) — clínica rural, libpcap
+- Tier 2: N100 (~300€) — hospital comarcal, eBPF nativo
+- Tier 3: HW empresarial — hospital universitario, XDP offload
+- Tier 4: Cloud soberana — red hospitales nacional (post-FEDER)
+
+
+### BACKLOG-HARDWARE-FEDER-001 — Adquisición hardware lab distribuido
+**Estado:** ⏳ PENDIENTE — coordinando con Andrés Caro Lindo (UEx/INCIBE)
+**Prioridad:** P0 — desbloquea ADR-041, BACKLOG-BENCHMARK-CAPACITY-001,
+  inversión eBPF/XDP bare-metal, datasets UEx, convocatoria FEDER
+
+**Inventario mínimo propuesto (~460€):**
+| Hardware | Cantidad | Precio/ud | Rol |
+|---|---|---|---|
+| Raspberry Pi 5 (8GB) | 2 | ~80€ | Edge ARM64, libpcap Variant B |
+| Intel N100 miniPC | 2 | ~150€ | Edge x86-64, eBPF/XDP nativo |
+| Switch 8 puertos gigabit | 1 | ~30€ | Intranet emulada |
+| MacBook Pro (existente) | 1 | — | Servidor central (Vagrant VM) |
+
+**Por qué el N100 es crítico:**
+- NIC Intel i226-V tiene driver XDP nativo (igc) — sin SKB fallback
+- VirtualBox virtio: eBPF ~10 Mbps (SKB mode) vs libpcap ~19 Mbps
+- N100 bare-metal: eBPF/XDP puede dar Gbps — inversión total
+- Sin N100, las cifras del paper son el SUELO, nunca el techo
+- El delta VirtualBox vs bare-metal es el argumento más fuerte para FEDER
+
+**Experimentos que desbloquea:**
+1. ADR-029 Variant A vs B en bare-metal real — inversión predicha pero no medida
+2. Los 2 FP VirtualBox (mDNS + broadcast) probablemente desaparecen en bare-metal
+3. Reentrenamiento ML en el propio nodo con datos capturados reales
+4. Hospital simulado completo con múltiples configuraciones
+5. HA etcd con 3 nodos físicos (DEBT-ETCD-HA-QUORUM-001)
+6. Datasets bajo paraguas UEx publicables
+
+**Vagrantfile servidor central (pendiente):**
+vagrant/central-server/Vagrantfile — debian minimal, provisionado
+incrementalmente. MacBook como servidor mientras llegan fondos UEx.
+
 ### BACKLOG-ZMQ-TUNING-001
 **Estado:** ⏳ BACKLOG | **Prioridad:** P1 — Prerequisito de BENCHMARK-CAPACITY
 **Bloqueado por:** ADR-029 Variant A + Variant B estables
@@ -942,10 +1217,14 @@ Targets `make emecas-dev/prod-x86/prod-arm64` con log automático fechado.
 
 ## BACKLOG-FEDER-001
 
-**Estado:** PENDIENTE — bloqueado por prerequisites técnicos
+**Estado:** ACTIVO — colaboración UEx/INCIBE en curso
 **Contacto:** Andrés Caro Lindo — UEx/INCIBE — andresc@unex.es
-**Deadline límite:** 22 septiembre 2026 | **Go/no-go técnico:** 1 agosto 2026
-**Emails enviados DAY 141:** hardware FEDER (RPi5+N100+switch) + scope standalone vs federado
+**Deadline límite:** referencia de ritmo, NO deadline duro (DAY 149)
+**Convocatoria:** pendiente identificar — limitada a investigador independiente sin empresa
+**Colaboración:** Andrés como co-investigador, no solo asesor. Posible infra UEx para servidor.
+**Hardware en camino (DAY 149):** RPi × N + switch desde UEx. Email pendiente para añadir N100 x86.
+**Emails enviados DAY 141:** hardware FEDER + scope standalone vs federado
+**Llamada DAY 149:** datasets bajo paraguas UEx prerequisito convocatoria
 
 ### Gate de entrada
 
@@ -1011,6 +1290,13 @@ Targets `make emecas-dev/prod-x86/prod-arm64` con log automático fechado.
 | **IRP prob. conjunta multi-señal** | No topología por quirófano (inviable). Función de decisión con todas las señales disponibles + pesos. | Consejo 8/8 · DAY 143 |
 | **etcd-server HA es deuda crítica** | Single-node etcd no es robusta. DEBT-ETCD-HA-QUORUM-001 obligatoria post-FEDER. | Founder · DAY 142 |
 
+| **Open-core: un solo binario por arquitectura (DAY 150 — Consejo 8/8 + Founder)** | Plugin system como mecanismo de licencias. Community = seed-client. Enterprise = plugins firmados activados por licencia en Vault. Cero variantes de código. `ARGUS_VAULT_ENABLED` único separador compile-time. | DAY 150 |
+| **ICryptoProvider interfaz abstracta (DAY 150 — Consejo 8/8)** | `SeedFileProvider` (community) y `VaultProvider` (enterprise) implementan la misma interfaz. Ningún componente ve `#ifdef` en lógica de negocio. El flag CMake solo controla qué `.cpp` se linka. | DAY 150 |
+| **Migración por canal, no por componente (DAY 150 — Gemini/Consejo 8/8)** | ZeroMQ es bilateral. Si sniffer usa VaultProvider y ml-detector usa SeedFile, los keypairs derivados no coinciden y el canal se rompe. Migrar simultáneamente: etcd-server → sniffer+ml-detector → firewall-acl-agent → rag-ingester+rag-security. | DAY 150 |
+| **TTL = ventana de renovación preferente (DAY 150 — Consejo 8/8)** | TTL no es fecha de muerte criptográfica. La clave expira solo por: revocación explícita firmada desde Vault, EMECAS, o tamper detection. Nunca por el paso del tiempo. | DAY 150 |
+| **Firewall default-deny en EXTENDED_AUTONOMY (DAY 150 — Consejo 8/8 + Founder)** | Cuando Vault es inaccesible, el firewall-acl-agent pasa a bloquear todo tráfico nuevo. La pérdida de Vault es un indicador de ataque inminente, no una razón para relajar la defensa. | DAY 150 |
+| **Reconciliación obligatoria post-Vault (DAY 150 — Consejo 8/8)** | Al recuperar conectividad con Vault, el nodo no vuelve a NORMAL automáticamente. Envía `key_version` actual. Vault responde: válida → NORMAL; revocada → nueva clave; no reconocida → EMECAS. | DAY 150 |
+| **Cache cifrada obligatoria en prod (DAY 150 — Founder)** | Seed maestra en texto plano: JAMÁS. En producción, cache solo si filesystem cifrado (LUKS o equivalente). Sin cifrado de disco → Vault obligatorio en cada arranque. | DAY 150 |
 | **MAC unicast como identidad primaria** | `HMAC-SHA256(K_pseudo, MAC)`. Jerarquía MAC→hostname→IP. `Host` vs `NetworkPresence`. MAC nunca sale del nodo. | ADR-0043 v4 · Consejo 8/8 · DAY 147 |
 | **Pseudonimización determinista K_pseudo** | HMAC-SHA256 con clave por instalación en Vault local. Coherencia temporal garantizada. Rotación es evento excepcional. | ADR-0043 v4 · Consejo 8/8 · DAY 147 |
 | **Paquete mensual edge→central** | Parquet ×2 + plugin firmado + metadatos. idempotency_key = firma Ed25519(batch_content). Estable a N reintentos. | ADR-0043 v4 · Consejo 8/8 · DAY 147 |
@@ -1091,6 +1377,9 @@ DEBT-MUTEX-ROBUST-001:                   0% ⏳  post-FEDER (tras HA etcd)
 DEBT-IRP-MULTI-SIGNAL-001:              0% ⏳  post-FEDER
 DEBT-IRP-LAST-KNOWN-GOOD-001:           0% ⏳  post-FEDER
 DEBT-IRP-QUEUE-PROCESSOR-001:           0% ⏳  post-merge
+BACKLOG-PAPER-METHODOLOGY-001:             0% ⏳  post-FEDER (paper cs.SE TDH+Consejo)
+BACKLOG-DEPLOY-CALCULATOR-001:             0% ⏳  cuando llegue hardware físico
+BACKLOG-HARDWARE-FEDER-001:               0% ⏳  coordinando con Andrés (RPi+N100+switch)
 BACKLOG-ZMQ-TUNING-001:                  0% ⏳  pre-FEDER
 BACKLOG-BENCHMARK-CAPACITY-001:           0% ⏳  FEDER Year 1 Deliverable
 BACKLOG-BUILD-WARNING-CLASSIFIER-001:    0% ⏳  post-FEDER (grep/awk script)
@@ -1123,6 +1412,20 @@ DEBT-CRYPTO-STAMPEDE-001:                    0% ⏳  P1 (jitter vault_client)
 DEBT-CRYPTO-AUDIT-FINGERPRINT-001:           0% ⏳  P1 (fingerprint etcd)
 DEBT-CRYPTO-HEARTBEAT-001:                   0% ⏳  P1 (heartbeat etcd)
 DEBT-ALERTING-EDGE-SOS-001:                  0% ⏳  P1 pre-FEDER (SOS webhook edge)
+ADR-044 provision_crypto.sh:                100% ✅  DAY 150 (Vault KV v1, familias A/B/C + etcd, idempotente)
+ADR-044 vault_client.h/.cpp:               100% ✅  DAY 150 (derivación D12/D13, jitter, cache, 5/5 tests)
+ADR-044 Jenkinsfile Provision Crypto:      100% ✅  DAY 150 (stage separado, condicional, artifact)
+DEBT-CRYPTO-STAMPEDE-001:                  100% ✅  DAY 150 (jitter implementado en vault_client.cpp)
+Decisión open-core plugin system:          100% ✅  DAY 150 (Consejo 8/8 + Founder)
+Decisión autonomía extendida Opción D:     100% ✅  DAY 150 (Consejo 8/8)
+DEBT-CRYPTO-AUTONOMY-001:                    0% ⏳  P1 pre-FEDER (máquina de estados EXTENDED_AUTONOMY)
+DEBT-FIREWALL-AUTONOMY-MODE-001:             0% ⏳  P1 pre-FEDER (default-deny en autonomía)
+DEBT-CRYPTO-REVOCATION-LOCAL-001:            0% ⏳  P1 post-FEDER (revocación offline)
+DEBT-CRYPTO-RECONCILIATION-001:              0% ⏳  P1 pre-FEDER (handshake post-Vault)
+DEBT-CRYPTO-CACHE-PERSISTENT-PROD-001:       0% ⏳  P1 pre-FEDER (cache cifrada en prod edge)
+DEBT-EMECAS-DUAL-COMPILATION-001:            0% ⏳  P1 (CI compila ON+OFF)
+DEBT-LICENSE-VAULT-001:                      0% ⏳  P2 post-FEDER (servidor licencias en Vault)
+DEBT-PLUGIN-ENTERPRISE-001:                  0% ⏳  P2 post-FEDER (definir plugins enterprise)
 ADR-031 aRGus-seL4:                      0% ⏳  branch independiente
 ```
 
@@ -1328,9 +1631,39 @@ Un sistema con ACRL converge hacia cobertura de técnicas ATT&CK en tiempo polin
 
 ---
 
-*DAY 149 — 12 Mayo 2026 · main @ v0.7.2 (múltiples PRs)*
+*DAY 150 — 13 Mayo 2026 · main @ 93b4d39c*
 *"Via Appia Quality — Un escudo que aprende de su propia sombra."*
 
+
+
+## 📝 Notas del Consejo de Sabios — DAY 150 (8/8)
+
+> "DAY 150 — ADR-044 completado. 4 PRs mergeados. EMECAS verde. Decisiones arquitectónicas mayores adoptadas.
+>
+> **Consenso Q1 (8/8):** Un solo código fuente, interfaz abstracta `ICryptoProvider` con `SeedFileProvider` (community) y `VaultProvider` (enterprise). El flag CMake `ARGUS_VAULT_ENABLED` solo controla qué `.cpp` se linka — ningún componente ve `#ifdef` en lógica de negocio. `DEBT-EMECAS-DUAL-COMPILATION-001` registrada (DeepSeek): CI compila ambas variantes.
+>
+> **Consenso Q2 — Migración por canal (8/8 + Gemini):** ZeroMQ es bilateral. Migración simultánea por canal: etcd-server → sniffer+ml-detector → firewall-acl-agent → rag-ingester+rag-security. Orden dentro del canal: ChatGPT propone ml-detector antes que sniffer (latencia arranque); Gemini propone simultáneo. Decisión: simultáneo dentro del canal. Mezcla de providers en el mismo canal = claves incompatibles.
+>
+> **Consenso Q3 (8/8 — Kimi/Qwen):** etcd-server escribe estado en fichero local `/run/argus/etcd-bootstrap-status.json` (0600, AppArmor + Falco vigilando). Una vez etcd arranca, se registra en sí mismo vía loopback y borra el fichero. Un solo mecanismo de registro para todos los componentes.
+>
+> **Consenso Q4 — Opción D adoptada (8/8):** TTL = ventana de renovación preferente, nunca fecha de muerte. Máquina de estados NORMAL → EXTENDED_AUTONOMY → RECONCILIATION → REVOKED. Firewall default-deny en autonomía. Circuit breaker 30 días configurable. Logs firmados locales. Cache cifrada en prod (LUKS obligatorio). El hospital se protege hasta el último gramo de electricidad.
+>
+> **Consenso Q5 (8/8 — ChatGPT + DeepSeek):** No hay crippleware. Plugin system como mecanismo de licencias. Un solo binario por arquitectura. Community = técnicamente útil y respetable. Enterprise = governance, escala, compliance. `ARGUS_VAULT_ENABLED` suficiente para FEDER; roadmap post-FEDER con feature flags granulares en Vault.
+>
+> **Nuevas deudas registradas:**
+> DEBT-CRYPTO-AUTONOMY-001 (P1), DEBT-FIREWALL-AUTONOMY-MODE-001 (P1),
+> DEBT-CRYPTO-REVOCATION-LOCAL-001 (P1 post-FEDER), DEBT-CRYPTO-RECONCILIATION-001 (P1),
+> DEBT-CRYPTO-CACHE-PERSISTENT-PROD-001 (P1), DEBT-EMECAS-DUAL-COMPILATION-001 (P1),
+> DEBT-LICENSE-VAULT-001 (P2 post-FEDER), DEBT-PLUGIN-ENTERPRISE-001 (P2 post-FEDER).
+>
+> **Mañana DAY 151:**
+> EMECAS. Integración etcd-server con VaultClient + ICryptoProvider (#ifdef ARGUS_VAULT_ENABLED).
+> Implementar DEBT-CRYPTO-AUTONOMY-001 máquina de estados en vault_client.cpp.
+>
+> 'La elegancia no está en la pureza teórica, sino en la resiliencia operacional.
+> En un hospital bajo ataque, un NDR que sigue detectando con claves stale pero válidas
+> es infinitamente más valioso que un NDR criptográficamente puro pero apagado.' — Qwen · DAY 150"
+> — Consejo de Sabios (8/8) · DAY 150
 
 ## 📝 Notas del Consejo de Sabios — DAY 149 (8/8)
 
