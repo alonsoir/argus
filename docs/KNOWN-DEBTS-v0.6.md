@@ -184,3 +184,18 @@ Suite de 8 tests (unit/integ/stress/regression) — 8/8 PASSED.
 - Deudas 🟢 Baja se abordan oportunísticamente
 - Ver también: BACKLOG.md sección DEBT para deudas anteriores a v0.6
 - Keypair activo: b5b6cbdf67dad75cdd7e3169d837d1d6d4c938b720e34331f8a73f478ee85daa
+---
+
+## DEBT-VAULT-CONFIG-HARDCODED-001
+**Severidad:** 🟢 Baja — pre-producción real
+**Componente:** common/vault_client.h
+**Descripción:**
+Constantes de configuración Vault hardcodeadas como `constexpr` en el header:
+`VAULT_TIMEOUT_DEV_MS`, `VAULT_TIMEOUT_PROD_MS`, `VAULT_JITTER_BASE_MS`,
+`VAULT_JITTER_RAND_MS`, `ETCD_LEASE_TTL_S`, `ETCD_KEEPALIVE_S`,
+`CACHE_TTL_DEV_S`, `CACHE_TTL_PROD_S`.
+Extraer a fichero JSON de configuración Vault cargado por `VaultClientConfig`
+en runtime. Mismo patrón que el resto de JSONs de componente gestionados
+por Ansible.
+**Corrección:** post-FEDER, antes de producción real
+**Descubierto:** DAY 151 — 2026-05-14

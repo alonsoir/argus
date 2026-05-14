@@ -10,6 +10,9 @@
 #include <iostream>
 #include <csignal>
 #include <exception>
+#include <vault_client/crypto_provider.h>
+#include <fstream>
+#include <filesystem>
 
 std::unique_ptr<EtcdServer> g_server;
 std::shared_ptr<etcd_server::SecretsManager> g_secrets_manager;
@@ -37,6 +40,57 @@ int main() {
         // ═══════════════════════════════════════════════════════════
         // STEP 1: Initialize SecretsManager (Day 54)
         // ═══════════════════════════════════════════════════════════
+        // ═══════════════════════════════════════════════════════════
+        // STEP 0: ICryptoProvider — identidad criptográfica (ADR-044 DAY 151)
+        // SeedClient + CryptoTransport (canal ZeroMQ) NO se tocan — Opción B.
+        // ICryptoProvider gestiona identidad Ed25519 y bootstrap status.
+        // ═══════════════════════════════════════════════════════════
+        std::cout << std::endl;
+        std::cout << "═══════════════════════════════════════════════════════" << std::endl;
+        std::cout << "  STEP 0: ICryptoProvider — identidad Ed25519         " << std::endl;
+        std::cout << "═══════════════════════════════════════════════════════" << std::endl;
+
+        ml_defender::CryptoProviderConfig crypto_cfg;
+        crypto_cfg.component_name        = "etcd-server";
+        crypto_cfg.component_config_path = "/etc/ml-defender/etcd-server/";
+
+        auto crypto_provider = ml_defender::CryptoProvider::create(crypto_cfg);
+        auto crypto_material = crypto_provider->get_material();
+
+        // Fingerprint hex
+        char fp_buf[65] = {};
+        for (size_t i = 0; i < crypto_material.fingerprint.size(); ++i) {
+            snprintf(fp_buf + i * 2, 3, "%02x", crypto_material.fingerprint[i]);
+        }
+        std::string fingerprint_hex(fp_buf);
+
+        // Escribir /run/argus/etcd-bootstrap-status.json (0600)
+        // Fichero efímero: indica material criptográfico válido antes del arranque.
+        // Se borra tras g_server->start().
+        const std::string bootstrap_path = "/run/argus/etcd-bootstrap-status.json";
+        try {
+            std::filesystem::create_directories("/run/argus");
+            std::ofstream bsf(bootstrap_path);
+            bsf << "{\n"
+                << "  \"component\": \"etcd-server\",\n"
+                << "  \"provider\": \"" << (crypto_provider->is_healthy() ? "ok" : "degraded") << "\",\n"
+                << "  \"fingerprint\": \"" << fingerprint_hex << "\",\n"
+                << "  \"key_version\": " << crypto_material.key_version << ",\n"
+                << "  \"from_cache\": " << (crypto_material.from_cache ? "true" : "false") << ",\n"
+                << "  \"timestamp\": \"" << crypto_material.derivation_timestamp << "\"\n"
+                << "}\n";
+            bsf.close();
+            std::filesystem::permissions(bootstrap_path,
+                std::filesystem::perms::owner_read | std::filesystem::perms::owner_write,
+                std::filesystem::perm_options::replace);
+            std::cout << "✅ ICryptoProvider OK — fingerprint: "
+                      << fingerprint_hex.substr(0, 16) << "..." << std::endl;
+            std::cout << "✅ Bootstrap status escrito: " << bootstrap_path << std::endl;
+        } catch (const std::exception& e) {
+            // No fatal — el fichero es informativo, no bloquea el arranque
+            std::cerr << "⚠️  No se pudo escribir bootstrap status: " << e.what() << std::endl;
+        }
+
         std::cout << std::endl;
         std::cout << "═══════════════════════════════════════════════════════" << std::endl;
         std::cout << "  Initializing SecretsManager (Day 54)" << std::endl;
@@ -111,6 +165,12 @@ int main() {
         std::cout << std::endl;
 
         g_server->start();
+
+        // Borrar bootstrap status — servidor activo y aceptando conexiones
+        try {
+            std::filesystem::remove(bootstrap_path);
+            std::cout << "✅ Bootstrap status eliminado (servidor activo)" << std::endl;
+        } catch (...) {}
 
         while (g_server->is_running()) {
             std::this_thread::sleep_for(std::chrono::seconds(1));
