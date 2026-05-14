@@ -1,5 +1,5 @@
 # aRGus NDR — BACKLOG
-*Última actualización: DAY 146 — 9 Mayo 2026*
+*Última actualización: DAY 151 — 14 Mayo 2026*
 
 ---
 
@@ -63,6 +63,26 @@
 | **aRGus-seL4** | ⏳ No iniciada | Apéndice científico. Kernel seL4, libpcap. Branch independiente. |
 
 ---
+
+## ✅ CERRADO DAY 151
+
+### ICryptoProvider — Abstracción criptográfica (ADR-044 implementación completa) — DAY 151
+- **Status:** ✅ COMPLETADO DAY 151 — main @ `9e692a4e`
+- **ICryptoProvider** interfaz abstracta: `get_material()`, `refresh()`, `is_healthy()`, `component_name()`, `get_operational_mode()`
+- **SeedFileProvider** (community): `SeedClient` → `crypto_sign_seed_keypair()` → `CryptoMaterial`. Misma derivación Kimi D12.
+- **VaultProvider** (enterprise): wrapper delgado sobre `VaultClient` existente.
+- **`CryptoProvider::create()`**: factoría, único punto con `#ifdef ARGUS_VAULT_ENABLED` (confinado en `crypto_provider.cpp`).
+- **`libcrypto_provider.so`** instalada en `/usr/local/lib`. Headers en `/usr/local/include/vault_client/`.
+- **test_crypto_provider_community 10/10 PASSED**: fixture propio con `mkdtemp` + `seed.bin` sintético `0400` — sin dependencia de root.
+- **Decisión Opción B (SRP)**: `SeedClient`+`CryptoTransport` (canal ZeroMQ) ≠ `ICryptoProvider` (identidad Ed25519). `CryptoTransport` no tocado.
+- **etcd-server STEP 0**: `CryptoProvider::create()` → fingerprint Ed25519 → `/run/argus/etcd-bootstrap-status.json` (0600) → eliminado tras `g_server->start()`. Verificado en log: `fingerprint: 0079087736d9d62a...`
+- **ADR-045 aprobado (Consejo 8/8)**: VaultClient por composición — `IVaultTransport`, `ICacheManager`, `IEtcdRegistrar`, `ICryptoDeriver`, `IJitterStrategy`. Implementación DAY 153+.
+- **Nuevas deudas DAY 151:**
+  - `DEBT-BOOTSTRAP-STATUS-SIGNATURE-001` (P1 pre-FEDER): bootstrap status sin firma Ed25519
+  - `DEBT-AUTONOMY-STATE-PERSISTENCE-001` (P1): escribir estado autonomía firmado al entrar en AUTONOMOUS
+  - `DEBT-AUTONOMY-CLOCK-INJECTION-001` (P1): Clock inyectable en CryptoAutonomyStateMachine para tests
+  - `DEBT-AUTONOMY-ZMQ-EVENTS-001` (P1): cada transición emite evento ZeroMQ `crypto.autonomy.transition`
+- **make test-all**: ALL TESTS COMPLETE — 55+ tests, pipeline 6/6 RUNNING ✅
 
 ## ✅ CERRADO DAY 150
 
@@ -873,6 +893,24 @@ Makefile: targets `vault-client-build-community` y `vault-client-build-enterpris
 
 ---
 
+
+### ADR-045 — VaultClient Decomposition by Composition
+**Estado:** ✅ APROBADO DAY 151 — Consejo 8/8 + Founder | **Implementación:** DAY 153+
+**Descripción:** VaultClient se descompone en interfaces inyectables para eliminar el monolito:
+- `IVaultTransport` → HTTP a Vault API
+- `ICacheManager` → tmpfs, TTL, mlock, permisos
+- `IEtcdRegistrar` → registro + keepalive
+- `ICryptoDeriver` → KDF + sign_seed_keypair
+- `IJitterStrategy` → anti-stampede
+- `CryptoAutonomyStateMachine` → estados operativos
+
+`VaultProvider` las compone. Cada responsabilidad testeable en aislamiento sin Vault, sin red, sin etcd. Independencia de proveedor: hoy Vault, mañana lo que sea, pasado mañana el nuestro propio. Documentado en `docs/adr/ADR-045-vaultclient-decomposition.md`.
+
+**Test de cierre:** cada interfaz testeada con mock independiente. `make test-all` verde.
+**Estimación:** DAY 153 (IVaultTransport + ICacheManager) + DAY 154 (IEtcdRegistrar + ICryptoDeriver)
+
+---
+
 ### DEBT-LICENSE-VAULT-001 — Servidor de licencias en Vault
 **Severidad:** 🟡 P2 post-FEDER
 **Estado:** ABIERTO — DAY 150 (Founder + DeepSeek)
@@ -913,6 +951,55 @@ Crear `docs/OPEN_CORE.md` con la matriz de funcionalidades y la regla de diseño
 **Test de cierre:** docs/OPEN_CORE.md creado. Matrix de features documentada. ADR-045 Open-Core Feature Flags creado.
 **Estimación:** 1 sesión
 
+
+
+### DEBT-BOOTSTRAP-STATUS-SIGNATURE-001 — Bootstrap status sin firma Ed25519
+**Severidad:** 🔴 Alta — P1 pre-FEDER
+**Estado:** ABIERTO — DAY 151 (Claude + Grok, Consejo)
+**Componente:** `etcd-server/src/main.cpp`, `/run/argus/etcd-bootstrap-status.json`
+
+El fichero de bootstrap status escrito en STEP 0 no lleva firma Ed25519. Un atacante con acceso local podría reemplazarlo con fingerprint falso antes del arranque. Firmar con `crypto_material.sk` (disponible en STEP 0) y verificar la firma antes de consumir el fichero en cualquier componente. Misma cadena de confianza que los plugins (ADR-025).
+
+**Test de cierre:** bootstrap status firmado Ed25519. Verificación de firma falla con fichero manipulado.
+**Estimación:** 1h pre-FEDER
+
+---
+
+### DEBT-AUTONOMY-STATE-PERSISTENCE-001 — Estado autonomía sin persistencia firmada
+**Severidad:** 🟡 P1
+**Estado:** ABIERTO — DAY 151 (Grok, Consejo)
+**Componente:** `CryptoAutonomyStateMachine`
+
+Al entrar en `AUTONOMOUS`, escribir `/run/argus/crypto-autonomy-state.json` firmado Ed25519 con timestamp + fingerprint. Al recuperar, validar la firma antes de reconciliar. Previene que un atacante manipule el estado de autonomía persistido.
+
+**Test de cierre:** entrar en AUTONOMOUS → fichero escrito y firmado. Manipulación detectada.
+**Estimación:** 1h
+
+---
+
+### DEBT-AUTONOMY-CLOCK-INJECTION-001 — Clock no inyectable en CryptoAutonomyStateMachine
+**Severidad:** 🟡 P1
+**Estado:** ABIERTO — DAY 151 (Kimi, Consejo)
+**Componente:** `common/crypto_autonomy.h`
+
+`CryptoAutonomyStateMachine` usa `std::chrono::steady_clock` directamente. Sin inyección de clock, los tests que verifican el TTL del circuit breaker deben esperar 30 días reales. Implementar `template<typename Clock = std::chrono::steady_clock>` o interfaz `IClock` inyectable.
+
+**Test de cierre:** test avanza clock sintético 31 días → transición a DEGRADED sin esperar.
+**Estimación:** 30min al implementar la clase
+
+---
+
+### DEBT-AUTONOMY-ZMQ-EVENTS-001 — Transiciones de autonomía no emiten eventos ZeroMQ
+**Severidad:** 🟡 P1
+**Estado:** ABIERTO — DAY 151 (Grok, Consejo)
+**Componente:** `CryptoAutonomyStateMachine` + ZeroMQ bus
+
+Cada transición de estado (`NORMAL→AUTONOMOUS`, `AUTONOMOUS→RECONCILING`, etc.) debe emitir un evento ZeroMQ interno en el topic `crypto.autonomy.transition`. Permite que firewall, alerting y RAG reaccionen sin polling.
+
+**Test de cierre:** transición de estado → evento ZeroMQ recibido por suscriptor.
+**Estimación:** 1h
+
+---
 
 ### DEBT-ETCD-HA-QUORUM-001 — etcd-server en HA con quorum
 **Severidad:** 🔴 Alta — P0 post-FEDER (OBLIGATORIO, no opcional)
@@ -1403,6 +1490,12 @@ DEBT-GDPR-ERASURE-001:                       0% ⏳  P1 pre-FEDER (flujo derecho
 DEBT-KPSEUDO-HKDF-HIERARCHY-001:             0% ⏳  P3 post-FEDER (jerarquía HKDF para K_pseudo)
 DEBT-VAULT-PROVISION-PROD-001:             100% ✅  DAY 149 (Vault/Ansible/Jinja2/Jenkins en Vagrant)
 ADR-044 CI/CD Crypto Pipeline:             100% ✅  DAY 149 (definido, Consejo 8/8, impl DAY 150+)
+ICryptoProvider + SeedFileProvider + VaultProvider: 100% ✅  DAY 151 (factoría, tests, etcd STEP 0)
+DEBT-BOOTSTRAP-STATUS-SIGNATURE-001:      0% ⏳  P1 pre-FEDER (bootstrap status sin firma)
+DEBT-AUTONOMY-STATE-PERSISTENCE-001:      0% ⏳  P1 (estado autonomía sin persistencia firmada)
+DEBT-AUTONOMY-CLOCK-INJECTION-001:        0% ⏳  P1 (clock no inyectable)
+DEBT-AUTONOMY-ZMQ-EVENTS-001:             0% ⏳  P1 (transiciones sin eventos ZMQ)
+ADR-045 VaultClient Decomposition:        0% ⏳  DAY 153+ (IVaultTransport + ICacheManager primero)
 Ansible+Jinja2 deploy_configs pipeline:    100% ✅  DAY 149 (3 templates, playbook, 9 OK 0 failed)
 Paper Abstract v24:                        100% ✅  DAY 149 (architecturally complementary by design)
 DEBT-PARQUET-TIMESTAMP-NS-001:               0% ⏳  P2 (firewall ms→ns en origen)
@@ -1631,10 +1724,53 @@ Un sistema con ACRL converge hacia cobertura de técnicas ATT&CK en tiempo polin
 
 ---
 
-*DAY 150 — 13 Mayo 2026 · main @ 93b4d39c*
+*DAY 151 — 14 Mayo 2026 · main @ 9e692a4e*
 *"Via Appia Quality — Un escudo que aprende de su propia sombra."*
 
 
+
+## 📝 Notas del Consejo de Sabios — DAY 151 (8/8)
+
+> "DAY 151 — ICryptoProvider completa. etcd-server STEP 0 funcionando. ADR-045 aprobado.
+>
+> **Consenso Q1 — Prioridad DAY 152 (8/8):** Opción A — máquina de estados primero.
+> `CryptoAutonomyStateMachine` es el núcleo de la propuesta de valor para infraestructura crítica.
+> Sin ella, `ICryptoProvider` es una abstracción elegante sin comportamiento de resiliencia.
+> `DEBT-EMECAS-DUAL-COMPILATION-001` es deuda de calidad, no de funcionalidad — DAY 153.
+>
+> **Consenso Q2 — Clase separada (8/8):** Sí, `CryptoAutonomyStateMachine` extraída.
+> `VaultClient` ya tiene seis responsabilidades. La séptima la convierte en inmantenible.
+> Founder amplía: VaultClient por composición completa — ADR-045 aprobado.
+> `IVaultTransport`, `ICacheManager`, `IEtcdRegistrar`, `ICryptoDeriver`, `IJitterStrategy`.
+> Independencia de proveedor: hoy Vault, mañana cualquier backend, pasado el nuestro propio.
+>
+> **Consenso Q3 — Exponer en ICryptoProvider (6/8 sí, 2/8 con matiz):**
+> `get_operational_mode()` expuesto con default `NORMAL`. Community y enterprise tienen
+> el mismo contrato. `SeedFileProvider` siempre retorna `NORMAL`. Nombre recomendado por Kimi:
+> `OperationalMode` (`NORMAL`, `AUTONOMOUS`, `RECONCILING`, `DEGRADED`).
+>
+> **Principio rector adoptado (Founder, DAY 151):**
+> Calidad sobre fechas. No hay deadline duro para FEDER. Los datasets se generan cuando
+> el pipeline esté listo. La calidad no se negocia. Plan MITRE/CTF en backlog, después de
+> infraestructura consolidada y primer plugin enterprise.
+>
+> **Nuevas deudas Consejo:**
+> `DEBT-BOOTSTRAP-STATUS-SIGNATURE-001` (Claude+Grok, P1): bootstrap status sin firma Ed25519.
+> `DEBT-AUTONOMY-STATE-PERSISTENCE-001` (Grok): estado autonomía firmado al entrar en AUTONOMOUS.
+> `DEBT-AUTONOMY-CLOCK-INJECTION-001` (Kimi): Clock inyectable para tests sin esperar 30 días.
+> `DEBT-AUTONOMY-ZMQ-EVENTS-001` (Grok): transiciones emiten evento ZeroMQ.
+>
+> **Fingerprint verificado en log real:** `0079087736d9d62a...` — estable entre arranques.
+> Mismo `seed.bin` → mismo keypair → mismo fingerprint. Derivación determinista confirmada.
+>
+> **Plan DAY 152:** `CryptoAutonomyStateMachine` + `ICryptoProvider::get_operational_mode()`.
+> **Plan DAY 153:** ADR-045 — `IVaultTransport` + `ICacheManager` primero.
+> **Plan DAY 154:** `IEtcdRegistrar` + `ICryptoDeriver` + dual compilation CI.
+>
+> 'La soberanía tecnológica no es un objetivo teórico — es una decisión de diseño que se toma
+> hoy, en cada interfaz que defines. Si `VaultClient` no es reemplazable, no somos soberanos.'
+> — Founder · DAY 151"
+> — Consejo de Sabios (8/8) · DAY 151
 
 ## 📝 Notas del Consejo de Sabios — DAY 150 (8/8)
 

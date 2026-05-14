@@ -19,7 +19,7 @@
 [![Variant B](https://img.shields.io/badge/ADR--029-Variant_B_libpcap_pipeline-blue)]()
 [![Reproducible](https://img.shields.io/badge/Infra-make_bootstrap-brightgreen)]()
 [![XGBoost](https://img.shields.io/badge/XGBoost-Prec%3D0.9945_In--Distribution-brightgreen)]()
-[![Hardened](https://img.shields.io/badge/Security-v0.7.2--day149-brightgreen)]()
+[![Hardened](https://img.shields.io/badge/Security-v0.8.0--day151-brightgreen)]()
 [![PRE-PRODUCTION](https://img.shields.io/badge/Status-PRE--PRODUCTION-orange)]()
 [![Crypto](https://img.shields.io/badge/Crypto-HKDF_SHA256+ChaCha20_Poly1305-orange)]()
 [![arXiv](https://img.shields.io/badge/arXiv-2604.04952_cs.CR-red)](https://arxiv.org/abs/2604.04952)
@@ -36,12 +36,12 @@
 
 ---
 
-## Estado actual — DAY 149 (2026-05-12)
+## Estado actual — DAY 151 (2026-05-14)
 
-**Tag activo:** `v0.7.2-day149` | **Branch activa:** `main`
+**Tag activo:** `v0.8.0-day151` | **Branch activa:** `main`
 **Keypair activo:** `b5b6cbdf67dad75cdd7e3169d837d1d6d4c938b720e34331f8a73f478ee85daa`
-**Paper:** arXiv:2604.04952 · Draft v24 local (abstract v24: architecturally complementary by design) · v3 en arXiv
-**FEDER deadline:** 22-Sep-2026 | **Go/no-go:** 1-Ago-2026
+**Paper:** arXiv:2604.04952 · Draft v24 local · v3 en arXiv
+**Principio rector:** calidad sobre fechas — los datasets se generan cuando el pipeline esté listo
 
 ### Pipeline
 - 6/6 componentes RUNNING — validado EMECAS DAY 145 ✅
@@ -402,6 +402,20 @@ make hardened-full   # destroy → up → provision → build → deploy → che
 - [x] ADR-041 Hardware Acceptance Metrics FEDER (8/8)
 - [x] Pipeline E2E hardened · check-prod-all PASSED
 
+### ✅ DONE — DAY 151 (14 May 2026) — ICryptoProvider + etcd-server STEP 0 🎉
+
+| Task | Result |
+|---|---|
+| ICryptoProvider interfaz abstracta (ADR-044) | ✅ SeedFileProvider + VaultProvider + factoría |
+| #ifdef ARGUS_VAULT_ENABLED confinado en crypto_provider.cpp | ✅ único punto de decisión |
+| libcrypto_provider.so instalada | ✅ /usr/local/lib |
+| test_crypto_provider_community 10/10 | ✅ fixture propio sin root |
+| etcd-server STEP 0: bootstrap status + fingerprint | ✅ 0079087736d9d62a... |
+| Opción B SRP: SeedClient/CryptoTransport ≠ ICryptoProvider | ✅ responsabilidades separadas |
+| DEBT-BOOTSTRAP-STATUS-SIGNATURE-001 registrada | ✅ P1 pre-FEDER |
+| make test-all verde 55+ tests | ✅ pipeline 6/6 RUNNING |
+| ADR-045 aprobado (VaultClient por composición) | ✅ Consejo 8/8 |
+
 ### 🔜 NEXT — DAY 149+ (secuencia confirmada Consejo 8/8)
 
 | Priority | Task |
@@ -446,6 +460,8 @@ make hardened-full   # destroy → up → provision → build → deploy → che
 - ✅ DAY 147: **Experimento tres paradigmas (Suricata+Zeek+aRGus) · Paper v22 §8.14 · HTTP C2 hallazgo · weird.log behavioral profile · v0.7.1-day147** 🎉
 - ✅ DAY 147: **ADR-0043 v4 ACEPTADO** — Memoria Episódica Distribuida, Consejo 8/8, 4 versiones 🎉
 - ✅ DAY 149: **Schema Parquet Arrow v1.0 · Vault CI/CD pipeline · ADR-044 · Ansible+Jinja2 · 5 PRs · v0.7.2-day149** 🎉
+- ✅ DAY 150: **ADR-044 implementación completa · provision_crypto.sh · vault_client C++20 · Jenkinsfile Provision Crypto · EMECAS verde** 🎉
+- ✅ DAY 151: **ICryptoProvider + SeedFileProvider + VaultProvider · etcd-server STEP 0 · ADR-045 aprobado · 55+ tests verdes · v0.8.0-day151** 🎉
 - ✅ DAY 148: **Suricata offline irrefutable · Paper v23 · arXiv replace v3 · DEBT-IRP-FLOAT-TYPES-001 cerrada · v0.7.1-day148** 🎉
 - 🔜 DAY 146+: **DEBT-IRP-TMPFILES-001 · DEBT-IRP-IPSET-TMP-001 · experiment-comparative · ARM64 scope**
 

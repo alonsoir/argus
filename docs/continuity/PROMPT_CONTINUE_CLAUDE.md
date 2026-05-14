@@ -1,136 +1,142 @@
-# aRGus NDR — DAY 151 CONTINUITY PROMPT
-# Estado: main @ 93b4d39c | DAY 150 COMPLETO
-# Paper: arXiv:2604.04952 | v24 local (v3 en arXiv)
-# FEDER: pendiente identificar convocatoria adecuada (investigador independiente)
+# Prompt de continuidad — DAY 152
+# aRGus NDR (arXiv:2604.04952)
+# 2026-05-14
 
-## COMPLETADO DAY 150
-- fix/parquet-convert-vagrant-ssh PR #69: vagrant ssh -c en parquet targets
-- feat(adr044) PR #70: provision_crypto.sh — Vault KV v1, familias A/B/C + etcd, idempotente, crypto_audit.json
-- feat(adr044) PR #71: vault_client.h/.cpp — derivación D12/D13, jitter, cache tmpfs, 5/5 tests, pipeline-build
-- feat(adr044) PR #72: Jenkinsfile stage Provision Crypto — separado, condicional, artifact, bloquea si Vault KO
-- DEBT-CRYPTO-STAMPEDE-001: CERRADA (jitter implementado)
-- Email Dr. Andrés Caro Lindo: inventario hardware ~460€ + datasets UEx + VM supercomputador
-- Decisión open-core: plugin system como mecanismo de licencias (Consejo 8/8 + Founder)
-- Decisión autonomía extendida Opción D (Consejo 8/8): TTL = ventana renovación preferente
-- BACKLOG.md + README.md actualizados
+## Estado del proyecto
 
-## 🔴 DECISIONES ARQUITECTÓNICAS MAYORES (DAY 150)
+**Proyecto:** aRGus NDR — C++20 NDR open-source para infraestructura crítica
+**Rama:** main @ `9e692a4e` (DAY 151 mergeado)
+**Paper:** arXiv:2604.04952 · Draft v24 local · v3 en arXiv
+**Principio rector:** calidad sobre fechas — no hay deadline duro para FEDER
 
-### Open-core model definitivo
-- Un solo binario por arquitectura (x86-ebpf, x86-libpcap, ARM64-libpcap, seL4-futuro)
-- Plugin system = mecanismo de licencias. NO hay versión community vs enterprise separada
-- Community: seed-client + pipeline C++20 completo (siempre libre, siempre capaz)
-- Enterprise: plugins firmados activados por licencia en Vault (governance, escala, compliance)
-- `ARGUS_VAULT_ENABLED` único separador compile-time — solo controla qué .cpp se linka
-- `ICryptoProvider` interfaz abstracta: `SeedFileProvider` (community) + `VaultProvider` (enterprise)
-- Factoría `CryptoProvider::create()` único punto de decisión — ningún componente ve #ifdef
-- DEBT-EMECAS-DUAL-COMPILATION-001: CI compila ON y OFF en cada build
+---
 
-### Autonomía extendida Opción D (hospital scenario)
-- TTL = ventana de renovación preferente, NUNCA fecha de muerte
-- Máquina de estados: NORMAL → EXTENDED_AUTONOMY → RECONCILIATION → REVOKED
-- EXTENDED_AUTONOMY: continúa operando, Log CRITICAL cada 15 min, SOS webhook, reintentos cada 5 min
-- Firewall default-deny para tráfico nuevo en EXTENDED_AUTONOMY
-- Reconciliación obligatoria al recuperar Vault (envía key_version, Vault valida)
-- Circuit breaker configurable (default 30 días)
-- Logs firmados locales con flag EXTENDED_AUTONOMY=1
-- Cache persistente en prod solo sobre filesystem cifrado (LUKS obligatorio)
-- Clave invalidada SOLO por: revocación explícita firmada, EMECAS, tamper detection
+## Lo que acabamos de completar (DAY 151)
 
-### Migración por canal (no por componente)
-- ZeroMQ bilateral: si sniffer usa VaultProvider y ml-detector usa SeedFile → keypairs incompatibles
-- Orden de migración:
-    1. etcd-server (bootstrap especial)
-    2. sniffer + ml-detector (simultáneamente — canal A)
-    3. firewall-acl-agent (canal B)
-    4. rag-ingester + rag-security (simultáneamente — canal C)
+### ICryptoProvider — Abstracción completa (ADR-044)
 
-## PENDIENTES DAY 151 (por prioridad)
+**Decisión Opción B (SRP):** `SeedClient`+`CryptoTransport` (canal ZeroMQ) y `ICryptoProvider` (identidad Ed25519) son responsabilidades separadas. `CryptoTransport` no se tocó.
 
-### P0 — EMECAS PRIMERO
-1. vagrant destroy -f && vagrant up && make bootstrap && make test-all
+**Ficheros creados en `common/`:**
+- `crypto_provider.h/.cpp` — interfaz `ICryptoProvider` + `CryptoProviderConfig` + factoría `CryptoProvider::create()`
+- `seed_file_provider.h/.cpp` — community: `SeedClient` → `crypto_sign_seed_keypair()` → `CryptoMaterial`
+- `vault_provider.h/.cpp` — enterprise: wrapper delgado sobre `VaultClient`
+- `tests/test_crypto_provider.cpp` — 10 tests con fixture propio (`mkdtemp` + seed.bin 0400, sin root)
+- `CMakeLists.txt` — target `crypto_provider`, option `ARGUS_VAULT_ENABLED`
 
-### P0 — Integración etcd-server con VaultClient
-2. Rama: feature/adr044-etcd-vault-integration
-   a) Crear ICryptoProvider interfaz abstracta en common/crypto_provider.h
-   b) SeedFileProvider implementa ICryptoProvider (wraps seed-client actual)
-   c) VaultProvider implementa ICryptoProvider (wraps VaultClient)
-   d) Factoría CryptoProvider::create() con #ifdef ARGUS_VAULT_ENABLED
-   e) etcd-server integra ICryptoProvider en lugar de seed-client directo
-   f) fichero local /run/argus/etcd-bootstrap-status.json (0600, AppArmor + Falco)
-   g) Una vez etcd arranca → registro vía loopback → borra fichero temporal
-   h) Tests: ARGUS_VAULT_ENABLED=ON y =OFF ambos verdes
-   i) EMECAS verde con make PROFILE=production test-all
+**`make vault-client-test`:** 2/2 PASSED. `make test-all`: 55+ tests verdes, pipeline 6/6 RUNNING.
 
-### P1 — DEBT-CRYPTO-AUTONOMY-001
-3. Máquina de estados en vault_client.cpp:
-   enum class CryptoState { NORMAL, EXTENDED_AUTONOMY, RECONCILIATION, REVOKED }
-    - EXTENDED_AUTONOMY: Log CRITICAL cada 15 min + SOS webhook + reintentos background
-    - RECONCILIATION: handshake key_version con Vault antes de volver a NORMAL
-    - REVOKED: revocación explícita → descarga nueva clave
+**etcd-server STEP 0:** `CryptoProvider::create()` → `get_material()` → fingerprint hex → `/run/argus/etcd-bootstrap-status.json` (0600) → eliminado tras `g_server->start()`. Verificado en log: `✅ ICryptoProvider OK — fingerprint: 0079087736d9d62a...`
 
-### P1 — DEBT-FIREWALL-AUTONOMY-MODE-001
-4. firewall-acl-agent detecta vault_client en EXTENDED_AUTONOMY
-   → default-deny para tráfico nuevo
-   → umbral ML más sensible
-   → logs DEBUG, retención máxima
+**ADR-045 aprobado (Consejo 8/8):** VaultClient por composición — `IVaultTransport`, `ICacheManager`, `IEtcdRegistrar`, `ICryptoDeriver`, `IJitterStrategy`. Cada responsabilidad inyectable y testeable en aislamiento.
 
-### P1 — DEBT-ALERTING-EDGE-SOS-001
-5. scripts/alerts/sos_vault_unreachable.sh
-    - Webhook Discord/Telegram/email configurable por despliegue via Ansible
-    - Escalado: TTL<48h WARN, TTL<24h CRITICAL, TTL=0 último intento
+**Nuevas deudas documentadas:**
+- `DEBT-BOOTSTRAP-STATUS-SIGNATURE-001` (P1 pre-FEDER): bootstrap status sin firma Ed25519
+- `DEBT-AUTONOMY-STATE-PERSISTENCE-001` (P1): estado autonomía sin persistencia firmada
+- `DEBT-AUTONOMY-CLOCK-INJECTION-001` (P1): Clock no inyectable en `CryptoAutonomyStateMachine`
+- `DEBT-AUTONOMY-ZMQ-EVENTS-001` (P1): transiciones no emiten evento ZeroMQ
 
-### P1 — DEBT-EMECAS-DUAL-COMPILATION-001
-6. Jenkinsfile: stages paralelos Test Community (VAULT_ENABLED=OFF) + Test Enterprise (ON)
-   Makefile: vault-client-build-community + vault-client-build-enterprise
+---
 
-## DEUDAS NUEVAS DAY 150
-- DEBT-CRYPTO-AUTONOMY-001: máquina de estados EXTENDED_AUTONOMY (P1 pre-FEDER)
-- DEBT-FIREWALL-AUTONOMY-MODE-001: default-deny en autonomía (P1 pre-FEDER)
-- DEBT-CRYPTO-REVOCATION-LOCAL-001: revocación offline sin Vault (P1 post-FEDER)
-- DEBT-CRYPTO-RECONCILIATION-001: handshake post-Vault (P1 pre-FEDER)
-- DEBT-CRYPTO-CACHE-PERSISTENT-PROD-001: cache cifrada prod LUKS (P1 pre-FEDER)
-- DEBT-EMECAS-DUAL-COMPILATION-001: CI compila ON+OFF (P1)
-- DEBT-LICENSE-VAULT-001: servidor licencias en Vault (P2 post-FEDER)
-- DEBT-PLUGIN-ENTERPRISE-001: definir plugins enterprise (P2 post-FEDER)
+## Decisiones arquitectónicas activas
 
-## DEUDAS ABIERTAS RELEVANTES (DAY 151)
-- DEBT-CRYPTO-HEARTBEAT-001: lease etcd TTL=10s keepalive 5s (P1) — stub en vault_client
-- DEBT-CRYPTO-AUDIT-FINGERPRINT-001: fingerprint sha256(pk) en etcd (P1) — struct implementada, etcd stub
-- DEBT-ALERTING-EDGE-SOS-001: webhook SOS (P1 pre-FEDER)
-- DEBT-VAULT-HA-001: Vault HA raft post-FEDER
-- DEBT-LEGAL-DATA-RETENTION-001: esperando Dr. Andrés Caro Lindo
+- **`#ifdef ARGUS_VAULT_ENABLED`:** confinado ÚNICAMENTE en `crypto_provider.cpp`. Ningún otro fichero lo ve.
+- **Migración por canal:** sniffer+ml-detector simultáneamente (ZeroMQ es bilateral).
+- **TTL = ventana de renovación preferente, nunca fecha de muerte.**
+- **Firewall default-deny en `AUTONOMOUS`.**
+- **Reconciliación obligatoria al recuperar Vault.**
+- **VaultClient por composición (ADR-045):** hoy Vault, mañana cualquier backend, pasado el nuestro propio.
+- **`OperationalMode`:** `NORMAL`, `AUTONOMOUS`, `RECONCILING`, `DEGRADED` — mismo contrato en community y enterprise.
 
-## NOVEDADES ANDRÉS (DAY 149-150)
-- Llamó la noche del DAY 149 — co-investigador activo, no asesor pasivo
-- Hardware en camino: RPi × N + switch
-- Email DAY 150: inventario completo ~460€ (RPi5×2 + N100×2 + switch)
-  Argumento clave: sin N100 no medimos eBPF bare-metal real
-- FEDER: deadline 22-Sep NO es duro — busca convocatoria adecuada para investigador independiente
-- Supercomputador UEx: VM (no bare-metal), sistema virtualización pendiente conocer
+---
 
-## ESTADO TÉCNICO
-- main @ 93b4d39c
-- Keypair post-destroy DAY 133: b5b6cbdf67dad75cdd7e3169d837d1d6d4c938b720e34331f8a73f478ee85daa
-- Vault instalado en VM: v2.0.0 — NO corriendo tras vagrant destroy (provision_crypto.sh lo arranca)
-- vault_client instalado: /usr/local/lib/libvault_client.so.1.0.0
-- common/vault_client.h + common/vault_client.cpp + common/CMakeLists.txt + common/tests/
-- ICryptoProvider: POR IMPLEMENTAR (DAY 151 P0)
-- Scripts: scripts/jenkins/provision_crypto.sh ✅
-- Paper: docs/latex/main.tex (v24 local)
+## Plan DAY 152 (P0 — consenso Consejo 8/8)
 
-## REGLAS PERMANENTES
-- macOS: nunca sed -i sin -e ''; usar python3 inline
-- Makefile: única fuente de verdad
-- EMECAS: vagrant destroy -f && vagrant up && make bootstrap && make test-all
-- EMECAS con código C++20: añadir make PROFILE=production test-all
-- Consejo: Claude, Grok, ChatGPT, DeepSeek, Qwen, Gemini, Kimi, Mistral (8 modelos)
-- No ARM64 antes de pipeline x86 end-to-end verde (Kimi, DAY 148)
-- GITHUB: push directo a main BLOQUEADO. Flujo obligatorio:
-  git checkout -b feature/nombre → git push → gh pr create → merge → git checkout main && git pull
-- JSON originales INTOCABLES: Ansible genera *.dev.json / *.prod.json separados
-- #ifdef ARGUS_VAULT_ENABLED: único separador compile-time. Solo en factoría, nunca en lógica de negocio
-- Migración por canal: sniffer+ml-detector simultáneamente, nunca mezclados
-- TTL = ventana de renovación preferente, NUNCA fecha de muerte criptográfica
-- Firewall default-deny en EXTENDED_AUTONOMY: obligatorio, sin excepciones
-- Cache cifrada en prod: LUKS obligatorio. Seed en texto plano: JAMÁS
+### P0 — `CryptoAutonomyStateMachine`
+
+**Ficheros a crear:**
+- `common/crypto_autonomy.h`
+- `common/crypto_autonomy.cpp`
+
+**Requisitos:**
+```cpp
+enum class OperationalMode { NORMAL, AUTONOMOUS, RECONCILING, DEGRADED };
+
+class CryptoAutonomyStateMachine {
+public:
+    // Tabla de transiciones explícita — no enums sueltos
+    void on_vault_unreachable();   // NORMAL → AUTONOMOUS
+    void on_vault_restored();      // AUTONOMOUS → RECONCILING
+    void on_reconciliation_ok();   // RECONCILING → NORMAL
+    void on_revocation();          // cualquier → DEGRADED
+    void on_tamper_detected();     // cualquier → DEGRADED
+
+    OperationalMode current_mode() const noexcept;  // std::atomic, sin lock
+    bool can_operate() const noexcept;              // NORMAL || AUTONOMOUS || RECONCILING
+};
+```
+
+**Concurrencia (¡atención!):**
+- `std::mutex` para transiciones (escritura)
+- `std::atomic<OperationalMode>` para lectura en hot path (consulta desde firewall sin bloquear)
+- Thread-safe desde el primer día — keepalive, timer, firewall llaman desde hilos distintos
+
+**Clock inyectable (DEBT-AUTONOMY-CLOCK-INJECTION-001):**
+```cpp
+template<typename Clock = std::chrono::steady_clock>
+class CryptoAutonomyStateMachine { ... };
+```
+
+**Tests en aislamiento:** sin Vault, sin red, sin etcd. Solo eventos sintéticos y `ManualClock`.
+
+### P0 — `ICryptoProvider` ampliada
+
+Añadir `get_operational_mode()` con default `NORMAL`:
+```cpp
+virtual OperationalMode get_operational_mode() const noexcept {
+    return OperationalMode::NORMAL;
+}
+```
+
+- `SeedFileProvider::get_operational_mode()` → siempre `NORMAL` (sin lógica adicional)
+- `VaultProvider::get_operational_mode()` → delega a `CryptoAutonomyStateMachine`
+
+### P1 — ADR-045 documentado antes de tocar código
+
+`docs/adr/ADR-045-vaultclient-decomposition.md` — YA CREADO en DAY 151.
+
+---
+
+## Plan DAY 153
+
+- Descomposición `VaultClient`: `IVaultTransport` + `ICacheManager` primero
+- `DEBT-EMECAS-DUAL-COMPILATION-001` — Jenkinsfile dual stage community/enterprise
+
+## Plan DAY 154
+
+- `IEtcdRegistrar` + `ICryptoDeriver`
+- `DEBT-FIREWALL-AUTONOMY-MODE-001` — firewall reacciona a `AUTONOMOUS`
+
+---
+
+## Reglas permanentes (no negociables)
+
+1. **Makefile** es única fuente de verdad. Nunca cmake/make directamente.
+2. **macOS:** nunca `sed -i` sin `-e ''`. Usar Python3 inline.
+3. **EMECAS:** `vagrant destroy -f && vagrant up && make bootstrap && make test-all` antes de cualquier merge.
+4. **GitHub:** push directo a main BLOQUEADO. Feature branch → PR → merge.
+5. **`#ifdef ARGUS_VAULT_ENABLED`:** solo en `crypto_provider.cpp`. Sin excepciones.
+6. **Migración por canal:** sniffer+ml-detector simultáneamente.
+7. **TTL ≠ fecha de muerte.**
+8. **Qwen se identifica como DeepSeek** en el Consejo — siempre registrar como Qwen.
+9. **Calidad sobre fechas** — no hay deadline duro para FEDER.
+
+---
+
+## Keypair activo
+
+Post-destroy DAY 133: `b5b6cbdf67dad75cdd7e3169d837d1d6d4c938b720e34331f8a73f478ee85daa`
+
+## Consejo de Sabios
+
+Claude · Grok · ChatGPT · DeepSeek · Qwen · Gemini · Kimi · Mistral (8 modelos)

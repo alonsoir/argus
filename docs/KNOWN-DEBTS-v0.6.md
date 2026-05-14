@@ -199,3 +199,17 @@ en runtime. Mismo patrón que el resto de JSONs de componente gestionados
 por Ansible.
 **Corrección:** post-FEDER, antes de producción real
 **Descubierto:** DAY 151 — 2026-05-14
+
+---
+
+## DEBT-BOOTSTRAP-STATUS-SIGNATURE-001
+**Severidad:** 🔴 Alta — pre-FEDER
+**Componente:** etcd-server/src/main.cpp, /run/argus/etcd-bootstrap-status.json
+**Descripción:**
+El fichero de bootstrap status escrito en STEP 0 no lleva firma Ed25519.
+Un atacante con acceso local podría reemplazarlo con fingerprint falso antes
+del arranque. Firmar con `crypto_material.sk` (disponible en STEP 0) y
+verificar la firma antes de consumir el fichero en cualquier componente.
+Misma cadena de confianza que los plugins (ADR-025).
+**Corrección:** Pre-FEDER, antes de demo
+**Descubierto:** DAY 151 — 2026-05-14 (Claude + Grok, Consejo)
