@@ -111,6 +111,16 @@ find_path(SEED_CLIENT_INCLUDE_DIR
         PATHS /usr/local/include
         NO_DEFAULT_PATH
 )
+find_library(CRYPTO_PROVIDER_LIB
+        NAMES crypto_provider
+        PATHS /usr/local/lib
+        NO_DEFAULT_PATH
+)
+find_path(CRYPTO_PROVIDER_INCLUDE_DIR
+        NAMES vault_client/crypto_provider.h
+        PATHS /usr/local/include
+        NO_DEFAULT_PATH
+)
 
 if(SEED_CLIENT_LIB AND SEED_CLIENT_INCLUDE_DIR)
     message(STATUS "✅ Found seed-client library: ${SEED_CLIENT_LIB}")
@@ -122,6 +132,7 @@ else()
 
     Fix: Run 'make seed-client-build' from project root")
 endif()
+
 
 # ============================================================================
 # INCLUDE DIRECTORIES
@@ -173,6 +184,7 @@ target_link_libraries(etcd-server
         PRIVATE
         crypto_transport
         seed_client
+        ${CRYPTO_PROVIDER_LIB}
         sodium
         lz4
         ${OPENSSL_LIBRARIES}
@@ -187,6 +199,7 @@ target_include_directories(etcd-server
         ${CMAKE_CURRENT_SOURCE_DIR}/include
         ${CRYPTO_TRANSPORT_INCLUDE_DIR}
         ${SEED_CLIENT_INCLUDE_DIR}
+        ${CRYPTO_PROVIDER_INCLUDE_DIR}
         ${LIBSODIUM_INCLUDE_DIRS}
         ${LZ4_INCLUDE_DIRS}
         ${OPENSSL_INCLUDE_DIR}
