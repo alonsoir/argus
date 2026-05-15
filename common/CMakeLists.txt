@@ -27,6 +27,8 @@ find_path(SEED_CLIENT_INCLUDE seed_client/seed_client.hpp
 # ── vault_client (sin cambios) ────────────────────────────────────────────────
 add_library(vault_client SHARED
         vault_client.cpp
+        vault_transport.cpp
+        cache_manager.cpp
 )
 target_include_directories(vault_client
         PUBLIC
@@ -104,6 +106,9 @@ install(TARGETS crypto_provider
 )
 install(FILES
         vault_client.h
+        vault_types.h
+        vault_transport.h
+        cache_manager.h
         crypto_provider.h
         seed_file_provider.h
         include/reason_codes.hpp
@@ -159,6 +164,34 @@ if(BUILD_TESTS)
     )
     add_test(NAME test_crypto_autonomy
             COMMAND test_crypto_autonomy)
+    # IVaultTransport tests (ADR-045 DAY 153)
+    add_executable(test_vault_transport
+            tests/test_vault_transport.cpp
+            vault_transport.cpp
+    )
+    target_include_directories(test_vault_transport PRIVATE
+            ${CMAKE_CURRENT_SOURCE_DIR}
+            ${CURL_INCLUDE_DIRS}
+    )
+    target_link_libraries(test_vault_transport PRIVATE
+            vault_client
+            ${CURL_LIBRARIES}
+    )
+    add_test(NAME test_vault_transport COMMAND test_vault_transport)
+
+    # ICacheManager tests (ADR-045 DAY 153)
+    add_executable(test_cache_manager
+            tests/test_cache_manager.cpp
+            cache_manager.cpp
+    )
+    target_include_directories(test_cache_manager PRIVATE
+            ${CMAKE_CURRENT_SOURCE_DIR}
+            ${LIBSODIUM_INCLUDE_DIRS}
+    )
+    target_link_libraries(test_cache_manager PRIVATE
+            vault_client
+    )
+    add_test(NAME test_cache_manager COMMAND test_cache_manager)
     # Tests crypto_provider — enterprise (VAULT_ENABLED=ON, solo si aplica)
     if(ARGUS_VAULT_ENABLED)
         add_executable(test_crypto_provider_enterprise
