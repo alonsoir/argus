@@ -28,6 +28,7 @@
 #include "vault_client.h"  // CryptoMaterial, VaultClientConfig, et al.
 #include <memory>
 #include <string>
+#include "crypto_autonomy.h"
 
 namespace ml_defender {
 
@@ -53,6 +54,14 @@ public:
 
     // Nombre del componente para logging y registro en etcd.
     virtual std::string component_name() const = 0;
+
+	// Modo operacional actual.
+    // Default NORMAL — SeedFileProvider nunca entra en autonomy.
+    // VaultProvider delega a CryptoAutonomyStateMachine.
+    // DEBT-AUTONOMY-ZMQ-EVENTS-001: en el futuro emite evento ZeroMQ.
+    virtual OperationalMode get_operational_mode() const noexcept {
+        return OperationalMode::NORMAL;
+    }
 };
 
 // ── Configuración de la factoría ─────────────────────────────────────────────

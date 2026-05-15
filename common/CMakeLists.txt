@@ -147,7 +147,18 @@ if(BUILD_TESTS)
     )
     add_test(NAME test_crypto_provider_community
             COMMAND test_crypto_provider_community)
-
+    # Test CryptoAutonomyStateMachine — sin red, sin Vault (DAY 152)
+    add_executable(test_crypto_autonomy
+            tests/test_crypto_autonomy.cpp
+    )
+    target_include_directories(test_crypto_autonomy PRIVATE
+            ${CMAKE_CURRENT_SOURCE_DIR}
+    )
+    target_link_libraries(test_crypto_autonomy PRIVATE
+            crypto_provider
+    )
+    add_test(NAME test_crypto_autonomy
+            COMMAND test_crypto_autonomy)
     # Tests crypto_provider — enterprise (VAULT_ENABLED=ON, solo si aplica)
     if(ARGUS_VAULT_ENABLED)
         add_executable(test_crypto_provider_enterprise
