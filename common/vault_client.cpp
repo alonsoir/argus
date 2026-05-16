@@ -2,6 +2,8 @@
 // vault_client.cpp — ADR-044/045 — coordinador tras extracción DAY 153
 // ============================================================================
 #include "vault_client.h"
+#include "crypto_deriver.h"
+#include "etcd_registrar.h"
 #include "vault_transport.h"
 #include "cache_manager.h"
 
@@ -23,6 +25,13 @@ VaultClient::VaultClient(const VaultClientConfig& config)
 VaultClient::VaultClient(const VaultClientConfig& config,
                          std::unique_ptr<IVaultTransport> transport,
                          std::unique_ptr<ICacheManager>   cache)
+    : VaultClient(config, std::move(transport), std::move(cache), nullptr) {}
+
+VaultClient::VaultClient(const VaultClientConfig& config,
+                         std::unique_ptr<IVaultTransport>  transport,
+                         std::unique_ptr<ICacheManager>    cache,
+                         std::unique_ptr<ICryptoDeriver>   deriver,
+                         std::unique_ptr<IEtcdRegistrar>   registrar)
     : config_(config)
     , transport_(transport
           ? std::move(transport)
@@ -30,6 +39,12 @@ VaultClient::VaultClient(const VaultClientConfig& config,
     , cache_(cache
           ? std::move(cache)
           : std::make_unique<FilesystemCacheManager>(config))
+    , deriver_(deriver
+          ? std::move(deriver)
+          : std::make_unique<HkdfCryptoDeriver>())
+    , registrar_(registrar
+          ? std::move(registrar)
+          : std::make_unique<StubEtcdRegistrar>())
 {
     if (sodium_init() < 0) {
         std::cerr << "[vault_client] ERROR: libsodium init failed\n";
@@ -46,7 +61,8 @@ VaultClientResult VaultClient::fetch_crypto_material() {
     // 1. Intentar Vault via transport_ (incluye jitter)
     auto seed_opt = transport_->fetch_seed(config_);
     if (seed_opt) {
-        auto mat_opt = derive_material(*seed_opt);
+        auto mat_opt = deriver_->derive(*seed_opt, config_);
+        if (mat_opt) mat_opt->derivation_timestamp = now_iso8601();
         if (!mat_opt) {
             return {VaultClientStatus::ERROR_DERIVE, std::nullopt,
                     "kdf/keypair derivation failed"};
@@ -71,91 +87,18 @@ VaultClientResult VaultClient::fetch_crypto_material() {
     // 3. Sin Vault ni cache
     return {VaultClientStatus::ERROR_VAULT_DOWN, std::nullopt,
             "Vault KO y cache vacía o expirada"};
-}
 
-// ── Derivación (permanece aquí hasta DAY 154 → ICryptoDeriver) ───────────────
-
-namespace {
-
-std::string hex_encode(const uint8_t* data, size_t len) {
-    std::ostringstream oss;
-    for (size_t i = 0; i < len; ++i)
-        oss << std::hex << std::setw(2) << std::setfill('0')
-            << static_cast<int>(data[i]);
-    return oss.str();
-}
-
-bool hex_decode(const std::string& hex, uint8_t* out, size_t expected_len) {
-    if (hex.size() != expected_len * 2) return false;
-    for (size_t i = 0; i < expected_len; ++i) {
-        unsigned int byte;
-        if (std::sscanf(hex.c_str() + 2*i, "%02x", &byte) != 1) return false;
-        out[i] = static_cast<uint8_t>(byte);
-    }
-    return true;
-}
-
-} // namespace anon
-
-std::optional<CryptoMaterial> VaultClient::derive_material(
-        const std::string& master_seed_hex) {
-    std::array<uint8_t, 32> master_seed{};
-    if (!hex_decode(master_seed_hex, master_seed.data(), 32))
-        return std::nullopt;
-
-    std::array<uint8_t, 32> component_seed{};
-    char ctx[crypto_kdf_CONTEXTBYTES] = {};
-    std::string ctx_str = "family_" + config_.family;
-    std::memcpy(ctx, ctx_str.c_str(),
-                std::min(ctx_str.size(),
-                         static_cast<size_t>(crypto_kdf_CONTEXTBYTES)));
-
-    if (crypto_kdf_derive_from_key(
-            component_seed.data(), component_seed.size(),
-            static_cast<uint64_t>(config_.component_index),
-            ctx,
-            master_seed.data()) != 0) {
-        return std::nullopt;
-    }
-
-    CryptoMaterial mat;
-    if (crypto_sign_seed_keypair(mat.pk.data(), mat.sk.data(),
-                                 component_seed.data()) != 0) {
-        return std::nullopt;
-    }
-
-    crypto_hash_sha256(mat.fingerprint.data(), mat.pk.data(), mat.pk.size());
-    mat.family               = config_.family;
-    mat.key_version          = 1;
-    mat.derivation_timestamp = now_iso8601();
-    mat.from_cache           = false;
-
-    try_mlock(mat.sk.data(), mat.sk.size());
-    return mat;
 }
 
 // ── Etcd (sin cambios) ────────────────────────────────────────────────────────
 
 bool VaultClient::register_etcd_status(const CryptoMaterial& material,
                                         bool started_with_cache) {
-    std::ostringstream json;
-    json << "{"
-         << "\"component\":\"" << config_.component_name << "\","
-         << "\"crypto_ready\":true,"
-         << "\"key_version\":"   << material.key_version << ","
-         << "\"family\":\""      << material.family << "\","
-         << "\"fingerprint\":\"" << fingerprint_hex(material.fingerprint) << "\","
-         << "\"derivation_timestamp\":\"" << material.derivation_timestamp << "\","
-         << "\"started_with_cache\":"
-             << (started_with_cache ? "true" : "false")
-         << "}";
-    std::cerr << "[vault_client] INFO: etcd crypto_status (stub): "
-              << json.str() << "\n";
-    return true;
+    return registrar_->register_status(material, config_.component_name,
+                                       started_with_cache);
 }
-
-void VaultClient::start_etcd_keepalive()  { keepalive_running_ = true; }
-void VaultClient::stop_etcd_keepalive()   { keepalive_running_ = false; }
+void VaultClient::start_etcd_keepalive()  { registrar_->start_keepalive(); }
+void VaultClient::stop_etcd_keepalive()   { registrar_->stop_keepalive(); }
 
 // ── Utilidades ────────────────────────────────────────────────────────────────
 
@@ -164,6 +107,16 @@ void VaultClient::try_mlock(void* ptr, size_t len) {
     if (mlock(ptr, len) != 0)
         std::cerr << "[vault_client] WARN: mlock() falló (no fatal)\n";
 }
+
+namespace {
+std::string hex_encode(const uint8_t* data, size_t len) {
+    std::ostringstream oss;
+    for (size_t i = 0; i < len; ++i)
+        oss << std::hex << std::setw(2) << std::setfill('0')
+            << static_cast<int>(data[i]);
+    return oss.str();
+}
+} // namespace
 
 std::string VaultClient::fingerprint_hex(const Sha256Fingerprint& fp) {
     return hex_encode(fp.data(), fp.size());
