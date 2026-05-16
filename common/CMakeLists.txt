@@ -113,6 +113,8 @@ install(FILES
         cache_manager.h
         crypto_provider.h
         crypto_autonomy.h
+        crypto_deriver.h
+        etcd_registrar.h
         seed_file_provider.h
         include/reason_codes.hpp
         include/sentinel.hpp
