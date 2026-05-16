@@ -27,6 +27,8 @@ find_path(SEED_CLIENT_INCLUDE seed_client/seed_client.hpp
 # ── vault_client (sin cambios) ────────────────────────────────────────────────
 add_library(vault_client SHARED
         vault_client.cpp
+        crypto_deriver.cpp
+        etcd_registrar.cpp
         vault_transport.cpp
         cache_manager.cpp
 )
@@ -110,6 +112,9 @@ install(FILES
         vault_transport.h
         cache_manager.h
         crypto_provider.h
+        crypto_autonomy.h
+        crypto_deriver.h
+        etcd_registrar.h
         seed_file_provider.h
         include/reason_codes.hpp
         include/sentinel.hpp
@@ -125,7 +130,17 @@ if(BUILD_TESTS)
     enable_testing()
 
     # Test vault_client existente (sin cambios)
-    add_executable(test_vault_client
+    add_executable(test_crypto_deriver tests/test_crypto_deriver.cpp crypto_deriver.cpp)
+target_include_directories(test_crypto_deriver PRIVATE ${CMAKE_CURRENT_SOURCE_DIR} ${SODIUM_INCLUDE_DIRS})
+target_link_libraries(test_crypto_deriver PRIVATE sodium)
+add_test(NAME test_crypto_deriver COMMAND test_crypto_deriver)
+
+add_executable(test_etcd_registrar tests/test_etcd_registrar.cpp etcd_registrar.cpp)
+target_include_directories(test_etcd_registrar PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+target_link_libraries(test_etcd_registrar PRIVATE vault_client)
+add_test(NAME test_etcd_registrar COMMAND test_etcd_registrar)
+
+add_executable(test_vault_client
             tests/test_vault_client.cpp
     )
     target_include_directories(test_vault_client PRIVATE
