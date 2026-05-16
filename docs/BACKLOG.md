@@ -989,10 +989,42 @@ Al entrar en `AUTONOMOUS`, escribir `/run/argus/crypto-autonomy-state.json` firm
 
 ---
 
+
+### DEBT-FIREWALL-DENY-SELECTIVE-001 — Regla default-deny demasiado agresiva
+**Severidad:** 🔴 P0 — DAY 154 (Consejo 8/8 UNÁNIME)
+**Estado:** ABIERTO — CERRAR EN DAY 155
+**Componente:** `firewall-acl-agent/src/core/autonomy_reactor.cpp`
+
+La regla actual `iptables -I INPUT 1 -j DROP` en modo AUTONOMOUS bloquea:
+- Loopback (127.0.0.1) → rompe IPC interno, health checks, métricas
+- Conexiones establecidas (ESTABLISHED, RELATED) → rompe sesiones activas de médicos en el HIS
+- Subredes internas del hospital (imaging, monitorización, HL7, DICOM) → puede parar un quirófano
+- SSH de management → deja al sysadmin fuera en momento de crisis
+
+**Regla correcta (Kimi — orden crítico):**
+```bash
+iptables -I INPUT 1 -i lo -j ACCEPT --comment "argus-autonomy-lo"
+iptables -I INPUT 2 -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT \
+  --comment "argus-autonomy-established"
+iptables -I INPUT 3 -s 10.0.0.0/8 -j ACCEPT --comment "argus-autonomy-rfc1918-a"
+iptables -I INPUT 4 -s 172.16.0.0/12 -j ACCEPT --comment "argus-autonomy-rfc1918-b"
+iptables -I INPUT 5 -s 192.168.0.0/16 -j ACCEPT --comment "argus-autonomy-rfc1918-c"
+iptables -I INPUT 6 -j DROP --comment "argus-autonomy-deny"
+```
+
+Subnets whitelist configurables vía JSON — no hardcodeadas.
+El DROP debe ser la ÚLTIMA regla de INPUT, no la primera.
+
+**Test de cierre:** AUTONOMOUS activado → loopback responde, SSH interno funciona,
+tráfico externo bloqueado → 6 tests actualizados PASSED.
+**Estimación:** 1.5h DAY 155
+
 ### DEBT-AUTONOMY-ZMQ-EVENTS-001 — Transiciones de autonomía no emiten eventos ZeroMQ
 **Severidad:** 🟡 P1
 **Estado:** ABIERTO — DAY 151 (Grok, Consejo)
 **Componente:** `CryptoAutonomyStateMachine` + ZeroMQ bus
+
+**Consenso Consejo DAY 154 (7/8):** ZMQ pub/sub directo, sin polling como mecanismo principal. Solo polling reconciliador lento (60-120s) como safety net. Topic: `argus.crypto.autonomy`. Transport: `inproc://argus.autonomy` (mismo proceso) o `ipc:///run/argus/autonomy.sock`. Founder (Alonso): acuerda ZMQ como mecanismo principal.
 
 Cada transición de estado (`NORMAL→AUTONOMOUS`, `AUTONOMOUS→RECONCILING`, etc.) debe emitir un evento ZeroMQ interno en el topic `crypto.autonomy.transition`. Permite que firewall, alerting y RAG reaccionen sin polling.
 
@@ -1494,8 +1526,9 @@ ICryptoProvider + SeedFileProvider + VaultProvider: 100% ✅  DAY 151 (factoría
 DEBT-BOOTSTRAP-STATUS-SIGNATURE-001:      0% ⏳  P1 pre-FEDER (bootstrap status sin firma)
 DEBT-AUTONOMY-STATE-PERSISTENCE-001:      0% ⏳  P1 (estado autonomía sin persistencia firmada)
 DEBT-AUTONOMY-CLOCK-INJECTION-001:        0% ⏳  P1 (clock no inyectable)
-DEBT-AUTONOMY-ZMQ-EVENTS-001:             0% ⏳  P1 (transiciones sin eventos ZMQ)
-ADR-045 VaultClient Decomposition:        0% ⏳  DAY 153+ (IVaultTransport + ICacheManager primero)
+DEBT-FIREWALL-DENY-SELECTIVE-001:          0% ⏳  P0 DAY 155 (regla actual rompe hospitales)
+DEBT-AUTONOMY-ZMQ-EVENTS-001:             0% ⏳  P1 DAY 155 (ZMQ pub/sub directo)
+ADR-045 VaultClient Decomposition:      100% ✅  CERRADA DAY 154 — v0.8.0-adr045
 Ansible+Jinja2 deploy_configs pipeline:    100% ✅  DAY 149 (3 templates, playbook, 9 OK 0 failed)
 Paper Abstract v24:                        100% ✅  DAY 149 (architecturally complementary by design)
 DEBT-PARQUET-TIMESTAMP-NS-001:               0% ⏳  P2 (firewall ms→ns en origen)
@@ -1512,7 +1545,7 @@ DEBT-CRYPTO-STAMPEDE-001:                  100% ✅  DAY 150 (jitter implementad
 Decisión open-core plugin system:          100% ✅  DAY 150 (Consejo 8/8 + Founder)
 Decisión autonomía extendida Opción D:     100% ✅  DAY 150 (Consejo 8/8)
 DEBT-CRYPTO-AUTONOMY-001:                    0% ⏳  P1 pre-FEDER (máquina de estados EXTENDED_AUTONOMY)
-DEBT-FIREWALL-AUTONOMY-MODE-001:             0% ⏳  P1 pre-FEDER (default-deny en autonomía)
+DEBT-FIREWALL-AUTONOMY-MODE-001:           100% ✅  CERRADA DAY 154 (FirewallAutonomyReactor)
 DEBT-CRYPTO-REVOCATION-LOCAL-001:            0% ⏳  P1 post-FEDER (revocación offline)
 DEBT-CRYPTO-RECONCILIATION-001:              0% ⏳  P1 pre-FEDER (handshake post-Vault)
 DEBT-CRYPTO-CACHE-PERSISTENT-PROD-001:       0% ⏳  P1 pre-FEDER (cache cifrada en prod edge)
@@ -1724,10 +1757,43 @@ Un sistema con ACRL converge hacia cobertura de técnicas ATT&CK en tiempo polin
 
 ---
 
-*DAY 151 — 14 Mayo 2026 · main @ 9e692a4e*
+*DAY 154 — 16 Mayo 2026 · main @ v0.8.0-adr045*
 *"Via Appia Quality — Un escudo que aprende de su propia sombra."*
 
 
+
+
+## 📝 Notas del Consejo de Sabios — DAY 154 (8/8)
+
+> "DAY 154 — ADR-045 VaultClient decomposition completa. DEBT-FIREWALL-AUTONOMY-MODE-001 cerrada.
+>
+> **Hitos técnicos:**
+> `ICryptoDeriver` + `HkdfCryptoDeriver`: 6 tests (determinismo, aislamiento family/index, seed inválido → nullopt, fingerprint).
+> `IEtcdRegistrar` + `StubEtcdRegistrar`: 4 tests. VaultClient por composición completa (4º ctor). 7 tests common/.
+> `FirewallAutonomyReactor`: AUTONOMOUS/DEGRADED → default-deny, NORMAL → lift. Executor inyectable. 6 tests. 48/48 firewall tests.
+> EMECAS: bootstrap ✅ | test-all ✅ | hardened-full ✅ | check-prod-all ✅.
+>
+> **Consenso P1 — ZMQ directo (7/8 + Founder):**
+> No polling como mecanismo principal. `TransitionCallback` ya definido en `crypto_autonomy.h` — el cableado es mínimo. Latencia 30s inaceptable en entorno ransomware activo. Añadir polling reconciliador 60-120s solo como safety net. Topic: `argus.crypto.autonomy`. Transport: `inproc://` si mismo proceso, `ipc://` si procesos separados. ChatGPT: 'Polling → race windows → comportamiento no determinista → debugging infernal en fail-closed systems.'
+>
+> **Consenso P2 — Default-deny SELECTIVO (8/8 UNÁNIME):**
+> La regla actual `-I INPUT 1 -j DROP` es INCORRECTA para hospitales. Eleva a P0 DAY 155.
+> Kimi: 'Un `vagrant up` en un laptop no sufre. Un hospital sí.' DROP en posición 1 rompe loopback → IPC interno del propio NDR queda ciego. Orden correcto: lo → ESTABLISHED → RFC1918 → DROP. Subnets whitelist configurables vía JSON.
+>
+> **Consenso P3 — HWM primero (8/8):**
+> Sin HWM explícito, benchmarks no son reproducibles. Throughput alto con 50% drops silenciosos es una mentira. Medir tres estados: steady, failure, recovery.
+>
+> **Consenso P4 — ISP después (8/8):**
+> `DEBT-CAPTURE-BACKEND-ISP-001` espera a post-benchmark. Reactor con señal real es P0 funcional; ISP es P2 de calidad.
+>
+> **ChatGPT — transición arquitectónica:**
+> 'El sistema ya no es solo un NDR. Empieza a comportarse como una plataforma resiliente distribuida. Propagación de estado, reconciliación, persistencia, backpressure y recovery semantics son ahora más importantes que añadir features nuevas.'
+>
+> **Nueva deuda registrada:**
+> `DEBT-FIREWALL-DENY-SELECTIVE-001` (P0, DAY 155): regla actual puede paralizar hospital en autonomía.
+>
+> 'No estamos comparando herramientas — estamos construyendo el sistema que protege a los que no tienen escudo.' — Founder · DAY 154"
+> — Consejo de Sabios (8/8) · DAY 154 · v0.8.0-adr045
 
 ## 📝 Notas del Consejo de Sabios — DAY 151 (8/8)
 
