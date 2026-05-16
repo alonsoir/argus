@@ -184,6 +184,7 @@ set(FIREWALL_CORE_SOURCES
         src/core/batch_processor.cpp
         src/core/config_loader.cpp
         src/core/etcd_client.cpp
+        src/core/autonomy_reactor.cpp
         # src/core/acl_intelligence.cpp     # TODO: Phase 2+
 )
 
@@ -330,7 +331,6 @@ if(BUILD_TESTS)
             tests/unit/test_logger.cpp
             tests/unit/test_config_loader_traversal.cpp
             tests/unit/test_safe_exec.cpp
-            tests/test_auto_isolate.cpp
             tests/test_globals_stub.cpp
     )
 
@@ -352,6 +352,21 @@ if(BUILD_TESTS)
     )
 
     include(GoogleTest)
+
+    # test_auto_isolate — standalone (propio main, sin GTest)
+    add_executable(test_auto_isolate
+            tests/test_auto_isolate.cpp
+    )
+    target_include_directories(test_auto_isolate
+            PRIVATE
+            ${CMAKE_CURRENT_SOURCE_DIR}/include
+            ${CMAKE_CURRENT_SOURCE_DIR}/src/core
+    )
+    target_link_libraries(test_auto_isolate
+            PRIVATE
+            firewall_core
+    )
+    add_test(NAME test_auto_isolate COMMAND test_auto_isolate)
     gtest_discover_tests(firewall_tests)
 
     message(STATUS "✅ Unit tests enabled (including logger tests)")
