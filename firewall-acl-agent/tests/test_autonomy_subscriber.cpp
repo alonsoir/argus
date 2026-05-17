@@ -27,7 +27,7 @@ static void publish_event(zmq::socket_t& pub, const std::string& state) {
 }
 
 // Espera con timeout a que el reactor alcance el modo esperado
-static bool wait_for_mode(FirewallAutonomyReactor& reactor,
+[[maybe_unused]] static bool wait_for_mode(FirewallAutonomyReactor& reactor,
                            FirewallAutonomyMode expected,
                            int timeout_ms = 500) {
     const auto deadline = std::chrono::steady_clock::now()

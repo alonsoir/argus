@@ -13,7 +13,7 @@ using namespace mldefender::firewall;
 
 
 
-static bool has_cmd(const std::vector<std::string>& cmds, const std::string& fragment) {
+[[maybe_unused]] static bool has_cmd(const std::vector<std::string>& cmds, const std::string& fragment) {
     return std::any_of(cmds.begin(), cmds.end(),
         [&](const std::string& c){ return c.find(fragment) != std::string::npos; });
 }
@@ -104,7 +104,7 @@ int main() {
         FirewallAutonomyReactor reactor(TEST_CIDRS, false,
             [&ex](const std::string& c){ return ex(c); });
         reactor.set_mode(FirewallAutonomyMode::AUTONOMOUS);
-        const auto cmds_after_autonomous = ex.cmds.size();
+        [[maybe_unused]] const auto cmds_after_autonomous = ex.cmds.size();
         reactor.set_mode(FirewallAutonomyMode::DEGRADED); // deny ya activo
         assert(ex.cmds.size() == cmds_after_autonomous); // sin comandos adicionales
         if (!reactor.is_deny_active()) { std::cerr << "T6 FAIL\n"; return 1; }
@@ -123,12 +123,12 @@ int main() {
                 if (ex.cmds[i].find(frag) != std::string::npos) return i;
             return -1;
         };
-        const int i_N           = idx("-N argus-autonomy");
-        const int i_lo          = idx("argus-autonomy-lo");
-        const int i_established = idx("argus-autonomy-established");
-        const int i_permit      = idx("argus-autonomy-permit");
-        const int i_drop        = idx("argus-autonomy-deny");
-        const int i_input       = idx("-I INPUT 1");
+        [[maybe_unused]] const int i_N           = idx("-N argus-autonomy");
+        [[maybe_unused]] const int i_lo          = idx("argus-autonomy-lo");
+        [[maybe_unused]] const int i_established = idx("argus-autonomy-established");
+        [[maybe_unused]] const int i_permit      = idx("argus-autonomy-permit");
+        [[maybe_unused]] const int i_drop        = idx("argus-autonomy-deny");
+        [[maybe_unused]] const int i_input       = idx("-I INPUT 1");
 
         assert(i_N != -1 && i_lo != -1 && i_established != -1);
         assert(i_permit != -1 && i_drop != -1 && i_input != -1);
@@ -155,7 +155,7 @@ int main() {
     }
     // ── T9: constructor con CIDRs vacíos lanza std::invalid_argument ─────────
     {
-        bool threw = false;
+        [[maybe_unused]] bool threw = false;
         try {
             FirewallAutonomyReactor reactor({}, false, nullptr);
         } catch (const std::invalid_argument&) {
@@ -207,9 +207,9 @@ int main() {
         assert(has_cmd(ex.cmds, "-i lo"));
         assert(has_cmd(ex.cmds, "argus-autonomy-lo"));
         // lo debe aparecer antes que el DROP
-        auto lo_it  = std::find_if(ex.cmds.begin(), ex.cmds.end(),
+        [[maybe_unused]] auto lo_it  = std::find_if(ex.cmds.begin(), ex.cmds.end(),
             [](const std::string& c){ return c.find("-i lo") != std::string::npos; });
-        auto drp_it = std::find_if(ex.cmds.begin(), ex.cmds.end(),
+        [[maybe_unused]] auto drp_it = std::find_if(ex.cmds.begin(), ex.cmds.end(),
             [](const std::string& c){ return c.find("argus-autonomy-deny") != std::string::npos
                                           && c.find("-j DROP") != std::string::npos; });
         assert(lo_it != ex.cmds.end() && drp_it != ex.cmds.end());
