@@ -1198,6 +1198,9 @@ test-components:
 	@echo "Testing RAG Security..."
 	@vagrant ssh -c "cd $(RAG_BUILD_DIR) && ctest --output-on-failure" || echo "⚠️  No rag-security tests configured"
 	@echo ""
+	@echo "Testing Firewall ACL Agent..."
+	@vagrant ssh -c "cd $(FIREWALL_BUILD_DIR) && ctest --output-on-failure" || echo "⚠️  No firewall tests configured"
+	@echo ""
 
 deploy-configs:
 	@echo "🚀 Desplegando configs Ansible/Jinja2 (dev)..."

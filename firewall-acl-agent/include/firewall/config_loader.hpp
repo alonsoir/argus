@@ -164,6 +164,17 @@ struct IrpConfig {
     std::string isolate_binary_path    = "/usr/local/bin/argus-network-isolate";
     std::vector<std::string> auto_isolate_event_types;
 };
+
+    //===----------------------------------------------------------------------===//
+    // Autonomy Configuration (DEBT-FIREWALL-DENY-SELECTIVE-001, DAY 155)
+    //===----------------------------------------------------------------------===//
+    struct AutonomyConfig {
+        // Sin defaults — vacío = error de configuración.
+        // Quien construye FirewallAutonomyReactor valida antes de pasar.
+        std::vector<std::string> whitelist_cidrs;
+        int reconcile_interval_sec = 90;
+    };
+
 //===----------------------------------------------------------------------===//
 // MAIN CONFIGURATION STRUCTURE
 //===----------------------------------------------------------------------===//
@@ -180,6 +191,8 @@ struct FirewallAgentConfig {
     TransportConfig transport;  // ✅ Day 23: AÑADIR ESTA LÍNEA
     CsvBatchLoggerConfig csv_batch_logger;  // ✅ Day 59
     IrpConfig irp;                           // ADR-042 auto-isolate
+    AutonomyConfig autonomy;   // DAY 155 — DEBT-FIREWALL-DENY-SELECTIVE-001
+
 
     bool is_valid() const { return true; }
     std::vector<std::string> validate() const { return {}; }
@@ -225,6 +238,9 @@ private:
     static std::vector<std::string> parse_string_array(const Json::Value& array);
 
     static CsvBatchLoggerConfig parse_csv_batch_logger(const Json::Value& json);
+
+    static AutonomyConfig parse_autonomy(const Json::Value& json,
+                                         const std::string& config_path);
 };
 
 } // namespace mldefender::firewall

@@ -158,7 +158,16 @@ FirewallAgentConfig ConfigLoader::load_from_file(const std::string& config_path,
         std::cout << "[CONFIG] CSV batch logger output_dir: "
                   << config.csv_batch_logger.output_dir << std::endl;
     }
-
+    // DAY 155: autonomy — REQUERIDO. Sin esta sección el reactor
+    // no sabe qué subredes proteger. Fail-fast explícito.
+    if (!root.isMember("autonomy")) {
+        throw std::runtime_error(
+            "❌ MISSING REQUIRED SECTION: 'autonomy' en " + config_path + "\n"
+            "   Fix: Añadir sección 'autonomy' con 'whitelist_cidrs' al JSON.\n"
+            "   Ver DEBT-FIREWALL-DENY-SELECTIVE-001."
+        );
+    }
+    config.autonomy = parse_autonomy(root["autonomy"], config_path);
     // Validate configuration
     validate_config(config);
 
@@ -466,6 +475,40 @@ CsvBatchLoggerConfig ConfigLoader::parse_csv_batch_logger(const Json::Value& jso
     config.output_dir   = get_optional<std::string>(json, "output_dir", "/vagrant/logs/firewall_logs");
     config.batch_size   = get_optional<int>(json, "batch_size", 100);
     config.batch_timeout_sec = get_optional<int>(json, "batch_timeout_sec", 5);
+    return config;
+}
+    //===----------------------------------------------------------------------===//
+    // Autonomy Parser (DAY 155 — DEBT-FIREWALL-DENY-SELECTIVE-001)
+    //===----------------------------------------------------------------------===//
+
+    AutonomyConfig ConfigLoader::parse_autonomy(const Json::Value& json,
+                                                 const std::string& config_path) {
+    AutonomyConfig config;
+
+    // whitelist_cidrs es OBLIGATORIO y no puede estar vacío.
+    // Un vector vacío equivale a "denegar todo sin excepciones" — inaceptable
+    // en infraestructura hospitalaria donde el loopback y la LAN clínica
+    // deben sobrevivir al modo autónomo.
+    if (!json.isMember("whitelist_cidrs") || !json["whitelist_cidrs"].isArray()) {
+        throw std::runtime_error(
+            "❌ MISSING REQUIRED FIELD: 'autonomy.whitelist_cidrs' en " + config_path + "\n"
+            "   Fix: Añadir array de CIDRs permitidos durante modo autónomo.\n"
+            "   Ejemplo: [\"10.0.0.0/8\", \"172.16.0.0/12\", \"192.168.0.0/16\"]"
+        );
+    }
+
+    config.whitelist_cidrs = parse_string_array(json["whitelist_cidrs"]);
+
+    if (config.whitelist_cidrs.empty()) {
+        throw std::runtime_error(
+            "❌ EMPTY FIELD: 'autonomy.whitelist_cidrs' en " + config_path + "\n"
+            "   Fix: Especificar al menos un CIDR permitido durante modo autónomo.\n"
+            "   Un array vacío bloquearía toda la LAN clínica."
+        );
+    }
+
+    config.reconcile_interval_sec = get_optional<int>(json, "reconcile_interval_sec", 90);
+
     return config;
 }
 

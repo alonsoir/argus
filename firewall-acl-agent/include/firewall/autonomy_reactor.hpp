@@ -1,23 +1,32 @@
 #pragma once
 // ============================================================================
-// autonomy_reactor.hpp — DEBT-FIREWALL-AUTONOMY-MODE-001 (ADR-045, DAY 154)
+// autonomy_reactor.hpp — DEBT-FIREWALL-DENY-SELECTIVE-001 (DAY 155)
 // ============================================================================
-// Cuando el crypto-provider entra en AUTONOMOUS (Vault KO, cache válida),
-// el firewall aplica default-deny para tráfico nuevo entrante.
-// Cuando vuelve a NORMAL o RECONCILING, levanta la restricción.
+// CORRECCIÓN P0: la regla anterior (-I INPUT 1 -j DROP) bloqueaba loopback,
+// sesiones activas y subredes clínicas. Ahora se usa cadena dedicada
+// "argus-autonomy" con whitelist OBLIGATORIA desde firewall.json.
 //
-// Señal actual: conectividad etcd (proxy del modo crypto).
-// Señal futura: eventos ZMQ desde CryptoAutonomyStateMachine
-//               (DEBT-AUTONOMY-ZMQ-EVENTS-001)
+// Apply (AUTONOMOUS / DEGRADED):
+//   iptables -N argus-autonomy
+//   iptables -A argus-autonomy -i lo -j ACCEPT              [argus-autonomy-lo]
+//   iptables -A argus-autonomy -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
+//   iptables -A argus-autonomy -s <cidr> -j ACCEPT          [argus-autonomy-permit] × N
+//   iptables -A argus-autonomy -j DROP                      [argus-autonomy-deny]
+//   iptables -I INPUT 1 -j argus-autonomy
 //
-// Regla aplicada:
-//   iptables -I INPUT 1 -m comment --comment "argus-autonomy-deny" -j DROP
-// Regla retirada:
-//   iptables -D INPUT -m comment --comment "argus-autonomy-deny" -j DROP
+// Lift (NORMAL):
+//   iptables -D INPUT -j argus-autonomy
+//   iptables -F argus-autonomy
+//   iptables -X argus-autonomy
+//
+// whitelist_cidrs viene SIEMPRE de firewall.json["autonomy"]["whitelist_cidrs"].
+// Constructor lanza std::invalid_argument si el vector está vacío.
 // ============================================================================
-#include <string>
-#include <functional>
 #include <atomic>
+#include <functional>
+#include <stdexcept>
+#include <string>
+#include <vector>
 
 namespace mldefender::firewall {
 
@@ -36,35 +45,48 @@ inline const char* autonomy_mode_str(FirewallAutonomyMode m) {
     return "UNKNOWN";
 }
 
-// Ejecutor de comandos iptables — inyectable para tests
 using IptablesExecutor = std::function<int(const std::string&)>;
 
 class FirewallAutonomyReactor {
 public:
-    static constexpr const char* RULE_COMMENT = "argus-autonomy-deny";
+    // ── Identificadores de cadena y comentarios ──────────────────────────────
+    static constexpr const char* CHAIN_NAME          = "argus-autonomy";
+    static constexpr const char* RULE_COMMENT        = "argus-autonomy-deny"; // compat DAY 154
+    static constexpr const char* COMMENT_LO          = "argus-autonomy-lo";
+    static constexpr const char* COMMENT_ESTABLISHED = "argus-autonomy-established";
+    static constexpr const char* COMMENT_PERMIT      = "argus-autonomy-permit";
+    static constexpr const char* COMMENT_DENY        = "argus-autonomy-deny";
 
-    explicit FirewallAutonomyReactor(bool dry_run = false,
-                                      IptablesExecutor executor = nullptr);
+    // whitelist_cidrs es OBLIGATORIO — vacío lanza std::invalid_argument.
+    // Sin defaults: quien construye este objeto debe haber leído firewall.json.
+    explicit FirewallAutonomyReactor(
+        std::vector<std::string> whitelist_cidrs,
+        bool             dry_run  = false,
+        IptablesExecutor executor = nullptr
+    );
 
-    // Actualiza el modo. Si cambia, aplica o retira la regla default-deny.
-    // Thread-safe (llamable desde health-check loop).
     void set_mode(FirewallAutonomyMode mode);
 
     FirewallAutonomyMode current_mode() const noexcept {
         return mode_.load(std::memory_order_acquire);
     }
-
     bool is_deny_active() const noexcept { return deny_active_.load(); }
+
+    const std::vector<std::string>& whitelist_cidrs() const noexcept {
+        return whitelist_cidrs_;
+    }
 
 private:
     void apply_default_deny();
     void lift_default_deny();
     int  exec(const std::string& cmd);
+    int  run(const std::string& cmd);
 
     std::atomic<FirewallAutonomyMode> mode_{FirewallAutonomyMode::NORMAL};
     std::atomic<bool>                 deny_active_{false};
     bool                              dry_run_;
     IptablesExecutor                  executor_;
+    std::vector<std::string>          whitelist_cidrs_;
 };
 
 } // namespace mldefender::firewall
