@@ -185,6 +185,7 @@ set(FIREWALL_CORE_SOURCES
         src/core/config_loader.cpp
         src/core/etcd_client.cpp
         src/core/autonomy_reactor.cpp
+        src/core/autonomy_subscriber.cpp
         # src/core/acl_intelligence.cpp     # TODO: Phase 2+
 )
 
@@ -367,6 +368,23 @@ if(BUILD_TESTS)
             firewall_core
     )
     add_test(NAME test_auto_isolate COMMAND test_auto_isolate)
+
+    # test_autonomy_subscriber — standalone (propio main, sin GTest)
+    add_executable(test_autonomy_subscriber
+            tests/test_autonomy_subscriber.cpp
+    )
+    target_include_directories(test_autonomy_subscriber
+            PRIVATE
+            ${CMAKE_CURRENT_SOURCE_DIR}/include
+            ${CMAKE_CURRENT_SOURCE_DIR}/tests
+            ${ZMQ_INCLUDE_DIRS}
+    )
+    target_link_libraries(test_autonomy_subscriber
+            PRIVATE
+            firewall_core
+            ${ZMQ_LIBRARIES}
+    )
+    add_test(NAME test_autonomy_subscriber COMMAND test_autonomy_subscriber)
     gtest_discover_tests(firewall_tests)
 
     message(STATUS "✅ Unit tests enabled (including logger tests)")

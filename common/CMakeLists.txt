@@ -13,6 +13,7 @@ option(ARGUS_VAULT_ENABLED "Enable Vault crypto provider (enterprise)" OFF)
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(LIBSODIUM REQUIRED libsodium)
 find_package(CURL REQUIRED)
+pkg_check_modules(ZMQ REQUIRED libzmq)
 
 # seed-client — requerido por SeedFileProvider (ambas compilaciones)
 find_library(SEED_CLIENT_LIB seed_client
@@ -55,6 +56,7 @@ set_target_properties(vault_client PROPERTIES
 set(CRYPTO_PROVIDER_SOURCES
         crypto_provider.cpp
         seed_file_provider.cpp
+        autonomy_publisher.cpp
 )
 if(ARGUS_VAULT_ENABLED)
     list(APPEND CRYPTO_PROVIDER_SOURCES vault_provider.cpp)
@@ -77,6 +79,7 @@ target_link_libraries(crypto_provider
         vault_client
         ${SEED_CLIENT_LIB}
         ${LIBSODIUM_LIBRARIES}
+        ${ZMQ_LIBRARIES}
 )
 if(ARGUS_VAULT_ENABLED)
     target_compile_definitions(crypto_provider PUBLIC ARGUS_VAULT_ENABLED)
@@ -179,6 +182,21 @@ add_executable(test_vault_client
     )
     add_test(NAME test_crypto_autonomy
             COMMAND test_crypto_autonomy)
+
+    # test_autonomy_publisher — DEBT-AUTONOMY-ZMQ-EVENTS-001 (DAY 155)
+    add_executable(test_autonomy_publisher
+            tests/test_autonomy_publisher.cpp
+            autonomy_publisher.cpp
+    )
+    target_include_directories(test_autonomy_publisher PRIVATE
+            ${CMAKE_CURRENT_SOURCE_DIR}
+            ${ZMQ_INCLUDE_DIRS}
+    )
+    target_link_libraries(test_autonomy_publisher PRIVATE
+            crypto_provider
+            ${ZMQ_LIBRARIES}
+    )
+    add_test(NAME test_autonomy_publisher COMMAND test_autonomy_publisher)
     # IVaultTransport tests (ADR-045 DAY 153)
     add_executable(test_vault_transport
             tests/test_vault_transport.cpp

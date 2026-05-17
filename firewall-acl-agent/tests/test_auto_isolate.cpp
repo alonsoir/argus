@@ -1,6 +1,7 @@
 // test_auto_isolate.cpp — DEBT-FIREWALL-DENY-SELECTIVE-001 (DAY 155)
 // Tests del FirewallAutonomyReactor con cadena dedicada + whitelist configurable
 #include "firewall/autonomy_reactor.hpp"
+#include "test_firewall_stubs.hpp"
 #include <cassert>
 #include <algorithm>
 #include <iostream>
@@ -10,14 +11,7 @@ using namespace mldefender::firewall;
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
-struct StubExecutor {
-    std::vector<std::string> cmds;
-    int ret{0};
-    int operator()(const std::string& cmd) {
-        cmds.push_back(cmd);
-        return ret;
-    }
-};
+
 
 static bool has_cmd(const std::vector<std::string>& cmds, const std::string& fragment) {
     return std::any_of(cmds.begin(), cmds.end(),
