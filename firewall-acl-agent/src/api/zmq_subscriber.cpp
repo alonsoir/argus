@@ -283,9 +283,14 @@ void ZMQSubscriber::connect() {
         socket_->set(zmq::sockopt::linger, config_.linger_ms);
         FIREWALL_LOG_DEBUG("Set socket option", "linger", config_.linger_ms);
 
-        // High water mark (buffer size)
-        socket_->set(zmq::sockopt::rcvhwm, 10000);
-        FIREWALL_LOG_DEBUG("Set socket option", "rcvhwm", 10000);
+        // High water mark — desde config (BACKLOG-ZMQ-TUNING-001)
+        socket_->set(zmq::sockopt::rcvhwm, config_.high_water_mark);
+        FIREWALL_LOG_DEBUG("Set socket option", "rcvhwm", config_.high_water_mark);
+        // Reconnect interval — backoff exponencial hasta max
+        socket_->set(zmq::sockopt::reconnect_ivl,     config_.reconnect_interval_ms);
+        socket_->set(zmq::sockopt::reconnect_ivl_max, config_.max_reconnect_interval_ms);
+        FIREWALL_LOG_DEBUG("Set socket option", "reconnect_ivl", config_.reconnect_interval_ms);
+        FIREWALL_LOG_DEBUG("Set socket option", "reconnect_ivl_max", config_.max_reconnect_interval_ms);
 
     } catch (const zmq::error_t& e) {
         FIREWALL_LOG_CRASH("Failed to set socket options", "error", e.what());

@@ -619,6 +619,7 @@ int main(int argc, char** argv) {
         zmq_config.reconnect_interval_ms = config.zmq.reconnect_interval_ms;
         zmq_config.max_reconnect_interval_ms = config.zmq.max_reconnect_interval_ms;
         zmq_config.enable_reconnect = config.zmq.enable_reconnect;
+        zmq_config.high_water_mark = config.zmq.high_water_mark;  // BACKLOG-ZMQ-TUNING-001
 
         // ✅ Day 61: CSV batch logger output directory
         zmq_config.log_directory = config.csv_batch_logger.output_dir;

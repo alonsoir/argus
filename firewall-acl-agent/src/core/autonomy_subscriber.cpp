@@ -20,9 +20,12 @@ AutonomySubscriber::AutonomySubscriber(
     , context_(1)
     , socket_(context_, zmq::socket_type::sub)
 {
-    socket_.set(zmq::sockopt::rcvtimeo, RECV_TIMEOUT_MS);
-    socket_.set(zmq::sockopt::linger,   0);
-    socket_.set(zmq::sockopt::subscribe, TOPIC);
+    socket_.set(zmq::sockopt::rcvtimeo,          RECV_TIMEOUT_MS);
+    socket_.set(zmq::sockopt::linger,            0);
+    socket_.set(zmq::sockopt::rcvhwm,            1000);   // conservador — canal control
+    socket_.set(zmq::sockopt::reconnect_ivl,     100);    // 100ms base
+    socket_.set(zmq::sockopt::reconnect_ivl_max, 5000);   // 5s max
+    socket_.set(zmq::sockopt::subscribe,         TOPIC);
     socket_.connect(endpoint_);
     std::cerr << "[autonomy_subscriber] SUB connected to " << endpoint_ << "\n";
 }

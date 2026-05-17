@@ -17,7 +17,10 @@ AutonomyPublisher::AutonomyPublisher(
     , context_(1)
     , socket_(context_, zmq::socket_type::pub)
 {
-    socket_.set(zmq::sockopt::linger, linger_ms);
+    socket_.set(zmq::sockopt::linger,            linger_ms);
+    socket_.set(zmq::sockopt::sndhwm,            1000);   // conservador — canal control
+    socket_.set(zmq::sockopt::reconnect_ivl,     100);    // 100ms base
+    socket_.set(zmq::sockopt::reconnect_ivl_max, 5000);   // 5s max
     socket_.bind(endpoint_);
     std::cerr << "[autonomy_publisher] PUB bound to " << endpoint_ << "\n";
 }

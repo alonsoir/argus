@@ -107,6 +107,7 @@ public:
         int reconnect_interval_ms;      ///< Base reconnection interval
         int max_reconnect_interval_ms;  ///< Max exponential backoff interval
         bool enable_reconnect;          ///< Auto-reconnect on connection loss
+        int high_water_mark;            ///< ZMQ_RCVHWM (BACKLOG-ZMQ-TUNING-001)
 
         // ✅ AÑADIDO: Logger configuration
         std::string log_directory;      ///< Directory for blocked event logs
