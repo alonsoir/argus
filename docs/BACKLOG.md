@@ -50,6 +50,11 @@
 - **REGLA PERMANENTE (DAY 144 — Consejo 8/8):** `isolate.json` es la ÚNICA fuente de verdad para `auto_isolate`. Campo obligatorio — sin fallback silencioso. Si falta el fichero o el campo, el arranque falla ruidosamente con mensaje claro. Sin excepciones.
 - **REGLA PERMANENTE (DAY 144 — Consejo 8/8):** `assert()` debe estar activo en todos los tests independientemente del PROFILE. Usar `target_compile_options(test_target PRIVATE -UNDEBUG)` en CMakeLists de tests. `-DNDEBUG` de producción no debe silenciar la cobertura de tests.
 - **REGLA PERMANENTE (DAY 144 — gate ODR confirmado):** `make PROFILE=production all` detecta ODR violations reales bajo `-flto`. Confirmado en DAY 144: 3 categorías de violations encontradas y corregidas. El gate es obligatorio pre-merge sin excepciones.
+- **REGLA PERMANENTE (DAY 155 — Consejo 6/8):** `etcd-server` es el proceso propietario de `CryptoAutonomyStateMachine` y `AutonomyPublisher` en despliegues FEDER. Un solo publisher por nodo garantiza coherencia de estado. Migración a `argus-crypto-daemon` documentada como deuda post-FEDER.
+- **REGLA PERMANENTE (DAY 155 — Consejo 8/8):** El canal de autonomía (`argus.crypto.autonomy`) usa `ipc://` por defecto en edge nodes co-locados. El endpoint es configurable desde `firewall.json["autonomy"]["zmq_endpoint"]`. No introducir `tcp://` sin revisión del modelo de seguridad.
+- **REGLA PERMANENTE (DAY 155 — Consejo 8/8):** El reconciliador de `AutonomySubscriber` re-aplica el último estado conocido. NUNCA consulta Vault/etcd en el ciclo de reconciliación. El intervalo es configurable desde `firewall.json["autonomy"]["reconcile_interval_sec"]` (default 90s).
+- **REGLA PERMANENTE (DAY 155 — Consejo 6/8):** Código enterprise (`VaultClient`, `VaultProvider`) vive en `enterprise/` en la raíz del proyecto, paralelo a `common/`. El flag CMake `ARGUS_VAULT_ENABLED` controla `add_subdirectory(enterprise)`. La migración física es post-FEDER.
+
 - **REGLA PERMANENTE (DAY 142 — macOS):** zsh intercepta `!` en heredocs. Para código C++ con emojis o caracteres especiales: siempre `vagrant ssh << 'SSHEOF'` con Python dentro. Nunca heredoc directo desde zsh para código complejo.
 
 ---
@@ -990,9 +995,9 @@ Al entrar en `AUTONOMOUS`, escribir `/run/argus/crypto-autonomy-state.json` firm
 ---
 
 
-### DEBT-FIREWALL-DENY-SELECTIVE-001 — Regla default-deny demasiado agresiva
-**Severidad:** 🔴 P0 — DAY 154 (Consejo 8/8 UNÁNIME)
-**Estado:** ABIERTO — CERRAR EN DAY 155
+### DEBT-FIREWALL-DENY-SELECTIVE-001 — Regla default-deny selectiva
+**Severidad:** ✅ CERRADA DAY 155 — Consejo 8/8 unánime
+**Estado:** CERRADO — v0.9.0-day155
 **Componente:** `firewall-acl-agent/src/core/autonomy_reactor.cpp`
 
 La regla actual `iptables -I INPUT 1 -j DROP` en modo AUTONOMOUS bloquea:
@@ -1019,10 +1024,10 @@ El DROP debe ser la ÚLTIMA regla de INPUT, no la primera.
 tráfico externo bloqueado → 6 tests actualizados PASSED.
 **Estimación:** 1.5h DAY 155
 
-### DEBT-AUTONOMY-ZMQ-EVENTS-001 — Transiciones de autonomía no emiten eventos ZeroMQ
-**Severidad:** 🟡 P1
-**Estado:** ABIERTO — DAY 151 (Grok, Consejo)
-**Componente:** `CryptoAutonomyStateMachine` + ZeroMQ bus
+### DEBT-AUTONOMY-ZMQ-EVENTS-001 — ZMQ pub/sub para transiciones de autonomía
+**Severidad:** ✅ CERRADA DAY 155
+**Estado:** CERRADO — v0.9.0-day155 · Integración main.cpp pendiente: DEBT-AUTONOMY-CRYPTO-INTEGRATION-001
+**Componente:** `common/autonomy_publisher.h/.cpp` + `firewall-acl-agent/autonomy_subscriber.hpp/.cpp`
 
 **Consenso Consejo DAY 154 (7/8):** ZMQ pub/sub directo, sin polling como mecanismo principal. Solo polling reconciliador lento (60-120s) como safety net. Topic: `argus.crypto.autonomy`. Transport: `inproc://argus.autonomy` (mismo proceso) o `ipc:///run/argus/autonomy.sock`. Founder (Alonso): acuerda ZMQ como mecanismo principal.
 
@@ -1033,6 +1038,35 @@ Cada transición de estado (`NORMAL→AUTONOMOUS`, `AUTONOMOUS→RECONCILING`, e
 
 ---
 
+
+### DEBT-AUTONOMY-CRYPTO-INTEGRATION-001 — Integración CryptoAutonomyStateMachine en producción
+**Severidad:** 🔴 P0 — DAY 156
+**Estado:** ABIERTO — DAY 155
+**Componente:** `etcd-server/src/main.cpp` + `common/autonomy_publisher.h`
+
+`CryptoAutonomyStateMachine` está definida en `common/` y testeada, pero no instanciada
+en ningún componente de producción. `AutonomyPublisher` y `AutonomySubscriber` implementados
+y verdes, pero sin cableado en `main.cpp`.
+
+**Decisión Consejo DAY 155 (6/8):** `etcd-server` es el proceso propietario para FEDER.
+Ya es el trust anchor operacional (STEP 0), ya conoce el estado de Vault, ya tiene
+el health-check loop. Un solo publisher garantiza coherencia de estado (no split-brain).
+Migración post-FEDER a `argus-crypto-daemon` documentada como deuda futura.
+
+**Trabajo pendiente:**
+1. Instanciar `CryptoAutonomyStateMachine` + `AutonomyPublisher` en `etcd-server/main.cpp`
+2. Conectar health-check loop de Vault → eventos → SM → publisher
+3. Integrar `AutonomySubscriber` en `firewall-acl-agent/src/main.cpp` con `reconcile_interval_sec` desde JSON
+4. Pasar `firewall.json["autonomy"]["reconcile_interval_sec"]` al constructor del subscriber
+
+**Transporte:** `ipc:///run/argus/autonomy.sock` (procesos co-locados en edge node, confirmado 8/8)
+**Endpoint configurable:** añadir `firewall.json["autonomy"]["zmq_endpoint"]` como campo opcional
+
+**Test de cierre:** Vault KO → etcd-server detecta → SM entra AUTONOMOUS → ZMQ pub →
+firewall sub recibe → apply_default_deny() → hospital protegido. E2E en EMECAS.
+**Estimación:** 1 sesión DAY 156
+
+---
 ### DEBT-ETCD-HA-QUORUM-001 — etcd-server en HA con quorum
 **Severidad:** 🔴 Alta — P0 post-FEDER (OBLIGATORIO, no opcional)
 **Estado:** ABIERTO — DAY 142
@@ -1499,7 +1533,7 @@ DEBT-IRP-QUEUE-PROCESSOR-001:           0% ⏳  post-merge
 BACKLOG-PAPER-METHODOLOGY-001:             0% ⏳  post-FEDER (paper cs.SE TDH+Consejo)
 BACKLOG-DEPLOY-CALCULATOR-001:             0% ⏳  cuando llegue hardware físico
 BACKLOG-HARDWARE-FEDER-001:               0% ⏳  coordinando con Andrés (RPi+N100+switch)
-BACKLOG-ZMQ-TUNING-001:                  0% ⏳  pre-FEDER
+BACKLOG-ZMQ-TUNING-001:                100% ✅  DAY 155 — HWM + RECONNECT_IVL en todos los sockets
 BACKLOG-BENCHMARK-CAPACITY-001:           0% ⏳  FEDER Year 1 Deliverable
 BACKLOG-BUILD-WARNING-CLASSIFIER-001:    0% ⏳  post-FEDER (grep/awk script)
 DEBT-LLAMA-API-UPGRADE-001:              0% ⏳  post-FEDER (salvo CVE)
@@ -1526,8 +1560,9 @@ ICryptoProvider + SeedFileProvider + VaultProvider: 100% ✅  DAY 151 (factoría
 DEBT-BOOTSTRAP-STATUS-SIGNATURE-001:      0% ⏳  P1 pre-FEDER (bootstrap status sin firma)
 DEBT-AUTONOMY-STATE-PERSISTENCE-001:      0% ⏳  P1 (estado autonomía sin persistencia firmada)
 DEBT-AUTONOMY-CLOCK-INJECTION-001:        0% ⏳  P1 (clock no inyectable)
-DEBT-FIREWALL-DENY-SELECTIVE-001:          0% ⏳  P0 DAY 155 (regla actual rompe hospitales)
-DEBT-AUTONOMY-ZMQ-EVENTS-001:             0% ⏳  P1 DAY 155 (ZMQ pub/sub directo)
+DEBT-FIREWALL-DENY-SELECTIVE-001:        100% ✅  DAY 155 — cadena argus-autonomy, whitelist obligatoria JSON
+DEBT-AUTONOMY-ZMQ-EVENTS-001:           100% ✅  DAY 155 — AutonomyPublisher + AutonomySubscriber (ipc://)
+DEBT-AUTONOMY-CRYPTO-INTEGRATION-001:     0% ⏳  DAY 155 — integración main.cpp pendiente (etcd-server DAY 156)
 ADR-045 VaultClient Decomposition:      100% ✅  CERRADA DAY 154 — v0.8.0-adr045
 Ansible+Jinja2 deploy_configs pipeline:    100% ✅  DAY 149 (3 templates, playbook, 9 OK 0 failed)
 Paper Abstract v24:                        100% ✅  DAY 149 (architecturally complementary by design)
@@ -1757,11 +1792,75 @@ Un sistema con ACRL converge hacia cobertura de técnicas ATT&CK en tiempo polin
 
 ---
 
-*DAY 154 — 16 Mayo 2026 · main @ v0.8.0-adr045*
+*DAY 155 — 17 Mayo 2026 · main @ v0.9.0-day155*
 *"Via Appia Quality — Un escudo que aprende de su propia sombra."*
 
 
 
+
+
+## 📝 Notas del Consejo de Sabios — DAY 155 (8/8)
+
+> "DAY 155 — Tres deudas cerradas. La autonomía pasa de concepto a flujo operacional real.
+>
+> **P0 CERRADO — DEBT-FIREWALL-DENY-SELECTIVE-001 (8/8 unánime DAY 154 → ejecutado DAY 155):**
+> Cadena dedicada `argus-autonomy` reemplaza regla garrote `-I INPUT 1 -j DROP`.
+> Orden garantizado estructuralmente: lo→ESTABLISHED→CIDRs→DROP→INPUT hook.
+> `whitelist_cidrs` obligatorio desde `firewall.json["autonomy"]["whitelist_cidrs"]` — sin defaults.
+> `AutonomyConfig` + `parse_autonomy()` con fail-fast explícito en `ConfigLoader`.
+> 12/12 tests. 49/49 firewall tests verdes. EMECAS HARDENED PASSED con `-flto -O3 -Werror`.
+> Kimi: 'Un vagrant up en un laptop no sufre. Un hospital sí.' — ejecutado.
+>
+> **P1 CERRADO — DEBT-AUTONOMY-ZMQ-EVENTS-001:**
+> `AutonomyPublisher` (`common/`): ZMQ PUB, topic `argus.crypto.autonomy`, `make_callback()`
+> integra con `CryptoAutonomyStateMachine::TransitionCallback`. 4/4 tests.
+> `AutonomySubscriber` (`firewall-acl-agent/`): ZMQ SUB event-driven + polling reconciliador 90s safety net.
+> RECONCILING mapea a NORMAL. 6/6 tests.
+> Transport: `ipc:///run/argus/autonomy.sock` (procesos separados confirmado — firewall no linkea common/).
+>
+> **P2 CERRADO — BACKLOG-ZMQ-TUNING-001:**
+> HWM + RECONNECT_IVL en todos los sockets. Prerequisito de BACKLOG-BENCHMARK-CAPACITY-001 satisfecho.
+>
+> **Consenso Q1 — Proceso propietario SM (6/8 + Founder):**
+> `etcd-server` instancia `CryptoAutonomyStateMachine` + `AutonomyPublisher` para FEDER.
+> Ya es trust anchor, ya tiene health-check loop, ya conoce el estado de Vault.
+> Un solo publisher = coherencia garantizada, sin split-brain.
+> Migración post-FEDER a `argus-crypto-daemon` documentada (DeepSeek + Grok en disidencia razonada).
+> ChatGPT: 'El componente coordinador es quien primero conoce la pérdida de quorum.'
+>
+> **Consenso Q2 — Endpoint (8/8 unánime):**
+> `ipc://` correcto y suficiente para edge nodes co-locados.
+> Endpoint configurable desde `firewall.json["autonomy"]["zmq_endpoint"]` para flexibilidad futura.
+> El firewall autonomy plane debe ser local, determinista, fail-contained.
+>
+> **Consenso Q3 — Reconciliador (8/8 unánime):**
+> `reconcile_interval_sec` configurable desde JSON (default 90s).
+> Re-aplica último estado conocido — NO consulta Vault/etcd.
+> Desired state reconciliation, no distributed state recomputation (ChatGPT).
+>
+> **Consenso Q4 — Estructura enterprise (6/8):**
+> `enterprise/` en raíz del proyecto, paralelo a `common/`.
+> `CMakeLists.txt` raíz: `add_subdirectory(enterprise)` condicional con `ARGUS_VAULT_ENABLED`.
+> Documentar en `docs/OPEN_CORE.md`. Migración física post-FEDER.
+> Disidentes ChatGPT + Kimi: `plugins/enterprise/` (argumentan plugin system existente).
+>
+> **Consenso Q5 — Benchmarks sintéticos (6/8):**
+> Ejecutar en VirtualBox con disclaimer explícito: 'VirtualBox Synthetic Baseline — lower bound only'.
+> Valor: detección de regresiones, calibración HWM, validación metodológica para paper.
+> NO publicar como throughput de producción. Claude + Kimi en disidencia (datos ya en paper DAY 145).
+>
+> **Nuevas deudas registradas:**
+> `DEBT-AUTONOMY-CRYPTO-INTEGRATION-001` (P0 DAY 156): integración en `etcd-server/main.cpp`.
+> `DEBT-ENTERPRISE-LAYOUT-001` (post-FEDER): mover vault_client a `enterprise/`.
+> `DEBT-BENCHMARK-SYNTHETIC-VIRTUALBOX-001` (P2 pre-FEDER): harness de benchmark con disclaimer.
+>
+> ChatGPT — transición arquitectónica: 'El sistema empieza a comportarse como una plataforma
+> resiliente distribuida. Reconciliación, ownership único, deterministic enforcement,
+> local-first autonomy y explicit state propagation son ahora más importantes que nuevas features.'
+>
+> 'La autonomía no se delega; se coordina. El IPC no es un detalle de implementación;
+> es un pacto de localidad. Y el benchmark no mide mentiras: mide metodología.' — Qwen · DAY 155"
+> — Consejo de Sabios (8/8) · DAY 155 · v0.9.0-day155
 
 ## 📝 Notas del Consejo de Sabios — DAY 154 (8/8)
 

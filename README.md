@@ -31,14 +31,14 @@
 
 ---
 
-✅ `main` is tagged `v0.7.2-day149`. Branch activa: `main` — Schema Parquet Arrow v1.0, Vault CI/CD pipeline, ADR-044 aprobado (DAY 149).
+✅ `main` is tagged `v0.9.0-day155`. Branch activa: `main` — Schema Parquet Arrow v1.0, Vault CI/CD pipeline, ADR-044 aprobado (DAY 149).
 **PRE-PRODUCTION: do not deploy in hospitals until ACRL (DEBT-PENTESTER-LOOP-001) is complete.**
 
 ---
 
-## Estado actual — DAY 151 (2026-05-14)
+## Estado actual — DAY 155 (2026-05-17)
 
-**Tag activo:** `v0.8.0-adr045` | **Branch activa:** `main`
+**Tag activo:** `v0.9.0-day155` | **Branch activa:** `main`
 **Keypair activo:** `b5b6cbdf67dad75cdd7e3169d837d1d6d4c938b720e34331f8a73f478ee85daa`
 **Paper:** arXiv:2604.04952 · Draft v24 local · v3 en arXiv
 **Principio rector:** calidad sobre fechas — los datasets se generan cuando el pipeline esté listo
@@ -48,6 +48,13 @@
 - `make test-all`: ALL TESTS COMPLETE (65/65 PASSED — 0 FAILED) ✅
 - `make PROFILE=production all`: Gate ODR — ALL COMPONENTS BUILT ✅
 - `make argus-network-isolate-test`: dry-run PASSED ✅
+
+### Hitos DAY 155 🎉
+- **DEBT-FIREWALL-DENY-SELECTIVE-001 CERRADA** — Cadena dedicada `argus-autonomy`: lo→ESTABLISHED→CIDRs→DROP→INPUT. `whitelist_cidrs` obligatorio desde `firewall.json`. `AutonomyConfig` + `parse_autonomy()` fail-fast. 12/12 tests. 49/49 firewall tests verdes.
+- **DEBT-AUTONOMY-ZMQ-EVENTS-001 CERRADA** — `AutonomyPublisher` (`common/`) + `AutonomySubscriber` (`firewall-acl-agent/`). Topic `argus.crypto.autonomy`. Transport `ipc:///run/argus/autonomy.sock`. 4/4 + 6/6 tests PASSED.
+- **BACKLOG-ZMQ-TUNING-001 CERRADA** — HWM + RECONNECT_IVL en todos los sockets ZMQ del proyecto. Prerequisito de BACKLOG-BENCHMARK-CAPACITY-001 satisfecho.
+- **DEBT-AUTONOMY-CRYPTO-INTEGRATION-001 registrada** — Integración en `etcd-server/main.cpp` pendiente (P0 DAY 156). Consejo 6/8: etcd-server como proceso propietario.
+- **EMECAS HARDENED PASSED** — `-Werror` + `-O3` + `-flto` + producción limpio. AppArmor 6/6. Falco 11 reglas. BSR verificado. Tag `v0.9.0-day155`.
 
 ### Hitos DAY 154 🎉
 - **ADR-045 VaultClient decomposition COMPLETA** — `ICryptoDeriver` + `HkdfCryptoDeriver` (6 tests), `IEtcdRegistrar` + `StubEtcdRegistrar` (4 tests). VaultClient por composición con 4º ctor inyectable. 7 tests common/. v0.8.0-adr045.
@@ -140,7 +147,7 @@
 | DEBT-GDPR-ERASURE-001 | 🟡 P1 pre-FEDER | Flujo derecho al olvido Art. 17 GDPR — comando borrado firmado |
 | DEBT-CRYPTO-AUTONOMY-001 | 🔴 P1 pre-FEDER | Máquina de estados EXTENDED_AUTONOMY |
 | DEBT-FIREWALL-AUTONOMY-MODE-001 | ✅ CERRADA DAY 154 | FirewallAutonomyReactor |
-| DEBT-FIREWALL-DENY-SELECTIVE-001 | 🔴 P0 DAY 155 | Regla actual rompe hospitales — selectiva |
+| DEBT-FIREWALL-DENY-SELECTIVE-001 | ✅ CERRADA DAY 155 | Cadena argus-autonomy selectiva, whitelist JSON |
 | DEBT-CRYPTO-RECONCILIATION-001 | 🟡 P1 pre-FEDER | Handshake validación al recuperar Vault |
 | DEBT-CRYPTO-CACHE-PERSISTENT-PROD-001 | 🟡 P1 pre-FEDER | Cache cifrada en prod edge (LUKS obligatorio) |
 | DEBT-EMECAS-DUAL-COMPILATION-001 | 🟡 P1 | CI compila ARGUS_VAULT_ENABLED=ON y OFF |
@@ -148,15 +155,14 @@
 | DEBT-LICENSE-VAULT-001 | ⏳ P2 post-FEDER | Servidor licencias en Vault (plugin system) |
 | DEBT-PLUGIN-ENTERPRISE-001 | ⏳ P2 post-FEDER | Definir plugins enterprise vs community |
 | DEBT-KPSEUDO-HKDF-HIERARCHY-001 | ⏳ P3 post-FEDER | Jerarquía HKDF para K_pseudo (host/flow/model desde K_root) |
-### Próxima frontera — DAY 151+
-1. **EMECAS protocolo** — `vagrant destroy -f && vagrant up && make bootstrap && make test-all`
-2. **DEBT-FIREWALL-DENY-SELECTIVE-001 P0** — regla default-deny selectiva (loopback + ESTABLISHED + RFC1918)
-3. **DEBT-AUTONOMY-ZMQ-EVENTS-001** — ZMQ pub/sub `argus.crypto.autonomy` (inproc/ipc)
-4. **BACKLOG-ZMQ-TUNING-001** — HWM + Linger en todos los sockets — `#ifdef ARGUS_VAULT_ENABLED`, `ICryptoProvider`, fichero local bootstrap + registro vía loopback
-3. **DEBT-CRYPTO-AUTONOMY-001** — máquina de estados EXTENDED_AUTONOMY en `vault_client.cpp`
-4. **DEBT-FIREWALL-AUTONOMY-MODE-001** — firewall default-deny en modo autonomía
-5. **DEBT-ALERTING-EDGE-SOS-001** — webhook SOS configurable por despliegue
-6. **DEBT-EMECAS-DUAL-COMPILATION-001** — CI compila community + enterprise
+### Próxima frontera — DAY 156+
+1. **DEBT-AUTONOMY-CRYPTO-INTEGRATION-001 P0** — Integrar `CryptoAutonomyStateMachine` + `AutonomyPublisher` en `etcd-server/main.cpp`. Consejo 6/8: etcd-server como propietario para FEDER.
+2. **DEBT-AUTONOMY-STATE-PERSISTENCE-001 P1** — Estado firmado Ed25519 en `/run/argus/crypto-autonomy-state.json` en tmpfs.
+3. **DEBT-BOOTSTRAP-STATUS-SIGNATURE-001 P1** — Firma Ed25519 en bootstrap status.
+4. **DEBT-CRYPTO-AUTONOMY-001 P2** — Máquina de estados EXTENDED_AUTONOMY completa en `etcd-server`.
+5. **DEBT-CRYPTO-RECONCILIATION-001 P1** — Handshake de validación al recuperar Vault.
+6. **DEBT-ALERTING-EDGE-SOS-001 P1** — Webhook SOS configurable por despliegue.
+7. **BACKLOG-BENCHMARK-CAPACITY-001** — Benchmarks sintéticos VirtualBox (baseline) + hardware físico FEDER.
 
 ---
 
@@ -472,6 +478,7 @@ make hardened-full   # destroy → up → provision → build → deploy → che
 - ✅ DAY 149: **Schema Parquet Arrow v1.0 · Vault CI/CD pipeline · ADR-044 · Ansible+Jinja2 · 5 PRs · v0.7.2-day149** 🎉
 - ✅ DAY 150: **ADR-044 implementación completa · provision_crypto.sh · vault_client C++20 · Jenkinsfile Provision Crypto · EMECAS verde** 🎉
 - ✅ DAY 154: **ADR-045 VaultClient decomposition · DEBT-FIREWALL-AUTONOMY-MODE-001 CERRADA · 48/48 tests · v0.8.0-adr045** 🎉
+- ✅ DAY 155: **DEBT-FIREWALL-DENY-SELECTIVE-001 · DEBT-AUTONOMY-ZMQ-EVENTS-001 · BACKLOG-ZMQ-TUNING-001 · 49/49 tests · EMECAS HARDENED PASSED · v0.9.0-day155** 🎉
 - ✅ DAY 151: **ICryptoProvider + SeedFileProvider + VaultProvider · etcd-server STEP 0 · ADR-045 aprobado · 55+ tests verdes · v0.8.0-day151** 🎉
 - ✅ DAY 148: **Suricata offline irrefutable · Paper v23 · arXiv replace v3 · DEBT-IRP-FLOAT-TYPES-001 cerrada · v0.7.1-day148** 🎉
 - 🔜 DAY 146+: **DEBT-IRP-TMPFILES-001 · DEBT-IRP-IPSET-TMP-001 · experiment-comparative · ARM64 scope**
