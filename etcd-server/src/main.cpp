@@ -13,6 +13,8 @@
 #include <vault_client/crypto_provider.h>
 #include <fstream>
 #include <filesystem>
+#include <vault_client/autonomy_publisher.h>
+#include <vault_client/crypto_autonomy.h>
 
 std::unique_ptr<EtcdServer> g_server;
 std::shared_ptr<etcd_server::SecretsManager> g_secrets_manager;
@@ -45,6 +47,23 @@ int main() {
         // SeedClient + CryptoTransport (canal ZeroMQ) NO se tocan — Opción B.
         // ICryptoProvider gestiona identidad Ed25519 y bootstrap status.
         // ═══════════════════════════════════════════════════════════
+
+        // ═══════════════════════════════════════════════════════════
+        // STEP 0b: CryptoAutonomyStateMachine + AutonomyPublisher (DAY 156)
+        // DEBT-AUTONOMY-CRYPTO-INTEGRATION-001
+        // etcd-server es el único publisher de autonomía en el nodo (Q1 DAY 155).
+        // ═══════════════════════════════════════════════════════════
+        const std::string autonomy_endpoint = "ipc:///run/argus/autonomy.sock";
+        ml_defender::common::AutonomyPublisher autonomy_pub(
+            autonomy_endpoint, "etcd-server", 0
+        );
+        ml_defender::CryptoAutonomy autonomy_sm(
+            "etcd-server",
+            autonomy_pub.make_callback()
+        );
+        std::cout << "✅ AutonomyPublisher + CryptoAutonomySM inicializados" << std::endl;
+        std::cout << "   endpoint: " << autonomy_endpoint << std::endl;
+
         std::cout << std::endl;
         std::cout << "═══════════════════════════════════════════════════════" << std::endl;
         std::cout << "  STEP 0: ICryptoProvider — identidad Ed25519         " << std::endl;
@@ -172,7 +191,31 @@ int main() {
             std::cout << "✅ Bootstrap status eliminado (servidor activo)" << std::endl;
         } catch (...) {}
 
+        // ── Health-check loop con SM de autonomía (DAY 156) ──────────────
+        auto   last_vault_check = std::chrono::steady_clock::now();
+        bool   was_vault_healthy = true;
+
         while (g_server->is_running()) {
+            auto now     = std::chrono::steady_clock::now();
+            auto elapsed = std::chrono::duration_cast<std::chrono::seconds>(
+                               now - last_vault_check).count();
+
+            if (elapsed >= 5) {
+                const bool healthy = crypto_provider->is_healthy();
+                if (!healthy && was_vault_healthy) {
+                    std::cout << "[autonomy] Vault KO → AUTONOMOUS" << std::endl;
+                    autonomy_sm.on_vault_unreachable();
+                } else if (healthy && !was_vault_healthy) {
+                    std::cout << "[autonomy] Vault OK → RECONCILING" << std::endl;
+                    autonomy_sm.on_vault_restored();
+                    // on_reconciliation_ok() se llamará tras validar material
+                    // DEBT-CRYPTO-RECONCILIATION-001
+                    autonomy_sm.on_reconciliation_ok();
+                }
+                was_vault_healthy = healthy;
+                last_vault_check  = now;
+            }
+
             std::this_thread::sleep_for(std::chrono::seconds(1));
         }
 

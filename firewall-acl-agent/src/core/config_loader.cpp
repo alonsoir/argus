@@ -508,6 +508,7 @@ CsvBatchLoggerConfig ConfigLoader::parse_csv_batch_logger(const Json::Value& jso
     }
 
     config.reconcile_interval_sec = get_optional<int>(json, "reconcile_interval_sec", 90);
+    config.zmq_endpoint = get_optional<std::string>(json, "zmq_endpoint", "ipc:///run/argus/autonomy.sock");
 
     return config;
 }

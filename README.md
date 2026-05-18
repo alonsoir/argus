@@ -19,7 +19,7 @@
 [![Variant B](https://img.shields.io/badge/ADR--029-Variant_B_libpcap_pipeline-blue)]()
 [![Reproducible](https://img.shields.io/badge/Infra-make_bootstrap-brightgreen)]()
 [![XGBoost](https://img.shields.io/badge/XGBoost-Prec%3D0.9945_In--Distribution-brightgreen)]()
-[![Hardened](https://img.shields.io/badge/Security-v0.8.0--day151-brightgreen)]()
+[![Hardened](https://img.shields.io/badge/Security-v0.9.1--day156-brightgreen)]()
 [![PRE-PRODUCTION](https://img.shields.io/badge/Status-PRE--PRODUCTION-orange)]()
 [![Crypto](https://img.shields.io/badge/Crypto-HKDF_SHA256+ChaCha20_Poly1305-orange)]()
 [![arXiv](https://img.shields.io/badge/arXiv-2604.04952_cs.CR-red)](https://arxiv.org/abs/2604.04952)
@@ -31,23 +31,31 @@
 
 ---
 
-✅ `main` is tagged `v0.9.0-day155`. Branch activa: `main` — Schema Parquet Arrow v1.0, Vault CI/CD pipeline, ADR-044 aprobado (DAY 149).
+✅ `main` is tagged `v0.9.1-day156`. Branch activa: `main` — Schema Parquet Arrow v1.0, Vault CI/CD pipeline, ADR-044 aprobado (DAY 149).
 **PRE-PRODUCTION: do not deploy in hospitals until ACRL (DEBT-PENTESTER-LOOP-001) is complete.**
 
 ---
 
-## Estado actual — DAY 155 (2026-05-17)
+## Estado actual — DAY 156 (2026-05-18)
 
-**Tag activo:** `v0.9.0-day155` | **Branch activa:** `main`
+**Tag activo:** `v0.9.1-day156` | **Branch activa:** `main`
 **Keypair activo:** `b5b6cbdf67dad75cdd7e3169d837d1d6d4c938b720e34331f8a73f478ee85daa`
 **Paper:** arXiv:2604.04952 · Draft v24 local · v3 en arXiv
 **Principio rector:** calidad sobre fechas — los datasets se generan cuando el pipeline esté listo
 
 ### Pipeline
 - 6/6 componentes RUNNING — validado EMECAS DAY 145 ✅
-- `make test-all`: ALL TESTS COMPLETE (65/65 PASSED — 0 FAILED) ✅
+- `make test-all`: ALL TESTS COMPLETE (50/50 firewall · 3/3 etcd-server · 9/9 sniffer · 10/10 ml-detector · 8/8 rag-ingester · 1/1 argus-network-isolate) ✅
 - `make PROFILE=production all`: Gate ODR — ALL COMPONENTS BUILT ✅
 - `make argus-network-isolate-test`: dry-run PASSED ✅
+
+### Hitos DAY 156 🎉
+- **DEBT-AUTONOMY-CRYPTO-INTEGRATION-001 CERRADA** — `CryptoAutonomyStateMachine` + `AutonomyPublisher` integrados en `etcd-server/main.cpp`. Health-check loop 5s dispara `on_vault_unreachable/restored`. `FirewallAutonomyReactor` + `AutonomySubscriber` integrados en `firewall-acl-agent/main.cpp`. `AutonomyConfig.zmq_endpoint` añadido a struct y parser. `autonomy_publisher.h` añadido al install target de CMake.
+- **Test B (unitario): 7/7 PASSED** — `CryptoAutonomyStateMachine` + `AutonomyPublisher` via ZMQ real. T1-T7 incluyendo `HealthCheckLoopSimulation`.
+- **Test A (E2E): 4/4 PASSED** — Pipeline `Publisher→IPC→Subscriber→Reactor` dry_run. `VaultKoTriggersAutonomousMode`, `VaultRestoredLiftsAutonomousMode`, `FullCycleNormalAutonomousReconcileNormal`, `SubscriberRunsStableWithoutEvents`.
+- **Fix ZMQ slow joiner** — publisher debe hacer `bind()` ANTES de que cualquier subscriber conecte. Regla permanente para todos los pares PUB/SUB del proyecto.
+- **EMECAS DAY 156 VERDE** — `vagrant destroy → up → make bootstrap → make test-all` — TODO VERDE. 50/50 firewall, 3/3 etcd-server, 9/9 sniffer, 10/10 ml-detector, 8/8 rag-ingester.
+- **ADR-046 PENDING-REVISION** — Multi-Source Enriched Pipeline aRGus++. Tres condiciones para cierre: §Label leakage policy, §Deployment matrix RPi5 vs edge server, §8 datos empíricos o hipótesis.
 
 ### Hitos DAY 155 🎉
 - **DEBT-FIREWALL-DENY-SELECTIVE-001 CERRADA** — Cadena dedicada `argus-autonomy`: lo→ESTABLISHED→CIDRs→DROP→INPUT. `whitelist_cidrs` obligatorio desde `firewall.json`. `AutonomyConfig` + `parse_autonomy()` fail-fast. 12/12 tests. 49/49 firewall tests verdes.
@@ -156,8 +164,8 @@
 | DEBT-PLUGIN-ENTERPRISE-001 | ⏳ P2 post-FEDER | Definir plugins enterprise vs community |
 | DEBT-KPSEUDO-HKDF-HIERARCHY-001 | ⏳ P3 post-FEDER | Jerarquía HKDF para K_pseudo (host/flow/model desde K_root) |
 ### Próxima frontera — DAY 156+
-1. **DEBT-AUTONOMY-CRYPTO-INTEGRATION-001 P0** — Integrar `CryptoAutonomyStateMachine` + `AutonomyPublisher` en `etcd-server/main.cpp`. Consejo 6/8: etcd-server como propietario para FEDER.
-2. **DEBT-AUTONOMY-STATE-PERSISTENCE-001 P1** — Estado firmado Ed25519 en `/run/argus/crypto-autonomy-state.json` en tmpfs.
+1. ✅ **DEBT-AUTONOMY-CRYPTO-INTEGRATION-001 CERRADA DAY 156**
+2. **DEBT-AUTONOMY-STATE-PERSISTENCE-001 P1** — Estado firmado Ed25519 en `/var/lib/argus/crypto-autonomy-state.json` (Consejo 6/8: fichero regular + fsync, NO tmpfs). Arranque desde AUTONOMOUS si firma válida y timestamp < 24h.
 3. **DEBT-BOOTSTRAP-STATUS-SIGNATURE-001 P1** — Firma Ed25519 en bootstrap status.
 4. **DEBT-CRYPTO-AUTONOMY-001 P2** — Máquina de estados EXTENDED_AUTONOMY completa en `etcd-server`.
 5. **DEBT-CRYPTO-RECONCILIATION-001 P1** — Handshake de validación al recuperar Vault.
@@ -479,6 +487,7 @@ make hardened-full   # destroy → up → provision → build → deploy → che
 - ✅ DAY 150: **ADR-044 implementación completa · provision_crypto.sh · vault_client C++20 · Jenkinsfile Provision Crypto · EMECAS verde** 🎉
 - ✅ DAY 154: **ADR-045 VaultClient decomposition · DEBT-FIREWALL-AUTONOMY-MODE-001 CERRADA · 48/48 tests · v0.8.0-adr045** 🎉
 - ✅ DAY 155: **DEBT-FIREWALL-DENY-SELECTIVE-001 · DEBT-AUTONOMY-ZMQ-EVENTS-001 · BACKLOG-ZMQ-TUNING-001 · 49/49 tests · EMECAS HARDENED PASSED · v0.9.0-day155** 🎉
+- ✅ DAY 156: **DEBT-AUTONOMY-CRYPTO-INTEGRATION-001 · Test B 7/7 + Test A 4/4 · Fix ZMQ slow joiner · EMECAS VERDE 50/50 · v0.9.1-day156** 🎉
 - ✅ DAY 151: **ICryptoProvider + SeedFileProvider + VaultProvider · etcd-server STEP 0 · ADR-045 aprobado · 55+ tests verdes · v0.8.0-day151** 🎉
 - ✅ DAY 148: **Suricata offline irrefutable · Paper v23 · arXiv replace v3 · DEBT-IRP-FLOAT-TYPES-001 cerrada · v0.7.1-day148** 🎉
 - 🔜 DAY 146+: **DEBT-IRP-TMPFILES-001 · DEBT-IRP-IPSET-TMP-001 · experiment-comparative · ARM64 scope**

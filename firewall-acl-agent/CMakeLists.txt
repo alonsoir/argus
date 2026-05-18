@@ -385,6 +385,24 @@ if(BUILD_TESTS)
             ${ZMQ_LIBRARIES}
     )
     add_test(NAME test_autonomy_subscriber COMMAND test_autonomy_subscriber)
+# ── Test A: Autonomy E2E DAY 156 ─────────────────────────────────────────────
+add_executable(test_autonomy_e2e
+    tests/test_autonomy_e2e.cpp
+)
+target_include_directories(test_autonomy_e2e PRIVATE
+    ${CMAKE_SOURCE_DIR}/include
+    /usr/local/include
+    /usr/local/include/vault_client
+)
+target_link_libraries(test_autonomy_e2e PRIVATE
+    firewall_core
+    GTest::gtest_main
+    vault_client
+    crypto_provider
+    zmq
+)
+add_test(NAME test_autonomy_e2e COMMAND test_autonomy_e2e)
+
     gtest_discover_tests(firewall_tests)
 
     message(STATUS "✅ Unit tests enabled (including logger tests)")

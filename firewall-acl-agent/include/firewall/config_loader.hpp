@@ -172,7 +172,8 @@ struct IrpConfig {
         // Sin defaults — vacío = error de configuración.
         // Quien construye FirewallAutonomyReactor valida antes de pasar.
         std::vector<std::string> whitelist_cidrs;
-        int reconcile_interval_sec = 90;
+        int         reconcile_interval_sec = 90;
+        std::string zmq_endpoint = "ipc:///run/argus/autonomy.sock";
     };
 
 //===----------------------------------------------------------------------===//

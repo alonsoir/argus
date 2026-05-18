@@ -210,7 +210,42 @@ target_include_directories(etcd-server
 # ============================================================================
 option(BUILD_TESTS "Build test executables" ON)
 
+# ── GTest (igual que firewall-acl-agent) ─────────────────────────────────────
+find_package(GTest)
+if(NOT GTest_FOUND)
+    message(STATUS "GTest not found, fetching from GitHub...")
+    include(FetchContent)
+    FetchContent_Declare(
+        googletest
+        GIT_REPOSITORY https://github.com/google/googletest.git
+        GIT_TAG        v1.14.0
+    )
+    set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+    FetchContent_MakeAvailable(googletest)
+endif()
+
 if(BUILD_TESTS)
+# ── Test B: Autonomy Integration DAY 156 ─────────────────────────────────────
+add_executable(test_autonomy_integration
+    tests/test_autonomy_integration.cpp
+)
+target_include_directories(test_autonomy_integration PRIVATE
+    ${CMAKE_SOURCE_DIR}/src
+    /usr/local/include
+    /usr/local/include/vault_client
+)
+target_link_libraries(test_autonomy_integration PRIVATE
+    GTest::gtest_main
+    ${CRYPTO_PROVIDER_LIB}
+    zmq
+)
+target_include_directories(test_autonomy_integration PRIVATE
+    /usr/include/nlohmann
+    /usr/include
+)
+add_test(NAME test_autonomy_integration COMMAND test_autonomy_integration)
+
+
     message(STATUS "========================================")
     message(STATUS "Building Tests")
     message(STATUS "========================================")
