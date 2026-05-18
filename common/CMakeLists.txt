@@ -115,6 +115,7 @@ install(FILES
         vault_transport.h
         cache_manager.h
         crypto_provider.h
+        autonomy_publisher.h
         crypto_autonomy.h
         crypto_deriver.h
         etcd_registrar.h
