@@ -1,5 +1,5 @@
 # aRGus NDR — BACKLOG
-*Última actualización: DAY 151 — 14 Mayo 2026*
+*Última actualización: DAY 156 — 18 Mayo 2026*
 
 ---
 
@@ -50,6 +50,10 @@
 - **REGLA PERMANENTE (DAY 144 — Consejo 8/8):** `isolate.json` es la ÚNICA fuente de verdad para `auto_isolate`. Campo obligatorio — sin fallback silencioso. Si falta el fichero o el campo, el arranque falla ruidosamente con mensaje claro. Sin excepciones.
 - **REGLA PERMANENTE (DAY 144 — Consejo 8/8):** `assert()` debe estar activo en todos los tests independientemente del PROFILE. Usar `target_compile_options(test_target PRIVATE -UNDEBUG)` en CMakeLists de tests. `-DNDEBUG` de producción no debe silenciar la cobertura de tests.
 - **REGLA PERMANENTE (DAY 144 — gate ODR confirmado):** `make PROFILE=production all` detecta ODR violations reales bajo `-flto`. Confirmado en DAY 144: 3 categorías de violations encontradas y corregidas. El gate es obligatorio pre-merge sin excepciones.
+- **REGLA PERMANENTE (DAY 156 — Consejo 8/8):** En ZMQ PUB/SUB, el publisher debe hacer `bind()` ANTES de que cualquier subscriber haga `connect()`. En tests: crear el publisher en `SetUp()` del fixture antes de `start_subscriber()`. El slow joiner de ZMQ pierde mensajes silenciosamente si el orden se invierte. Ver `docs/technical-notes/ZMQ-PUB-SUB-SLOW-JOINER.md`.
+- **REGLA PERMANENTE (DAY 156 — Consejo 6/8):** El estado de `CryptoAutonomyStateMachine` se persiste en `/var/lib/argus/crypto-autonomy-state.json` con fsync atómico y firma Ed25519. tmpfs es insuficiente para hospitalario (desaparece en reboot no planificado durante AUTONOMOUS). Un reboot durante AUTONOMOUS es el escenario de ataque exacto que hay que cubrir.
+- **REGLA PERMANENTE (DAY 156 — Consejo 8/8):** En producción FEDER (CPD UEx), el keypair Ed25519 se genera UNA SOLA VEZ durante el bootstrap físico del nodo. `make bootstrap` con `ARGUS_ENV=prod` falla explícitamente si no existe keypair preexistente — nunca genera silenciosamente. Ver DEBT-KEYPAIR-LIFECYCLE-PROD-001.
+
 - **REGLA PERMANENTE (DAY 155 — Consejo 6/8):** `etcd-server` es el proceso propietario de `CryptoAutonomyStateMachine` y `AutonomyPublisher` en despliegues FEDER. Un solo publisher por nodo garantiza coherencia de estado. Migración a `argus-crypto-daemon` documentada como deuda post-FEDER.
 - **REGLA PERMANENTE (DAY 155 — Consejo 8/8):** El canal de autonomía (`argus.crypto.autonomy`) usa `ipc://` por defecto en edge nodes co-locados. El endpoint es configurable desde `firewall.json["autonomy"]["zmq_endpoint"]`. No introducir `tcp://` sin revisión del modelo de seguridad.
 - **REGLA PERMANENTE (DAY 155 — Consejo 8/8):** El reconciliador de `AutonomySubscriber` re-aplica el último estado conocido. NUNCA consulta Vault/etcd en el ciclo de reconciliación. El intervalo es configurable desde `firewall.json["autonomy"]["reconcile_interval_sec"]` (default 90s).
@@ -68,6 +72,20 @@
 | **aRGus-seL4** | ⏳ No iniciada | Apéndice científico. Kernel seL4, libpcap. Branch independiente. |
 
 ---
+
+## ✅ CERRADO DAY 156
+
+### DEBT-AUTONOMY-CRYPTO-INTEGRATION-001 — Integración plano de autonomía E2E
+- **Status:** ✅ COMPLETADO DAY 156 — rama `feature/day156-autonomy-integration` → EMECAS VERDE → PR pendiente merge
+- **etcd-server/src/main.cpp:** instancia `CryptoAutonomyStateMachine` + `AutonomyPublisher` (ZMQ PUB). Health-check loop 5s via `crypto_provider->is_healthy()`. Transiciones automáticas NORMAL→AUTONOMOUS→RECONCILING→NORMAL. Publica eventos JSON al socket `ipc:///run/argus/autonomy.sock`.
+- **firewall-acl-agent/src/main.cpp:** instancia `FirewallAutonomyReactor` (whitelist_cidrs de firewall.json) + `AutonomySubscriber` en hilo dedicado. Al recibir AUTONOMOUS → aplica cadena `argus-autonomy` (dry_run en tests). Al recibir RECONCILING/NORMAL → levanta la cadena.
+- **Correcciones de infraestructura:** `autonomy_publisher.h` añadido al install target de `common/CMakeLists.txt`. `AutonomyConfig` extendida con `zmq_endpoint` en struct y parser. `poll_callback` usa presencia de `etcd_client` como proxy (DEBT-CRYPTO-RECONCILIATION-001 placeholder).
+- **Fix ZMQ slow joiner (regla permanente DAY 156):** publisher debe hacer `bind()` ANTES de que cualquier subscriber conecte. En tests: publisher creado en `SetUp()` del fixture, antes de `start_subscriber()`.
+- **Test B (unitario) — 7/7 PASSED:** T1 InitialStateNoEvent, T2 VaultKoPublishesAutonomous, T3 VaultRestoredPublishesReconciling, T4 ReconciliationOkPublishesNormal, T5 VaultKoFromAutonomousIsNoop, T6 RevocationPublishesDegraded, T7 HealthCheckLoopSimulation.
+- **Test A (E2E) — 4/4 PASSED:** E2E-1 VaultKoTriggersAutonomousMode, E2E-2 VaultRestoredLiftsAutonomousMode, E2E-3 FullCycleNormalAutonomousReconcileNormal, E2E-4 SubscriberRunsStableWithoutEvents.
+- **EMECAS DAY 156:** `vagrant destroy → up → make bootstrap → make test-all` — TODO VERDE. 50/50 firewall · 3/3 etcd-server · 9/9 sniffer · 10/10 ml-detector · 8/8 rag-ingester · 1/1 argus-network-isolate.
+- **ADR-046 PENDING-REVISION:** Multi-Source Enriched Pipeline. Tres condiciones para cierre: §Label leakage policy, §Deployment matrix, §8 hipótesis o datos reales.
+- **Nuevas deudas DAY 156:** `DEBT-KEYPAIR-LIFECYCLE-PROD-001` (P1 pre-FEDER, Consejo 8/8). Nota técnica ZMQ slow joiner (`docs/technical-notes/ZMQ-PUB-SUB-SLOW-JOINER.md`). Revisión poll_callback (DEBT-CRYPTO-RECONCILIATION-001: arquitectura final = `last_known_mode_.load()` del subscriber existente, no segundo socket).
 
 ## ✅ CERRADO DAY 151
 
@@ -958,6 +976,34 @@ Crear `docs/OPEN_CORE.md` con la matriz de funcionalidades y la regla de diseño
 
 
 
+
+### DEBT-KEYPAIR-LIFECYCLE-PROD-001 — Ciclo de vida keypair en producción FEDER
+**Severidad:** 🟡 P1 pre-FEDER
+**Estado:** NUEVA — DAY 156 (Consejo 8/8 unánime)
+**Componente:** `provision.sh` + Ansible + `make bootstrap`
+
+El keypair Ed25519 actual se regenera en cada `vagrant destroy && up`.
+Correcto para desarrollo (aislamiento de sesión), catastrófico en producción.
+
+**Estrategia de 3 niveles acordada (Consejo 8/8):**
+
+| Entorno | Keypair | Generación | Rotación |
+|---------|---------|------------|----------|
+| Desarrollo (EMECAS) | Efímero | provision.sh (actual) | Cada sesión |
+| Staging | Estable por deployment | Ansible Vault | Trimestral |
+| Producción CPD UEx | Estable por nodo, HSM/TPM | Bootstrap físico UNA VEZ | Semestral, manual |
+
+**Regla de producción:**
+- `make bootstrap` en prod: si existe `/etc/argus/keys/crypto_material.sk` → cargar; si no → FALLAR
+  con mensaje claro (no generar silenciosamente)
+- Backup cifrado offline obligatorio
+- Rotación manual con procedimiento documentado (dual-key temporal)
+- `auditd` habilitado sobre `/etc/argus/keys/` en producción
+
+**Test de cierre:** variable `ARGUS_ENV=prod` en bootstrap → keypair preexistente cargado →
+intento de regenerar falla con mensaje claro.
+**Estimación:** 1 sesión pre-FEDER
+
 ### DEBT-BOOTSTRAP-STATUS-SIGNATURE-001 — Bootstrap status sin firma Ed25519
 **Severidad:** 🔴 Alta — P1 pre-FEDER
 **Estado:** ABIERTO — DAY 151 (Claude + Grok, Consejo)
@@ -972,13 +1018,25 @@ El fichero de bootstrap status escrito en STEP 0 no lleva firma Ed25519. Un atac
 
 ### DEBT-AUTONOMY-STATE-PERSISTENCE-001 — Estado autonomía sin persistencia firmada
 **Severidad:** 🟡 P1
-**Estado:** ABIERTO — DAY 151 (Grok, Consejo)
+**Estado:** ABIERTO — DAY 151 · Decisión Consejo DAY 156 (6/8)
 **Componente:** `CryptoAutonomyStateMachine`
 
-Al entrar en `AUTONOMOUS`, escribir `/run/argus/crypto-autonomy-state.json` firmado Ed25519 con timestamp + fingerprint. Al recuperar, validar la firma antes de reconciliar. Previene que un atacante manipule el estado de autonomía persistido.
+**Decisión Consejo (6/8 — ChatGPT, DeepSeek, Gemini, Kimi, Mistral, Qwen):**
+Persistir en `/var/lib/argus/crypto-autonomy-state.json` con fsync atómico.
+tmpfs descartado: en hospitalario, un reboot no planificado durante AUTONOMOUS es el
+escenario exacto que hay que cubrir. Si el fichero desaparece con la memoria, el sistema
+arranca en NORMAL con Vault caído — ventana de ataque.
 
-**Test de cierre:** entrar en AUTONOMOUS → fichero escrito y firmado. Manipulación detectada.
-**Estimación:** 1h
+Implementación acordada:
+- Escritura: write temp → fsync → rename → fsync(parent_dir)
+- Contenido: `{state, entered_at, sequence, node_id, reason, signature}`
+- `sequence` anti-replay
+- Al arrancar: si estado=AUTONOMOUS y firma válida y timestamp < 24h → arrancar en AUTONOMOUS
+- Restart desde AUTONOMOUS → pasar por RECONCILING, verificar salud real de Vault → NORMAL o AUTONOMOUS
+
+**Test de cierre:** entrar en AUTONOMOUS → fichero en /var/lib/argus/ escrito y firmado.
+Reboot → pipeline arranca en AUTONOMOUS (no en NORMAL). Manipulación detectada.
+**Estimación:** 1 sesión DAY 157
 
 ---
 
@@ -1557,12 +1615,13 @@ DEBT-KPSEUDO-HKDF-HIERARCHY-001:             0% ⏳  P3 post-FEDER (jerarquía H
 DEBT-VAULT-PROVISION-PROD-001:             100% ✅  DAY 149 (Vault/Ansible/Jinja2/Jenkins en Vagrant)
 ADR-044 CI/CD Crypto Pipeline:             100% ✅  DAY 149 (definido, Consejo 8/8, impl DAY 150+)
 ICryptoProvider + SeedFileProvider + VaultProvider: 100% ✅  DAY 151 (factoría, tests, etcd STEP 0)
+DEBT-KEYPAIR-LIFECYCLE-PROD-001:           0% ⏳  P1 pre-FEDER (3 niveles: dev/staging/prod — Consejo 8/8)
 DEBT-BOOTSTRAP-STATUS-SIGNATURE-001:      0% ⏳  P1 pre-FEDER (bootstrap status sin firma)
-DEBT-AUTONOMY-STATE-PERSISTENCE-001:      0% ⏳  P1 (estado autonomía sin persistencia firmada)
+DEBT-AUTONOMY-STATE-PERSISTENCE-001:      0% ⏳  P1 DAY 157 — /var/lib/argus/ + fsync + Ed25519 (Consejo 6/8)
 DEBT-AUTONOMY-CLOCK-INJECTION-001:        0% ⏳  P1 (clock no inyectable)
 DEBT-FIREWALL-DENY-SELECTIVE-001:        100% ✅  DAY 155 — cadena argus-autonomy, whitelist obligatoria JSON
 DEBT-AUTONOMY-ZMQ-EVENTS-001:           100% ✅  DAY 155 — AutonomyPublisher + AutonomySubscriber (ipc://)
-DEBT-AUTONOMY-CRYPTO-INTEGRATION-001:     0% ⏳  DAY 155 — integración main.cpp pendiente (etcd-server DAY 156)
+DEBT-AUTONOMY-CRYPTO-INTEGRATION-001:   100% ✅  DAY 156 — CERRADA. 7/7 + 4/4 tests. EMECAS verde.
 ADR-045 VaultClient Decomposition:      100% ✅  CERRADA DAY 154 — v0.8.0-adr045
 Ansible+Jinja2 deploy_configs pipeline:    100% ✅  DAY 149 (3 templates, playbook, 9 OK 0 failed)
 Paper Abstract v24:                        100% ✅  DAY 149 (architecturally complementary by design)
@@ -1792,12 +1851,64 @@ Un sistema con ACRL converge hacia cobertura de técnicas ATT&CK en tiempo polin
 
 ---
 
-*DAY 155 — 17 Mayo 2026 · main @ v0.9.0-day155*
+*DAY 156 — 18 Mayo 2026 · main @ v0.9.1-day156*
 *"Via Appia Quality — Un escudo que aprende de su propia sombra."*
 
 
 
 
+
+## 📝 Notas del Consejo de Sabios — DAY 156 (8/8)
+
+> "DAY 156 — DEBT-AUTONOMY-CRYPTO-INTEGRATION-001 CERRADA. Plano de autonomía criptográfica E2E funcionando en producción. 50/50 tests verdes. EMECAS verde en VM limpia.
+>
+> **Q1 — Persistencia de estado (6/8 contra 2 disidentes):**
+> `/var/lib/argus/crypto-autonomy-state.json` + fsync atómico + firma Ed25519.
+> tmpfs descartado unánimemente para hospitalario — reboot durante AUTONOMOUS es el escenario crítico.
+> Disidentes: Claude y Grok (tmpfs) — reconocido error. ChatGPT: restart desde AUTONOMOUS debe
+> pasar por RECONCILING, verificar Vault real antes de volver a NORMAL. No trust on reboot.
+> Formato acordado: `{state, entered_at, sequence, node_id, reason, signature}`.
+> `sequence` anti-replay obligatorio.
+>
+> **Q2 — poll_callback como proxy de Vault (mayoría: implementar canal):**
+> Arquitectura final acordada (Qwen — propuesta más elegante):
+> `AutonomySubscriber::run()` → actualiza `atomic<FirewallAutonomyMode> last_known_mode_`
+> `poll_callback` → retorna `last_known_mode_.load()`
+> No se crea un segundo socket — se reutiliza el canal `autonomy.sock` existente.
+> Para MVP FEDER: feature flag `use_dedicated_health_channel` (default false).
+> Registrar como DEBT-CRYPTO-RECONCILIATION-001: RESOLVED-PARTIALLY.
+>
+> **Q3 — Suricata (8/8 unánime): Eve JSON via file watcher.**
+> Inotify sobre `/var/log/suricata/eve.json` (rotation-aware). Parser incremental.
+> Solo eventos `alert` con `community_id` para correlación inicial.
+> AppArmor para Suricata OBLIGATORIO antes de despliegue (historial RCE).
+> ZMQ directo solo si latencia es cuello de botella demostrado.
+>
+> **Q4 — ZMQ slow joiner (7/8): nota técnica, NO ADR.**
+> `docs/technical-notes/ZMQ-PUB-SUB-SLOW-JOINER.md`. Wrapper `ReliablePubSocket` (Qwen).
+> Mistral (1/8 disidente): propuso ADR-047 — rechazado. Un ADR documenta decisiones con
+> alternativas; el slow joiner es un gotcha de librería con solución canónica.
+>
+> **Q5 — Keypair (8/8 unánime): 3 niveles dev/staging/prod.**
+> Dev: regenerar en cada destroy/up (correcto). Staging: Ansible Vault. Prod CPD UEx:
+> generado UNA VEZ en bootstrap físico, TPM/HSM si disponible, /etc/argus/keys/ 0600 si no.
+> NUNCA regenerar automáticamente en restarts. Rotación manual con procedimiento documentado.
+> DEBT-KEYPAIR-LIFECYCLE-PROD-001 registrada.
+>
+> **ADR-046 — PENDING-REVISION (Consejo 8/8):**
+> Tres condiciones para cerrar: (1) §Label leakage policy — features=solo aRGus, labels=Suricata,
+> NUNCA mezclar en el vector de entrada; (2) §Deployment matrix — RPi5=aRGus-only,
+> edge server x86≥16GB=aRGus++; (3) §8 reformulado como hipótesis o con datos reales.
+>
+> **Observación arquitectónica (ChatGPT):**
+> 'El sistema empieza a mostrar comportamiento autónomo determinista. Muchos sistemas
+> resilientes colapsan al perder componentes críticos. aRGus está empezando a comportarse
+> como un sistema tolerante a particiones, no como un IDS tradicional.'
+>
+> 'La autonomía no se delega; se coordina. El publisher que hace bind primero no es un
+> detalle — es el pacto de localidad que garantiza que el primer latido del hospital
+> siempre llega.' — Qwen · DAY 156"
+> — Consejo de Sabios (8/8) · DAY 156 · v0.9.1-day156
 
 ## 📝 Notas del Consejo de Sabios — DAY 155 (8/8)
 

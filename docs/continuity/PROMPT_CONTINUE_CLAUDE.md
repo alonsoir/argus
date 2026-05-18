@@ -1,246 +1,109 @@
-## Prompt de continuidad DAY 156
+═══════════════════════════════════════════════════════════
+PROMPT DE CONTINUIDAD — aRGus NDR
+DAY 157 · 2026-05-19 · Continuación de DAY 156
+arXiv:2604.04952 · GitHub: alonsoir/argus
+═══════════════════════════════════════════════════════════
 
-```markdown
-# aRGus NDR — PROMPT DE CONTINUIDAD DAY 156
-*Fecha: 2026-05-18 | Branch: main @ v0.9.0-day155*
+## ESTADO AL INICIO DE DAY 157
 
----
-
-## ESTADO ACTUAL
-
-**Tag activo:** `v0.9.0-day155`
+**Tag activo:** v0.9.1-day156
+**Rama activa:** feature/day156-autonomy-integration → PENDIENTE merge a main via PR
+**Keypair activo:** b5b6cbdf67dad75cdd7e3169d837d1d6d4c938b720e34331f8a73f478ee85daa
 **Paper:** arXiv:2604.04952 · Draft v24 local · v3 en arXiv
-**Keypair activo:** `b5b6cbdf67dad75cdd7e3169d827d1d6d4c938b720e34331f8a73f478ee85daa`
 
-### EMECAS DAY 155 — VERDE ✅
-- bootstrap ✅ | test-all ✅ | hardened-full ✅ | check-prod-all ✅
-- 49/49 firewall tests | 4/4 test_autonomy_publisher | 6/6 test_autonomy_subscriber
+### EMECAS DAY 156 — RESULTADO FINAL
+vagrant destroy → up → make bootstrap → make test-all: TODO VERDE
+- seed-client: 3/3 ✅
+- crypto-transport: 5/5 ✅
+- etcd-client HMAC: 12/12 ✅
+- plugin-loader + sign: PASSED ✅
+- sniffer: 9/9 ✅
+- ml-detector: 10/10 ✅
+- rag-ingester: 8/8 ✅
+- etcd-server: 3/3 (incluye test_autonomy_integration 7/7) ✅
+- firewall: 50/50 (incluye test_autonomy_e2e 4/4) ✅
+- argus-network-isolate: 1/1 ✅
 
----
+### P0 CERRADA DAY 156: DEBT-AUTONOMY-CRYPTO-INTEGRATION-001
+- etcd-server/src/main.cpp: CryptoAutonomyStateMachine + AutonomyPublisher integrados.
+  Health-check loop 5s. Transiciones NORMAL→AUTONOMOUS→RECONCILING→NORMAL.
+- firewall-acl-agent/src/main.cpp: FirewallAutonomyReactor + AutonomySubscriber integrados.
+  AutonomyConfig.zmq_endpoint en struct y parser. dry_run en tests.
+- Fix ZMQ slow joiner: publisher bind() ANTES de subscriber connect() — REGLA PERMANENTE.
+- Tests: Test B 7/7 (unitario) + Test A 4/4 (E2E dry_run) — integrados en make test-all.
 
-## COMPLETADO DAY 155
+### ESTADO GIT
+Commits en feature/day156-autonomy-integration:
+1. fix: add autonomy_publisher.h to CMake install target (+ ADR-046 + respuestas Consejo)
+2. feat: DEBT-AUTONOMY-CRYPTO-INTEGRATION-001 CERRADA (DAY 156)
+   PR pendiente a main. Merge tras EMECAS en rama (ya ejecutado, verde).
 
-### P0 — DEBT-FIREWALL-DENY-SELECTIVE-001 CERRADA (Consejo 8/8 unánime DAY 154)
-- Cadena dedicada `argus-autonomy`: N → lo ACCEPT → ESTABLISHED ACCEPT → CIDRs ACCEPT → DROP → I INPUT 1
-- `whitelist_cidrs` obligatorio desde `firewall.json["autonomy"]["whitelist_cidrs"]` — sin defaults
-- `AutonomyConfig` + `parse_autonomy()` en `ConfigLoader` con fail-fast explícito
-- Constructor lanza `std::invalid_argument` si whitelist vacía
-- test_auto_isolate: T1-T6 actualizados + T7-T12 nuevos (12/12 PASSED)
-- `test-components` integra firewall (49/49 verde)
+### DEUDAS PENDIENTES POST-DAY 156 (en orden de prioridad)
 
-### P1 — DEBT-AUTONOMY-ZMQ-EVENTS-001 CERRADA
-- `AutonomyPublisher` (`common/`): ZMQ PUB, topic `argus.crypto.autonomy`
-  `make_callback()` integra con `CryptoAutonomyStateMachine::TransitionCallback`
-- `AutonomySubscriber` (`firewall-acl-agent/`): ZMQ SUB event-driven + polling reconciliador 90s
-- Transport: `ipc:///run/argus/autonomy.sock` (procesos separados — firewall no linkea common/)
-- RECONCILING → NORMAL. test_autonomy_publisher 4/4. test_autonomy_subscriber 6/6.
-- `DEBT-AUTONOMY-CRYPTO-INTEGRATION-001` registrada en `docs/debt/`
+**P1 — DEBT-AUTONOMY-STATE-PERSISTENCE-001 (DAY 157)**
+Estado firmado Ed25519 en /var/lib/argus/crypto-autonomy-state.json (NO tmpfs).
+Decisión Consejo 6/8: fichero regular + fsync atómico.
+Formato: {state, entered_at, sequence, node_id, reason, signature}
+Al arrancar: si estado=AUTONOMOUS y firma válida y timestamp < 24h → arrancar en AUTONOMOUS.
+Restart desde AUTONOMOUS → pasar por RECONCILING, no volver a NORMAL sin verificar Vault.
+Nuevo fichero: common/autonomy_state_writer.h/.cpp
 
-### P2 — BACKLOG-ZMQ-TUNING-001 CERRADA
-- `zmq_subscriber`: `rcvhwm` desde `firewall.json["zmq"]["high_water_mark"]` + `reconnect_ivl`
-- `autonomy_subscriber`: `rcvhwm=1000`, `reconnect_ivl=100ms`, `max=5000ms`
-- `autonomy_publisher`: `sndhwm=1000`, `reconnect_ivl=100ms`, `max=5000ms`
-- ml-detector y sniffer ya tenían HWM desde config — sin cambios
-
-### Archivo nuevo: `test_firewall_stubs.hpp`
-- `StubExecutor` extraído como helper compartido entre tests del firewall
-
----
-
-## DECISIONES DEL CONSEJO — DAY 155 (8/8)
-
-### Q1 — Proceso propietario de CryptoAutonomyStateMachine (6/8)
-**`etcd-server`** instancia `CryptoAutonomyStateMachine` + `AutonomyPublisher` para FEDER.
-Ya es trust anchor operacional (STEP 0), ya conoce estado de Vault, ya tiene health-check loop.
-Un solo publisher = coherencia garantizada, sin split-brain.
-Migración post-FEDER a `argus-crypto-daemon` documentada (DeepSeek + Grok disidentes).
-
-### Q2 — Endpoint pub/sub (8/8 unánime)
-`ipc://` correcto y suficiente para edge nodes co-locados.
-Endpoint configurable desde `firewall.json["autonomy"]["zmq_endpoint"]` (default: `ipc:///run/argus/autonomy.sock`).
-El autonomy plane debe ser local, determinista, fail-contained.
-
-### Q3 — Reconciliador (8/8 unánime)
-`reconcile_interval_sec` configurable desde `firewall.json["autonomy"]["reconcile_interval_sec"]`.
-Re-aplica último estado conocido — NO consulta Vault/etcd.
-Desired state reconciliation, no distributed state recomputation.
-
-### Q4 — Estructura enterprise (6/8)
-`enterprise/` en raíz del proyecto, paralelo a `common/`.
-`CMakeLists.txt` raíz: `add_subdirectory(enterprise)` condicional.
-Documentar en `docs/OPEN_CORE.md`. Migración física post-FEDER.
-Disidentes ChatGPT + Kimi: `plugins/enterprise/` (argumentan plugin system existente).
-
-### Q5 — Benchmarks sintéticos VirtualBox (6/8)
-Ejecutar con disclaimer: "VirtualBox Synthetic Baseline — lower bound only".
-Valor: detección de regresiones, calibración HWM, validación metodológica.
-NO publicar como throughput de producción.
-Claude + Kimi disidentes (datos ya en paper DAY 145; usar solo internamente).
-
----
-
-## PRIORIDADES DAY 156
-
-### P0 — DEBT-AUTONOMY-CRYPTO-INTEGRATION-001
-
-Integrar `CryptoAutonomyStateMachine` + `AutonomyPublisher` en `etcd-server/main.cpp`.
-
-```cpp
-// etcd-server/main.cpp — añadir
-#include "autonomy_publisher.h"      // desde /usr/local/include/vault_client/
-#include "crypto_autonomy.h"
-
-// En main():
-ml_defender::common::AutonomyPublisher pub(
-    config.autonomy.zmq_endpoint,  // "ipc:///run/argus/autonomy.sock"
-    "etcd-server",
-    0  // linger_ms
-);
-ml_defender::CryptoAutonomy sm("etcd-server", pub.make_callback());
-
-// Conectar al health-check loop existente:
-// on_vault_unreachable() → sm.on_vault_unreachable()
-// on_vault_restored()    → sm.on_vault_restored()
-// on_revocation()        → sm.on_revocation()
-```
-
-También en `firewall-acl-agent/src/main.cpp`:
-```cpp
-// Añadir AutonomySubscriber con reconcile_interval desde config
-auto autonomy_sub = std::make_unique<AutonomySubscriber>(
-    reactor,
-    poll_callback,   // consulta etcd para reconciliar
-    config.autonomy.zmq_endpoint,
-    config.autonomy.reconcile_interval_sec  // desde firewall.json
-);
-autonomy_sub->start();
-```
-
-Añadir a `firewall.json["autonomy"]`:
-```json
-"zmq_endpoint": "ipc:///run/argus/autonomy.sock"
-```
-
-Tests de cierre E2E:
-- Vault KO simulado → etcd-server publica AUTONOMOUS → firewall aplica deny selectivo
-- Vault recuperado → etcd-server publica RECONCILING → firewall levanta deny
-
-### P1 — DEBT-AUTONOMY-STATE-PERSISTENCE-001
-
-Estado firmado Ed25519 en `/run/argus/crypto-autonomy-state.json` (tmpfs):
-```json
-{
-  "state": "AUTONOMOUS",
-  "timestamp_utc_ns": 1747442880000000000,
-  "component": "etcd-server",
-  "fingerprint": "b5b6cbdf...",
-  "signature": "<ed25519-sig-base64>"
-}
-```
-Verificar firma antes de reconciliar en el subscriber.
-
-### P1 — DEBT-BOOTSTRAP-STATUS-SIGNATURE-001
-
-Firmar `/run/argus/etcd-bootstrap-status.json` con `crypto_material.sk` en STEP 0.
+**P1 — DEBT-BOOTSTRAP-STATUS-SIGNATURE-001 (DAY 157)**
+Firmar /run/argus/etcd-bootstrap-status.json con crypto_material.sk en STEP 0.
 Verificar firma antes de consumir en cualquier componente.
+Misma cadena de confianza que ADR-025 plugins.
 
-### P2 — DEBT-CRYPTO-AUTONOMY-001
+**P1 — DEBT-KEYPAIR-LIFECYCLE-PROD-001 (nueva DAY 156)**
+Estrategia 3 niveles dev/staging/prod. Consejo 8/8.
+make bootstrap con ARGUS_ENV=prod: usar keypair preexistente o FALLAR — nunca generar silenciosamente.
 
-Máquina de estados EXTENDED_AUTONOMY completa en `etcd-server`:
-- `on_vault_unreachable()` → AUTONOMOUS
-- `on_vault_restored()` → RECONCILING
-- `on_reconciliation_ok()` → NORMAL
-- `on_revocation()` → DEGRADED (terminal)
-- Circuit breaker configurable (default 30 días)
+**P2 — DEBT-CRYPTO-AUTONOMY-001**
+SM EXTENDED_AUTONOMY: circuit breaker 30 días (configurable), alerta progresiva,
+logs firmados con flag EXTENDED_AUTONOMY=1.
+Implementar SOLO después de P1s cerradas.
 
----
+**P2 — DEBT-CRYPTO-RECONCILIATION-001 (arquitectura final acordada)**
+poll_callback arquitectura final: AutonomySubscriber::run() → actualiza
+atomic<FirewallAutonomyMode> last_known_mode_. poll_callback retorna last_known_mode_.load().
+No se crea un segundo socket. Feature flag use_dedicated_health_channel (default false para MVP).
 
-## DEUDAS ACTIVAS
+**ADR-046 — PENDING-REVISION (sesión dedicada)**
+Tres condiciones para cerrar:
+1. §Label leakage policy (features=solo aRGus, labels=Suricata, NUNCA mezclar)
+2. §Deployment matrix (RPi5=aRGus-only, edge server x86≥16GB=aRGus++)
+3. §8 reformulado como hipótesis o con datos reales (antes de arXiv v24)
 
-| Deuda | Prioridad | DAY |
-|---|---|---|
-| DEBT-AUTONOMY-CRYPTO-INTEGRATION-001 | **P0 DAY 156** | Integrar SM en etcd-server + firewall main.cpp |
-| DEBT-AUTONOMY-STATE-PERSISTENCE-001 | P1 DAY 156 | Estado firmado en tmpfs |
-| DEBT-BOOTSTRAP-STATUS-SIGNATURE-001 | P1 pre-FEDER | Bootstrap sin firma |
-| DEBT-CRYPTO-AUTONOMY-001 | P2 DAY 156 | SM EXTENDED_AUTONOMY completa |
-| DEBT-CRYPTO-RECONCILIATION-001 | P1 pre-FEDER | Handshake validación post-Vault |
-| DEBT-ALERTING-EDGE-SOS-001 | P1 pre-FEDER | SOS webhook edge |
-| BACKLOG-BENCHMARK-CAPACITY-001 | P1 FEDER | 4 configs BM-A/B/C/D |
-| DEBT-CAPTURE-BACKEND-ISP-001 | P2 post-benchmark | ISP CaptureBackend |
-| DEBT-ENTERPRISE-LAYOUT-001 | P3 post-FEDER | Mover vault_client a enterprise/ |
+### REGLAS CRÍTICAS DEL PROYECTO
+- macOS: NUNCA sed -i sin -e ''. Para edits de ficheros: Python3 inline o dentro de la VM.
+- ZMQ PUB/SUB: publisher bind() ANTES de subscriber connect(). Sin excepciones.
+- EMECAS: vagrant destroy -f && vagrant up && make bootstrap && make test-all (invariante).
+- Makefile es la única fuente de verdad. Nunca cmake/make directamente.
+- -Werror activo: 0 warnings es invariante permanente.
+- Toda deuda tiene test de cierre. Sin test = no cerrado.
+- Merge a main solo via PR. EMECAS verde en rama antes del PR.
 
----
+### PROTOCOLO DE INICIO DAY 157
+1. Abrir PR de feature/day156-autonomy-integration → main
+2. EMECAS apertura en main (tras merge): vagrant destroy → up → make bootstrap → make test-all
+3. Si verde: tag v0.9.1-day156 en main
+4. Iniciar DEBT-AUTONOMY-STATE-PERSISTENCE-001:
+    - Leer headers de autonomy_publisher.h y crypto_autonomy.h (ya conocidos)
+    - Nuevo fichero common/autonomy_state_writer.h/.cpp
+    - Escribir estado firmado al entrar en AUTONOMOUS
+    - Leer y verificar al arrancar etcd-server (STEP 0b)
 
-## ARQUITECTURA ACTUAL
+### CONTEXTO DEL PROYECTO
+- aRGus NDR: C++20 NDR open-source para infraestructura crítica (hospitales, municipios)
+- Dev: macOS M2 Pro host, Vagrant/VirtualBox, Debian Bookworm guest
+- Pipeline: sniffer(eBPF/XDP) → ml-detector → etcd-server → firewall-acl-agent → rag-ingester/rag-security
+- ZeroMQ + ChaCha20-Poly1305 + Ed25519 + HKDF-SHA256 via libsodium 1.0.19
+- F1=0.9985, ROC-AUC=1.0000 en CIC-IDS-2017
+- FEDER Extremadura 2026 deadline: 22 Septiembre 2026
+- Consejo de Sabios: 8 modelos (Claude, Grok, ChatGPT, DeepSeek, Qwen, Gemini, Kimi, Mistral)
+- Qwen se autoidentifica como DeepSeek — registrar siempre como Qwen en actas
 
-```
-common/
-  autonomy_publisher.h/.cpp      ← AutonomyPublisher ZMQ PUB (DAY 155) ✅
-  crypto_autonomy.h              ← CryptoAutonomyStateMachine (DAY 152)
-  vault_client.h/.cpp            ← VaultClient por composición (DAY 154)
-  crypto_deriver.h/.cpp          ← ICryptoDeriver + HkdfCryptoDeriver (DAY 154)
-  etcd_registrar.h/.cpp          ← IEtcdRegistrar + StubEtcdRegistrar (DAY 154)
-  vault_transport.h/.cpp         ← IVaultTransport + HttpVaultTransport (DAY 153)
-  cache_manager.h/.cpp           ← ICacheManager + FilesystemCacheManager (DAY 153)
-  crypto_provider.h/.cpp         ← ICryptoProvider + SeedFileProvider (DAY 151)
-
-firewall-acl-agent/
-  include/firewall/
-    autonomy_reactor.hpp         ← FirewallAutonomyReactor cadena selectiva (DAY 155) ✅
-    autonomy_subscriber.hpp      ← AutonomySubscriber ZMQ SUB (DAY 155) ✅
-    config_loader.hpp            ← AutonomyConfig + parse_autonomy() (DAY 155) ✅
-  src/core/
-    autonomy_reactor.cpp         ← apply/lift cadena argus-autonomy (DAY 155) ✅
-    autonomy_subscriber.cpp      ← SUB event-driven + reconciliador (DAY 155) ✅
-  config/firewall.json           ← sección "autonomy" con whitelist_cidrs (DAY 155) ✅
-
-etcd-server/                     ← PENDIENTE: instanciar SM + Publisher (DAY 156)
-```
-
----
-
-## SECUENCIA DAY 156
-
-```bash
-# 1. EMECAS apertura
-vagrant destroy -f && vagrant up && make bootstrap && make test-all
-
-# 2. Nueva rama
-git checkout -b feature/day156-autonomy-integration
-
-# 3. P0: Integrar SM en etcd-server + subscriber en firewall main.cpp
-# Editar: etcd-server/src/main.cpp
-# Editar: firewall-acl-agent/src/main.cpp
-# Editar: firewall-acl-agent/config/firewall.json (zmq_endpoint)
-
-# 4. P1: Estado persistido firmado
-# Nuevo: common/autonomy_state_writer.h/.cpp
-
-# 5. EMECAS post-cambios
-make test-all && make hardened-full
-
-# 6. PR → main
-```
-
----
-
-## REGLAS PERMANENTES
-
-- **macOS:** nunca `sed -i` sin `-e ''` → usar Python3 inline o `vagrant ssh`
-- **EMECAS:** `vagrant destroy -f && vagrant up && make bootstrap && make test-all` antes de merge
-- **Push a main:** BLOQUEADO — siempre por PR
-- **Qwen** se identifica como DeepSeek en respuestas — registrar siempre como Qwen
-- **Makefile** es única fuente de verdad
-- **`#ifdef ARGUS_VAULT_ENABLED`** solo en `crypto_provider.cpp`
-- **`-Werror` + `PROFILE=production`** gate ODR obligatorio pre-merge
-- **Canal autonomía:** `ipc://` por defecto, configurable, nunca `tcp://` sin revisión seguridad
-- **Reconciliador:** re-aplica último estado conocido, NUNCA consulta Vault/etcd
-- **Un solo publisher** de `CryptoAutonomyStateMachine` por nodo — sin split-brain
-- **enterprise/** en raíz para código que requiere Vault — post-FEDER
-
----
-
-*aRGus NDR — DAY 156 — Via Appia Quality*
-*"La autonomía no se delega; se coordina. El IPC no es un detalle: es un pacto de localidad." — Qwen · DAY 155*
-```
-
+═══════════════════════════════════════════════════════════
+Alonso Isidoro Román — PI aRGus NDR
+arXiv:2604.04952 · DAY 157 · Extremadura, España
+"Via Appia Quality — Un escudo que aprende de su propia sombra."
+═══════════════════════════════════════════════════════════
