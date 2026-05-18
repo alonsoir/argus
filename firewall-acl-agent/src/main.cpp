@@ -22,6 +22,8 @@
 #include "firewall/batch_processor.hpp"
 #include "firewall/zmq_subscriber.hpp"
 #include "firewall/etcd_client.hpp"
+#include "firewall/autonomy_subscriber.hpp"
+#include "firewall/autonomy_reactor.hpp"
 
 #include <json/json.h>
 #include <cstring>
@@ -411,7 +413,42 @@ int main(int argc, char** argv) {
         FIREWALL_LOG_INFO("etcd integration disabled in configuration");
     }
 
-    FIREWALL_LOG_DEBUG("Configuration phase completed successfully");
+        FIREWALL_LOG_DEBUG("Configuration phase completed successfully");
+
+        // ═══════════════════════════════════════════════════════════
+        // AUTONOMY PLANE — FirewallAutonomyReactor + AutonomySubscriber
+        // DEBT-AUTONOMY-CRYPTO-INTEGRATION-001 (DAY 156)
+        // ═══════════════════════════════════════════════════════════
+    FIREWALL_LOG_INFO("Initializing autonomy plane",
+        "zmq_endpoint", config.autonomy.zmq_endpoint,
+        "reconcile_interval_sec", config.autonomy.reconcile_interval_sec);
+
+    mldefender::firewall::FirewallAutonomyReactor autonomy_reactor(
+        config.autonomy.whitelist_cidrs,
+        config.operation.dry_run
+    );
+
+    // poll_callback: consultado por el reconciliador cada reconcile_interval_sec.
+    // EtcdClient no expone health-check directo — presencia del puntero
+    // es proxy suficiente para FEDER (DEBT-CRYPTO-RECONCILIATION-001).
+    auto poll_callback = [&etcd_client]() -> mldefender::firewall::FirewallAutonomyMode {
+        if (etcd_client) {
+            return mldefender::firewall::FirewallAutonomyMode::NORMAL;
+        }
+        return mldefender::firewall::FirewallAutonomyMode::AUTONOMOUS;
+    };
+
+    auto autonomy_sub = std::make_unique<mldefender::firewall::AutonomySubscriber>(
+        autonomy_reactor,
+        poll_callback,
+        config.autonomy.zmq_endpoint,
+        config.autonomy.reconcile_interval_sec
+    );
+    autonomy_sub->start();
+    FIREWALL_LOG_INFO("AutonomySubscriber started",
+        "endpoint", config.autonomy.zmq_endpoint);
+
+
 
     // Test config mode
     if (test_config) {
@@ -755,6 +792,12 @@ int main(int argc, char** argv) {
             std::cout << "[INFO] plugin-loader: shutdown OK" << std::endl;
         }
 #endif
+
+        // Detener AutonomySubscriber antes de shutdown
+        if (autonomy_sub && autonomy_sub->is_running()) {
+            autonomy_sub->stop();
+            FIREWALL_LOG_INFO("AutonomySubscriber stopped");
+        }
 
         // Export final metrics
         export_metrics(config, subscriber, processor);
