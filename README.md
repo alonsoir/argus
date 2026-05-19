@@ -19,7 +19,7 @@
 [![Variant B](https://img.shields.io/badge/ADR--029-Variant_B_libpcap_pipeline-blue)]()
 [![Reproducible](https://img.shields.io/badge/Infra-make_bootstrap-brightgreen)]()
 [![XGBoost](https://img.shields.io/badge/XGBoost-Prec%3D0.9945_In--Distribution-brightgreen)]()
-[![Hardened](https://img.shields.io/badge/Security-v0.9.1--day156-brightgreen)]()
+[![Hardened](https://img.shields.io/badge/Security-v0.9.2--day157-brightgreen)]()
 [![PRE-PRODUCTION](https://img.shields.io/badge/Status-PRE--PRODUCTION-orange)]()
 [![Crypto](https://img.shields.io/badge/Crypto-HKDF_SHA256+ChaCha20_Poly1305-orange)]()
 [![arXiv](https://img.shields.io/badge/arXiv-2604.04952_cs.CR-red)](https://arxiv.org/abs/2604.04952)
@@ -31,16 +31,17 @@
 
 ---
 
-✅ `main` is tagged `v0.9.1-day156`. Branch activa: `feature/day157-autonomy-state-persistence` — PR pendiente → `v0.9.2-day157` — Schema Parquet Arrow v1.0, Vault CI/CD pipeline, ADR-044 aprobado (DAY 149).
+✅ `main` is tagged `v0.9.2-day157`. DAY 157: 4 deudas cerradas (DEBT-AUTONOMY-STATE-PERSISTENCE-001, DEBT-BOOTSTRAP-STATUS-SIGNATURE-001, DEBT-KEYPAIR-LIFECYCLE-PROD-001, DEBT-CRYPTO-RECONCILIATION-001 + staleness guard). Consejo 8/8. EMECAS VERDE.
 **PRE-PRODUCTION: do not deploy in hospitals until ACRL (DEBT-PENTESTER-LOOP-001) is complete.**
 
 ---
 
-## Estado actual — DAY 156 (2026-05-18)
+## Estado actual — DAY 157 (2026-05-19)
 
-**Tag activo:** `v0.9.1-day156` | **Branch activa:** `feature/day157-autonomy-state-persistence`
+**Tag activo:** `v0.9.2-day157` | **Branch activa:** `main`
 **Keypair activo:** `b5b6cbdf67dad75cdd7e3169d837d1d6d4c938b720e34331f8a73f478ee85daa` *(regenera en cada EMECAS)*
 **Paper:** arXiv:2604.04952 · Draft v24 local · v3 en arXiv
+**Principio rector:** calidad sobre fechas — los datasets se generan cuando el pipeline esté listo
 **Principio rector:** calidad sobre fechas — los datasets se generan cuando el pipeline esté listo
 
 ### Pipeline
@@ -171,18 +172,16 @@
 | DEBT-LICENSE-VAULT-001 | ⏳ P2 post-FEDER | Servidor licencias en Vault (plugin system) |
 | DEBT-PLUGIN-ENTERPRISE-001 | ⏳ P2 post-FEDER | Definir plugins enterprise vs community |
 | DEBT-KPSEUDO-HKDF-HIERARCHY-001 | ⏳ P3 post-FEDER | Jerarquía HKDF para K_pseudo (host/flow/model desde K_root) |
-### Próxima frontera — DAY 156+
+### Próxima frontera — DAY 158+
 1. ✅ **DEBT-AUTONOMY-CRYPTO-INTEGRATION-001 CERRADA DAY 156**
 2. ✅ **DEBT-AUTONOMY-STATE-PERSISTENCE-001 CERRADA DAY 157**
 3. ✅ **DEBT-BOOTSTRAP-STATUS-SIGNATURE-001 CERRADA DAY 157**
 4. ✅ **DEBT-KEYPAIR-LIFECYCLE-PROD-001 CERRADA DAY 157**
 5. ✅ **DEBT-CRYPTO-RECONCILIATION-001 CERRADA DAY 157 (staleness guard B1)**
-6. **DEBT-BOOTSTRAP-STATUS-SIGNATURE-CONSUMERS-001 P2** — ExecStartPre= + check-bootstrap-status.sh — Estado firmado Ed25519 en `/var/lib/argus/crypto-autonomy-state.json` (Consejo 6/8: fichero regular + fsync, NO tmpfs). Arranque desde AUTONOMOUS si firma válida y timestamp < 24h.
-3. **DEBT-BOOTSTRAP-STATUS-SIGNATURE-001 P1** — Firma Ed25519 en bootstrap status.
-4. **DEBT-CRYPTO-AUTONOMY-001 P2** — Máquina de estados EXTENDED_AUTONOMY completa en `etcd-server`.
-5. **DEBT-CRYPTO-RECONCILIATION-001 P1** — Handshake de validación al recuperar Vault.
-6. **DEBT-ALERTING-EDGE-SOS-001 P1** — Webhook SOS configurable por despliegue.
-7. **BACKLOG-BENCHMARK-CAPACITY-001** — Benchmarks sintéticos VirtualBox (baseline) + hardware físico FEDER.
+6. **DEBT-BOOTSTRAP-STATUS-SIGNATURE-CONSUMERS-001 P2** — `ExecStartPre=` + `check-bootstrap-status.sh`. Verificar firma Ed25519 antes de iniciar componentes dependientes.
+7. **DEBT-CRYPTO-AUTONOMY-001 P2** — Máquina de estados EXTENDED_AUTONOMY completa en `etcd-server`.
+8. **DEBT-ALERTING-EDGE-SOS-001 P1** — Webhook SOS configurable por despliegue.
+9. **BACKLOG-BENCHMARK-CAPACITY-001** — Benchmarks sintéticos VirtualBox (baseline) + hardware físico FEDER.
 
 ---
 
@@ -499,7 +498,7 @@ make hardened-full   # destroy → up → provision → build → deploy → che
 - ✅ DAY 150: **ADR-044 implementación completa · provision_crypto.sh · vault_client C++20 · Jenkinsfile Provision Crypto · EMECAS verde** 🎉
 - ✅ DAY 154: **ADR-045 VaultClient decomposition · DEBT-FIREWALL-AUTONOMY-MODE-001 CERRADA · 48/48 tests · v0.8.0-adr045** 🎉
 - ✅ DAY 155: **DEBT-FIREWALL-DENY-SELECTIVE-001 · DEBT-AUTONOMY-ZMQ-EVENTS-001 · BACKLOG-ZMQ-TUNING-001 · 49/49 tests · EMECAS HARDENED PASSED · v0.9.0-day155** 🎉
-- ✅ DAY 157: **4 deudas cerradas · Consejo 8/8 · Staleness guard · Keypair lifecycle prod · Bootstrap firmado · EMECAS VERDE · v0.9.2-day157 (pending)** 🎉
+- ✅ DAY 157: **4 deudas cerradas · Consejo 8/8 · Staleness guard · Keypair lifecycle prod · Bootstrap firmado · EMECAS VERDE · v0.9.2-day157** 🎉
 - ✅ DAY 156: **DEBT-AUTONOMY-CRYPTO-INTEGRATION-001 · Test B 7/7 + Test A 4/4 · Fix ZMQ slow joiner · EMECAS VERDE 50/50 · v0.9.1-day156** 🎉
 - ✅ DAY 151: **ICryptoProvider + SeedFileProvider + VaultProvider · etcd-server STEP 0 · ADR-045 aprobado · 55+ tests verdes · v0.8.0-day151** 🎉
 - ✅ DAY 148: **Suricata offline irrefutable · Paper v23 · arXiv replace v3 · DEBT-IRP-FLOAT-TYPES-001 cerrada · v0.7.1-day148** 🎉
