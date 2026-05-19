@@ -13,12 +13,16 @@ AutonomySubscriber::AutonomySubscriber(
         PollCallback             poll_cb,
         std::string              endpoint,
         int                      reconcile_interval_sec,
-        std::shared_ptr<std::atomic<FirewallAutonomyMode>> shared_mode)
+        std::shared_ptr<std::atomic<FirewallAutonomyMode>> shared_mode,
+        std::shared_ptr<std::atomic<int64_t>> shared_last_update_ns,
+        int                      staleness_timeout_sec)
     : reactor_(reactor)
     , poll_cb_(std::move(poll_cb))
     , endpoint_(std::move(endpoint))
     , reconcile_interval_sec_(reconcile_interval_sec)
     , shared_mode_(std::move(shared_mode))
+    , shared_last_update_ns_(std::move(shared_last_update_ns))
+    , staleness_timeout_sec_(staleness_timeout_sec)
     , context_(1)
     , socket_(context_, zmq::socket_type::sub)
 {
@@ -102,6 +106,10 @@ void AutonomySubscriber::handle_message(const std::string& payload) {
               << autonomy_mode_str(mode) << " payload=" << payload << "\n";
     last_known_mode_.store(mode, std::memory_order_release);
     if (shared_mode_) shared_mode_->store(mode, std::memory_order_release);
+    // STALENESS GUARD: actualizar timestamp de último evento recibido
+    const int64_t now_ns = std::chrono::duration_cast<std::chrono::nanoseconds>(
+        std::chrono::steady_clock::now().time_since_epoch()).count();
+    if (shared_last_update_ns_) shared_last_update_ns_->store(now_ns, std::memory_order_release);
     reactor_.set_mode(mode);
 }
 

@@ -227,6 +227,40 @@ int main() {
         sub.stop();
         std::cout << "T8 PASS: shared_mode actualizado por evento ZMQ\n";
     }
-    std::cout << "=== test_autonomy_subscriber: 8/8 PASSED ===\n";
+    // ── T9: staleness guard — poll_callback retorna NORMAL si no hay eventos ──
+    {
+        zmq::context_t ctx(1);
+        zmq::socket_t  pub(ctx, zmq::socket_type::pub);
+        pub.set(zmq::sockopt::linger, 0);
+        pub.bind(INPROC);
+        StubExecutor ex;
+        FirewallAutonomyReactor reactor(TEST_CIDRS, false,
+            [&ex](const std::string& c){ return ex(c); });
+        using AtomicMode = std::atomic<FirewallAutonomyMode>;
+        using AtomicNs   = std::atomic<int64_t>;
+        auto shared_mode = std::make_shared<AtomicMode>(FirewallAutonomyMode::NORMAL);
+        // Inicializar last_update muy en el pasado (100s atrás) → stale inmediato
+        const int64_t old_ns = std::chrono::duration_cast<std::chrono::nanoseconds>(
+            std::chrono::steady_clock::now().time_since_epoch()).count()
+            - 100LL * 1'000'000'000LL;
+        auto shared_last_update_ns = std::make_shared<AtomicNs>(old_ns);
+        const int staleness_sec = 30;
+        // poll_callback con staleness check
+        auto poll_cb = [shared_mode, shared_last_update_ns, staleness_sec]()
+            -> FirewallAutonomyMode {
+            const int64_t now_ns = std::chrono::duration_cast<std::chrono::nanoseconds>(
+                std::chrono::steady_clock::now().time_since_epoch()).count();
+            const int64_t elapsed = (now_ns - shared_last_update_ns->load()) / 1'000'000'000LL;
+            if (elapsed > staleness_sec) return FirewallAutonomyMode::NORMAL;
+            return shared_mode->load();
+        };
+        // Forzar AUTONOMOUS en shared_mode — staleness debe ignorarlo
+        shared_mode->store(FirewallAutonomyMode::AUTONOMOUS);
+        // poll_cb debe retornar NORMAL porque last_update es viejo
+        const auto result = poll_cb();
+        assert(result == FirewallAutonomyMode::NORMAL);
+        std::cout << "T9 PASS: staleness guard retorna NORMAL cuando publisher lleva >30s sin eventos\n";
+    }
+    std::cout << "=== test_autonomy_subscriber: 9/9 PASSED ===\n";
     return 0;
 }

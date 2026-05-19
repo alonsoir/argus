@@ -20,6 +20,7 @@
 #include <functional>
 #include <memory>
 #include <string>
+#include <chrono>
 #include <thread>
 
 namespace mldefender::firewall {
@@ -40,7 +41,9 @@ public:
         PollCallback             poll_cb,
         std::string              endpoint               = DEFAULT_ENDPOINT,
         int                      reconcile_interval_sec = 90,
-        std::shared_ptr<std::atomic<FirewallAutonomyMode>> shared_mode = nullptr
+        std::shared_ptr<std::atomic<FirewallAutonomyMode>> shared_mode = nullptr,
+        std::shared_ptr<std::atomic<int64_t>> shared_last_update_ns = nullptr,
+        int                      staleness_timeout_sec  = 30
     );
 
     ~AutonomySubscriber();
@@ -79,6 +82,11 @@ private:
     // Compartido con poll_callback via shared_ptr para resolver ordering.
     // Declarado antes de context_/socket_ para respetar orden de inicialización.
     std::shared_ptr<std::atomic<FirewallAutonomyMode>> shared_mode_;
+    // STALENESS GUARD (DAY 157 — B1 post-Consejo)
+    // Nanosegundos steady_clock del último evento ZMQ recibido.
+    // poll_callback comprueba: si now - last_update > staleness_timeout → NORMAL.
+    std::shared_ptr<std::atomic<int64_t>> shared_last_update_ns_;
+    int                                  staleness_timeout_sec_;
 
     zmq::context_t           context_;
     zmq::socket_t            socket_;

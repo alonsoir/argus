@@ -427,26 +427,42 @@ int main(int argc, char** argv) {
         config.autonomy.whitelist_cidrs,
         config.operation.dry_run
     );
-
     // DEBT-CRYPTO-RECONCILIATION-001 (DAY 157)
-    // poll_callback retorna last_known_mode_ del subscriber — sin segundo socket.
-    // shared_ptr<atomic> resuelve el ordering: callback captura el puntero,
-    // subscriber lo actualiza vía store(). Feature flag
-    // use_dedicated_health_channel=false (MVP).
+    // STALENESS GUARD (DAY 157 — B1 post-Consejo):
+    // shared_last_update_ns: nanosegundos steady_clock del último evento ZMQ.
+    // poll_callback: si now - last_update > staleness_timeout → NORMAL.
+    // Previene firewall congelado en AUTONOMOUS si etcd-server muere.
     using AtomicMode = std::atomic<mldefender::firewall::FirewallAutonomyMode>;
     auto shared_mode = std::make_shared<AtomicMode>(
         mldefender::firewall::FirewallAutonomyMode::NORMAL);
 
-    auto poll_callback = [shared_mode]() -> mldefender::firewall::FirewallAutonomyMode {
+    auto shared_last_update_ns = std::make_shared<std::atomic<int64_t>>(
+        std::chrono::duration_cast<std::chrono::nanoseconds>(
+            std::chrono::steady_clock::now().time_since_epoch()).count());
+
+    const int staleness_timeout_sec = config.autonomy.reconcile_interval_sec * 3;
+
+    auto poll_callback = [shared_mode, shared_last_update_ns, staleness_timeout_sec]()
+        -> mldefender::firewall::FirewallAutonomyMode {
+        const int64_t now_ns = std::chrono::duration_cast<std::chrono::nanoseconds>(
+            std::chrono::steady_clock::now().time_since_epoch()).count();
+        const int64_t last_ns = shared_last_update_ns->load(std::memory_order_acquire);
+        const int64_t elapsed_sec = (now_ns - last_ns) / 1'000'000'000LL;
+        if (elapsed_sec > staleness_timeout_sec) {
+            std::cerr << "[poll_callback] STALE: sin eventos ZMQ desde "
+                      << elapsed_sec << "s — fallback NORMAL\n";
+            return mldefender::firewall::FirewallAutonomyMode::NORMAL;
+        }
         return shared_mode->load(std::memory_order_acquire);
     };
-
     auto autonomy_sub = std::make_unique<mldefender::firewall::AutonomySubscriber>(
         autonomy_reactor,
         poll_callback,
         config.autonomy.zmq_endpoint,
         config.autonomy.reconcile_interval_sec,
-        shared_mode
+        shared_mode,
+        shared_last_update_ns,
+        staleness_timeout_sec
     );
     autonomy_sub->start();
     FIREWALL_LOG_INFO("AutonomySubscriber started",
