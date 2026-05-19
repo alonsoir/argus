@@ -12,11 +12,13 @@ AutonomySubscriber::AutonomySubscriber(
         FirewallAutonomyReactor& reactor,
         PollCallback             poll_cb,
         std::string              endpoint,
-        int                      reconcile_interval_sec)
+        int                      reconcile_interval_sec,
+        std::shared_ptr<std::atomic<FirewallAutonomyMode>> shared_mode)
     : reactor_(reactor)
     , poll_cb_(std::move(poll_cb))
     , endpoint_(std::move(endpoint))
     , reconcile_interval_sec_(reconcile_interval_sec)
+    , shared_mode_(std::move(shared_mode))
     , context_(1)
     , socket_(context_, zmq::socket_type::sub)
 {
@@ -84,6 +86,8 @@ void AutonomySubscriber::run() {
                 const auto polled_mode = poll_cb_();
                 std::cerr << "[autonomy_subscriber] reconcile → "
                           << autonomy_mode_str(polled_mode) << "\n";
+                last_known_mode_.store(polled_mode, std::memory_order_release);
+                if (shared_mode_) shared_mode_->store(polled_mode, std::memory_order_release);
                 reactor_.set_mode(polled_mode);
             }
         }
@@ -96,6 +100,8 @@ void AutonomySubscriber::handle_message(const std::string& payload) {
     const auto mode = parse_state(payload);
     std::cerr << "[autonomy_subscriber] evento → "
               << autonomy_mode_str(mode) << " payload=" << payload << "\n";
+    last_known_mode_.store(mode, std::memory_order_release);
+    if (shared_mode_) shared_mode_->store(mode, std::memory_order_release);
     reactor_.set_mode(mode);
 }
 

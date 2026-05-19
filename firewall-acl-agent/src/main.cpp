@@ -428,21 +428,25 @@ int main(int argc, char** argv) {
         config.operation.dry_run
     );
 
-    // poll_callback: consultado por el reconciliador cada reconcile_interval_sec.
-    // EtcdClient no expone health-check directo — presencia del puntero
-    // es proxy suficiente para FEDER (DEBT-CRYPTO-RECONCILIATION-001).
-    auto poll_callback = [&etcd_client]() -> mldefender::firewall::FirewallAutonomyMode {
-        if (etcd_client) {
-            return mldefender::firewall::FirewallAutonomyMode::NORMAL;
-        }
-        return mldefender::firewall::FirewallAutonomyMode::AUTONOMOUS;
+    // DEBT-CRYPTO-RECONCILIATION-001 (DAY 157)
+    // poll_callback retorna last_known_mode_ del subscriber — sin segundo socket.
+    // shared_ptr<atomic> resuelve el ordering: callback captura el puntero,
+    // subscriber lo actualiza vía store(). Feature flag
+    // use_dedicated_health_channel=false (MVP).
+    using AtomicMode = std::atomic<mldefender::firewall::FirewallAutonomyMode>;
+    auto shared_mode = std::make_shared<AtomicMode>(
+        mldefender::firewall::FirewallAutonomyMode::NORMAL);
+
+    auto poll_callback = [shared_mode]() -> mldefender::firewall::FirewallAutonomyMode {
+        return shared_mode->load(std::memory_order_acquire);
     };
 
     auto autonomy_sub = std::make_unique<mldefender::firewall::AutonomySubscriber>(
         autonomy_reactor,
         poll_callback,
         config.autonomy.zmq_endpoint,
-        config.autonomy.reconcile_interval_sec
+        config.autonomy.reconcile_interval_sec,
+        shared_mode
     );
     autonomy_sub->start();
     FIREWALL_LOG_INFO("AutonomySubscriber started",
