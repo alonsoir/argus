@@ -285,7 +285,16 @@ generate_keypair() {
         return 0
     fi
 
-    # Generar clave privada Ed25519
+    # DEBT-KEYPAIR-LIFECYCLE-PROD-001 (DAY 157)
+    # En prod: NUNCA generar silenciosamente — keypair debe existir previamente.
+    local env="${ARGUS_ENV:-dev}"
+    if [[ "$env" == "prod" ]]; then
+        log_error "PROD: keypair ausente para ${component} — nunca generar en producción"
+        log_error "  Despliega el keypair preexistente antes de ejecutar provision.sh"
+        log_error "  Ver: DEBT-KEYPAIR-LIFECYCLE-PROD-001"
+        exit 1
+    fi
+    # Generar clave privada Ed25519 (solo dev/staging)
     openssl genpkey -algorithm ed25519 -out "$private_key" 2>/dev/null
     chmod 600 "$private_key"
     chown root:root "$private_key"

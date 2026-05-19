@@ -120,6 +120,7 @@ install(FILES
         crypto_deriver.h
         etcd_registrar.h
         seed_file_provider.h
+        autonomy_state_writer.h
         include/reason_codes.hpp
         include/sentinel.hpp
         DESTINATION include/vault_client
@@ -244,4 +245,19 @@ add_executable(test_vault_client
         add_test(NAME test_crypto_provider_enterprise
                 COMMAND test_crypto_provider_enterprise)
     endif()
+
+    # test_autonomy_state_writer — DEBT-AUTONOMY-STATE-PERSISTENCE-001 (DAY 157)
+    add_executable(test_autonomy_state_writer
+            tests/test_autonomy_state_writer.cpp
+    )
+    target_include_directories(test_autonomy_state_writer PRIVATE
+            ${CMAKE_CURRENT_SOURCE_DIR}
+            ${LIBSODIUM_INCLUDE_DIRS}
+            ${nlohmann_json_INCLUDE_DIRS}
+    )
+    target_link_libraries(test_autonomy_state_writer PRIVATE
+            crypto_provider
+            ${LIBSODIUM_LIBRARIES}
+    )
+    add_test(NAME test_autonomy_state_writer COMMAND test_autonomy_state_writer)
 endif()

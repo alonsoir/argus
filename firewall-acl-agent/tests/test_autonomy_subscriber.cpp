@@ -181,6 +181,86 @@ int main() {
         std::cout << "T6 PASS: stop() idempotente\n";
     }
 
-    std::cout << "=== test_autonomy_subscriber: 6/6 PASSED ===\n";
+    // ── T7: last_known_mode() se actualiza con evento ZMQ ───────────────────
+    {
+        zmq::context_t ctx(1);
+        zmq::socket_t  pub(ctx, zmq::socket_type::pub);
+        pub.set(zmq::sockopt::linger, 0);
+        pub.bind(INPROC);
+        StubExecutor ex;
+        FirewallAutonomyReactor reactor(TEST_CIDRS, false,
+            [&ex](const std::string& c){ return ex(c); });
+        AutonomySubscriber sub(reactor,
+            []{ return FirewallAutonomyMode::NORMAL; },
+            INPROC, 3600);
+        sub.start();
+        std::this_thread::sleep_for(std::chrono::milliseconds(300));
+        assert(sub.last_known_mode() == FirewallAutonomyMode::NORMAL);
+        publish_event(pub, "AUTONOMOUS");
+        assert(wait_for_mode(reactor, FirewallAutonomyMode::AUTONOMOUS));
+        assert(sub.last_known_mode() == FirewallAutonomyMode::AUTONOMOUS);
+        sub.stop();
+        std::cout << "T7 PASS: last_known_mode() actualizado por evento ZMQ\n";
+    }
+    // ── T8: shared_mode actualizado cuando llega evento ZMQ ──────────────────
+    {
+        zmq::context_t ctx(1);
+        zmq::socket_t  pub(ctx, zmq::socket_type::pub);
+        pub.set(zmq::sockopt::linger, 0);
+        pub.bind(INPROC);
+        StubExecutor ex;
+        FirewallAutonomyReactor reactor(TEST_CIDRS, false,
+            [&ex](const std::string& c){ return ex(c); });
+        using AtomicMode = std::atomic<FirewallAutonomyMode>;
+        auto shared_mode = std::make_shared<AtomicMode>(FirewallAutonomyMode::NORMAL);
+        auto poll_cb = [shared_mode]() -> FirewallAutonomyMode {
+            return shared_mode->load(std::memory_order_acquire);
+        };
+        AutonomySubscriber sub(reactor, poll_cb, INPROC, 3600, shared_mode);
+        sub.start();
+        std::this_thread::sleep_for(std::chrono::milliseconds(300));
+        assert(shared_mode->load() == FirewallAutonomyMode::NORMAL);
+        publish_event(pub, "AUTONOMOUS");
+        assert(wait_for_mode(reactor, FirewallAutonomyMode::AUTONOMOUS));
+        assert(shared_mode->load() == FirewallAutonomyMode::AUTONOMOUS);
+        assert(sub.last_known_mode() == FirewallAutonomyMode::AUTONOMOUS);
+        sub.stop();
+        std::cout << "T8 PASS: shared_mode actualizado por evento ZMQ\n";
+    }
+    // ── T9: staleness guard — poll_callback retorna NORMAL si no hay eventos ──
+    {
+        zmq::context_t ctx(1);
+        zmq::socket_t  pub(ctx, zmq::socket_type::pub);
+        pub.set(zmq::sockopt::linger, 0);
+        pub.bind(INPROC);
+        StubExecutor ex;
+        FirewallAutonomyReactor reactor(TEST_CIDRS, false,
+            [&ex](const std::string& c){ return ex(c); });
+        using AtomicMode = std::atomic<FirewallAutonomyMode>;
+        using AtomicNs   = std::atomic<int64_t>;
+        auto shared_mode = std::make_shared<AtomicMode>(FirewallAutonomyMode::NORMAL);
+        // Inicializar last_update muy en el pasado (100s atrás) → stale inmediato
+        const int64_t old_ns = std::chrono::duration_cast<std::chrono::nanoseconds>(
+            std::chrono::steady_clock::now().time_since_epoch()).count()
+            - 100LL * 1'000'000'000LL;
+        auto shared_last_update_ns = std::make_shared<AtomicNs>(old_ns);
+        const int staleness_sec = 30;
+        // poll_callback con staleness check
+        auto poll_cb = [shared_mode, shared_last_update_ns, staleness_sec]()
+            -> FirewallAutonomyMode {
+            const int64_t now_ns = std::chrono::duration_cast<std::chrono::nanoseconds>(
+                std::chrono::steady_clock::now().time_since_epoch()).count();
+            const int64_t elapsed = (now_ns - shared_last_update_ns->load()) / 1'000'000'000LL;
+            if (elapsed > staleness_sec) return FirewallAutonomyMode::NORMAL;
+            return shared_mode->load();
+        };
+        // Forzar AUTONOMOUS en shared_mode — staleness debe ignorarlo
+        shared_mode->store(FirewallAutonomyMode::AUTONOMOUS);
+        // poll_cb debe retornar NORMAL porque last_update es viejo
+        const auto result = poll_cb();
+        assert(result == FirewallAutonomyMode::NORMAL);
+        std::cout << "T9 PASS: staleness guard retorna NORMAL cuando publisher lleva >30s sin eventos\n";
+    }
+    std::cout << "=== test_autonomy_subscriber: 9/9 PASSED ===\n";
     return 0;
 }

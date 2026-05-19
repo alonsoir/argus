@@ -15,6 +15,11 @@
 #include <filesystem>
 #include <vault_client/autonomy_publisher.h>
 #include <vault_client/crypto_autonomy.h>
+#include <vault_client/autonomy_state_writer.h>
+#include <sodium.h>
+#include <sstream>
+#include <iomanip>
+#include <cstdio>
 
 std::unique_ptr<EtcdServer> g_server;
 std::shared_ptr<etcd_server::SecretsManager> g_secrets_manager;
@@ -76,6 +81,28 @@ int main() {
         auto crypto_provider = ml_defender::CryptoProvider::create(crypto_cfg);
         auto crypto_material = crypto_provider->get_material();
 
+        // ═══════════════════════════════════════════════════════════
+        // STEP 0c: AutonomyStateWriter — persistencia de estado (DAY 157)
+        // DEBT-AUTONOMY-STATE-PERSISTENCE-001
+        // ═══════════════════════════════════════════════════════════
+        ml_defender::AutonomyStateWriter autonomy_writer;
+        uint64_t autonomy_sequence = 0;
+
+        // Leer estado previo firmado con la clave pública del componente
+        auto persisted = autonomy_writer.read_and_verify(crypto_material.pk);
+        if (persisted.has_value() &&
+            persisted->mode == ml_defender::OperationalMode::AUTONOMOUS)
+        {
+            std::cout << "[autonomy] Estado persistido: AUTONOMOUS (seq="
+                      << persisted->sequence << ") — arrancando en AUTONOMOUS"
+                      << std::endl;
+            autonomy_sm.on_vault_unreachable();
+            autonomy_sequence = persisted->sequence;
+        } else {
+            std::cout << "[autonomy] Sin estado AUTONOMOUS persistido — arrancando NORMAL"
+                      << std::endl;
+        }
+
         // Fingerprint hex
         char fp_buf[65] = {};
         for (size_t i = 0; i < crypto_material.fingerprint.size(); ++i) {
@@ -89,22 +116,67 @@ int main() {
         const std::string bootstrap_path = "/run/argus/etcd-bootstrap-status.json";
         try {
             std::filesystem::create_directories("/run/argus");
-            std::ofstream bsf(bootstrap_path);
-            bsf << "{\n"
-                << "  \"component\": \"etcd-server\",\n"
-                << "  \"provider\": \"" << (crypto_provider->is_healthy() ? "ok" : "degraded") << "\",\n"
-                << "  \"fingerprint\": \"" << fingerprint_hex << "\",\n"
-                << "  \"key_version\": " << crypto_material.key_version << ",\n"
-                << "  \"from_cache\": " << (crypto_material.from_cache ? "true" : "false") << ",\n"
-                << "  \"timestamp\": \"" << crypto_material.derivation_timestamp << "\"\n"
-                << "}\n";
-            bsf.close();
+
+            // DEBT-BOOTSTRAP-STATUS-SIGNATURE-001 (DAY 157)
+            // Construir JSON canónico a firmar (sin signature_hex, claves ordenadas)
+            const std::string provider_str =
+                crypto_provider->is_healthy() ? "ok" : "degraded";
+            const std::string canonical =
+                std::string("{") +
+                "\"component\":\"etcd-server\"," +
+                "\"fingerprint\":\"" + fingerprint_hex + "\"," +
+                "\"from_cache\":" + (crypto_material.from_cache ? "true" : "false") + "," +
+                "\"key_version\":" + std::to_string(crypto_material.key_version) + "," +
+                "\"provider\":\"" + provider_str + "\"," +
+                "\"timestamp\":\"" + crypto_material.derivation_timestamp + "\"" +
+                "}";
+
+            // Firmar con Ed25519 (mismo patrón que autonomy_state_writer.h)
+            std::array<uint8_t, crypto_sign_BYTES> sig{};
+            unsigned long long sig_len = 0;
+            if (crypto_sign_detached(
+                    sig.data(), &sig_len,
+                    reinterpret_cast<const uint8_t*>(canonical.data()),
+                    canonical.size(),
+                    crypto_material.sk.data()) != 0)
+            {
+                throw std::runtime_error("crypto_sign_detached falló en bootstrap status");
+            }
+
+            // Convertir firma a hex
+            std::ostringstream sig_oss;
+            sig_oss << std::hex << std::setfill('0');
+            for (size_t i = 0; i < sig_len; ++i)
+                sig_oss << std::setw(2) << static_cast<unsigned>(sig[i]);
+            const std::string sig_hex = sig_oss.str();
+
+            // Escribir JSON final con signature_hex — escritura atómica tmp→rename
+            const std::string tmp_path = bootstrap_path + ".tmp";
+            {
+                std::ofstream bsf(tmp_path);
+                bsf << "{\n"
+                    << "  \"component\": \"etcd-server\",\n"
+                    << "  \"provider\": \"" << provider_str << "\",\n"
+                    << "  \"fingerprint\": \"" << fingerprint_hex << "\",\n"
+                    << "  \"key_version\": " << crypto_material.key_version << ",\n"
+                    << "  \"from_cache\": " << (crypto_material.from_cache ? "true" : "false") << ",\n"
+                    << "  \"timestamp\": \"" << crypto_material.derivation_timestamp << "\",\n"
+                    << "  \"signature_hex\": \"" << sig_hex << "\"\n"
+                    << "}\n";
+                bsf.flush();
+            }
+            // fsync via FILE* para durabilidad antes del rename
+            {
+                FILE* f = ::fopen(tmp_path.c_str(), "r");
+                if (f) { ::fsync(::fileno(f)); ::fclose(f); }
+            }
+            std::rename(tmp_path.c_str(), bootstrap_path.c_str());
             std::filesystem::permissions(bootstrap_path,
                 std::filesystem::perms::owner_read | std::filesystem::perms::owner_write,
                 std::filesystem::perm_options::replace);
             std::cout << "✅ ICryptoProvider OK — fingerprint: "
                       << fingerprint_hex.substr(0, 16) << "..." << std::endl;
-            std::cout << "✅ Bootstrap status escrito: " << bootstrap_path << std::endl;
+            std::cout << "✅ Bootstrap status firmado (Ed25519): " << bootstrap_path << std::endl;
         } catch (const std::exception& e) {
             // No fatal — el fichero es informativo, no bloquea el arranque
             std::cerr << "⚠️  No se pudo escribir bootstrap status: " << e.what() << std::endl;
@@ -205,12 +277,38 @@ int main() {
                 if (!healthy && was_vault_healthy) {
                     std::cout << "[autonomy] Vault KO → AUTONOMOUS" << std::endl;
                     autonomy_sm.on_vault_unreachable();
+                    try {
+                        autonomy_writer.write(
+                            ml_defender::OperationalMode::AUTONOMOUS,
+                            crypto_material.sk,
+                            "etcd-server",
+                            "vault_unreachable",
+                            ++autonomy_sequence);
+                        std::cout << "[autonomy] Estado AUTONOMOUS persistido (seq="
+                                  << autonomy_sequence << ")" << std::endl;
+                    } catch (const std::exception& e) {
+                        std::cerr << "[autonomy] WARN: no se pudo persistir estado: "
+                                  << e.what() << std::endl;
+                    }
                 } else if (healthy && !was_vault_healthy) {
                     std::cout << "[autonomy] Vault OK → RECONCILING" << std::endl;
                     autonomy_sm.on_vault_restored();
                     // on_reconciliation_ok() se llamará tras validar material
                     // DEBT-CRYPTO-RECONCILIATION-001
                     autonomy_sm.on_reconciliation_ok();
+                    try {
+                        autonomy_writer.write(
+                            ml_defender::OperationalMode::NORMAL,
+                            crypto_material.sk,
+                            "etcd-server",
+                            "vault_restored",
+                            ++autonomy_sequence);
+                        std::cout << "[autonomy] Estado NORMAL persistido (seq="
+                                  << autonomy_sequence << ")" << std::endl;
+                    } catch (const std::exception& e) {
+                        std::cerr << "[autonomy] WARN: no se pudo persistir estado: "
+                                  << e.what() << std::endl;
+                    }
                 }
                 was_vault_healthy = healthy;
                 last_vault_check  = now;

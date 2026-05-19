@@ -18,7 +18,9 @@
 #include <zmq.hpp>
 #include <atomic>
 #include <functional>
+#include <memory>
 #include <string>
+#include <chrono>
 #include <thread>
 
 namespace mldefender::firewall {
@@ -37,8 +39,11 @@ public:
     explicit AutonomySubscriber(
         FirewallAutonomyReactor& reactor,
         PollCallback             poll_cb,
-        std::string              endpoint            = DEFAULT_ENDPOINT,
-        int                      reconcile_interval_sec = 90
+        std::string              endpoint               = DEFAULT_ENDPOINT,
+        int                      reconcile_interval_sec = 90,
+        std::shared_ptr<std::atomic<FirewallAutonomyMode>> shared_mode = nullptr,
+        std::shared_ptr<std::atomic<int64_t>> shared_last_update_ns = nullptr,
+        int                      staleness_timeout_sec  = 30
     );
 
     ~AutonomySubscriber();
@@ -54,6 +59,12 @@ public:
 
     bool is_running() const noexcept { return running_.load(); }
 
+    // DEBT-CRYPTO-RECONCILIATION-001: modo conocido vía ZMQ + reconciliador.
+    // Consultable desde poll_callback en main.cpp sin segundo socket.
+    FirewallAutonomyMode last_known_mode() const noexcept {
+        return last_known_mode_.load(std::memory_order_acquire);
+    }
+
     // Acceso para tests
     const std::string& endpoint() const noexcept { return endpoint_; }
 
@@ -67,6 +78,16 @@ private:
     std::string              endpoint_;
     int                      reconcile_interval_sec_;
 
+    // DEBT-CRYPTO-RECONCILIATION-001 (DAY 157)
+    // Compartido con poll_callback via shared_ptr para resolver ordering.
+    // Declarado antes de context_/socket_ para respetar orden de inicialización.
+    std::shared_ptr<std::atomic<FirewallAutonomyMode>> shared_mode_;
+    // STALENESS GUARD (DAY 157 — B1 post-Consejo)
+    // Nanosegundos steady_clock del último evento ZMQ recibido.
+    // poll_callback comprueba: si now - last_update > staleness_timeout → NORMAL.
+    std::shared_ptr<std::atomic<int64_t>> shared_last_update_ns_;
+    int                                  staleness_timeout_sec_;
+
     zmq::context_t           context_;
     zmq::socket_t            socket_;
 
@@ -75,6 +96,10 @@ private:
 
     // Reconciliador: timestamp de último evento recibido
     std::atomic<int64_t>     last_event_ns_{0};
+
+    // Último modo conocido — actualizado por ZMQ events y reconciliador.
+    // Sin segundo socket. Feature flag use_dedicated_health_channel=false.
+    std::atomic<FirewallAutonomyMode> last_known_mode_{FirewallAutonomyMode::NORMAL};
 };
 
 } // namespace mldefender::firewall

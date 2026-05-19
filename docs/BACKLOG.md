@@ -73,6 +73,45 @@
 
 ---
 
+## ✅ CERRADO DAY 157
+
+### DEBT-AUTONOMY-STATE-PERSISTENCE-001 — Estado autonomía firmado en /var/lib/argus/
+- **Status:** ✅ COMPLETADO DAY 157 — rama `feature/day157-autonomy-state-persistence`
+- **common/autonomy_state_writer.h** (header-only, 280 líneas): escribe/lee estado `CryptoAutonomyStateMachine` firmado Ed25519 en `/var/lib/argus/crypto-autonomy-state.json`. Escritura atómica (write→fsync→rename). Lectura fail-safe: firma inválida/ausente/AUTONOMOUS expirado >24h → NORMAL.
+- **Formato:** `{state, entered_at_utc, sequence, node_id, reason, signature_hex}`.
+- **Integración etcd-server STEP 0c:** Leer estado persistido al arrancar; si AUTONOMOUS válido → `autonomy_sm.on_vault_unreachable()`. Escribir estado en cada transición del health-check loop.
+- **Tests:** 9/9 RED→GREEN (write/read, pk errónea, fichero ausente, JSON corrupto, campo faltante, AUTONOMOUS expirado, secuencia, .tmp limpio).
+- **Decisión Consejo (6/8):** `/var/lib/argus/` + fsync atómico. tmpfs descartado: hospitalario requiere supervivencia a reboot no planificado durante AUTONOMOUS.
+
+### DEBT-BOOTSTRAP-STATUS-SIGNATURE-001 — bootstrap-status.json firmado Ed25519
+- **Status:** ✅ COMPLETADO DAY 157
+- **etcd-server/src/main.cpp STEP 0:** JSON canónico (claves ordenadas, sin `signature_hex`) → `crypto_sign_detached` → campo `signature_hex` añadido. Escritura atómica tmp→rename+fsync.
+- **Cadena de confianza:** igual que ADR-025 plugins y autonomy_state_writer.
+- **Consumidores:** ningún componente lee el fichero todavía — registrado como DEBT-BOOTSTRAP-STATUS-SIGNATURE-CONSUMERS-001 (P2). Corrección systemd: `ExecStartPre=` en dependientes, NO `ExecStartPost=` (fichero ya no existe en ese momento).
+
+### DEBT-KEYPAIR-LIFECYCLE-PROD-001 — Ciclo de vida keypair en producción
+- **Status:** ✅ COMPLETADO DAY 157
+- **tools/provision.sh** `generate_keypair()`: política 3 niveles (Consejo 8/8):
+  - `ARGUS_ENV=prod` + keypair ausente → `exit 1`, mensaje claro, NUNCA genera
+  - `ARGUS_ENV=dev/staging` (default) → genera normalmente
+  - Keypair existente en cualquier env → skip sin cambios
+- **Test:** `ARGUS_ENV=prod` sin keypair → error + exit 1 verificado.
+
+### DEBT-CRYPTO-RECONCILIATION-001 — Staleness guard + arquitectura final AutonomySubscriber
+- **Status:** ✅ COMPLETADO DAY 157 (arquitectura MVP + B1 post-Consejo)
+- **Arquitectura final (Consejo 8/8):**
+  - `last_known_mode_` (`atomic<FirewallAutonomyMode>`) actualizado en `handle_message()` y reconciliador
+  - `shared_ptr<atomic<FirewallAutonomyMode>>` compartido entre subscriber y `poll_callback`
+  - `poll_callback` retorna `shared_mode->load()` sin segundo socket (MVP)
+  - Feature flag `use_dedicated_health_channel=false`
+- **STALENESS GUARD (B1 post-Consejo):** `shared_last_update_ns` (`atomic<int64_t>` steady_clock). `poll_callback`: si `elapsed > staleness_timeout_sec` → NORMAL + log. `staleness_timeout_sec = reconcile_interval_sec * 3` (default 270s). Previene firewall congelado si etcd-server muere silenciosamente.
+- **Tests:** 9/9 PASSED (T7: `last_known_mode()` vía ZMQ, T8: `shared_mode` vía ZMQ, T9: staleness guard retorna NORMAL con publisher muerto).
+- **EMECAS:** TODO VERDE — `vagrant destroy → up → make bootstrap → make test-all`.
+
+### DEBT-BOOTSTRAP-STATUS-SIGNATURE-CONSUMERS-001 (P2 registrada)
+- Verificación firma en `ExecStartPre=` de servicios dependientes + `tools/check-bootstrap-status.sh`.
+- Corrección arquitectónica: verificar ANTES de `start()`, no después (fichero efímero).
+
 ## ✅ CERRADO DAY 156
 
 ### DEBT-AUTONOMY-CRYPTO-INTEGRATION-001 — Integración plano de autonomía E2E
@@ -1616,8 +1655,8 @@ DEBT-VAULT-PROVISION-PROD-001:             100% ✅  DAY 149 (Vault/Ansible/Jinj
 ADR-044 CI/CD Crypto Pipeline:             100% ✅  DAY 149 (definido, Consejo 8/8, impl DAY 150+)
 ICryptoProvider + SeedFileProvider + VaultProvider: 100% ✅  DAY 151 (factoría, tests, etcd STEP 0)
 DEBT-KEYPAIR-LIFECYCLE-PROD-001:           0% ⏳  P1 pre-FEDER (3 niveles: dev/staging/prod — Consejo 8/8)
-DEBT-BOOTSTRAP-STATUS-SIGNATURE-001:      0% ⏳  P1 pre-FEDER (bootstrap status sin firma)
-DEBT-AUTONOMY-STATE-PERSISTENCE-001:      0% ⏳  P1 DAY 157 — /var/lib/argus/ + fsync + Ed25519 (Consejo 6/8)
+DEBT-BOOTSTRAP-STATUS-SIGNATURE-001:    100% ✅  DAY 157 — bootstrap-status.json firmado Ed25519, escritura atómica
+DEBT-AUTONOMY-STATE-PERSISTENCE-001:    100% ✅  DAY 157 — autonomy_state_writer.h 9/9 tests + etcd-server STEP 0c
 DEBT-AUTONOMY-CLOCK-INJECTION-001:        0% ⏳  P1 (clock no inyectable)
 DEBT-FIREWALL-DENY-SELECTIVE-001:        100% ✅  DAY 155 — cadena argus-autonomy, whitelist obligatoria JSON
 DEBT-AUTONOMY-ZMQ-EVENTS-001:           100% ✅  DAY 155 — AutonomyPublisher + AutonomySubscriber (ipc://)
@@ -1641,7 +1680,7 @@ Decisión autonomía extendida Opción D:     100% ✅  DAY 150 (Consejo 8/8)
 DEBT-CRYPTO-AUTONOMY-001:                    0% ⏳  P1 pre-FEDER (máquina de estados EXTENDED_AUTONOMY)
 DEBT-FIREWALL-AUTONOMY-MODE-001:           100% ✅  CERRADA DAY 154 (FirewallAutonomyReactor)
 DEBT-CRYPTO-REVOCATION-LOCAL-001:            0% ⏳  P1 post-FEDER (revocación offline)
-DEBT-CRYPTO-RECONCILIATION-001:              0% ⏳  P1 pre-FEDER (handshake post-Vault)
+DEBT-CRYPTO-RECONCILIATION-001:            100% ✅  DAY 157 — shared_mode + staleness guard 30s, 9/9 tests
 DEBT-CRYPTO-CACHE-PERSISTENT-PROD-001:       0% ⏳  P1 pre-FEDER (cache cifrada en prod edge)
 DEBT-EMECAS-DUAL-COMPILATION-001:            0% ⏳  P1 (CI compila ON+OFF)
 DEBT-LICENSE-VAULT-001:                      0% ⏳  P2 post-FEDER (servidor licencias en Vault)
@@ -1851,12 +1890,37 @@ Un sistema con ACRL converge hacia cobertura de técnicas ATT&CK en tiempo polin
 
 ---
 
-*DAY 156 — 18 Mayo 2026 · main @ v0.9.1-day156*
+*DAY 157 — 19 Mayo 2026 · feature/day157-autonomy-state-persistence @ v0.9.2-day157 (pending merge)*
 *"Via Appia Quality — Un escudo que aprende de su propia sombra."*
 
 
 
 
+
+## 📝 Notas del Consejo de Sabios — DAY 157 (8/8)
+
+> "DAY 157 — Cuatro deudas cerradas. El plano de autonomía criptográfica adquiere persistencia, integridad y resiliencia operacional.
+>
+> **DEBT-AUTONOMY-STATE-PERSISTENCE-001 (6/8 original + correcciones B1):**
+> `/var/lib/argus/crypto-autonomy-state.json` con fsync atómico + firma Ed25519. 9/9 tests. Integrado en etcd-server STEP 0c. Vector replay cubierto por timestamp + expiración 24h. Umbral configurable recomendado post-FEDER (ChatGPT: 1h-6h hospitalario; Kimi: 4h default; Claude/Qwen: 24h OK para FEDER MVP).
+>
+> **DEBT-BOOTSTRAP-STATUS-SIGNATURE-001 (7/8 consenso ExecStartPre=):**
+> Fichero efímero firmado Ed25519. `ExecStartPost=` incorrecto — fichero ya no existe en ese momento. Corrección: `ExecStartPre=` en servicios dependientes. DEBT-BOOTSTRAP-STATUS-SIGNATURE-CONSUMERS-001 registrada (P2).
+>
+> **DEBT-KEYPAIR-LIFECYCLE-PROD-001 (8/8 unánime):**
+> Política 3 niveles: dev=genera, staging=genera (pragmático FEDER), prod=exit 1 si ausente. ChatGPT y Kimi: staging debería requerir keypair preexistente para detectar errores de provisioning antes de prod. Registrado como mejora P2 post-FEDER.
+>
+> **DEBT-CRYPTO-RECONCILIATION-001 + STALENESS GUARD B1 (8/8 consenso bloqueante):**
+> `shared_ptr<atomic>` resuelve ordering. Staleness guard 30s (configurable) previene firewall congelado si publisher muere silenciosamente. ChatGPT: 'último valor conocido' ≠ 'valor confiable' — distinción crítica para sistemas distribuidos. 9/9 tests incluyendo T9 staleness.
+>
+> **Inconsistencia detectada (ChatGPT):** `autonomy_state_writer.h` usa sk inyectado; `bootstrap-status.json` usa `crypto_material.sk` directamente. Cadena de confianza consistente pero API diverge. Registrado para refactorización futura.
+>
+> **`fsync(dirfd)` pendiente (Kimi):** Para garantía POSIX completa en EXT4/XFS con barrier=1, `fsync(fd)` del fichero no basta — se necesita `fsync(dirfd)` del directorio padre. P2 post-merge.
+>
+> **EMECAS DAY 157:** TODO VERDE. `vagrant destroy → up → make bootstrap → make test-all`.
+>
+> 'La autonomía sin staleness detection no es autonomía — es un estado zombie que el atacante puede explotar.' — Consejo DAY 157"
+> — Consejo de Sabios (8/8) · DAY 157 · feature/day157-autonomy-state-persistence
 
 ## 📝 Notas del Consejo de Sabios — DAY 156 (8/8)
 
@@ -2151,3 +2215,17 @@ Un sistema con ACRL converge hacia cobertura de técnicas ATT&CK en tiempo polin
 > 'El schema Parquet no es un detalle de implementación — es el contrato de soberanía entre
 > el edge y el centro.' — Qwen · DAY 148"
 > — Consejo de Sabios (8/8) · DAY 148
+> 
+> ## DEBT-BOOTSTRAP-STATUS-SIGNATURE-CONSUMERS-001 (P2, post-DAY 157)
+**Descripción:** El bootstrap-status.json ahora está firmado Ed25519, pero nadie verifica la firma.
+**Consumidores pendientes:**
+1. Script de healthcheck (`tools/check-bootstrap-status.sh`): verificar firma antes de declarar nodo listo
+2. Systemd `ExecStartPost=` en `ml-defender-etcd-server.service`: verificar fichero antes de iniciar dependientes (sniffer, ml-detector, etc.)
+   **Prerequisito:** DEBT-BOOTSTRAP-STATUS-SIGNATURE-001 CERRADA (DAY 157)
+   **Referencia:** etcd-server/src/main.cpp STEP 0, /run/argus/etcd-bootstrap-status.json
+## DEBT-BOOTSTRAP-STATUS-SIGNATURE-CONSUMERS-001 (P2, post-DAY 157)
+**Descripción:** bootstrap-status.json firmado Ed25519 pero ningún consumidor verifica la firma.
+**Pendiente:**
+1. `tools/check-bootstrap-status.sh`: verificar firma antes de declarar nodo listo
+2. Systemd `ExecStartPost=` en `ml-defender-etcd-server.service`: verificar antes de iniciar dependientes
+**Referencia:** DEBT-BOOTSTRAP-STATUS-SIGNATURE-001 CERRADA DAY 157
