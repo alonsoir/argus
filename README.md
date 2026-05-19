@@ -38,6 +38,19 @@
 
 ## Estado actual — DAY 157 (2026-05-19)
 
+<!-- DAY-STATUS -->
+| Campo | Valor |
+|---|---|
+| DAY | 158 |
+| Tag | v0.9.2-day157 |
+| Branch | main |
+| EMECAS | ✅ Verde (19-05-2026) |
+| Pipeline | 6/6 RUNNING |
+| ADR-046 | v3 aprobado Consejo 8/8 |
+| Próximo hito | DEBT-ARGUSPP-SURICATA-001 |
+| Deadline FEDER | 22-09-2026 |
+<!-- /DAY-STATUS -->
+
 **Tag activo:** `v0.9.2-day157` | **Branch activa:** `main`
 **Keypair activo:** `b5b6cbdf67dad75cdd7e3169d837d1d6d4c938b720e34331f8a73f478ee85daa` *(regenera en cada EMECAS)*
 **Paper:** arXiv:2604.04952 · Draft v24 local · v3 en arXiv
