@@ -1,5 +1,5 @@
 # aRGus NDR — BACKLOG
-*Última actualización: DAY 156 — 18 Mayo 2026*
+*Última actualización: DAY 157 — 19 Mayo 2026*
 
 ---
 
@@ -1654,7 +1654,7 @@ DEBT-KPSEUDO-HKDF-HIERARCHY-001:             0% ⏳  P3 post-FEDER (jerarquía H
 DEBT-VAULT-PROVISION-PROD-001:             100% ✅  DAY 149 (Vault/Ansible/Jinja2/Jenkins en Vagrant)
 ADR-044 CI/CD Crypto Pipeline:             100% ✅  DAY 149 (definido, Consejo 8/8, impl DAY 150+)
 ICryptoProvider + SeedFileProvider + VaultProvider: 100% ✅  DAY 151 (factoría, tests, etcd STEP 0)
-DEBT-KEYPAIR-LIFECYCLE-PROD-001:           0% ⏳  P1 pre-FEDER (3 niveles: dev/staging/prod — Consejo 8/8)
+DEBT-KEYPAIR-LIFECYCLE-PROD-001:          100% ✅  DAY 157 — 3 niveles dev/staging/prod, exit 1 en prod sin keypair
 DEBT-BOOTSTRAP-STATUS-SIGNATURE-001:    100% ✅  DAY 157 — bootstrap-status.json firmado Ed25519, escritura atómica
 DEBT-AUTONOMY-STATE-PERSISTENCE-001:    100% ✅  DAY 157 — autonomy_state_writer.h 9/9 tests + etcd-server STEP 0c
 DEBT-AUTONOMY-CLOCK-INJECTION-001:        0% ⏳  P1 (clock no inyectable)
@@ -1890,7 +1890,7 @@ Un sistema con ACRL converge hacia cobertura de técnicas ATT&CK en tiempo polin
 
 ---
 
-*DAY 157 — 19 Mayo 2026 · feature/day157-autonomy-state-persistence @ v0.9.2-day157 (pending merge)*
+*DAY 157 — 19 Mayo 2026 · main @ v0.9.2-day157*
 *"Via Appia Quality — Un escudo que aprende de su propia sombra."*
 
 
