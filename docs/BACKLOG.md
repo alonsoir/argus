@@ -2151,3 +2151,17 @@ Un sistema con ACRL converge hacia cobertura de técnicas ATT&CK en tiempo polin
 > 'El schema Parquet no es un detalle de implementación — es el contrato de soberanía entre
 > el edge y el centro.' — Qwen · DAY 148"
 > — Consejo de Sabios (8/8) · DAY 148
+> 
+> ## DEBT-BOOTSTRAP-STATUS-SIGNATURE-CONSUMERS-001 (P2, post-DAY 157)
+**Descripción:** El bootstrap-status.json ahora está firmado Ed25519, pero nadie verifica la firma.
+**Consumidores pendientes:**
+1. Script de healthcheck (`tools/check-bootstrap-status.sh`): verificar firma antes de declarar nodo listo
+2. Systemd `ExecStartPost=` en `ml-defender-etcd-server.service`: verificar fichero antes de iniciar dependientes (sniffer, ml-detector, etc.)
+   **Prerequisito:** DEBT-BOOTSTRAP-STATUS-SIGNATURE-001 CERRADA (DAY 157)
+   **Referencia:** etcd-server/src/main.cpp STEP 0, /run/argus/etcd-bootstrap-status.json
+## DEBT-BOOTSTRAP-STATUS-SIGNATURE-CONSUMERS-001 (P2, post-DAY 157)
+**Descripción:** bootstrap-status.json firmado Ed25519 pero ningún consumidor verifica la firma.
+**Pendiente:**
+1. `tools/check-bootstrap-status.sh`: verificar firma antes de declarar nodo listo
+2. Systemd `ExecStartPost=` en `ml-defender-etcd-server.service`: verificar antes de iniciar dependientes
+**Referencia:** DEBT-BOOTSTRAP-STATUS-SIGNATURE-001 CERRADA DAY 157
