@@ -15,6 +15,7 @@
 #include <filesystem>
 #include <vault_client/autonomy_publisher.h>
 #include <vault_client/crypto_autonomy.h>
+#include <vault_client/autonomy_state_writer.h>
 
 std::unique_ptr<EtcdServer> g_server;
 std::shared_ptr<etcd_server::SecretsManager> g_secrets_manager;
@@ -75,6 +76,28 @@ int main() {
 
         auto crypto_provider = ml_defender::CryptoProvider::create(crypto_cfg);
         auto crypto_material = crypto_provider->get_material();
+
+        // ═══════════════════════════════════════════════════════════
+        // STEP 0c: AutonomyStateWriter — persistencia de estado (DAY 157)
+        // DEBT-AUTONOMY-STATE-PERSISTENCE-001
+        // ═══════════════════════════════════════════════════════════
+        ml_defender::AutonomyStateWriter autonomy_writer;
+        uint64_t autonomy_sequence = 0;
+
+        // Leer estado previo firmado con la clave pública del componente
+        auto persisted = autonomy_writer.read_and_verify(crypto_material.pk);
+        if (persisted.has_value() &&
+            persisted->mode == ml_defender::OperationalMode::AUTONOMOUS)
+        {
+            std::cout << "[autonomy] Estado persistido: AUTONOMOUS (seq="
+                      << persisted->sequence << ") — arrancando en AUTONOMOUS"
+                      << std::endl;
+            autonomy_sm.on_vault_unreachable();
+            autonomy_sequence = persisted->sequence;
+        } else {
+            std::cout << "[autonomy] Sin estado AUTONOMOUS persistido — arrancando NORMAL"
+                      << std::endl;
+        }
 
         // Fingerprint hex
         char fp_buf[65] = {};
@@ -205,12 +228,38 @@ int main() {
                 if (!healthy && was_vault_healthy) {
                     std::cout << "[autonomy] Vault KO → AUTONOMOUS" << std::endl;
                     autonomy_sm.on_vault_unreachable();
+                    try {
+                        autonomy_writer.write(
+                            ml_defender::OperationalMode::AUTONOMOUS,
+                            crypto_material.sk,
+                            "etcd-server",
+                            "vault_unreachable",
+                            ++autonomy_sequence);
+                        std::cout << "[autonomy] Estado AUTONOMOUS persistido (seq="
+                                  << autonomy_sequence << ")" << std::endl;
+                    } catch (const std::exception& e) {
+                        std::cerr << "[autonomy] WARN: no se pudo persistir estado: "
+                                  << e.what() << std::endl;
+                    }
                 } else if (healthy && !was_vault_healthy) {
                     std::cout << "[autonomy] Vault OK → RECONCILING" << std::endl;
                     autonomy_sm.on_vault_restored();
                     // on_reconciliation_ok() se llamará tras validar material
                     // DEBT-CRYPTO-RECONCILIATION-001
                     autonomy_sm.on_reconciliation_ok();
+                    try {
+                        autonomy_writer.write(
+                            ml_defender::OperationalMode::NORMAL,
+                            crypto_material.sk,
+                            "etcd-server",
+                            "vault_restored",
+                            ++autonomy_sequence);
+                        std::cout << "[autonomy] Estado NORMAL persistido (seq="
+                                  << autonomy_sequence << ")" << std::endl;
+                    } catch (const std::exception& e) {
+                        std::cerr << "[autonomy] WARN: no se pudo persistir estado: "
+                                  << e.what() << std::endl;
+                    }
                 }
                 was_vault_healthy = healthy;
                 last_vault_check  = now;
