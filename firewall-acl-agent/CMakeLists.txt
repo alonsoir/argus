@@ -400,7 +400,6 @@ target_include_directories(test_autonomy_e2e PRIVATE
 target_link_libraries(test_autonomy_e2e PRIVATE
     firewall_core
     GTest::gtest_main
-    vault_client
     crypto_provider
     zmq
 )
