@@ -22,8 +22,9 @@
 
 #pragma once
 #include "firewall/config_loader.hpp"
-#define CPPHTTPLIB_OPENSSL_SUPPORT
-#include "alert_client.hpp"
+// alert_client.hpp movido al .cpp (DEBT-FIREWALL-HTTPLIB-ODR-001 — pimpl)
+#include <nlohmann/json.hpp>
+#include <memory>
 
 #include "firewall/ipset_wrapper.hpp"
 #include "network_security.pb.h"
@@ -250,7 +251,6 @@ private:
 
     IPSetWrapper& ipset_;                    ///< IPSet wrapper
     BatchProcessorConfig config_;            ///< Configuration
-    argus::AlertClient   alert_client_{nlohmann::json{{"alerting", {{"enabled", false}}}}};  ///< SOS alerting
     IrpConfig            irp_config_;         ///< ADR-042 auto-isolate config
     BatchProcessorMetrics metrics_;          ///< Performance metrics
 

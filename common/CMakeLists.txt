@@ -1,95 +1,263 @@
 cmake_minimum_required(VERSION 3.16)
-project(vault_client CXX)
+project(vault_client VERSION 1.0.0 LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+# ── Opciones ──────────────────────────────────────────────────────────────────
+# ARGUS_VAULT_ENABLED: único separador compile-time entre community y enterprise.
+# OFF → SeedFileProvider  (community, default)
+# ON  → VaultProvider     (enterprise)
+option(ARGUS_VAULT_ENABLED "Enable Vault crypto provider (enterprise)" OFF)
+
+# ── Dependencias ──────────────────────────────────────────────────────────────
 find_package(PkgConfig REQUIRED)
-pkg_check_modules(JSONCPP REQUIRED jsoncpp)
-find_package(OpenSSL REQUIRED)
-find_package(nlohmann_json REQUIRED)
-find_package(GTest REQUIRED)
+pkg_check_modules(LIBSODIUM REQUIRED libsodium)
+find_package(CURL REQUIRED)
+pkg_check_modules(ZMQ REQUIRED libzmq)
 
-# ── libcrypto_provider (vault-client shared library) ─────────────────────────
+# seed-client — requerido por SeedFileProvider (ambas compilaciones)
+find_library(SEED_CLIENT_LIB seed_client
+        PATHS /usr/local/lib
+        REQUIRED
+)
+find_path(SEED_CLIENT_INCLUDE seed_client/seed_client.hpp
+        PATHS /usr/local/include
+        REQUIRED
+)
+
+# ── vault_client (sin cambios) ────────────────────────────────────────────────
+add_library(vault_client SHARED
+        vault_client.cpp
+        crypto_deriver.cpp
+        etcd_registrar.cpp
+        vault_transport.cpp
+        cache_manager.cpp
+)
+target_include_directories(vault_client
+        PUBLIC
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+        $<INSTALL_INTERFACE:include>
+        PRIVATE
+        ${LIBSODIUM_INCLUDE_DIRS}
+        ${CURL_INCLUDE_DIRS}
+)
+target_link_libraries(vault_client
+        PUBLIC
+        ${LIBSODIUM_LIBRARIES}
+        ${CURL_LIBRARIES}
+)
+set_target_properties(vault_client PROPERTIES
+        VERSION   ${PROJECT_VERSION}
+        SOVERSION 1
+)
+
+# ── crypto_provider (nuevo — ADR-044 DAY 151) ─────────────────────────────────
+set(CRYPTO_PROVIDER_SOURCES
+        crypto_provider.cpp
+        seed_file_provider.cpp
+        autonomy_publisher.cpp
+)
+if(ARGUS_VAULT_ENABLED)
+    list(APPEND CRYPTO_PROVIDER_SOURCES vault_provider.cpp)
+endif()
 
 add_library(crypto_provider SHARED
-    crypto_provider.cpp
-    vault_provider.cpp
-    vault_client.cpp
-    vault_transport.cpp
-    vault_types.h
-    autonomy_publisher.cpp
-    cache_manager.cpp
-    crypto_deriver.cpp
-    etcd_registrar.cpp
-    EtcdServiceRegistry.cpp
-    seed_file_provider.cpp
+        ${CRYPTO_PROVIDER_SOURCES}
 )
-
-target_include_directories(crypto_provider PUBLIC
-    ${CMAKE_CURRENT_SOURCE_DIR}
-    /usr/local/include
-    /usr/local/include/seed_client
-    ${JSONCPP_INCLUDE_DIRS}
+target_include_directories(crypto_provider
+        PUBLIC
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+        $<INSTALL_INTERFACE:include>
+        PRIVATE
+        ${LIBSODIUM_INCLUDE_DIRS}
+        ${SEED_CLIENT_INCLUDE}
 )
-
-target_link_libraries(crypto_provider PRIVATE
-    OpenSSL::SSL
-    OpenSSL::Crypto
-    /usr/local/lib/libseed_client.so
-    /usr/local/lib/libcrypto_transport.so
-    zmq
-    pthread
-    ${JSONCPP_LIBRARIES}
-    curl
+target_link_libraries(crypto_provider
+        PUBLIC
+        vault_client
+        ${SEED_CLIENT_LIB}
+        ${LIBSODIUM_LIBRARIES}
+        ${ZMQ_LIBRARIES}
 )
-
+if(ARGUS_VAULT_ENABLED)
+    target_compile_definitions(crypto_provider PUBLIC ARGUS_VAULT_ENABLED)
+endif()
 set_target_properties(crypto_provider PROPERTIES
-    VERSION 1.0.0
-    SOVERSION 1
-    OUTPUT_NAME crypto_provider
+        VERSION   ${PROJECT_VERSION}
+        SOVERSION 1
 )
 
-# Install library
+# Resumen de compilación
+message(STATUS "╔══════════════════════════════════════════════╗")
+message(STATUS "║  crypto_provider — ADR-044 DAY 151           ║")
+message(STATUS "╠══════════════════════════════════════════════╣")
+if(ARGUS_VAULT_ENABLED)
+    message(STATUS "║  Provider: VaultProvider  (enterprise)       ║")
+else()
+    message(STATUS "║  Provider: SeedFileProvider (community)      ║")
+endif()
+message(STATUS "╚══════════════════════════════════════════════╝")
+
+# ── Instalación ───────────────────────────────────────────────────────────────
+install(TARGETS vault_client
+        LIBRARY DESTINATION lib
+        ARCHIVE DESTINATION lib
+)
 install(TARGETS crypto_provider
-    LIBRARY DESTINATION lib
+        LIBRARY DESTINATION lib
+        ARCHIVE DESTINATION lib
 )
-
-# Install headers as vault_client/
 install(FILES
-    crypto_provider.h
-    autonomy_publisher.h
-    autonomy_state_writer.h
-    crypto_autonomy.h
-    vault_client.h
-    vault_provider.h
-    vault_transport.h
-    vault_types.h
-    cache_manager.h
-    crypto_deriver.h
-    etcd_registrar.h
-    EtcdServiceRegistry.h
-    seed_file_provider.h
-    DESTINATION include/vault_client
+        vault_client.h
+        vault_types.h
+        vault_transport.h
+        cache_manager.h
+        crypto_provider.h
+        autonomy_publisher.h
+        crypto_autonomy.h
+        crypto_deriver.h
+        etcd_registrar.h
+        seed_file_provider.h
+        autonomy_state_writer.h
+        include/reason_codes.hpp
+        include/sentinel.hpp
+        DESTINATION include/vault_client
 )
+if(ARGUS_VAULT_ENABLED)
+    install(FILES vault_provider.h DESTINATION include/vault_client)
+endif()
 
-# ── test_alert_client ─────────────────────────────────────────────────────────
+# ── Tests ─────────────────────────────────────────────────────────────────────
+option(BUILD_TESTS "Build tests" ON)
+if(BUILD_TESTS)
+    enable_testing()
 
-add_executable(test_alert_client
-    tests/test_alert_client.cpp
-)
+    # Test vault_client existente (sin cambios)
+    add_executable(test_crypto_deriver tests/test_crypto_deriver.cpp crypto_deriver.cpp)
+target_include_directories(test_crypto_deriver PRIVATE ${CMAKE_CURRENT_SOURCE_DIR} ${SODIUM_INCLUDE_DIRS})
+target_link_libraries(test_crypto_deriver PRIVATE sodium)
+add_test(NAME test_crypto_deriver COMMAND test_crypto_deriver)
 
-target_include_directories(test_alert_client PRIVATE
-    include
-    /usr/local/include
-)
+add_executable(test_etcd_registrar tests/test_etcd_registrar.cpp etcd_registrar.cpp)
+target_include_directories(test_etcd_registrar PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+target_link_libraries(test_etcd_registrar PRIVATE vault_client)
+add_test(NAME test_etcd_registrar COMMAND test_etcd_registrar)
 
-target_link_libraries(test_alert_client PRIVATE
-    GTest::GTest
-    GTest::Main
-    nlohmann_json::nlohmann_json
-    OpenSSL::SSL
-    OpenSSL::Crypto
-    pthread
-)
+add_executable(test_vault_client
+            tests/test_vault_client.cpp
+    )
+    target_include_directories(test_vault_client PRIVATE
+            ${CMAKE_CURRENT_SOURCE_DIR}
+            ${LIBSODIUM_INCLUDE_DIRS}
+            ${CURL_INCLUDE_DIRS}
+    )
+    target_link_libraries(test_vault_client PRIVATE
+            vault_client
+    )
+    add_test(NAME test_vault_client COMMAND test_vault_client)
 
-enable_testing()
-add_test(NAME test_alert_client COMMAND test_alert_client)
+    # Tests crypto_provider — community (VAULT_ENABLED=OFF)
+    add_executable(test_crypto_provider_community
+            tests/test_crypto_provider.cpp
+    )
+    target_include_directories(test_crypto_provider_community PRIVATE
+            ${CMAKE_CURRENT_SOURCE_DIR}
+            ${SEED_CLIENT_INCLUDE}
+    )
+    target_link_libraries(test_crypto_provider_community PRIVATE
+            crypto_provider
+            ${LIBSODIUM_LIBRARIES}
+    )
+    add_test(NAME test_crypto_provider_community
+            COMMAND test_crypto_provider_community)
+    # Test CryptoAutonomyStateMachine — sin red, sin Vault (DAY 152)
+    add_executable(test_crypto_autonomy
+            tests/test_crypto_autonomy.cpp
+    )
+    target_include_directories(test_crypto_autonomy PRIVATE
+            ${CMAKE_CURRENT_SOURCE_DIR}
+    )
+    target_link_libraries(test_crypto_autonomy PRIVATE
+            crypto_provider
+    )
+    add_test(NAME test_crypto_autonomy
+            COMMAND test_crypto_autonomy)
+
+    # test_autonomy_publisher — DEBT-AUTONOMY-ZMQ-EVENTS-001 (DAY 155)
+    add_executable(test_autonomy_publisher
+            tests/test_autonomy_publisher.cpp
+            autonomy_publisher.cpp
+    )
+    target_include_directories(test_autonomy_publisher PRIVATE
+            ${CMAKE_CURRENT_SOURCE_DIR}
+            ${ZMQ_INCLUDE_DIRS}
+    )
+    target_link_libraries(test_autonomy_publisher PRIVATE
+            crypto_provider
+            ${ZMQ_LIBRARIES}
+    )
+    add_test(NAME test_autonomy_publisher COMMAND test_autonomy_publisher)
+    # IVaultTransport tests (ADR-045 DAY 153)
+    add_executable(test_vault_transport
+            tests/test_vault_transport.cpp
+            vault_transport.cpp
+    )
+    target_include_directories(test_vault_transport PRIVATE
+            ${CMAKE_CURRENT_SOURCE_DIR}
+            ${CURL_INCLUDE_DIRS}
+    )
+    target_link_libraries(test_vault_transport PRIVATE
+            vault_client
+            ${CURL_LIBRARIES}
+    )
+    add_test(NAME test_vault_transport COMMAND test_vault_transport)
+
+    # ICacheManager tests (ADR-045 DAY 153)
+    add_executable(test_cache_manager
+            tests/test_cache_manager.cpp
+            cache_manager.cpp
+    )
+    target_include_directories(test_cache_manager PRIVATE
+            ${CMAKE_CURRENT_SOURCE_DIR}
+            ${LIBSODIUM_INCLUDE_DIRS}
+    )
+    target_link_libraries(test_cache_manager PRIVATE
+            vault_client
+    )
+    add_test(NAME test_cache_manager COMMAND test_cache_manager)
+    # Tests crypto_provider — enterprise (VAULT_ENABLED=ON, solo si aplica)
+    if(ARGUS_VAULT_ENABLED)
+        add_executable(test_crypto_provider_enterprise
+                tests/test_crypto_provider.cpp
+        )
+        target_include_directories(test_crypto_provider_enterprise PRIVATE
+                ${CMAKE_CURRENT_SOURCE_DIR}
+                ${SEED_CLIENT_INCLUDE}
+        )
+        target_compile_definitions(test_crypto_provider_enterprise
+                PRIVATE ARGUS_VAULT_ENABLED)
+        target_link_libraries(test_crypto_provider_enterprise PRIVATE
+                crypto_provider
+                ${LIBSODIUM_LIBRARIES}
+        )
+        add_test(NAME test_crypto_provider_enterprise
+                COMMAND test_crypto_provider_enterprise)
+    endif()
+
+    # test_autonomy_state_writer — DEBT-AUTONOMY-STATE-PERSISTENCE-001 (DAY 157)
+    add_executable(test_autonomy_state_writer
+            tests/test_autonomy_state_writer.cpp
+    )
+    target_include_directories(test_autonomy_state_writer PRIVATE
+            ${CMAKE_CURRENT_SOURCE_DIR}
+            ${LIBSODIUM_INCLUDE_DIRS}
+            ${nlohmann_json_INCLUDE_DIRS}
+    )
+    target_link_libraries(test_autonomy_state_writer PRIVATE
+            crypto_provider
+            ${LIBSODIUM_LIBRARIES}
+    )
+    add_test(NAME test_autonomy_state_writer COMMAND test_autonomy_state_writer)
+endif()

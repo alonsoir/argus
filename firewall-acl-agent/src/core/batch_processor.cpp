@@ -20,6 +20,8 @@
 //===----------------------------------------------------------------------===//
 
 #include "firewall/batch_processor.hpp"
+// DEBT-ALERTING-VAULT-001 (P2): alert_client eliminado del firewall
+// httplib no debe compilarse en el binario firewall (ODR con libetcd_client.so)
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <unistd.h>
@@ -41,7 +43,6 @@ BatchProcessor::BatchProcessor(
 )
     : ipset_(ipset)
     , config_(config)
-    , alert_client_(config.alerting_json)
     , last_flush_(std::chrono::steady_clock::now())
 {
     FIREWALL_LOG_INFO("Initializing BatchProcessor",
@@ -645,12 +646,8 @@ void BatchProcessor::check_auto_isolate(const protobuf::Detection& detection) {
         "score",      detection.confidence(),
         "type",       static_cast<int>(detection.type()),
         "interface",  irp_config_.isolate_interface);
-    alert_client_.send_sos({
-        .node            = "firewall-acl-agent",
-        .component       = "firewall-acl-agent",
-        .event           = "AUTO_ISOLATE_TRIGGERED",
-        .pipeline_status = "src_ip=" + detection.src_ip()
-    });
+    // DEBT-ALERTING-VAULT-001 (P2): SOS via Vault pendiente
+    // alert_client eliminado — ODR con libetcd_client.so (httplib symbol clash)
 
     // ── fork()+execv(): el firewall sigue vivo ────────────────────────────
     pid_t pid = fork();
