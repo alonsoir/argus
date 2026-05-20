@@ -2010,7 +2010,7 @@ vault-client-build: seed-client-build crypto-transport-build
 	@echo "║  🔨 Building vault-client Library (ADR-044)               ║"
 	@echo "╚════════════════════════════════════════════════════════════╝"
 	@vagrant ssh -c 'cd /vagrant/common && rm -rf build && mkdir -p build && cd build && cmake -DCMAKE_BUILD_TYPE=Release .. && make -j4'
-	@vagrant ssh -c 'cd /vagrant/common/build && sudo make install && sudo ldconfig'
+	@echo 'common: header-only, no install needed'
 	@echo "✅ vault-client instalado en /usr/local/lib"
 
 vault-client-clean:
