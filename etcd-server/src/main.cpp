@@ -18,6 +18,8 @@
 #include <vault_client/autonomy_state_writer.h>
 #include <sodium.h>
 #include <sstream>
+#define CPPHTTPLIB_OPENSSL_SUPPORT
+#include "alert_client.hpp"
 #include <iomanip>
 #include <cstdio>
 
@@ -267,6 +269,14 @@ int main() {
         auto   last_vault_check = std::chrono::steady_clock::now();
         bool   was_vault_healthy = true;
 
+        // ── AlertClient (DEBT-ALERTING-EDGE-SOS-001) ─────────────────────────────
+        argus::AlertClient alert_client([&]() -> nlohmann::json {
+            try {
+                std::ifstream f("/etc/ml-defender/etcd-server/etcd-server.json");
+                if (f.good()) return nlohmann::json::parse(f);
+            } catch (...) {}
+            return nlohmann::json{{"alerting", {{"enabled", false}}}};
+        }());
         while (g_server->is_running()) {
             auto now     = std::chrono::steady_clock::now();
             auto elapsed = std::chrono::duration_cast<std::chrono::seconds>(
@@ -277,6 +287,12 @@ int main() {
                 if (!healthy && was_vault_healthy) {
                     std::cout << "[autonomy] Vault KO → AUTONOMOUS" << std::endl;
                     autonomy_sm.on_vault_unreachable();
+                    alert_client.send_sos({
+                        .node            = "etcd-server",
+                        .component       = "etcd-server",
+                        .event           = "AUTONOMOUS_STATE_ACTIVATED",
+                        .pipeline_status = "vault_unreachable"
+                    });
                     try {
                         autonomy_writer.write(
                             ml_defender::OperationalMode::AUTONOMOUS,

@@ -10,7 +10,7 @@
 .PHONY: run-lab-dev kill-lab status-lab
 .PHONY: run-lab-dev-day23 kill-lab-day23 status-lab-day23
 .PHONY: kill-all check-ports restart
-.PHONY: clean clean-libs clean-components clean-all distclean test test-libs test-components test-all dev-setup schema-update parquet-convert test-parquet deploy-configs deploy-configs-prod
+.PHONY: clean clean-libs clean-components clean-all distclean test test-libs test-components test-all dev-setup schema-update parquet-convert test-parquet deploy-configs deploy-configs-prod test-alert-client
 .PHONY: build-unified rebuild-unified quick-fix dev-setup-unified
 .PHONY: check-libbpf verify-bpf-maps diagnose-bpf
 .PHONY: test-replay-small test-replay-neris test-replay-big test-replay-neris-x86-ebpf test-replay-neris-x86-libpcap experiment-suricata-up experiment-suricata-down experiment-suricata-run experiment-suricata-results experiment-suricata-status
@@ -1165,6 +1165,10 @@ distclean: clean-all
 #   test-components - Run component tests (current profile)
 #   test            - Run ALL tests (libs + components)
 # ============================================================================
+
+test-alert-client:
+	@echo "Testing alert-client..."
+	@vagrant ssh -c "cd /vagrant/common/build && ctest --output-on-failure"
 
 test-libs:
 	@echo "Testing seed-client..."

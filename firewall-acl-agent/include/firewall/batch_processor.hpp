@@ -22,6 +22,8 @@
 
 #pragma once
 #include "firewall/config_loader.hpp"
+#define CPPHTTPLIB_OPENSSL_SUPPORT
+#include "alert_client.hpp"
 
 #include "firewall/ipset_wrapper.hpp"
 #include "network_security.pb.h"
@@ -58,6 +60,7 @@ struct BatchProcessorConfig {
     // Filtering
     float confidence_threshold{0.8f};         ///< Minimum confidence to block
     bool block_low_confidence{false};         ///< Block IPs with low confidence
+    nlohmann::json alerting_json{{"alerting", {{"enabled", false}}}};  ///< DEBT-ALERTING-EDGE-SOS-001
 };
 
 //===----------------------------------------------------------------------===//
@@ -247,6 +250,7 @@ private:
 
     IPSetWrapper& ipset_;                    ///< IPSet wrapper
     BatchProcessorConfig config_;            ///< Configuration
+    argus::AlertClient   alert_client_{nlohmann::json{{"alerting", {{"enabled", false}}}}};  ///< SOS alerting
     IrpConfig            irp_config_;         ///< ADR-042 auto-isolate config
     BatchProcessorMetrics metrics_;          ///< Performance metrics
 

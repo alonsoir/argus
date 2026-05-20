@@ -5,13 +5,13 @@
     "worker_threads": 4
   },
   "identity": {
-    "_comment": "ADR-013 — provision.sh es el único responsable de crear estas claves.",
+    "_comment": "ADR-013 \u2014 provision.sh es el \u00fanico responsable de crear estas claves.",
     "_phase": "PHASE 1: seed.bin en claro (chmod 0600). PHASE 2: seed.enc via seed-client.",
     "component_id": "etcd-server",
-    "keys_dir":     "/etc/ml-defender/etcd-server",
-    "public_key":   "/etc/ml-defender/etcd-server/public.pem",
-    "private_key":  "/etc/ml-defender/etcd-server/private.pem",
-    "seed_bin":     "/etc/ml-defender/etcd-server/seed.bin"
+    "keys_dir": "/etc/ml-defender/etcd-server",
+    "public_key": "/etc/ml-defender/etcd-server/public.pem",
+    "private_key": "/etc/ml-defender/etcd-server/private.pem",
+    "seed_bin": "/etc/ml-defender/etcd-server/seed.bin"
   },
   "heartbeat": {
     "enabled": true,
@@ -71,5 +71,21 @@
         "auto_generate": false
       }
     }
+  },
+  "alerting": {
+    "enabled": false,
+    "providers": [
+      {
+        "type": "discord",
+        "enabled": false,
+        "webhook_url": ""
+      },
+      {
+        "type": "telegram",
+        "enabled": false,
+        "bot_token": "",
+        "chat_id": ""
+      }
+    ]
   }
 }

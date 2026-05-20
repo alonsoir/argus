@@ -20,6 +20,8 @@
 #include "firewall/ipset_wrapper.hpp"
 #include "firewall/iptables_wrapper.hpp"
 #include "firewall/batch_processor.hpp"
+#include <fstream>
+#include <nlohmann/json.hpp>
 #include "firewall/zmq_subscriber.hpp"
 #include "firewall/etcd_client.hpp"
 #include "firewall/autonomy_subscriber.hpp"
@@ -643,6 +645,11 @@ int main(int argc, char** argv) {
 
         FIREWALL_LOG_INFO("Initializing batch processor");
         BatchProcessor processor(ipset, batch_config);
+        // ── AlertClient config (DEBT-ALERTING-EDGE-SOS-001) ──────────────────
+        try {
+            std::ifstream falert("/etc/ml-defender/firewall-acl-agent/firewall.json");
+            if (falert.good()) batch_config.alerting_json = nlohmann::json::parse(falert);
+        } catch (...) {}
         processor.set_irp_config(config.irp);  // ADR-042
         FIREWALL_LOG_INFO("Batch processor started successfully",
             "irp_auto_isolate", config.irp.auto_isolate,
