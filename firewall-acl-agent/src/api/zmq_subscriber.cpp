@@ -446,11 +446,12 @@ void ZMQSubscriber::handle_message(const void* msg_data, size_t msg_size) {
             FIREWALL_LOG_DEBUG("Starting decryption",
                 "input_bytes", original_size);
 
-            // Convert hex key to bytes
-            auto key = crypto_transport::hex_to_bytes(config_.crypto_token);
-
-            // Decrypt
-            data = crypto_transport::decrypt(data, key);
+            // ADR-013 PHASE 2 — DAY 159: usar rx_ (CryptoTransport via SeedClient)
+            // DEBT-FIREWALL-CRYPTO-FORMAT-001 FIX: crypto_token deprecated desde DAY 98
+            if (!rx_) {
+                throw std::runtime_error("CryptoTransport rx_ not initialized");
+            }
+            data = rx_->decrypt(data);
 
             auto end = std::chrono::high_resolution_clock::now();
             auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
@@ -483,12 +484,12 @@ void ZMQSubscriber::handle_message(const void* msg_data, size_t msg_size) {
                 throw std::runtime_error("Compressed data too small (need 4-byte header + data)");
             }
 
-            // Extract original size from 4-byte big-endian header
-            uint32_t decompressed_size =
-                (static_cast<uint32_t>(data[0]) << 24) |
-                (static_cast<uint32_t>(data[1]) << 16) |
-                (static_cast<uint32_t>(data[2]) << 8) |
-                static_cast<uint32_t>(data[3]);
+            // Extract original size from 4-byte little-endian header
+            // DAY 159 FIX: DEBT-FIREWALL-CRYPTO-FORMAT-001
+            // ml-detector escribe LE (memcpy de uint32_t en x86)
+            // El firewall leía BE → 0xBD020000 = 3171024896 → crash
+            uint32_t decompressed_size = 0;
+            std::memcpy(&decompressed_size, data.data(), sizeof(uint32_t));
 
             FIREWALL_LOG_DEBUG("Extracted decompression size from header",
                 "decompressed_size", decompressed_size);

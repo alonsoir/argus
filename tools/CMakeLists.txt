@@ -161,6 +161,8 @@ target_include_directories(synthetic_sniffer_injector
         ${CMAKE_CURRENT_SOURCE_DIR}/../protobuf
         ${CMAKE_CURRENT_SOURCE_DIR}/../etcd-client/include
         ${CMAKE_CURRENT_SOURCE_DIR}/../crypto-transport/include
+        ${CMAKE_CURRENT_SOURCE_DIR}/../libs/seed-client/include
+        /usr/local/include
         ${Protobuf_INCLUDE_DIRS}
 )
 
@@ -181,6 +183,8 @@ target_link_libraries(synthetic_sniffer_injector
         OpenSSL::SSL
         OpenSSL::Crypto
         ${CURL_LIBRARIES}
+        ${LZ4_LIBRARIES}
+        seed_client
 )
 
 # ============================================================================
@@ -197,6 +201,8 @@ target_include_directories(synthetic_ml_output_injector
         ${CMAKE_CURRENT_SOURCE_DIR}/../protobuf
         ${CMAKE_CURRENT_SOURCE_DIR}/../etcd-client/include
         ${CMAKE_CURRENT_SOURCE_DIR}/../crypto-transport/include
+        ${CMAKE_CURRENT_SOURCE_DIR}/../libs/seed-client/include
+        /usr/local/include
         ${Protobuf_INCLUDE_DIRS}
 )
 
@@ -217,6 +223,8 @@ target_link_libraries(synthetic_ml_output_injector
         OpenSSL::SSL
         OpenSSL::Crypto
         ${CURL_LIBRARIES}
+        ${LZ4_LIBRARIES}
+        seed_client
 )
 
 # ============================================================================
