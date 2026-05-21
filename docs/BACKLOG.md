@@ -1,5 +1,5 @@
 # aRGus NDR — BACKLOG
-*Última actualización: DAY 157 — 19 Mayo 2026*
+*Última actualización: DAY 159 — 2026-05-21*
 
 ---
 
@@ -50,6 +50,9 @@
 - **REGLA PERMANENTE (DAY 144 — Consejo 8/8):** `isolate.json` es la ÚNICA fuente de verdad para `auto_isolate`. Campo obligatorio — sin fallback silencioso. Si falta el fichero o el campo, el arranque falla ruidosamente con mensaje claro. Sin excepciones.
 - **REGLA PERMANENTE (DAY 144 — Consejo 8/8):** `assert()` debe estar activo en todos los tests independientemente del PROFILE. Usar `target_compile_options(test_target PRIVATE -UNDEBUG)` en CMakeLists de tests. `-DNDEBUG` de producción no debe silenciar la cobertura de tests.
 - **REGLA PERMANENTE (DAY 144 — gate ODR confirmado):** `make PROFILE=production all` detecta ODR violations reales bajo `-flto`. Confirmado en DAY 144: 3 categorías de violations encontradas y corregidas. El gate es obligatorio pre-merge sin excepciones.
+- **REGLA PERMANENTE (DAY 159 — Consejo 8/8):** El wire protocol entre componentes tiene test de contrato binario en `common/tests/`. Serialización LE/BE del header LZ4 se verifica byte-a-byte. Un bug de endianness no puede permanecer invisible más de un ciclo CI. Ver DEBT-WIRE-PROTOCOL-TEST-001.
+- **REGLA PERMANENTE (DAY 159 — Consejo 8/8):** `make test-e2e` es gate de release (nightly), no gate de PR. Los subtests E2E son siempre secuenciales — estado compartido en el pipeline hace la paralelización interna peligrosa.
+- **REGLA PERMANENTE (DAY 159 — Founder):** El primer plugin enterprise (`vault_provider.so`) se firma con keypair vendor offline (air-gapped), distinto del keypair del nodo. La pubkey vendor está hardcodeada en el plugin-loader — nunca en Vault.
 - **REGLA PERMANENTE (DAY 156 — Consejo 8/8):** En ZMQ PUB/SUB, el publisher debe hacer `bind()` ANTES de que cualquier subscriber haga `connect()`. En tests: crear el publisher en `SetUp()` del fixture antes de `start_subscriber()`. El slow joiner de ZMQ pierde mensajes silenciosamente si el orden se invierte. Ver `docs/technical-notes/ZMQ-PUB-SUB-SLOW-JOINER.md`.
 - **REGLA PERMANENTE (DAY 156 — Consejo 6/8):** El estado de `CryptoAutonomyStateMachine` se persiste en `/var/lib/argus/crypto-autonomy-state.json` con fsync atómico y firma Ed25519. tmpfs es insuficiente para hospitalario (desaparece en reboot no planificado durante AUTONOMOUS). Un reboot durante AUTONOMOUS es el escenario de ataque exacto que hay que cubrir.
 - **REGLA PERMANENTE (DAY 156 — Consejo 8/8):** En producción FEDER (CPD UEx), el keypair Ed25519 se genera UNA SOLA VEZ durante el bootstrap físico del nodo. `make bootstrap` con `ARGUS_ENV=prod` falla explícitamente si no existe keypair preexistente — nunca genera silenciosamente. Ver DEBT-KEYPAIR-LIFECYCLE-PROD-001.
@@ -72,6 +75,47 @@
 | **aRGus-seL4** | ⏳ No iniciada | Apéndice científico. Kernel seL4, libpcap. Branch independiente. |
 
 ---
+
+
+## ✅ CERRADO DAY 158
+
+### DEBT-ALERTING-EDGE-SOS-001 — Webhook SOS Discord/Telegram desde edge
+- **Status:** ✅ COMPLETADO DAY 158 — rama `feature/day158-alerting-edge-sos` → tag `v0.9.3-day158`
+- **common/include/alert_client.hpp** (header-only, fire-and-forget): Discord + Telegram. Sin dependencia de libhttplib en el binario de producción (ODR eliminado).
+- **Tests:** 10/10 RED→GREEN — integración Discord + Telegram en EMECAS.
+- **DEBT-ALERTING-VAULT-001 abierta P2:** migrar credenciales Discord/Telegram a Vault en producción.
+
+## ✅ CERRADO DAY 159
+
+### DEBT-FIREWALL-CRYPTO-FORMAT-001 — Dos bugs encadenados desde DAY 98 (100% drop rate invisible)
+- **Status:** ✅ COMPLETADO DAY 159
+- **Bug 1** — `firewall-acl-agent/src/api/zmq_subscriber.cpp`: usado `hex_to_bytes(config_.crypto_token)` (deprecated DAY 98, siempre vacío) en vez de `rx_->decrypt(data)`. CryptoTransport inicializado correctamente pero nunca llamado.
+- **Bug 2** — mismo fichero: header LZ4 leído en big-endian (bit-shifts manuales) pero ml-detector escribe little-endian (`memcpy` de `uint32_t` x86). `0x000002BD` → leído como `0xBD020000` = 3,171,024,896 → fallo sanity check >100 MB → 100% drop rate.
+- **Bug 3** — `firewall-acl-agent/src/main.cpp`: dead code eliminado (fetch `crypto_token` de etcd, nunca usado).
+- **Resultado tras fix:** `events_processed=5, events_dropped=0, crypto_errors=0` inmediato.
+- **Lección sistémica:** unit tests pasan, E2E gate no existía, wire protocol nunca validado. 61 días invisible.
+
+### Migración synthetic injectors a ADR-013 PHASE 2
+- **Status:** ✅ COMPLETADO DAY 159
+- `tools/synthetic_sniffer_injector.cpp`: lee `sniffer.json → network.output_socket` → `bind tcp://*:5571`. Usa `SeedClient` + `CryptoTransport` + LZ4 LE header (mismo path que ml-detector).
+- `tools/synthetic_ml_output_injector.cpp`: lee `ml_detector_config.json → network.output_socket` → `bind tcp://*:5572`. Mismo patrón.
+- `tools/CMakeLists.txt`: añadidos `${LZ4_LIBRARIES}` + `seed_client` linkage.
+- Código DAY 49 con `get_encryption_key()` + `hex_to_bytes()` + `crypto::CryptoManager` completamente eliminado.
+
+### make test-e2e — Primera implementación gate E2E real
+- **Status:** ✅ COMPLETADO DAY 159
+- `scripts/check_e2e_pipeline.py` — modos: `snapshot`, `check`, `check-firewall`, `check-abs`.
+- `make test-e2e-synthetic-full`: para sniffer → inyecta 100 events → espera 65s → verifica delta ml-detector+firewall.
+- `make test-e2e-synthetic-firewall`: para sniffer+ml-detector → inyecta 100 threats → espera 35s → verifica delta firewall.
+- `make test-e2e-live`: pipeline running → observa 60s tráfico real → verifica valores absolutos.
+- `make test-e2e`: `test-e2e-synthetic` + `test-e2e-live` secuenciales.
+
+### EMECAS++ — Primera ejecución completa desde VM limpia
+- **Status:** ✅ COMPLETADO DAY 159
+- `vagrant destroy -f && vagrant up && make bootstrap && make test-all && make test-e2e` — TODO VERDE.
+- TEST-E2E-SYNTHETIC-FULL: delta ml-detector=100, firewall=100 ✅
+- TEST-E2E-SYNTHETIC-FIREWALL: delta firewall=158 ✅
+- TEST-E2E-LIVE: received=4, events_processed=329, events_dropped=0 ✅
 
 ## ✅ CERRADO DAY 157
 
@@ -1686,6 +1730,16 @@ DEBT-EMECAS-DUAL-COMPILATION-001:            0% ⏳  P1 (CI compila ON+OFF)
 DEBT-LICENSE-VAULT-001:                      0% ⏳  P2 post-FEDER (servidor licencias en Vault)
 DEBT-PLUGIN-ENTERPRISE-001:                  0% ⏳  P2 post-FEDER (definir plugins enterprise)
 ADR-031 aRGus-seL4:                      0% ⏳  branch independiente
+DEBT-ALERTING-EDGE-SOS-001:             100% ✅  DAY 158 — alert_client.hpp 10/10 tests, Discord+Telegram
+DEBT-FIREWALL-CRYPTO-FORMAT-001:        100% ✅  DAY 159 — dos bugs encadenados DAY 98, 100% drop rate resuelto
+Synthetic injectors ADR-013 PHASE 2:    100% ✅  DAY 159 — SeedClient+CryptoTransport+LZ4-LE, DAY-49 code eliminado
+make test-e2e (gate E2E real):          100% ✅  DAY 159 — synthetic-full + synthetic-firewall + live, EMECAS++ verde
+DEBT-WIRE-PROTOCOL-TEST-001:              0% ⏳  P1 siguiente merge (test contrato binario LZ4 LE)
+DEBT-E2E-LIVE-DELTA-001:                  0% ⏳  P1 siguiente merge (snapshot+delta en test-e2e-live)
+DEBT-ALERTING-VAULT-001:                  0% ⏳  P2 (credenciales Discord/Telegram a Vault)
+DEBT-ENTERPRISE-PLUGIN-001:               0% ⏳  P0 DAY 160-161 (primer plugin enterprise vault_provider.so)
+DEBT-JENKINS-PROD-001:                    0% ⏳  P0 post-hardware (Jenkins CI/CD en hardware físico)
+DEBT-EMECAS-TEST-TO-MERGE-001:            0% ⏳  P1 (pirámide 4 niveles: unit+wire+integ+E2E)
 ```
 
 ---
@@ -1890,12 +1944,41 @@ Un sistema con ACRL converge hacia cobertura de técnicas ATT&CK en tiempo polin
 
 ---
 
-*DAY 157 — 19 Mayo 2026 · main @ v0.9.2-day157*
+*DAY 159 — 2026-05-21 · main @ v0.9.3-day158*
 *"Via Appia Quality — Un escudo que aprende de su propia sombra."*
 
 
 
 
+
+
+## 📝 Notas del Consejo de Sabios — DAY 159 (8/8)
+
+> "DAY 159 — Dos bugs encadenados desde DAY 98 encontrados y corregidos. 61 días de 100% drop rate invisible en el firewall. Primera ejecución EMECAS++ completa con gate E2E real desde VM limpia: TODO VERDE.
+>
+> **Hallazgo sistémico (ChatGPT, convergencia 8/8):** El problema no fue el bug de endianness — fue que el pipeline tenía un hueco de testing entre unitario y E2E. Los contratos binarios entre componentes nunca fueron validados. La pirámide de testing tiene ahora 4 niveles obligatorios: unit → wire contract → integration → E2E. Cada nivel cubre fallos que el siguiente no puede detectar a tiempo.
+>
+> **Q1 — Test wire protocol (consenso: sí, ubicación debatida):**
+> Test unitario en `common/tests/` — contrato cross-componente. ChatGPT: `common/tests/` porque el contrato pertenece al bus, no a un componente. Gemini propone además modo `check-wire` en `check_e2e_pipeline.py` que samplea mensaje real del bus ZMQ. Mistral en minoría: gate E2E suficiente. Decisión: DEBT-WIRE-PROTOCOL-TEST-001 en `common/tests/`, P1 siguiente merge.
+>
+> **Q2 — test-e2e-live delta vs absoluto (Gemini/Kimi/Mistral convergentes):**
+> Snapshot justo antes del wait de 60s → delta ≥ 1 → mucho más robusto que absoluto histórico. Claude/Grok/DeepSeek: timestamp check sobre absoluto. Decisión: adoptar propuesta Gemini — snapshot+delta de ventana corta. DEBT-E2E-LIVE-DELTA-001 P1.
+>
+> **Q3 — DEBT-ALERTING-LIBCRYPTO-PROVIDER-001 (consenso: P2, no P0):**
+> etcd-server ya alerta. Para FEDER, detección+respuesta > notificación granular. DeepSeek + Kimi: documentar la limitación single-point-alerting en el prospectus FEDER y en §7 del paper. Adoptado.
+>
+> **Q4 — Auto-adaptación ml_output_injector (unánime: No):**
+> Solo endpoint ZMQ desde JSON. Crypto/compresión son canónicos via CryptoTransport — no leer más JSON. Gemini: añadir docstring en el fichero marcando explícitamente que asume LZ4+ChaCha20. DeepSeek: comentario TODO si en el futuro se añade Zstd. Adoptado.
+>
+> **Q5 — Paralelización test-e2e en Jenkins (unánime: No paralelizar internamente):**
+> Estado compartido (pipeline, logs, ZMQ sockets, iptables) hace la paralelización interna peligrosa. Qwen + Kimi: estrategia nightly — `test-all` en cada PR, `test-e2e` en job nocturno. Para FEDER con baja frecuencia de merges, merge gate es aceptable. Grok: `timeout(time: 120, unit: MINUTES)` como safety net en Jenkins. DeepSeek: polling activo de logs para reducir sleeps. Adoptado.
+>
+> **Decisión Founder post-Consejo:** Prioridad inmediata → primer plugin enterprise real (`vault_provider.so` via ADR-025). Sin un plugin enterprise firmado, el modelo open-core es una promesa en papel. Cierra: DEBT-LICENSE-VAULT-001, modelo de negocio, demo FEDER enterprise. Jenkins en hardware físico real (DEBT-JENKINS-PROD-001) es el siguiente hito de infraestructura — requiere hardware FEDER.
+>
+> **EMECAS++:** `vagrant destroy -f && vagrant up && make bootstrap && make test-all && make test-e2e` — TODO VERDE. Tag `v0.9.3-day158` en main.
+>
+> 'Un test que pasa no es evidencia de ausencia de bug — es evidencia de ausencia del test correcto.' — ChatGPT · DAY 159"
+> — Consejo de Sabios (8/8) · DAY 159 · v0.9.3-day158
 
 ## 📝 Notas del Consejo de Sabios — DAY 157 (8/8)
 
@@ -2146,7 +2229,7 @@ Un sistema con ACRL converge hacia cobertura de técnicas ATT&CK en tiempo polin
 > "DAY 149 — Arquitectura CI/CD criptográfica definida. ADR-044 aprobado unánimemente.
 >
 > **Consenso Q1-Q7 (síntesis):**# aRGus NDR — BACKLOG
-*Última actualización: DAY 157 — 19 Mayo 2026*
+*Última actualización: DAY 159 — 2026-05-21*
 
 ---
 
@@ -2197,6 +2280,9 @@ Un sistema con ACRL converge hacia cobertura de técnicas ATT&CK en tiempo polin
 - **REGLA PERMANENTE (DAY 144 — Consejo 8/8):** `isolate.json` es la ÚNICA fuente de verdad para `auto_isolate`. Campo obligatorio — sin fallback silencioso. Si falta el fichero o el campo, el arranque falla ruidosamente con mensaje claro. Sin excepciones.
 - **REGLA PERMANENTE (DAY 144 — Consejo 8/8):** `assert()` debe estar activo en todos los tests independientemente del PROFILE. Usar `target_compile_options(test_target PRIVATE -UNDEBUG)` en CMakeLists de tests. `-DNDEBUG` de producción no debe silenciar la cobertura de tests.
 - **REGLA PERMANENTE (DAY 144 — gate ODR confirmado):** `make PROFILE=production all` detecta ODR violations reales bajo `-flto`. Confirmado en DAY 144: 3 categorías de violations encontradas y corregidas. El gate es obligatorio pre-merge sin excepciones.
+- **REGLA PERMANENTE (DAY 159 — Consejo 8/8):** El wire protocol entre componentes tiene test de contrato binario en `common/tests/`. Serialización LE/BE del header LZ4 se verifica byte-a-byte. Un bug de endianness no puede permanecer invisible más de un ciclo CI. Ver DEBT-WIRE-PROTOCOL-TEST-001.
+- **REGLA PERMANENTE (DAY 159 — Consejo 8/8):** `make test-e2e` es gate de release (nightly), no gate de PR. Los subtests E2E son siempre secuenciales — estado compartido en el pipeline hace la paralelización interna peligrosa.
+- **REGLA PERMANENTE (DAY 159 — Founder):** El primer plugin enterprise (`vault_provider.so`) se firma con keypair vendor offline (air-gapped), distinto del keypair del nodo. La pubkey vendor está hardcodeada en el plugin-loader — nunca en Vault.
 - **REGLA PERMANENTE (DAY 156 — Consejo 8/8):** En ZMQ PUB/SUB, el publisher debe hacer `bind()` ANTES de que cualquier subscriber haga `connect()`. En tests: crear el publisher en `SetUp()` del fixture antes de `start_subscriber()`. El slow joiner de ZMQ pierde mensajes silenciosamente si el orden se invierte. Ver `docs/technical-notes/ZMQ-PUB-SUB-SLOW-JOINER.md`.
 - **REGLA PERMANENTE (DAY 156 — Consejo 6/8):** El estado de `CryptoAutonomyStateMachine` se persiste en `/var/lib/argus/crypto-autonomy-state.json` con fsync atómico y firma Ed25519. tmpfs es insuficiente para hospitalario (desaparece en reboot no planificado durante AUTONOMOUS). Un reboot durante AUTONOMOUS es el escenario de ataque exacto que hay que cubrir.
 - **REGLA PERMANENTE (DAY 156 — Consejo 8/8):** En producción FEDER (CPD UEx), el keypair Ed25519 se genera UNA SOLA VEZ durante el bootstrap físico del nodo. `make bootstrap` con `ARGUS_ENV=prod` falla explícitamente si no existe keypair preexistente — nunca genera silenciosamente. Ver DEBT-KEYPAIR-LIFECYCLE-PROD-001.
@@ -2219,6 +2305,47 @@ Un sistema con ACRL converge hacia cobertura de técnicas ATT&CK en tiempo polin
 | **aRGus-seL4** | ⏳ No iniciada | Apéndice científico. Kernel seL4, libpcap. Branch independiente. |
 
 ---
+
+
+## ✅ CERRADO DAY 158
+
+### DEBT-ALERTING-EDGE-SOS-001 — Webhook SOS Discord/Telegram desde edge
+- **Status:** ✅ COMPLETADO DAY 158 — rama `feature/day158-alerting-edge-sos` → tag `v0.9.3-day158`
+- **common/include/alert_client.hpp** (header-only, fire-and-forget): Discord + Telegram. Sin dependencia de libhttplib en el binario de producción (ODR eliminado).
+- **Tests:** 10/10 RED→GREEN — integración Discord + Telegram en EMECAS.
+- **DEBT-ALERTING-VAULT-001 abierta P2:** migrar credenciales Discord/Telegram a Vault en producción.
+
+## ✅ CERRADO DAY 159
+
+### DEBT-FIREWALL-CRYPTO-FORMAT-001 — Dos bugs encadenados desde DAY 98 (100% drop rate invisible)
+- **Status:** ✅ COMPLETADO DAY 159
+- **Bug 1** — `firewall-acl-agent/src/api/zmq_subscriber.cpp`: usado `hex_to_bytes(config_.crypto_token)` (deprecated DAY 98, siempre vacío) en vez de `rx_->decrypt(data)`. CryptoTransport inicializado correctamente pero nunca llamado.
+- **Bug 2** — mismo fichero: header LZ4 leído en big-endian (bit-shifts manuales) pero ml-detector escribe little-endian (`memcpy` de `uint32_t` x86). `0x000002BD` → leído como `0xBD020000` = 3,171,024,896 → fallo sanity check >100 MB → 100% drop rate.
+- **Bug 3** — `firewall-acl-agent/src/main.cpp`: dead code eliminado (fetch `crypto_token` de etcd, nunca usado).
+- **Resultado tras fix:** `events_processed=5, events_dropped=0, crypto_errors=0` inmediato.
+- **Lección sistémica:** unit tests pasan, E2E gate no existía, wire protocol nunca validado. 61 días invisible.
+
+### Migración synthetic injectors a ADR-013 PHASE 2
+- **Status:** ✅ COMPLETADO DAY 159
+- `tools/synthetic_sniffer_injector.cpp`: lee `sniffer.json → network.output_socket` → `bind tcp://*:5571`. Usa `SeedClient` + `CryptoTransport` + LZ4 LE header (mismo path que ml-detector).
+- `tools/synthetic_ml_output_injector.cpp`: lee `ml_detector_config.json → network.output_socket` → `bind tcp://*:5572`. Mismo patrón.
+- `tools/CMakeLists.txt`: añadidos `${LZ4_LIBRARIES}` + `seed_client` linkage.
+- Código DAY 49 con `get_encryption_key()` + `hex_to_bytes()` + `crypto::CryptoManager` completamente eliminado.
+
+### make test-e2e — Primera implementación gate E2E real
+- **Status:** ✅ COMPLETADO DAY 159
+- `scripts/check_e2e_pipeline.py` — modos: `snapshot`, `check`, `check-firewall`, `check-abs`.
+- `make test-e2e-synthetic-full`: para sniffer → inyecta 100 events → espera 65s → verifica delta ml-detector+firewall.
+- `make test-e2e-synthetic-firewall`: para sniffer+ml-detector → inyecta 100 threats → espera 35s → verifica delta firewall.
+- `make test-e2e-live`: pipeline running → observa 60s tráfico real → verifica valores absolutos.
+- `make test-e2e`: `test-e2e-synthetic` + `test-e2e-live` secuenciales.
+
+### EMECAS++ — Primera ejecución completa desde VM limpia
+- **Status:** ✅ COMPLETADO DAY 159
+- `vagrant destroy -f && vagrant up && make bootstrap && make test-all && make test-e2e` — TODO VERDE.
+- TEST-E2E-SYNTHETIC-FULL: delta ml-detector=100, firewall=100 ✅
+- TEST-E2E-SYNTHETIC-FIREWALL: delta firewall=158 ✅
+- TEST-E2E-LIVE: received=4, events_processed=329, events_dropped=0 ✅
 
 ## ✅ CERRADO DAY 157
 
@@ -3833,6 +3960,16 @@ DEBT-EMECAS-DUAL-COMPILATION-001:            0% ⏳  P1 (CI compila ON+OFF)
 DEBT-LICENSE-VAULT-001:                      0% ⏳  P2 post-FEDER (servidor licencias en Vault)
 DEBT-PLUGIN-ENTERPRISE-001:                  0% ⏳  P2 post-FEDER (definir plugins enterprise)
 ADR-031 aRGus-seL4:                      0% ⏳  branch independiente
+DEBT-ALERTING-EDGE-SOS-001:             100% ✅  DAY 158 — alert_client.hpp 10/10 tests, Discord+Telegram
+DEBT-FIREWALL-CRYPTO-FORMAT-001:        100% ✅  DAY 159 — dos bugs encadenados DAY 98, 100% drop rate resuelto
+Synthetic injectors ADR-013 PHASE 2:    100% ✅  DAY 159 — SeedClient+CryptoTransport+LZ4-LE, DAY-49 code eliminado
+make test-e2e (gate E2E real):          100% ✅  DAY 159 — synthetic-full + synthetic-firewall + live, EMECAS++ verde
+DEBT-WIRE-PROTOCOL-TEST-001:              0% ⏳  P1 siguiente merge (test contrato binario LZ4 LE)
+DEBT-E2E-LIVE-DELTA-001:                  0% ⏳  P1 siguiente merge (snapshot+delta en test-e2e-live)
+DEBT-ALERTING-VAULT-001:                  0% ⏳  P2 (credenciales Discord/Telegram a Vault)
+DEBT-ENTERPRISE-PLUGIN-001:               0% ⏳  P0 DAY 160-161 (primer plugin enterprise vault_provider.so)
+DEBT-JENKINS-PROD-001:                    0% ⏳  P0 post-hardware (Jenkins CI/CD en hardware físico)
+DEBT-EMECAS-TEST-TO-MERGE-001:            0% ⏳  P1 (pirámide 4 niveles: unit+wire+integ+E2E)
 ```
 
 ---
@@ -4037,12 +4174,41 @@ Un sistema con ACRL converge hacia cobertura de técnicas ATT&CK en tiempo polin
 
 ---
 
-*DAY 157 — 19 Mayo 2026 · main @ v0.9.2-day157*
+*DAY 159 — 2026-05-21 · main @ v0.9.3-day158*
 *"Via Appia Quality — Un escudo que aprende de su propia sombra."*
 
 
 
 
+
+
+## 📝 Notas del Consejo de Sabios — DAY 159 (8/8)
+
+> "DAY 159 — Dos bugs encadenados desde DAY 98 encontrados y corregidos. 61 días de 100% drop rate invisible en el firewall. Primera ejecución EMECAS++ completa con gate E2E real desde VM limpia: TODO VERDE.
+>
+> **Hallazgo sistémico (ChatGPT, convergencia 8/8):** El problema no fue el bug de endianness — fue que el pipeline tenía un hueco de testing entre unitario y E2E. Los contratos binarios entre componentes nunca fueron validados. La pirámide de testing tiene ahora 4 niveles obligatorios: unit → wire contract → integration → E2E. Cada nivel cubre fallos que el siguiente no puede detectar a tiempo.
+>
+> **Q1 — Test wire protocol (consenso: sí, ubicación debatida):**
+> Test unitario en `common/tests/` — contrato cross-componente. ChatGPT: `common/tests/` porque el contrato pertenece al bus, no a un componente. Gemini propone además modo `check-wire` en `check_e2e_pipeline.py` que samplea mensaje real del bus ZMQ. Mistral en minoría: gate E2E suficiente. Decisión: DEBT-WIRE-PROTOCOL-TEST-001 en `common/tests/`, P1 siguiente merge.
+>
+> **Q2 — test-e2e-live delta vs absoluto (Gemini/Kimi/Mistral convergentes):**
+> Snapshot justo antes del wait de 60s → delta ≥ 1 → mucho más robusto que absoluto histórico. Claude/Grok/DeepSeek: timestamp check sobre absoluto. Decisión: adoptar propuesta Gemini — snapshot+delta de ventana corta. DEBT-E2E-LIVE-DELTA-001 P1.
+>
+> **Q3 — DEBT-ALERTING-LIBCRYPTO-PROVIDER-001 (consenso: P2, no P0):**
+> etcd-server ya alerta. Para FEDER, detección+respuesta > notificación granular. DeepSeek + Kimi: documentar la limitación single-point-alerting en el prospectus FEDER y en §7 del paper. Adoptado.
+>
+> **Q4 — Auto-adaptación ml_output_injector (unánime: No):**
+> Solo endpoint ZMQ desde JSON. Crypto/compresión son canónicos via CryptoTransport — no leer más JSON. Gemini: añadir docstring en el fichero marcando explícitamente que asume LZ4+ChaCha20. DeepSeek: comentario TODO si en el futuro se añade Zstd. Adoptado.
+>
+> **Q5 — Paralelización test-e2e en Jenkins (unánime: No paralelizar internamente):**
+> Estado compartido (pipeline, logs, ZMQ sockets, iptables) hace la paralelización interna peligrosa. Qwen + Kimi: estrategia nightly — `test-all` en cada PR, `test-e2e` en job nocturno. Para FEDER con baja frecuencia de merges, merge gate es aceptable. Grok: `timeout(time: 120, unit: MINUTES)` como safety net en Jenkins. DeepSeek: polling activo de logs para reducir sleeps. Adoptado.
+>
+> **Decisión Founder post-Consejo:** Prioridad inmediata → primer plugin enterprise real (`vault_provider.so` via ADR-025). Sin un plugin enterprise firmado, el modelo open-core es una promesa en papel. Cierra: DEBT-LICENSE-VAULT-001, modelo de negocio, demo FEDER enterprise. Jenkins en hardware físico real (DEBT-JENKINS-PROD-001) es el siguiente hito de infraestructura — requiere hardware FEDER.
+>
+> **EMECAS++:** `vagrant destroy -f && vagrant up && make bootstrap && make test-all && make test-e2e` — TODO VERDE. Tag `v0.9.3-day158` en main.
+>
+> 'Un test que pasa no es evidencia de ausencia de bug — es evidencia de ausencia del test correcto.' — ChatGPT · DAY 159"
+> — Consejo de Sabios (8/8) · DAY 159 · v0.9.3-day158
 
 ## 📝 Notas del Consejo de Sabios — DAY 157 (8/8)
 
