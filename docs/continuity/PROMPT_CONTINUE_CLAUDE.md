@@ -1,133 +1,187 @@
-# DAY 159 — Prompt de Continuidad
+# PROMPT_CONTINUE_CLAUDE — aRGus NDR DAY 160
+*Generado: 2026-05-21 · main @ v0.9.3-day158*
+
+---
 
 ## Contexto del proyecto
-aRGus NDR — pipeline C++20 de seguridad open-source para infraestructura crítica.
-Repo: github.com/alonsoir/argus | Paper: arXiv:2604.04952
-Rama activa: `feature/day158-alerting-edge-sos` (NO mergeada a main aún)
-Tag más reciente en main: `v0.9.2-day157`
 
-## Estado al cierre de DAY 158
+aRGus NDR es un sistema C++20 open-source de Network Detection & Response para infraestructura crítica (hospitales, escuelas, municipios). PI y único desarrollador: Alonso (Badajoz, Extremadura). Co-investigador institucional: Dr. Andrés Caro Lindo (UEx/INCIBE). Co-fundador: Hugo Vázquez Caramés. Paper: arXiv:2604.04952. Repo: github.com/alonsoir/argus.
 
-### ✅ Resuelto hoy
-**DEBT-FIREWALL-HTTPLIB-ODR-001 CERRADA:**
-- `alert_client.hpp` (header-only con `httplib.h`) estaba incluido en
-  `batch_processor.hpp` como miembro directo `argus::AlertClient alert_client_`
-- El firewall también enlaza con `libetcd_client.so` que compila su propia
-  instancia de `httplib::ClientImpl` → ODR violation → SIGSEGV al arrancar
-- Fix aplicado: `alert_client_` eliminado de `firewall-acl-agent` completamente
-- Pipeline: **6/6 RUNNING sin SIGSEGV**
+Metodología: Test-Driven Hardening (TDH), Consejo de Sabios (8 modelos: Claude, Grok, ChatGPT, DeepSeek, Qwen, Gemini, Kimi, Mistral), EMECAS como invariante de reproducibilidad. "Via Appia Quality". "JSON is the law".
 
-### ❌ TAREA 1 — PRIORITARIA
-**DEBT-FIREWALL-CRYPTO-FORMAT-001 — P1:**
+**EMECAS canonical:** `vagrant destroy -f && vagrant up && make bootstrap && make test-all`
+**EMECAS++:** `vagrant destroy -f && vagrant up && make bootstrap && make test-all && make test-e2e`
+**macOS constraint:** Python3 heredoc (`<< 'PYEOF'`), nunca `sed -i` sin `-e ''`. Vagrant siempre con `-c`.
 
-El firewall tiene `events_processed=0, events_dropped=N` (100% drop rate).
+---
 
-**Causa exacta:**
-`firewall-acl-agent/src/api/zmq_subscriber.cpp` línea 450 usa la ruta antigua:
-```cpp
-auto key = crypto_transport::hex_to_bytes(config_.crypto_token);
-data = crypto_transport::decrypt(data, key);
+## Estado actual — DAY 160
+
+**Branch activa:** abrir `feature/day160-enterprise-plugin`
+**Tag en main:** `v0.9.3-day158`
+**Keypair activo:** regenera en cada `vagrant destroy+up`
+
+### Lo que se cerró en DAY 158-159
+
+**DAY 158 — DEBT-ALERTING-EDGE-SOS-001 CERRADA:**
+- `common/include/alert_client.hpp` header-only, Discord+Telegram fire-and-forget
+- 10/10 tests, E2E validado. Integrado en etcd-server.
+- `DEBT-ALERTING-VAULT-001` abierta P2 (migrar credenciales a Vault).
+
+**DAY 159 — DEBT-FIREWALL-CRYPTO-FORMAT-001 CERRADA (crítica):**
+- Dos bugs encadenados desde DAY 98 — 61 días de 100% drop rate invisible en el firewall.
+- Bug 1: `hex_to_bytes(config_.crypto_token)` (deprecated, siempre vacío) → fix: `rx_->decrypt(data)`.
+- Bug 2: header LZ4 leído BE (bit-shifts manuales) pero ml-detector escribe LE (`memcpy uint32_t x86`). `0x000002BD` → `0xBD020000` = 3,171M → crash sanity check → 100% drop.
+- Tras fix: `events_processed=5, events_dropped=0, crypto_errors=0` inmediato.
+
+**DAY 159 — Synthetic injectors migrados a ADR-013 PHASE 2:**
+- `tools/synthetic_sniffer_injector.cpp`: lee `sniffer.json → network.output_socket`, `SeedClient + CryptoTransport + LZ4 LE`.
+- `tools/synthetic_ml_output_injector.cpp`: lee `ml_detector_config.json → network.output_socket`, mismo patrón.
+- DAY-49 code (`get_encryption_key() + hex_to_bytes()`) completamente eliminado.
+
+**DAY 159 — make test-e2e implementado:**
+- `scripts/check_e2e_pipeline.py` — modos: snapshot, check, check-firewall, check-abs.
+- `make test-e2e-synthetic-full`: delta ml-detector=100, firewall=100 ✅
+- `make test-e2e-synthetic-firewall`: delta firewall=158 ✅
+- `make test-e2e-live`: events_processed=329, events_dropped=0 ✅
+- EMECAS++ completo desde VM limpia: TODO VERDE.
+
+### Consejo de Sabios DAY 159 — Decisiones
+
+| Q | Decisión adoptada |
+|---|---|
+| Q1 — Wire protocol test | DEBT-WIRE-PROTOCOL-TEST-001 P1: `common/tests/` byte-a-byte LZ4 LE |
+| Q2 — test-e2e-live delta | DEBT-E2E-LIVE-DELTA-001 P1: snapshot+60s wait+delta≥1 (Gemini) |
+| Q3 — ALERTING-LIBCRYPTO | P2, no P0. Documentar limitación single-point-alerting en FEDER prospectus |
+| Q4 — ml_output_injector | No auto-adaptar más parámetros. Docstring+TODO en fichero |
+| Q5 — paralelización E2E | No interna. Nightly job en Jenkins post-FEDER |
+
+---
+
+## Prioridades DAY 160
+
+### P0 — Primer plugin enterprise firmado (DEBT-ENTERPRISE-PLUGIN-001)
+
+**Objetivo:** `plugins/enterprise/vault_provider/libvault_provider.so` firmado Ed25519, cargable via ADR-025.
+
+**Por qué ahora:** el modelo open-core (DAY 150, Consejo 8/8) existe solo en papel. Sin un plugin enterprise real firmado, no hay modelo de negocio demostrable, no hay demo FEDER enterprise, no hay DEBT-LICENSE-VAULT-001 posible.
+
+**Arquitectura:**
 ```
-`config_.crypto_token` viene vacío porque `get_encryption_key()` está
-**DEPRECATED desde DAY 98** (migración CryptoManager → CryptoTransport, ADR-013).
-
-También `firewall-acl-agent/src/main.cpp` línea 713:
-```cpp
-zmq_config.crypto_token = etcd_client->get_crypto_seed();
+argus-binary (ARGUS_VAULT_ENABLED=OFF)
+    └── plugin-loader (ADR-025)
+            └── dlopen("libvault_provider.so")
+                    └── VaultProvider (enterprise feature)
 ```
-Ambos puntos hay que migrar.
 
-**Lo que SÍ funciona:**
-- El seed correcto existe en `/etc/ml-defender/firewall-acl-agent/seed.bin`
-- Es idéntico al de ml-detector (verificado con `cmp`)
-- ml-detector cifra correctamente con CryptoTransport + seed.bin
-- El firewall tiene el seed pero no lo usa
+**Keypair vendor (DISTINTO del keypair nodo):**
+- Generado UNA VEZ por el founder, air-gapped, offline
+- Pubkey hardcodeada en el plugin-loader (como ADR-025 con plugins XGBoost)
+- Nunca en Vault, nunca en disco del nodo en producción
+- En dev: puede estar en `vendor_keypair.pub` (gitignored)
 
-**Fix a aplicar:**
-Migrar `zmq_subscriber.cpp` y `main.cpp` para usar `CryptoTransport` con
-`seed.bin`, igual que hace ml-detector. Mismo patrón ADR-013 PHASE 2 DAY 98-99.
+**Pasos:**
+1. Crear `plugins/enterprise/vault_provider/CMakeLists.txt`
+2. Exponer símbolo `argus_plugin_create()` + `argus_plugin_destroy()` (ADR-025 interface)
+3. Mover `VaultProvider` de `enterprise/` a este nuevo plugin
+4. Compilar como `.so` separado
+5. Generar keypair vendor: `tools/gen_vendor_keypair.sh` (gitignored output)
+6. Firmar `.so` con keypair vendor
+7. Plugin-loader: verificar firma vendor antes de `dlopen()`
+8. Tests: 6 tests RED→GREEN
 
-**Primer comando:**
+**Test de cierre:** `make test-all` + `make test-enterprise-plugin` PASSED. Plugin cargado, verificado, funcional, descargado limpiamente. `ARGUS_VAULT_ENABLED=OFF` binario principal + plugin .so → idéntico a `ARGUS_VAULT_ENABLED=ON` monolítico.
+
+### P1 — DEBT-WIRE-PROTOCOL-TEST-001
+- `common/tests/test_wire_protocol.cpp`
+- Serializa un payload con código de ml-detector (LZ4 LE memcpy)
+- Lo deserializa con código del firewall (mismo memcpy)
+- Verifica decoded_size == original_size, no errores
+- ~30 minutos
+
+### P1 — DEBT-E2E-LIVE-DELTA-001
+- `scripts/check_e2e_pipeline.py`: añadir modo `check-delta`
+- `make test-e2e-live`: snapshot → 60s → delta ≥ 1
+- ~1h
+
+### P1 — DEBT-EMECAS-TEST-TO-MERGE-001
+- `make test-wire` (llama a test_wire_protocol)
+- `docs/CONTRIBUTING.md`: pirámide 4 niveles documentada
+- PR template: checklist actualizado
+- ~1 sesión
+
+---
+
+## Deudas abiertas P1 pre-FEDER (orden de prioridad)
+
+| DEBT | Prioridad | Estimación |
+|------|-----------|-----------|
+| DEBT-ENTERPRISE-PLUGIN-001 | 🔴 P0 | 2 sesiones (DAY 160-161) |
+| DEBT-WIRE-PROTOCOL-TEST-001 | 🔴 P1 | 30 min |
+| DEBT-E2E-LIVE-DELTA-001 | 🔴 P1 | 1h |
+| DEBT-EMECAS-TEST-TO-MERGE-001 | 🔴 P1 | 1 sesión |
+| DEBT-JENKINS-PROD-001 | 🔴 P0 | post-hardware |
+| DEBT-CRYPTO-AUTONOMY-001 | 🔴 P1 | 2 sesiones |
+| DEBT-CRYPTO-CACHE-PERSISTENT-PROD-001 | 🟡 P1 | 1 sesión |
+| DEBT-ALERTING-VAULT-001 | 🟡 P2 | 1 sesión |
+| DEBT-BOOTSTRAP-STATUS-SIGNATURE-CONSUMERS-001 | 🟡 P2 | 1h |
+| DEBT-AUTONOMY-CLOCK-INJECTION-001 | 🟡 P1 | 30 min |
+
+---
+
+## Reglas permanentes críticas (no cambiar)
+
+- **EMECAS:** `vagrant destroy -f && vagrant up && make bootstrap && make test-all` — sin excepciones
+- **EMECAS++:** añadir `&& make test-e2e` para gates de release
+- **Wire protocol test (DAY 159):** todo contrato binario cross-componente tiene test en `common/tests/`
+- **ZMQ PUB/SUB (DAY 156):** publisher hace `bind()` ANTES de que subscriber conecte
+- **ODR gate:** `make PROFILE=production all` antes de cualquier merge a main con C++20
+- **-Werror:** 0 warnings es invariante permanente
+- **JSON is the law:** toda config desde JSON canónico, nunca hardcodeada
+- **fork()+execv() en IRP:** firewall-acl-agent nunca muere
+- **Ed25519 signing:** todo artefacto firmable (plugins, bootstrap-status, autonomy-state) lleva firma
+- **Keypair vendor (DAY 159):** air-gapped, distinto del keypair nodo, pubkey hardcodeada en loader
+- **test-e2e secuencial:** no paralelizar internamente (estado compartido)
+
+---
+
+## Arquitectura pipeline
+
+```
+sniffer (eBPF/XDP o libpcap)
+    PUSH bind:5571
+        → ml-detector PULL connect:5571
+            PUB bind:5572
+                → firewall-acl-agent SUB connect:5572
+                → rag-ingester
+
+etcd-server: trust anchor, autonomy publisher (ipc:///run/argus/autonomy.sock)
+firewall-acl-agent: autonomy subscriber + reactor
+
+Crypto bus: SeedClient → CryptoTransport (ChaCha20-Poly1305 + HKDF)
+Serialización: Protobuf → LZ4 compress (LE header, memcpy uint32_t) → ChaCha20 encrypt
+Plugin system: Ed25519 signed .so via ADR-025
+```
+
+---
+
+## FEDER deadline
+
+22 Septiembre 2026 (BACKLOG-FEDER-001). Contacto: Dr. Andrés Caro Lindo (andresc@unex.es).
+
+Hardware en camino via UEx: RPi5 × N + switch. Email pendiente para N100 x86.
+
+Gate FEDER: ADR-026 ✅, ADR-029 A+B ✅, Pipeline E2E ✅, DEBT-ENTERPRISE-PLUGIN-001 ⏳, make feder-demo ⏳, hardware físico ⏳.
+
+---
+
+## Para comenzar DAY 160
+
 ```bash
-grep -n "CryptoTransport\|seed\|decrypt\|zmq" ml-detector/src/zmq_handler.cpp | head -30
-grep -n "crypto_token\|hex_to_bytes\|decrypt\|CryptoTransport\|seed" \
-  firewall-acl-agent/src/api/zmq_subscriber.cpp \
-  firewall-acl-agent/src/main.cpp | head -40
+git checkout main && git pull origin main --ff-only
+git checkout -b feature/day160-enterprise-plugin
+# Abrir Consejo con las preguntas de arquitectura del plugin enterprise
+# Ver: docs/adr/ADR-025-plugin-integrity-ed25519.md para la interfaz existente
+# Keypair vendor: tools/gen_vendor_keypair.sh (crear nuevo)
+vagrant destroy -f && vagrant up && make bootstrap && make test-all
 ```
-
-**Criterio de éxito:**
-```
-events_processed > 0, events_dropped = 0
-```
-En `logs/lab/firewall-agent.log` tras arrancar el pipeline.
-
-### ❌ TAREA 2 — Tras fix crypto
-**DEBT-EMECAS-E2E-001 — P1 (nueva):**
-
-EMECAS verifica compilación y tests unitarios pero NO verifica que el pipeline
-funciona end-to-end. El bug del firewall llevaba desde DAY 98 invisible porque
-50/50 tests pasan pero `events_processed=0` nunca se detectó.
-
-**Añadir fase `make test-e2e` al final de EMECAS:**
-
-```
-EMECAS actual:
-  vagrant destroy → vagrant up → make bootstrap → make test-all
-
-EMECAS propuesto:
-  vagrant destroy → vagrant up → make bootstrap → make test-all → make test-e2e
-```
-
-**Tests E2E mínimos a implementar:**
-```
-TEST-E2E-1: sniffer → ml-detector
-  → inyectar tráfico sintético (synthetic_sniffer_injector)
-  → verificar ml-detector: events_processed > 0
-
-TEST-E2E-2: ml-detector → firewall
-  → verificar firewall: events_processed > 0, events_dropped = 0
-  → verificar firewall: detections_received > 0
-
-TEST-E2E-3: etcd-server → firewall (AUTONOMY signal)
-  → verificar cadena de autonomía E2E
-
-TEST-E2E-4: pipeline completo — drop rate check
-  → FALLO si events_processed=0 en cualquier componente receptor
-  → FALLO si drop_rate=100% en cualquier canal ZMQ
-```
-
-**Prerequisito:** verificar y actualizar `tools/synthetic_sniffer_injector`
-para que genere tráfico compatible con el formato actual del pipeline
-(puede haber quedado desactualizado desde DAY 98 igual que el firewall).
-
-```bash
-# Primer comando para inspeccionar el injector
-grep -n "encrypt\|CryptoTransport\|seed\|zmq\|send" \
-  tools/synthetic_sniffer_injector.cpp | head -30
-```
-
-### ❌ Pendiente (P1, post TAREA 2)
-**DEBT-ALERTING-LIBCRYPTO-PROVIDER-001:**
-Mover `AlertClient` como implementación opaca dentro de `libcrypto_provider.so`.
-Exponer `argus/alerting.h` sin httplib en headers. Prerequisito para que
-todos los componentes puedan enviar alertas Discord/Telegram sin ODR.
-Hoy solo `etcd-server` puede enviar alertas de forma segura.
-
-### ❌ Pendiente (P2)
-**DEBT-ALERTING-VAULT-001:** migrar credenciales Discord/Telegram a Vault.
-
-## Reglas permanentes del proyecto
-- EMECAS = `vagrant destroy -f && vagrant up && make bootstrap && make test-all`
-- macOS: siempre Python3 heredoc (`<< 'PYEOF'`), nunca `sed -i` sin `-e ''`
-- Vagrant commands desde macOS siempre sin `-c` recursivo dentro de la VM
-- "Via Appia Quality" + "JSON is the law"
-- ZMQ publisher `bind()` ANTES de subscriber `connect()`
-- NO mergear a main hasta pipeline completamente funcional (E2E verde)
-
-## Orden del día DAY 159
-1. Fix DEBT-FIREWALL-CRYPTO-FORMAT-001 → `events_processed > 0`
-2. Verificar synthetic_sniffer_injector, actualizar si necesario
-3. Implementar `make test-e2e` con los 4 tests mínimos
-4. EMECAS completo con test-e2e incluido → todo verde
-5. Merge `feature/day158-alerting-edge-sos` → main → tag `v0.9.3-day158`
-6. Abrir rama `feature/day159-firewall-crypto-e2e`

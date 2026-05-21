@@ -19,7 +19,7 @@
 [![Variant B](https://img.shields.io/badge/ADR--029-Variant_B_libpcap_pipeline-blue)]()
 [![Reproducible](https://img.shields.io/badge/Infra-make_bootstrap-brightgreen)]()
 [![XGBoost](https://img.shields.io/badge/XGBoost-Prec%3D0.9945_In--Distribution-brightgreen)]()
-[![Hardened](https://img.shields.io/badge/Security-v0.9.2--day157-brightgreen)]()
+[![Hardened](https://img.shields.io/badge/Security-v0.9.3--day158-brightgreen)]()
 [![PRE-PRODUCTION](https://img.shields.io/badge/Status-PRE--PRODUCTION-orange)]()
 [![Crypto](https://img.shields.io/badge/Crypto-HKDF_SHA256+ChaCha20_Poly1305-orange)]()
 [![arXiv](https://img.shields.io/badge/arXiv-2604.04952_cs.CR-red)](https://arxiv.org/abs/2604.04952)
@@ -31,27 +31,27 @@
 
 ---
 
-✅ `main` is tagged `v0.9.2-day157`. DAY 157: 4 deudas cerradas (DEBT-AUTONOMY-STATE-PERSISTENCE-001, DEBT-BOOTSTRAP-STATUS-SIGNATURE-001, DEBT-KEYPAIR-LIFECYCLE-PROD-001, DEBT-CRYPTO-RECONCILIATION-001 + staleness guard). Consejo 8/8. EMECAS VERDE.
+✅ `main` is tagged `v0.9.3-day158`. DAY 159: DEBT-FIREWALL-CRYPTO-FORMAT-001 CERRADA (100% drop rate invisible desde DAY 98, dos bugs encadenados). DEBT-ALERTING-EDGE-SOS-001 CERRADA. Gate E2E real implementado. EMECAS++ completo verde. Consejo 8/8.
 **PRE-PRODUCTION: do not deploy in hospitals until ACRL (DEBT-PENTESTER-LOOP-001) is complete.**
 
 ---
 
-## Estado actual — DAY 157 (2026-05-19)
+## Estado actual — DAY 159 (2026-05-21)
 
 <!-- DAY-STATUS -->
 | Campo | Valor |
 |---|---|
-| DAY | 158 |
-| Tag | v0.9.2-day157 |
+| DAY | 159 |
+| Tag | v0.9.3-day158 |
 | Branch | main |
-| EMECAS | ✅ Verde (19-05-2026) |
+| EMECAS | ✅ Verde (2026-05-21) — incluye gate E2E |
 | Pipeline | 6/6 RUNNING |
-| ADR-046 | v3 aprobado Consejo 8/8 |
-| Próximo hito | DEBT-ARGUSPP-SURICATA-001 |
+| EMECAS++ | ✅ test-e2e verde (synthetic-full + firewall + live) |
+| Próximo hito | DEBT-ENTERPRISE-PLUGIN-001 (vault_provider.so ADR-025) |
 | Deadline FEDER | 22-09-2026 |
 <!-- /DAY-STATUS -->
 
-**Tag activo:** `v0.9.2-day157` | **Branch activa:** `main`
+**Tag activo:** `v0.9.3-day158` | **Branch activa:** `main`
 **Keypair activo:** `b5b6cbdf67dad75cdd7e3169d837d1d6d4c938b720e34331f8a73f478ee85daa` *(regenera en cada EMECAS)*
 **Paper:** arXiv:2604.04952 · Draft v24 local · v3 en arXiv
 **Principio rector:** calidad sobre fechas — los datasets se generan cuando el pipeline esté listo
@@ -441,7 +441,7 @@ make hardened-full   # destroy → up → provision → build → deploy → che
 ### ✅ DONE — DAY 135-136: v0.6.0 🎉
 - [x] make hardened-full EMECAS PASSED
 - [x] feature/adr030-variant-a → main MERGEADO
-- [x] Tag v0.6.0-hardened-variant-a publicado
+- [x] Tag v0.9.3-day158-variant-a publicado
 - [x] arXiv replace v15 → v18 ENVIADO
 
 ### ✅ DONE — DAY 133-134: ADR-030 + ADR-040 + ADR-041 🎉
@@ -490,12 +490,12 @@ make hardened-full   # destroy → up → provision → build → deploy → che
 - ✅ DAY 113: **ADR-025 MERGED — v0.3.0-plugin-integrity** 🎉
 - ✅ DAY 118: **PHASE 3 COMPLETADA — v0.4.0** 🎉
 - ✅ DAY 122: **PHASE 4 COMPLETADA — v0.5.0-preproduction** 🎉
-- ✅ DAY 124: **ADR-037 MERGED — v0.5.1-hardened** 🎉
+- ✅ DAY 124: **ADR-037 MERGED — v0.9.3-day158** 🎉
 - ✅ DAY 129: **CWE-78 CERRADO — execv() sin shell** 🎉
 - ✅ DAY 130: **REGLA EMECAS · libFuzzer 2.4M runs** 🎉
 - ✅ DAY 133: **ADR-030 Variant A — cap_bpf · AppArmor 6/6 · Falco 10 reglas** 🎉
 - ✅ DAY 134: **ADR-040 (8/8, 17 enmiendas) · ADR-041 FEDER HW Metrics (8/8)** 🎉
-- ✅ DAY 136: **v0.6.0-hardened-variant-a · merge main** 🎉
+- ✅ DAY 136: **v0.9.3-day158-variant-a · merge main** 🎉
 - ✅ DAY 137: **feature/variant-b-libpcap · sniffer-libpcap compilable · KISS** 🎉
 - ✅ DAY 138: **ISP cerrado · pipeline Variant B completo · 8/8 tests · Consejo 8/8** 🎉
 - ✅ DAY 140: **192→0 warnings · -Werror activo · ODR limpio** 🎉
