@@ -20,6 +20,8 @@
 #include "firewall/ipset_wrapper.hpp"
 #include "firewall/iptables_wrapper.hpp"
 #include "firewall/batch_processor.hpp"
+#include <fstream>
+#include <nlohmann/json.hpp>
 #include "firewall/zmq_subscriber.hpp"
 #include "firewall/etcd_client.hpp"
 #include "firewall/autonomy_subscriber.hpp"
@@ -643,6 +645,11 @@ int main(int argc, char** argv) {
 
         FIREWALL_LOG_INFO("Initializing batch processor");
         BatchProcessor processor(ipset, batch_config);
+        // ── AlertClient config (DEBT-ALERTING-EDGE-SOS-001) ──────────────────
+        try {
+            std::ifstream falert("/etc/ml-defender/firewall-acl-agent/firewall.json");
+            if (falert.good()) batch_config.alerting_json = nlohmann::json::parse(falert);
+        } catch (...) {}
         processor.set_irp_config(config.irp);  // ADR-042
         FIREWALL_LOG_INFO("Batch processor started successfully",
             "irp_auto_isolate", config.irp.auto_isolate,
@@ -702,18 +709,11 @@ int main(int argc, char** argv) {
                 return 1;
             }
 
-            FIREWALL_LOG_INFO("Retrieving crypto seed from etcd");
-            zmq_config.crypto_token = etcd_client->get_crypto_seed();
-
-            if (zmq_config.crypto_token.empty()) {
-                FIREWALL_LOG_CRASH("Failed to retrieve crypto seed from etcd");
-                std::cerr << "[ERROR] Failed to get crypto seed from etcd-server" << std::endl;
-                return 1;
-            }
-
-            FIREWALL_LOG_INFO("ChaCha20-Poly1305 decryption enabled",
-                "algorithm", config.transport.encryption.algorithm,
-                "key_length", zmq_config.crypto_token.length());
+            // ADR-013 PHASE 2 — DAY 159: crypto_token deprecated.
+            // CryptoTransport inicializa desde seed.bin via SeedClient en ZMQSubscriber.
+            // DEBT-FIREWALL-CRYPTO-FORMAT-001 FIX
+            FIREWALL_LOG_INFO("ChaCha20-Poly1305 decryption via CryptoTransport (seed.bin)",
+                "algorithm", config.transport.encryption.algorithm);
         } else {
             zmq_config.encryption_enabled = false;
             FIREWALL_LOG_INFO("Decryption disabled");

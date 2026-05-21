@@ -1,87 +1,133 @@
-Soy Alonso Isidoro Román, PI y desarrollador único de aRGus NDR (arXiv:2604.04952), sistema C++20 de detección de red para infraestructura crítica (hospitales, escuelas, municipios). Colaboradores: Dr. Andrés Caro Lindo (UEx/INCIBE, FEDER) y Hugo Vázquez Caramés (co-founder). Repo: github.com/alonsoir/argus.
+# DAY 159 — Prompt de Continuidad
 
-## ESTADO HOY — DAY 158 (19 Mayo 2026)
+## Contexto del proyecto
+aRGus NDR — pipeline C++20 de seguridad open-source para infraestructura crítica.
+Repo: github.com/alonsoir/argus | Paper: arXiv:2604.04952
+Rama activa: `feature/day158-alerting-edge-sos` (NO mergeada a main aún)
+Tag más reciente en main: `v0.9.2-day157`
 
-Tag: v0.9.2-day157 | Branch: main @ 92533d03
-EMECAS DAY 157: VERDE. Pipeline 6/6. make test-all PASSED.
-Keypair activo: b5b6cbdf67dad75cdd7e3169d837d1d6d4c938b720e34331f8a73f478ee85daa
+## Estado al cierre de DAY 158
 
-## CERRADO DAY 157
-- DEBT-AUTONOMY-STATE-PERSISTENCE-001 ✅ (autonomy_state_writer.h, 9/9 tests)
-- DEBT-BOOTSTRAP-STATUS-SIGNATURE-001 ✅ (Ed25519 firmado, escritura atómica)
-- DEBT-KEYPAIR-LIFECYCLE-PROD-001 ✅ (3 niveles dev/staging/prod)
-- DEBT-CRYPTO-RECONCILIATION-001 ✅ (staleness guard 30s, 9/9 tests)
-- Tag v0.9.2-day157 en main. PR mergeado. Rama feature eliminada.
+### ✅ Resuelto hoy
+**DEBT-FIREWALL-HTTPLIB-ODR-001 CERRADA:**
+- `alert_client.hpp` (header-only con `httplib.h`) estaba incluido en
+  `batch_processor.hpp` como miembro directo `argus::AlertClient alert_client_`
+- El firewall también enlaza con `libetcd_client.so` que compila su propia
+  instancia de `httplib::ClientImpl` → ODR violation → SIGSEGV al arrancar
+- Fix aplicado: `alert_client_` eliminado de `firewall-acl-agent` completamente
+- Pipeline: **6/6 RUNNING sin SIGSEGV**
 
-## PENDIENTE INMEDIATO DAY 158
-1. DEBT-BOOTSTRAP-STATUS-SIGNATURE-CONSUMERS-001 (P2): tools/check-bootstrap-status.sh + ExecStartPre= en systemd units dependientes
-2. DEBT-CRYPTO-AUTONOMY-001 (P2): EXTENDED_AUTONOMY state machine completa
-3. DEBT-ALERTING-EDGE-SOS-001 (P1 pre-FEDER): webhook SOS configurable (Discord/Telegram/email)
+### ❌ TAREA 1 — PRIORITARIA
+**DEBT-FIREWALL-CRYPTO-FORMAT-001 — P1:**
 
-## EMAIL A ANDRÉS CARO LINDO — PENDIENTE ENVÍO
-Redactado y listo para enviar por Gmail. Tres temas:
-1. Hardware lab: RPi5×2 (8GB) + N100 miniPC×2 (NIC i226-V) + switch 8p gigabit + cables Cat6 + accesorios RPi. Sin precios (dependen de UEx/INCIBE).
-2. Ampliación pipeline Suricata+Zeek+Wazuh (aRGus++): señal más rica, datasets mejores, NDR→NDR/EDR híbrido. Wazuh agent en edge (cabe en RPi 8GB), manager en servidor central (~8GB).
-3. Dictamen GDPR: ¿datos HMAC-SHA256 dejan de ser datos personales Art.4(5) si clave en Vault destruido certificadamente? Necesario antes de agosto.
+El firewall tiene `events_processed=0, events_dropped=N` (100% drop rate).
 
-## ADR-046 v3 — APROBADO CONSEJO 8/8 DAY 158
-Documento: docs/adr/ADR-046-v3-multi-source-enriched-pipeline-arguspp.md
-Supersede v1 y v2. Amendments clave:
-- community_id como primary key de correlación cross-tool (ChatGPT)
-- source_wait_timeout (técnico, por fuente) ≠ crisis_idle_timeout (semántico, 120s) — ChatGPT
-- crisis_generation: permite crisis simultáneas/solapadas en mismo nodo — ChatGPT
-- late_arrival: true para Wazuh tardío — Grok
-- Secuencia v1.0→v1.1→v1.2→v2.0 — Kimi
-- NTP como gate P0 (chrony + offset >1s bloquea arranque) — DeepSeek+Grok
-- Principio: "la crisis es la ventana". Sin ventana fija artificial.
-- Disparadores múltiples: aRGus, Suricata, Zeek, Wazuh (cualquiera puede disparar)
-- Protobuf NO se modifica hasta evidencia empírica MITRE ATT&CK
-- Cada herramienta genera su Parquet con su propio esquema. Schema Neo4j es aditivo.
-- community_id es el pegamento entre esquemas distintos.
-- CrisisWindow = registro de evento, NO dataset de entrenamiento. Datasets = miles de CrisisWindows acumuladas (ADR-040).
-- Timeouts del servidor controlan convergencia de señales post-disparo, no período de recolección del edge (que es continuo).
-- ADR-047 pendiente: mitre-generator (consenso 8/8)
+**Causa exacta:**
+`firewall-acl-agent/src/api/zmq_subscriber.cpp` línea 450 usa la ruta antigua:
+```cpp
+auto key = crypto_transport::hex_to_bytes(config_.crypto_token);
+data = crypto_transport::decrypt(data, key);
+```
+`config_.crypto_token` viene vacío porque `get_encryption_key()` está
+**DEPRECATED desde DAY 98** (migración CryptoManager → CryptoTransport, ADR-013).
 
-## 12 NUEVAS DEUDAS TÉCNICAS (DEBT-ARGUSPP-*)
-- DEBT-ARGUSPP-NTP-001 (P0): chrony + gate arranque offset >1s
-- DEBT-ARGUSPP-COMMUNITY-ID-001 (P0 en v1.1): habilitar community_id Suricata+Zeek
-- DEBT-ARGUSPP-SURICATA-001 (P1): Vagrantfile + EMECAS
-- DEBT-ARGUSPP-ZEEK-001 (P1): Vagrantfile + EMECAS
-- DEBT-ARGUSPP-CORRELATION-001 (P1): correlation-engine v1.0 C++20
-- DEBT-ARGUSPP-TIMEOUT-CONFIG-001 (P1): mapa timeouts JSON
-- DEBT-ARGUSPP-NEO4J-TTL-001 (P1): TTL+compactación pre-producción
-- DEBT-ARGUSPP-RESOURCE-001 (P1 con hardware): medir CPU/RAM 4 fuentes RPi5+N100
-- DEBT-ARGUSPP-MITRE-001 (P1 post-hardware): mitre-generator + Atomic Red Team
-- DEBT-ARGUSPP-BENCHMARK-001 (P1 post-hardware): benchmark con 4 fuentes
-- DEBT-ARGUSPP-WAZUH-001 (P2): post-medición recursos
-- DEBT-PAPER-SYNTHETIC-001 (P2): sección paper v24 datasets sintéticos vs académicos
+También `firewall-acl-agent/src/main.cpp` línea 713:
+```cpp
+zmq_config.crypto_token = etcd_client->get_crypto_seed();
+```
+Ambos puntos hay que migrar.
 
-## EXPERIMENTO DATASETS — CONFIRMADO (para §8 paper v24)
-- Experimento 1: 100% académico → F1≈0.3 (pcap relay catastrófico)
-- Experimento 2: mezcla proporcional → degradaba el modelo al añadir académico
-- Experimento 3: 100% sintético estadístico (DeepSeek) → F1=0.9985, Recall=1.000, detecta Neris 2011
-- Hallazgo: datasets académicos = benchmark, NO entrenamiento. Sesgo de construcción.
-- Referencias: Arp et al.[2022], Wagner et al.[2022], Sommer&Paxson[2010]
-- Reproducible: si artefactos perdidos, re-ejecutar (la reproducibilidad es el punto)
+**Lo que SÍ funciona:**
+- El seed correcto existe en `/etc/ml-defender/firewall-acl-agent/seed.bin`
+- Es idéntico al de ml-detector (verificado con `cmp`)
+- ml-detector cifra correctamente con CryptoTransport + seed.bin
+- El firewall tiene el seed pero no lo usa
 
-## BACKLOG PRIORIDAD ABSOLUTA PRE-FEDER (deadline 22 sep 2026)
-1. Email a Andrés — ESTA SEMANA (desbloqueante externo hardware + GDPR)
-2. DEBT-ALERTING-EDGE-SOS-001
-3. DEBT-CRYPTO-AUTONOMY-001 (EXTENDED_AUTONOMY)
-4. DEBT-JENKINS-SEED-DISTRIBUTION-001
-5. DEBT-CRYPTO-CACHE-PERSISTENT-PROD-001
-6. Hardware físico (RPi5 + N100) — desbloquea ADR-041 y benchmarks
-7. DEBT-VAULT-FEDERATION-001 + DEBT-GDPR-ERASURE-001
+**Fix a aplicar:**
+Migrar `zmq_subscriber.cpp` y `main.cpp` para usar `CryptoTransport` con
+`seed.bin`, igual que hace ml-detector. Mismo patrón ADR-013 PHASE 2 DAY 98-99.
 
-## REGLAS PERMANENTES
-- EMECAS: vagrant destroy -f && vagrant up && make bootstrap && make test-all
-- macOS: siempre Python3 heredoc, nunca sed -i sin -e ''
-- Vagrant: siempre -c flag
-- ZMQ PUB/SUB: publisher bind() ANTES de subscriber connect()
-- Keypair activo regenera en cada EMECAS: b5b6cbdf67dad75cdd7e3169d827d1d6d4c938b720e34331f8a73f478ee85daa
-- ADR-047 pendiente: mitre-generator (Consejo 8/8 unánime)
+**Primer comando:**
+```bash
+grep -n "CryptoTransport\|seed\|decrypt\|zmq" ml-detector/src/zmq_handler.cpp | head -30
+grep -n "crypto_token\|hex_to_bytes\|decrypt\|CryptoTransport\|seed" \
+  firewall-acl-agent/src/api/zmq_subscriber.cpp \
+  firewall-acl-agent/src/main.cpp | head -40
+```
 
-## METODOLOGÍA
-- Consejo de Sabios: 8 modelos (Claude, Grok, ChatGPT, DeepSeek, Qwen, Gemini, Kimi, Mistral)
-- Test-Driven Hardening (TDH): RED→GREEN obligatorio. Sin test = no cerrado.
-- Via Appia Quality. JSON is the law. KISS.
+**Criterio de éxito:**
+```
+events_processed > 0, events_dropped = 0
+```
+En `logs/lab/firewall-agent.log` tras arrancar el pipeline.
+
+### ❌ TAREA 2 — Tras fix crypto
+**DEBT-EMECAS-E2E-001 — P1 (nueva):**
+
+EMECAS verifica compilación y tests unitarios pero NO verifica que el pipeline
+funciona end-to-end. El bug del firewall llevaba desde DAY 98 invisible porque
+50/50 tests pasan pero `events_processed=0` nunca se detectó.
+
+**Añadir fase `make test-e2e` al final de EMECAS:**
+
+```
+EMECAS actual:
+  vagrant destroy → vagrant up → make bootstrap → make test-all
+
+EMECAS propuesto:
+  vagrant destroy → vagrant up → make bootstrap → make test-all → make test-e2e
+```
+
+**Tests E2E mínimos a implementar:**
+```
+TEST-E2E-1: sniffer → ml-detector
+  → inyectar tráfico sintético (synthetic_sniffer_injector)
+  → verificar ml-detector: events_processed > 0
+
+TEST-E2E-2: ml-detector → firewall
+  → verificar firewall: events_processed > 0, events_dropped = 0
+  → verificar firewall: detections_received > 0
+
+TEST-E2E-3: etcd-server → firewall (AUTONOMY signal)
+  → verificar cadena de autonomía E2E
+
+TEST-E2E-4: pipeline completo — drop rate check
+  → FALLO si events_processed=0 en cualquier componente receptor
+  → FALLO si drop_rate=100% en cualquier canal ZMQ
+```
+
+**Prerequisito:** verificar y actualizar `tools/synthetic_sniffer_injector`
+para que genere tráfico compatible con el formato actual del pipeline
+(puede haber quedado desactualizado desde DAY 98 igual que el firewall).
+
+```bash
+# Primer comando para inspeccionar el injector
+grep -n "encrypt\|CryptoTransport\|seed\|zmq\|send" \
+  tools/synthetic_sniffer_injector.cpp | head -30
+```
+
+### ❌ Pendiente (P1, post TAREA 2)
+**DEBT-ALERTING-LIBCRYPTO-PROVIDER-001:**
+Mover `AlertClient` como implementación opaca dentro de `libcrypto_provider.so`.
+Exponer `argus/alerting.h` sin httplib en headers. Prerequisito para que
+todos los componentes puedan enviar alertas Discord/Telegram sin ODR.
+Hoy solo `etcd-server` puede enviar alertas de forma segura.
+
+### ❌ Pendiente (P2)
+**DEBT-ALERTING-VAULT-001:** migrar credenciales Discord/Telegram a Vault.
+
+## Reglas permanentes del proyecto
+- EMECAS = `vagrant destroy -f && vagrant up && make bootstrap && make test-all`
+- macOS: siempre Python3 heredoc (`<< 'PYEOF'`), nunca `sed -i` sin `-e ''`
+- Vagrant commands desde macOS siempre sin `-c` recursivo dentro de la VM
+- "Via Appia Quality" + "JSON is the law"
+- ZMQ publisher `bind()` ANTES de subscriber `connect()`
+- NO mergear a main hasta pipeline completamente funcional (E2E verde)
+
+## Orden del día DAY 159
+1. Fix DEBT-FIREWALL-CRYPTO-FORMAT-001 → `events_processed > 0`
+2. Verificar synthetic_sniffer_injector, actualizar si necesario
+3. Implementar `make test-e2e` con los 4 tests mínimos
+4. EMECAS completo con test-e2e incluido → todo verde
+5. Merge `feature/day158-alerting-edge-sos` → main → tag `v0.9.3-day158`
+6. Abrir rama `feature/day159-firewall-crypto-e2e`

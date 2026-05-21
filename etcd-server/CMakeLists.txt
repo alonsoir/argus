@@ -197,12 +197,14 @@ target_link_libraries(etcd-server
 target_include_directories(etcd-server
         PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}/include
+        ${CMAKE_CURRENT_SOURCE_DIR}/../common/include
         ${CRYPTO_TRANSPORT_INCLUDE_DIR}
         ${SEED_CLIENT_INCLUDE_DIR}
         ${CRYPTO_PROVIDER_INCLUDE_DIR}
         ${LIBSODIUM_INCLUDE_DIRS}
         ${LZ4_INCLUDE_DIRS}
         ${OPENSSL_INCLUDE_DIR}
+        /usr/local/include
 )
 
 # ============================================================================

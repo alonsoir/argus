@@ -10,7 +10,7 @@
 .PHONY: run-lab-dev kill-lab status-lab
 .PHONY: run-lab-dev-day23 kill-lab-day23 status-lab-day23
 .PHONY: kill-all check-ports restart
-.PHONY: clean clean-libs clean-components clean-all distclean test test-libs test-components test-all dev-setup schema-update parquet-convert test-parquet deploy-configs deploy-configs-prod
+.PHONY: clean clean-libs clean-components clean-all distclean test test-libs test-components test-all dev-setup schema-update parquet-convert test-parquet deploy-configs deploy-configs-prod test-alert-client
 .PHONY: build-unified rebuild-unified quick-fix dev-setup-unified
 .PHONY: check-libbpf verify-bpf-maps diagnose-bpf
 .PHONY: test-replay-small test-replay-neris test-replay-big test-replay-neris-x86-ebpf test-replay-neris-x86-libpcap experiment-suricata-up experiment-suricata-down experiment-suricata-run experiment-suricata-results experiment-suricata-status
@@ -1166,6 +1166,10 @@ distclean: clean-all
 #   test            - Run ALL tests (libs + components)
 # ============================================================================
 
+test-alert-client:
+	@echo "Testing alert-client..."
+	@vagrant ssh -c "cd /vagrant/common/build && ctest --output-on-failure"
+
 test-libs:
 	@echo "Testing seed-client..."
 	@$(MAKE) seed-client-test
@@ -1229,6 +1233,117 @@ test-all: test-libs test-components test-provision-1 test-invariant-seed plugin-
 test: test-all
 	@echo "💡 Tip: Use 'make test-libs' to test only libraries"
 	@echo "💡 Tip: Use 'make test-components' to test only components"
+
+
+# ============================================================================
+# E2E Tests (DAY 159)
+# test-e2e-synthetic: para componentes que sustituye, inyecta tráfico sintético
+#                     y verifica contadores en logs. Rápido y determinista.
+# test-e2e-live:      pipeline completo con componentes reales, parsea logs
+#                     y verifica integridad de la cadena completa.
+# Ambos son gates duros: exit 1 si cualquier criterio falla.
+# ============================================================================
+.PHONY: test-e2e-synthetic test-e2e-synthetic-full test-e2e-synthetic-firewall test-e2e-live test-e2e
+
+test-e2e-live:
+	@echo ""
+	@echo "╔════════════════════════════════════════════════════════════╗"
+	@echo "║  🧪 TEST-E2E-LIVE — Pipeline real, sin injectors          ║"
+	@echo "╚════════════════════════════════════════════════════════════╝"
+	@echo ""
+	@echo "── Verificando 6/6 RUNNING ──"
+	@$(MAKE) pipeline-status
+	@echo "── Rotando logs para medición limpia ──"
+	@vagrant ssh -c "mkdir -p /vagrant/logs/lab/archive && \
+	  for f in ml-detector.log firewall-agent.log; do \
+	    [ -f /vagrant/logs/lab/$$f ] && \
+	    cp /vagrant/logs/lab/$$f /vagrant/logs/lab/archive/$${f%.log}-$$(date +%s).log; \
+	    truncate -s 0 /vagrant/logs/lab/$$f 2>/dev/null || true; \
+	  done"
+	@echo "── Observando pipeline real durante 60s ──"
+	@sleep 60
+	@echo "── Verificando integridad E2E ──"
+	@vagrant ssh -c "python3 /vagrant/scripts/check_e2e_pipeline.py" || \
+	  (echo "❌ TEST-E2E-LIVE FAILED" && exit 1)
+	@echo ""
+	@echo "╔════════════════════════════════════════════════════════════╗"
+	@echo "║  ✅ TEST-E2E-LIVE PASSED                                  ║"
+	@echo "╚════════════════════════════════════════════════════════════╝"
+
+test-e2e-synthetic-full:
+	@echo ""
+	@echo "╔════════════════════════════════════════════════════════════╗"
+	@echo "║  🧪 TEST-E2E-SYNTHETIC-FULL                               ║"
+	@echo "║  sniffer_injector → ml-detector → firewall               ║"
+	@echo "╚════════════════════════════════════════════════════════════╝"
+	@echo ""
+	@echo "── Parando sniffer real ──"
+	@vagrant ssh -c "tmux kill-session -t sniffer 2>/dev/null || true"
+	@sleep 2
+	@echo "── Esperando stat fresco de ml-detector (60s cycle) ──"
+	@sleep 65
+	@echo "── Snapshot de contadores ──"
+	@vagrant ssh -c "python3 /vagrant/scripts/check_e2e_pipeline.py snapshot"
+	@echo "── Inyectando 100 eventos vía synthetic_sniffer_injector ──"
+	@vagrant ssh -c "tmux kill-session -t e2e-sniffer-injector 2>/dev/null || true"
+	@vagrant ssh -c "tmux new-session -d -s e2e-sniffer-injector 'sudo env LD_LIBRARY_PATH=/usr/local/lib /vagrant/tools/build-debug/synthetic_sniffer_injector 100 10 > /vagrant/logs/lab/e2e-sniffer-injector.log 2>&1; tmux kill-session -t e2e-sniffer-injector 2>/dev/null || true'"
+	@echo "   Esperando fin de inyeccion (~20s)..."
+	@vagrant ssh -c "timeout 40 sh -c 'until grep -q Injection\ complete /vagrant/logs/lab/e2e-sniffer-injector.log 2>/dev/null; do sleep 1; done'"
+	@vagrant ssh -c "tail -3 /vagrant/logs/lab/e2e-sniffer-injector.log"
+	@echo "   Esperando stats de ml-detector (60s cycle)..."
+	@sleep 65
+	@echo "── Verificando delta E2E ──"
+	@vagrant ssh -c "python3 /vagrant/scripts/check_e2e_pipeline.py check" || \
+	  (echo "❌ TEST-E2E-SYNTHETIC-FULL FAILED" && exit 1)
+	@echo "── Restaurando sniffer ──"
+	@$(MAKE) sniffer-start
+	@echo ""
+	@echo "╔════════════════════════════════════════════════════════════╗"
+	@echo "║  ✅ TEST-E2E-SYNTHETIC-FULL PASSED                        ║"
+	@echo "╚════════════════════════════════════════════════════════════╝"
+
+test-e2e-synthetic-firewall:
+	@echo ""
+	@echo "╔════════════════════════════════════════════════════════════╗"
+	@echo "║  🧪 TEST-E2E-SYNTHETIC-FIREWALL                           ║"
+	@echo "║  ml_output_injector → firewall (aislado)                 ║"
+	@echo "╚════════════════════════════════════════════════════════════╝"
+	@echo ""
+	@echo "── Parando sniffer + ml-detector ──"
+	@vagrant ssh -c "tmux kill-session -t sniffer 2>/dev/null || true"
+	@vagrant ssh -c "tmux kill-session -t ml-detector 2>/dev/null || true"
+	@sleep 2
+	@echo "── Snapshot de contadores firewall ──"
+	@vagrant ssh -c "python3 /vagrant/scripts/check_e2e_pipeline.py snapshot"
+	@echo "── Inyectando 100 amenazas vía synthetic_ml_output_injector ──"
+	@vagrant ssh -c "tmux kill-session -t e2e-ml-injector 2>/dev/null || true"
+	@vagrant ssh -c "tmux new-session -d -s e2e-ml-injector 'sudo env LD_LIBRARY_PATH=/usr/local/lib /vagrant/tools/build-debug/synthetic_ml_output_injector 100 10 > /vagrant/logs/lab/e2e-ml-injector.log 2>&1; tmux kill-session -t e2e-ml-injector 2>/dev/null || true'"
+	@echo "   Esperando fin de inyeccion (~20s)..."
+	@vagrant ssh -c "timeout 40 sh -c 'until grep -q Injection\ complete /vagrant/logs/lab/e2e-ml-injector.log 2>/dev/null; do sleep 1; done'"
+	@vagrant ssh -c "tail -3 /vagrant/logs/lab/e2e-ml-injector.log"
+	@echo "   Esperando stats de firewall (30s cycle)..."
+	@sleep 35
+	@echo "── Verificando delta E2E firewall ──"
+	@vagrant ssh -c "python3 /vagrant/scripts/check_e2e_pipeline.py check-firewall" || \
+	  (echo "❌ TEST-E2E-SYNTHETIC-FIREWALL FAILED" && exit 1)
+	@echo "── Restaurando pipeline ──"
+	@$(MAKE) ml-detector-start sniffer-start
+	@echo ""
+	@echo "╔════════════════════════════════════════════════════════════╗"
+	@echo "║  ✅ TEST-E2E-SYNTHETIC-FIREWALL PASSED                    ║"
+	@echo "╚════════════════════════════════════════════════════════════╝"
+
+test-e2e-synthetic: test-e2e-synthetic-full test-e2e-synthetic-firewall
+	@echo ""
+	@echo "╔════════════════════════════════════════════════════════════╗"
+	@echo "║  ✅ ALL SYNTHETIC E2E TESTS PASSED (DAY 159)              ║"
+	@echo "╚════════════════════════════════════════════════════════════╝"
+
+test-e2e: test-e2e-synthetic test-e2e-live
+	@echo ""
+	@echo "╔════════════════════════════════════════════════════════════╗"
+	@echo "║  ✅ ALL E2E TESTS PASSED (DAY 159)                       ║"
+	@echo "╚════════════════════════════════════════════════════════════╝"
 
 # ============================================================================
 # Fuzzing Targets (DEBT-FUZZING-LIBFUZZER-001 — DAY 130)

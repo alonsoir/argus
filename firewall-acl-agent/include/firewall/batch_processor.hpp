@@ -22,6 +22,9 @@
 
 #pragma once
 #include "firewall/config_loader.hpp"
+// alert_client.hpp movido al .cpp (DEBT-FIREWALL-HTTPLIB-ODR-001 — pimpl)
+#include <nlohmann/json.hpp>
+#include <memory>
 
 #include "firewall/ipset_wrapper.hpp"
 #include "network_security.pb.h"
@@ -58,6 +61,7 @@ struct BatchProcessorConfig {
     // Filtering
     float confidence_threshold{0.8f};         ///< Minimum confidence to block
     bool block_low_confidence{false};         ///< Block IPs with low confidence
+    nlohmann::json alerting_json{{"alerting", {{"enabled", false}}}};  ///< DEBT-ALERTING-EDGE-SOS-001
 };
 
 //===----------------------------------------------------------------------===//

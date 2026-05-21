@@ -20,6 +20,8 @@
 //===----------------------------------------------------------------------===//
 
 #include "firewall/batch_processor.hpp"
+// DEBT-ALERTING-VAULT-001 (P2): alert_client eliminado del firewall
+// httplib no debe compilarse en el binario firewall (ODR con libetcd_client.so)
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <unistd.h>
@@ -644,6 +646,8 @@ void BatchProcessor::check_auto_isolate(const protobuf::Detection& detection) {
         "score",      detection.confidence(),
         "type",       static_cast<int>(detection.type()),
         "interface",  irp_config_.isolate_interface);
+    // DEBT-ALERTING-VAULT-001 (P2): SOS via Vault pendiente
+    // alert_client eliminado — ODR con libetcd_client.so (httplib symbol clash)
 
     // ── fork()+execv(): el firewall sigue vivo ────────────────────────────
     pid_t pid = fork();

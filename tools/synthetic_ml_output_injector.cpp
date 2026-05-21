@@ -2,7 +2,7 @@
 // Synthetic ML Detector → Firewall ACL Agent Event Generator
 // Generates NetworkSecurityEvent with ML analysis for firewall stress testing
 // AUTHORS: Alonso Isidoro Roman + Claude (Anthropic)
-// DATE: 2 February 2026 - Day 49
+// DATE: 2 February 2026 - Day 49 | Migrated DAY 159: ADR-013 PHASE 2 CryptoTransport
 
 #include <zmq.hpp>
 #include <iostream>
@@ -15,19 +15,48 @@
 // Protobuf
 #include "network_security.pb.h"
 
-// Crypto-transport
-#include <crypto_transport/crypto_manager.hpp>
-#include <crypto_transport/utils.hpp>
+// Crypto-transport (ADR-013 PHASE 2 — DAY 159)
+#include <seed_client/seed_client.hpp>
+#include <crypto_transport/transport.hpp>
+#include <crypto_transport/contexts.hpp>
+#include <lz4.h>
+#include <cstring>
 
 // etcd-client
 #include <etcd_client/etcd_client.hpp>
+// JSON config
+#include <nlohmann/json.hpp>
+#include <fstream>
 
 class SyntheticMLOutputInjector {
 private:
     zmq::context_t zmq_ctx_;
     zmq::socket_t publisher_;
     std::unique_ptr<etcd_client::EtcdClient> etcd_client_;
-    std::string crypto_seed_;
+    std::unique_ptr<ml_defender::SeedClient> seed_client_;
+    std::string zmq_bind_address_{"tcp://*:5572"};  // default, overridden by JSON
+
+    void load_zmq_config(const std::string& config_path) {
+        try {
+            std::ifstream f(config_path);
+            if (!f.is_open()) {
+                std::cerr << "⚠️  [config] Cannot open " << config_path << " — using defaults\n";
+                return;
+            }
+            auto j = nlohmann::json::parse(f);
+            auto& sock = j["network"]["output_socket"];
+            std::string endpoint = sock["endpoint"].get<std::string>();
+            // Normalize: replace 0.0.0.0 with * for bind
+            std::string bind_ep = endpoint;
+            auto pos = bind_ep.find("0.0.0.0");
+            if (pos != std::string::npos) bind_ep.replace(pos, 7, "*");
+            zmq_bind_address_ = bind_ep;
+            std::cout << "📋 [config] ZMQ endpoint from JSON: bind " << zmq_bind_address_ << "\n";
+        } catch (const std::exception& e) {
+            std::cerr << "⚠️  [config] JSON parse error: " << e.what() << " — using defaults\n";
+        }
+    }
+    std::unique_ptr<crypto_transport::CryptoTransport> tx_;
     std::mt19937 rng_;
 
     // Random generators
@@ -94,7 +123,9 @@ public:
         , rng_(std::random_device{}())
     {
         // Bind to firewall-acl-agent input port
-        publisher_.bind("tcp://*:5572");
+        // DAY 159: leer endpoint desde ml_detector_config.json (Single Source of Truth)
+        load_zmq_config("/etc/ml-defender/ml-detector/ml_detector_config.json");
+        publisher_.bind(zmq_bind_address_);
 
         // Parse endpoint: "localhost:2379" → host="localhost", port=2379
         size_t colon_pos = etcd_endpoint.find(':');
@@ -130,14 +161,13 @@ public:
 
         std::cout << "✅ [etcd] Connected and registered\n";
 
-        // Get encryption key
-        crypto_seed_ = etcd_client_->get_encryption_key();
-        if (crypto_seed_.empty()) {
-            throw std::runtime_error("Encryption key is empty after registration");
-        }
-
-        std::cout << "✅ [etcd] Retrieved encryption key (" << crypto_seed_.size() << " hex chars)\n";
-        std::cout << "🔑 DEBUG: Encryption key = " << crypto_seed_ << "\n";
+        // ADR-013 PHASE 2 — DAY 159: CryptoTransport via SeedClient
+        seed_client_ = std::make_unique<ml_defender::SeedClient>(
+            "/etc/ml-defender/ml-detector/ml_detector_config.json");
+        seed_client_->load();
+        tx_ = std::make_unique<crypto_transport::CryptoTransport>(
+            *seed_client_, ml_defender::crypto::CTX_ML_TO_FIREWALL);
+        std::cout << "✅ [crypto] CryptoTransport inicializado (HKDF-SHA256 + ChaCha20-Poly1305)\n";
 
         // Give ZMQ time to bind
         std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -171,14 +201,26 @@ public:
                 continue;
             }
 
-            // Hex → bytes → string para CryptoManager
-            auto key_bytes = crypto_transport::hex_to_bytes(crypto_seed_);
-            std::string key_str(key_bytes.begin(), key_bytes.end());
-            crypto::CryptoManager crypto_mgr(key_str);
-
-            auto compressed_str = crypto_mgr.compress_with_size(serialized);
-            auto encrypted_str = crypto_mgr.encrypt(compressed_str);
-            std::vector<uint8_t> encrypted(encrypted_str.begin(), encrypted_str.end());
+            // ADR-013 PHASE 2 — DAY 159: LZ4 LE + CryptoTransport
+            std::vector<uint8_t> to_encrypt;
+            {
+                int orig_size = static_cast<int>(serialized.size());
+                int max_compressed = LZ4_compressBound(orig_size);
+                std::vector<uint8_t> compressed(sizeof(uint32_t) + static_cast<size_t>(max_compressed));
+                uint32_t orig_le = static_cast<uint32_t>(orig_size);
+                std::memcpy(compressed.data(), &orig_le, sizeof(orig_le));
+                int compressed_size = LZ4_compress_default(
+                    serialized.data(),
+                    reinterpret_cast<char*>(compressed.data() + sizeof(uint32_t)),
+                    orig_size, max_compressed);
+                if (compressed_size > 0) {
+                    compressed.resize(sizeof(uint32_t) + static_cast<size_t>(compressed_size));
+                    to_encrypt = std::move(compressed);
+                } else {
+                    to_encrypt = std::vector<uint8_t>(serialized.begin(), serialized.end());
+                }
+            }
+            auto encrypted = tx_->encrypt(to_encrypt);
 
             // Send via ZMQ
             zmq::message_t msg(encrypted.data(), encrypted.size());

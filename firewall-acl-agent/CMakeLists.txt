@@ -247,6 +247,8 @@ target_include_directories(firewall_core
         ${SEED_CLIENT_INCLUDE_DIR}
         ${LZ4_INCLUDE_DIRS}
         ${CMAKE_CURRENT_SOURCE_DIR}/../contrib/safe-path/include
+        ${CMAKE_CURRENT_SOURCE_DIR}/../common/include
+        /usr/local/include
 )
 
 #===----------------------------------------------------------------------===//
@@ -261,6 +263,7 @@ target_link_libraries(firewall-acl-agent
         PRIVATE
         firewall_core
         OpenSSL::Crypto
+        OpenSSL::SSL
 )
 #===----------------------------------------------------------------------===//
 # ADR-012 PHASE 1b — Plugin Loader (DAY 102)
@@ -397,7 +400,6 @@ target_include_directories(test_autonomy_e2e PRIVATE
 target_link_libraries(test_autonomy_e2e PRIVATE
     firewall_core
     GTest::gtest_main
-    vault_client
     crypto_provider
     zmq
 )
