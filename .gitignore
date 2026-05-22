@@ -261,3 +261,5 @@ etcd-server/build
 rag-ingester/build
 scripts/parquet/schemas/__pycache__/
 test_sos_e2e.cpp
+enterprise_vendor.key
+enterprise.token
