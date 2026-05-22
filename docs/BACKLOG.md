@@ -4790,3 +4790,24 @@ una vez abierta la CrisisWindow — no controlan el período de recolección del
 Una CrisisWindow es un registro de evento, no un dataset de entrenamiento. Los datasets de
 entrenamiento se acumulan de cientos/miles de CrisisWindows a lo largo de días/semanas (ADR-040).
 
+
+### DEBT-HARDWARE-STORAGE-001 — NVMe obligatorio en nodos de producción
+**Severidad:** 🔴 P0 pre-producción
+**Estado:** ABIERTO — DAY 160
+**Componente:** hardware spec + deployment.yaml + ADR-048
+
+SD cards en RPi5 bajo carga NDR continua (logs, Parquet, crypto cache, eventos)
+fallan en semanas/meses por agotamiento de ciclos de escritura NAND.
+
+**Solución:** RPi5 + NVMe HAT + SSD M.2 128GB (~110€/nodo vs ~90€ con SD).
+- argus-collector: 256GB recomendado (acumula Parquet multi-engine)
+- Resto de nodos: 128GB suficiente
+- SD card: solo para recovery/imaging inicial, nunca en producción
+
+**Campo en deployment.yaml:** `storage_type: nvme`
+**Campo en hardware_profile.yml:** prerequisito de deploy en producción
+**Impacto en BACKLOG-DEPLOY-CALCULATOR-001:** parámetros de escritura
+  (HWM, buffer sizes, flush intervals) dependen del tipo de almacenamiento.
+
+**Test de cierre:** nodo con NVMe desplegado + pipeline corriendo 72h
+  sin degradación de escritura medible.
