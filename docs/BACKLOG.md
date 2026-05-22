@@ -1513,12 +1513,18 @@ incrementalmente. MacBook como servidor mientras llegan fondos UEx.
 
 **Estado:** ACTIVO — colaboración UEx/INCIBE en curso
 **Contacto:** Andrés Caro Lindo — UEx/INCIBE — andresc@unex.es
-**Deadline límite:** referencia de ritmo, NO deadline duro (DAY 149)
+
+**REALIDAD ACTUALIZADA DAY 160:**
+- NO hay deadline FEDER sin el cual no. El 22-09-2026 era referencia de ritmo.
+- Gate real: ser introducido OFICIALMENTE en el grupo de investigación de Andrés.
+- Prerequisito de ese gate: demostrar que el pipeline produce datasets de valor científico.
+- El FEDER es consecuencia del valor demostrado, no el objetivo en sí.
+- Lo que le interesa a Andrés: producción de datasets de vanguardia, no la demo NDR per se.
+
 **Convocatoria:** pendiente identificar — limitada a investigador independiente sin empresa
 **Colaboración:** Andrés como co-investigador, no solo asesor. Posible infra UEx para servidor.
-**Hardware en camino (DAY 149):** RPi × N + switch desde UEx. Email pendiente para añadir N100 x86.
+**Hardware en camino:** RPi × N + switch desde UEx. Email pendiente para añadir N100 x86.
 **Emails enviados DAY 141:** hardware FEDER + scope standalone vs federado
-**Llamada DAY 149:** datasets bajo paraguas UEx prerequisito convocatoria
 
 ### Gate de entrada
 
@@ -1534,6 +1540,64 @@ incrementalmente. MacBook como servidor mientras llegan fondos UEx.
 - [ ] BACKLOG-ZMQ-TUNING-001 concluido
 - [ ] BACKLOG-BENCHMARK-CAPACITY-001 concluido (FEDER Year 1 Deliverable)
 - [ ] Clarificación scope con Andrés: NDR standalone vs federación (antes julio 2026)
+
+---
+
+
+
+---
+
+## ADR-048 — Dataset Production Roadmap (DAY 160)
+
+**Estado:** DEFINIDO DAY 160 — Consejo 8/8 + Founder
+**Hipótesis central:**
+> Un ataque MITRE controlado visto simultáneamente por 5 lenses calibradas para geometrías
+> distintas del ataque produce datasets como el mundo nunca ha visto.
+> Al añadir señal progresivamente (fase 1→5), el F1 del modelo ensemble mejora de forma
+> medible y publicable. Esa curva de mejora es la contribución científica para Andrés/UEx.
+
+**El plan — 5 fases de señal creciente:**
+
+| Fase | Componentes activos | Dataset producido | Modelo entrenado |
+|------|---------------------|-------------------|-----------------|
+| **F1** | aRGus (ML behavioral, F1=0.9985) | Parquet ml-detector + firewall | XGBoost baseline |
+| **F2** | aRGus + Suricata | F1 + eve.json (firmas) | Ensemble F1+F2 |
+| **F3** | aRGus + Suricata + Zeek | F2 + conn/dns/ssl/files.log | Ensemble F1+F2+F3 |
+| **F4** | aRGus + Suricata + Zeek + Wazuh | F3 + host events (HIDS) | Ensemble F1+F2+F3+F4 |
+| **F5** | F4 + Neo4j (correlation engine) | F4 unificado vía community_id | Modelo final |
+
+**Entregaremos a Andrés:**
+- Datasets de CADA fase (no solo el final) — integridad científica
+- Modelo entrenado de cada fase con métricas F1/Precision/Recall documentadas
+- La curva de mejora F1 al añadir señal es la contribución publicable
+- Proceso MITRE controlado (hackeo simulado) como ground truth reproducible
+
+**La sesión MITRE:**
+- Construida por nosotros — lo mejor que podamos
+- Ejecutada contra el pipeline con los 5 engines activos simultáneamente
+- Cada engine ve el ataque desde su propia geometría (behavioral, firma, protocolo, host, grafo)
+- El dataset resultante tiene ground truth conocido y verificable
+
+**community_id es el pegamento entre engines** — primary key de correlación cross-tool.
+**Neo4j es el cerebro de la unión inteligente** — no un simple join, sino un grafo de correlación temporal.
+
+**Dependencias técnicas por fase:**
+
+| Fase | Prerequisito técnico | Estado |
+|------|---------------------|--------|
+| F1 | Pipeline aRGus completo + Parquet | ✅ DAY 159 |
+| F2 | DEBT-ARGUSPP-SURICATA-001 | ⏳ OPEN |
+| F3 | DEBT-ARGUSPP-ZEEK-001 | ⏳ OPEN |
+| F4 | DEBT-ARGUSPP-WAZUH-001 | ⏳ OPEN |
+| F5 | DEBT-ARGUSPP-CORRELATION-001 + Neo4j | ⏳ OPEN |
+| Todas | DEBT-ARGUSPP-NTP-001 (sync temporal) | ⏳ OPEN P0 |
+| Todas | DEBT-ARGUSPP-COMMUNITY-ID-001 | ⏳ OPEN P0 |
+| F5 | DEBT-ARGUSPP-MITRE-001 (ADR-047) | ⏳ OPEN |
+
+**Nota de integridad (Founder DAY 160):**
+Entregaremos datasets de cada fase para que la comunidad científica pueda verificar
+que la mejora del modelo es consecuencia real de la señal añadida, no de overfitting
+ni de artefactos del proceso. La honestidad científica es no negociable.
 
 ---
 
@@ -3743,12 +3807,18 @@ incrementalmente. MacBook como servidor mientras llegan fondos UEx.
 
 **Estado:** ACTIVO — colaboración UEx/INCIBE en curso
 **Contacto:** Andrés Caro Lindo — UEx/INCIBE — andresc@unex.es
-**Deadline límite:** referencia de ritmo, NO deadline duro (DAY 149)
+
+**REALIDAD ACTUALIZADA DAY 160:**
+- NO hay deadline FEDER sin el cual no. El 22-09-2026 era referencia de ritmo.
+- Gate real: ser introducido OFICIALMENTE en el grupo de investigación de Andrés.
+- Prerequisito de ese gate: demostrar que el pipeline produce datasets de valor científico.
+- El FEDER es consecuencia del valor demostrado, no el objetivo en sí.
+- Lo que le interesa a Andrés: producción de datasets de vanguardia, no la demo NDR per se.
+
 **Convocatoria:** pendiente identificar — limitada a investigador independiente sin empresa
 **Colaboración:** Andrés como co-investigador, no solo asesor. Posible infra UEx para servidor.
-**Hardware en camino (DAY 149):** RPi × N + switch desde UEx. Email pendiente para añadir N100 x86.
+**Hardware en camino:** RPi × N + switch desde UEx. Email pendiente para añadir N100 x86.
 **Emails enviados DAY 141:** hardware FEDER + scope standalone vs federado
-**Llamada DAY 149:** datasets bajo paraguas UEx prerequisito convocatoria
 
 ### Gate de entrada
 
@@ -3764,6 +3834,64 @@ incrementalmente. MacBook como servidor mientras llegan fondos UEx.
 - [ ] BACKLOG-ZMQ-TUNING-001 concluido
 - [ ] BACKLOG-BENCHMARK-CAPACITY-001 concluido (FEDER Year 1 Deliverable)
 - [ ] Clarificación scope con Andrés: NDR standalone vs federación (antes julio 2026)
+
+---
+
+
+
+---
+
+## ADR-048 — Dataset Production Roadmap (DAY 160)
+
+**Estado:** DEFINIDO DAY 160 — Consejo 8/8 + Founder
+**Hipótesis central:**
+> Un ataque MITRE controlado visto simultáneamente por 5 lenses calibradas para geometrías
+> distintas del ataque produce datasets como el mundo nunca ha visto.
+> Al añadir señal progresivamente (fase 1→5), el F1 del modelo ensemble mejora de forma
+> medible y publicable. Esa curva de mejora es la contribución científica para Andrés/UEx.
+
+**El plan — 5 fases de señal creciente:**
+
+| Fase | Componentes activos | Dataset producido | Modelo entrenado |
+|------|---------------------|-------------------|-----------------|
+| **F1** | aRGus (ML behavioral, F1=0.9985) | Parquet ml-detector + firewall | XGBoost baseline |
+| **F2** | aRGus + Suricata | F1 + eve.json (firmas) | Ensemble F1+F2 |
+| **F3** | aRGus + Suricata + Zeek | F2 + conn/dns/ssl/files.log | Ensemble F1+F2+F3 |
+| **F4** | aRGus + Suricata + Zeek + Wazuh | F3 + host events (HIDS) | Ensemble F1+F2+F3+F4 |
+| **F5** | F4 + Neo4j (correlation engine) | F4 unificado vía community_id | Modelo final |
+
+**Entregaremos a Andrés:**
+- Datasets de CADA fase (no solo el final) — integridad científica
+- Modelo entrenado de cada fase con métricas F1/Precision/Recall documentadas
+- La curva de mejora F1 al añadir señal es la contribución publicable
+- Proceso MITRE controlado (hackeo simulado) como ground truth reproducible
+
+**La sesión MITRE:**
+- Construida por nosotros — lo mejor que podamos
+- Ejecutada contra el pipeline con los 5 engines activos simultáneamente
+- Cada engine ve el ataque desde su propia geometría (behavioral, firma, protocolo, host, grafo)
+- El dataset resultante tiene ground truth conocido y verificable
+
+**community_id es el pegamento entre engines** — primary key de correlación cross-tool.
+**Neo4j es el cerebro de la unión inteligente** — no un simple join, sino un grafo de correlación temporal.
+
+**Dependencias técnicas por fase:**
+
+| Fase | Prerequisito técnico | Estado |
+|------|---------------------|--------|
+| F1 | Pipeline aRGus completo + Parquet | ✅ DAY 159 |
+| F2 | DEBT-ARGUSPP-SURICATA-001 | ⏳ OPEN |
+| F3 | DEBT-ARGUSPP-ZEEK-001 | ⏳ OPEN |
+| F4 | DEBT-ARGUSPP-WAZUH-001 | ⏳ OPEN |
+| F5 | DEBT-ARGUSPP-CORRELATION-001 + Neo4j | ⏳ OPEN |
+| Todas | DEBT-ARGUSPP-NTP-001 (sync temporal) | ⏳ OPEN P0 |
+| Todas | DEBT-ARGUSPP-COMMUNITY-ID-001 | ⏳ OPEN P0 |
+| F5 | DEBT-ARGUSPP-MITRE-001 (ADR-047) | ⏳ OPEN |
+
+**Nota de integridad (Founder DAY 160):**
+Entregaremos datasets de cada fase para que la comunidad científica pueda verificar
+que la mejora del modelo es consecuencia real de la señal añadida, no de overfitting
+ni de artefactos del proceso. La honestidad científica es no negociable.
 
 ---
 

@@ -41,14 +41,17 @@
 <!-- DAY-STATUS -->
 | Campo | Valor |
 |---|---|
-| DAY | 159 |
-| Tag | v0.9.3-day158 |
-| Branch | main |
-| EMECAS | ✅ Verde (2026-05-21) — incluye gate E2E |
+| DAY | 160 |
+| Tag | v0.9.4-day160 |
+| Branch | feature/day160-enterprise-vault-crypto → merge pendiente |
+| EMECAS | ✅ Verde DAY 159 |
 | Pipeline | 6/6 RUNNING |
-| EMECAS++ | ✅ test-e2e verde (synthetic-full + firewall + live) |
-| Próximo hito | DEBT-ENTERPRISE-PLUGIN-001 (vault_provider.so ADR-025) |
-| Deadline FEDER | 22-09-2026 |
+| EMECAS++ | ✅ test-e2e verde + test-enterprise-plugin verde |
+| Plugin enterprise | ✅ libvault_provider.so — 6 tests RED→GREEN |
+| Jenkins | ✅ 2.555.2 operacional (Java 21 Temurin) |
+| Vault | ✅ v2.0.1 dev mode — secret/argus/crypto |
+| Próximo hito | ADR-048 F1 → F2: integrar Suricata en pipeline |
+| Gate UEx/INCIBE | Datasets de valor científico (no deadline duro) |
 <!-- /DAY-STATUS -->
 
 **Tag activo:** `v0.9.3-day158` | **Branch activa:** `main`
@@ -511,6 +514,7 @@ make hardened-full   # destroy → up → provision → build → deploy → che
 - ✅ DAY 150: **ADR-044 implementación completa · provision_crypto.sh · vault_client C++20 · Jenkinsfile Provision Crypto · EMECAS verde** 🎉
 - ✅ DAY 154: **ADR-045 VaultClient decomposition · DEBT-FIREWALL-AUTONOMY-MODE-001 CERRADA · 48/48 tests · v0.8.0-adr045** 🎉
 - ✅ DAY 155: **DEBT-FIREWALL-DENY-SELECTIVE-001 · DEBT-AUTONOMY-ZMQ-EVENTS-001 · BACKLOG-ZMQ-TUNING-001 · 49/49 tests · EMECAS HARDENED PASSED · v0.9.0-day155** 🎉
+- ✅ DAY 160: **DEBT-ENTERPRISE-PLUGIN-001 · libvault_provider.so 6/6 tests · Jenkins 2.555.2 + Vault v2.0.1 · ADR-048 Dataset Production Roadmap definido · v0.9.4-day160** 🎉
 - ✅ DAY 157: **4 deudas cerradas · Consejo 8/8 · Staleness guard · Keypair lifecycle prod · Bootstrap firmado · EMECAS VERDE · v0.9.2-day157** 🎉
 - ✅ DAY 156: **DEBT-AUTONOMY-CRYPTO-INTEGRATION-001 · Test B 7/7 + Test A 4/4 · Fix ZMQ slow joiner · EMECAS VERDE 50/50 · v0.9.1-day156** 🎉
 - ✅ DAY 151: **ICryptoProvider + SeedFileProvider + VaultProvider · etcd-server STEP 0 · ADR-045 aprobado · 55+ tests verdes · v0.8.0-day151** 🎉
