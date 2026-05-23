@@ -1243,7 +1243,7 @@ test: test-all
 #                     y verifica integridad de la cadena completa.
 # Ambos son gates duros: exit 1 si cualquier criterio falla.
 # ============================================================================
-.PHONY: test-e2e-synthetic test-e2e-synthetic-full test-e2e-synthetic-firewall test-e2e-live test-e2e
+.PHONY: test-e2e-synthetic test-e2e-synthetic-full test-e2e-synthetic-firewall test-e2e-live test-e2e test-enterprise-plugin vault-dev-start vault-dev-stop
 
 test-e2e-live:
 	@echo ""
@@ -1340,6 +1340,36 @@ test-e2e-synthetic: test-e2e-synthetic-full test-e2e-synthetic-firewall
 	@echo "╚════════════════════════════════════════════════════════════╝"
 
 test-e2e: test-e2e-synthetic test-e2e-live
+
+# ── Enterprise plugin tests ───────────────────────────────────────────────────
+# Requiere: Vault dev mode corriendo (make vault-dev-start)
+test-enterprise-plugin:
+	@echo "=== test-enterprise-plugin ==="
+	@vagrant ssh defender -c " \
+	  cd /vagrant/enterprise/plugins/vault_crypto/build && \
+	  cmake .. -DBUILD_TESTS=ON -DCMAKE_BUILD_TYPE=Debug > /dev/null 2>&1 && \
+	  make -j$$(nproc) > /dev/null 2>&1 && \
+	  ./tests/test_vault_provider" || \
+	  (echo "FAILED: test-enterprise-plugin -- Vault dev mode corriendo?" && exit 1)
+	@echo "=== test-enterprise-plugin PASSED ==="
+
+vault-dev-start:
+	@echo "=== Arrancando Vault dev mode ==="
+	@vagrant ssh defender -c " \
+	  pgrep -x vault > /dev/null && echo 'Vault ya corriendo' || \
+	  (nohup vault server -dev \
+	    -dev-root-token-id=argus-dev-token \
+	    -dev-listen-address=0.0.0.0:8200 \
+	    > /tmp/vault-dev.log 2>&1 &) ; \
+	  sleep 3 && \
+	  VAULT_ADDR=http://127.0.0.1:8200 VAULT_TOKEN=argus-dev-token \
+	  vault kv put secret/argus/crypto \
+	    seed=argus-dev-seed-32bytes-placeholder provider=vault_crypto > /dev/null && \
+	  echo 'Vault dev OK'"
+
+vault-dev-stop:
+	@vagrant ssh defender -c "pkill vault && echo 'Vault detenido' || echo 'Vault no estaba corriendo'"
+
 	@echo ""
 	@echo "╔════════════════════════════════════════════════════════════╗"
 	@echo "║  ✅ ALL E2E TESTS PASSED (DAY 159)                       ║"
