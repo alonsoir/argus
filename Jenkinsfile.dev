@@ -1,0 +1,78 @@
+// aRGus NDR — Jenkinsfile.dev
+// Pipeline CI/CD para entorno de desarrollo (VM Vagrant)
+// Consejo DAY 161 (ChatGPT/Kimi/DeepSeek convergentes)
+//
+// Prerequisitos:
+//   - Jenkins corriendo en http://localhost:8080
+//   - Credential: vault-enterprise-token (Secret Text)
+//   - Vault dev mode: make vault-dev-start
+
+pipeline {
+    agent any
+
+    environment {
+        VAULT_ADDR = 'http://127.0.0.1:8200'
+    }
+
+    stages {
+
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
+
+        stage('Bootstrap') {
+            steps {
+                sh 'make bootstrap'
+            }
+        }
+
+        stage('Wire Protocol') {
+            // DEBT-WIRE-PROTOCOL-TEST-001 (DAY 161)
+            // Gate obligatorio — sin esto el pipeline no tiene cimientos
+            steps {
+                sh 'make test-wire-protocol'
+            }
+        }
+
+        stage('Unit Tests') {
+            steps {
+                sh 'make test-all'
+            }
+        }
+
+        stage('Enterprise Plugin') {
+            steps {
+                withCredentials([string(credentialsId: 'vault-enterprise-token',
+                                        variable: 'VAULT_TOKEN')]) {
+                    sh 'make test-enterprise-plugin'
+                }
+            }
+        }
+
+        stage('Build .deb') {
+            steps {
+                sh 'make package-deb'
+            }
+        }
+
+        stage('Deploy Vagrant Test') {
+            steps {
+                sh 'make deploy-vagrant-test'
+            }
+        }
+    }
+
+    post {
+        always {
+            sh 'make vault-dev-stop || true'
+        }
+        success {
+            echo 'Pipeline dev PASSED — aRGus NDR'
+        }
+        failure {
+            echo 'Pipeline dev FAILED — revisar logs'
+        }
+    }
+}
