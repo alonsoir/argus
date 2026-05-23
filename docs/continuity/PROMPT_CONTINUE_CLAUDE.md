@@ -1,213 +1,106 @@
-# PROMPT_CONTINUE_CLAUDE — aRGus NDR DAY 161
-*Generado: 2026-05-22 · branch: feature/day161-cicd-pipeline · main @ v0.9.4-day160*
+# ── PROMPT DE CONTINUIDAD DAY 162 ──────────────────────────────────────────────
+prompt = """# PROMPT DE CONTINUIDAD — aRGus NDR DAY 162
+*Generado: 2026-05-23 · Branch: feature/day161-cicd-pipeline (pendiente merge)*
 
 ---
 
-## Contexto del proyecto
+## Contexto esencial
 
-aRGus NDR es un sistema C++20 open-source de Network Detection & Response para infraestructura
-crítica (hospitales, escuelas, municipios). PI y único desarrollador: Alonso (Badajoz, Extremadura).
-Co-investigador institucional: Dr. Andrés Caro Lindo (UEx/INCIBE).
-Paper: arXiv:2604.04952. Repo: github.com/alonsoir/argus.
-
-Metodología: Test-Driven Hardening (TDH), Consejo de Sabios (8 modelos), EMECAS como
-invariante de reproducibilidad. "Via Appia Quality". "JSON is the law".
+Proyecto: aRGus NDR — C++20 NDR open-source para infraestructura crítica (hospitales, municipios).
+PI: Alonso Isidoro Román (Badajoz). Paper: arXiv:2604.04952. Colaboración: Dr. Andrés Caro Lindo (UEx/INCIBE).
+Metodología: TDH, EMECAS++, Consejo de Sabios (8 modelos), Via Appia Quality.
 
 **EMECAS:** `vagrant destroy -f && vagrant up && make bootstrap && make test-all`
 **EMECAS++:** `vagrant destroy -f && vagrant up && make bootstrap && make test-all && make test-e2e`
 
 ---
 
-## Realidad estratégica (aclarada DAY 160)
+## Estado al inicio de DAY 162
 
-El gate para la colaboración UEx/INCIBE NO es una demo NDR el 22-09-2026.
-Es demostrar que el pipeline produce datasets de valor científico suficiente para
-que Andrés pueda introducir a Alonso oficialmente en el grupo de investigación.
-El FEDER es consecuencia, no objetivo.
+### Git
+- `main` en `v0.9.4-day160` (commit `178a1fb5`)
+- Branch activa: `feature/day161-cicd-pipeline` — **PENDIENTE EMECAS++ y merge a main**
+- Commits DAY 161: `79bcea48` · `e912ec4c` · `21096b23` · `f0ef51df` · `3c5a6d24` · `634cc1fe`
 
-**Lo que le interesa a Andrés:** datasets de vanguardia producidos por múltiples
-engines de análisis de red correlacionados.
+### Lo que se hizo en DAY 161
+1. ✅ **DEBT-WIRE-PROTOCOL-TEST-001 CERRADA** — `common/tests/test_wire_protocol.cpp` 6/6 tests. Integrado en CMakeLists + `make test-wire-protocol`. El bug DAY 98 no puede repetirse.
+2. ✅ **Jenkinsfile.dev + Jenkinsfile.prod** — `Jenkinsfile` renombrado a `.prod`. `.dev` nuevo con `agent any`.
+3. ✅ **DEBT-E2E-LIVE-DELTA-001 parcial** — `test-e2e-live` usa modo `snapshot → 60s → check` (delta). Falta inyector sintético.
+4. 📋 DEBT-CONFIG-JINJA2-PIPELINE-001 documentada (varios días, post-hardware UEx)
+5. 📋 DEBT-PACKAGE-DEB-001 documentada (post-FEDER)
+6. ✅ Consejo de Sabios DAY 161 — 8/8 respondieron, síntesis guardada.
 
-**ADR-048 — Plan de 5 fases:**
-- F1: aRGus solo (ya funciona — F1=0.9985)
-- F2: aRGus + Suricata
-- F3: F2 + Zeek
-- F4: F3 + Wazuh
-- F5: F4 + Neo4j (correlation engine — dataset final)
+### Decisiones del Consejo DAY 161
+- **Q5 DAY 162:** A) SURICATA primero (6/8), luego B) NTP en DAY 163-164
+- **DEBT-WIRE-CRYPTO-INTEGRATION-TEST-001** abierta P2 — test integración CryptoTransport completo, post-Suricata
+- **test-e2e-live:** inyectar sintético mínimo (pendiente mini-fix DAY 162 antes de Suricata)
 
-La hipótesis científica: al añadir señal progresivamente, el F1 del modelo ensemble
-mejora de forma medible. Esa curva de mejora ES la contribución publicable.
-Ground truth: sesión MITRE controlada vista por los 5 engines simultáneamente.
+### VM
+- `defender` RUNNING
+- Vault unsealed (`VAULT_ADDR=http://127.0.0.1:8200`)
 
 ---
 
-## Estado inicio DAY 161
+## PRIMER PASO obligatorio DAY 162
 
-**Branch activa:** `feature/day161-cicd-pipeline` (crear desde main @ v0.9.4-day160)
-**Tags:** `v0.9.4-day160` en main (2 commits DAY 160)
-**EMECAS++ DAY 159:** TODO VERDE (el de DAY 160 no se ejecutó — sesión de madrugada)
-
-### Stack dev operacional (DAY 160)
-- Vault v2.0.1 dev mode: `secret/argus/crypto` operacional ✅
-- Jenkins 2.555.2: `http://localhost:8080` ✅ (Java 21 Temurin via SDKMAN)
-- Plugin enterprise: `libvault_provider.so` — 6 tests verdes ✅
-- Makefile: `make test-enterprise-plugin`, `make vault-dev-start`, `make vault-dev-stop` ✅
-- Vagrantfile: todos los fixes DAY 160 codificados ✅
-
-### ADVERTENCIA: Vault dev mode no persiste
-Cada `vagrant reload` o reinicio mata Vault. Antes de cualquier trabajo:
+### 1. EMECAS++ en la rama actual
 ```bash
-make vault-dev-start
-# verifica: vagrant ssh defender -c "vault status | grep Sealed"
-```
-
----
-
-## Prioridades DAY 161
-
-### P0 — DEBT-WIRE-PROTOCOL-TEST-001 (30 min — ANTES de todo)
-**Consejo 8/8 unánime:** sin este test el pipeline CI/CD no tiene cimientos.
-
-`common/tests/test_wire_protocol.cpp`:
-- Serializa payload con código de ml-detector (LZ4 LE memcpy uint32_t)
-- Deserializa con código del firewall (mismo memcpy)
-- Verifica: decoded_size == original_size, crypto_errors == 0
-- El bug DEBT-FIREWALL-CRYPTO-FORMAT-001 (DAY 159) no puede repetirse
-
-### P1 — Pipeline Jenkins básico (Jenkinsfile)
-Secuencia del Consejo (ChatGPT/Kimi/DeepSeek convergentes):
-
-```groovy
-pipeline {
-    agent any
-    environment {
-        VAULT_ADDR = 'http://127.0.0.1:8200'
-    }
-    stages {
-        stage('Checkout') { steps { checkout scm } }
-        stage('Bootstrap') { steps { sh 'make bootstrap' } }
-        stage('Wire Protocol') { steps { sh 'make test-wire-protocol' } }
-        stage('Unit Tests') { steps { sh 'make test-all' } }
-        stage('Enterprise Plugin') {
-            steps {
-                withCredentials([string(credentialsId: 'vault-enterprise-token',
-                                        variable: 'VAULT_TOKEN')]) {
-                    sh 'make test-enterprise-plugin'
-                }
-            }
-        }
-        stage('Build .deb') { steps { sh 'make package-deb' } }
-        stage('Deploy Vagrant Test') { steps { sh 'make deploy-vagrant-test' } }
-    }
-    post { always { sh 'make vault-dev-stop || true' } }
-}
-```
-
-### P2 — generate_config.py --hardware naive
-- Perfiles: `edge-low` (≤4GB), `edge-medium` (8GB), `edge-high` (≥16GB)
-- Sustituye variables en JSON contrato con valores dev seguros
-- TODO explícito en cada parámetro → BACKLOG-ZMQ-TUNING-001
-- Sin auto-tuning hasta tener hardware físico UEx
-
-### P3 — make package-deb (.deb como artefacto primario)
-- `dpkg-deb` o `cmake --build --target package` (CPack)
-- arm64 para RPi5, x86_64 para N100
-- Jenkins archiva el .deb como artefacto del build
-
-### P4 — DEBT-E2E-LIVE-DELTA-001
-- `scripts/check_e2e_pipeline.py`: modo `check-delta`
-- snapshot → 60s → delta ≥ 1
-- Más robusto que valor absoluto histórico
-
----
-
-## Secuencia recomendada DAY 161
-git checkout -b feature/day161-cicd-pipeline
-EMECAS++ (verificar todo verde desde DAY 160)
-make vault-dev-start (Vault no persiste entre reinicios)
-DEBT-WIRE-PROTOCOL-TEST-001 — common/tests/test_wire_protocol.cpp (30 min)
-Jenkinsfile básico en raíz
-Configurar Jenkins credentials: vault-enterprise-token (Secret Text)
-generate_config.py --hardware naive
-make package-deb (target nuevo)
-make deploy-vagrant-test (VM Vagrant limpia instala el .deb)
-DEBT-E2E-LIVE-DELTA-001
-Commit + tag v0.9.5-day161
----
-
-## Deudas abiertas (orden prioridad)
-
-| DEBT | Prioridad | Estado |
-|------|-----------|--------|
-| DEBT-WIRE-PROTOCOL-TEST-001 | 🔴 P1 | HOY — antes del pipeline |
-| DEBT-E2E-LIVE-DELTA-001 | 🔴 P1 | HOY si queda tiempo |
-| DEBT-JENKINS-PROD-001 | 🔴 P0 | post-hardware UEx |
-| DEBT-CRYPTO-AUTONOMY-001 | 🔴 P1 | EXTENDED_AUTONOMY state machine |
-| DEBT-VAULT-PROD-SETUP-001 | 🔴 P0 | deadline: primera semana septiembre 2026 |
-| DEBT-ARGUSPP-NTP-001 | 🔴 P0 | prerequisito correlación multi-engine |
-| DEBT-ARGUSPP-COMMUNITY-ID-001 | 🔴 P0 | Suricata+Zeek: community_id activo |
-| DEBT-ARGUSPP-SURICATA-001 | 🟡 P1 | ADR-048 F2 |
-| DEBT-EMECAS-DUAL-COMPILATION-001 | 🟡 P1 | CI compila ON+OFF |
-
-**Nueva deuda a abrir DAY 161:**
-- `DEBT-VAULT-PROD-SETUP-001` P0: Vault single-node producción (file backend, TLS,
-  AppRole, audit log, unseal manual documentado). Deadline: primera semana septiembre 2026.
-  Prerequisito para demo FEDER con Andrés. Dev mode no es aceptable en demo final.
-
----
-
-## Reglas permanentes críticas
-
-- **EMECAS:** `vagrant destroy -f && vagrant up && make bootstrap && make test-all`
-- **Wire protocol (DAY 159):** todo contrato binario cross-componente tiene test en `common/tests/`
-- **Enterprise fail-closed:** sin token válido el sistema para, nunca fallback silencioso
-- **Artefacto primario:** `.deb` — Vagrant box es entorno de validación, no artefacto de release
-- **Token enterprise en CI:** Jenkins Credentials Store (Secret Text) — nunca fichero en VM
-- **Vault dev mode no persiste:** `make vault-dev-start` al inicio de cada sesión
-- **-Werror:** 0 warnings es invariante permanente
-- **JSON is the law:** toda config desde JSON canónico
-
----
-
-## Jenkins — primer arranque DAY 160
-
-- URL: `http://localhost:8080`
-- Password inicial: `e0652929610d4b638a2cec1f453f800b`
-- Plugins instalados: Git 5.10.1, HashiCorp Vault 379.v080d932e61e4
-- Plugins necesarios DAY 161: Pipeline, Credentials Binding
-- Configurar credential: `vault-enterprise-token` (Secret Text) =
-  contenido de `/etc/argus/enterprise.token` en la VM
-
----
-
-## ADR-048 — Roadmap Dataset Production
-
-Ver BACKLOG.md sección ADR-048 para el plan completo de 5 fases.
-DAY 161 está en F1 (pipeline aRGus solo, ya operacional).
-La F2 (+ Suricata) es el siguiente hito científico — DEBT-ARGUSPP-SURICATA-001.
-
----
-
-## Para comenzar DAY 161
-
-```bash
-# 1 — Crear rama
-git checkout main
-git pull
-git checkout -b feature/day161-cicd-pipeline
-
-# 2 — Verificar estado VM
 vagrant status
-
-# 3 — Si VM corriendo: arrancar Vault (no persiste)
 make vault-dev-start
-
-# 4 — EMECAS++ desde VM limpia si hay dudas
-# vagrant destroy -f && vagrant up && make bootstrap && make test-all && make test-e2e
-
-# 5 — Primer objetivo: wire protocol test
-# ver common/tests/ y añadir test_wire_protocol.cpp
-
-# 6 — Jenkins en http://localhost:8080
-# Configurar credential vault-enterprise-token antes de crear el pipeline
+vagrant destroy -f && vagrant up && make bootstrap && make test-all && make test-e2e
 ```
+
+Si EMECAS++ verde → PR de `feature/day161-cicd-pipeline` → merge main → tag `v0.9.5-day161`.
+
+### 2. Mini-fix inyector sintético (antes de Suricata)
+El `test-e2e-live` falla en Vagrant si no hay tráfico orgánico. Añadir inyección mínima:
+- Opción simple: `ping -c 3 8.8.8.8` o `curl -s http://example.com` antes del `sleep 60`
+- Alternativa: usar el injector sintético existente para garantizar ≥1 evento
+
+### 3. DEBT-ARGUSPP-SURICATA-001 (ADR-048 F2)
+Primera señal externa al pipeline. Decisión Consejo: inotify sobre `/var/log/suricata/eve.json`.
+- Suricata ya está en el Vagrantfile (`make up-suricata` disponible)
+- AppArmor para Suricata OBLIGATORIO antes de despliegue
+- Solo eventos `alert` con `community_id` para correlación inicial
+
+---
+
+## Deudas activas ordenadas por prioridad
+
+| DEBT | Prioridad | Estado | Target |
+|------|-----------|--------|--------|
+| DEBT-ARGUSPP-SURICATA-001 | 🔴 P0 | OPEN | DAY 162 — ADR-048 F2 |
+| DEBT-ARGUSPP-NTP-001 | 🔴 P0 | OPEN | DAY 163-164 — prerequisito correlación |
+| DEBT-E2E-LIVE-DELTA-001 | 🟡 P1 | 60% | DAY 162 mini-fix — inyector sintético |
+| DEBT-WIRE-CRYPTO-INTEGRATION-TEST-001 | 🟡 P2 | OPEN | post-Suricata |
+| DEBT-CONFIG-JINJA2-PIPELINE-001 | 🟡 P2 | Documentada | varios días + hardware UEx |
+| DEBT-PACKAGE-DEB-001 | 🟡 P2 | Documentada | post-FEDER |
+| DEBT-ALERTING-LIBCRYPTO-PROVIDER-001 | 🟡 P1 | OPEN | mover AlertClient a libcrypto_provider.so |
+| DEBT-CRYPTO-AUTONOMY-001 | 🟡 P1 | OPEN | EXTENDED_AUTONOMY state machine |
+| DEBT-JENKINS-PROD-001 | 🔴 P0 | OPEN | post-hardware UEx |
+
+---
+
+## Constantes técnicas permanentes
+
+- **Keypair activo:** regenera en cada `vagrant destroy+up` — leer de `/etc/ml-defender/etcd-server/public.pem`
+- **Vault dev:** no persiste entre sesiones — `make vault-dev-start` al inicio
+- **File edits en macOS:** siempre Python3 heredoc (`python3 << 'PYEOF'`), nunca `sed -i` sin `-e ''`
+- **Vagrant:** siempre `vagrant ssh -c '...'` desde macOS host; nunca desde dentro de la VM
+- **JSON is the law:** configs desde JSON canónico, originales SAGRADOS
+- **`-Werror`:** 0 warnings es invariante permanente
+- **`alert_client.hpp`** NUNCA incluir en componentes que linkean `libetcd_client.so` (DEBT-ALERTING-LIBCRYPTO-PROVIDER-001)
+- **PR obligatorio:** no merge directo a main, siempre PR en GitHub
+- **EMECAS++ antes de mergear:** `vagrant destroy -f && vagrant up && make bootstrap && make test-all && make test-e2e`
+
+---
+
+## Contexto estratégico
+
+- Gate real UEx/INCIBE = datasets de valor científico (no demo NDR)
+- ADR-048: 5 fases de señal creciente (F1=aRGus done, F2=+Suricata, F3=+Zeek, F4=+Wazuh, F5=+Neo4j)
+- community_id = pegamento entre engines para correlación temporal
+- FEDER deadline 22-Sep-2026 = referencia de ritmo, no deadline duro
+- Principio rector: calidad sobre fechas — los datasets se generan cuando el pipeline esté listo
+  """
+
