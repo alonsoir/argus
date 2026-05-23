@@ -1,5 +1,5 @@
 # aRGus NDR — BACKLOG
-*Última actualización: DAY 159 — 2026-05-21*
+*Última actualización: DAY 161 — 2026-05-23*
 
 ---
 
@@ -76,6 +76,44 @@
 
 ---
 
+
+## ✅ CERRADO DAY 161
+
+### DEBT-WIRE-PROTOCOL-TEST-001 — Test contrato binario LZ4 LE uint32_t
+- **Status:** ✅ COMPLETADO DAY 161 — rama `feature/day161-cicd-pipeline`
+- **common/tests/test_wire_protocol.cpp**: 6 tests del protocolo binario entre ml-detector (serializador) y firewall-acl-agent (deserializador).
+- T1: payload mínimo (2B) · T2: JSON típico (84B) · T3: 8KB · T4: binario 256B · T5: decoded_size==original_size · T6: crypto_errors==0
+- Integrado en `common/CMakeLists.txt` + target `make test-wire-protocol` en Makefile.
+- El bug DAY 98 (DEBT-FIREWALL-CRYPTO-FORMAT-001) no puede repetirse sin que este test lo detecte.
+- **Consejo DAY 161 (5/8):** test actual suficiente — DEBT-WIRE-CRYPTO-INTEGRATION-TEST-001 abierta P2 para integración completa post-Suricata.
+
+### Jenkinsfile.dev + Jenkinsfile.prod — Separación pipelines CI/CD
+- **Status:** ✅ COMPLETADO DAY 161
+- `Jenkinsfile` renombrado a `Jenkinsfile.prod` (agent: argus-server, pipeline FEDER completo con ODR, Vault, Ansible).
+- `Jenkinsfile.dev` nuevo: `agent any`, stages Wire Protocol → Unit Tests → Enterprise Plugin → Build .deb → Deploy Vagrant Test.
+- Consejo 8/8 unánime: `agent any` correcto para fase actual. Migrar a `argus-server` cuando Jenkins esté en FEDER.
+
+### DEBT-E2E-LIVE-DELTA-001 — Fix modo delta en test-e2e-live (parcial)
+- **Status:** 🟡 60% — DAY 161 (fix Makefile correcto, falta inyector sintético)
+- `test-e2e-live` cambiado de modo `check-abs` (valor absoluto desde cero) a `snapshot → 60s → check` (delta).
+- Pendiente DAY 162 mini-fix: inyector sintético mínimo para evitar flakiness en Vagrant sin tráfico orgánico.
+- **Consejo DAY 161 (6/8):** tráfico orgánico solo en Vagrant es flaky por diseño — inyectar sintético mínimo.
+
+### DEBT-CONFIG-JINJA2-PIPELINE-001 — Documentada (diferida)
+- **Status:** 📋 DOCUMENTADA — DAY 161 (`docs/debts/DEBT-CONFIG-JINJA2-PIPELINE-001.md`)
+- JSONs originales SAGRADOS. Plantillas Jinja2 en `json-templates/`, valores en `json-values/`, generados en `json-generated/`.
+- Prerequisito: hardware físico UEx + BACKLOG-ZMQ-TUNING-001. Varios días de trabajo.
+
+### DEBT-PACKAGE-DEB-001 — Documentada (diferida)
+- **Status:** 📋 DOCUMENTADA — DAY 161 (`docs/debts/DEBT-PACKAGE-DEB-001.md`)
+- Artefacto .deb primario de release. Prerequisito: hardware físico + Jenkins real + Jinja2 pipeline. Post-FEDER.
+
+### Notas Consejo de Sabios DAY 161 (8/8)
+- Q1 Wire Protocol: NO ahora — abrir DEBT-WIRE-CRYPTO-INTEGRATION-TEST-001 P2 (5/8 No, 3/8 Sí complementario)
+- Q2 agent any: CORRECTO para fase actual (8/8 unánime)
+- Q3 Valores config: FIJOS por perfil, runtime solo selecciona (7/8)
+- Q4 Tráfico E2E: INYECTAR sintético mínimo (6/8)
+- Q5 DAY 162: A) SURICATA primero (6/8), luego B) NTP
 
 ## ✅ CERRADO DAY 158
 
@@ -1798,12 +1836,16 @@ DEBT-ALERTING-EDGE-SOS-001:             100% ✅  DAY 158 — alert_client.hpp 1
 DEBT-FIREWALL-CRYPTO-FORMAT-001:        100% ✅  DAY 159 — dos bugs encadenados DAY 98, 100% drop rate resuelto
 Synthetic injectors ADR-013 PHASE 2:    100% ✅  DAY 159 — SeedClient+CryptoTransport+LZ4-LE, DAY-49 code eliminado
 make test-e2e (gate E2E real):          100% ✅  DAY 159 — synthetic-full + synthetic-firewall + live, EMECAS++ verde
-DEBT-WIRE-PROTOCOL-TEST-001:              0% ⏳  P1 siguiente merge (test contrato binario LZ4 LE)
-DEBT-E2E-LIVE-DELTA-001:                  0% ⏳  P1 siguiente merge (snapshot+delta en test-e2e-live)
+DEBT-WIRE-PROTOCOL-TEST-001:            100% ✅  DAY 161 — 6/6 tests, common/tests/ + make test-wire-protocol
+DEBT-E2E-LIVE-DELTA-001:                 60% 🟡  DAY 161 — fix delta OK, falta inyector sintético mínimo
 DEBT-ALERTING-VAULT-001:                  0% ⏳  P2 (credenciales Discord/Telegram a Vault)
-DEBT-ENTERPRISE-PLUGIN-001:               0% ⏳  P0 DAY 160-161 (primer plugin enterprise vault_provider.so)
+DEBT-ENTERPRISE-PLUGIN-001:             100% ✅  DAY 160 — vault_provider.so 6/6 tests, Vault+Jenkins operacionales
 DEBT-JENKINS-PROD-001:                    0% ⏳  P0 post-hardware (Jenkins CI/CD en hardware físico)
 DEBT-EMECAS-TEST-TO-MERGE-001:            0% ⏳  P1 (pirámide 4 niveles: unit+wire+integ+E2E)
+DEBT-WIRE-CRYPTO-INTEGRATION-TEST-001:    0% ⏳  P2 post-Suricata (test integración CryptoTransport+wire protocol)
+DEBT-CONFIG-JINJA2-PIPELINE-001:          0% ⏳  P2 — Jinja2 config pipeline, varios días, post-hardware UEx
+DEBT-PACKAGE-DEB-001:                     0% ⏳  P2 post-FEDER — paquete .deb artefacto primario
+Jenkinsfile.dev + Jenkinsfile.prod:      100% ✅  DAY 161 — separación dev/prod, agent any vs argus-server
 ```
 
 ---
@@ -2293,7 +2335,7 @@ Un sistema con ACRL converge hacia cobertura de técnicas ATT&CK en tiempo polin
 > "DAY 149 — Arquitectura CI/CD criptográfica definida. ADR-044 aprobado unánimemente.
 >
 > **Consenso Q1-Q7 (síntesis):**# aRGus NDR — BACKLOG
-*Última actualización: DAY 159 — 2026-05-21*
+*Última actualización: DAY 161 — 2026-05-23*
 
 ---
 
@@ -2370,6 +2412,44 @@ Un sistema con ACRL converge hacia cobertura de técnicas ATT&CK en tiempo polin
 
 ---
 
+
+## ✅ CERRADO DAY 161
+
+### DEBT-WIRE-PROTOCOL-TEST-001 — Test contrato binario LZ4 LE uint32_t
+- **Status:** ✅ COMPLETADO DAY 161 — rama `feature/day161-cicd-pipeline`
+- **common/tests/test_wire_protocol.cpp**: 6 tests del protocolo binario entre ml-detector (serializador) y firewall-acl-agent (deserializador).
+- T1: payload mínimo (2B) · T2: JSON típico (84B) · T3: 8KB · T4: binario 256B · T5: decoded_size==original_size · T6: crypto_errors==0
+- Integrado en `common/CMakeLists.txt` + target `make test-wire-protocol` en Makefile.
+- El bug DAY 98 (DEBT-FIREWALL-CRYPTO-FORMAT-001) no puede repetirse sin que este test lo detecte.
+- **Consejo DAY 161 (5/8):** test actual suficiente — DEBT-WIRE-CRYPTO-INTEGRATION-TEST-001 abierta P2 para integración completa post-Suricata.
+
+### Jenkinsfile.dev + Jenkinsfile.prod — Separación pipelines CI/CD
+- **Status:** ✅ COMPLETADO DAY 161
+- `Jenkinsfile` renombrado a `Jenkinsfile.prod` (agent: argus-server, pipeline FEDER completo con ODR, Vault, Ansible).
+- `Jenkinsfile.dev` nuevo: `agent any`, stages Wire Protocol → Unit Tests → Enterprise Plugin → Build .deb → Deploy Vagrant Test.
+- Consejo 8/8 unánime: `agent any` correcto para fase actual. Migrar a `argus-server` cuando Jenkins esté en FEDER.
+
+### DEBT-E2E-LIVE-DELTA-001 — Fix modo delta en test-e2e-live (parcial)
+- **Status:** 🟡 60% — DAY 161 (fix Makefile correcto, falta inyector sintético)
+- `test-e2e-live` cambiado de modo `check-abs` (valor absoluto desde cero) a `snapshot → 60s → check` (delta).
+- Pendiente DAY 162 mini-fix: inyector sintético mínimo para evitar flakiness en Vagrant sin tráfico orgánico.
+- **Consejo DAY 161 (6/8):** tráfico orgánico solo en Vagrant es flaky por diseño — inyectar sintético mínimo.
+
+### DEBT-CONFIG-JINJA2-PIPELINE-001 — Documentada (diferida)
+- **Status:** 📋 DOCUMENTADA — DAY 161 (`docs/debts/DEBT-CONFIG-JINJA2-PIPELINE-001.md`)
+- JSONs originales SAGRADOS. Plantillas Jinja2 en `json-templates/`, valores en `json-values/`, generados en `json-generated/`.
+- Prerequisito: hardware físico UEx + BACKLOG-ZMQ-TUNING-001. Varios días de trabajo.
+
+### DEBT-PACKAGE-DEB-001 — Documentada (diferida)
+- **Status:** 📋 DOCUMENTADA — DAY 161 (`docs/debts/DEBT-PACKAGE-DEB-001.md`)
+- Artefacto .deb primario de release. Prerequisito: hardware físico + Jenkins real + Jinja2 pipeline. Post-FEDER.
+
+### Notas Consejo de Sabios DAY 161 (8/8)
+- Q1 Wire Protocol: NO ahora — abrir DEBT-WIRE-CRYPTO-INTEGRATION-TEST-001 P2 (5/8 No, 3/8 Sí complementario)
+- Q2 agent any: CORRECTO para fase actual (8/8 unánime)
+- Q3 Valores config: FIJOS por perfil, runtime solo selecciona (7/8)
+- Q4 Tráfico E2E: INYECTAR sintético mínimo (6/8)
+- Q5 DAY 162: A) SURICATA primero (6/8), luego B) NTP
 
 ## ✅ CERRADO DAY 158
 
@@ -4092,12 +4172,16 @@ DEBT-ALERTING-EDGE-SOS-001:             100% ✅  DAY 158 — alert_client.hpp 1
 DEBT-FIREWALL-CRYPTO-FORMAT-001:        100% ✅  DAY 159 — dos bugs encadenados DAY 98, 100% drop rate resuelto
 Synthetic injectors ADR-013 PHASE 2:    100% ✅  DAY 159 — SeedClient+CryptoTransport+LZ4-LE, DAY-49 code eliminado
 make test-e2e (gate E2E real):          100% ✅  DAY 159 — synthetic-full + synthetic-firewall + live, EMECAS++ verde
-DEBT-WIRE-PROTOCOL-TEST-001:              0% ⏳  P1 siguiente merge (test contrato binario LZ4 LE)
-DEBT-E2E-LIVE-DELTA-001:                  0% ⏳  P1 siguiente merge (snapshot+delta en test-e2e-live)
+DEBT-WIRE-PROTOCOL-TEST-001:            100% ✅  DAY 161 — 6/6 tests, common/tests/ + make test-wire-protocol
+DEBT-E2E-LIVE-DELTA-001:                 60% 🟡  DAY 161 — fix delta OK, falta inyector sintético mínimo
 DEBT-ALERTING-VAULT-001:                  0% ⏳  P2 (credenciales Discord/Telegram a Vault)
-DEBT-ENTERPRISE-PLUGIN-001:               0% ⏳  P0 DAY 160-161 (primer plugin enterprise vault_provider.so)
+DEBT-ENTERPRISE-PLUGIN-001:             100% ✅  DAY 160 — vault_provider.so 6/6 tests, Vault+Jenkins operacionales
 DEBT-JENKINS-PROD-001:                    0% ⏳  P0 post-hardware (Jenkins CI/CD en hardware físico)
 DEBT-EMECAS-TEST-TO-MERGE-001:            0% ⏳  P1 (pirámide 4 niveles: unit+wire+integ+E2E)
+DEBT-WIRE-CRYPTO-INTEGRATION-TEST-001:    0% ⏳  P2 post-Suricata (test integración CryptoTransport+wire protocol)
+DEBT-CONFIG-JINJA2-PIPELINE-001:          0% ⏳  P2 — Jinja2 config pipeline, varios días, post-hardware UEx
+DEBT-PACKAGE-DEB-001:                     0% ⏳  P2 post-FEDER — paquete .deb artefacto primario
+Jenkinsfile.dev + Jenkinsfile.prod:      100% ✅  DAY 161 — separación dev/prod, agent any vs argus-server
 ```
 
 ---

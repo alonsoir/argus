@@ -19,7 +19,7 @@
 [![Variant B](https://img.shields.io/badge/ADR--029-Variant_B_libpcap_pipeline-blue)]()
 [![Reproducible](https://img.shields.io/badge/Infra-make_bootstrap-brightgreen)]()
 [![XGBoost](https://img.shields.io/badge/XGBoost-Prec%3D0.9945_In--Distribution-brightgreen)]()
-[![Hardened](https://img.shields.io/badge/Security-v0.9.3--day158-brightgreen)]()
+[![Hardened](https://img.shields.io/badge/Security-v0.9.5--day161-brightgreen)]()
 [![PRE-PRODUCTION](https://img.shields.io/badge/Status-PRE--PRODUCTION-orange)]()
 [![Crypto](https://img.shields.io/badge/Crypto-HKDF_SHA256+ChaCha20_Poly1305-orange)]()
 [![arXiv](https://img.shields.io/badge/arXiv-2604.04952_cs.CR-red)](https://arxiv.org/abs/2604.04952)
@@ -31,7 +31,7 @@
 
 ---
 
-✅ `main` is tagged `v0.9.3-day158`. DAY 159: DEBT-FIREWALL-CRYPTO-FORMAT-001 CERRADA (100% drop rate invisible desde DAY 98, dos bugs encadenados). DEBT-ALERTING-EDGE-SOS-001 CERRADA. Gate E2E real implementado. EMECAS++ completo verde. Consejo 8/8.
+✅ `main` is tagged `v0.9.4-day160`. DAY 161: DEBT-WIRE-PROTOCOL-TEST-001 CERRADA (6/6 tests LZ4 LE uint32_t). Jenkinsfile.dev+prod separados. test-e2e-live modo delta. Consejo 8/8. Branch `feature/day161-cicd-pipeline` pendiente EMECAS++ → merge → v0.9.5-day161.
 **PRE-PRODUCTION: do not deploy in hospitals until ACRL (DEBT-PENTESTER-LOOP-001) is complete.**
 
 ---
@@ -41,16 +41,16 @@
 <!-- DAY-STATUS -->
 | Campo | Valor |
 |---|---|
-| DAY | 160 |
-| Tag | v0.9.4-day160 |
-| Branch | feature/day160-enterprise-vault-crypto → merge pendiente |
-| EMECAS | ✅ Verde DAY 159 |
+| DAY | 161 |
+| Tag | v0.9.5-day161 (pendiente merge) |
+| Branch | feature/day161-cicd-pipeline → EMECAS++ pendiente |
+| EMECAS | ✅ Verde DAY 160 |
 | Pipeline | 6/6 RUNNING |
-| EMECAS++ | ✅ test-e2e verde + test-enterprise-plugin verde |
-| Plugin enterprise | ✅ libvault_provider.so — 6 tests RED→GREEN |
+| EMECAS++ | 🟡 Pendiente en feature/day161-cicd-pipeline |
+| Wire protocol | ✅ DEBT-WIRE-PROTOCOL-TEST-001 — 6/6 tests |
 | Jenkins | ✅ 2.555.2 operacional (Java 21 Temurin) |
 | Vault | ✅ v2.0.1 dev mode — secret/argus/crypto |
-| Próximo hito | ADR-048 F1 → F2: integrar Suricata en pipeline |
+| Próximo hito | DAY 162: DEBT-ARGUSPP-SURICATA-001 (ADR-048 F2) |
 | Gate UEx/INCIBE | Datasets de valor científico (no deadline duro) |
 <!-- /DAY-STATUS -->
 
@@ -514,6 +514,7 @@ make hardened-full   # destroy → up → provision → build → deploy → che
 - ✅ DAY 150: **ADR-044 implementación completa · provision_crypto.sh · vault_client C++20 · Jenkinsfile Provision Crypto · EMECAS verde** 🎉
 - ✅ DAY 154: **ADR-045 VaultClient decomposition · DEBT-FIREWALL-AUTONOMY-MODE-001 CERRADA · 48/48 tests · v0.8.0-adr045** 🎉
 - ✅ DAY 155: **DEBT-FIREWALL-DENY-SELECTIVE-001 · DEBT-AUTONOMY-ZMQ-EVENTS-001 · BACKLOG-ZMQ-TUNING-001 · 49/49 tests · EMECAS HARDENED PASSED · v0.9.0-day155** 🎉
+- ✅ DAY 161: **DEBT-WIRE-PROTOCOL-TEST-001 · Jenkinsfile.dev+prod · test-e2e-live delta · Consejo 8/8 · v0.9.5-day161 (pendiente)** 🎉
 - ✅ DAY 160: **DEBT-ENTERPRISE-PLUGIN-001 · libvault_provider.so 6/6 tests · Jenkins 2.555.2 + Vault v2.0.1 · ADR-048 Dataset Production Roadmap definido · v0.9.4-day160** 🎉
 - ✅ DAY 157: **4 deudas cerradas · Consejo 8/8 · Staleness guard · Keypair lifecycle prod · Bootstrap firmado · EMECAS VERDE · v0.9.2-day157** 🎉
 - ✅ DAY 156: **DEBT-AUTONOMY-CRYPTO-INTEGRATION-001 · Test B 7/7 + Test A 4/4 · Fix ZMQ slow joiner · EMECAS VERDE 50/50 · v0.9.1-day156** 🎉
