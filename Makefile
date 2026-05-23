@@ -1253,17 +1253,12 @@ test-e2e-live:
 	@echo ""
 	@echo "── Verificando 6/6 RUNNING ──"
 	@$(MAKE) pipeline-status
-	@echo "── Rotando logs para medición limpia ──"
-	@vagrant ssh -c "mkdir -p /vagrant/logs/lab/archive && \
-	  for f in ml-detector.log firewall-agent.log; do \
-	    [ -f /vagrant/logs/lab/$$f ] && \
-	    cp /vagrant/logs/lab/$$f /vagrant/logs/lab/archive/$${f%.log}-$$(date +%s).log; \
-	    truncate -s 0 /vagrant/logs/lab/$$f 2>/dev/null || true; \
-	  done"
+	@echo "── Snapshot de contadores (DEBT-E2E-LIVE-DELTA-001) ──"
+	@vagrant ssh -c "python3 /vagrant/scripts/check_e2e_pipeline.py snapshot"
 	@echo "── Observando pipeline real durante 60s ──"
 	@sleep 60
-	@echo "── Verificando integridad E2E ──"
-	@vagrant ssh -c "python3 /vagrant/scripts/check_e2e_pipeline.py" || \
+	@echo "── Verificando delta E2E (≥1 evento nuevo) ──"
+	@vagrant ssh -c "python3 /vagrant/scripts/check_e2e_pipeline.py check" || \
 	  (echo "❌ TEST-E2E-LIVE FAILED" && exit 1)
 	@echo ""
 	@echo "╔════════════════════════════════════════════════════════════╗"
@@ -1343,6 +1338,17 @@ test-e2e: test-e2e-synthetic test-e2e-live
 
 # ── Enterprise plugin tests ───────────────────────────────────────────────────
 # Requiere: Vault dev mode corriendo (make vault-dev-start)
+
+test-wire-protocol:
+	@echo "=== test-wire-protocol ==="
+	@vagrant ssh defender -c " \
+	  cd /vagrant/common/build && \
+	  cmake .. -DBUILD_TESTS=ON > /dev/null 2>&1 && \
+	  make test_wire_protocol -j\$$(nproc) > /dev/null 2>&1 && \
+	  ./test_wire_protocol" || \
+	  (echo "FAILED: test-wire-protocol" && exit 1)
+	@echo "=== test-wire-protocol PASSED ==="
+
 test-enterprise-plugin:
 	@echo "=== test-enterprise-plugin ==="
 	@vagrant ssh defender -c " \
