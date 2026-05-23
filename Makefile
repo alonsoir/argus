@@ -1343,6 +1343,17 @@ test-e2e: test-e2e-synthetic test-e2e-live
 
 # ── Enterprise plugin tests ───────────────────────────────────────────────────
 # Requiere: Vault dev mode corriendo (make vault-dev-start)
+
+test-wire-protocol:
+	@echo "=== test-wire-protocol ==="
+	@vagrant ssh defender -c " \
+	  cd /vagrant/common/build && \
+	  cmake .. -DBUILD_TESTS=ON > /dev/null 2>&1 && \
+	  make test_wire_protocol -j\$$(nproc) > /dev/null 2>&1 && \
+	  ./test_wire_protocol" || \
+	  (echo "FAILED: test-wire-protocol" && exit 1)
+	@echo "=== test-wire-protocol PASSED ==="
+
 test-enterprise-plugin:
 	@echo "=== test-enterprise-plugin ==="
 	@vagrant ssh defender -c " \

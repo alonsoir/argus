@@ -260,4 +260,18 @@ add_executable(test_vault_client
             ${LIBSODIUM_LIBRARIES}
     )
     add_test(NAME test_autonomy_state_writer COMMAND test_autonomy_state_writer)
+
+    # DEBT-WIRE-PROTOCOL-TEST-001 (DAY 161)
+    # Verifica simetría del protocolo binario LZ4 LE uint32_t
+    # entre ml-detector (serializador) y firewall-acl-agent (deserializador)
+    add_executable(test_wire_protocol
+            tests/test_wire_protocol.cpp
+    )
+    target_include_directories(test_wire_protocol PRIVATE
+            ${CMAKE_CURRENT_SOURCE_DIR}
+    )
+    target_link_libraries(test_wire_protocol PRIVATE
+            lz4
+    )
+    add_test(NAME test_wire_protocol COMMAND test_wire_protocol)
 endif()
