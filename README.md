@@ -19,7 +19,7 @@
 [![Variant B](https://img.shields.io/badge/ADR--029-Variant_B_libpcap_pipeline-blue)]()
 [![Reproducible](https://img.shields.io/badge/Infra-make_bootstrap-brightgreen)]()
 [![XGBoost](https://img.shields.io/badge/XGBoost-Prec%3D0.9945_In--Distribution-brightgreen)]()
-[![Hardened](https://img.shields.io/badge/Security-v0.9.5--day161-brightgreen)]()
+[![Hardened](https://img.shields.io/badge/Security-v0.9.6--day162-brightgreen)]()
 [![PRE-PRODUCTION](https://img.shields.io/badge/Status-PRE--PRODUCTION-orange)]()
 [![Crypto](https://img.shields.io/badge/Crypto-HKDF_SHA256+ChaCha20_Poly1305-orange)]()
 [![arXiv](https://img.shields.io/badge/arXiv-2604.04952_cs.CR-red)](https://arxiv.org/abs/2604.04952)
@@ -31,7 +31,7 @@
 
 ---
 
-✅ `main` is tagged `v0.9.4-day160`. DAY 161: DEBT-WIRE-PROTOCOL-TEST-001 CERRADA (6/6 tests LZ4 LE uint32_t). Jenkinsfile.dev+prod separados. test-e2e-live modo delta. Consejo 8/8. Branch `feature/day161-cicd-pipeline` pendiente EMECAS++ → merge → v0.9.5-day161.
+✅ `main` is tagged `v0.9.5-day161` (EMECAS++ verde). DAY 162: enterprise crypto PASO 1-5 completados. DAY 161: DEBT-WIRE-PROTOCOL-TEST-001 CERRADA (6/6 tests LZ4 LE uint32_t). Jenkinsfile.dev+prod separados. test-e2e-live modo delta. Consejo 8/8. Branch `feature/day161-cicd-pipeline` pendiente EMECAS++ → merge → v0.9.5-day161.
 **PRE-PRODUCTION: do not deploy in hospitals until ACRL (DEBT-PENTESTER-LOOP-001) is complete.**
 
 ---

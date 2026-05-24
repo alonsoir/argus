@@ -1,5 +1,5 @@
 # aRGus NDR — BACKLOG
-*Última actualización: DAY 161 — 2026-05-23*
+*Última actualización: DAY 162 — 2026-05-24*
 
 ---
 
@@ -53,6 +53,9 @@
 - **REGLA PERMANENTE (DAY 159 — Consejo 8/8):** El wire protocol entre componentes tiene test de contrato binario en `common/tests/`. Serialización LE/BE del header LZ4 se verifica byte-a-byte. Un bug de endianness no puede permanecer invisible más de un ciclo CI. Ver DEBT-WIRE-PROTOCOL-TEST-001.
 - **REGLA PERMANENTE (DAY 159 — Consejo 8/8):** `make test-e2e` es gate de release (nightly), no gate de PR. Los subtests E2E son siempre secuenciales — estado compartido en el pipeline hace la paralelización interna peligrosa.
 - **REGLA PERMANENTE (DAY 159 — Founder):** El primer plugin enterprise (`vault_provider.so`) se firma con keypair vendor offline (air-gapped), distinto del keypair del nodo. La pubkey vendor está hardcodeada en el plugin-loader — nunca en Vault.
+- **REGLA PERMANENTE (DAY 162 — Consejo 8/8):** "Rotación simultánea" de material criptográfico en sistemas distribuidos es un anti-patrón. Implementar siempre "rotación coordinada con solapamiento" (grace_period ≥ 2× max_clock_skew + deploy_time). Nunca asumir que todos los nodos pueden cambiar de clave en el mismo instante.
+- **REGLA PERMANENTE (DAY 162 — Consejo 8/8):** ADR-045 "Crypto Epoch Coordination" debe ser aprobado por el Consejo antes de cualquier PR que implemente coordinación de rotación (Fase 2+). Sin ADR aprobado, el PR no se revisa.
+- **REGLA PERMANENTE (DAY 162 — Consejo 8/8):** `enterprise_vendor.key` nunca vive en la VM ni en el repositorio. Debe residir en Vault desde el momento en que exista automatización. En dev manual: solo en memoria o tmpfs 0600. Un vagrant destroy que destruye la clave privada vendor hace inoperativo el sistema enterprise.
 - **REGLA PERMANENTE (DAY 156 — Consejo 8/8):** En ZMQ PUB/SUB, el publisher debe hacer `bind()` ANTES de que cualquier subscriber haga `connect()`. En tests: crear el publisher en `SetUp()` del fixture antes de `start_subscriber()`. El slow joiner de ZMQ pierde mensajes silenciosamente si el orden se invierte. Ver `docs/technical-notes/ZMQ-PUB-SUB-SLOW-JOINER.md`.
 - **REGLA PERMANENTE (DAY 156 — Consejo 6/8):** El estado de `CryptoAutonomyStateMachine` se persiste en `/var/lib/argus/crypto-autonomy-state.json` con fsync atómico y firma Ed25519. tmpfs es insuficiente para hospitalario (desaparece en reboot no planificado durante AUTONOMOUS). Un reboot durante AUTONOMOUS es el escenario de ataque exacto que hay que cubrir.
 - **REGLA PERMANENTE (DAY 156 — Consejo 8/8):** En producción FEDER (CPD UEx), el keypair Ed25519 se genera UNA SOLA VEZ durante el bootstrap físico del nodo. `make bootstrap` con `ARGUS_ENV=prod` falla explícitamente si no existe keypair preexistente — nunca genera silenciosamente. Ver DEBT-KEYPAIR-LIFECYCLE-PROD-001.
@@ -76,6 +79,51 @@
 
 ---
 
+
+## ✅ CERRADO DAY 162
+
+### EMECAS++ DAY 162 — Todos los gates verdes
+- **Status:** ✅ COMPLETADO DAY 162
+- `make test-all` ✅ · `make test-e2e-synthetic-full` ✅ · `make test-e2e-synthetic-firewall` ✅
+- `test-e2e-live` desacoplado (Consejo Opción 1+3) — gate independiente con precondición explícita
+
+### DEBT-EMECAS-SYNTHETIC-INJECTOR-001 — ZMQ slow joiner CERRADA
+- **Status:** ✅ COMPLETADO DAY 162 — rama `feature/day161-emecas-e2e-fix` → mergeado main
+- **Causa raíz:** SUB (firewall) conectaba antes de que PUB (injector) hiciera bind → backoff exponencial hasta 30s → 100% pérdida de mensajes en ventana de inyección.
+- **Fix:** `synthetic_ml_output_injector`: slow joiner guard 500ms→3000ms. `test-e2e-synthetic-firewall`: PUB arranca 3s antes que SUB, log truncado antes de restart, snapshot post-restart con contadores en 0. `check_e2e_pipeline.py`: modo `precondition` (gate explícito). `check-firewall-abs`: valor absoluto para firewall post-restart (log truncado). Desacoplamiento `test-e2e-synthetic` / `test-e2e-live`.
+- **REGLA PERMANENTE (DAY 162 — Consejo 8/8):** En ZMQ PUB/SUB, el PUB debe hacer bind() y estar listo ANTES de que el SUB conecte. En tests E2E: PUB arranca con sleep mínimo 3s de antelación. Ver regla DAY 156 slow joiner.
+
+### DEBT-EMECAS-DUAL-COMPILATION-001 CERRADA
+- **Status:** ✅ COMPLETADO DAY 162 — `make test-dual-compilation`
+- [1/4] plugin-loader community (OFF) ✅ · [2/4] plugin-loader enterprise (ON) ✅
+- [3/4] common/ community ✅ · [4/4] common/ enterprise ✅
+
+### PASO 1 — plugin-loader validate_or_abort() (DAY 162)
+- **Status:** ✅ COMPLETADO DAY 162
+- `extract_enabled_objects`: cambiado de `pair<string,string>` a `tuple<4>` con `is_enterprise` y `token_path`.
+- Antes de `dlopen`: si `is_enterprise==true` → `argus::enterprise::TokenValidator::validate_or_abort(eff_token_path, ARGUS_ENTERPRISE_PUBKEY_HEX, {"vault_crypto"})` bajo `#ifdef ARGUS_VAULT_ENABLED`.
+- `plugin-loader/CMakeLists.txt`: `ARGUS_ENTERPRISE_PUBKEY_HEX` hardcodeado (`01cd1509...`), propagado al compilador. `CMAKE_SOURCE_DIR/..` como PRIVATE include para localizar `enterprise/token/TokenValidator.hpp`.
+- **Community build:** `#ifdef` inactivo → sin cambio de comportamiento.
+
+### PASO 2-3 — CryptoProvider::create() + etcd-server (DAY 162)
+- **Status:** ✅ YA IMPLEMENTADOS — `common/crypto_provider.cpp` y `etcd-server/src/main.cpp` correctos desde DAY 151.
+
+### PASO 4 — test-e2e-vault (DAY 162)
+- **Status:** ✅ COMPLETADO DAY 162
+- Step 1: Vault dev activo con `secret/argus/crypto`. Step 2: `common/` enterprise build. Step 3: 6/6 vault_provider tests. Step 4: etcd-server enterprise build. Step 5: smoke test (puerto ocupado = binario correcto). ✅ PASSED
+
+### PASO 5 — DEBT-EMECAS-DUAL-COMPILATION-001 (DAY 162)
+- **Status:** ✅ COMPLETADO DAY 162 — ver sección anterior.
+
+### Notas Consejo de Sabios DAY 162 (8/8) — Ciclo de vida criptográfico enterprise
+- **Veredicto unánime:** "Rotación simultánea" en sistemas distribuidos es anti-patrón. Implementar siempre "rotación coordinada con solapamiento" (grace period ≥ 2× max_clock_skew).
+- **Roadmap aprobado (8/8):** 8 fases obligatorias antes de production-ready (ver BACKLOG-CRYPTO-* abajo).
+- **Veto (8/8):** No mergear enterprise a main ni habilitar rotación automática hasta Fases 0-4 verdes.
+- **ADR obligatorio:** ADR-045 "Crypto Epoch Coordination" antes de cualquier PR de Fase 2.
+- **Nuevo riesgo crítico:** vendor.key vive en la VM — P0 inmediato.
+- **Pubkey hardcodeada en CMake:** aceptable para bootstrap, no como arquitectura permanente.
+
+---
 
 ## ✅ CERRADO DAY 161
 
@@ -1547,6 +1595,49 @@ incrementalmente. MacBook como servidor mientras llegan fondos UEx.
 
 ---
 
+---
+
+## 🔴 BACKLOG — Ciclo de vida criptográfico enterprise (DAY 162 — Consejo 8/8)
+
+> **Veto unánime:** No se autoriza rotación automática hasta Fases 0-4 implementadas y verdes.
+> **ADR-045 "Crypto Epoch Coordination"** requerido antes de cualquier PR de Fase 2.
+
+### BACKLOG-CRYPTO-VENDOR-KEY-001 — vendor.key → Vault (P0, INMEDIATO)
+**Estado:** ⏳ OPEN — DAY 163
+**Descripción:** `enterprise_vendor.key` vive solo en la VM. Vagrant destroy → clave perdida → sistema enterprise inoperativo. Script de bootstrap que sube la clave a `secret/argus/enterprise/vendor-key` con política de acceso restringida a Jenkins. Eliminar pubkey hardcodeada de CMakeLists — inyectar desde CI como secreto efímero.
+**Test de cierre:** `vagrant destroy && vagrant up` → enterprise sigue operativo porque clave viene de Vault.
+**Bloqueante para:** todo lo demás.
+
+### BACKLOG-CRYPTO-HOT-RELOAD-001 — CryptoProvider::reload() RCU (P0)
+**Estado:** ⏳ OPEN — DAY 163-164
+**Descripción:** `CryptoProvider::reload()` con semántica Read-Copy-Update. Threads en vuelo usan keypair activo mientras se carga el nuevo. Sin lock global. Sin downtime. Base para rotación coordinada.
+**Test de cierre:** reload() en caliente → threads en vuelo no interrumpen → nuevo material activo.
+
+### BACKLOG-CRYPTO-EPOCH-001 — CryptoEpoch en etcd (P1) → ADR-045
+**Estado:** ⏳ OPEN — DAY 164-165
+**Descripción:** `CryptoEpoch` monotónico en etcd (`/argus/crypto/epoch/<component_id>`). Protocolo 6 fases: generate → pre-distribute → ACK-ready → commit → ACK-active → cleanup. Rollback si convergencia no alcanzada en T segundos. Cada componente expone: `crypto_epoch_local`, `crypto_epoch_target`, `rotation_state`. **ADR-045 debe aprobarse antes del primer PR.**
+**Test de cierre:** rotación via etcd → todos los componentes convergen → 0 mensajes perdidos.
+
+### BACKLOG-CRYPTO-DUAL-KEY-ZMQ-001 — Ventana dual-key ZMQ (P1)
+**Estado:** ⏳ OPEN — DAY 165-166
+**Descripción:** `key_ring[epoch]` con ventana deslizante de 2 epochs en CryptoTransport. Grace period = `2 × max_clock_skew + deploy_time`. Acepta Keyₙ y Keyₙ₊₁ durante transición. Property tests: `decrypt(encrypt(msg, epoch), epoch+1)` falla fuera de ventana. **ADR-013 compliance obligatoria.**
+**Test de cierre:** rotación durante tráfico activo → 0 mensajes perdidos en ventana de gracia.
+
+### BACKLOG-CRYPTO-E2E-ROTATION-001 — test-e2e-rotation Vault HA (P1)
+**Estado:** ⏳ OPEN — DAY 166-167
+**Descripción:** Harness con Vault HA (Raft, 3 nodos, Docker Compose). Tráfico ZMQ real durante rotación. Criterio: throughput no cae >5%, sin desconexiones >3s. Caos: Vault down, nodo retrasado, partición de red. **Gate obligatorio antes de cualquier PR de automatización.**
+**Test de cierre:** rotación completa bajo tráfico → métricas dentro de umbrales → 0 split-brain.
+
+### BACKLOG-CRYPTO-OPERABILITY-001 — Runbook + métricas + circuit breaker (P2)
+**Estado:** ⏳ OPEN — DAY 167-168
+**Descripción:** `argusctl crypto rotate --epoch=N+1` CLI. Métricas: `argus_crypto_epoch`, `argus_crypto_rotation_latency_seconds`, `argus_crypto_handshake_failures_total`, `argus_crypto_seed_age_seconds`. Circuit breaker: si `handshake_failures > umbral` → auto-revert a epoch-1. Alerta temprana: token enterprise expira <30 días → WARN/CRIT logs.
+**Test de cierre:** drill de rotación manual exitoso + métricas visibles.
+
+### BACKLOG-CRYPTO-JENKINS-AUTOMATION-001 — Jenkins pipeline rotación (P2)
+**Estado:** ⏳ OPEN — DAY 168+
+**Descripción:** Pipeline Jenkins: generación → Vault → epoch bump → espera ACK → gate E2E → rollback si falla. OIDC efímero para Jenkins→Vault (no token estático). **Solo después de Fases 0-5 verdes.**
+**Test de cierre:** rotación automática valida en CI → 0 intervención manual.
+
 ## BACKLOG-FEDER-001
 
 **Estado:** ACTIVO — colaboración UEx/INCIBE en curso
@@ -1828,7 +1919,7 @@ DEBT-FIREWALL-AUTONOMY-MODE-001:           100% ✅  CERRADA DAY 154 (FirewallAu
 DEBT-CRYPTO-REVOCATION-LOCAL-001:            0% ⏳  P1 post-FEDER (revocación offline)
 DEBT-CRYPTO-RECONCILIATION-001:            100% ✅  DAY 157 — shared_mode + staleness guard 30s, 9/9 tests
 DEBT-CRYPTO-CACHE-PERSISTENT-PROD-001:       0% ⏳  P1 pre-FEDER (cache cifrada en prod edge)
-DEBT-EMECAS-DUAL-COMPILATION-001:            0% ⏳  P1 (CI compila ON+OFF)
+DEBT-EMECAS-DUAL-COMPILATION-001:          100% ✅  DAY 162 — test-dual-compilation, 4/4 OK
 DEBT-LICENSE-VAULT-001:                      0% ⏳  P2 post-FEDER (servidor licencias en Vault)
 DEBT-PLUGIN-ENTERPRISE-001:                  0% ⏳  P2 post-FEDER (definir plugins enterprise)
 ADR-031 aRGus-seL4:                      0% ⏳  branch independiente
@@ -1839,6 +1930,16 @@ make test-e2e (gate E2E real):          100% ✅  DAY 159 — synthetic-full + s
 DEBT-WIRE-PROTOCOL-TEST-001:            100% ✅  DAY 161 — 6/6 tests, common/tests/ + make test-wire-protocol
 DEBT-E2E-LIVE-DELTA-001:                 60% 🟡  DAY 161 — fix delta OK, falta inyector sintético mínimo
 DEBT-ALERTING-VAULT-001:                  0% ⏳  P2 (credenciales Discord/Telegram a Vault)
+PASO 1 plugin-loader validate_or_abort():       100% ✅  DAY 162 — tuple<4>, ARGUS_VAULT_ENABLED, namespace correcto
+PASO 4 test-e2e-vault:                          100% ✅  DAY 162 — 6/6 vault_provider + smoke etcd-server enterprise
+BACKLOG-CRYPTO-VENDOR-KEY-001:                    0% ⏳  P0 DAY 163 (vendor.key → Vault, eliminar pubkey CMake)
+BACKLOG-CRYPTO-HOT-RELOAD-001:                    0% ⏳  P0 DAY 163-164 (CryptoProvider::reload() RCU)
+BACKLOG-CRYPTO-EPOCH-001:                         0% ⏳  P1 DAY 164-165 (CryptoEpoch etcd + ADR-045)
+BACKLOG-CRYPTO-DUAL-KEY-ZMQ-001:                  0% ⏳  P1 DAY 165-166 (ventana dual-key ZMQ)
+BACKLOG-CRYPTO-E2E-ROTATION-001:                  0% ⏳  P1 DAY 166-167 (test-e2e-rotation Vault HA)
+BACKLOG-CRYPTO-OPERABILITY-001:                   0% ⏳  P2 DAY 167-168 (runbook + métricas + circuit breaker)
+BACKLOG-CRYPTO-JENKINS-AUTOMATION-001:            0% ⏳  P2 DAY 168+ (Jenkins pipeline rotación)
+
 DEBT-ENTERPRISE-PLUGIN-001:             100% ✅  DAY 160 — vault_provider.so 6/6 tests, Vault+Jenkins operacionales
 DEBT-JENKINS-PROD-001:                    0% ⏳  P0 post-hardware (Jenkins CI/CD en hardware físico)
 DEBT-EMECAS-TEST-TO-MERGE-001:            0% ⏳  P1 (pirámide 4 niveles: unit+wire+integ+E2E)
@@ -2335,7 +2436,7 @@ Un sistema con ACRL converge hacia cobertura de técnicas ATT&CK en tiempo polin
 > "DAY 149 — Arquitectura CI/CD criptográfica definida. ADR-044 aprobado unánimemente.
 >
 > **Consenso Q1-Q7 (síntesis):**# aRGus NDR — BACKLOG
-*Última actualización: DAY 161 — 2026-05-23*
+*Última actualización: DAY 162 — 2026-05-24*
 
 ---
 
@@ -4164,7 +4265,7 @@ DEBT-FIREWALL-AUTONOMY-MODE-001:           100% ✅  CERRADA DAY 154 (FirewallAu
 DEBT-CRYPTO-REVOCATION-LOCAL-001:            0% ⏳  P1 post-FEDER (revocación offline)
 DEBT-CRYPTO-RECONCILIATION-001:            100% ✅  DAY 157 — shared_mode + staleness guard 30s, 9/9 tests
 DEBT-CRYPTO-CACHE-PERSISTENT-PROD-001:       0% ⏳  P1 pre-FEDER (cache cifrada en prod edge)
-DEBT-EMECAS-DUAL-COMPILATION-001:            0% ⏳  P1 (CI compila ON+OFF)
+DEBT-EMECAS-DUAL-COMPILATION-001:          100% ✅  DAY 162 — test-dual-compilation, 4/4 OK
 DEBT-LICENSE-VAULT-001:                      0% ⏳  P2 post-FEDER (servidor licencias en Vault)
 DEBT-PLUGIN-ENTERPRISE-001:                  0% ⏳  P2 post-FEDER (definir plugins enterprise)
 ADR-031 aRGus-seL4:                      0% ⏳  branch independiente

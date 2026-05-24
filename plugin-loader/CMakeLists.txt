@@ -70,6 +70,15 @@ else()
 endif()
 
 # ============================================================================
+# ARGUS_ENTERPRISE_PUBKEY_HEX — keypair vendor enterprise (offline, ADR-044)
+# NOT a secret — pubkey es público por definición.
+# Generado con: python3 enterprise/scripts/generate_token.py --gen-keypair
+# ============================================================================
+set(ARGUS_ENTERPRISE_PUBKEY_HEX "01cd1509d3cdb6012b5d0e08c2b1a5d4164649c8cacec0f9b1bbfefc7cce0326"
+    CACHE STRING "Ed25519 vendor pubkey hex para validación de token enterprise")
+message(STATUS "ARGUS_ENTERPRISE_PUBKEY_HEX: ${ARGUS_ENTERPRISE_PUBKEY_HEX}")
+
+# ============================================================================
 # LIBRARY TARGET
 # ============================================================================
 add_library(plugin_loader SHARED ${SOURCES})
@@ -78,6 +87,9 @@ target_include_directories(plugin_loader
     PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
         $<INSTALL_INTERFACE:include>
+    PRIVATE
+        $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}>
+        $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/..>
     PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}/src
         ${SODIUM_INCLUDE}
@@ -90,9 +102,15 @@ target_link_libraries(plugin_loader
         ${SODIUM_LIB}
 )
 
+if(ARGUS_VAULT_ENABLED)
+    message(STATUS "plugin-loader: ARGUS_VAULT_ENABLED=ON — enterprise token validation activa")
+endif()
+
 target_compile_definitions(plugin_loader
     PRIVATE
         MLD_PLUGIN_PUBKEY_HEX="${MLD_PLUGIN_PUBKEY_HEX}"
+        ARGUS_ENTERPRISE_PUBKEY_HEX="${ARGUS_ENTERPRISE_PUBKEY_HEX}"
+        $<$<BOOL:${ARGUS_VAULT_ENABLED}>:ARGUS_VAULT_ENABLED>
 )
 target_compile_options(plugin_loader
     PRIVATE
