@@ -170,7 +170,7 @@ public:
         std::cout << "✅ [crypto] CryptoTransport inicializado (HKDF-SHA256 + ChaCha20-Poly1305)\n";
 
         // Give ZMQ time to bind
-        std::this_thread::sleep_for(std::chrono::milliseconds(500));
+        std::this_thread::sleep_for(std::chrono::milliseconds(3000));  // slow-joiner guard: firewall reconnect_interval_ms=1000
 
         std::cout << "✅ Synthetic ML Output Injector initialized\n";
         std::cout << "   Port: 5572 (firewall-acl-agent input)\n";
