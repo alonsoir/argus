@@ -114,6 +114,45 @@ def main():
             print("✅ E2E CHECK PASSED — firewall saludable")
         sys.exit(0)
 
+
+    # ── PRECONDITION CHECK (para test-e2e-live) ───────────────────────────────
+    if mode == "precondition":
+        print_header("aRGus NDR — E2E Live Precondition Check")
+        failures = []
+
+        # 1. ml-detector debe estar corriendo y haber procesado eventos
+        ml_recv = (ml_stats or {}).get("received", 0)
+        if ml_stats is None:
+            failures.append("PRECONDITION_FAIL: ml-detector log no encontrado — componente no está corriendo")
+        elif ml_recv == 0:
+            failures.append("PRECONDITION_FAIL: ml-detector received=0 — pipeline sin tráfico real aún (espera >120s o lanza tráfico)")
+
+        # 2. firewall debe estar corriendo
+        fw_proc = (fw_stats or {}).get("events_processed", 0)
+        if fw_stats is None:
+            failures.append("PRECONDITION_FAIL: firewall log no encontrado — componente no está corriendo")
+
+        # 3. ml-detector log debe tener entradas recientes (< 180s)
+        import time as _time
+        if ml_log.exists():
+            age_s = _time.time() - ml_log.stat().st_mtime
+            if age_s > 180:
+                failures.append(f"PRECONDITION_FAIL: ml-detector log sin actividad desde {int(age_s)}s — componente posiblemente caído")
+
+        if failures:
+            print()
+            print("════════════════════════════════════════════════════════════")
+            print("❌ PRECONDITION NOT MET — test-e2e-live no puede ejecutarse:")
+            for f in failures:
+                print(f"   • {f}")
+            print()
+            print("   Solución: espera 120s tras el último restart, o ejecuta")
+            print("   make test-e2e-synthetic primero y luego make test-e2e-live.")
+            sys.exit(2)  # exit 2 = precondición, no fallo de pipeline
+        else:
+            print(f"✅ PRECONDITION OK — ml-detector: received={ml_recv}, firewall: processed={fw_proc}")
+            sys.exit(0)
+
     # ── CHECK con delta ───────────────────────────────────────────────────────
     if mode == "check":
         print_header("aRGus NDR — E2E Check (delta vs snapshot)")

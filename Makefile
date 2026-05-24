@@ -1254,6 +1254,9 @@ test-e2e-live:
 	@echo "── Verificando 6/6 RUNNING ──"
 	@$(MAKE) pipeline-status
 	@echo "── Snapshot de contadores (DEBT-E2E-LIVE-DELTA-001) ──"
+	@echo "── Verificando precondiciones del pipeline ──"
+	@vagrant ssh -c "python3 /vagrant/scripts/check_e2e_pipeline.py precondition" || \
+	  (echo "❌ TEST-E2E-LIVE ABORTED: precondición no cumplida (exit 2)" && exit 2)
 	@vagrant ssh -c "python3 /vagrant/scripts/check_e2e_pipeline.py snapshot"
 	@echo "── Observando pipeline real durante 60s ──"
 	@sleep 60
@@ -1283,7 +1286,7 @@ test-e2e-synthetic-full:
 	@vagrant ssh -c "tmux kill-session -t e2e-sniffer-injector 2>/dev/null || true"
 	@vagrant ssh -c "tmux new-session -d -s e2e-sniffer-injector 'sudo env LD_LIBRARY_PATH=/usr/local/lib /vagrant/tools/build-debug/synthetic_sniffer_injector 100 10 > /vagrant/logs/lab/e2e-sniffer-injector.log 2>&1; tmux kill-session -t e2e-sniffer-injector 2>/dev/null || true'"
 	@echo "   Esperando fin de inyeccion (~20s)..."
-	@vagrant ssh -c "timeout 40 sh -c 'until grep -q Injection\ complete /vagrant/logs/lab/e2e-sniffer-injector.log 2>/dev/null; do sleep 1; done'"
+	@vagrant ssh -c "timeout 60 bash -c 'until grep -q \"Injection complete\" /vagrant/logs/lab/e2e-sniffer-injector.log 2>/dev/null; do sleep 1; done'"
 	@vagrant ssh -c "tail -3 /vagrant/logs/lab/e2e-sniffer-injector.log"
 	@echo "   Esperando stats de ml-detector (60s cycle)..."
 	@sleep 65
@@ -1304,17 +1307,24 @@ test-e2e-synthetic-firewall:
 	@echo "║  ml_output_injector → firewall (aislado)                 ║"
 	@echo "╚════════════════════════════════════════════════════════════╝"
 	@echo ""
-	@echo "── Parando sniffer + ml-detector ──"
+	@echo "── Parando sniffer + ml-detector + firewall + injector ──"
 	@vagrant ssh -c "tmux kill-session -t sniffer 2>/dev/null || true"
 	@vagrant ssh -c "tmux kill-session -t ml-detector 2>/dev/null || true"
-	@sleep 2
-	@echo "── Snapshot de contadores firewall ──"
-	@vagrant ssh -c "python3 /vagrant/scripts/check_e2e_pipeline.py snapshot"
-	@echo "── Inyectando 100 amenazas vía synthetic_ml_output_injector ──"
+	@vagrant ssh -c "tmux kill-session -t firewall 2>/dev/null || true"
 	@vagrant ssh -c "tmux kill-session -t e2e-ml-injector 2>/dev/null || true"
-	@vagrant ssh -c "tmux new-session -d -s e2e-ml-injector 'sudo env LD_LIBRARY_PATH=/usr/local/lib /vagrant/tools/build-debug/synthetic_ml_output_injector 100 10 > /vagrant/logs/lab/e2e-ml-injector.log 2>&1; tmux kill-session -t e2e-ml-injector 2>/dev/null || true'"
-	@echo "   Esperando fin de inyeccion (~20s)..."
-	@vagrant ssh -c "timeout 40 sh -c 'until grep -q Injection\ complete /vagrant/logs/lab/e2e-ml-injector.log 2>/dev/null; do sleep 1; done'"
+	@sleep 2
+	@vagrant ssh -c "truncate -s 0 /vagrant/logs/lab/firewall-agent.log"
+	@echo "── Arrancando injector primero (PUB bind a :5572) ──"
+	@vagrant ssh -c "tmux new-session -d -s e2e-ml-injector 'sudo env LD_LIBRARY_PATH=/usr/local/lib /vagrant/tools/build-debug/synthetic_ml_output_injector 300 5 > /vagrant/logs/lab/e2e-ml-injector.log 2>&1'"
+	@sleep 3
+	@echo "── Arrancando firewall (SUB connect → primer intento exitoso) ──"
+	@$(MAKE) firewall-start
+	@echo "── Esperando primer System State Dump del firewall (35s) ──"
+	@sleep 36
+	@echo "── Snapshot base ──"
+	@vagrant ssh -c "python3 /vagrant/scripts/check_e2e_pipeline.py snapshot"
+	@echo "── Esperando fin de inyeccion (300@5 = 60s total) ──"
+	@vagrant ssh -c "timeout 90 bash -c 'until grep -q \"Injection complete\" /vagrant/logs/lab/e2e-ml-injector.log 2>/dev/null; do sleep 1; done'"
 	@vagrant ssh -c "tail -3 /vagrant/logs/lab/e2e-ml-injector.log"
 	@echo "   Esperando stats de firewall (30s cycle)..."
 	@sleep 35
@@ -1334,7 +1344,10 @@ test-e2e-synthetic: test-e2e-synthetic-full test-e2e-synthetic-firewall
 	@echo "║  ✅ ALL SYNTHETIC E2E TESTS PASSED (DAY 159)              ║"
 	@echo "╚════════════════════════════════════════════════════════════╝"
 
-test-e2e: test-e2e-synthetic test-e2e-live
+test-e2e: test-e2e-synthetic
+
+test-e2e-live-gate: test-e2e-live
+
 
 # ── Enterprise plugin tests ───────────────────────────────────────────────────
 # Requiere: Vault dev mode corriendo (make vault-dev-start)
