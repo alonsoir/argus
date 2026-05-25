@@ -41,16 +41,17 @@
 <!-- DAY-STATUS -->
 | Campo | Valor |
 |---|---|
-| DAY | 161 |
-| Tag | v0.9.5-day161 (pendiente merge) |
-| Branch | feature/day161-cicd-pipeline → EMECAS++ pendiente |
-| EMECAS | ✅ Verde DAY 160 |
+| DAY | 163 |
+| Tag | pendiente (feature/day161-enterprise-crypto-integration) |
+| Branch | feature/day161-enterprise-crypto-integration |
+| EMECAS | ⏳ Pendiente pre-merge (EMECAS justo antes de mergear) |
 | Pipeline | 6/6 RUNNING |
-| EMECAS++ | 🟡 Pendiente en feature/day161-cicd-pipeline |
-| Wire protocol | ✅ DEBT-WIRE-PROTOCOL-TEST-001 — 6/6 tests |
-| Jenkins | ✅ 2.555.2 operacional (Java 21 Temurin) |
-| Vault | ✅ v2.0.1 dev mode — secret/argus/crypto |
-| Próximo hito | DAY 162: DEBT-ARGUSPP-SURICATA-001 (ADR-048 F2) |
+| Crypto lifecycle | FASE 0 ✅ + FASE 1 ✅ — FASE 2 en curso (DAY 164) |
+| CryptoProviderHandle | ✅ RCU header-only 9/9 tests |
+| vendor.key | ✅ Modelo B — solo en Vault dev, nunca en disco |
+| ADR-045 v2 | ✅ Consejo 8/8 — decisiones finales |
+| DEBT-ETCD-REGISTRAR-REAL-001 | ⏳ P0 DAY 164 — prerequisito FASE 2 |
+| Próximo hito | DAY 164: HttpEtcdRegistrar real + CryptoEpochCoordinator |
 | Gate UEx/INCIBE | Datasets de valor científico (no deadline duro) |
 <!-- /DAY-STATUS -->
 
@@ -73,6 +74,13 @@
 - **DEBT-CRYPTO-RECONCILIATION-001 CERRADA + STALENESS GUARD (B1 post-Consejo)** — `AutonomySubscriber`: `shared_ptr<atomic<FirewallAutonomyMode>>` + `shared_ptr<atomic<int64_t>>` (last_update_ns). `poll_callback`: si `elapsed > staleness_timeout_sec` → NORMAL + log. Previene firewall congelado si etcd-server muere silenciosamente. 9/9 tests (T9: staleness guard).
 - **Consejo 8/8 consultado** — Dos bloqueantes identificados y resueltos antes del merge: B1 (staleness) + B2 (ExecStartPre= vs ExecStartPost= para fichero efímero, pendiente DAY 158).
 - **EMECAS DAY 157 VERDE** — `vagrant destroy → up → make bootstrap → make test-all` — TODO VERDE.
+
+### Hitos DAY 163 🎉
+- **BACKLOG-CRYPTO-VENDOR-KEY-001 CERRADA** — Modelo B: keypair enterprise efímero por `vagrant up`. `vault-enterprise-bootstrap` (run:always) genera Ed25519 + token + sube a Vault + limpia `/tmp`. vendor.key nunca en disco. CMakeLists guard `FATAL_ERROR` sin `-DARGUS_ENTERPRISE_PUBKEY_HEX`. `enterprise_vendor.pub` + `enterprise.token` gitignored.
+- **BACKLOG-CRYPTO-HOT-RELOAD-001 CERRADA** — `common/crypto_provider_handle.hpp` RCU header-only. `std::atomic<shared_ptr<ICryptoProvider>>`. `get()` nunca null. `reload()` swap atómico lock-free. 9/9 tests incluyendo concurrencia 8 readers + 50 reloads y RCU survival via `weak_ptr`.
+- **ADR-045 v2 aprobado (Consejo 8/8)** — `not_before` suficiente (sin 2PC), grace period 10s global, etcd-server escritor único via `CryptoEpochCoordinator` en `vault_client`, `EPOCH_TRANSITION` + `EPOCH_FAILED`, wire header `[uint32_t][uint16_t epoch_id][2B reserved][LZ4]`.
+- **DEBT-ETCD-REGISTRAR-REAL-001 descubierta** — `StubEtcdRegistrar` es stub puro. Prerequisito bloqueante de FASE 2. P0 DAY 164.
+- **12/12 suite common verde** — nuevo test target `test_crypto_provider_handle` integrado.
 
 ### Hitos DAY 156 🎉
 - **DEBT-AUTONOMY-CRYPTO-INTEGRATION-001 CERRADA** — `CryptoAutonomyStateMachine` + `AutonomyPublisher` integrados en `etcd-server/main.cpp`. Health-check loop 5s dispara `on_vault_unreachable/restored`. `FirewallAutonomyReactor` + `AutonomySubscriber` integrados en `firewall-acl-agent/main.cpp`. `AutonomyConfig.zmq_endpoint` añadido a struct y parser. `autonomy_publisher.h` añadido al install target de CMake.
@@ -514,6 +522,7 @@ make hardened-full   # destroy → up → provision → build → deploy → che
 - ✅ DAY 150: **ADR-044 implementación completa · provision_crypto.sh · vault_client C++20 · Jenkinsfile Provision Crypto · EMECAS verde** 🎉
 - ✅ DAY 154: **ADR-045 VaultClient decomposition · DEBT-FIREWALL-AUTONOMY-MODE-001 CERRADA · 48/48 tests · v0.8.0-adr045** 🎉
 - ✅ DAY 155: **DEBT-FIREWALL-DENY-SELECTIVE-001 · DEBT-AUTONOMY-ZMQ-EVENTS-001 · BACKLOG-ZMQ-TUNING-001 · 49/49 tests · EMECAS HARDENED PASSED · v0.9.0-day155** 🎉
+- ✅ DAY 163: **FASE 0+1 crypto lifecycle · Modelo B vendor.key efímero · CryptoProviderHandle RCU · ADR-045 v2 (Consejo 8/8) · 9/9 tests** 🎉
 - ✅ DAY 161: **DEBT-WIRE-PROTOCOL-TEST-001 · Jenkinsfile.dev+prod · test-e2e-live delta · Consejo 8/8 · v0.9.5-day161 (pendiente)** 🎉
 - ✅ DAY 160: **DEBT-ENTERPRISE-PLUGIN-001 · libvault_provider.so 6/6 tests · Jenkins 2.555.2 + Vault v2.0.1 · ADR-048 Dataset Production Roadmap definido · v0.9.4-day160** 🎉
 - ✅ DAY 157: **4 deudas cerradas · Consejo 8/8 · Staleness guard · Keypair lifecycle prod · Bootstrap firmado · EMECAS VERDE · v0.9.2-day157** 🎉

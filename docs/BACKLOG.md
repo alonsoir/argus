@@ -1,5 +1,5 @@
 # aRGus NDR — BACKLOG
-*Última actualización: DAY 162 — 2026-05-24*
+*Última actualización: DAY 163 — 2026-05-25*
 
 ---
 
@@ -55,6 +55,10 @@
 - **REGLA PERMANENTE (DAY 159 — Founder):** El primer plugin enterprise (`vault_provider.so`) se firma con keypair vendor offline (air-gapped), distinto del keypair del nodo. La pubkey vendor está hardcodeada en el plugin-loader — nunca en Vault.
 - **REGLA PERMANENTE (DAY 162 — Consejo 8/8):** "Rotación simultánea" de material criptográfico en sistemas distribuidos es un anti-patrón. Implementar siempre "rotación coordinada con solapamiento" (grace_period ≥ 2× max_clock_skew + deploy_time). Nunca asumir que todos los nodos pueden cambiar de clave en el mismo instante.
 - **REGLA PERMANENTE (DAY 162 — Consejo 8/8):** ADR-045 "Crypto Epoch Coordination" debe ser aprobado por el Consejo antes de cualquier PR que implemente coordinación de rotación (Fase 2+). Sin ADR aprobado, el PR no se revisa.
+- **REGLA PERMANENTE (DAY 163 — Consejo 8/8):** `ARGUS_ENTERPRISE_PUBKEY_HEX` nunca hardcodeado en CMakeLists. Fuente única: `vault kv get -field=hex secret/argus/enterprise/vendor-pubkey`. Inyectar via `-DARGUS_ENTERPRISE_PUBKEY_HEX=<hex>`. Build enterprise sin el flag → `FATAL_ERROR` explícito.
+- **REGLA PERMANENTE (DAY 163 — Consejo 8/8):** Modelo B para keypair enterprise: cada `vagrant destroy && vagrant up` genera nuevo keypair Ed25519, nuevo token. El vendor.key nunca persiste en disco ni en la VM — solo en Vault dev (inmem). En producción FEDER, el Vagrantfile vault-enterprise-bootstrap es la única fuente de bootstrap enterprise.
+- **REGLA PERMANENTE (DAY 163 — Consejo 8/8):** `CryptoProviderHandle` es el único punto de acceso a `ICryptoProvider` en componentes que requieren hot-reload. `get()` nunca devuelve null. `reload()` swap atómico sin downtime. Sin excepciones.
+- **REGLA PERMANENTE (DAY 163 — Consejo 8/8):** ADR-045 v2 aprobado. Grace period de rotación de época: global configurable, default 10s. No por componente. Wire header epoch: `[uint32_t size][uint16_t epoch_id][2B reserved][LZ4]` — definido ahora, implementado en FASE 3.
 - **REGLA PERMANENTE (DAY 162 — Consejo 8/8):** `enterprise_vendor.key` nunca vive en la VM ni en el repositorio. Debe residir en Vault desde el momento en que exista automatización. En dev manual: solo en memoria o tmpfs 0600. Un vagrant destroy que destruye la clave privada vendor hace inoperativo el sistema enterprise.
 - **REGLA PERMANENTE (DAY 156 — Consejo 8/8):** En ZMQ PUB/SUB, el publisher debe hacer `bind()` ANTES de que cualquier subscriber haga `connect()`. En tests: crear el publisher en `SetUp()` del fixture antes de `start_subscriber()`. El slow joiner de ZMQ pierde mensajes silenciosamente si el orden se invierte. Ver `docs/technical-notes/ZMQ-PUB-SUB-SLOW-JOINER.md`.
 - **REGLA PERMANENTE (DAY 156 — Consejo 6/8):** El estado de `CryptoAutonomyStateMachine` se persiste en `/var/lib/argus/crypto-autonomy-state.json` con fsync atómico y firma Ed25519. tmpfs es insuficiente para hospitalario (desaparece en reboot no planificado durante AUTONOMOUS). Un reboot durante AUTONOMOUS es el escenario de ataque exacto que hay que cubrir.
@@ -79,6 +83,44 @@
 
 ---
 
+
+## ✅ CERRADO DAY 163
+
+### BACKLOG-CRYPTO-VENDOR-KEY-001 — vendor.key → Vault (Modelo B efímero)
+- **Status:** ✅ COMPLETADO DAY 163 — rama `feature/day161-enterprise-crypto-integration`
+- **Modelo B adoptado:** cada `vagrant destroy && vagrant up` genera nuevo keypair Ed25519 enterprise, sube a Vault, genera token firmado, limpia `/tmp`. vendor.key nunca persiste en disco.
+- `enterprise_vendor.key` eliminado del disco y del repo.
+- `enterprise_vendor.pub` y `enterprise.token` marcados gitignored (efímeros por diseño).
+- `plugin-loader/CMakeLists.txt`: hex hardcodeado eliminado → guard `FATAL_ERROR` si enterprise build sin `-DARGUS_ENTERPRISE_PUBKEY_HEX`.
+- `Makefile [2/4]` test-dual-compilation: lee hex de Vault en runtime antes de invocar cmake.
+- `Vagrantfile`: bloque `vault-enterprise-bootstrap` (run:always) — nuevo keypair + token en cada vagrant up.
+- `test-dual-compilation` 4/4 verde tras los cambios.
+- **Commits:** `e933e316` (vendor.key→Vault + CMake guard) · `feat(enterprise): Modelo B`
+
+### BACKLOG-CRYPTO-HOT-RELOAD-001 — CryptoProviderHandle RCU sin downtime
+- **Status:** ✅ COMPLETADO DAY 163 — rama `feature/day161-enterprise-crypto-integration`
+- **`common/crypto_provider_handle.hpp`** — header-only, `std::atomic<shared_ptr<ICryptoProvider>>`.
+- **Garantías:** `get()` nunca devuelve null post-construcción. `reload()` swap atómico lock-free C++20. Provider anterior sobrevive hasta refcount=0 (RCU semántica real).
+- **9/9 tests RED→GREEN:** null guard, delegaciones is_healthy/component_name, reload swap, concurrent reads (8 readers + 50 reloads), RCU survival test (`weak_ptr` verifica destrucción diferida).
+- **12/12 suite common verde** tras añadir test target en CMakeLists.
+- **Commit:** `d39be6a1` (CryptoProviderHandle RCU 9/9 tests)
+
+### ADR-045 v2 — Decisiones Consejo DAY 163 (8/8)
+- **P1 Coordinación:** `not_before` en etcd suficiente. Sin 2PC. ACKs solo para observabilidad post-hoc en `/argus/crypto/epoch/ack/<comp_id>`. Kimi cambió posición — jitter scheduling 0.02% del grace period de 5s no justifica complejidad de protocolo.
+- **P2 Grace period:** global configurable, default **10s**. No por componente (asimetría = split-brain garantizado).
+- **P3 Escritor único:** etcd-server escribe `/argus/crypto/epoch` en FASE 2. Lógica criptográfica en `CryptoEpochCoordinator` dentro de `vault_client`. etcd-server habla con él pero no contiene la lógica.
+- **P4 Estado EPOCH_TRANSITION:** nuevo estado obligatorio + `EPOCH_FAILED`. `AUTONOMOUS_EPOCH_STALE` documentado para FASE 5.
+- **P5 Wire header:** `[uint32_t size][uint16_t epoch_id][2B reserved][LZ4]`. Definido ahora, implementado en FASE 3.
+- **Puntos nuevos del Consejo:** `last_seen_revision` para resume seguro, estados watch `WATCH_CONNECTED/DEGRADED/STALE`, ACK con timestamp monotónico en ns.
+
+### DEBT-ETCD-REGISTRAR-REAL-001 — Descubierta DAY 163 (bloqueante FASE 2)
+- **Status:** ⏳ OPEN — P0 DAY 164
+- **Descripción:** `StubEtcdRegistrar` es un stub puro (logs a stderr, sin conexión real a etcd). El watch de `/argus/crypto/epoch` que necesita `CryptoEpochCoordinator` no puede construirse sobre el stub. Prerequisito bloqueante de BACKLOG-CRYPTO-EPOCH-001.
+- **Fix:** implementar `HttpEtcdRegistrar` real con `etcd-cpp-apiv3` (ya instalado en `provision.sh`): `register_status()` real, `start_keepalive()` real, `watch()` con gRPC watch nativo.
+- **Decisiones Consejo DAY 163 (8/8):** etcd-cpp-apiv3 (8/8), gRPC watch (6/8), hilo dedicado encapsulado (5/8).
+- **Extras Consejo:** `last_seen_revision` obligatorio para reconnect, estados `WATCH_CONNECTED/DEGRADED/STALE`, ACK con timestamp monotónico.
+- **Test de cierre:** `register_status()` escribe en etcd real. `watch()` recibe evento en <100ms. Reconnect tras fallo recupera `last_seen_revision`.
+- **Estimación:** 1.5 sesiones DAY 164.
 
 ## ✅ CERRADO DAY 162
 
@@ -1932,9 +1974,10 @@ DEBT-E2E-LIVE-DELTA-001:                 60% 🟡  DAY 161 — fix delta OK, fal
 DEBT-ALERTING-VAULT-001:                  0% ⏳  P2 (credenciales Discord/Telegram a Vault)
 PASO 1 plugin-loader validate_or_abort():       100% ✅  DAY 162 — tuple<4>, ARGUS_VAULT_ENABLED, namespace correcto
 PASO 4 test-e2e-vault:                          100% ✅  DAY 162 — 6/6 vault_provider + smoke etcd-server enterprise
-BACKLOG-CRYPTO-VENDOR-KEY-001:                    0% ⏳  P0 DAY 163 (vendor.key → Vault, eliminar pubkey CMake)
-BACKLOG-CRYPTO-HOT-RELOAD-001:                    0% ⏳  P0 DAY 163-164 (CryptoProvider::reload() RCU)
-BACKLOG-CRYPTO-EPOCH-001:                         0% ⏳  P1 DAY 164-165 (CryptoEpoch etcd + ADR-045)
+BACKLOG-CRYPTO-VENDOR-KEY-001:                  100% ✅  DAY 163 — Modelo B, vault-enterprise-bootstrap, CMake guard
+BACKLOG-CRYPTO-HOT-RELOAD-001:                  100% ✅  DAY 163 — CryptoProviderHandle RCU 9/9 tests, header-only
+DEBT-ETCD-REGISTRAR-REAL-001:                     0% ⏳  P0 DAY 164 (StubEtcdRegistrar → HttpEtcdRegistrar real, prerequisito FASE 2)
+BACKLOG-CRYPTO-EPOCH-001:                         0% ⏳  P1 DAY 164-165 (CryptoEpoch etcd + ADR-045 v2)
 BACKLOG-CRYPTO-DUAL-KEY-ZMQ-001:                  0% ⏳  P1 DAY 165-166 (ventana dual-key ZMQ)
 BACKLOG-CRYPTO-E2E-ROTATION-001:                  0% ⏳  P1 DAY 166-167 (test-e2e-rotation Vault HA)
 BACKLOG-CRYPTO-OPERABILITY-001:                   0% ⏳  P2 DAY 167-168 (runbook + métricas + circuit breaker)
@@ -2436,7 +2479,7 @@ Un sistema con ACRL converge hacia cobertura de técnicas ATT&CK en tiempo polin
 > "DAY 149 — Arquitectura CI/CD criptográfica definida. ADR-044 aprobado unánimemente.
 >
 > **Consenso Q1-Q7 (síntesis):**# aRGus NDR — BACKLOG
-*Última actualización: DAY 162 — 2026-05-24*
+*Última actualización: DAY 163 — 2026-05-25*
 
 ---
 
