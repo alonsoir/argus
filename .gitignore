@@ -263,3 +263,7 @@ scripts/parquet/schemas/__pycache__/
 test_sos_e2e.cpp
 enterprise_vendor.key
 enterprise.token
+
+# Enterprise crypto — efímeros Modelo B (regenerados cada vagrant up)
+enterprise/enterprise_vendor.pub
+enterprise/enterprise.token

@@ -659,25 +659,7 @@ BASHRC_EOF
         systemctl start jenkins 2>/dev/null || true
       fi
 
-      # ── Vault dev mode autostart ────────────────────────────────────────────
-      # Fix DAY 160: Vault dev mode es inmem — no persiste entre reinicios
-      # Se arranca automáticamente y se recrea secret/argus/crypto
-      if ! pgrep -x vault > /dev/null; then
-        echo "🔐 Arrancando Vault dev mode..."
-        nohup vault server -dev \
-          -dev-root-token-id=argus-dev-token \
-          -dev-listen-address=0.0.0.0:8200 \
-          > /tmp/vault-dev.log 2>&1 &
-        sleep 3
-        export VAULT_ADDR=http://127.0.0.1:8200
-        export VAULT_TOKEN=argus-dev-token
-        vault kv put secret/argus/crypto \
-          seed=argus-dev-seed-32bytes-placeholder \
-          provider=vault_crypto > /dev/null 2>&1
-        echo "✅ Vault dev OK — token: argus-dev-token — secret/argus/crypto recreado"
-      else
-        echo "✅ Vault ya corriendo"
-      fi
+      # Vault autostart movido a vault-enterprise-bootstrap (run: always) — DAY 163
     DEPENDENCIES_EOF
 
     # ════════════════════════════════════════════════════════════════════════
@@ -782,6 +764,116 @@ BASHRC_EOF
         echo "⚠️  install-systemd-units.sh not found — skipping"
       fi
     CRYPTO_PROVISION
+
+    # ════════════════════════════════════════════════════════════════════════
+    # Enterprise Crypto Bootstrap — Modelo B (efímero por diseño)
+    # run: "always" — cada vagrant up genera nuevo keypair enterprise
+    # vendor.key NUNCA persiste en disco — solo en Vault dev (inmem)
+    # BACKLOG-CRYPTO-VENDOR-KEY-001 (DAY 163)
+    # ════════════════════════════════════════════════════════════════════════
+    defender.vm.provision "shell", name: "vault-enterprise-bootstrap", run: "always", inline: <<-VAULT_ENTERPRISE
+      set -e
+      echo "╔════════════════════════════════════════════════════════════╗"
+      echo "║  🔐 Enterprise Crypto Bootstrap — Modelo B (efímero)      ║"
+      echo "║  Nuevo keypair → Vault → nuevo token (cada vagrant up)    ║"
+      echo "╚════════════════════════════════════════════════════════════╝"
+
+      export VAULT_ADDR=http://127.0.0.1:8200
+      export VAULT_TOKEN=argus-dev-token
+
+      # ── 1. Vault dev ──────────────────────────────────────────────────
+      if ! pgrep -x vault > /dev/null; then
+        echo "🔐 Arrancando Vault dev mode..."
+        nohup vault server -dev \
+          -dev-root-token-id=argus-dev-token \
+          -dev-listen-address=0.0.0.0:8200 \
+          > /tmp/vault-dev.log 2>&1 &
+        sleep 3
+        echo "✅ Vault dev OK"
+      else
+        echo "✅ Vault ya corriendo (pid: $(pgrep -x vault))"
+      fi
+
+      # secret/argus/crypto: siempre recrear (Vault dev es inmem)
+      vault kv put secret/argus/crypto \
+        seed=argus-dev-seed-32bytes-placeholder \
+        provider=vault_crypto > /dev/null
+      echo "✅ secret/argus/crypto recreado"
+
+      # ── 2. Python cryptography (si no está) ───────────────────────────
+      python3 -c "import cryptography" 2>/dev/null || \
+        pip3 install cryptography --break-system-packages --quiet
+
+      # ── 3. Generar nuevo keypair Ed25519 enterprise ────────────────────
+      echo "🔑 Generando nuevo keypair enterprise (Modelo B)..."
+      rm -f /tmp/argus_vendor.key /tmp/argus_vendor.pub /tmp/argus_enterprise.token
+
+      python3 /vagrant/enterprise/scripts/generate_token.py \
+        --gen-keypair \
+        --privkey /tmp/argus_vendor.key \
+        --pubkey  /tmp/argus_vendor.pub
+
+      if [ ! -f /tmp/argus_vendor.key ] || [ ! -f /tmp/argus_vendor.pub ]; then
+        echo "❌ generate_token.py --gen-keypair no generó los ficheros esperados"
+        exit 1
+      fi
+      echo "✅ Keypair generado en /tmp"
+
+      # ── 4. Extraer pubkey hex (32 bytes Ed25519 raw) ──────────────────
+      PUBKEY_HEX=$(openssl pkey -in /tmp/argus_vendor.pub -pubin -outform DER \
+        | tail -c 32 | od -A n -t x1 | tr -d ' \n')
+
+      if [ -z "$PUBKEY_HEX" ] || [ ${#PUBKEY_HEX} -ne 64 ]; then
+        echo "❌ Pubkey hex inválido: '$PUBKEY_HEX' (longitud: ${#PUBKEY_HEX})"
+        exit 1
+      fi
+      echo "✅ Pubkey hex: $PUBKEY_HEX"
+
+      # ── 5. Subir a Vault ──────────────────────────────────────────────
+      vault kv put secret/argus/enterprise/vendor-key \
+        key=$(base64 -w0 /tmp/argus_vendor.key)
+      vault kv put secret/argus/enterprise/vendor-pubkey \
+        hex=$PUBKEY_HEX
+      echo "✅ Vault: vendor-key + vendor-pubkey almacenados"
+
+      # ── 6. Generar token enterprise (365 días) ────────────────────────
+      python3 /vagrant/enterprise/scripts/generate_token.py \
+        --privkey     /tmp/argus_vendor.key \
+        --pubkey      /tmp/argus_vendor.pub \
+        --instance-id argus-dev \
+        --features    vault_crypto \
+        --days        365 \
+        --out         /tmp/argus_enterprise.token
+
+      if [ ! -f /tmp/argus_enterprise.token ]; then
+        echo "❌ Token no generado"
+        exit 1
+      fi
+      echo "✅ Token enterprise generado"
+
+      # ── 7. Instalar artefactos en /vagrant/enterprise/ ────────────────
+      cp /tmp/argus_vendor.pub       /vagrant/enterprise/enterprise_vendor.pub
+      cp /tmp/argus_enterprise.token /vagrant/enterprise/enterprise.token
+      echo "✅ enterprise_vendor.pub + enterprise.token actualizados"
+
+      # ── 8. Token en Vault (etcd-server lo consulta en runtime) ────────
+      vault kv put secret/argus/enterprise/token \
+        value=$(cat /tmp/argus_enterprise.token)
+      echo "✅ Vault: enterprise.token almacenado"
+
+      # ── 9. Limpiar /tmp ───────────────────────────────────────────────
+      rm -f /tmp/argus_vendor.key /tmp/argus_vendor.pub /tmp/argus_enterprise.token
+      echo "✅ /tmp limpiado — vendor.key nunca persiste en disco"
+
+      echo ""
+      echo "╔════════════════════════════════════════════════════════════╗"
+      echo "║  ✅ Enterprise crypto bootstrap completado                 ║"
+      echo "╚════════════════════════════════════════════════════════════╝"
+      echo "   Pubkey hex : $PUBKEY_HEX"
+      echo "   Token      : /vagrant/enterprise/enterprise.token"
+      echo "   Vault      : secret/argus/enterprise/{vendor-key,vendor-pubkey,token}"
+      echo "   vendor.key : solo en Vault (nunca en disco)"
+    VAULT_ENTERPRISE
 
   end  # End defender VM
 
