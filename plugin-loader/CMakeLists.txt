@@ -74,8 +74,16 @@ endif()
 # NOT a secret — pubkey es público por definición.
 # Generado con: python3 enterprise/scripts/generate_token.py --gen-keypair
 # ============================================================================
-set(ARGUS_ENTERPRISE_PUBKEY_HEX "01cd1509d3cdb6012b5d0e08c2b1a5d4164649c8cacec0f9b1bbfefc7cce0326"
-    CACHE STRING "Ed25519 vendor pubkey hex para validación de token enterprise")
+# BACKLOG-CRYPTO-VENDOR-KEY-001: ARGUS_ENTERPRISE_PUBKEY_HEX NUNCA hardcodeado aquí.
+# Fuente: vault kv get -field=hex secret/argus/enterprise/vendor-pubkey
+# Inyectar vía: cmake -DARGUS_ENTERPRISE_PUBKEY_HEX=<hex> ...
+if(NOT DEFINED ARGUS_ENTERPRISE_PUBKEY_HEX OR "${ARGUS_ENTERPRISE_PUBKEY_HEX}" STREQUAL "")
+    if(ARGUS_VAULT_ENABLED)
+        message(FATAL_ERROR "BACKLOG-CRYPTO-VENDOR-KEY-001: ARGUS_ENTERPRISE_PUBKEY_HEX requerido. Inject via -DARGUS_ENTERPRISE_PUBKEY_HEX=<hex> (fuente: Vault secret/argus/enterprise/vendor-pubkey)")
+    else()
+        set(ARGUS_ENTERPRISE_PUBKEY_HEX "")  # community build: no se usa
+    endif()
+endif()
 message(STATUS "ARGUS_ENTERPRISE_PUBKEY_HEX: ${ARGUS_ENTERPRISE_PUBKEY_HEX}")
 
 # ============================================================================

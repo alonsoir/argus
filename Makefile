@@ -1383,7 +1383,7 @@ test-dual-compilation:
 	@vagrant ssh -c "cd /vagrant/plugin-loader/build && cmake -DCMAKE_BUILD_TYPE=Debug .. > /dev/null 2>&1 && make -j$$(nproc) 2>&1 | tail -2"
 	@echo "✅ plugin-loader community OK"
 	@echo "── [2/4] plugin-loader enterprise (ARGUS_VAULT_ENABLED=ON) ──"
-	@vagrant ssh -c "cd /vagrant/plugin-loader/build-enterprise && cmake -DCMAKE_BUILD_TYPE=Debug -DARGUS_VAULT_ENABLED=ON .. > /dev/null 2>&1 && make -j$$(nproc) 2>&1 | tail -2"
+	@vagrant ssh -c 'PUBKEY_HEX=$$(VAULT_ADDR=http://127.0.0.1:8200 VAULT_TOKEN=argus-dev-token vault kv get -field=hex secret/argus/enterprise/vendor-pubkey) && cd /vagrant/plugin-loader/build-enterprise && cmake -DCMAKE_BUILD_TYPE=Debug -DARGUS_VAULT_ENABLED=ON -DARGUS_ENTERPRISE_PUBKEY_HEX=$$PUBKEY_HEX .. > /dev/null 2>&1 && make -j$$(nproc) 2>&1 | tail -2'
 	@echo "✅ plugin-loader enterprise OK"
 	@echo "── [3/4] common/ community (ARGUS_VAULT_ENABLED=OFF) ──"
 	@vagrant ssh -c "cd /vagrant/common/build && cmake -DARGUS_VAULT_ENABLED=OFF .. > /dev/null 2>&1 && make -j$$(nproc) 2>&1 | tail -2"
