@@ -115,6 +115,7 @@ install(FILES
         vault_transport.h
         cache_manager.h
         crypto_provider.h
+        crypto_provider_handle.hpp
         autonomy_publisher.h
         crypto_autonomy.h
         crypto_deriver.h
@@ -260,6 +261,20 @@ add_executable(test_vault_client
             ${LIBSODIUM_LIBRARIES}
     )
     add_test(NAME test_autonomy_state_writer COMMAND test_autonomy_state_writer)
+
+    # test_crypto_provider_handle — BACKLOG-CRYPTO-HOT-RELOAD-001 (DAY 163)
+    add_executable(test_crypto_provider_handle
+            tests/test_crypto_provider_handle.cpp
+    )
+    target_include_directories(test_crypto_provider_handle PRIVATE
+            ${CMAKE_CURRENT_SOURCE_DIR}
+            ${LIBSODIUM_INCLUDE_DIRS}
+    )
+    target_link_libraries(test_crypto_provider_handle PRIVATE
+            crypto_provider
+            ${LIBSODIUM_LIBRARIES}
+    )
+    add_test(NAME test_crypto_provider_handle COMMAND test_crypto_provider_handle)
 
     # DEBT-WIRE-PROTOCOL-TEST-001 (DAY 161)
     # Verifica simetría del protocolo binario LZ4 LE uint32_t
