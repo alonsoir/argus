@@ -200,6 +200,7 @@ add_executable(test_vault_client
             ${ZMQ_LIBRARIES}
     )
     add_test(NAME test_autonomy_publisher COMMAND test_autonomy_publisher)
+    set_tests_properties(test_autonomy_publisher PROPERTIES TIMEOUT 30)
     # IVaultTransport tests (ADR-045 DAY 153)
     add_executable(test_vault_transport
             tests/test_vault_transport.cpp
@@ -289,4 +290,20 @@ add_executable(test_vault_client
             lz4
     )
     add_test(NAME test_wire_protocol COMMAND test_wire_protocol)
+
+    # BACKLOG-CRYPTO-EPOCH-001 — DAY 164
+    add_executable(test_crypto_epoch_coordinator
+            tests/test_crypto_epoch_coordinator.cpp
+            crypto_epoch_coordinator.cpp
+            http_etcd_registrar.cpp
+    )
+    target_include_directories(test_crypto_epoch_coordinator PRIVATE
+            ${CMAKE_CURRENT_SOURCE_DIR}
+            ${CURL_INCLUDE_DIRS}
+    )
+    target_link_libraries(test_crypto_epoch_coordinator PRIVATE
+            vault_client
+            ${CURL_LIBRARIES}
+    )
+    add_test(NAME test_crypto_epoch_coordinator COMMAND test_crypto_epoch_coordinator)
 endif()
