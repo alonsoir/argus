@@ -31,7 +31,7 @@
 
 ---
 
-✅ `main` is tagged `v0.9.5-day161` (EMECAS++ verde). DAY 162: enterprise crypto PASO 1-5 completados. DAY 161: DEBT-WIRE-PROTOCOL-TEST-001 CERRADA (6/6 tests LZ4 LE uint32_t). Jenkinsfile.dev+prod separados. test-e2e-live modo delta. Consejo 8/8. Branch `feature/day161-cicd-pipeline` pendiente EMECAS++ → merge → v0.9.5-day161.
+✅ DAY 165: FASE 3 wire header epoch_id (13/13 tests) + EMECAS++ OSS verde + Consejo 8/8 EMECAS++ protocolo 3 actos definido. Branch `feature/day161-enterprise-crypto-integration`. DAY 164: FASE 2a+2b (HttpEtcdRegistrar + CryptoEpochCoordinator, 10/10 tests).
 **PRE-PRODUCTION: do not deploy in hospitals until ACRL (DEBT-PENTESTER-LOOP-001) is complete.**
 
 ---
@@ -41,17 +41,17 @@
 <!-- DAY-STATUS -->
 | Campo | Valor |
 |---|---|
-| DAY | 163 |
+| DAY | 165 |
 | Tag | pendiente (feature/day161-enterprise-crypto-integration) |
 | Branch | feature/day161-enterprise-crypto-integration |
-| EMECAS | ⏳ Pendiente pre-merge (EMECAS justo antes de mergear) |
+| EMECAS++ OSS | ✅ verde — test-all + test-e2e-synthetic-full + test-e2e-synthetic-firewall |
+| EMECAS++ Enterprise | ⏳ Pendiente — protocolo 3 actos (Consejo 8/8 DAY 165) |
 | Pipeline | 6/6 RUNNING |
-| Crypto lifecycle | FASE 0 ✅ + FASE 1 ✅ — FASE 2 en curso (DAY 164) |
-| CryptoProviderHandle | ✅ RCU header-only 9/9 tests |
+| Crypto lifecycle | FASE 0 ✅ + FASE 1 ✅ + FASE 2a ✅ + FASE 2b ✅ + FASE 3 ✅ |
+| Wire header epoch_id | ✅ [uint32_t][uint16_t epoch_id][2B reserved][LZ4] — 13/13 tests |
 | vendor.key | ✅ Modelo B — solo en Vault dev, nunca en disco |
-| ADR-045 v2 | ✅ Consejo 8/8 — decisiones finales |
-| DEBT-ETCD-REGISTRAR-REAL-001 | ⏳ P0 DAY 164 — prerequisito FASE 2 |
-| Próximo hito | DAY 164: HttpEtcdRegistrar real + CryptoEpochCoordinator |
+| ADR-045 v2 | ✅ Consejo 8/8 — implementado FASES 0-3 |
+| Próximo hito | DAY 166: inspeccionar VaultProvider retry/cache + Acto I EMECAS++ |
 | Gate UEx/INCIBE | Datasets de valor científico (no deadline duro) |
 <!-- /DAY-STATUS -->
 
@@ -63,101 +63,115 @@
 
 ### Pipeline
 - 6/6 componentes RUNNING — validado EMECAS DAY 145 ✅
-- `make test-all`: ALL TESTS COMPLETE (50/50 firewall · 3/3 etcd-server · 9/9 sniffer · 10/10 ml-detector · 8/8 rag-ingester · 1/1 argus-network-isolate) ✅
-- `make PROFILE=production all`: Gate ODR — ALL COMPONENTS BUILT ✅
-- `make argus-network-isolate-test`: dry-run PASSED ✅
+  - `make test-all`: ALL TESTS COMPLETE (50/50 firewall · 3/3 etcd-server · 9/9 sniffer · 10/10 ml-detector · 8/8 rag-ingester · 1/1 argus-network-isolate) ✅
+  - `make PROFILE=production all`: Gate ODR — ALL COMPONENTS BUILT ✅
+  - `make argus-network-isolate-test`: dry-run PASSED ✅
 
 ### Hitos DAY 157 🎉
 - **DEBT-AUTONOMY-STATE-PERSISTENCE-001 CERRADA** — `common/autonomy_state_writer.h` header-only. Escritura atómica fsync+rename, firma Ed25519, lectura fail-safe (AUTONOMOUS expirado >24h → NORMAL). 9/9 tests RED→GREEN. Integrado en etcd-server STEP 0c.
-- **DEBT-BOOTSTRAP-STATUS-SIGNATURE-001 CERRADA** — `bootstrap-status.json` firmado Ed25519. JSON canónico → `crypto_sign_detached` → `signature_hex`. Escritura atómica tmp→rename+fsync. Misma cadena de confianza que ADR-025.
-- **DEBT-KEYPAIR-LIFECYCLE-PROD-001 CERRADA** — `provision.sh` `generate_keypair()`: `ARGUS_ENV=prod` sin keypair → `exit 1`. NUNCA genera silenciosamente en producción. 3 niveles: dev/staging=genera, prod=falla.
-- **DEBT-CRYPTO-RECONCILIATION-001 CERRADA + STALENESS GUARD (B1 post-Consejo)** — `AutonomySubscriber`: `shared_ptr<atomic<FirewallAutonomyMode>>` + `shared_ptr<atomic<int64_t>>` (last_update_ns). `poll_callback`: si `elapsed > staleness_timeout_sec` → NORMAL + log. Previene firewall congelado si etcd-server muere silenciosamente. 9/9 tests (T9: staleness guard).
-- **Consejo 8/8 consultado** — Dos bloqueantes identificados y resueltos antes del merge: B1 (staleness) + B2 (ExecStartPre= vs ExecStartPost= para fichero efímero, pendiente DAY 158).
-- **EMECAS DAY 157 VERDE** — `vagrant destroy → up → make bootstrap → make test-all` — TODO VERDE.
+  - **DEBT-BOOTSTRAP-STATUS-SIGNATURE-001 CERRADA** — `bootstrap-status.json` firmado Ed25519. JSON canónico → `crypto_sign_detached` → `signature_hex`. Escritura atómica tmp→rename+fsync. Misma cadena de confianza que ADR-025.
+  - **DEBT-KEYPAIR-LIFECYCLE-PROD-001 CERRADA** — `provision.sh` `generate_keypair()`: `ARGUS_ENV=prod` sin keypair → `exit 1`. NUNCA genera silenciosamente en producción. 3 niveles: dev/staging=genera, prod=falla.
+  - **DEBT-CRYPTO-RECONCILIATION-001 CERRADA + STALENESS GUARD (B1 post-Consejo)** — `AutonomySubscriber`: `shared_ptr<atomic<FirewallAutonomyMode>>` + `shared_ptr<atomic<int64_t>>` (last_update_ns). `poll_callback`: si `elapsed > staleness_timeout_sec` → NORMAL + log. Previene firewall congelado si etcd-server muere silenciosamente. 9/9 tests (T9: staleness guard).
+  - **Consejo 8/8 consultado** — Dos bloqueantes identificados y resueltos antes del merge: B1 (staleness) + B2 (ExecStartPre= vs ExecStartPost= para fichero efímero, pendiente DAY 158).
+  - **EMECAS DAY 157 VERDE** — `vagrant destroy → up → make bootstrap → make test-all` — TODO VERDE.
 
 ### Hitos DAY 163 🎉
 - **BACKLOG-CRYPTO-VENDOR-KEY-001 CERRADA** — Modelo B: keypair enterprise efímero por `vagrant up`. `vault-enterprise-bootstrap` (run:always) genera Ed25519 + token + sube a Vault + limpia `/tmp`. vendor.key nunca en disco. CMakeLists guard `FATAL_ERROR` sin `-DARGUS_ENTERPRISE_PUBKEY_HEX`. `enterprise_vendor.pub` + `enterprise.token` gitignored.
-- **BACKLOG-CRYPTO-HOT-RELOAD-001 CERRADA** — `common/crypto_provider_handle.hpp` RCU header-only. `std::atomic<shared_ptr<ICryptoProvider>>`. `get()` nunca null. `reload()` swap atómico lock-free. 9/9 tests incluyendo concurrencia 8 readers + 50 reloads y RCU survival via `weak_ptr`.
-- **ADR-045 v2 aprobado (Consejo 8/8)** — `not_before` suficiente (sin 2PC), grace period 10s global, etcd-server escritor único via `CryptoEpochCoordinator` en `vault_client`, `EPOCH_TRANSITION` + `EPOCH_FAILED`, wire header `[uint32_t][uint16_t epoch_id][2B reserved][LZ4]`.
-- **DEBT-ETCD-REGISTRAR-REAL-001 descubierta** — `StubEtcdRegistrar` es stub puro. Prerequisito bloqueante de FASE 2. P0 DAY 164.
-- **12/12 suite common verde** — nuevo test target `test_crypto_provider_handle` integrado.
+  - **BACKLOG-CRYPTO-HOT-RELOAD-001 CERRADA** — `common/crypto_provider_handle.hpp` RCU header-only. `std::atomic<shared_ptr<ICryptoProvider>>`. `get()` nunca null. `reload()` swap atómico lock-free. 9/9 tests incluyendo concurrencia 8 readers + 50 reloads y RCU survival via `weak_ptr`.
+  - **ADR-045 v2 aprobado (Consejo 8/8)** — `not_before` suficiente (sin 2PC), grace period 10s global, etcd-server escritor único via `CryptoEpochCoordinator` en `vault_client`, `EPOCH_TRANSITION` + `EPOCH_FAILED`, wire header `[uint32_t][uint16_t epoch_id][2B reserved][LZ4]`.
+  - **DEBT-ETCD-REGISTRAR-REAL-001 descubierta** — `StubEtcdRegistrar` es stub puro. Prerequisito bloqueante de FASE 2. P0 DAY 164.
+  - **12/12 suite common verde** — nuevo test target `test_crypto_provider_handle` integrado.
+
+### Hitos DAY 164 🎉
+- **DEBT-ETCD-REGISTRAR-REAL-001 CERRADA (FASE 2a)** — `HttpEtcdRegistrar` REST real: `register_status()`, `start_keepalive()` (hilo heartbeat), `watch_epoch()` (polling 2s), `last_seen_revision`, WatchState CONNECTED/DEGRADED/STALE. 5/5 tests RED→GREEN.
+  - **BACKLOG-CRYPTO-EPOCH-001 CERRADA (FASE 2b)** — `CryptoEpochCoordinator`: watch `/v1/epoch`, callback `on_epoch_change` → `handle.reload()`, ACK timestamp monotónico ns. 5/5 tests RED→GREEN. etcd-server: GET/PUT `/v1/epoch` + EpochInfo thread-safe.
+  - **Fix ODR httplib** — `CPPHTTPLIB_OPENSSL_SUPPORT` via CMake en todos los targets. `alert_client.hpp` #ifndef guard. vault-enterprise-bootstrap token via @file.
+  - **12/12 suite common verde.**
+
+### Hitos DAY 165 🎉
+- **BACKLOG-CRYPTO-DUAL-KEY-ZMQ-001 CERRADA (FASE 3)** — Wire header enterprise: `[uint32_t size][uint16_t epoch_id][2B reserved][LZ4+encrypted]`. Selección de clave ANTES de descifrar (seguridad crítica). 13/13 tests RED→GREEN. `ml-detector` serializa, `firewall-acl-agent/zmq_subscriber` deserializa.
+  - **EMECAS++ OSS verde** — `test-all` ✅ · `test-e2e-synthetic-full` ✅ · `test-e2e-synthetic-firewall` ✅ (540 eventos, 0 crypto_errors).
+  - **FASE 4 parcial** — `test_e2e_rotation` FakeEtcdServer 5/5 PASSED + `test-e2e-vault` PASSED. Live rotation pipeline activo pendiente.
+  - **Keypair efímero activo:** `a2abfe43e349e86ddeb4a22496b007919c87bdb0f5dc88c17b57cabf0d61331f`
+  - **Consejo de Sabios (8/8)** — 6 preguntas EMECAS++. Unanimidades: targets anidados, EMECAS++ naming, Jenkins post-merge. Decisión Alonso: 3 actos obligatorios (Vault nominal + rotación + fallo componente). No merge hasta los 3 actos verdes.
+  - **DEBT-FIREWALL-BUILD-LEGACY-001** descubierta (P3, no bloquea).
 
 ### Hitos DAY 156 🎉
 - **DEBT-AUTONOMY-CRYPTO-INTEGRATION-001 CERRADA** — `CryptoAutonomyStateMachine` + `AutonomyPublisher` integrados en `etcd-server/main.cpp`. Health-check loop 5s dispara `on_vault_unreachable/restored`. `FirewallAutonomyReactor` + `AutonomySubscriber` integrados en `firewall-acl-agent/main.cpp`. `AutonomyConfig.zmq_endpoint` añadido a struct y parser. `autonomy_publisher.h` añadido al install target de CMake.
-- **Test B (unitario): 7/7 PASSED** — `CryptoAutonomyStateMachine` + `AutonomyPublisher` via ZMQ real. T1-T7 incluyendo `HealthCheckLoopSimulation`.
-- **Test A (E2E): 4/4 PASSED** — Pipeline `Publisher→IPC→Subscriber→Reactor` dry_run. `VaultKoTriggersAutonomousMode`, `VaultRestoredLiftsAutonomousMode`, `FullCycleNormalAutonomousReconcileNormal`, `SubscriberRunsStableWithoutEvents`.
-- **Fix ZMQ slow joiner** — publisher debe hacer `bind()` ANTES de que cualquier subscriber conecte. Regla permanente para todos los pares PUB/SUB del proyecto.
-- **EMECAS DAY 156 VERDE** — `vagrant destroy → up → make bootstrap → make test-all` — TODO VERDE. 50/50 firewall, 3/3 etcd-server, 9/9 sniffer, 10/10 ml-detector, 8/8 rag-ingester.
-- **ADR-046 PENDING-REVISION** — Multi-Source Enriched Pipeline aRGus++. Tres condiciones para cierre: §Label leakage policy, §Deployment matrix RPi5 vs edge server, §8 datos empíricos o hipótesis.
+  - **Test B (unitario): 7/7 PASSED** — `CryptoAutonomyStateMachine` + `AutonomyPublisher` via ZMQ real. T1-T7 incluyendo `HealthCheckLoopSimulation`.
+  - **Test A (E2E): 4/4 PASSED** — Pipeline `Publisher→IPC→Subscriber→Reactor` dry_run. `VaultKoTriggersAutonomousMode`, `VaultRestoredLiftsAutonomousMode`, `FullCycleNormalAutonomousReconcileNormal`, `SubscriberRunsStableWithoutEvents`.
+  - **Fix ZMQ slow joiner** — publisher debe hacer `bind()` ANTES de que cualquier subscriber conecte. Regla permanente para todos los pares PUB/SUB del proyecto.
+  - **EMECAS DAY 156 VERDE** — `vagrant destroy → up → make bootstrap → make test-all` — TODO VERDE. 50/50 firewall, 3/3 etcd-server, 9/9 sniffer, 10/10 ml-detector, 8/8 rag-ingester.
+  - **ADR-046 PENDING-REVISION** — Multi-Source Enriched Pipeline aRGus++. Tres condiciones para cierre: §Label leakage policy, §Deployment matrix RPi5 vs edge server, §8 datos empíricos o hipótesis.
 
 ### Hitos DAY 155 🎉
 - **DEBT-FIREWALL-DENY-SELECTIVE-001 CERRADA** — Cadena dedicada `argus-autonomy`: lo→ESTABLISHED→CIDRs→DROP→INPUT. `whitelist_cidrs` obligatorio desde `firewall.json`. `AutonomyConfig` + `parse_autonomy()` fail-fast. 12/12 tests. 49/49 firewall tests verdes.
-- **DEBT-AUTONOMY-ZMQ-EVENTS-001 CERRADA** — `AutonomyPublisher` (`common/`) + `AutonomySubscriber` (`firewall-acl-agent/`). Topic `argus.crypto.autonomy`. Transport `ipc:///run/argus/autonomy.sock`. 4/4 + 6/6 tests PASSED.
-- **BACKLOG-ZMQ-TUNING-001 CERRADA** — HWM + RECONNECT_IVL en todos los sockets ZMQ del proyecto. Prerequisito de BACKLOG-BENCHMARK-CAPACITY-001 satisfecho.
-- **DEBT-AUTONOMY-CRYPTO-INTEGRATION-001 registrada** — Integración en `etcd-server/main.cpp` pendiente (P0 DAY 156). Consejo 6/8: etcd-server como proceso propietario.
-- **EMECAS HARDENED PASSED** — `-Werror` + `-O3` + `-flto` + producción limpio. AppArmor 6/6. Falco 11 reglas. BSR verificado. Tag `v0.9.0-day155`.
+  - **DEBT-AUTONOMY-ZMQ-EVENTS-001 CERRADA** — `AutonomyPublisher` (`common/`) + `AutonomySubscriber` (`firewall-acl-agent/`). Topic `argus.crypto.autonomy`. Transport `ipc:///run/argus/autonomy.sock`. 4/4 + 6/6 tests PASSED.
+  - **BACKLOG-ZMQ-TUNING-001 CERRADA** — HWM + RECONNECT_IVL en todos los sockets ZMQ del proyecto. Prerequisito de BACKLOG-BENCHMARK-CAPACITY-001 satisfecho.
+  - **DEBT-AUTONOMY-CRYPTO-INTEGRATION-001 registrada** — Integración en `etcd-server/main.cpp` pendiente (P0 DAY 156). Consejo 6/8: etcd-server como proceso propietario.
+  - **EMECAS HARDENED PASSED** — `-Werror` + `-O3` + `-flto` + producción limpio. AppArmor 6/6. Falco 11 reglas. BSR verificado. Tag `v0.9.0-day155`.
 
 ### Hitos DAY 154 🎉
 - **ADR-045 VaultClient decomposition COMPLETA** — `ICryptoDeriver` + `HkdfCryptoDeriver` (6 tests), `IEtcdRegistrar` + `StubEtcdRegistrar` (4 tests). VaultClient por composición con 4º ctor inyectable. 7 tests common/. v0.8.0-adr045.
-- **DEBT-FIREWALL-AUTONOMY-MODE-001 CERRADA** — `FirewallAutonomyReactor`: AUTONOMOUS/DEGRADED → `iptables -I INPUT 1 argus-autonomy-deny DROP`, NORMAL → `iptables -D INPUT`. Executor inyectable (testable sin root). 6 tests. 48/48 firewall tests verdes.
-- **Fix EMECAS** — `crypto_deriver.h` y `etcd_registrar.h` añadidos al install target. `test_auto_isolate` T6 corregido para `-Werror` en production build.
-- **Consejo 8/8** — ZMQ directo para señal autonomía (P0 DAY 155). Default-deny actual INCORRECTA para hospitales → `DEBT-FIREWALL-DENY-SELECTIVE-001` P0 DAY 155.
-- **EMECAS:** bootstrap ✅ | test-all ✅ | hardened-full ✅ | check-prod-all ✅.
+  - **DEBT-FIREWALL-AUTONOMY-MODE-001 CERRADA** — `FirewallAutonomyReactor`: AUTONOMOUS/DEGRADED → `iptables -I INPUT 1 argus-autonomy-deny DROP`, NORMAL → `iptables -D INPUT`. Executor inyectable (testable sin root). 6 tests. 48/48 firewall tests verdes.
+  - **Fix EMECAS** — `crypto_deriver.h` y `etcd_registrar.h` añadidos al install target. `test_auto_isolate` T6 corregido para `-Werror` en production build.
+  - **Consejo 8/8** — ZMQ directo para señal autonomía (P0 DAY 155). Default-deny actual INCORRECTA para hospitales → `DEBT-FIREWALL-DENY-SELECTIVE-001` P0 DAY 155.
+  - **EMECAS:** bootstrap ✅ | test-all ✅ | hardened-full ✅ | check-prod-all ✅.
 
 ### Hitos DAY 149 🎉
 - **DEBT-PARQUET-SCHEMA-001 CERRADA** — Schema Arrow v1.0: ml_detector_events (15 fields) + firewall_acl_events (7 fields). 207,122 filas / 53 días. Ratio 11-12x. `make parquet-convert` + `make test-parquet` en `test-all`. Tipos acordados Consejo 8/8.
-- **Vault dev mode + K_pseudo prototipo** — Vault v2.0.0. HMAC-SHA256 determinismo OK, aislamiento OK, post-destroy irrecuperable. Evidencia técnica GDPR para Dr. Andrés Caro Lindo.
-- **Ansible + Jinja2 CI/CD pipeline** — `ansible/templates/*.json.j2`, `deploy_configs.yml`. Ejecutado en VM: 9 OK, 3 changed, 0 failed. `make deploy-configs`.
-- **ADR-044 aprobado (Consejo 8/8)** — Jenkins como entropy orchestrator. Vault autoridad criptográfica. common/vault_client C++20. Paths por familia. etcd barrera pre-arranque. Rotación manual FEDER. Edge nodes autónomos con cache TTL 72h.
-- **Abstract v24** — "architecturally complementary by design". PR #63.
-- **5 PRs mergeados.** Main en 81490fcb.
+  - **Vault dev mode + K_pseudo prototipo** — Vault v2.0.0. HMAC-SHA256 determinismo OK, aislamiento OK, post-destroy irrecuperable. Evidencia técnica GDPR para Dr. Andrés Caro Lindo.
+  - **Ansible + Jinja2 CI/CD pipeline** — `ansible/templates/*.json.j2`, `deploy_configs.yml`. Ejecutado en VM: 9 OK, 3 changed, 0 failed. `make deploy-configs`.
+  - **ADR-044 aprobado (Consejo 8/8)** — Jenkins como entropy orchestrator. Vault autoridad criptográfica. common/vault_client C++20. Paths por familia. etcd barrera pre-arranque. Rotación manual FEDER. Edge nodes autónomos con cache TTL 72h.
+  - **Abstract v24** — "architecturally complementary by design". PR #63.
+  - **5 PRs mergeados.** Main en 81490fcb.
 
 ### Hitos DAY 145 🎉
 - **ADR-029 Variant A vs B x86** — libpcap ~2× eBPF en VirtualBox virtio (artefacto SKB mode). Equivalencia funcional confirmada.
-- **Bootstrap múltiple** — `bootstrap-x86-ebpf` + `bootstrap-x86-libpcap`. `bootstrap` = alias de A.
-- **pipeline-status** distingue Variant A/B + detecta invariant violation.
-- **Relay targets** — resumen inline por velocidad + rutas log + nota MTU en banner.
-- **Paper v19** — §6 ADR-029, §10.9, §11.17, §12, abstract actualizado.
-- **Failed packets (2,630):** artefacto fijo pcap CTU-13 Neris — frames jumbo MTU VirtualBox. No son errores del pipeline.
+  - **Bootstrap múltiple** — `bootstrap-x86-ebpf` + `bootstrap-x86-libpcap`. `bootstrap` = alias de A.
+  - **pipeline-status** distingue Variant A/B + detecta invariant violation.
+  - **Relay targets** — resumen inline por velocidad + rutas log + nota MTU en banner.
+  - **Paper v19** — §6 ADR-029, §10.9, §11.17, §12, abstract actualizado.
+  - **Failed packets (2,630):** artefacto fijo pcap CTU-13 Neris — frames jumbo MTU VirtualBox. No son errores del pipeline.
 
 ### Hitos DAY 146 🎉
 - **EMECAS verde** — 4 deudas técnicas cerradas: DEBT-IRP-TMPFILES-001, DEBT-IRP-IPSET-TMP-001, DEBT-BOOTSTRAP-SNIFFER-VERIFY-001, DEBT-EMECAS-VERIFICATION-001.
-- **Experimento comparativo Suricata 6.0.10 vs aRGus NDR** — CTU-13 Neris, mismas condiciones. Suricata: 0 alertas (ET Open no cubre Neris 2011). aRGus: F1=0.9985, Recall=1.0000.
-- **Makefile**: `make up-argus`, `make up-suricata`, `make halt-argus`, `make halt-suricata`, `make experiment-suricata-run/results`.
-- **Paper Draft v20** generado — nueva §8.13 con comparativa directa, Tabla comparación actualizada con datos empíricos Suricata.
-- **Vagrantfile Suricata** operativo — `nictype1 virtio` (fix crítico DHCP NAT), 50,010 reglas ET Open cargadas.
+  - **Experimento comparativo Suricata 6.0.10 vs aRGus NDR** — CTU-13 Neris, mismas condiciones. Suricata: 0 alertas (ET Open no cubre Neris 2011). aRGus: F1=0.9985, Recall=1.0000.
+  - **Makefile**: `make up-argus`, `make up-suricata`, `make halt-argus`, `make halt-suricata`, `make experiment-suricata-run/results`.
+  - **Paper Draft v20** generado — nueva §8.13 con comparativa directa, Tabla comparación actualizada con datos empíricos Suricata.
+  - **Vagrantfile Suricata** operativo — `nictype1 virtio` (fix crítico DHCP NAT), 50,010 reglas ET Open cargadas.
 
 ### Hitos DAY 148 🎉
 - **Suricata offline validation** — `suricata -r neris.pcap -k none`, 50,010 ET Open rules (251 IRC, 475 botnet/C2, 853 trojan). 323,154 paquetes. 0 firmas ET disparadas. 128 alertas internas de motor. Criterio de Kimi satisfecho — conclusión irrefutable.
-- **§8.13 paper** — párrafo "Offline validation with full ruleset enforcement" insertado (DAY 148).
-- **§8.14 paper** — framing taxonómico: "decision architecture taxonomies", "measurement layer", "telemetry platform", "Observability does not imply classification".
-- **§10 Future Work** — 5 subsecciones completas: baremetal, corpus, acrl, hardened, Zeek Phase 2 (`detect-botnets.zeek`, Intel framework temporal limitation).
-- **Tabla §8.2** — fila Zeek 8.1.2 añadida (F1=0.042, Prec=1.000, Recall=0.022).
-- **Abstract v23** — tres paradigmas + complementariedad (Zeek telemetry + Suricata signatures + aRGus ML behavioral).
-- **arXiv replace v19→v23** — submitted como v3 (submit/7576269).
-- **DEBT-IRP-FLOAT-TYPES-001 CERRADA** — `IrpConfig::threat_score_threshold` double→float. Parche IEEE 754 eliminado. EMECAS PROFILE=production ALL TESTS COMPLETE.
-- **fix(.gitignore)** — excluir protocol-EMECAS-output-*.md, docs/argus_ndr_v*.pdf, docs/latex/*.zip. Untrack build symlinks.
-- **Tag:** `v0.7.1-day148`.
+  - **§8.13 paper** — párrafo "Offline validation with full ruleset enforcement" insertado (DAY 148).
+  - **§8.14 paper** — framing taxonómico: "decision architecture taxonomies", "measurement layer", "telemetry platform", "Observability does not imply classification".
+  - **§10 Future Work** — 5 subsecciones completas: baremetal, corpus, acrl, hardened, Zeek Phase 2 (`detect-botnets.zeek`, Intel framework temporal limitation).
+  - **Tabla §8.2** — fila Zeek 8.1.2 añadida (F1=0.042, Prec=1.000, Recall=0.022).
+  - **Abstract v23** — tres paradigmas + complementariedad (Zeek telemetry + Suricata signatures + aRGus ML behavioral).
+  - **arXiv replace v19→v23** — submitted como v3 (submit/7576269).
+  - **DEBT-IRP-FLOAT-TYPES-001 CERRADA** — `IrpConfig::threat_score_threshold` double→float. Parche IEEE 754 eliminado. EMECAS PROFILE=production ALL TESTS COMPLETE.
+  - **fix(.gitignore)** — excluir protocol-EMECAS-output-*.md, docs/argus_ndr_v*.pdf, docs/latex/*.zip. Untrack build symlinks.
+  - **Tag:** `v0.7.1-day148`.
 
 ### Hitos DAY 147 🎉
 - **Bug fix pipeline-status** — pgrep fallback para procesos huérfanos (tmux + pgrep OR). Commit `42c04b06`.
-- **Búsqueda ruleset ET Open 2011** — no encontrado en fuentes públicas. Hallazgo clave: Neris CTU-13 escenario 42 usa HTTP C2, no solo IRC. Paper v21 §8.13 actualizado.
-- **Experimento Zeek 8.1.2 (tres paradigmas)** — modo offline (`zeek -r pcap`), scripts por defecto, determinístico:
-  - Suricata 6.0.10: F1=0.000, TP=0 (sin firmas para Neris 2011)
-  - Zeek 8.1.2 (default): F1=0.042, Precision=1.000, TP=14 (SSL::Invalid_Server_Cert)
-  - aRGus NDR: F1=0.9985, Recall=1.000, TP=646
-- **weird.log**: Zeek observa IRC, HTTP beaconing, SMB lateral movement, spam — sin alertar. Distinción observabilidad vs detección.
-- **Paper Draft v21** — §8.13 hallazgos reales DAY 147 + Springer 2023 (signature aging).
-- **Paper Draft v22** — §8.14 Three Paradigms (tablas + análisis + §13 reproducibilidad Zeek).
-- **Makefile**: `make experiment-zeek-up/run/results`. Infraestructura `experiments/zeek-comparative/`.
-- **Tag:** `v0.7.1-day147`.
+  - **Búsqueda ruleset ET Open 2011** — no encontrado en fuentes públicas. Hallazgo clave: Neris CTU-13 escenario 42 usa HTTP C2, no solo IRC. Paper v21 §8.13 actualizado.
+  - **Experimento Zeek 8.1.2 (tres paradigmas)** — modo offline (`zeek -r pcap`), scripts por defecto, determinístico:
+    - Suricata 6.0.10: F1=0.000, TP=0 (sin firmas para Neris 2011)
+    - Zeek 8.1.2 (default): F1=0.042, Precision=1.000, TP=14 (SSL::Invalid_Server_Cert)
+    - aRGus NDR: F1=0.9985, Recall=1.000, TP=646
+  - **weird.log**: Zeek observa IRC, HTTP beaconing, SMB lateral movement, spam — sin alertar. Distinción observabilidad vs detección.
+  - **Paper Draft v21** — §8.13 hallazgos reales DAY 147 + Springer 2023 (signature aging).
+  - **Paper Draft v22** — §8.14 Three Paradigms (tablas + análisis + §13 reproducibilidad Zeek).
+  - **Makefile**: `make experiment-zeek-up/run/results`. Infraestructura `experiments/zeek-comparative/`.
+  - **Tag:** `v0.7.1-day147`.
 
 ### Hitos DAY 143-144 🎉
 - **DEBT-IRP-NFTABLES-001 CERRADA** — IRP completo: config → disparo → fork()+execv() → AppArmor 7/7 enforce → 12/12 tests.
-- **DEBT-IRP-SIGCHLD-001 CERRADA** — SA_NOCLDWAIT. SigchldTest.NoZombiesAfterNForks PASSED.
-- **DEBT-IRP-AUTOISO-FALSE-001 CERRADA** — isolate.json única fuente de verdad. 5 tests PASSED.
-- **DEBT-IRP-BACKUP-DIR-001 CERRADA** — /run/argus/irp/. AppArmor + provision.sh actualizados.
-- **Gate ODR production SUPERADO** — 3 ODR violations reales detectadas y corregidas bajo -flto.
+  - **DEBT-IRP-SIGCHLD-001 CERRADA** — SA_NOCLDWAIT. SigchldTest.NoZombiesAfterNForks PASSED.
+  - **DEBT-IRP-AUTOISO-FALSE-001 CERRADA** — isolate.json única fuente de verdad. 5 tests PASSED.
+  - **DEBT-IRP-BACKUP-DIR-001 CERRADA** — /run/argus/irp/. AppArmor + provision.sh actualizados.
+  - **Gate ODR production SUPERADO** — 3 ODR violations reales detectadas y corregidas bajo -flto.
 
 ### Deuda técnica abierta
 
@@ -198,14 +212,14 @@
 | DEBT-KPSEUDO-HKDF-HIERARCHY-001 | ⏳ P3 post-FEDER | Jerarquía HKDF para K_pseudo (host/flow/model desde K_root) |
 ### Próxima frontera — DAY 158+
 1. ✅ **DEBT-AUTONOMY-CRYPTO-INTEGRATION-001 CERRADA DAY 156**
-2. ✅ **DEBT-AUTONOMY-STATE-PERSISTENCE-001 CERRADA DAY 157**
-3. ✅ **DEBT-BOOTSTRAP-STATUS-SIGNATURE-001 CERRADA DAY 157**
-4. ✅ **DEBT-KEYPAIR-LIFECYCLE-PROD-001 CERRADA DAY 157**
-5. ✅ **DEBT-CRYPTO-RECONCILIATION-001 CERRADA DAY 157 (staleness guard B1)**
-6. **DEBT-BOOTSTRAP-STATUS-SIGNATURE-CONSUMERS-001 P2** — `ExecStartPre=` + `check-bootstrap-status.sh`. Verificar firma Ed25519 antes de iniciar componentes dependientes.
-7. **DEBT-CRYPTO-AUTONOMY-001 P2** — Máquina de estados EXTENDED_AUTONOMY completa en `etcd-server`.
-8. **DEBT-ALERTING-EDGE-SOS-001 P1** — Webhook SOS configurable por despliegue.
-9. **BACKLOG-BENCHMARK-CAPACITY-001** — Benchmarks sintéticos VirtualBox (baseline) + hardware físico FEDER.
+   2. ✅ **DEBT-AUTONOMY-STATE-PERSISTENCE-001 CERRADA DAY 157**
+   3. ✅ **DEBT-BOOTSTRAP-STATUS-SIGNATURE-001 CERRADA DAY 157**
+   4. ✅ **DEBT-KEYPAIR-LIFECYCLE-PROD-001 CERRADA DAY 157**
+   5. ✅ **DEBT-CRYPTO-RECONCILIATION-001 CERRADA DAY 157 (staleness guard B1)**
+   6. **DEBT-BOOTSTRAP-STATUS-SIGNATURE-CONSUMERS-001 P2** — `ExecStartPre=` + `check-bootstrap-status.sh`. Verificar firma Ed25519 antes de iniciar componentes dependientes.
+   7. **DEBT-CRYPTO-AUTONOMY-001 P2** — Máquina de estados EXTENDED_AUTONOMY completa en `etcd-server`.
+   8. **DEBT-ALERTING-EDGE-SOS-001 P1** — Webhook SOS configurable por despliegue.
+   9. **BACKLOG-BENCHMARK-CAPACITY-001** — Benchmarks sintéticos VirtualBox (baseline) + hardware físico FEDER.
 
 ---
 
@@ -360,7 +374,7 @@ Run all commands from **Git Bash** (not CMD or PowerShell — the Makefile requi
 
 > ⚠️ **Hyper-V conflict:** Windows 11 enables Hyper-V by default for WSL2. VirtualBox 7.0+ has experimental Hyper-V support but with ~30% performance penalty. You must choose one of:
 > - Disable Hyper-V (loses WSL2): `bcdedit /set hypervisorlaunchtype off` + reboot
-> - Use VirtualBox 7.0+ in Hyper-V mode (slower, less stable)
+>   - Use VirtualBox 7.0+ in Hyper-V mode (slower, less stable)
 
 **Not tested by the maintainer.** If you hit issues on Windows 11, please [open an issue](https://github.com/alonsoir/argus/issues) — we'll help with the resources we have.
 
@@ -431,35 +445,35 @@ make hardened-full   # destroy → up → provision → build → deploy → che
 
 ### ✅ DONE — DAY 143-144 — IRP completo + ODR gate 🎉
 - [x] DEBT-IRP-NFTABLES-001 CERRADA — IRP completo, AppArmor 7/7 enforce, 12/12 tests
-- [x] DEBT-IRP-SIGCHLD-001 CERRADA — SA_NOCLDWAIT
-- [x] DEBT-IRP-AUTOISO-FALSE-001 CERRADA — isolate.json única fuente de verdad
-- [x] DEBT-IRP-BACKUP-DIR-001 CERRADA — /run/argus/irp/
-- [x] Gate ODR production PASSED — 3 violations reales corregidas bajo -flto
+  - [x] DEBT-IRP-SIGCHLD-001 CERRADA — SA_NOCLDWAIT
+  - [x] DEBT-IRP-AUTOISO-FALSE-001 CERRADA — isolate.json única fuente de verdad
+  - [x] DEBT-IRP-BACKUP-DIR-001 CERRADA — /run/argus/irp/
+  - [x] Gate ODR production PASSED — 3 violations reales corregidas bajo -flto
 
 ### ✅ DONE — DAY 138-142 — ADR-029 Variant B pipeline 🎉
 - [x] DEBT-CAPTURE-BACKEND-ISP-001 CERRADA — `CaptureBackend` 5 métodos puros
-- [x] DEBT-VARIANT-B-PCAP-IMPL-001 CERRADA — pipeline pcap → proto → LZ4 → ChaCha20 → ZMQ
-- [x] DEBT-VARIANT-B-BUFFER-SIZE-001 CERRADA — pcap_create()+pcap_set_buffer_size()
-- [x] DEBT-VARIANT-B-MUTEX-001 CERRADA (Nivel 1) — exclusión mutua via tmux
-- [x] Suite 9 tests Variant B — 9/9 PASSED
+  - [x] DEBT-VARIANT-B-PCAP-IMPL-001 CERRADA — pipeline pcap → proto → LZ4 → ChaCha20 → ZMQ
+  - [x] DEBT-VARIANT-B-BUFFER-SIZE-001 CERRADA — pcap_create()+pcap_set_buffer_size()
+  - [x] DEBT-VARIANT-B-MUTEX-001 CERRADA (Nivel 1) — exclusión mutua via tmux
+  - [x] Suite 9 tests Variant B — 9/9 PASSED
 
 ### ✅ DONE — DAY 137 (30 Apr 2026) — feature/variant-b-libpcap 🎉
 - [x] EMECAS dev + EMECAS hardened PASSED
-- [x] capture_backend.hpp · ebpf_backend.hpp/cpp · pcap_backend.hpp/cpp
-- [x] main_libpcap.cpp — Variant B sin #ifdef
-- [x] sniffer-libpcap compilable y arranca limpio
+  - [x] capture_backend.hpp · ebpf_backend.hpp/cpp · pcap_backend.hpp/cpp
+  - [x] main_libpcap.cpp — Variant B sin #ifdef
+  - [x] sniffer-libpcap compilable y arranca limpio
 
 ### ✅ DONE — DAY 135-136: v0.6.0 🎉
 - [x] make hardened-full EMECAS PASSED
-- [x] feature/adr030-variant-a → main MERGEADO
-- [x] Tag v0.9.3-day158-variant-a publicado
-- [x] arXiv replace v15 → v18 ENVIADO
+  - [x] feature/adr030-variant-a → main MERGEADO
+  - [x] Tag v0.9.3-day158-variant-a publicado
+  - [x] arXiv replace v15 → v18 ENVIADO
 
 ### ✅ DONE — DAY 133-134: ADR-030 + ADR-040 + ADR-041 🎉
 - [x] AppArmor 6/6 enforce · Falco 10 reglas · cap_bpf · Paper v18
-- [x] ADR-040 ML Retraining Contract (8/8, 17 enmiendas)
-- [x] ADR-041 Hardware Acceptance Metrics FEDER (8/8)
-- [x] Pipeline E2E hardened · check-prod-all PASSED
+  - [x] ADR-040 ML Retraining Contract (8/8, 17 enmiendas)
+  - [x] ADR-041 Hardware Acceptance Metrics FEDER (8/8)
+  - [x] Pipeline E2E hardened · check-prod-all PASSED
 
 ### ✅ DONE — DAY 151 (14 May 2026) — ICryptoProvider + etcd-server STEP 0 🎉
 
@@ -489,47 +503,49 @@ make hardened-full   # destroy → up → provision → build → deploy → che
 ### 🔜 THEN — PHASE 5: Adversarial Capture-Retrain Loop
 
 - DEBT-PENTESTER-LOOP-001 — ACRL completo
-- BACKLOG-FEDER-001 — presentación Andrés Caro Lindo
-- aRGus-production ARM64
-- aRGus-seL4 research branch (post-FEDER, equipo especializado)
+  - BACKLOG-FEDER-001 — presentación Andrés Caro Lindo
+  - aRGus-production ARM64
+  - aRGus-seL4 research branch (post-FEDER, equipo especializado)
 
 ---
 
 ## 🗺️ Milestones
 
 - ✅ DAY 111: **arXiv:2604.04952 PUBLICADO** 🎉
-- ✅ DAY 113: **ADR-025 MERGED — v0.3.0-plugin-integrity** 🎉
-- ✅ DAY 118: **PHASE 3 COMPLETADA — v0.4.0** 🎉
-- ✅ DAY 122: **PHASE 4 COMPLETADA — v0.5.0-preproduction** 🎉
-- ✅ DAY 124: **ADR-037 MERGED — v0.9.3-day158** 🎉
-- ✅ DAY 129: **CWE-78 CERRADO — execv() sin shell** 🎉
-- ✅ DAY 130: **REGLA EMECAS · libFuzzer 2.4M runs** 🎉
-- ✅ DAY 133: **ADR-030 Variant A — cap_bpf · AppArmor 6/6 · Falco 10 reglas** 🎉
-- ✅ DAY 134: **ADR-040 (8/8, 17 enmiendas) · ADR-041 FEDER HW Metrics (8/8)** 🎉
-- ✅ DAY 136: **v0.9.3-day158-variant-a · merge main** 🎉
-- ✅ DAY 137: **feature/variant-b-libpcap · sniffer-libpcap compilable · KISS** 🎉
-- ✅ DAY 138: **ISP cerrado · pipeline Variant B completo · 8/8 tests · Consejo 8/8** 🎉
-- ✅ DAY 140: **192→0 warnings · -Werror activo · ODR limpio** 🎉
-- ✅ DAY 141: **DEBT-VARIANT-B-CONFIG-001 · sniffer-libpcap.json · emails FEDER** 🎉
-- ✅ DAY 142: **IRP pasos 1-6 · buffer=8MB · mutex Nivel 1 · Consejo 8/8** 🎉
-- ✅ DAY 143: **DEBT-IRP-NFTABLES-001 sesión 3/3 CERRADA — IRP completo · AppArmor 7/7 · 12 tests** 🎉
-- ✅ DAY 144: **3 deudas P0 IRP cerradas · Gate ODR production · 65/65 tests** 🎉
-- ✅ DAY 145: **ADR-029 Variant A vs B x86 · libpcap ~2× eBPF en virtio · Bootstrap múltiple · Paper v19 · v0.7.0-variant-b** 🎉
-- ✅ DAY 146: **Experimento Suricata comparativo · 0 alertas ET Open vs F1=0.9985 aRGus · Paper v20 §8.13 · v0.7.1-day146** 🎉
-- ✅ DAY 147: **Experimento tres paradigmas (Suricata+Zeek+aRGus) · Paper v22 §8.14 · HTTP C2 hallazgo · weird.log behavioral profile · v0.7.1-day147** 🎉
-- ✅ DAY 147: **ADR-0043 v4 ACEPTADO** — Memoria Episódica Distribuida, Consejo 8/8, 4 versiones 🎉
-- ✅ DAY 149: **Schema Parquet Arrow v1.0 · Vault CI/CD pipeline · ADR-044 · Ansible+Jinja2 · 5 PRs · v0.7.2-day149** 🎉
-- ✅ DAY 150: **ADR-044 implementación completa · provision_crypto.sh · vault_client C++20 · Jenkinsfile Provision Crypto · EMECAS verde** 🎉
-- ✅ DAY 154: **ADR-045 VaultClient decomposition · DEBT-FIREWALL-AUTONOMY-MODE-001 CERRADA · 48/48 tests · v0.8.0-adr045** 🎉
-- ✅ DAY 155: **DEBT-FIREWALL-DENY-SELECTIVE-001 · DEBT-AUTONOMY-ZMQ-EVENTS-001 · BACKLOG-ZMQ-TUNING-001 · 49/49 tests · EMECAS HARDENED PASSED · v0.9.0-day155** 🎉
-- ✅ DAY 163: **FASE 0+1 crypto lifecycle · Modelo B vendor.key efímero · CryptoProviderHandle RCU · ADR-045 v2 (Consejo 8/8) · 9/9 tests** 🎉
-- ✅ DAY 161: **DEBT-WIRE-PROTOCOL-TEST-001 · Jenkinsfile.dev+prod · test-e2e-live delta · Consejo 8/8 · v0.9.5-day161 (pendiente)** 🎉
-- ✅ DAY 160: **DEBT-ENTERPRISE-PLUGIN-001 · libvault_provider.so 6/6 tests · Jenkins 2.555.2 + Vault v2.0.1 · ADR-048 Dataset Production Roadmap definido · v0.9.4-day160** 🎉
-- ✅ DAY 157: **4 deudas cerradas · Consejo 8/8 · Staleness guard · Keypair lifecycle prod · Bootstrap firmado · EMECAS VERDE · v0.9.2-day157** 🎉
-- ✅ DAY 156: **DEBT-AUTONOMY-CRYPTO-INTEGRATION-001 · Test B 7/7 + Test A 4/4 · Fix ZMQ slow joiner · EMECAS VERDE 50/50 · v0.9.1-day156** 🎉
-- ✅ DAY 151: **ICryptoProvider + SeedFileProvider + VaultProvider · etcd-server STEP 0 · ADR-045 aprobado · 55+ tests verdes · v0.8.0-day151** 🎉
-- ✅ DAY 148: **Suricata offline irrefutable · Paper v23 · arXiv replace v3 · DEBT-IRP-FLOAT-TYPES-001 cerrada · v0.7.1-day148** 🎉
-- 🔜 DAY 146+: **DEBT-IRP-TMPFILES-001 · DEBT-IRP-IPSET-TMP-001 · experiment-comparative · ARM64 scope**
+  - ✅ DAY 113: **ADR-025 MERGED — v0.3.0-plugin-integrity** 🎉
+  - ✅ DAY 118: **PHASE 3 COMPLETADA — v0.4.0** 🎉
+  - ✅ DAY 122: **PHASE 4 COMPLETADA — v0.5.0-preproduction** 🎉
+  - ✅ DAY 124: **ADR-037 MERGED — v0.9.3-day158** 🎉
+  - ✅ DAY 129: **CWE-78 CERRADO — execv() sin shell** 🎉
+  - ✅ DAY 130: **REGLA EMECAS · libFuzzer 2.4M runs** 🎉
+  - ✅ DAY 133: **ADR-030 Variant A — cap_bpf · AppArmor 6/6 · Falco 10 reglas** 🎉
+  - ✅ DAY 134: **ADR-040 (8/8, 17 enmiendas) · ADR-041 FEDER HW Metrics (8/8)** 🎉
+  - ✅ DAY 136: **v0.9.3-day158-variant-a · merge main** 🎉
+  - ✅ DAY 137: **feature/variant-b-libpcap · sniffer-libpcap compilable · KISS** 🎉
+  - ✅ DAY 138: **ISP cerrado · pipeline Variant B completo · 8/8 tests · Consejo 8/8** 🎉
+  - ✅ DAY 140: **192→0 warnings · -Werror activo · ODR limpio** 🎉
+  - ✅ DAY 141: **DEBT-VARIANT-B-CONFIG-001 · sniffer-libpcap.json · emails FEDER** 🎉
+  - ✅ DAY 142: **IRP pasos 1-6 · buffer=8MB · mutex Nivel 1 · Consejo 8/8** 🎉
+  - ✅ DAY 143: **DEBT-IRP-NFTABLES-001 sesión 3/3 CERRADA — IRP completo · AppArmor 7/7 · 12 tests** 🎉
+  - ✅ DAY 144: **3 deudas P0 IRP cerradas · Gate ODR production · 65/65 tests** 🎉
+  - ✅ DAY 145: **ADR-029 Variant A vs B x86 · libpcap ~2× eBPF en virtio · Bootstrap múltiple · Paper v19 · v0.7.0-variant-b** 🎉
+  - ✅ DAY 146: **Experimento Suricata comparativo · 0 alertas ET Open vs F1=0.9985 aRGus · Paper v20 §8.13 · v0.7.1-day146** 🎉
+  - ✅ DAY 147: **Experimento tres paradigmas (Suricata+Zeek+aRGus) · Paper v22 §8.14 · HTTP C2 hallazgo · weird.log behavioral profile · v0.7.1-day147** 🎉
+  - ✅ DAY 147: **ADR-0043 v4 ACEPTADO** — Memoria Episódica Distribuida, Consejo 8/8, 4 versiones 🎉
+  - ✅ DAY 149: **Schema Parquet Arrow v1.0 · Vault CI/CD pipeline · ADR-044 · Ansible+Jinja2 · 5 PRs · v0.7.2-day149** 🎉
+  - ✅ DAY 150: **ADR-044 implementación completa · provision_crypto.sh · vault_client C++20 · Jenkinsfile Provision Crypto · EMECAS verde** 🎉
+  - ✅ DAY 154: **ADR-045 VaultClient decomposition · DEBT-FIREWALL-AUTONOMY-MODE-001 CERRADA · 48/48 tests · v0.8.0-adr045** 🎉
+  - ✅ DAY 155: **DEBT-FIREWALL-DENY-SELECTIVE-001 · DEBT-AUTONOMY-ZMQ-EVENTS-001 · BACKLOG-ZMQ-TUNING-001 · 49/49 tests · EMECAS HARDENED PASSED · v0.9.0-day155** 🎉
+  - ✅ DAY 163: **FASE 0+1 crypto lifecycle · Modelo B vendor.key efímero · CryptoProviderHandle RCU · ADR-045 v2 (Consejo 8/8) · 9/9 tests** 🎉
+  - ✅ DAY 161: **DEBT-WIRE-PROTOCOL-TEST-001 · Jenkinsfile.dev+prod · test-e2e-live delta · Consejo 8/8 · v0.9.5-day161 (pendiente)** 🎉
+  - ✅ DAY 160: **DEBT-ENTERPRISE-PLUGIN-001 · libvault_provider.so 6/6 tests · Jenkins 2.555.2 + Vault v2.0.1 · ADR-048 Dataset Production Roadmap definido · v0.9.4-day160** 🎉
+  - ✅ DAY 157: **4 deudas cerradas · Consejo 8/8 · Staleness guard · Keypair lifecycle prod · Bootstrap firmado · EMECAS VERDE · v0.9.2-day157** 🎉
+  - ✅ DAY 156: **DEBT-AUTONOMY-CRYPTO-INTEGRATION-001 · Test B 7/7 + Test A 4/4 · Fix ZMQ slow joiner · EMECAS VERDE 50/50 · v0.9.1-day156** 🎉
+  - ✅ DAY 151: **ICryptoProvider + SeedFileProvider + VaultProvider · etcd-server STEP 0 · ADR-045 aprobado · 55+ tests verdes · v0.8.0-day151** 🎉
+  - ✅ DAY 148: **Suricata offline irrefutable · Paper v23 · arXiv replace v3 · DEBT-IRP-FLOAT-TYPES-001 cerrada · v0.7.1-day148** 🎉
+  - ✅ DAY 164: **FASE 2a+2b enterprise · HttpEtcdRegistrar + CryptoEpochCoordinator · 10/10 tests** 🎉
+  - ✅ DAY 165: **FASE 3 wire header epoch_id · 13/13 tests · EMECAS++ OSS verde · Consejo 8/8 protocolo 3 actos** 🎉
+  - 🔜 DAY 166+: **VaultProvider retry/cache + test-e2e-vault Acto I + EMECAS++ 3 actos**
 
 ---
 

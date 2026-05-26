@@ -1,5 +1,5 @@
 # aRGus NDR — BACKLOG
-*Última actualización: DAY 163 — 2026-05-25*
+*Última actualización: DAY 165 — 2026-05-26*
 
 ---
 
@@ -69,6 +69,9 @@
 - **REGLA PERMANENTE (DAY 155 — Consejo 8/8):** El reconciliador de `AutonomySubscriber` re-aplica el último estado conocido. NUNCA consulta Vault/etcd en el ciclo de reconciliación. El intervalo es configurable desde `firewall.json["autonomy"]["reconcile_interval_sec"]` (default 90s).
 - **REGLA PERMANENTE (DAY 155 — Consejo 6/8):** Código enterprise (`VaultClient`, `VaultProvider`) vive en `enterprise/` en la raíz del proyecto, paralelo a `common/`. El flag CMake `ARGUS_VAULT_ENABLED` controla `add_subdirectory(enterprise)`. La migración física es post-FEDER.
 
+- **REGLA PERMANENTE (DAY 165 — Consejo 8/8):** `epoch_id` en wire header selecciona clave ANTES de descifrar. Nunca intentar descifrado y luego verificar epoch — es un oracle de padding. La selección de clave es el primer paso al recibir un mensaje enterprise.
+- **REGLA PERMANENTE (DAY 165 — Consejo 8/8):** El protocolo EMECAS++ tiene tres actos obligatorios: (I) arranque nominal con Vault, (II) rotación controlada con live epoch bajo tráfico, (III) Vault falla en un componente con zero downtime. Los tres actos deben ser verdes y reproducibles antes de cualquier merge enterprise a main.
+- **REGLA PERMANENTE (DAY 165 — Founder):** VaultProvider retry/cache es prerequisito arquitectónico del Acto III. Inspeccionar estado antes de planificar DAY 166.
 - **REGLA PERMANENTE (DAY 142 — macOS):** zsh intercepta `!` en heredocs. Para código C++ con emojis o caracteres especiales: siempre `vagrant ssh << 'SSHEOF'` con Python dentro. Nunca heredoc directo desde zsh para código complejo.
 
 ---
@@ -83,6 +86,67 @@
 
 ---
 
+
+## ✅ CERRADO DAY 165
+
+### BACKLOG-CRYPTO-DUAL-KEY-ZMQ-001 — FASE 3: Wire header epoch_id (13/13 tests)
+- **Status:** ✅ COMPLETADO DAY 165 — rama `feature/day161-enterprise-crypto-integration`
+- Wire header: `[uint32_t size][uint16_t epoch_id][2B reserved][LZ4+encrypted]`
+  bytes 0-3: size · bytes 4-5: epoch_id · bytes 6-7: reserved · bytes 8+: payload
+- epoch_id=0: community. epoch_id>0: enterprise. Selección de clave ANTES de descifrar.
+- `crypto-transport/include/crypto_transport/transport.hpp` actualizado.
+- `ml-detector` serializa epoch_id. `firewall-acl-agent/zmq_subscriber.cpp` deserializa.
+- **13/13 tests RED→GREEN** incluyendo contrato binario epoch_id.
+- **EMECAS++ OSS verde:** `test-all` ✅ · `test-e2e-synthetic-full` ✅ · `test-e2e-synthetic-firewall` ✅ (540 eventos, 0 crypto_errors)
+- **Keypair efímero activo (DAY 165):** `a2abfe43e349e86ddeb4a22496b007919c87bdb0f5dc88c17b57cabf0d61331f`
+
+### BACKLOG-CRYPTO-E2E-ROTATION-001 — FASE 4: test-e2e-rotation FakeEtcdServer (5/5)
+- **Status:** 🟡 60% DAY 165 — FakeEtcdServer OK, live rotation pendiente
+- `test_e2e_rotation`: 5/5 tests con FakeEtcdServer — lógica del coordinador validada.
+- `test-e2e-vault` PASSED (smoke test Vault dev + etcd-server enterprise).
+- **PENDIENTE:** live rotation con pipeline activo (Acto II del EMECAS++) — BACKLOG-EMECAS-ENTERPRISE-001.
+
+### Consejo de Sabios DAY 165 — Deliberación EMECAS++ (8/8)
+- **P1 Arquitectura:** (C) targets anidados. UNANIMIDAD.
+- **P2 Vault dev:** suficiente con evidencia. DEBT-VAULT-RECONNECT-001 P0.
+- **P3 Live rotation:** obligatoria (7/8). Alonso: mayoría gana.
+- **P4 Test negativo epoch_id:** bloqueante (6/8). Alonso: de acuerdo. DEBT-CRYPTO-NEGATIVE-TEST-001 P0.
+- **P5 Jenkins:** post-merge P1. UNANIMIDAD.
+- **P6 Naming:** (B) EMECAS++ oficial. UNANIMIDAD.
+- **Decisión Alonso:** no se mergea hasta EMECAS++ verde con los 3 actos.
+
+### DEBT-FIREWALL-BUILD-LEGACY-001 — Descubierta DAY 165 (P3, no bloquea)
+- **Status:** ⏳ OPEN — P3
+- `firewall-acl-agent/build` (ruta antigua) falla build: falta `seed_client/seed_client.hpp`.
+- Pipeline usa `build-debug` correctamente — no bloquea.
+
+## ✅ CERRADO DAY 164
+
+### DEBT-ETCD-REGISTRAR-REAL-001 — HttpEtcdRegistrar real (FASE 2a)
+- **Status:** ✅ COMPLETADO DAY 164 — rama `feature/day161-enterprise-crypto-integration`
+- **`common/http_etcd_registrar.h/.cpp`**: IEtcdRegistrar real con httplib.
+  `register_status()` → POST /register · `start_keepalive()` → hilo heartbeat ·
+  `watch_epoch()` → polling GET /v1/epoch 2s · `last_seen_revision` anti-replay.
+  WatchState: CONNECTED → DEGRADED tras N fallos consecutivos.
+- **5/5 tests RED→GREEN** con FakeEtcdServer httplib inline.
+- Fix: test_autonomy_publisher ZMQ PUB/SUB invertido (bug DAY 155).
+- **Commit:** `b48c86ec`
+
+### BACKLOG-CRYPTO-EPOCH-001 — CryptoEpochCoordinator (FASE 2b)
+- **Status:** ✅ COMPLETADO DAY 164 — rama `feature/day161-enterprise-crypto-integration`
+- **`common/crypto_epoch_coordinator.h/.cpp`**: coordina rotación de época.
+  watch `/v1/epoch` via HttpEtcdRegistrar · `on_epoch_change` callback →
+  caller hace `handle.reload()` · ACK timestamp monotónico ns · `stop()` idempotente.
+- **5/5 tests RED→GREEN**
+- etcd-server: GET/PUT `/v1/epoch` + EpochInfo thread-safe (mutex)
+- **Commits:** `36d05cef` (CryptoEpochCoordinator) · `475589fb` (integración etcd-server)
+
+### Fix ODR httplib + vault-enterprise-bootstrap DAY 164
+- `CPPHTTPLIB_OPENSSL_SUPPORT` via CMake `target_compile_definitions` en todos los targets (evita ODR).
+- `alert_client.hpp` #ifndef guard añadido.
+- vault-enterprise-bootstrap: token via @file (no shell expansion) — `426c0340`.
+- fix: `db63c44f` (httplib ODR + heartbeat timestamp + etcd-server arranca limpio)
+- **12/12 suite common verde.**
 
 ## ✅ CERRADO DAY 163
 
@@ -114,7 +178,7 @@
 - **Puntos nuevos del Consejo:** `last_seen_revision` para resume seguro, estados watch `WATCH_CONNECTED/DEGRADED/STALE`, ACK con timestamp monotónico en ns.
 
 ### DEBT-ETCD-REGISTRAR-REAL-001 — Descubierta DAY 163 (bloqueante FASE 2)
-- **Status:** ⏳ OPEN — P0 DAY 164
+- **Status:** ✅ CERRADA DAY 164 — ver sección DAY 164
 - **Descripción:** `StubEtcdRegistrar` es un stub puro (logs a stderr, sin conexión real a etcd). El watch de `/argus/crypto/epoch` que necesita `CryptoEpochCoordinator` no puede construirse sobre el stub. Prerequisito bloqueante de BACKLOG-CRYPTO-EPOCH-001.
 - **Fix:** implementar `HttpEtcdRegistrar` real con `etcd-cpp-apiv3` (ya instalado en `provision.sh`): `register_status()` real, `start_keepalive()` real, `watch()` con gRPC watch nativo.
 - **Decisiones Consejo DAY 163 (8/8):** etcd-cpp-apiv3 (8/8), gRPC watch (6/8), hilo dedicado encapsulado (5/8).
@@ -1656,17 +1720,17 @@ incrementalmente. MacBook como servidor mientras llegan fondos UEx.
 **Test de cierre:** reload() en caliente → threads en vuelo no interrumpen → nuevo material activo.
 
 ### BACKLOG-CRYPTO-EPOCH-001 — CryptoEpoch en etcd (P1) → ADR-045
-**Estado:** ⏳ OPEN — DAY 164-165
+**Estado:** ✅ CERRADA DAY 164 — CryptoEpochCoordinator 5/5 tests
 **Descripción:** `CryptoEpoch` monotónico en etcd (`/argus/crypto/epoch/<component_id>`). Protocolo 6 fases: generate → pre-distribute → ACK-ready → commit → ACK-active → cleanup. Rollback si convergencia no alcanzada en T segundos. Cada componente expone: `crypto_epoch_local`, `crypto_epoch_target`, `rotation_state`. **ADR-045 debe aprobarse antes del primer PR.**
 **Test de cierre:** rotación via etcd → todos los componentes convergen → 0 mensajes perdidos.
 
 ### BACKLOG-CRYPTO-DUAL-KEY-ZMQ-001 — Ventana dual-key ZMQ (P1)
-**Estado:** ⏳ OPEN — DAY 165-166
+**Estado:** ✅ CERRADA DAY 165 — FASE 3: wire header epoch_id, 13/13 tests
 **Descripción:** `key_ring[epoch]` con ventana deslizante de 2 epochs en CryptoTransport. Grace period = `2 × max_clock_skew + deploy_time`. Acepta Keyₙ y Keyₙ₊₁ durante transición. Property tests: `decrypt(encrypt(msg, epoch), epoch+1)` falla fuera de ventana. **ADR-013 compliance obligatoria.**
 **Test de cierre:** rotación durante tráfico activo → 0 mensajes perdidos en ventana de gracia.
 
 ### BACKLOG-CRYPTO-E2E-ROTATION-001 — test-e2e-rotation Vault HA (P1)
-**Estado:** ⏳ OPEN — DAY 166-167
+**Estado:** 🟡 60% DAY 165 — FakeEtcdServer 5/5 + test-e2e-vault PASSED. Pendiente: live rotation pipeline activo (Actos II-III EMECAS++)
 **Descripción:** Harness con Vault HA (Raft, 3 nodos, Docker Compose). Tráfico ZMQ real durante rotación. Criterio: throughput no cae >5%, sin desconexiones >3s. Caos: Vault down, nodo retrasado, partición de red. **Gate obligatorio antes de cualquier PR de automatización.**
 **Test de cierre:** rotación completa bajo tráfico → métricas dentro de umbrales → 0 split-brain.
 
@@ -1990,6 +2054,15 @@ DEBT-WIRE-CRYPTO-INTEGRATION-TEST-001:    0% ⏳  P2 post-Suricata (test integra
 DEBT-CONFIG-JINJA2-PIPELINE-001:          0% ⏳  P2 — Jinja2 config pipeline, varios días, post-hardware UEx
 DEBT-PACKAGE-DEB-001:                     0% ⏳  P2 post-FEDER — paquete .deb artefacto primario
 Jenkinsfile.dev + Jenkinsfile.prod:      100% ✅  DAY 161 — separación dev/prod, agent any vs argus-server
+DEBT-ETCD-REGISTRAR-REAL-001:                  100% ✅  DAY 164 — HttpEtcdRegistrar REST 5/5 tests, WatchState CONNECTED/DEGRADED/STALE
+BACKLOG-CRYPTO-EPOCH-001:                       100% ✅  DAY 164 — CryptoEpochCoordinator 5/5 tests, etcd-server integrado
+BACKLOG-CRYPTO-DUAL-KEY-ZMQ-001:               100% ✅  DAY 165 — FASE 3: wire header epoch_id, 13/13 tests
+BACKLOG-CRYPTO-E2E-ROTATION-001 (FakeEtcd):     60% 🟡  DAY 165 — FakeEtcdServer 5/5 + test-e2e-vault PASSED; live rotation pendiente
+BACKLOG-EMECAS-ENTERPRISE-001:                   0% ⏳  P0 — protocolo EMECAS++ 3 actos, bloqueante de merge
+DEBT-VAULT-RECONNECT-001:                         0% ⏳  P0 — VaultProvider retry/cache estado desconocido (inspeccionar DAY 166)
+DEBT-CRYPTO-NEGATIVE-TEST-001:                    0% ⏳  P0 — test negativo epoch_id incorrecto, bloqueante pre-merge
+BACKLOG-CI-ENTERPRISE-001:                        0% ⏳  P1 post-merge (Jenkins gate enterprise)
+DEBT-FIREWALL-BUILD-LEGACY-001:                   0% ⏳  P3 — firewall-acl-agent/build ruta antigua (no bloquea)
 ```
 
 ---
@@ -2186,6 +2259,37 @@ Jenkinsfile.dev + Jenkinsfile.prod:      100% ✅  DAY 161 — separación dev/p
 
 ---
 
+
+## 📝 Notas del Consejo de Sabios — DAY 165 (8/8)
+
+> "DAY 165 — Deliberación sobre el diseño del protocolo EMECAS++ enterprise. Seis preguntas, 8 modelos, decisiones finales de Alonso como árbitro.
+>
+> **P1 — Arquitectura del protocolo (UNANIMIDAD C):** `make emecas` = OSS sin cambios. `make emecas++` = superset anidado. Enterprise ⊃ OSS — no puedes tener enterprise verde con OSS roto.
+>
+> **P2 — Vault dev suficiente (DECISIÓN ALONSO: Sí con evidencia):** Vault dev cubre el camino funcional. Pero se requiere evidencia de que VaultProvider funciona en el pipeline con retry/cache. DEBT-VAULT-RECONNECT-001 abierta P0.
+>
+> **P3 — Live epoch rotation en EMECAS (DECISIÓN ALONSO: SÍ, mayoría 7/8):** FakeEtcdServer valida lógica unitaria. La cadena real Vault→etcd→CryptoEpochCoordinator→CryptoProviderHandle RCU→wire header→firewall debe ejecutarse al menos una vez en el gate. Claude votó A (solo FakeEtcdServer) — posición minoritaria. El mejor test futuro será el pipeline CI/CD en hardware real (RPi5/N100).
+>
+> **P4 — Test negativo epoch_id incorrecto (DECISIÓN ALONSO: OBLIGATORIO, mayoría 6/8):** Un epoch_id incorrecto indica bug propio (situación de filo no vista) o abuso externo. Ambos peligrosos. Test obligatorio pre-merge. DEBT-CRYPTO-NEGATIVE-TEST-001 P0.
+>
+> **P5 — Jenkins gate (UNANIMIDAD):** Merge aceptable sin Jenkins. BACKLOG-CI-ENTERPRISE-001 P1 post-merge.
+>
+> **P6 — Naming (UNANIMIDAD B):** EMECAS++ oficial. EMECAS = community. EMECAS++ = community + enterprise.
+>
+> **Decisión Alonso — definición EMECAS++ real (3 actos):**
+> Acto I: Arranque nominal — todos los componentes se autentican contra Vault, reciben claves, cifran/descifran, tráfico fluye. Medición: events_processed, crypto_errors==0, epoch_id correcto.
+> Acto II: Rotación controlada (5 min o forzada) — pipeline sigue corriendo, epoch_id antes/después distintos, zero drops, crypto_errors==0.
+> Acto III: Vault falla en entrega a un componente aleatorio — ese componente trabaja con clave anterior (caché RCU), notifica (log estructurado + señal Jenkins), resto funciona con clave nueva, al recuperar Vault el componente pendiente recibe nueva clave y la aplica. Zero downtime. Datos válidos para paper arXiv.
+>
+> **Bloqueantes identificados:**
+> B1: Estado VaultProvider retry/cache — DESCONOCIDO, prerequisito del Acto III.
+> B2: test-e2e-vault no terminado.
+> B3: Mecanismo notificación hacia Jenkins — inexistente.
+> B4: Script inyección fallo controlado — inexistente.
+>
+> 'No mergeas hasta ver los tres actos del protocolo verdes y reproducibles.' — Alonso · DAY 165"
+> — Consejo de Sabios (8/8) · DAY 165 · feature/day161-enterprise-crypto-integration
+
 ## 🧬 HIPÓTESIS CENTRAL — Inmunidad Global Adaptativa
 
 **Formulada:** DAY 128 | **Estado:** Pendiente demostración (DEBT-PENTESTER-LOOP-001)
@@ -2194,7 +2298,7 @@ Un sistema con ACRL converge hacia cobertura de técnicas ATT&CK en tiempo polin
 
 ---
 
-*DAY 159 — 2026-05-21 · main @ v0.9.3-day158*
+*DAY 165 — 2026-05-26 · main @ feature/day161-enterprise-crypto-integration*
 *"Via Appia Quality — Un escudo que aprende de su propia sombra."*
 
 
@@ -2479,7 +2583,7 @@ Un sistema con ACRL converge hacia cobertura de técnicas ATT&CK en tiempo polin
 > "DAY 149 — Arquitectura CI/CD criptográfica definida. ADR-044 aprobado unánimemente.
 >
 > **Consenso Q1-Q7 (síntesis):**# aRGus NDR — BACKLOG
-*Última actualización: DAY 163 — 2026-05-25*
+*Última actualización: DAY 165 — 2026-05-26*
 
 ---
 
@@ -2542,6 +2646,9 @@ Un sistema con ACRL converge hacia cobertura de técnicas ATT&CK en tiempo polin
 - **REGLA PERMANENTE (DAY 155 — Consejo 8/8):** El reconciliador de `AutonomySubscriber` re-aplica el último estado conocido. NUNCA consulta Vault/etcd en el ciclo de reconciliación. El intervalo es configurable desde `firewall.json["autonomy"]["reconcile_interval_sec"]` (default 90s).
 - **REGLA PERMANENTE (DAY 155 — Consejo 6/8):** Código enterprise (`VaultClient`, `VaultProvider`) vive en `enterprise/` en la raíz del proyecto, paralelo a `common/`. El flag CMake `ARGUS_VAULT_ENABLED` controla `add_subdirectory(enterprise)`. La migración física es post-FEDER.
 
+- **REGLA PERMANENTE (DAY 165 — Consejo 8/8):** `epoch_id` en wire header selecciona clave ANTES de descifrar. Nunca intentar descifrado y luego verificar epoch — es un oracle de padding. La selección de clave es el primer paso al recibir un mensaje enterprise.
+- **REGLA PERMANENTE (DAY 165 — Consejo 8/8):** El protocolo EMECAS++ tiene tres actos obligatorios: (I) arranque nominal con Vault, (II) rotación controlada con live epoch bajo tráfico, (III) Vault falla en un componente con zero downtime. Los tres actos deben ser verdes y reproducibles antes de cualquier merge enterprise a main.
+- **REGLA PERMANENTE (DAY 165 — Founder):** VaultProvider retry/cache es prerequisito arquitectónico del Acto III. Inspeccionar estado antes de planificar DAY 166.
 - **REGLA PERMANENTE (DAY 142 — macOS):** zsh intercepta `!` en heredocs. Para código C++ con emojis o caracteres especiales: siempre `vagrant ssh << 'SSHEOF'` con Python dentro. Nunca heredoc directo desde zsh para código complejo.
 
 ---
@@ -4326,6 +4433,15 @@ DEBT-WIRE-CRYPTO-INTEGRATION-TEST-001:    0% ⏳  P2 post-Suricata (test integra
 DEBT-CONFIG-JINJA2-PIPELINE-001:          0% ⏳  P2 — Jinja2 config pipeline, varios días, post-hardware UEx
 DEBT-PACKAGE-DEB-001:                     0% ⏳  P2 post-FEDER — paquete .deb artefacto primario
 Jenkinsfile.dev + Jenkinsfile.prod:      100% ✅  DAY 161 — separación dev/prod, agent any vs argus-server
+DEBT-ETCD-REGISTRAR-REAL-001:                  100% ✅  DAY 164 — HttpEtcdRegistrar REST 5/5 tests, WatchState CONNECTED/DEGRADED/STALE
+BACKLOG-CRYPTO-EPOCH-001:                       100% ✅  DAY 164 — CryptoEpochCoordinator 5/5 tests, etcd-server integrado
+BACKLOG-CRYPTO-DUAL-KEY-ZMQ-001:               100% ✅  DAY 165 — FASE 3: wire header epoch_id, 13/13 tests
+BACKLOG-CRYPTO-E2E-ROTATION-001 (FakeEtcd):     60% 🟡  DAY 165 — FakeEtcdServer 5/5 + test-e2e-vault PASSED; live rotation pendiente
+BACKLOG-EMECAS-ENTERPRISE-001:                   0% ⏳  P0 — protocolo EMECAS++ 3 actos, bloqueante de merge
+DEBT-VAULT-RECONNECT-001:                         0% ⏳  P0 — VaultProvider retry/cache estado desconocido (inspeccionar DAY 166)
+DEBT-CRYPTO-NEGATIVE-TEST-001:                    0% ⏳  P0 — test negativo epoch_id incorrecto, bloqueante pre-merge
+BACKLOG-CI-ENTERPRISE-001:                        0% ⏳  P1 post-merge (Jenkins gate enterprise)
+DEBT-FIREWALL-BUILD-LEGACY-001:                   0% ⏳  P3 — firewall-acl-agent/build ruta antigua (no bloquea)
 ```
 
 ---
@@ -4522,6 +4638,37 @@ Jenkinsfile.dev + Jenkinsfile.prod:      100% ✅  DAY 161 — separación dev/p
 
 ---
 
+
+## 📝 Notas del Consejo de Sabios — DAY 165 (8/8)
+
+> "DAY 165 — Deliberación sobre el diseño del protocolo EMECAS++ enterprise. Seis preguntas, 8 modelos, decisiones finales de Alonso como árbitro.
+>
+> **P1 — Arquitectura del protocolo (UNANIMIDAD C):** `make emecas` = OSS sin cambios. `make emecas++` = superset anidado. Enterprise ⊃ OSS — no puedes tener enterprise verde con OSS roto.
+>
+> **P2 — Vault dev suficiente (DECISIÓN ALONSO: Sí con evidencia):** Vault dev cubre el camino funcional. Pero se requiere evidencia de que VaultProvider funciona en el pipeline con retry/cache. DEBT-VAULT-RECONNECT-001 abierta P0.
+>
+> **P3 — Live epoch rotation en EMECAS (DECISIÓN ALONSO: SÍ, mayoría 7/8):** FakeEtcdServer valida lógica unitaria. La cadena real Vault→etcd→CryptoEpochCoordinator→CryptoProviderHandle RCU→wire header→firewall debe ejecutarse al menos una vez en el gate. Claude votó A (solo FakeEtcdServer) — posición minoritaria. El mejor test futuro será el pipeline CI/CD en hardware real (RPi5/N100).
+>
+> **P4 — Test negativo epoch_id incorrecto (DECISIÓN ALONSO: OBLIGATORIO, mayoría 6/8):** Un epoch_id incorrecto indica bug propio (situación de filo no vista) o abuso externo. Ambos peligrosos. Test obligatorio pre-merge. DEBT-CRYPTO-NEGATIVE-TEST-001 P0.
+>
+> **P5 — Jenkins gate (UNANIMIDAD):** Merge aceptable sin Jenkins. BACKLOG-CI-ENTERPRISE-001 P1 post-merge.
+>
+> **P6 — Naming (UNANIMIDAD B):** EMECAS++ oficial. EMECAS = community. EMECAS++ = community + enterprise.
+>
+> **Decisión Alonso — definición EMECAS++ real (3 actos):**
+> Acto I: Arranque nominal — todos los componentes se autentican contra Vault, reciben claves, cifran/descifran, tráfico fluye. Medición: events_processed, crypto_errors==0, epoch_id correcto.
+> Acto II: Rotación controlada (5 min o forzada) — pipeline sigue corriendo, epoch_id antes/después distintos, zero drops, crypto_errors==0.
+> Acto III: Vault falla en entrega a un componente aleatorio — ese componente trabaja con clave anterior (caché RCU), notifica (log estructurado + señal Jenkins), resto funciona con clave nueva, al recuperar Vault el componente pendiente recibe nueva clave y la aplica. Zero downtime. Datos válidos para paper arXiv.
+>
+> **Bloqueantes identificados:**
+> B1: Estado VaultProvider retry/cache — DESCONOCIDO, prerequisito del Acto III.
+> B2: test-e2e-vault no terminado.
+> B3: Mecanismo notificación hacia Jenkins — inexistente.
+> B4: Script inyección fallo controlado — inexistente.
+>
+> 'No mergeas hasta ver los tres actos del protocolo verdes y reproducibles.' — Alonso · DAY 165"
+> — Consejo de Sabios (8/8) · DAY 165 · feature/day161-enterprise-crypto-integration
+
 ## 🧬 HIPÓTESIS CENTRAL — Inmunidad Global Adaptativa
 
 **Formulada:** DAY 128 | **Estado:** Pendiente demostración (DEBT-PENTESTER-LOOP-001)
@@ -4530,7 +4677,7 @@ Un sistema con ACRL converge hacia cobertura de técnicas ATT&CK en tiempo polin
 
 ---
 
-*DAY 159 — 2026-05-21 · main @ v0.9.3-day158*
+*DAY 165 — 2026-05-26 · main @ feature/day161-enterprise-crypto-integration*
 *"Via Appia Quality — Un escudo que aprende de su propia sombra."*
 
 
