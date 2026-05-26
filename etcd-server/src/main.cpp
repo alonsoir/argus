@@ -18,7 +18,6 @@
 #include <vault_client/autonomy_state_writer.h>
 #include <sodium.h>
 #include <sstream>
-#define CPPHTTPLIB_OPENSSL_SUPPORT
 #include "alert_client.hpp"
 #include <vault_client/http_etcd_registrar.h>
 #include <vault_client/crypto_epoch_coordinator.h>
@@ -271,6 +270,7 @@ int main() {
             etcd_server_url, "etcd-server",
             /*keepalive_ms=*/30000,
             /*poll_ms=*/2000);
+        std::this_thread::sleep_for(std::chrono::milliseconds(1500)); // esperar servidor listo
         epoch_registrar.register_status(crypto_material, "etcd-server");
         epoch_registrar.start_keepalive();
 

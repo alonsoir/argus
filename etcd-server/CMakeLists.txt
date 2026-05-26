@@ -178,6 +178,7 @@ target_compile_options(etcd-server
         -Wextra
         -Wpedantic
 )
+target_compile_definitions(etcd-server PRIVATE CPPHTTPLIB_OPENSSL_SUPPORT)
 
 # ============================================================================
 # LINK LIBRARIES

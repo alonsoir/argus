@@ -13,6 +13,7 @@ option(ARGUS_VAULT_ENABLED "Enable Vault crypto provider (enterprise)" OFF)
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(LIBSODIUM REQUIRED libsodium)
 find_package(CURL REQUIRED)
+find_package(OpenSSL REQUIRED)
 pkg_check_modules(ZMQ REQUIRED libzmq)
 
 # seed-client — requerido por SeedFileProvider (ambas compilaciones)
@@ -83,10 +84,13 @@ target_link_libraries(crypto_provider
         ${LIBSODIUM_LIBRARIES}
         ${ZMQ_LIBRARIES}
         ${CURL_LIBRARIES}
+        OpenSSL::SSL
+        OpenSSL::Crypto
 )
 if(ARGUS_VAULT_ENABLED)
     target_compile_definitions(crypto_provider PUBLIC ARGUS_VAULT_ENABLED)
 endif()
+target_compile_definitions(crypto_provider PUBLIC CPPHTTPLIB_OPENSSL_SUPPORT)
 set_target_properties(crypto_provider PROPERTIES
         VERSION   ${PROJECT_VERSION}
         SOVERSION 1

@@ -82,7 +82,11 @@ void HttpEtcdRegistrar::start_keepalive() {
             cli.set_connection_timeout(request_timeout_ms_ / 1000, 0);
             cli.set_read_timeout(request_timeout_ms_ / 1000, 0);
 
-            auto res = cli.Post(path, "{}", "application/json");
+            // /v1/heartbeat requiere campo timestamp (unix epoch)
+            auto now_s = std::chrono::duration_cast<std::chrono::seconds>(
+                std::chrono::system_clock::now().time_since_epoch()).count();
+            std::string hb_body = R"({"timestamp":)" + std::to_string(now_s) + "}";
+            auto res = cli.Post(path, hb_body, "application/json");
             if (!res || res->status != 200) {
                 std::cerr << "[HttpEtcdRegistrar] ⚠️  heartbeat falló\n";
             }
