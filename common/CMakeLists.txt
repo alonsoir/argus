@@ -315,4 +315,26 @@ add_executable(test_vault_client
             ${CURL_LIBRARIES}
     )
     add_test(NAME test_crypto_epoch_coordinator COMMAND test_crypto_epoch_coordinator)
+
+    # BACKLOG-CRYPTO-E2E-ROTATION-001 — DAY 165
+    # Ciclo completo: FakeEtcdServer → CryptoEpochCoordinator → handle.reload()
+    #                 → encrypt(epoch_id) → decrypt_v2 → epoch_id correcto
+    add_executable(test_e2e_rotation
+            tests/test_e2e_rotation.cpp
+            crypto_epoch_coordinator.cpp
+            http_etcd_registrar.cpp
+    )
+    target_include_directories(test_e2e_rotation PRIVATE
+            ${CMAKE_CURRENT_SOURCE_DIR}
+            ${CURL_INCLUDE_DIRS}
+            ${LIBSODIUM_INCLUDE_DIRS}
+    )
+    target_link_libraries(test_e2e_rotation PRIVATE
+            vault_client
+            crypto_transport
+            ${SEED_CLIENT_LIB}
+            ${CURL_LIBRARIES}
+            ${LIBSODIUM_LIBRARIES}
+    )
+    add_test(NAME test_e2e_rotation COMMAND test_e2e_rotation)
 endif()
