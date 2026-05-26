@@ -858,7 +858,7 @@ BASHRC_EOF
 
       # ── 8. Token en Vault (etcd-server lo consulta en runtime) ────────
       vault kv put secret/argus/enterprise/token \
-        value=$(cat /tmp/argus_enterprise.token)
+        value=@/tmp/argus_enterprise.token
       echo "✅ Vault: enterprise.token almacenado"
 
       # ── 9. Limpiar /tmp ───────────────────────────────────────────────
