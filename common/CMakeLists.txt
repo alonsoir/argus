@@ -57,6 +57,8 @@ set(CRYPTO_PROVIDER_SOURCES
         crypto_provider.cpp
         seed_file_provider.cpp
         autonomy_publisher.cpp
+        http_etcd_registrar.cpp
+        crypto_epoch_coordinator.cpp
 )
 if(ARGUS_VAULT_ENABLED)
     list(APPEND CRYPTO_PROVIDER_SOURCES vault_provider.cpp)
@@ -80,6 +82,7 @@ target_link_libraries(crypto_provider
         ${SEED_CLIENT_LIB}
         ${LIBSODIUM_LIBRARIES}
         ${ZMQ_LIBRARIES}
+        ${CURL_LIBRARIES}
 )
 if(ARGUS_VAULT_ENABLED)
     target_compile_definitions(crypto_provider PUBLIC ARGUS_VAULT_ENABLED)
@@ -120,6 +123,8 @@ install(FILES
         crypto_autonomy.h
         crypto_deriver.h
         etcd_registrar.h
+        http_etcd_registrar.h
+        crypto_epoch_coordinator.h
         seed_file_provider.h
         autonomy_state_writer.h
         include/reason_codes.hpp

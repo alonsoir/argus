@@ -4,7 +4,7 @@
 // watch /v1/epoch → callback → caller hace handle.reload()
 // ============================================================================
 #include "http_etcd_registrar.h"
-#include "crypto_provider_handle.hpp"
+
 #include <string>
 #include <functional>
 #include <atomic>
