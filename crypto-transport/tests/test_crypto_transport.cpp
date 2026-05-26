@@ -83,12 +83,50 @@ TEST_F(CryptoTransportTest, EncryptDecryptRoundTrip) {
     EXPECT_EQ(plaintext, recovered);
 }
 
-// TC-CT-004: Wire format = nonce(12) + ciphertext(N) + mac(16)
+// TC-CT-004: Wire format = epoch_header(4) + nonce(12) + ciphertext(N) + mac(16)
 TEST_F(CryptoTransportTest, WireFormatCorrect) {
     auto sc = env_->make_client();
     crypto_transport::CryptoTransport ct(sc, "ml-defender:test:v1:tx");
     std::vector<uint8_t> plaintext(64, 0xAB);
-    EXPECT_EQ(ct.encrypt(plaintext).size(), 12u + 64u + 16u);
+    EXPECT_EQ(ct.encrypt(plaintext).size(), 4u + 12u + 64u + 16u);
+}
+
+// TC-CT-011: encrypt(p, epoch_id) + decrypt_v2 recupera epoch_id correcto
+TEST_F(CryptoTransportTest, EpochIdRoundTrip) {
+    auto sc = env_->make_client();
+    crypto_transport::CryptoTransport tx(sc, "ml-defender:test:v1:tx");
+    crypto_transport::CryptoTransport rx(sc, "ml-defender:test:v1:tx");
+
+    std::vector<uint8_t> plaintext = {0x01, 0x02, 0x03};
+    const uint16_t expected_epoch = 42;
+
+    auto wire = tx.encrypt(plaintext, expected_epoch);
+    auto result = rx.decrypt_v2(wire);
+
+    EXPECT_EQ(result.data, plaintext);
+    EXPECT_EQ(result.epoch_id, expected_epoch);
+}
+
+// TC-CT-012: wire format con epoch_id explícito tiene tamaño correcto
+TEST_F(CryptoTransportTest, WireFormatWithEpochId) {
+    auto sc = env_->make_client();
+    crypto_transport::CryptoTransport ct(sc, "ml-defender:test:v1:tx");
+    std::vector<uint8_t> plaintext(64, 0xAB);
+    EXPECT_EQ(ct.encrypt(plaintext, 7).size(), 4u + 12u + 64u + 16u);
+}
+
+// TC-CT-013: backward-compat encrypt() produce epoch_id=0 en wire header
+TEST_F(CryptoTransportTest, BackwardCompatEpochIdIsZero) {
+    auto sc = env_->make_client();
+    crypto_transport::CryptoTransport tx(sc, "ml-defender:test:v1:tx");
+    crypto_transport::CryptoTransport rx(sc, "ml-defender:test:v1:tx");
+
+    std::vector<uint8_t> plaintext = {0xDE, 0xAD};
+    auto wire = tx.encrypt(plaintext);      // backward-compat -> epoch_id=0
+    auto result = rx.decrypt_v2(wire);
+
+    EXPECT_EQ(result.data, plaintext);
+    EXPECT_EQ(result.epoch_id, 0u);
 }
 
 // TC-CT-005: Plaintext vacío → resultado vacío

@@ -888,7 +888,7 @@ void ZMQHandler::send_enriched_event(const protobuf::NetworkSecurityEvent& event
                 to_encrypt = std::vector<uint8_t>(serialized.begin(), serialized.end());
             }
         }
-        auto encrypted = tx_->encrypt(to_encrypt);
+        auto encrypted = tx_->encrypt(to_encrypt, 0);  // FASE 3: epoch_id=0 hasta FASE 4
 
         logger_->trace("🔒 Encrypted: {} → {} bytes", serialized.size(), encrypted.size());
 
