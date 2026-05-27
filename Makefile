@@ -1447,6 +1447,7 @@ vault-fault-inject:
 	@echo "── Fase 5: Detener etcd-server ──"
 	@vagrant ssh -c "sudo bash -c 'pkill -f etcd-server &'"; sleep 1; echo "✅ etcd-server detenido"
 	@echo ""
+	@echo '{"event":"vault_fault_inject","status":"passed","acto":"III","component":"etcd-server","vault_fault":"token_revoked","result":"autonomous_cache_rcu"}'
 	@echo "╔════════════════════════════════════════════════════════════╗"
 	@echo "║  ✅ VAULT-FAULT-INJECT PASSED                            ║"
 	@echo "╚════════════════════════════════════════════════════════════╝"
