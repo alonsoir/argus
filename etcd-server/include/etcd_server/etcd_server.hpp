@@ -1,6 +1,7 @@
+#include <mutex>
+#include <string>
 #pragma once
 
-#include <string>
 #include <memory>
 #include <thread>
 #include <atomic>
@@ -42,7 +43,18 @@ public:
     // Validación
     std::string validate_configuration();
 
+    // Epoch management (ADR-045 v2 — DAY 164)
+    struct EpochInfo {
+        uint16_t    epoch_id{1};
+        std::string not_before{"2026-01-01T00:00:00Z"};
+        int64_t     revision{1};
+    };
+    void        set_epoch(uint16_t epoch_id, const std::string& not_before);
+    EpochInfo   get_epoch() const;
+
 private:
     void run_server();
     std::string handle_request(const std::string& method, const std::string& path, const std::string& body);
+    EpochInfo           epoch_;
+    mutable std::mutex  epoch_mutex_;
 };

@@ -35,10 +35,10 @@ int main() {
         zmq::socket_t  sub(ctx, zmq::socket_type::sub);
         sub.set(zmq::sockopt::linger, 0);
         sub.set(zmq::sockopt::subscribe, AutonomyPublisher::TOPIC);
-        sub.bind(INPROC);
+        sub.connect(INPROC);
 
         AutonomyPublisher pub(INPROC, "test-component", 0);
-        std::this_thread::sleep_for(std::chrono::milliseconds(50));
+        std::this_thread::sleep_for(std::chrono::milliseconds(300));
 
         pub.publish(OperationalMode::NORMAL, OperationalMode::AUTONOMOUS);
 
@@ -53,10 +53,10 @@ int main() {
         zmq::socket_t  sub(ctx, zmq::socket_type::sub);
         sub.set(zmq::sockopt::linger, 0);
         sub.set(zmq::sockopt::subscribe, AutonomyPublisher::TOPIC);
-        sub.bind(INPROC);
+        sub.connect(INPROC);
 
         AutonomyPublisher pub(INPROC, "test-component", 0);
-        std::this_thread::sleep_for(std::chrono::milliseconds(50));
+        std::this_thread::sleep_for(std::chrono::milliseconds(300));
 
         pub.publish(OperationalMode::NORMAL, OperationalMode::AUTONOMOUS);
 
@@ -74,10 +74,10 @@ int main() {
         zmq::socket_t  sub(ctx, zmq::socket_type::sub);
         sub.set(zmq::sockopt::linger, 0);
         sub.set(zmq::sockopt::subscribe, AutonomyPublisher::TOPIC);
-        sub.bind(INPROC);
+        sub.connect(INPROC);
 
         AutonomyPublisher pub(INPROC, "vault-daemon", 0);
-        std::this_thread::sleep_for(std::chrono::milliseconds(50));
+        std::this_thread::sleep_for(std::chrono::milliseconds(300));
 
         CryptoAutonomyStateMachine<> sm("vault-daemon", pub.make_callback());
         sm.on_vault_unreachable();  // NORMAL → AUTONOMOUS
@@ -93,10 +93,10 @@ int main() {
         zmq::socket_t  sub(ctx, zmq::socket_type::sub);
         sub.set(zmq::sockopt::linger, 0);
         sub.set(zmq::sockopt::subscribe, AutonomyPublisher::TOPIC);
-        sub.bind(INPROC);
+        sub.connect(INPROC);
 
         AutonomyPublisher pub(INPROC, "test-component", 0);
-        std::this_thread::sleep_for(std::chrono::milliseconds(50));
+        std::this_thread::sleep_for(std::chrono::milliseconds(300));
 
         pub.publish(OperationalMode::AUTONOMOUS, OperationalMode::DEGRADED);
 

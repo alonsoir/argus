@@ -3,6 +3,7 @@
 // ============================================================================
 #include "vault_provider.h"
 #include <stdexcept>
+#include <iostream>
 
 namespace ml_defender {
 
@@ -14,6 +15,8 @@ VaultProvider::VaultProvider(const CryptoProviderConfig& config)
     if (config_.component_name.empty()) {
         throw std::runtime_error("VaultProvider: component_name vacío");
     }
+    std::cout << "[VaultProvider] 🔐 Arrancando modo enterprise — componente: "
+              << config_.component_name << std::endl;
 }
 
 VaultProvider::~VaultProvider() {

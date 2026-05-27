@@ -13,6 +13,7 @@ option(ARGUS_VAULT_ENABLED "Enable Vault crypto provider (enterprise)" OFF)
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(LIBSODIUM REQUIRED libsodium)
 find_package(CURL REQUIRED)
+find_package(OpenSSL REQUIRED)
 pkg_check_modules(ZMQ REQUIRED libzmq)
 
 # seed-client — requerido por SeedFileProvider (ambas compilaciones)
@@ -57,6 +58,8 @@ set(CRYPTO_PROVIDER_SOURCES
         crypto_provider.cpp
         seed_file_provider.cpp
         autonomy_publisher.cpp
+        http_etcd_registrar.cpp
+        crypto_epoch_coordinator.cpp
 )
 if(ARGUS_VAULT_ENABLED)
     list(APPEND CRYPTO_PROVIDER_SOURCES vault_provider.cpp)
@@ -80,10 +83,14 @@ target_link_libraries(crypto_provider
         ${SEED_CLIENT_LIB}
         ${LIBSODIUM_LIBRARIES}
         ${ZMQ_LIBRARIES}
+        ${CURL_LIBRARIES}
+        OpenSSL::SSL
+        OpenSSL::Crypto
 )
 if(ARGUS_VAULT_ENABLED)
     target_compile_definitions(crypto_provider PUBLIC ARGUS_VAULT_ENABLED)
 endif()
+target_compile_definitions(crypto_provider PUBLIC CPPHTTPLIB_OPENSSL_SUPPORT)
 set_target_properties(crypto_provider PROPERTIES
         VERSION   ${PROJECT_VERSION}
         SOVERSION 1
@@ -115,10 +122,13 @@ install(FILES
         vault_transport.h
         cache_manager.h
         crypto_provider.h
+        crypto_provider_handle.hpp
         autonomy_publisher.h
         crypto_autonomy.h
         crypto_deriver.h
         etcd_registrar.h
+        http_etcd_registrar.h
+        crypto_epoch_coordinator.h
         seed_file_provider.h
         autonomy_state_writer.h
         include/reason_codes.hpp
@@ -199,6 +209,7 @@ add_executable(test_vault_client
             ${ZMQ_LIBRARIES}
     )
     add_test(NAME test_autonomy_publisher COMMAND test_autonomy_publisher)
+    set_tests_properties(test_autonomy_publisher PROPERTIES TIMEOUT 30)
     # IVaultTransport tests (ADR-045 DAY 153)
     add_executable(test_vault_transport
             tests/test_vault_transport.cpp
@@ -261,6 +272,20 @@ add_executable(test_vault_client
     )
     add_test(NAME test_autonomy_state_writer COMMAND test_autonomy_state_writer)
 
+    # test_crypto_provider_handle — BACKLOG-CRYPTO-HOT-RELOAD-001 (DAY 163)
+    add_executable(test_crypto_provider_handle
+            tests/test_crypto_provider_handle.cpp
+    )
+    target_include_directories(test_crypto_provider_handle PRIVATE
+            ${CMAKE_CURRENT_SOURCE_DIR}
+            ${LIBSODIUM_INCLUDE_DIRS}
+    )
+    target_link_libraries(test_crypto_provider_handle PRIVATE
+            crypto_provider
+            ${LIBSODIUM_LIBRARIES}
+    )
+    add_test(NAME test_crypto_provider_handle COMMAND test_crypto_provider_handle)
+
     # DEBT-WIRE-PROTOCOL-TEST-001 (DAY 161)
     # Verifica simetría del protocolo binario LZ4 LE uint32_t
     # entre ml-detector (serializador) y firewall-acl-agent (deserializador)
@@ -274,4 +299,42 @@ add_executable(test_vault_client
             lz4
     )
     add_test(NAME test_wire_protocol COMMAND test_wire_protocol)
+
+    # BACKLOG-CRYPTO-EPOCH-001 — DAY 164
+    add_executable(test_crypto_epoch_coordinator
+            tests/test_crypto_epoch_coordinator.cpp
+            crypto_epoch_coordinator.cpp
+            http_etcd_registrar.cpp
+    )
+    target_include_directories(test_crypto_epoch_coordinator PRIVATE
+            ${CMAKE_CURRENT_SOURCE_DIR}
+            ${CURL_INCLUDE_DIRS}
+    )
+    target_link_libraries(test_crypto_epoch_coordinator PRIVATE
+            vault_client
+            ${CURL_LIBRARIES}
+    )
+    add_test(NAME test_crypto_epoch_coordinator COMMAND test_crypto_epoch_coordinator)
+
+    # BACKLOG-CRYPTO-E2E-ROTATION-001 — DAY 165
+    # Ciclo completo: FakeEtcdServer → CryptoEpochCoordinator → handle.reload()
+    #                 → encrypt(epoch_id) → decrypt_v2 → epoch_id correcto
+    add_executable(test_e2e_rotation
+            tests/test_e2e_rotation.cpp
+            crypto_epoch_coordinator.cpp
+            http_etcd_registrar.cpp
+    )
+    target_include_directories(test_e2e_rotation PRIVATE
+            ${CMAKE_CURRENT_SOURCE_DIR}
+            ${CURL_INCLUDE_DIRS}
+            ${LIBSODIUM_INCLUDE_DIRS}
+    )
+    target_link_libraries(test_e2e_rotation PRIVATE
+            vault_client
+            crypto_transport
+            ${SEED_CLIENT_LIB}
+            ${CURL_LIBRARIES}
+            ${LIBSODIUM_LIBRARIES}
+    )
+    add_test(NAME test_e2e_rotation COMMAND test_e2e_rotation)
 endif()

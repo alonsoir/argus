@@ -451,7 +451,9 @@ void ZMQSubscriber::handle_message(const void* msg_data, size_t msg_size) {
             if (!rx_) {
                 throw std::runtime_error("CryptoTransport rx_ not initialized");
             }
-            data = rx_->decrypt(data);
+            auto dr = rx_->decrypt_v2(data);  // FASE 3: extrae epoch_id
+            data = std::move(dr.data);
+            FIREWALL_LOG_DEBUG("epoch_id recibido", "epoch_id", dr.epoch_id);
 
             auto end = std::chrono::high_resolution_clock::now();
             auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);

@@ -1,142 +1,128 @@
-# Prompt de Continuidad — aRGus NDR — DAY 161
-
-**Proyecto:** aRGus NDR (arXiv:2604.04952)  
-**Rama activa:** `feature/day161-enterprise-crypto-integration`  
-**Entorno:** macOS M2 Pro host · Vagrant/VirtualBox · Debian Bookworm  
-**Metodología:** TDH (RED→GREEN obligatorio) · EMECAS · KISS · Via Appia Quality
+# PROMPT DE CONTINUIDAD — DAY 166
+## aRGus NDR | 2026-05-27
 
 ---
 
-## Estado al inicio de DAY 161
+## Estado al entrar en DAY 166
 
-### Cerrado recientemente
-- **DAY 159:** DEBT-FIREWALL-CRYPTO-FORMAT-001 cerrada. `zmq_subscriber.cpp` migrado a CryptoTransport + `seed.bin`. Drop rate 100% resuelto. EMECAS++ gate E2E real verde (`make test-e2e`).
-- **DAY 160:** `libvault_provider.so` compilado limpio, 6/6 tests RED→GREEN. Jenkins 2.555.2 + Vault dev mode arrancando en Vagrant. `generate_token.py` + `TokenValidator.hpp` + `enterprise.token` generados.
+### Rama activa
+`feature/day161-enterprise-crypto-integration` — commit `2389f7d3` (docs DAY 165)
 
-### Lo que existe en enterprise/ (confirmado)
-```
-enterprise/scripts/generate_token.py   ✅ firma Ed25519, genera/verifica tokens
-enterprise/token/TokenValidator.hpp    ✅ header-only, libsodium, validate_or_abort()
-enterprise_vendor.pub                  ✅ tracked
-enterprise_vendor.key                  ✅ gitignored (nunca al repo)
-enterprise.token                       ✅ emitido 365 días, features=[vault_crypto]
-enterprise/plugins/vault_crypto/
-  vault_provider.hpp                   ✅ ICryptoProvider implementado
-  vault_provider.cpp                   ✅ argus_enterprise_create/destroy C ABI
-  CMakeLists.txt                       ✅ compila libvault_provider.so
-  tests/test_vault_provider.cpp        ✅ 6 tests verdes
-```
+### EMECAS++ OSS del día anterior — todos verdes
+- test-all: ✅ (6 suites, 0 fallos)
+- test-e2e-synthetic-full: ✅ delta=100/100
+- test-e2e-synthetic-firewall: ✅ 540 eventos, 0 crypto_errors
+- **Keypair efímero activo:** `a2abfe43e349e86ddeb4a22496b007919c87bdb0f5dc88c17b57cabf0d61331f`
 
-### Pendiente DAY 161 (objetivo del día)
-```
-❌  plugin-loader: validate_or_abort() antes de dlopen enterprise
-❌  common/: CryptoProvider::create() — factoría ARGUS_VAULT_ENABLED
-❌  etcd-server: integrar ICryptoProvider vía factoría (no seed-client directo)
-❌  test-e2e-vault: gate E2E completo con Vault como backend
-❌  DEBT-EMECAS-DUAL-COMPILATION-001: EMECAS con ON y OFF ambos verdes
-```
+### Fases enterprise completadas
+| Fase | Estado |
+|------|--------|
+| FASE 0 — vendor.key → Vault (Modelo B) | ✅ |
+| FASE 1 — CryptoProviderHandle RCU | ✅ |
+| FASE 2a — HttpEtcdRegistrar real | ✅ |
+| FASE 2b — CryptoEpochCoordinator | ✅ |
+| FASE 3 — Wire header epoch_id (13/13) | ✅ |
+| FASE 4 — test-e2e-rotation FakeEtcdServer (5/5) | ✅ 60% |
+| **EMECAS++ Enterprise (3 actos)** | ⏳ PENDIENTE |
 
----
+### Consejo de Sabios DAY 165 — decisiones finales de Alonso
+1. **Arquitectura:** (C) targets anidados — `make emecas++` depende de `make emecas`
+2. **Vault dev:** suficiente con evidencia de retry/cache
+3. **Live rotation:** obligatoria en gate (mayoría 7/8)
+4. **Test negativo epoch_id:** P0 bloqueante pre-merge (mayoría 6/8)
+5. **Jenkins:** post-merge P1
+6. **Naming:** EMECAS++ oficial
 
-## Roadmap acordado (DAY 161-166+)
+### Definición EMECAS++ real (decisión Alonso DAY 165)
+No se mergea hasta tener los **tres actos** verdes y reproducibles:
 
-| DAY | Objetivo |
-|-----|----------|
-| **161** | Plugin enterprise cifrado completo — enganche plugin-loader + factoría + E2E vault |
-| **162** | Alerting: DEBT-ALERTING-LIBCRYPTO-PROVIDER-001 (AlertClient → libcrypto_provider.so) + DEBT-ALERTING-VAULT-001 (credenciales Discord/Telegram a Vault) |
-| **163** | Jenkins + Vault production-ready: AppRole por componente, políticas mínimas, Jenkinsfile enterprise stage |
-| **164** | Script JSON contracts desde plantillas + paquetes Debian (community y enterprise) |
-| **165** | Artifactory: enterprise .deb publicado desde Jenkins post-EMECAS |
-| **166+** | Integración Suricata / Zeek / Wazuh (ADR-046 v3, community_id) |
+**Acto I — Arranque nominal:** todos los componentes se autentican contra Vault, reciben claves, cifran/descifran, tráfico fluye. Medición: `events_processed`, `crypto_errors==0`, `epoch_id` correcto.
+
+**Acto II — Rotación controlada (5 min o forzada):** pipeline sigue corriendo, `CryptoEpochCoordinator` detecta nuevo epoch, `CryptoProviderHandle` hot-reload RCU, wire header actualiza `epoch_id`. Medición: continuo sin gaps, `crypto_errors==0`, `epoch_id` antes/después distintos.
+
+**Acto III — Vault falla en un componente aleatorio:** componente afectado sigue con clave anterior (caché RCU), notifica (log estructurado + señal Jenkins), resto funciona con clave nueva. Al recuperar Vault: componente recibe nueva clave, la aplica. Zero downtime. Datos válidos para paper arXiv.
 
 ---
 
-## Secuencia de implementación DAY 161
+## 🔑 HALLAZGO CRÍTICO AL CIERRE DE DAY 165 — VaultProvider tiene caché
 
-### PASO 0 — EMECAS limpio antes de tocar nada
+**Se ejecutaron estos comandos al final de la sesión:**
 ```bash
-cd /Users/aironman/CLionProjects/test-zeromq-docker
-vagrant destroy -f && vagrant up && make bootstrap && make test-all
+vagrant ssh -c "grep -A 20 'retry\|cache\|reconnect\|fallback' /vagrant/common/vault_provider.cpp"
+vagrant ssh -c "grep -A 20 'retry\|timeout\|reconnect' /vagrant/common/vault_transport.cpp"
 ```
 
-### PASO 1 — Enganche plugin-loader (RED→GREEN)
-En `plugin-loader/src/plugin_loader.cpp`, antes del `dlopen` de cualquier plugin enterprise:
-```cpp
-#include "enterprise/token/TokenValidator.hpp"
-// ...
-TokenValidator::validate_or_abort(
-    config.enterprise_token_path,
-    ARGUS_ENTERPRISE_PUBKEY_HEX,   // hardcodeado en CMakeLists.txt
-    "vault_crypto"
-);
-```
-Comportamiento fail-closed:
-- Token ausente → abort con mensaje claro
-- Firma inválida → abort
-- Token expirado → abort con fecha
-- Feature `vault_crypto` no incluida → abort
+**Resultado:** VaultProvider ya tiene retry/cache completamente implementado:
 
-### PASO 2 — Factoría CryptoProvider::create() en common/
-```cpp
-// common/include/argus/crypto_provider_factory.hpp
-namespace argus {
-  std::unique_ptr<ICryptoProvider> create_crypto_provider(const Config& cfg);
-}
+- `get_material()` — línea 1: `if (cached_material_.has_value()) return cached_material_.value()`. Si hay material en caché, nunca toca Vault. Funciona en silencio aunque Vault esté caído.
+- `ERROR_VAULT_DOWN` → dispara `autonomy_.on_vault_unreachable()` → estado AUTONOMOUS. El pipeline no muere, notifica.
+- `refresh()` — maneja recuperación completa: `on_vault_restored()` → RECONCILING → `on_reconciliation_ok()` → NORMAL.
 
-// Lógica (solo en common/src/crypto_provider_factory.cpp):
-// #ifdef ARGUS_VAULT_ENABLED → VaultProvider
-// else                       → SeedFileProvider
-// Ningún componente ve el #ifdef
-```
+**Implicación:** B1 (el bloqueante más incierto) es gratis. El Acto III no requiere implementación nueva, solo demostrar el comportamiento que ya existe.
 
-### PASO 3 — etcd-server integra la factoría
-Sustituir instanciación directa de SeedFileProvider por `create_crypto_provider(config)`.
-
-### PASO 4 — test-e2e-vault
-Variante de `make test-e2e` que:
-1. Arranca Vault dev con `secret/argus/crypto` cargado
-2. Compila con `ARGUS_VAULT_ENABLED=ON`
-3. Ejecuta el synthetic injector
-4. Verifica 0 drops + mensajes descifrados correctamente
-
-### PASO 5 — DEBT-EMECAS-DUAL-COMPILATION-001
-```bash
-make ARGUS_VAULT_ENABLED=OFF test-all   # community — debe pasar
-make ARGUS_VAULT_ENABLED=ON  test-all   # enterprise — debe pasar
-```
+**Bloqueantes actualizados:**
+| Bloqueante | Estado |
+|------------|--------|
+| B1 — VaultProvider retry/cache | ✅ Ya implementado (confirmado DAY 165) |
+| B2 — test-e2e-vault completo (Acto I) | ⏳ Pendiente |
+| B3 — Notificación hacia Jenkins (Acto III) | ⏳ Pendiente — log estructurado ya existe, falta canal Jenkins |
+| B4 — Script inyección fallo controlado (Acto III) | ⏳ Pendiente — revocar token Vault o iptables por proceso |
 
 ---
 
-## Decisiones arquitecturales cerradas (NO reabrir)
+## Objetivo de DAY 166
 
-- **Modelo centralizado:** solo `etcd-server` habla con Vault. Distribuye semilla a componentes por canal existente. Consenso 8/8 Consejo DAY 151.
-- **Factoría única:** `CryptoProvider::create()` es el único punto de decisión. Ningún componente ve `#ifdef` en lógica de negocio.
-- **Migración por canal** (cuando llegue): etcd-server primero → sniffer+ml-detector simultáneo (canal A) → firewall-acl-agent (canal B) → rag-ingester+rag-security (canal C).
-- **Keypair vendor distinto del keypair nodo:** generado una vez, offline, nunca en disco del nodo en producción.
-- **Fail-closed absoluto:** si token inválido → abort. No hay degradación silenciosa.
+Con B1 resuelto gratis, el plan es:
 
----
-
-## Constantes permanentes
-
-- EMECAS: `vagrant destroy -f && vagrant up && make bootstrap && make test-all`
-- Edición de ficheros: siempre `python3 << 'PYEOF'`, nunca `sed -i` sin `-e ''` en macOS
-- Vagrant: siempre `vagrant ssh -c '...'` desde host macOS
-- `alert_client.hpp`: NO incluir en ningún componente que linke `libetcd_client.so` hasta DAY 162
-- Keypair activo (se regenera en cada destroy+up): `b5b6cbdf67dad75cdd7e3169d837d1d6d4c938b720e34331f8a73f478ee85daa`
+1. **Completar test-e2e-vault** → Acto I verificado
+2. **Implementar DEBT-CRYPTO-NEGATIVE-TEST-001** → test epoch_id inválido (~20 líneas)
+3. **Script inyección fallo Vault** → B4 resuelto (revocar token vault dev por componente)
+4. **Definir canal notificación** → B3 (log estructurado + señal hacia Jenkins)
+5. **Implementar `make emecas++`** con los 3 actos
+6. **Ejecutar EMECAS++ completo** — estabilizar y recoger datos
 
 ---
 
-## Deudas técnicas abiertas relevantes
+## Deudas abiertas P0 pre-merge
 
-| ID | Prioridad | DAY objetivo |
-|----|-----------|--------------|
-| DEBT-EMECAS-DUAL-COMPILATION-001 | P0 | 161 |
-| DEBT-ALERTING-LIBCRYPTO-PROVIDER-001 | P1 | 162 |
-| DEBT-ALERTING-VAULT-001 | P2 | 162 |
-| DEBT-CRYPTO-AUTONOMY-001 | P2 | post-166 |
-| DEBT-ENTERPRISE-PLUGIN-001 | P0 | 161 (cierre) |
+| ID | Prioridad | Descripción |
+|----|-----------|-------------|
+| BACKLOG-EMECAS-ENTERPRISE-001 | P0 | Protocolo EMECAS++ 3 actos |
+| BACKLOG-CRYPTO-E2E-ROTATION-001 | P0 | Live rotation con pipeline activo (Acto II) |
+| DEBT-CRYPTO-NEGATIVE-TEST-001 | P0 | Test negativo epoch_id=0xFFFF, ~20 líneas |
+| DEBT-VAULT-RECONNECT-001 | ✅ RESUELTO | VaultProvider retry/cache ya implementado |
+
+## Deudas post-merge P1
+| ID | Descripción |
+|----|-------------|
+| BACKLOG-CI-ENTERPRISE-001 | Jenkins gate `make emecas++` |
+
+## Deudas P3
+| ID | Descripción |
+|----|-------------|
+| DEBT-FIREWALL-BUILD-LEGACY-001 | firewall-acl-agent/build ruta antigua |
 
 ---
 
-*Generado al cierre de DAY 160 · aRGus NDR · arXiv:2604.04952*
+## Reglas permanentes (recordatorio)
+
+- Edición ficheros en VM: siempre `python3 << 'PYEOF'`, nunca `sed -i` sin `-e ''` en macOS
+- ZMQ slow joiner: publisher `bind()` ANTES de subscriber `connect()`
+- `CPPHTTPLIB_OPENSSL_SUPPORT`: via CMake `target_compile_definitions`, nunca `#define` inline
+- `epoch_id` en wire header: seleccionar clave ANTES de descifrar (no oracle de padding)
+- Vault dev suficiente para gate de merge (Vault HA → hardware RPi5/N100)
+- `vendor.key` NUNCA en disco, NUNCA en repo — solo en Vault
+- VaultProvider ya tiene caché RCU — el Acto III no requiere implementación nueva
+
+---
+
+## Wire header (recordatorio)
+```
+[uint32_t size][uint16_t epoch_id][2B reserved][LZ4+encrypted]
+  bytes 0-3      bytes 4-5         bytes 6-7     bytes 8+
+```
+epoch_id=0: community. epoch_id>0: enterprise.
+
+---
+
+*Generado al cierre de DAY 165 — 2026-05-26 · commit 2389f7d3*

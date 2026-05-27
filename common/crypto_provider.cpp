@@ -7,6 +7,7 @@
 // ============================================================================
 
 #include "crypto_provider.h"
+#include <cstdlib>
 #include "seed_file_provider.h"
 
 #ifdef ARGUS_VAULT_ENABLED
@@ -21,7 +22,13 @@ namespace ml_defender {
         const CryptoProviderConfig& config)
     {
 #ifdef ARGUS_VAULT_ENABLED
-        return std::make_unique<VaultProvider>(config);
+        // Leer credenciales Vault de env vars si están presentes (BACKLOG-CRYPTO-VENDOR-KEY-001)
+        CryptoProviderConfig vault_config = config;
+        const char* env_addr  = std::getenv("VAULT_ADDR");
+        const char* env_token = std::getenv("VAULT_TOKEN");
+        if (env_addr)  vault_config.vault_config.vault_addr  = env_addr;
+        if (env_token) vault_config.vault_config.vault_token = env_token;
+        return std::make_unique<VaultProvider>(vault_config);
 #else
         return std::make_unique<SeedFileProvider>(config);
 #endif

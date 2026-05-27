@@ -29,9 +29,18 @@ namespace crypto_transport {
  */
 class CryptoTransport {
 public:
-    static constexpr size_t KEY_SIZE   = 32;
-    static constexpr size_t NONCE_SIZE = 12;
-    static constexpr size_t MAC_SIZE   = 16;
+    static constexpr size_t KEY_SIZE         = 32;
+    static constexpr size_t NONCE_SIZE       = 12;
+    static constexpr size_t MAC_SIZE         = 16;
+    static constexpr size_t EPOCH_HEADER_SIZE = 4; // uint16_t epoch_id LE + 2B reserved
+
+    /**
+     * @brief Result of decrypt_v2: decrypted data + epoch_id from wire header.
+     */
+    struct DecryptResult {
+        std::vector<uint8_t> data;
+        uint16_t             epoch_id{0};
+    };
 
     /**
      * @brief Construct and immediately derive session key via HKDF-SHA256.
@@ -52,14 +61,27 @@ public:
     CryptoTransport& operator=(const CryptoTransport&) = delete;
 
     /**
-     * @brief Encrypt plaintext with the next monotonic nonce.
-     * @return [nonce(12) || ciphertext(N) || mac(16)]
+     * @brief Encrypt plaintext with epoch_id in wire header.
+     * @return [epoch_id(2) || reserved(2) || nonce(12) || ciphertext(N) || mac(16)]
      * @throws std::runtime_error if AEAD encryption fails.
+     */
+    [[nodiscard]] std::vector<uint8_t> encrypt(const std::vector<uint8_t>& plaintext,
+                                                uint16_t epoch_id);
+
+    /**
+     * @brief Decrypt wire-format buffer, returning data + epoch_id.
+     * @throws std::runtime_error on MAC failure or truncated input.
+     */
+    [[nodiscard]] DecryptResult decrypt_v2(const std::vector<uint8_t>& ciphertext);
+
+    /**
+     * @brief Backward-compat: encrypt with epoch_id=0.
+     * @return [epoch_id=0(2) || reserved(2) || nonce(12) || ciphertext(N) || mac(16)]
      */
     [[nodiscard]] std::vector<uint8_t> encrypt(const std::vector<uint8_t>& plaintext);
 
     /**
-     * @brief Decrypt wire-format buffer produced by encrypt().
+     * @brief Backward-compat: decrypt, discards epoch_id.
      * @throws std::runtime_error on MAC failure or truncated input.
      */
     [[nodiscard]] std::vector<uint8_t> decrypt(const std::vector<uint8_t>& ciphertext);

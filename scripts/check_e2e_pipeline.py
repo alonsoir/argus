@@ -153,6 +153,35 @@ def main():
             print(f"✅ PRECONDITION OK — ml-detector: received={ml_recv}, firewall: processed={fw_proc}")
             sys.exit(0)
 
+
+    # ── CHECK firewall absoluto (para test-e2e-synthetic-firewall) ───────────
+    # Usado cuando el log fue truncado antes del restart → contadores desde 0.
+    # No necesita snapshot: basta con que events_processed > umbral.
+    if mode == "check-firewall-abs":
+        print_header("aRGus NDR — E2E Check firewall (absoluto, sin snapshot)")
+        fw_proc = (fw_stats or {}).get("events_processed", 0)
+        fw_drop  = (fw_stats or {}).get("events_dropped", 0)
+        fw_cerr  = (fw_stats or {}).get("crypto_errors", 0)
+        MIN_EVENTS = 50
+        print(f"firewall: events_processed={fw_proc} (min={MIN_EVENTS})")
+        print()
+        print("════════════════════════════════════════════════════════════")
+        failures = []
+        if fw_proc < MIN_EVENTS:
+            failures.append(f"firewall: events_processed={fw_proc} < {MIN_EVENTS} — pipeline no recibió suficientes eventos")
+        if fw_cerr > 0:
+            failures.append(f"firewall: crypto_errors={fw_cerr}")
+        if fw_drop > 0:
+            failures.append(f"firewall: events_dropped={fw_drop}")
+        if failures:
+            print("❌ E2E CHECK FAILED:")
+            for f in failures:
+                print(f"   • {f}")
+            sys.exit(1)
+        else:
+            print(f"✅ E2E CHECK PASSED — firewall saludable ({fw_proc} eventos procesados)")
+        sys.exit(0)
+
     # ── CHECK con delta ───────────────────────────────────────────────────────
     if mode == "check":
         print_header("aRGus NDR — E2E Check (delta vs snapshot)")

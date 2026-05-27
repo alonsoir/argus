@@ -18,8 +18,9 @@
 #include <vault_client/autonomy_state_writer.h>
 #include <sodium.h>
 #include <sstream>
-#define CPPHTTPLIB_OPENSSL_SUPPORT
 #include "alert_client.hpp"
+#include <vault_client/http_etcd_registrar.h>
+#include <vault_client/crypto_epoch_coordinator.h>
 #include <iomanip>
 #include <cstdio>
 
@@ -258,6 +259,31 @@ int main() {
         std::cout << std::endl;
 
         g_server->start();
+
+        // ═══════════════════════════════════════════════════════════
+        // STEP 4b: CryptoEpochCoordinator (ADR-045 v2 — DAY 164)
+        // Registra etcd-server en el servidor de configuración y
+        // observa /v1/epoch para coordinar rotaciones de época.
+        // ═══════════════════════════════════════════════════════════
+        const std::string etcd_server_url = "http://127.0.0.1:2379";
+        ml_defender::HttpEtcdRegistrar epoch_registrar(
+            etcd_server_url, "etcd-server",
+            /*keepalive_ms=*/30000,
+            /*poll_ms=*/2000);
+        std::this_thread::sleep_for(std::chrono::milliseconds(1500)); // esperar servidor listo
+        epoch_registrar.register_status(crypto_material, "etcd-server");
+        epoch_registrar.start_keepalive();
+
+        ml_defender::CryptoEpochCoordinator epoch_coordinator(
+            epoch_registrar, "etcd-server");
+        epoch_coordinator.start([&](uint16_t eid, const std::string& nb) {
+            std::cout << "[epoch] 🔄 Nueva época " << eid
+                      << " not_before=" << nb
+                      << " — handle.reload() pendiente FASE 3" << std::endl;
+            // FASE 3 (BACKLOG-CRYPTO-DUAL-KEY-ZMQ-001):
+            // handle.reload(CryptoProvider::create(new_cfg));
+        });
+        std::cout << "✅ CryptoEpochCoordinator arrancado (watch /v1/epoch)" << std::endl;
 
         // Borrar bootstrap status — servidor activo y aceptando conexiones
         try {

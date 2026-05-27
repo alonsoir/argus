@@ -156,6 +156,8 @@ set(SOURCES
         src/crypto_manager.cpp
         src/compression_lz4.cpp
         src/secrets_manager.cpp
+        ../common/http_etcd_registrar.cpp
+        ../common/crypto_epoch_coordinator.cpp
 )
 
 # ============================================================================
@@ -176,6 +178,7 @@ target_compile_options(etcd-server
         -Wextra
         -Wpedantic
 )
+target_compile_definitions(etcd-server PRIVATE CPPHTTPLIB_OPENSSL_SUPPORT)
 
 # ============================================================================
 # LINK LIBRARIES
@@ -189,6 +192,7 @@ target_link_libraries(etcd-server
         lz4
         ${OPENSSL_LIBRARIES}
         fmt
+        curl
 )
 
 # ============================================================================

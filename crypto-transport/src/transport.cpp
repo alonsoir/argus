@@ -104,19 +104,27 @@ std::array<uint8_t, CryptoTransport::NONCE_SIZE> CryptoTransport::next_nonce() {
 }
 
 // ============================================================================
-// Encrypt
+// Encrypt — con epoch_id explícito (FASE 3, ADR-045 v2)
+// Wire format: [epoch_id(2) || reserved(2) || nonce(12) || ciphertext(N) || mac(16)]
 // ============================================================================
 
-std::vector<uint8_t> CryptoTransport::encrypt(const std::vector<uint8_t>& plaintext) {
+std::vector<uint8_t> CryptoTransport::encrypt(const std::vector<uint8_t>& plaintext,
+                                                uint16_t epoch_id) {
     if (plaintext.empty()) return {};
 
     auto nonce = next_nonce();
-    std::vector<uint8_t> result(NONCE_SIZE + plaintext.size() + MAC_SIZE);
-    std::memcpy(result.data(), nonce.data(), NONCE_SIZE);
+    std::vector<uint8_t> result(EPOCH_HEADER_SIZE + NONCE_SIZE + plaintext.size() + MAC_SIZE);
+
+    // Header: epoch_id LE (2B) + reserved=0 (2B)
+    std::memcpy(result.data(), &epoch_id, sizeof(uint16_t));
+    // result[2..3] ya son cero (vector inicializado a cero)
+
+    // Nonce
+    std::memcpy(result.data() + EPOCH_HEADER_SIZE, nonce.data(), NONCE_SIZE);
 
     unsigned long long ciphertext_len = 0;
     int ret = crypto_aead_chacha20poly1305_ietf_encrypt(
-        result.data() + NONCE_SIZE, &ciphertext_len,
+        result.data() + EPOCH_HEADER_SIZE + NONCE_SIZE, &ciphertext_len,
         plaintext.data(), plaintext.size(),
         nullptr, 0, nullptr,
         nonce.data(), session_key_.data()
@@ -125,28 +133,47 @@ std::vector<uint8_t> CryptoTransport::encrypt(const std::vector<uint8_t>& plaint
     if (ret != 0) {
         throw std::runtime_error("CryptoTransport::encrypt: ChaCha20-Poly1305 IETF failed");
     }
-    result.resize(NONCE_SIZE + ciphertext_len);
+    result.resize(EPOCH_HEADER_SIZE + NONCE_SIZE + ciphertext_len);
     return result;
 }
 
 // ============================================================================
-// Decrypt
+// Encrypt — backward-compat (epoch_id=0)
 // ============================================================================
 
-std::vector<uint8_t> CryptoTransport::decrypt(const std::vector<uint8_t>& ciphertext) {
+std::vector<uint8_t> CryptoTransport::encrypt(const std::vector<uint8_t>& plaintext) {
+    return encrypt(plaintext, 0);
+}
+
+// ============================================================================
+// Decrypt v2 — extrae epoch_id del wire header (FASE 3, ADR-045 v2)
+// ============================================================================
+
+CryptoTransport::DecryptResult CryptoTransport::decrypt_v2(
+        const std::vector<uint8_t>& ciphertext) {
     if (ciphertext.empty()) return {};
 
-    const size_t min_size = NONCE_SIZE + MAC_SIZE;
+    const size_t min_size = EPOCH_HEADER_SIZE + NONCE_SIZE + MAC_SIZE;
     if (ciphertext.size() < min_size) {
         throw std::runtime_error(
-            "CryptoTransport::decrypt: buffer too short — expected at least " +
+            "CryptoTransport::decrypt_v2: buffer too short — expected at least " +
             std::to_string(min_size) + " bytes, got " +
             std::to_string(ciphertext.size()));
     }
 
-    const uint8_t* nonce  = ciphertext.data();
-    const uint8_t* ct     = ciphertext.data() + NONCE_SIZE;
-    const size_t   ct_len = ciphertext.size() - NONCE_SIZE;
+    // Extraer epoch_id del header
+    uint16_t epoch_id = 0;
+    std::memcpy(&epoch_id, ciphertext.data(), sizeof(uint16_t));
+
+    // epoch_id=0xFFFF es valor reservado — rechazar ANTES de descifrar (no oracle de padding)
+    if (epoch_id == 0xFFFF) {
+        throw std::runtime_error(
+            "CryptoTransport::decrypt_v2: epoch_id=0xFFFF is reserved — message rejected");
+    }
+
+    const uint8_t* nonce  = ciphertext.data() + EPOCH_HEADER_SIZE;
+    const uint8_t* ct     = ciphertext.data() + EPOCH_HEADER_SIZE + NONCE_SIZE;
+    const size_t   ct_len = ciphertext.size() - EPOCH_HEADER_SIZE - NONCE_SIZE;
 
     std::vector<uint8_t> plaintext(ct_len - MAC_SIZE);
     unsigned long long plaintext_len = 0;
@@ -161,11 +188,19 @@ std::vector<uint8_t> CryptoTransport::decrypt(const std::vector<uint8_t>& cipher
 
     if (ret != 0) {
         throw std::runtime_error(
-            "CryptoTransport::decrypt: MAC verification failed "
+            "CryptoTransport::decrypt_v2: MAC verification failed "
             "(wrong key, corrupted data, or nonce mismatch)");
     }
     plaintext.resize(plaintext_len);
-    return plaintext;
+    return {std::move(plaintext), epoch_id};
+}
+
+// ============================================================================
+// Decrypt — backward-compat (descarta epoch_id)
+// ============================================================================
+
+std::vector<uint8_t> CryptoTransport::decrypt(const std::vector<uint8_t>& ciphertext) {
+    return decrypt_v2(ciphertext).data;
 }
 
 // ============================================================================

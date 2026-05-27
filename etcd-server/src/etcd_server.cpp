@@ -90,6 +90,20 @@ std::string EtcdServer::validate_configuration() {
     return component_registry_->validate_configuration();
 }
 
+
+// ── Epoch management (ADR-045 v2 — DAY 164) ──────────────────────────────────
+void EtcdServer::set_epoch(uint16_t epoch_id, const std::string& not_before) {
+    std::lock_guard<std::mutex> lk(epoch_mutex_);
+    epoch_.epoch_id   = epoch_id;
+    epoch_.not_before = not_before;
+    epoch_.revision++;
+}
+
+EtcdServer::EpochInfo EtcdServer::get_epoch() const {
+    std::lock_guard<std::mutex> lk(epoch_mutex_);
+    return epoch_;
+}
+
 void EtcdServer::run_server() {
     httplib::Server server;
 
@@ -444,7 +458,32 @@ server.Post("/v1/heartbeat/(.*)", [this](const httplib::Request& req, httplib::R
 });
 
     // Endpoint de salud
-    server.Get("/health", [](const httplib::Request& /*req*/, httplib::Response& res) {
+server.Get("/v1/epoch", [this](const httplib::Request& /*req*/, httplib::Response& res) {
+        auto ep = get_epoch();
+        nlohmann::json j;
+        j["epoch_id"]   = ep.epoch_id;
+        j["not_before"] = ep.not_before;
+        j["revision"]   = ep.revision;
+        res.set_content(j.dump(), "application/json");
+    });
+
+    server.Put("/v1/epoch", [this](const httplib::Request& req, httplib::Response& res) {
+        try {
+            auto j          = nlohmann::json::parse(req.body);
+            uint16_t eid    = j.at("epoch_id").get<uint16_t>();
+            std::string nb  = j.at("not_before").get<std::string>();
+            set_epoch(eid, nb);
+            nlohmann::json resp;
+            resp["status"]   = "ok";
+            resp["epoch_id"] = eid;
+            res.set_content(resp.dump(), "application/json");
+        } catch (const std::exception& e) {
+            res.status = 400;
+            res.set_content(R"({"status":"error"})", "application/json");
+        }
+    });
+
+        server.Get("/health", [](const httplib::Request& /*req*/, httplib::Response& res) {
         json response = {
             {"status", "healthy"},
             {"service", "etcd-server"},

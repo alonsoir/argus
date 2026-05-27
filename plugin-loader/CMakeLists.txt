@@ -70,6 +70,23 @@ else()
 endif()
 
 # ============================================================================
+# ARGUS_ENTERPRISE_PUBKEY_HEX — keypair vendor enterprise (offline, ADR-044)
+# NOT a secret — pubkey es público por definición.
+# Generado con: python3 enterprise/scripts/generate_token.py --gen-keypair
+# ============================================================================
+# BACKLOG-CRYPTO-VENDOR-KEY-001: ARGUS_ENTERPRISE_PUBKEY_HEX NUNCA hardcodeado aquí.
+# Fuente: vault kv get -field=hex secret/argus/enterprise/vendor-pubkey
+# Inyectar vía: cmake -DARGUS_ENTERPRISE_PUBKEY_HEX=<hex> ...
+if(NOT DEFINED ARGUS_ENTERPRISE_PUBKEY_HEX OR "${ARGUS_ENTERPRISE_PUBKEY_HEX}" STREQUAL "")
+    if(ARGUS_VAULT_ENABLED)
+        message(FATAL_ERROR "BACKLOG-CRYPTO-VENDOR-KEY-001: ARGUS_ENTERPRISE_PUBKEY_HEX requerido. Inject via -DARGUS_ENTERPRISE_PUBKEY_HEX=<hex> (fuente: Vault secret/argus/enterprise/vendor-pubkey)")
+    else()
+        set(ARGUS_ENTERPRISE_PUBKEY_HEX "")  # community build: no se usa
+    endif()
+endif()
+message(STATUS "ARGUS_ENTERPRISE_PUBKEY_HEX: ${ARGUS_ENTERPRISE_PUBKEY_HEX}")
+
+# ============================================================================
 # LIBRARY TARGET
 # ============================================================================
 add_library(plugin_loader SHARED ${SOURCES})
@@ -78,6 +95,9 @@ target_include_directories(plugin_loader
     PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
         $<INSTALL_INTERFACE:include>
+    PRIVATE
+        $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}>
+        $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/..>
     PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}/src
         ${SODIUM_INCLUDE}
@@ -90,9 +110,15 @@ target_link_libraries(plugin_loader
         ${SODIUM_LIB}
 )
 
+if(ARGUS_VAULT_ENABLED)
+    message(STATUS "plugin-loader: ARGUS_VAULT_ENABLED=ON — enterprise token validation activa")
+endif()
+
 target_compile_definitions(plugin_loader
     PRIVATE
         MLD_PLUGIN_PUBKEY_HEX="${MLD_PLUGIN_PUBKEY_HEX}"
+        ARGUS_ENTERPRISE_PUBKEY_HEX="${ARGUS_ENTERPRISE_PUBKEY_HEX}"
+        $<$<BOOL:${ARGUS_VAULT_ENABLED}>:ARGUS_VAULT_ENABLED>
 )
 target_compile_options(plugin_loader
     PRIVATE

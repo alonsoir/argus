@@ -17,6 +17,13 @@
 #include <fstream>
 #include <sstream>
 #include <iostream>
+#include <set>
+#include <tuple>
+// Enterprise token validation (ADR-044 DAY 161 PASO 1)
+// Solo se incluye si ARGUS_VAULT_ENABLED — en community, TokenValidator no se llama
+#ifdef ARGUS_VAULT_ENABLED
+#include "enterprise/token/TokenValidator.hpp"
+#endif
 
 // Minimal JSON parsing — evitamos dependencia de nlohmann aquí.
 // El componente host ya tiene nlohmann; usamos una lectura simple
@@ -104,9 +111,10 @@ static std::string extract_plugins_block(const std::string& json) {
 
 // Extract enabled plugin descriptors from "enabled": [{name, path, active, ...}]
 // Returns pairs of {name, path} for entries where active==true only.
-static std::vector<std::pair<std::string,std::string>>
+static std::vector<std::tuple<std::string,std::string,bool,std::string>>
 extract_enabled_objects(const std::string& plugins_block) {
-    std::vector<std::pair<std::string,std::string>> result;
+    // (name, so_path, is_enterprise, token_path)
+    std::vector<std::tuple<std::string,std::string,bool,std::string>> result;
     auto pos = plugins_block.find("\"enabled\"");
     if (pos == std::string::npos) return result;
     pos = plugins_block.find("[", pos);
@@ -146,7 +154,10 @@ extract_enabled_objects(const std::string& plugins_block) {
         std::string so_path = json_string_value(obj, "path");
         if (so_path.empty()) continue;
 
-        result.push_back({name, so_path});
+        std::string ent_flag  = json_string_value(obj, "enterprise");
+        std::string tok_path   = json_string_value(obj, "enterprise_token_path");
+        bool is_enterprise = (ent_flag == "true");
+        result.push_back({name, so_path, is_enterprise, tok_path});
     }
     return result;
 }
@@ -317,7 +328,7 @@ void PluginLoader::load_plugins() {
         return;
     }
 
-    for (const auto& [plugin_name, so_path] : enabled) {
+    for (const auto& [plugin_name, so_path, is_enterprise, token_path] : enabled) {
 
         // ADR-025: require_signature=true produccion, false con MLD_ALLOW_DEV_MODE=1
         bool require_sig = true;
@@ -332,6 +343,22 @@ void PluginLoader::load_plugins() {
             continue;
         }
 
+        // PASO 1 DAY 161 — Enterprise token validation (ADR-044)
+        // Si el plugin es enterprise, validar token ANTES de dlopen.
+        // Fail-closed: abort() si token inválido, expirado o feature ausente.
+#ifdef ARGUS_VAULT_ENABLED
+        {
+            if (is_enterprise) {
+                std::string eff_token_path = token_path.empty()
+                    ? "/etc/ml-defender/enterprise.token" : token_path;
+                argus::enterprise::TokenValidator::validate_or_abort(
+                    eff_token_path,
+                    ARGUS_ENTERPRISE_PUBKEY_HEX,
+                    {"vault_crypto"}
+                );
+            }
+        }
+#endif
         // D4: dlopen via /proc/self/fd/ — nunca volver al path en disco
         std::string fd_path = "/proc/self/fd/" + std::to_string(fd_so);
         void* handle = dlopen(fd_path.c_str(), RTLD_LAZY | RTLD_LOCAL);
