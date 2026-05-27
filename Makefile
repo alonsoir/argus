@@ -1492,7 +1492,7 @@ vault-fault-inject:
 	@sleep 8
 	@vagrant ssh -c "grep -a -E 'AUTONOMOUS|vault_unreachable|cache|Vault KO' /tmp/etcd_fault_test.log | tail -5; true && echo '✅ Fase 4 OK — componente en cache RCU'"
 	@echo "── Fase 5: Detener etcd-server ──"
-	@vagrant ssh -c "sudo bash -c 'pkill -f etcd-server &'"; sleep 1; echo "✅ etcd-server detenido"
+	@vagrant ssh -c "sudo bash -c 'pkill -x etcd-server &'"; sleep 2; echo "✅ etcd-server detenido"
 	@echo ""
 	@echo '{"event":"vault_fault_inject","status":"passed","acto":"III","component":"etcd-server","vault_fault":"token_revoked","result":"autonomous_cache_rcu"}'
 	@echo "╔════════════════════════════════════════════════════════════╗"
