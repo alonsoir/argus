@@ -31,32 +31,32 @@
 
 ---
 
-✅ DAY 165: FASE 3 wire header epoch_id (13/13 tests) + EMECAS++ OSS verde + Consejo 8/8 EMECAS++ protocolo 3 actos definido. Branch `feature/day161-enterprise-crypto-integration`. DAY 164: FASE 2a+2b (HttpEtcdRegistrar + CryptoEpochCoordinator, 10/10 tests).
+✅ DAY 166: EMECAS++ 3 actos verdes y reproducibles. VaultProvider caché RCU confirmado. vault-fault-inject PASSED. Zero downtime demostrado. Branch `feature/day161-enterprise-crypto-integration` → mergeado a main. Tag `v1.0.0-day166`.
 **PRE-PRODUCTION: do not deploy in hospitals until ACRL (DEBT-PENTESTER-LOOP-001) is complete.**
 
 ---
 
-## Estado actual — DAY 159 (2026-05-21)
+## Estado actual — DAY 166 (2026-05-27)
 
 <!-- DAY-STATUS -->
 | Campo | Valor |
 |---|---|
-| DAY | 165 |
-| Tag | pendiente (feature/day161-enterprise-crypto-integration) |
-| Branch | feature/day161-enterprise-crypto-integration |
+| DAY | 166 |
+| Tag | v1.0.0-day166 |
+| Branch | main |
 | EMECAS++ OSS | ✅ verde — test-all + test-e2e-synthetic-full + test-e2e-synthetic-firewall |
-| EMECAS++ Enterprise | ⏳ Pendiente — protocolo 3 actos (Consejo 8/8 DAY 165) |
+| EMECAS++ Enterprise | ✅ VERDE — 3 actos verdes y reproducibles (DAY 166) |
 | Pipeline | 6/6 RUNNING |
-| Crypto lifecycle | FASE 0 ✅ + FASE 1 ✅ + FASE 2a ✅ + FASE 2b ✅ + FASE 3 ✅ |
+| Crypto lifecycle | FASE 0 ✅ + FASE 1 ✅ + FASE 2a ✅ + FASE 2b ✅ + FASE 3 ✅ + EMECAS++ ✅ |
 | Wire header epoch_id | ✅ [uint32_t][uint16_t epoch_id][2B reserved][LZ4] — 13/13 tests |
 | vendor.key | ✅ Modelo B — solo en Vault dev, nunca en disco |
-| ADR-045 v2 | ✅ Consejo 8/8 — implementado FASES 0-3 |
-| Próximo hito | DAY 166: inspeccionar VaultProvider retry/cache + Acto I EMECAS++ |
+| ADR-045 v2 | ✅ Consejo 8/8 — implementado FASES 0-3 + EMECAS++ |
+| Próximo hito | DAY 167: BACKLOG-CI-ENTERPRISE-001 (Jenkins gate) + ADR-048 F2 (NTP + community_id) |
 | Gate UEx/INCIBE | Datasets de valor científico (no deadline duro) |
 <!-- /DAY-STATUS -->
 
-**Tag activo:** `v0.9.3-day158` | **Branch activa:** `main`
-**Keypair activo:** `b5b6cbdf67dad75cdd7e3169d837d1d6d4c938b720e34331f8a73f478ee85daa` *(regenera en cada EMECAS)*
+**Tag activo:** `v1.0.0-day166` | **Branch activa:** `main`
+**Keypair activo:** `c76e5e10e2a5a5ebcbf249a2d36a2a18d88b05aa75552bb7042353221484cf90` *(regenera en cada EMECAS)*
 **Paper:** arXiv:2604.04952 · Draft v24 local · v3 en arXiv
 **Principio rector:** calidad sobre fechas — los datasets se generan cuando el pipeline esté listo
 **Principio rector:** calidad sobre fechas — los datasets se generan cuando el pipeline esté listo
@@ -545,7 +545,8 @@ make hardened-full   # destroy → up → provision → build → deploy → che
   - ✅ DAY 148: **Suricata offline irrefutable · Paper v23 · arXiv replace v3 · DEBT-IRP-FLOAT-TYPES-001 cerrada · v0.7.1-day148** 🎉
   - ✅ DAY 164: **FASE 2a+2b enterprise · HttpEtcdRegistrar + CryptoEpochCoordinator · 10/10 tests** 🎉
   - ✅ DAY 165: **FASE 3 wire header epoch_id · 13/13 tests · EMECAS++ OSS verde · Consejo 8/8 protocolo 3 actos** 🎉
-  - 🔜 DAY 166+: **VaultProvider retry/cache + test-e2e-vault Acto I + EMECAS++ 3 actos**
+  - ✅ DAY 166: **EMECAS++ 3 actos verdes · merge enterprise a main · VaultProvider caché RCU confirmado · vault-fault-inject PASSED · Zero downtime demostrado · Tag v1.0.0-day166** 🎉
+  - 🔜 DAY 167: **BACKLOG-CI-ENTERPRISE-001 (Jenkins gate `make emecas++`) + ADR-048 F2 (DEBT-ARGUSPP-NTP-001 + DEBT-ARGUSPP-COMMUNITY-ID-001) + DEBT-ARGUSPP-SURICATA-001**
 
 ---
 

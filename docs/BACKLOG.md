@@ -4462,10 +4462,10 @@ Jenkinsfile.dev + Jenkinsfile.prod:      100% ✅  DAY 161 — separación dev/p
 DEBT-ETCD-REGISTRAR-REAL-001:                  100% ✅  DAY 164 — HttpEtcdRegistrar REST 5/5 tests, WatchState CONNECTED/DEGRADED/STALE
 BACKLOG-CRYPTO-EPOCH-001:                       100% ✅  DAY 164 — CryptoEpochCoordinator 5/5 tests, etcd-server integrado
 BACKLOG-CRYPTO-DUAL-KEY-ZMQ-001:               100% ✅  DAY 165 — FASE 3: wire header epoch_id, 13/13 tests
-BACKLOG-CRYPTO-E2E-ROTATION-001 (FakeEtcd):     60% 🟡  DAY 165 — FakeEtcdServer 5/5 + test-e2e-vault PASSED; live rotation pendiente
-BACKLOG-EMECAS-ENTERPRISE-001:                   0% ⏳  P0 — protocolo EMECAS++ 3 actos, bloqueante de merge
-DEBT-VAULT-RECONNECT-001:                         0% ⏳  P0 — VaultProvider retry/cache estado desconocido (inspeccionar DAY 166)
-DEBT-CRYPTO-NEGATIVE-TEST-001:                    0% ⏳  P0 — test negativo epoch_id incorrecto, bloqueante pre-merge
+BACKLOG-CRYPTO-E2E-ROTATION-001:                 100% ✅  DAY 166 — Live rotation Acto II+III verdes, gate completado
+BACKLOG-EMECAS-ENTERPRISE-001:                   100% ✅  DAY 166 — EMECAS++ 3 actos verdes, merge a main
+DEBT-VAULT-RECONNECT-001:                        100% ✅  DAY 165/166 — caché inline preexistente confirmada, Acto III no requirió código nuevo
+DEBT-CRYPTO-NEGATIVE-TEST-001:                   100% ✅  DAY 166 — test epoch_id=0xFFFF rechazado, EMECAS++ verde
 BACKLOG-CI-ENTERPRISE-001:                        0% ⏳  P1 post-merge (Jenkins gate enterprise)
 DEBT-FIREWALL-BUILD-LEGACY-001:                   0% ⏳  P3 — firewall-acl-agent/build ruta antigua (no bloquea)
 ```
