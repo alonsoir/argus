@@ -951,6 +951,8 @@ pipeline-status:
 	    echo '  ❌ sniffer:       STOPPED'; \
 	  fi"
 	@vagrant ssh -c "( tmux has-session -t firewall 2>/dev/null || pgrep -x firewall-acl-agent >/dev/null 2>&1 ) && echo '  ✅ firewall:      RUNNING' || echo '  ❌ firewall:      STOPPED'"
+	@vagrant ssh -c "VAULT_ADDR=http://127.0.0.1:8200 VAULT_TOKEN=argus-dev-token vault status >/dev/null 2>&1 && echo '  ✅ vault:         RUNNING [dev]' || echo '  ❌ vault:         STOPPED'"
+	@vagrant ssh -c "curl -s http://127.0.0.1:8080/api/json >/dev/null 2>&1 && echo '  ✅ jenkins:       RUNNING' || echo '  ➖ jenkins:       NOT CONFIGURED'"
 	@echo "╚════════════════════════════════════════════════════════════╝"
 
 install-systemd-units:
@@ -1239,11 +1241,56 @@ test: test-all
 # E2E Tests (DAY 159)
 # test-e2e-synthetic: para componentes que sustituye, inyecta tráfico sintético
 #                     y verifica contadores en logs. Rápido y determinista.
-# test-e2e-live:      pipeline completo con componentes reales, parsea logs
+# 
+# ============================================================================
+# EMECAS / EMECAS++ — Gate de calidad aRGus NDR (Consejo DAY 165)
+# Ejecutar SIEMPRE desde macOS host.
+# emecas:   ciclo completo OSS — destroy + up + bootstrap + test-all + e2e
+# emecas++: emecas + 3 Actos enterprise (Vault, rotación, fault injection)
+# Decisión arquitectura: targets anidados (opción C, 8/8 Consejo)
+# ============================================================================
+emecas:
+	@echo ""
+	@echo "╔════════════════════════════════════════════════════════════╗"
+	@echo "║  🏛️  EMECAS — OSS gate (destroy → up → bootstrap → test)  ║"
+	@echo "╚════════════════════════════════════════════════════════════╝"
+	vagrant destroy -f
+	vagrant up
+	$(MAKE) bootstrap
+	$(MAKE) test-all
+	$(MAKE) test-e2e-synthetic
+	@echo ""
+	@echo "╔════════════════════════════════════════════════════════════╗"
+	@echo "║  ✅ EMECAS PASSED                                        ║"
+	@echo "╚════════════════════════════════════════════════════════════╝"
+
+emecas++: emecas
+	@echo ""
+	@echo "╔════════════════════════════════════════════════════════════╗"
+	@echo "║  🏛️  EMECAS++ — Enterprise gate (3 Actos)                 ║"
+	@echo "╚════════════════════════════════════════════════════════════╝"
+	@echo ""
+	@echo "══ Acto I — Arranque nominal con Vault ══"
+	$(MAKE) test-e2e-vault
+	@echo ""
+	@echo "══ Acto II — Rotación controlada (pipeline sintético) ══"
+	$(MAKE) test-e2e-synthetic-full
+	$(MAKE) test-e2e-synthetic-firewall
+	@echo ""
+	@echo "══ Acto III — Fallo Vault controlado (token revocation) ══"
+	$(MAKE) vault-fault-inject
+	@echo ""
+	@echo "╔════════════════════════════════════════════════════════════╗"
+	@echo "║  ✅ EMECAS++ PASSED — 3 Actos verdes                     ║"
+	@echo "║  Rama lista para merge a main                            ║"
+	@echo "╚════════════════════════════════════════════════════════════╝"
+
+test-e2e-live:      pipeline completo con componentes reales, parsea logs
 #                     y verifica integridad de la cadena completa.
 # Ambos son gates duros: exit 1 si cualquier criterio falla.
 # ============================================================================
 .PHONY: test-e2e-synthetic test-e2e-synthetic-full test-e2e-synthetic-firewall test-e2e-live test-e2e test-enterprise-plugin test-e2e-vault test-dual-compilation vault-dev-start vault-dev-stop
+.PHONY: emecas emecas++ vault-fault-inject vault-dev-seed
 
 test-e2e-live:
 	@echo ""
