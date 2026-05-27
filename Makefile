@@ -1397,7 +1397,12 @@ test-dual-compilation:
 	@echo "║  DEBT-EMECAS-DUAL-COMPILATION-001: CERRADA               ║"
 	@echo "╚════════════════════════════════════════════════════════════╝"
 
-test-e2e-vault:
+vault-dev-seed:
+	@echo "── Preparando seed enterprise en Vault dev ──"
+	@vagrant ssh -c "VAULT_ADDR=http://127.0.0.1:8200 VAULT_TOKEN=argus-dev-token vault secrets enable -path=argus -version=1 kv 2>&1 | grep -v 'already enabled' || true"
+	@vagrant ssh -c "VAULT_ADDR=http://127.0.0.1:8200 VAULT_TOKEN=argus-dev-token vault write argus/dev/families/family_A/seed value=\$$(python3 -c 'import secrets; print(secrets.token_hex(32))') > /dev/null && echo '✅ Vault seed enterprise OK'"
+
+test-e2e-vault: vault-dev-seed
 	@echo ""
 	@echo "╔════════════════════════════════════════════════════════════╗"
 	@echo "║  🧪 TEST-E2E-VAULT — Enterprise crypto integration        ║"
@@ -1405,15 +1410,15 @@ test-e2e-vault:
 	@echo "╚════════════════════════════════════════════════════════════╝"
 	@echo ""
 	@echo "── Step 1: Verificando Vault dev activo ──"
-	@vagrant ssh -c "VAULT_ADDR=http://127.0.0.1:8200 VAULT_TOKEN=argus-dev-token vault kv get secret/argus/crypto > /dev/null 2>&1 && echo '✅ Vault OK' || (echo '❌ Vault no responde — ejecuta: make vault-dev-start' && exit 1)"
+	@vagrant ssh -c "VAULT_ADDR=http://127.0.0.1:8200 VAULT_TOKEN=argus-dev-token vault read argus/dev/families/family_A/seed > /dev/null 2>&1 && echo '✅ Vault OK' || (echo '❌ Vault no responde — ejecuta: make vault-dev-start' && exit 1)"
 	@echo "── Step 2: Compilando common/ con ARGUS_VAULT_ENABLED=ON ──"
 	@vagrant ssh -c "cd /vagrant/common/build && cmake .. -DARGUS_VAULT_ENABLED=ON > /dev/null 2>&1 && make -j$$(nproc) > /dev/null 2>&1 && echo '✅ common/ enterprise build OK'"
 	@echo "── Step 3: Tests vault_provider (6/6) ──"
 	@$(MAKE) test-enterprise-plugin
 	@echo "── Step 4: Compilando etcd-server con ARGUS_VAULT_ENABLED=ON ──"
 	@vagrant ssh -c "cd /vagrant/etcd-server/build-debug && cmake .. -DARGUS_VAULT_ENABLED=ON > /dev/null 2>&1 && make etcd-server -j$$(nproc) 2>&1 | tail -3"
-	@echo "── Step 5: Smoke test etcd-server enterprise (arranque limpio) ──"
-	@vagrant ssh -c "timeout 10 env LD_LIBRARY_PATH=/usr/local/lib VAULT_ADDR=http://127.0.0.1:8200 VAULT_TOKEN=argus-dev-token /vagrant/etcd-server/build-debug/etcd-server 2>&1 | head -20 || true"
+	@echo "── Step 5: Smoke test etcd-server enterprise (Acto I — VaultProvider) ──"
+	@vagrant ssh -c "sudo timeout -k 2 8 env LD_LIBRARY_PATH=/usr/local/lib VAULT_ADDR=http://127.0.0.1:8200 VAULT_TOKEN=argus-dev-token /vagrant/etcd-server/build-debug/etcd-server 2>&1 | tee /tmp/etcd_vault_smoke.log | grep -E 'VaultProvider|ICryptoProvider|epoch|fatal' ; grep -q 'ICryptoProvider OK' /tmp/etcd_vault_smoke.log && echo '✅ Acto I: VaultProvider OK' || (echo '❌ Acto I FAILED' && exit 1)"
 	@echo ""
 	@echo "╔════════════════════════════════════════════════════════════╗"
 	@echo "║  ✅ TEST-E2E-VAULT PASSED                                 ║"
