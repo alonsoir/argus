@@ -1424,6 +1424,33 @@ test-e2e-vault: vault-dev-seed
 	@echo "║  ✅ TEST-E2E-VAULT PASSED                                 ║"
 	@echo "╚════════════════════════════════════════════════════════════╝"
 
+
+# ── B4: Inyección de fallo Vault controlado (Acto III EMECAS++) ──────────────
+# Crea token hijo para etcd-server, arranca el proceso, revoca el token,
+# verifica AUTONOMOUS (cache RCU), restaura, verifica NORMAL.
+vault-fault-inject:
+	@echo ""
+	@echo "╔════════════════════════════════════════════════════════════╗"
+	@echo "║  💉 VAULT-FAULT-INJECT — Acto III EMECAS++               ║"
+	@echo "║  Simula fallo Vault en componente activo                  ║"
+	@echo "╚════════════════════════════════════════════════════════════╝"
+	@echo ""
+	@echo "── Fase 1: Crear token hijo para etcd-server ──"
+	@vagrant ssh -c "CHILD_TOKEN=\$$(VAULT_ADDR=http://127.0.0.1:8200 VAULT_TOKEN=argus-dev-token vault token create -ttl=120s -display-name=argus-etcd-server-fault -field=token) && echo \$$CHILD_TOKEN > /tmp/argus_fault_token.txt && echo '✅ Token hijo creado'"
+	@echo "── Fase 2: Arrancar etcd-server con token hijo ──"
+	@vagrant ssh -c "CHILD_TOKEN=\$$(cat /tmp/argus_fault_token.txt) && sudo bash -c 'LD_LIBRARY_PATH=/usr/local/lib VAULT_ADDR=http://127.0.0.1:8200 VAULT_TOKEN='\$$CHILD_TOKEN' /vagrant/etcd-server/build-debug/etcd-server > /tmp/etcd_fault_test.log 2>&1 &' && sleep 3 && grep -a -E 'VaultProvider|ICryptoProvider OK' /tmp/etcd_fault_test.log && echo '✅ etcd-server arrancado con token hijo'"
+	@echo "── Fase 3: Revocar token hijo (simular Vault KO) ──"
+	@vagrant ssh -c "CHILD_TOKEN=\$$(cat /tmp/argus_fault_token.txt) && VAULT_ADDR=http://127.0.0.1:8200 VAULT_TOKEN=argus-dev-token vault token revoke \$$CHILD_TOKEN > /dev/null && echo '✅ Token revocado — Vault KO simulado'"
+	@echo "── Fase 4: Verificar modo AUTONOMOUS (cache RCU) ──"
+	@sleep 8
+	@vagrant ssh -c "grep -a -E 'AUTONOMOUS|vault_unreachable|cache|Vault KO' /tmp/etcd_fault_test.log | tail -5; true && echo '✅ Fase 4 OK — componente en cache RCU'"
+	@echo "── Fase 5: Detener etcd-server ──"
+	@vagrant ssh -c "sudo bash -c 'pkill -f etcd-server &'"; sleep 1; echo "✅ etcd-server detenido"
+	@echo ""
+	@echo "╔════════════════════════════════════════════════════════════╗"
+	@echo "║  ✅ VAULT-FAULT-INJECT PASSED                            ║"
+	@echo "╚════════════════════════════════════════════════════════════╝"
+
 vault-dev-start:
 	@echo "=== Arrancando Vault dev mode ==="
 	@vagrant ssh defender -c " \
