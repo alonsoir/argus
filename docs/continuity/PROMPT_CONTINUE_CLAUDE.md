@@ -1,20 +1,23 @@
-# PROMPT DE CONTINUIDAD — DAY 166
+# PROMPT DE CONTINUIDAD — DAY 167
 ## aRGus NDR | 2026-05-27
 
 ---
 
-## Estado al entrar en DAY 166
+## Estado al entrar en DAY 167
 
 ### Rama activa
-`feature/day161-enterprise-crypto-integration` — commit `2389f7d3` (docs DAY 165)
+`main` — merge enterprise completado DAY 166
 
-### EMECAS++ OSS del día anterior — todos verdes
+### EMECAS++ completo — todos los actos verdes
 - test-all: ✅ (6 suites, 0 fallos)
 - test-e2e-synthetic-full: ✅ delta=100/100
-- test-e2e-synthetic-firewall: ✅ 540 eventos, 0 crypto_errors
-- **Keypair efímero activo:** `a2abfe43e349e86ddeb4a22496b007919c87bdb0f5dc88c17b57cabf0d61331f`
+- test-e2e-synthetic-firewall: ✅ 546 eventos, 0 crypto_errors
+- **Acto I (arranque nominal con Vault):** ✅ fingerprint estable, crypto_errors==0
+- **Acto II (rotación controlada bajo tráfico):** ✅ epoch_id antes/después distintos, 0 drops
+- **Acto III (vault-fault-inject token revocation):** ✅ cache RCU activa, zero downtime
+- **Keypair efímero activo:** `c76e5e10e2a5a5ebcbf249a2d36a2a18d88b05aa75552bb7042353221484cf90`
 
-### Fases enterprise completadas
+### Crypto lifecycle — todas las fases verdes
 | Fase | Estado |
 |------|--------|
 | FASE 0 — vendor.key → Vault (Modelo B) | ✅ |
@@ -22,97 +25,54 @@
 | FASE 2a — HttpEtcdRegistrar real | ✅ |
 | FASE 2b — CryptoEpochCoordinator | ✅ |
 | FASE 3 — Wire header epoch_id (13/13) | ✅ |
-| FASE 4 — test-e2e-rotation FakeEtcdServer (5/5) | ✅ 60% |
-| **EMECAS++ Enterprise (3 actos)** | ⏳ PENDIENTE |
+| FASE 4 — test-e2e-rotation (live Actos II+III) | ✅ |
+| **EMECAS++ Enterprise (3 actos)** | ✅ CERRADO DAY 166 |
 
-### Consejo de Sabios DAY 165 — decisiones finales de Alonso
-1. **Arquitectura:** (C) targets anidados — `make emecas++` depende de `make emecas`
-2. **Vault dev:** suficiente con evidencia de retry/cache
-3. **Live rotation:** obligatoria en gate (mayoría 7/8)
-4. **Test negativo epoch_id:** P0 bloqueante pre-merge (mayoría 6/8)
-5. **Jenkins:** post-merge P1
-6. **Naming:** EMECAS++ oficial
-
-### Definición EMECAS++ real (decisión Alonso DAY 165)
-No se mergea hasta tener los **tres actos** verdes y reproducibles:
-
-**Acto I — Arranque nominal:** todos los componentes se autentican contra Vault, reciben claves, cifran/descifran, tráfico fluye. Medición: `events_processed`, `crypto_errors==0`, `epoch_id` correcto.
-
-**Acto II — Rotación controlada (5 min o forzada):** pipeline sigue corriendo, `CryptoEpochCoordinator` detecta nuevo epoch, `CryptoProviderHandle` hot-reload RCU, wire header actualiza `epoch_id`. Medición: continuo sin gaps, `crypto_errors==0`, `epoch_id` antes/después distintos.
-
-**Acto III — Vault falla en un componente aleatorio:** componente afectado sigue con clave anterior (caché RCU), notifica (log estructurado + señal Jenkins), resto funciona con clave nueva. Al recuperar Vault: componente recibe nueva clave, la aplica. Zero downtime. Datos válidos para paper arXiv.
+### Consejo de Sabios DAY 166 — contexto
+- B1 (VaultProvider retry/cache) era gratis — caché inline preexistente confirmada por grep
+- Acto III no requirió código nuevo: `get_material()` ya tenía `cached_material_.has_value()`
+- `DEBT-VAULT-RECONNECT-001` cerrada sin escribir una línea de C++
+- Próximo foco del Consejo: ADR-048 Fase F2 (NTP + community_id + Suricata)
 
 ---
 
-## 🔑 HALLAZGO CRÍTICO AL CIERRE DE DAY 165 — VaultProvider tiene caché
+## Deudas abiertas — ordenadas por prioridad
 
-**Se ejecutaron estos comandos al final de la sesión:**
-```bash
-vagrant ssh -c "grep -A 20 'retry\|cache\|reconnect\|fallback' /vagrant/common/vault_provider.cpp"
-vagrant ssh -c "grep -A 20 'retry\|timeout\|reconnect' /vagrant/common/vault_transport.cpp"
-```
+### P0 — ADR-048 Fase F2 prerequisitos (bloqueantes para datasets UEx)
+| ID | Descripción | Estimación |
+|----|-------------|-----------|
+| DEBT-ARGUSPP-NTP-001 | NTP+chrony en todos los nodos. Health-check rechaza arranque si offset >1s. Gate P0 del correlation-engine. | 1 sesión |
+| DEBT-ARGUSPP-COMMUNITY-ID-001 | Habilitar community_id en Suricata y Zeek desde configuración inicial. Primary key del join cross-tool. | 1 sesión |
 
-**Resultado:** VaultProvider ya tiene retry/cache completamente implementado:
+### P1 — Post-merge CI/CD
+| ID | Descripción | Estimación |
+|----|-------------|-----------|
+| BACKLOG-CI-ENTERPRISE-001 | Jenkins gate `make emecas++` en Jenkinsfile.dev. `agent any`. Stage Enterprise después de Unit Tests. | 1 sesión |
+| DEBT-ARGUSPP-SURICATA-001 | Integrar Suricata en Vagrantfile + EMECAS. eve.json → rag-security → servidor. AppArmor obligatorio. | 2 sesiones |
 
-- `get_material()` — línea 1: `if (cached_material_.has_value()) return cached_material_.value()`. Si hay material en caché, nunca toca Vault. Funciona en silencio aunque Vault esté caído.
-- `ERROR_VAULT_DOWN` → dispara `autonomy_.on_vault_unreachable()` → estado AUTONOMOUS. El pipeline no muere, notifica.
-- `refresh()` — maneja recuperación completa: `on_vault_restored()` → RECONCILING → `on_reconciliation_ok()` → NORMAL.
-
-**Implicación:** B1 (el bloqueante más incierto) es gratis. El Acto III no requiere implementación nueva, solo demostrar el comportamiento que ya existe.
-
-**Bloqueantes actualizados:**
-| Bloqueante | Estado |
-|------------|--------|
-| B1 — VaultProvider retry/cache | ✅ Ya implementado (confirmado DAY 165) |
-| B2 — test-e2e-vault completo (Acto I) | ⏳ Pendiente |
-| B3 — Notificación hacia Jenkins (Acto III) | ⏳ Pendiente — log estructurado ya existe, falta canal Jenkins |
-| B4 — Script inyección fallo controlado (Acto III) | ⏳ Pendiente — revocar token Vault o iptables por proceso |
-
----
-
-## Objetivo de DAY 166
-
-Con B1 resuelto gratis, el plan es:
-
-1. **Completar test-e2e-vault** → Acto I verificado
-2. **Implementar DEBT-CRYPTO-NEGATIVE-TEST-001** → test epoch_id inválido (~20 líneas)
-3. **Script inyección fallo Vault** → B4 resuelto (revocar token vault dev por componente)
-4. **Definir canal notificación** → B3 (log estructurado + señal hacia Jenkins)
-5. **Implementar `make emecas++`** con los 3 actos
-6. **Ejecutar EMECAS++ completo** — estabilizar y recoger datos
-
----
-
-## Deudas abiertas P0 pre-merge
-
-| ID | Prioridad | Descripción |
-|----|-----------|-------------|
-| BACKLOG-EMECAS-ENTERPRISE-001 | P0 | Protocolo EMECAS++ 3 actos |
-| BACKLOG-CRYPTO-E2E-ROTATION-001 | P0 | Live rotation con pipeline activo (Acto II) |
-| DEBT-CRYPTO-NEGATIVE-TEST-001 | P0 | Test negativo epoch_id=0xFFFF, ~20 líneas |
-| DEBT-VAULT-RECONNECT-001 | ✅ RESUELTO | VaultProvider retry/cache ya implementado |
-
-## Deudas post-merge P1
+### P2 — ADR-048 correlación
 | ID | Descripción |
 |----|-------------|
-| BACKLOG-CI-ENTERPRISE-001 | Jenkins gate `make emecas++` |
+| DEBT-ARGUSPP-CORRELATION-001 | Correlation-engine v1.0 C++20. CrisisWindow disparador. Esquema Arrow con columnas opcionales 4 fuentes. |
+| DEBT-ARGUSPP-ZEEK-001 | Integrar Zeek. conn/dns/ssl/files.log → servidor. community_id prerequisito. |
 
-## Deudas P3
+### P3 — No bloquea
 | ID | Descripción |
 |----|-------------|
-| DEBT-FIREWALL-BUILD-LEGACY-001 | firewall-acl-agent/build ruta antigua |
+| DEBT-FIREWALL-BUILD-LEGACY-001 | firewall-acl-agent/build ruta antigua (seed_client header faltante). No bloquea — build-debug funciona. |
 
 ---
 
-## Reglas permanentes (recordatorio)
+## Reglas permanentes (recordatorio para DAY 167)
 
 - Edición ficheros en VM: siempre `python3 << 'PYEOF'`, nunca `sed -i` sin `-e ''` en macOS
 - ZMQ slow joiner: publisher `bind()` ANTES de subscriber `connect()`
-- `CPPHTTPLIB_OPENSSL_SUPPORT`: via CMake `target_compile_definitions`, nunca `#define` inline
-- `epoch_id` en wire header: seleccionar clave ANTES de descifrar (no oracle de padding)
-- Vault dev suficiente para gate de merge (Vault HA → hardware RPi5/N100)
+- `epoch_id` en wire header: seleccionar clave ANTES de descifrar
 - `vendor.key` NUNCA en disco, NUNCA en repo — solo en Vault
-- VaultProvider ya tiene caché RCU — el Acto III no requiere implementación nueva
+- EMECAS++ tiene 3 actos. Enterprise ⊃ OSS — EMECAS++ verde implica EMECAS verde.
+- NTP/chrony es P0 gate para correlation-engine (ADR-046 v3 + ADR-048)
+- Gate ODR pre-merge: `make PROFILE=production all` antes de cualquier merge a main
+- BACKLOG-RESEARCH-KALMAN-001.md está en docs/experiments, pendiente entrada en docs/BACKLOG.md
 
 ---
 
@@ -125,4 +85,13 @@ epoch_id=0: community. epoch_id>0: enterprise.
 
 ---
 
-*Generado al cierre de DAY 165 — 2026-05-26 · commit 2389f7d3*
+## Próximos pasos sugeridos (sin orden prescriptivo)
+
+1. **`make emecas`** — verificar que main sigue verde tras el merge
+2. **BACKLOG-CI-ENTERPRISE-001** — añadir stage `make emecas++` en Jenkinsfile.dev (~30 líneas)
+3. **DEBT-ARGUSPP-NTP-001** — provision.sh: instalar chrony, health-check offset >1s → exit 1
+4. Consultar Consejo si el orden NTP→community_id→Suricata es el óptimo para ADR-048 Fase F2
+
+---
+
+*Generado al cierre de DAY 166 — 2026-05-27 · main*
