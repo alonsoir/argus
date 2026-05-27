@@ -1,163 +1,128 @@
-python3 << 'PYEOF'
-prompt = """# Prompt de Continuidad — aRGus NDR — DAY 165
-**Proyecto:** aRGus NDR (arXiv:2604.04952)
-**Rama activa:** `feature/day161-enterprise-crypto-integration`
-**Entorno:** macOS M2 Pro host · Vagrant/VirtualBox · Debian Bookworm
-**Metodología:** TDH (RED→GREEN obligatorio) · EMECAS · KISS · Via Appia Quality
+# PROMPT DE CONTINUIDAD — DAY 166
+## aRGus NDR | 2026-05-27
 
 ---
 
-## Estado al inicio de DAY 165
+## Estado al entrar en DAY 166
 
-### Cerrado DAY 164 (5 commits)
+### Rama activa
+`feature/day161-enterprise-crypto-integration` — commit `2389f7d3` (docs DAY 165)
 
-| Commit | Qué |
-|--------|-----|
-| `426c0340` | fix: vault-enterprise-bootstrap token via @file (not shell expansion) |
-| `b48c86ec` | feat: DEBT-ETCD-REGISTRAR-REAL-001 — HttpEtcdRegistrar REST 5/5 tests |
-| `36d05cef` | feat: BACKLOG-CRYPTO-EPOCH-001 — CryptoEpochCoordinator + /v1/epoch 5/5 tests |
-| `475589fb` | feat: PASO 4 — CryptoEpochCoordinator integrado en etcd-server |
-| `db63c44f` | fix: httplib ODR + heartbeat timestamp + etcd-server arranca limpio |
+### EMECAS++ OSS del día anterior — todos verdes
+- test-all: ✅ (6 suites, 0 fallos)
+- test-e2e-synthetic-full: ✅ delta=100/100
+- test-e2e-synthetic-firewall: ✅ 540 eventos, 0 crypto_errors
+- **Keypair efímero activo:** `a2abfe43e349e86ddeb4a22496b007919c87bdb0f5dc88c17b57cabf0d61331f`
 
-**DEBT-ETCD-REGISTRAR-REAL-001 CERRADA (FASE 2a)**
-- `common/http_etcd_registrar.h/.cpp`: IEtcdRegistrar real con httplib
-  · register_status → POST /register
-  · start_keepalive → hilo POST /v1/heartbeat/{component} con timestamp Unix
-  · watch_epoch → polling GET /v1/epoch cada 2s, baseline silencioso en primer poll
-  · last_seen_revision: no dispara callback en primer poll
-  · WatchState: CONNECTED → DEGRADED tras N fallos consecutivos
-- 5/5 tests RED→GREEN con FakeEtcdServer httplib inline
-- fix: test_autonomy_publisher ZMQ PUB/SUB invertido (bug DAY 155)
+### Fases enterprise completadas
+| Fase | Estado |
+|------|--------|
+| FASE 0 — vendor.key → Vault (Modelo B) | ✅ |
+| FASE 1 — CryptoProviderHandle RCU | ✅ |
+| FASE 2a — HttpEtcdRegistrar real | ✅ |
+| FASE 2b — CryptoEpochCoordinator | ✅ |
+| FASE 3 — Wire header epoch_id (13/13) | ✅ |
+| FASE 4 — test-e2e-rotation FakeEtcdServer (5/5) | ✅ 60% |
+| **EMECAS++ Enterprise (3 actos)** | ⏳ PENDIENTE |
 
-**BACKLOG-CRYPTO-EPOCH-001 CERRADA (FASE 2b)**
-- `common/crypto_epoch_coordinator.h/.cpp`: coordina rotación de época
-  · watch /v1/epoch via HttpEtcdRegistrar
-  · on_epoch_change callback → caller hace handle.reload()
-  · ACK timestamp monotónico en ns
-  · current_epoch() / current_not_before() / watch_state()
-  · stop() idempotente
-- 5/5 tests RED→GREEN
-- etcd-server: GET/PUT /v1/epoch + EpochInfo thread-safe (mutex)
+### Consejo de Sabios DAY 165 — decisiones finales de Alonso
+1. **Arquitectura:** (C) targets anidados — `make emecas++` depende de `make emecas`
+2. **Vault dev:** suficiente con evidencia de retry/cache
+3. **Live rotation:** obligatoria en gate (mayoría 7/8)
+4. **Test negativo epoch_id:** P0 bloqueante pre-merge (mayoría 6/8)
+5. **Jenkins:** post-merge P1
+6. **Naming:** EMECAS++ oficial
 
-**PASO 4 completado — etcd-server integrado**
-- `etcd-server/src/main.cpp`: HttpEtcdRegistrar + CryptoEpochCoordinator arrancados
-- etcd-server arranca limpio: register OK, heartbeat 200, /v1/epoch responde
-- `/components` → `["etcd-server"]` registrado
-- fix: CPPHTTPLIB_OPENSSL_SUPPORT via CMake en todos los targets (evita ODR)
-- fix: alert_client.hpp #ifndef guard
+### Definición EMECAS++ real (decisión Alonso DAY 165)
+No se mergea hasta tener los **tres actos** verdes y reproducibles:
 
-**Suite:** 12/12 common verde
+**Acto I — Arranque nominal:** todos los componentes se autentican contra Vault, reciben claves, cifran/descifran, tráfico fluye. Medición: `events_processed`, `crypto_errors==0`, `epoch_id` correcto.
+
+**Acto II — Rotación controlada (5 min o forzada):** pipeline sigue corriendo, `CryptoEpochCoordinator` detecta nuevo epoch, `CryptoProviderHandle` hot-reload RCU, wire header actualiza `epoch_id`. Medición: continuo sin gaps, `crypto_errors==0`, `epoch_id` antes/después distintos.
+
+**Acto III — Vault falla en un componente aleatorio:** componente afectado sigue con clave anterior (caché RCU), notifica (log estructurado + señal Jenkins), resto funciona con clave nueva. Al recuperar Vault: componente recibe nueva clave, la aplica. Zero downtime. Datos válidos para paper arXiv.
 
 ---
 
-## Constantes permanentes
+## 🔑 HALLAZGO CRÍTICO AL CIERRE DE DAY 165 — VaultProvider tiene caché
 
-- **EMECAS:** `vagrant destroy -f && vagrant up && make bootstrap && make test-all`
-- **EMECAS++:** añadir `&& make test-e2e-synthetic`
-- **EMECAS se ejecuta justo antes de mergear a main** — no en cada sesión
-- **Edición ficheros:** siempre `python3 << 'PYEOF'`, nunca `sed -i` sin `-e ''` en macOS
-- **Vagrant:** siempre `vagrant ssh -c '...'` desde host macOS
-- **ARGUS_ENTERPRISE_PUBKEY_HEX:** efímero por diseño (Modelo B) — se obtiene de Vault en cada vagrant up
-- **Token enterprise:** `/vagrant/enterprise/enterprise.token` (regenerado cada vagrant up)
-- **vendor.key:** solo en Vault dev `secret/argus/enterprise/vendor-key`. Nunca en disco.
-- **CPPHTTPLIB_OPENSSL_SUPPORT:** definido via CMake en crypto_provider y etcd-server — NUNCA inline en .cpp/.hpp
-
----
-
-## Lo que existe en common/ (confirmado DAY 164)
-common/crypto_provider_handle.hpp    ✅ RCU header-only, std::atomic<shared_ptr>, C++20
-common/crypto_provider.h/.cpp        ✅ ICryptoProvider, CryptoProvider::create(), factoría
-common/vault_provider.h/.cpp         ✅ VaultProvider, ICryptoProvider enterprise
-common/seed_file_provider.h/.cpp     ✅ SeedFileProvider, ICryptoProvider community
-common/etcd_registrar.h/.cpp         ✅ IEtcdRegistrar + StubEtcdRegistrar
-common/http_etcd_registrar.h/.cpp    ✅ HttpEtcdRegistrar REST, 5/5 tests (DAY 164)
-common/crypto_epoch_coordinator.h/.cpp ✅ CryptoEpochCoordinator, 5/5 tests (DAY 164)
-common/tests/test_http_etcd_registrar.cpp     ✅ 5/5
-common/tests/test_crypto_epoch_coordinator.cpp ✅ 5/5
-common/tests/test_crypto_provider_handle.cpp  ✅ 9/9
----
-
-## Objetivo DAY 165 — FASE 3: Wire header epoch_id
-
-### Descripción (ADR-045 v2)
-Wire header actual:   `[uint32_t size][LZ4 payload]`
-Wire header nuevo:    `[uint32_t size][uint16_t epoch_id][2B reserved][LZ4 payload]`
-
-El epoch_id viaja en cada mensaje ZMQ para coordinar la ventana dual-key durante rotaciones.
-
-### Ficheros a tocar
-1. `crypto-transport/include/crypto_transport/transport.hpp` — añadir epoch_id al header
-2. `crypto-transport/src/transport.cpp` — serializar/deserializar epoch_id
-3. `crypto-transport/tests/` — actualizar tests existentes + nuevos para epoch_id
-4. `ml-detector/` — serializador: escribe epoch_id en header
-5. `firewall-acl-agent/src/api/zmq_subscriber.cpp` — deserializador: lee epoch_id
-6. `test-e2e-synthetic` — validar pipeline completo post-cambio
-
-### Antes de empezar FASE 3
+**Se ejecutaron estos comandos al final de la sesión:**
 ```bash
-# Ver wire protocol actual
-vagrant ssh -c "cat /vagrant/crypto-transport/include/crypto_transport/transport.hpp"
-vagrant ssh -c "grep -n 'header\\|size\\|uint32\\|LZ4' /vagrant/crypto-transport/src/transport.cpp | head -20"
+vagrant ssh -c "grep -A 20 'retry\|cache\|reconnect\|fallback' /vagrant/common/vault_provider.cpp"
+vagrant ssh -c "grep -A 20 'retry\|timeout\|reconnect' /vagrant/common/vault_transport.cpp"
 ```
+
+**Resultado:** VaultProvider ya tiene retry/cache completamente implementado:
+
+- `get_material()` — línea 1: `if (cached_material_.has_value()) return cached_material_.value()`. Si hay material en caché, nunca toca Vault. Funciona en silencio aunque Vault esté caído.
+- `ERROR_VAULT_DOWN` → dispara `autonomy_.on_vault_unreachable()` → estado AUTONOMOUS. El pipeline no muere, notifica.
+- `refresh()` — maneja recuperación completa: `on_vault_restored()` → RECONCILING → `on_reconciliation_ok()` → NORMAL.
+
+**Implicación:** B1 (el bloqueante más incierto) es gratis. El Acto III no requiere implementación nueva, solo demostrar el comportamiento que ya existe.
+
+**Bloqueantes actualizados:**
+| Bloqueante | Estado |
+|------------|--------|
+| B1 — VaultProvider retry/cache | ✅ Ya implementado (confirmado DAY 165) |
+| B2 — test-e2e-vault completo (Acto I) | ⏳ Pendiente |
+| B3 — Notificación hacia Jenkins (Acto III) | ⏳ Pendiente — log estructurado ya existe, falta canal Jenkins |
+| B4 — Script inyección fallo controlado (Acto III) | ⏳ Pendiente — revocar token Vault o iptables por proceso |
 
 ---
 
-## Roadmap ciclo de vida criptográfico enterprise
+## Objetivo de DAY 166
 
-| Fase | ID | Descripción | Estado |
-|------|----|-------------|--------|
-| 0 | BACKLOG-CRYPTO-VENDOR-KEY-001 | vendor.key → Vault + Modelo B | ✅ DAY 163 |
-| 1 | BACKLOG-CRYPTO-HOT-RELOAD-001 | CryptoProviderHandle RCU | ✅ DAY 163 |
-| 2a | DEBT-ETCD-REGISTRAR-REAL-001 | HttpEtcdRegistrar real | ✅ DAY 164 |
-| 2b | BACKLOG-CRYPTO-EPOCH-001 | CryptoEpochCoordinator + ADR-045 v2 | ✅ DAY 164 |
-| 3 | BACKLOG-CRYPTO-DUAL-KEY-ZMQ-001 | Wire header epoch_id + ventana dual-key | ⏳ DAY 165 |
-| 4 | BACKLOG-CRYPTO-E2E-ROTATION-001 | test-e2e-rotation Vault HA | ⏳ DAY 166 |
-| 5 | BACKLOG-CRYPTO-OPERABILITY-001 | Runbook + métricas + circuit breaker | ⏳ DAY 167 |
-| 6 | BACKLOG-CRYPTO-JENKINS-AUTOMATION-001 | Jenkins pipeline rotación | ⏳ DAY 168+ |
+Con B1 resuelto gratis, el plan es:
 
-**Veto Consejo:** NO mergear enterprise a main hasta Fases 0-4 verdes con EMECAS.
+1. **Completar test-e2e-vault** → Acto I verificado
+2. **Implementar DEBT-CRYPTO-NEGATIVE-TEST-001** → test epoch_id inválido (~20 líneas)
+3. **Script inyección fallo Vault** → B4 resuelto (revocar token vault dev por componente)
+4. **Definir canal notificación** → B3 (log estructurado + señal hacia Jenkins)
+5. **Implementar `make emecas++`** con los 3 actos
+6. **Ejecutar EMECAS++ completo** — estabilizar y recoger datos
 
 ---
 
-## Notas técnicas permanentes
+## Deudas abiertas P0 pre-merge
 
-### ZMQ slow joiner (DAY 156 + confirmado DAY 162)
-Publisher SIEMPRE hace `bind()` antes de que cualquier subscriber haga `connect()`.
-En tests E2E: PUB arranca con ≥3s de antelación antes del SUB.
+| ID | Prioridad | Descripción |
+|----|-----------|-------------|
+| BACKLOG-EMECAS-ENTERPRISE-001 | P0 | Protocolo EMECAS++ 3 actos |
+| BACKLOG-CRYPTO-E2E-ROTATION-001 | P0 | Live rotation con pipeline activo (Acto II) |
+| DEBT-CRYPTO-NEGATIVE-TEST-001 | P0 | Test negativo epoch_id=0xFFFF, ~20 líneas |
+| DEBT-VAULT-RECONNECT-001 | ✅ RESUELTO | VaultProvider retry/cache ya implementado |
 
-### CryptoProviderHandle — uso correcto
-```cpp
-CryptoProviderHandle handle(CryptoProvider::create(cfg));
-auto p = handle.get();          // reader thread-safe, nunca null
-auto mat = p->get_material();
-handle.reload(CryptoProvider::create(new_cfg)); // rotación de época
+## Deudas post-merge P1
+| ID | Descripción |
+|----|-------------|
+| BACKLOG-CI-ENTERPRISE-001 | Jenkins gate `make emecas++` |
+
+## Deudas P3
+| ID | Descripción |
+|----|-------------|
+| DEBT-FIREWALL-BUILD-LEGACY-001 | firewall-acl-agent/build ruta antigua |
+
+---
+
+## Reglas permanentes (recordatorio)
+
+- Edición ficheros en VM: siempre `python3 << 'PYEOF'`, nunca `sed -i` sin `-e ''` en macOS
+- ZMQ slow joiner: publisher `bind()` ANTES de subscriber `connect()`
+- `CPPHTTPLIB_OPENSSL_SUPPORT`: via CMake `target_compile_definitions`, nunca `#define` inline
+- `epoch_id` en wire header: seleccionar clave ANTES de descifrar (no oracle de padding)
+- Vault dev suficiente para gate de merge (Vault HA → hardware RPi5/N100)
+- `vendor.key` NUNCA en disco, NUNCA en repo — solo en Vault
+- VaultProvider ya tiene caché RCU — el Acto III no requiere implementación nueva
+
+---
+
+## Wire header (recordatorio)
 ```
-
-### HttpEtcdRegistrar — uso correcto
-```cpp
-HttpEtcdRegistrar reg("http://127.0.0.1:2379", "component-name",
-                      /*keepalive_ms=*/30000, /*poll_ms=*/2000);
-reg.register_status(material, "component-name");
-reg.start_keepalive();
-// watch_epoch() establece baseline silencioso en primer poll
-reg.watch_epoch([](uint16_t eid, const std::string& nb) {
-    // handle.reload(CryptoProvider::create(new_cfg));
-});
+[uint32_t size][uint16_t epoch_id][2B reserved][LZ4+encrypted]
+  bytes 0-3      bytes 4-5         bytes 6-7     bytes 8+
 ```
+epoch_id=0: community. epoch_id>0: enterprise.
 
-### CryptoEpochCoordinator — uso correcto
-```cpp
-CryptoEpochCoordinator coord(registrar, "component-name");
-coord.start([&](uint16_t eid, const std::string& nb) {
-    handle.reload(CryptoProvider::create(new_cfg));
-});
-// coord.stop() en destructor automáticamente
-```
+---
 
-### CPPHTTPLIB_OPENSSL_SUPPORT — regla permanente (DAY 164)
-Debe definirse via CMake (`target_compile_definitions`) en TODOS los targets
-que incluyan httplib.h — nunca como `#define` inline en ficheros .cpp/.hpp.
-Targets afectados: `crypto_provider`, `etcd-server`.
-
-### Pendiente en docs/BACKLOG.md
-BACKLOG-RESEARCH-KALMAN-001.md está en docs/experiments/ — añadir entrada en docs/BACKLOG.md.
+*Generado al cierre de DAY 165 — 2026-05-26 · commit 2389f7d3*
