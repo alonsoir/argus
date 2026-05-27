@@ -48,6 +48,14 @@ static int prev_failed = 0;
                   << " (" << __FILE__ << ":" << __LINE__ << ")\n"; \
         failed++; return; } } while(0)
 
+#define ASSERT_THROWS(expr) \
+    do { bool threw = false; \
+         try { (void)(expr); } catch (...) { threw = true; } \
+         if (threw == false) { \
+             std::cerr << "❌ FAIL: " << __func__ << " — expected exception: " #expr \
+                       << " (" << __FILE__ << ":" << __LINE__ << ")\n"; \
+             failed++; return; } } while(0)
+
 #define RUN_TEST(name) \
     do { prev_failed = failed; \
          std::cout << "  🔵 " #name "..."; \
@@ -290,6 +298,21 @@ void test_dual_key_window_pre_rotation_messages_still_decryptable() {
     ASSERT_EQ(res_post.epoch_id, static_cast<uint16_t>(2));
 }
 
+
+// ── T6: epoch_id=0xFFFF rechazado ANTES de descifrar (DEBT-CRYPTO-NEGATIVE-TEST-001) ──
+// Garantia: no oracle de padding — validacion del header precede al MAC check.
+void test_epoch_id_sentinel_rejected() {
+    TestSeedEnv env("e2e_t6");
+    auto sc_tx = env.make_client();
+    auto sc_rx = env.make_client();
+    crypto_transport::CryptoTransport tx(sc_tx, "ml-defender:test:v1:tx");
+    crypto_transport::CryptoTransport rx(sc_rx, "ml-defender:test:v1:tx");
+
+    const std::vector<uint8_t> plaintext = {0x01, 0x02, 0x03};
+    auto wire = tx.encrypt(plaintext, 0xFFFF);
+    ASSERT_THROWS(rx.decrypt_v2(wire));
+}
+
 // ── main ──────────────────────────────────────────────────────────────────────
 int main() {
     if (sodium_init() < 0) {
@@ -307,6 +330,7 @@ int main() {
     RUN_TEST(test_wire_roundtrip_epoch2);
     RUN_TEST(test_coordinator_epoch_id_propagates_to_wire);
     RUN_TEST(test_dual_key_window_pre_rotation_messages_still_decryptable);
+    RUN_TEST(test_epoch_id_sentinel_rejected);
 
     std::cout << "\n──────────────────────────────────────────────\n";
     std::cout << "  Passed: " << passed << "  Failed: " << failed << "\n";

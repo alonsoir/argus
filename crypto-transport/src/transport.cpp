@@ -165,6 +165,12 @@ CryptoTransport::DecryptResult CryptoTransport::decrypt_v2(
     uint16_t epoch_id = 0;
     std::memcpy(&epoch_id, ciphertext.data(), sizeof(uint16_t));
 
+    // epoch_id=0xFFFF es valor reservado — rechazar ANTES de descifrar (no oracle de padding)
+    if (epoch_id == 0xFFFF) {
+        throw std::runtime_error(
+            "CryptoTransport::decrypt_v2: epoch_id=0xFFFF is reserved — message rejected");
+    }
+
     const uint8_t* nonce  = ciphertext.data() + EPOCH_HEADER_SIZE;
     const uint8_t* ct     = ciphertext.data() + EPOCH_HEADER_SIZE + NONCE_SIZE;
     const size_t   ct_len = ciphertext.size() - EPOCH_HEADER_SIZE - NONCE_SIZE;
