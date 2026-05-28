@@ -207,6 +207,9 @@ Vagrant.configure("2") do |config|
       apt-get update
       apt-get install -y build-essential git wget curl vim jq make rsync locales libc-bin file tmux xxd
 
+      apt-get install -y chrony
+      systemctl enable chrony
+
       # eBPF toolchain
       apt-get install -y clang llvm bpftool linux-headers-amd64 libpcap-dev
 
@@ -355,12 +358,17 @@ LIBBPF_PROFILE
           echo "❗ WARNING: xgboost $(python3 -c 'import xgboost; print(xgboost.__version__)' 2>/dev/null || echo 'not available')"
           echo "❗ Para reproducibilidad científica, usar xgboost==3.2.0"
         }
-        # Headers C++ desde tag oficial
+        # Headers C++ — desde pip (fallback si GitHub no accesible, DEBT-XGBOOST-HEADERS-001)
         mkdir -p /usr/local/include/xgboost
-        curl -fsSL https://raw.githubusercontent.com/dmlc/xgboost/v3.2.0/include/xgboost/c_api.h \
-          -o /usr/local/include/xgboost/c_api.h
-        curl -fsSL https://raw.githubusercontent.com/dmlc/xgboost/v3.2.0/include/xgboost/base.h \
-          -o /usr/local/include/xgboost/base.h
+        XGB_INC=$(python3 -c "import xgboost,os; print(os.path.join(os.path.dirname(xgboost.__file__),'include'))" 2>/dev/null || echo "")
+        if [ -d "$XGB_INC/xgboost" ]; then
+          cp "$XGB_INC/xgboost/"*.h /usr/local/include/xgboost/ || true
+        else
+          curl -fsSL https://raw.githubusercontent.com/dmlc/xgboost/v3.2.0/include/xgboost/c_api.h \
+            -o /usr/local/include/xgboost/c_api.h || true
+          curl -fsSL https://raw.githubusercontent.com/dmlc/xgboost/v3.2.0/include/xgboost/base.h \
+            -o /usr/local/include/xgboost/base.h || true
+        fi
         # Librería compartida al path estándar
         XGBOOST_SO=$(python3 -c "import xgboost.core; print(xgboost.core.find_lib_path()[0])" 2>/dev/null)
         if [ -n "$XGBOOST_SO" ]; then
@@ -690,6 +698,35 @@ BASHRC_EOF
       echo "Gateway interface: $GATEWAY_IFACE (192.168.100.1)"
       echo "═══════════════════════════════════════════════════════════"
     SNIFFER_CONFIG
+
+    defender.vm.provision "shell", name: "ntp-sync", run: "always", inline: <<-NTP_SYNC
+      echo "⏱️  NTP sync check (ADR-046 P0)..."
+
+      # Forzar sync inmediato (especialmente útil tras vagrant up en frío)
+      chronyc makestep 1.0 3 2>/dev/null || true
+      sleep 2
+
+      # Verificar offset
+      OFFSET=$(chronyc tracking 2>/dev/null \
+        | grep "System time" \
+        | awk '{print $4}' \
+        | sed 's/-//')
+
+      if [ -z "$OFFSET" ]; then
+        echo "⚠️  chronyc tracking no disponible — chrony no sincronizado aún"
+        echo "   Continuando (gate P0 en runtime del correlation-engine)"
+      else
+        # Comparar con threshold 1.0s usando awk (bash no maneja floats)
+        OVER=$(awk "BEGIN {print ($OFFSET > 1.0) ? 1 : 0}")
+        if [ "$OVER" = "1" ]; then
+          echo "❌ NTP offset ${OFFSET}s > 1.0s — WARN (gate bloqueará correlation-engine)"
+        else
+          echo "✅ NTP offset ${OFFSET}s < 1.0s — OK"
+        fi
+      fi
+
+      chronyc tracking | grep -E "Reference ID|System time|Stratum" || true
+    NTP_SYNC
 
     # ════════════════════════════════════════════════════════════════════════
     # Provisioning: Cron restart every 72h (memory leak mitigation)

@@ -57,6 +57,9 @@ Vagrant.configure("2") do |config|
       chmod +x /etc/rc.local
       # Reglas ET Open: apuntar al path correcto en suricata.yaml
       sed -i '/^rule-files:/a\  - /var/lib/suricata/rules/suricata.rules' /etc/suricata/suricata.yaml
+      # community-id: primary key para join con Zeek/aRGus (ADR-048 F2)
+      sed -i 's/community-id: false/community-id: yes/' /etc/suricata/suricata.yaml || \
+        sed -i '/eve-log:/a\      community-id: yes' /etc/suricata/suricata.yaml
       # Esperar carga de 50K reglas antes de dar el VM por listo
       echo 'suricata: esperando carga de reglas (~60s)...'
       sleep 60

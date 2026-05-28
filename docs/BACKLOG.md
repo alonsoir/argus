@@ -74,9 +74,7 @@
 - **REGLA PERMANENTE (DAY 165 — Consejo 8/8):** `epoch_id` en wire header selecciona clave ANTES de descifrar. Nunca intentar descifrado y luego verificar epoch — es un oracle de padding. La selección de clave es el primer paso al recibir un mensaje enterprise.
 - **REGLA PERMANENTE (DAY 165 — Consejo 8/8):** El protocolo EMECAS++ tiene tres actos obligatorios: (I) arranque nominal con Vault, (II) rotación controlada con live epoch bajo tráfico, (III) Vault falla en un componente con zero downtime. Los tres actos deben ser verdes y reproducibles antes de cualquier merge enterprise a main.
 - **REGLA PERMANENTE (DAY 165 — Founder):** VaultProvider retry/cache es prerequisito arquitectónico del Acto III. Inspeccionar estado antes de planificar DAY 166.
-- **REGLA PERMANENTE (DAY 142 — macOS):** zsh intercepta `!` en heredocs. Para código C++ con emojis o caracteres especiales: siempre `vagrant ssh << 'SSHEOF'` con Python dentro. Nunca heredoc directo desde zsh para código complejo.
-
----
+- **REGLA PERMANENTE (DAY 163 — Consejo 8/8):** Todo target de CMake dentro de un bloque condicional (`ARGUS_VAULT_ENABLED`, `ARGUS_ENTERPRISE`, etc.) debe ir envuelto en `if(NOT TARGET <nombre>)` como guard obligatorio. Los bloques condicionales NO deben crear targets nuevos — solo añadir comportamiento (compile definitions, link libraries) a targets ya definidos fuera del bloque. Si el guard dispara, es señal de bug arquitectónico, no de diseño válido. Ver DEBT-CMAKE-GRAPH-INVARIANTS-001.
 
 ## 🏗️ Tres variantes del pipeline
 
@@ -174,18 +172,19 @@
 - fix: `db63c44f` (httplib ODR + heartbeat timestamp + etcd-server arranca limpio)
 - **12/12 suite common verde.**
 
+### BACKLOG-CRYPTO-VENDOR-KEY-001 — vendor.key → Vault (Modelo B efímero)
 ## ✅ CERRADO DAY 163
 
+### Fix CMake — test_ntp_health_check triplicado (EMECAS++ bloqueado)
+- **Status:** ✅ COMPLETADO DAY 163
+- **Root cause:** `test_ntp_health_check` definido 3 veces en `common/CMakeLists.txt` (línea 68 canónica + líneas 291 y 387 dentro de `if(ARGUS_VAULT_ENABLED)`). CMake falla con "add_executable cannot create target" solo al activar `-DARGUS_VAULT_ENABLED=ON` — el build normal nunca detectaba el conflicto. Regresión introducida incrementalmente en una sesión reciente.
+- **Fix:** `sed -i '291,302d;387,398d' /vagrant/common/CMakeLists.txt`. Un comando, dos minutos.
+- **Consejo DAY 163 (8/8 convergencia):** Invariante `if(NOT TARGET)` obligatorio. Los bloques `if(ARGUS_VAULT_ENABLED)` no deben crear targets nuevos — solo añadir comportamiento. Nombres con sufijo `_vault` solo si el target es semánticamente distinto.
+- **Nota:** El commit message referenciaba "DAY 167" — typo cronológico (señalado por Qwen). La regresión fue introducida en una sesión reciente sin ese número de día. Corregido en documentación.
+- **Nuevas deudas:** `DEBT-CMAKE-GRAPH-INVARIANTS-001` (lint CI) + `BACKLOG-EMECAS-VAULT-E2E-001` (smoke test honesto Acto I).
+- **Commit:** `fix(common): remove duplicate test_ntp_health_check targets`
+
 ### BACKLOG-CRYPTO-VENDOR-KEY-001 — vendor.key → Vault (Modelo B efímero)
-- **Status:** ✅ COMPLETADO DAY 163 — rama `feature/day161-enterprise-crypto-integration`
-- **Modelo B adoptado:** cada `vagrant destroy && vagrant up` genera nuevo keypair Ed25519 enterprise, sube a Vault, genera token firmado, limpia `/tmp`. vendor.key nunca persiste en disco.
-- `enterprise_vendor.key` eliminado del disco y del repo.
-- `enterprise_vendor.pub` y `enterprise.token` marcados gitignored (efímeros por diseño).
-- `plugin-loader/CMakeLists.txt`: hex hardcodeado eliminado → guard `FATAL_ERROR` si enterprise build sin `-DARGUS_ENTERPRISE_PUBKEY_HEX`.
-- `Makefile [2/4]` test-dual-compilation: lee hex de Vault en runtime antes de invocar cmake.
-- `Vagrantfile`: bloque `vault-enterprise-bootstrap` (run:always) — nuevo keypair + token en cada vagrant up.
-- `test-dual-compilation` 4/4 verde tras los cambios.
-- **Commits:** `e933e316` (vendor.key→Vault + CMake guard) · `feat(enterprise): Modelo B`
 
 ### BACKLOG-CRYPTO-HOT-RELOAD-001 — CryptoProviderHandle RCU sin downtime
 - **Status:** ✅ COMPLETADO DAY 163 — rama `feature/day161-enterprise-crypto-integration`
@@ -1502,6 +1501,21 @@ Targets `make emecas-dev/prod-x86/prod-arm64` con log automático fechado.
 
 ---
 
+### DEBT-CMAKE-GRAPH-INVARIANTS-001 — Lint CI para targets CMake duplicados
+**Severidad:** 🟡 P1
+**Estado:** ABIERTO — DAY 163 (ChatGPT, Kimi — Consejo 8/8)
+**Componente:** `common/CMakeLists.txt` + CI pipeline
+
+Añadir script de lint pre-merge que detecte automáticamente targets duplicados en el grafo CMake. La regresión DAY 163 (`test_ntp_health_check` triplicado) es síntoma de ausencia de este guard. Objetivo: prohibir redefiniciones de targets, exigir `if(NOT TARGET)` en bloques condicionales, verificar unicidad global del grafo de build.
+
+**Propuesta Kimi:** nuevo ADR `docs/adr/adr-028-cmake-target-naming.md` con la convención formal.
+**Propuesta ChatGPT:** check de CI: `cmake -DARGUS_VAULT_ENABLED=ON` + grep de warnings de target ya definido.
+
+**Test de cierre:** PR con target duplicado en bloque condicional → CI falla con error explícito.
+**Estimación:** 1 sesión.
+
+---
+
 ### DEBT-LLAMA-API-UPGRADE-001
 **Severidad:** 🟡 Media — API deprecated, no CVE activo
 **Estado:** ABIERTO — DAY 140
@@ -1769,6 +1783,12 @@ incrementalmente. MacBook como servidor mientras llegan fondos UEx.
 **Estado:** ⏳ OPEN — DAY 168+
 **Descripción:** Pipeline Jenkins: generación → Vault → epoch bump → espera ACK → gate E2E → rollback si falla. OIDC efímero para Jenkins→Vault (no token estático). **Solo después de Fases 0-5 verdes.**
 **Test de cierre:** rotación automática valida en CI → 0 intervención manual.
+
+### BACKLOG-EMECAS-VAULT-E2E-001 — Smoke test honesto Acto I (SeedFileProvider rejection)
+**Estado:** ✅ CUBIERTO DAY 166 — BACKLOG-EMECAS-ENTERPRISE-001 3 actos verdes
+**Propuesto:** DAY 163 (Claude, Kimi — Consejo 8/8)
+**Descripción original:** Smoke test en Acto I que verificara: si `ARGUS_VAULT_ENABLED=ON`, entonces `SeedFileProvider` no debe ser el provider activo en runtime. Test rojo en DAY 163, verde al cerrar BACKLOG-CRYPTO-VENDOR-KEY-001. El Acto I de EMECAS++ no puede pasar silenciosamente usando `SeedFileProvider` cuando el flag dice `VaultProvider` — sería un gate que miente.
+**Resolución:** BACKLOG-EMECAS-ENTERPRISE-001 (Acto I de EMECAS++ — arranque nominal con Vault) cubre este requisito. DAY 166: todos los componentes se autentican contra VaultProvider real en Acto I. La condición de honestidad está garantizada por diseño.
 
 ## BACKLOG-FEDER-001
 
@@ -2089,6 +2109,8 @@ DEBT-VAULT-RECONNECT-001:                       100% ✅  DAY 165/166 — caché
 DEBT-CRYPTO-NEGATIVE-TEST-001:                  100% ✅  DAY 166 — test epoch_id=0xFFFF rechazado, EMECAS++ verde
 BACKLOG-CI-ENTERPRISE-001:                        0% ⏳  P1 — Jenkins gate make emecas++ (post-merge, requiere hardware FEDER)
 DEBT-FIREWALL-BUILD-LEGACY-001:                   0% ⏳  P3 — firewall-acl-agent/build ruta antigua (no bloquea)
+DEBT-CMAKE-GRAPH-INVARIANTS-001:                  0% ⏳  P1 — lint CI targets duplicados CMake (DAY 163, Consejo 8/8)
+BACKLOG-EMECAS-VAULT-E2E-001:                   100% ✅  DAY 166 — cubierto por BACKLOG-EMECAS-ENTERPRISE-001 Acto I
 ```
 
 ---
@@ -2675,8 +2697,7 @@ Un sistema con ACRL converge hacia cobertura de técnicas ATT&CK en tiempo polin
 - **REGLA PERMANENTE (DAY 165 — Consejo 8/8):** `epoch_id` en wire header selecciona clave ANTES de descifrar. Nunca intentar descifrado y luego verificar epoch — es un oracle de padding. La selección de clave es el primer paso al recibir un mensaje enterprise.
 - **REGLA PERMANENTE (DAY 165 — Consejo 8/8):** El protocolo EMECAS++ tiene tres actos obligatorios: (I) arranque nominal con Vault, (II) rotación controlada con live epoch bajo tráfico, (III) Vault falla en un componente con zero downtime. Los tres actos deben ser verdes y reproducibles antes de cualquier merge enterprise a main.
 - **REGLA PERMANENTE (DAY 165 — Founder):** VaultProvider retry/cache es prerequisito arquitectónico del Acto III. Inspeccionar estado antes de planificar DAY 166.
-- **REGLA PERMANENTE (DAY 142 — macOS):** zsh intercepta `!` en heredocs. Para código C++ con emojis o caracteres especiales: siempre `vagrant ssh << 'SSHEOF'` con Python dentro. Nunca heredoc directo desde zsh para código complejo.
-
+- **REGLA PERMANENTE (DAY 163 — Consejo 8/8):** Todo target de CMake dentro de un bloque condicional (`ARGUS_VAULT_ENABLED`, `ARGUS_ENTERPRISE`, etc.) debe ir envuelto en `if(NOT TARGET <nombre>)` como guard obligatorio. Los bloques condicionales NO deben crear targets nuevos — solo añadir comportamiento (compile definitions, link libraries) a targets ya definidos fuera del bloque. Si el guard dispara, es señal de bug arquitectónico, no de diseño válido. Ver DEBT-CMAKE-GRAPH-INVARIANTS-001.
 ---
 
 ## 🏗️ Tres variantes del pipeline
