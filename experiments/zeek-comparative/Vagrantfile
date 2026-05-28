@@ -64,6 +64,8 @@ Vagrant.configure("2") do |config|
 
       # Configure capture interface: eth2 receives tcpreplay traffic
       sed -i 's/interface=.*/interface=eth2/' /opt/zeek/etc/node.cfg
+      # community-id: primary key para join con Suricata/aRGus (ADR-048 F2)
+      echo '@load policy/protocols/conn/community-id-logging' >> /opt/zeek/share/zeek/site/local.zeek
 
       # Promiscuous mode on eth2 (persistent)
       ip link set eth2 promisc on || true
