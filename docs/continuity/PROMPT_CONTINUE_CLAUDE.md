@@ -1,32 +1,32 @@
-DAY 164 — aRGus NDR (arXiv:2604.04952)
+DAY 168 — aRGus NDR (arXiv:2604.04952)
 
-Estado: main @ v1.0.0-day166. EMECAS++ 3 actos verdes. Rama enterprise mergeada.
+Estado: main @ post-merge feature/day167-ntp-correlation-engine. EMECAS++ 3 actos verdes.
 
-PRIORIDAD DAY 164:
-BACKLOG-CI-ENTERPRISE-001 — Jenkins gate `make emecas++` (post-merge, hardware FEDER pendiente).
-ADR-048 F2 — DEBT-ARGUSPP-NTP-001 (NTP+chrony P0) + DEBT-ARGUSPP-COMMUNITY-ID-001 (P0).
-DEBT-ARGUSPP-SURICATA-001 — Integrar Suricata en Vagrantfile + EMECAS.
+CONTEXTO DE LOS ÚLTIMOS DÍAS:
+DAY 163: Fix CMake (test_ntp_health_check triplicado). BACKLOG-CRYPTO-VENDOR-KEY-001 ✅.
+CryptoProviderHandle RCU ✅. ADR-045 v2 ✅. Consejo 8/8.
+DAY 164-166: Enterprise crypto lifecycle completo. EMECAS++ 3 actos. Merge a main.
+DAY 167: NTP+chrony (DEBT-ARGUSPP-NTP-001 P0) + correlation engine (ADR-048 F2).
+11 pasadas para ajustar Jenkins. EMECAS++ verde. Merge a main.
 
-CERRADO DAY 163:
-- Bug CMake: test_ntp_health_check triplicado en common/CMakeLists.txt. Fix: sed elimina líneas 291-302 y 387-398. EMECAS++ verde en 1h 3m 26s.
-- BACKLOG-CRYPTO-VENDOR-KEY-001 ✅ (Modelo B efímero).
-- BACKLOG-CRYPTO-HOT-RELOAD-001 ✅ (CryptoProviderHandle RCU 9/9 tests).
-- ADR-045 v2 aprobado (Consejo 8/8).
-- DEBT-CMAKE-GRAPH-INVARIANTS-001 abierta (lint CI, propuesta ADR-028).
+PRIORIDAD DAY 168 (por completar ADR-048 F2):
+- DEBT-ARGUSPP-COMMUNITY-ID-001 — habilitar community_id en Suricata y Zeek (P0 en v1.1)
+- DEBT-ARGUSPP-SURICATA-001 — Suricata en Vagrantfile + EMECAS, eve.json → rag-security
+- BACKLOG-CI-ENTERPRISE-001 — Jenkins gate `make emecas++` (P1 post-merge)
 
-CONSEJO DAY 163 (8/8):
-- P1 CMake: `if(NOT TARGET)` invariante obligatorio. Bloques condicionales no crean targets.
-- P2 Fase 1: AppRole + vendor.key + test aislamiento = los tres o no cierra (posición dura Claude/ChatGPT/Grok/Kimi/DeepSeek). Gemini/Qwen aceptan ENV VAR sola como Fase 1.
-- P3 Acto I: suficiente con compilación + UTs hasta cerrar BACKLOG-CRYPTO-VENDOR-KEY-001.
-- Pendiente responder a Gemini: ciclo de vida credencial temporal Jenkins→Vault.
-- Typo "DAY 167" en commit: regresión fue sesión anterior sin número asignado.
+DEUDAS NUEVAS DAY 163:
+- DEBT-CMAKE-GRAPH-INVARIANTS-001 — lint CI targets duplicados CMake (P1)
+- BACKLOG-EMECAS-VAULT-E2E-001 — cubierto por EMECAS++ Acto I
 
-REGLAS NUEVAS:
+REGLAS CRÍTICAS:
 - if(NOT TARGET) obligatorio en bloques CMake condicionales.
-- EMECAS++ = 3 actos (I arranque Vault, II rotación live, III Vault fault inject zero downtime).
-- VaultProvider caché RCU implementación del Acto III.
+- EMECAS++ = 3 actos antes de cualquier merge enterprise. Tarda >1h. No negociable.
+- Python3 heredoc en macOS. vagrant ssh -c siempre con -c. -Werror permanente.
+- Nunca merge directo a main — siempre PR con EMECAS++ verde.
+- vendor.key nunca en disco ni en repo — solo Vault dev (Modelo B).
+- ZMQ PUB hace bind() ANTES de SUB connect().
 
-ENTORNO: macOS M2 Pro, Vagrant/VirtualBox Debian Bookworm, vagrant/dev/.
-STACK: ZeroMQ + ChaCha20-Poly1305 + Ed25519 + libsodium 1.0.19, eBPF/XDP, etcd-server, Vault dev.
-KEYPAIR ACTIVO: c76e5e10e2a5a5ebcbf249a2d36a2a18d88b05aa75552bb7042353221484cf90 (efímero, regenera en EMECAS).
-REGLA: Python3 heredoc en macOS. vagrant ssh -c siempre con -c. -Werror permanente. Nunca direct merge a main. EMECAS++ antes de cualquier merge enterprise.
+ENTORNO: macOS M2 Pro · Vagrant/VirtualBox Debian Bookworm · vagrant/dev/
+KEYPAIR: efímero, regenera en cada EMECAS.
+PAPER: arXiv:2604.04952 · Draft v24 local · v3 en arXiv.
+FEDER gate: datasets de valor científico para Dr. Andrés Caro Lindo (UEx/INCIBE).
