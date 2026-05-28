@@ -63,6 +63,20 @@ set(CRYPTO_PROVIDER_SOURCES
 )
 if(ARGUS_VAULT_ENABLED)
     list(APPEND CRYPTO_PROVIDER_SOURCES vault_provider.cpp)
+
+    # NTP-1/2/3 — DEBT-ARGUSPP-NTP-001 (DAY 167)
+    add_executable(test_ntp_health_check
+            tests/test_ntp_health_check.cpp
+            ntp_health_check.cpp
+    )
+    target_include_directories(test_ntp_health_check PRIVATE
+            ${CMAKE_CURRENT_SOURCE_DIR}
+    )
+    target_link_libraries(test_ntp_health_check PRIVATE
+            ntp_utils
+    )
+    add_test(NAME test_ntp_health_check COMMAND test_ntp_health_check)
+    set_tests_properties(test_ntp_health_check PROPERTIES TIMEOUT 10)
 endif()
 
 add_library(crypto_provider SHARED
@@ -138,6 +152,24 @@ install(FILES
 if(ARGUS_VAULT_ENABLED)
     install(FILES vault_provider.h DESTINATION include/vault_client)
 endif()
+
+# ── ntp_utils (ADR-046 P0 — DAY 167) ─────────────────────────────────────────
+# Librería STATIC sin dependencias externas.
+# Cualquier componente puede linkearla sin arrastrar crypto/ZMQ/sodium.
+add_library(ntp_utils STATIC
+        ntp_health_check.cpp
+)
+target_include_directories(ntp_utils
+        PUBLIC
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+        $<INSTALL_INTERFACE:include>
+)
+set_target_properties(ntp_utils PROPERTIES
+        POSITION_INDEPENDENT_CODE ON
+)
+install(TARGETS ntp_utils ARCHIVE DESTINATION lib)
+install(FILES include/ntp_health_check.hpp DESTINATION include/vault_client)
 
 # ── Tests ─────────────────────────────────────────────────────────────────────
 option(BUILD_TESTS "Build tests" ON)
@@ -255,6 +287,19 @@ add_executable(test_vault_client
         )
         add_test(NAME test_crypto_provider_enterprise
                 COMMAND test_crypto_provider_enterprise)
+        # NTP-1/2/3 — DEBT-ARGUSPP-NTP-001 (DAY 167)
+        add_executable(test_ntp_health_check
+                tests/test_ntp_health_check.cpp
+                ntp_health_check.cpp
+        )
+        target_include_directories(test_ntp_health_check PRIVATE
+                ${CMAKE_CURRENT_SOURCE_DIR}
+        )
+        target_link_libraries(test_ntp_health_check PRIVATE
+                ntp_utils
+        )
+        add_test(NAME test_ntp_health_check COMMAND test_ntp_health_check)
+        set_tests_properties(test_ntp_health_check PROPERTIES TIMEOUT 10)
     endif()
 
     # test_autonomy_state_writer — DEBT-AUTONOMY-STATE-PERSISTENCE-001 (DAY 157)
@@ -337,4 +382,18 @@ add_executable(test_vault_client
             ${LIBSODIUM_LIBRARIES}
     )
     add_test(NAME test_e2e_rotation COMMAND test_e2e_rotation)
+
+    # NTP-1/2/3 — DEBT-ARGUSPP-NTP-001 (DAY 167)
+    add_executable(test_ntp_health_check
+            tests/test_ntp_health_check.cpp
+            ntp_health_check.cpp
+    )
+    target_include_directories(test_ntp_health_check PRIVATE
+            ${CMAKE_CURRENT_SOURCE_DIR}
+    )
+    target_link_libraries(test_ntp_health_check PRIVATE
+            ntp_utils
+    )
+    add_test(NAME test_ntp_health_check COMMAND test_ntp_health_check)
+    set_tests_properties(test_ntp_health_check PROPERTIES TIMEOUT 10)
 endif()

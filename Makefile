@@ -2809,4 +2809,24 @@ experiment-zeek-run: experiment-zeek-replay-10 experiment-zeek-replay-50 experim
 	@echo "║  Ground truth: 147.32.84.165 (646 flows maliciosos)      ║"
 	@echo "╚════════════════════════════════════════════════════════════╝"
 	@$(MAKE) experiment-zeek-results
+# ── correlation-engine (DAY 167 — ADR-048 F2 scaffold) ───────────────────────
+.PHONY: correlation-engine-build correlation-engine-clean correlation-engine-test
 
+correlation-engine-build: vault-client-build
+	@echo "╔════════════════════════════════════════════════════════════╗"
+	@echo "║  🔨 Building correlation-engine [ADR-048 F2 scaffold]     ║"
+	@echo "╚════════════════════════════════════════════════════════════╝"
+	@vagrant ssh -c 'cd /vagrant/correlation-engine && \
+		rm -rf build && mkdir -p build && cd build && \
+		cmake -DCMAKE_BUILD_TYPE=Debug .. && \
+		make -j4'
+	@echo "✅ correlation-engine built"
+
+correlation-engine-test: correlation-engine-build
+	@echo "── correlation-engine: test_ntp_gate ──"
+	@vagrant ssh -c "cd /vagrant/correlation-engine/build && \
+		ctest --output-on-failure"
+
+correlation-engine-clean:
+	@vagrant ssh -c "rm -rf /vagrant/correlation-engine/build"
+	@echo "✅ correlation-engine cleaned"
