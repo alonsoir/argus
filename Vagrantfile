@@ -358,12 +358,17 @@ LIBBPF_PROFILE
           echo "❗ WARNING: xgboost $(python3 -c 'import xgboost; print(xgboost.__version__)' 2>/dev/null || echo 'not available')"
           echo "❗ Para reproducibilidad científica, usar xgboost==3.2.0"
         }
-        # Headers C++ desde tag oficial
+        # Headers C++ — desde pip (fallback si GitHub no accesible, DEBT-XGBOOST-HEADERS-001)
         mkdir -p /usr/local/include/xgboost
-        curl -fsSL https://raw.githubusercontent.com/dmlc/xgboost/v3.2.0/include/xgboost/c_api.h \
-          -o /usr/local/include/xgboost/c_api.h
-        curl -fsSL https://raw.githubusercontent.com/dmlc/xgboost/v3.2.0/include/xgboost/base.h \
-          -o /usr/local/include/xgboost/base.h
+        XGB_INC=$(python3 -c "import xgboost,os; print(os.path.join(os.path.dirname(xgboost.__file__),'include'))" 2>/dev/null || echo "")
+        if [ -d "$XGB_INC/xgboost" ]; then
+          cp "$XGB_INC/xgboost/"*.h /usr/local/include/xgboost/ || true
+        else
+          curl -fsSL https://raw.githubusercontent.com/dmlc/xgboost/v3.2.0/include/xgboost/c_api.h \
+            -o /usr/local/include/xgboost/c_api.h || true
+          curl -fsSL https://raw.githubusercontent.com/dmlc/xgboost/v3.2.0/include/xgboost/base.h \
+            -o /usr/local/include/xgboost/base.h || true
+        fi
         # Librería compartida al path estándar
         XGBOOST_SO=$(python3 -c "import xgboost.core; print(xgboost.core.find_lib_path()[0])" 2>/dev/null)
         if [ -n "$XGBOOST_SO" ]; then

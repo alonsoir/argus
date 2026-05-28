@@ -267,3 +267,5 @@ enterprise.token
 # Enterprise crypto — efímeros Modelo B (regenerados cada vagrant up)
 enterprise/enterprise_vendor.pub
 enterprise/enterprise.token
+enterprise/enterprise_vendor.pub
+enterprise/enterprise.token
