@@ -937,39 +937,254 @@ BASHRC_EOF
       virtualbox__intnet: "ml_defender_gateway_lan"
 
     client.vm.provision "shell", name: "client-setup", run: "always", inline: <<-CLIENT
-      export DEBIAN_FRONTEND=noninteractive
-      set -x
-      echo "═══════════════════════════════════════════════════════════════════"
-      echo "║  ML CLIENT - Traffic Generator Setup                            ║"
-      echo "═══════════════════════════════════════════════════════════════════"
+          export DEBIAN_FRONTEND=noninteractive
+          set -e
+          echo "=== ML CLIENT — Traffic Generator + MITRE Attack Tools ==="
 
-      # Install tools
-      apt-get update -qq
-      apt-get install -y --no-install-recommends \
-        --allow-downgrades --allow-remove-essential --allow-change-held-packages \
-        -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" \
-        curl wget hping3 nmap iproute2 \
-        tcpdump tcpreplay netcat-openbsd dnsutils \
-        iputils-ping net-tools
+          apt-get update -qq
+          apt-get install -y --no-install-recommends \
+            curl wget iproute2 net-tools dnsutils \
+            tcpdump tcpreplay netcat-openbsd \
+            iputils-ping procps chrony \
+            nmap hydra sqlmap \
+            metasploit-framework \
+            python3 python3-pip git
 
-      # Install iperf3 separately
-      apt-get install -y --no-install-recommends \
-        -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" \
-        iperf3 || echo "⚠️  iperf3 install had issues (non-critical)"
+          # Atomic Red Team (ground truth reproducible — DEBT-ARGUSPP-MITRE-001)
+          if [ ! -d /opt/atomic-red-team ]; then
+            git clone --depth 1 \
+              https://github.com/redcanaryco/atomic-red-team.git \
+              /opt/atomic-red-team || \
+              echo "⚠️  atomic-red-team clone failed — red team offline mode"
+          fi
 
-      # Configure routing
-      ip route del default 2>/dev/null || true
-      ip route add default via 192.168.100.1 dev eth1
+          # NTP sync — community_id requiere timestamps coherentes
+          systemctl enable chrony
+          systemctl start chrony
+          chronyc makestep 1.0 3 2>/dev/null || true
 
-      # DNS
-      echo "nameserver 8.8.8.8" > /etc/resolv.conf
-      echo "nameserver 1.1.1.1" >> /etc/resolv.conf
+          # Routing hacia defender
+          ip route del default 2>/dev/null || true
+          ip route add default via 192.168.100.1 dev eth1
 
-      echo "✅ CLIENT READY"
-      echo "   IP: 192.168.100.50"
-      echo "   Gateway: 192.168.100.1 (defender eth2)"
-    CLIENT
+          echo "nameserver 8.8.8.8" > /etc/resolv.conf
+          echo "nameserver 1.1.1.1" >> /etc/resolv.conf
+
+          echo "=== CLIENT READY ==="
+          echo "   IP      : 192.168.100.50"
+          echo "   Gateway : 192.168.100.1 (defender eth2)"
+          echo "   Tools   : nmap hydra sqlmap tcpreplay atomic-red-team"
+        CLIENT
 
   end  # End client VM
+
+# ════════════════════════════════════════════════════════════════════════════
+  # SURICATA VM — IDS signatures (ADR-048 F2)
+  # ════════════════════════════════════════════════════════════════════════════
+  config.vm.define "suricata", autostart: false do |suricata|
+    suricata.vm.box         = "debian/bookworm64"
+    suricata.vm.box_version = "12.20240905.1"
+    suricata.vm.hostname    = "argus-suricata"
+
+    suricata.vm.provider "virtualbox" do |vb|
+      vb.name   = "argus-suricata"
+      vb.memory = "2048"
+      vb.cpus   = 2
+      vb.customize ["modifyvm", :id, "--nictype1", "virtio"]
+      vb.customize ["modifyvm", :id, "--nictype2", "virtio"]
+      vb.customize ["modifyvm", :id, "--nicpromisc2", "allow-all"]
+      vb.customize ["modifyvm", :id, "--ioapic", "on"]
+      vb.customize ["modifyvm", :id, "--audio", "none"]
+      vb.customize ["modifyvm", :id, "--usb", "off"]
+    end
+
+    suricata.vm.network "private_network",
+      ip: "192.168.100.10",
+      virtualbox__intnet: "ml_defender_gateway_lan"
+
+    suricata.vm.synced_folder ".", "/vagrant", type: "virtualbox",
+      mount_options: ["dmode=775,fmode=775,exec"]
+
+    suricata.vm.provision "shell", name: "install-suricata", inline: <<-SHELL
+      export DEBIAN_FRONTEND=noninteractive
+      echo "=== Installing Suricata + ET Open rules (ADR-048 F2) ==="
+
+      apt-get update -qq
+      apt-get install -y curl gnupg2 chrony net-tools procps python3 jq tcpreplay
+
+      systemctl enable chrony
+      systemctl start chrony
+      chronyc makestep 1.0 3 2>/dev/null || true
+
+      # DNS fix DESPUES de chrony — chattr bloquea sobreescritura
+      echo "nameserver 8.8.8.8" > /etc/resolv.conf
+      echo "nameserver 1.1.1.1" >> /etc/resolv.conf
+      chattr +i /etc/resolv.conf
+
+      # bookworm-backports para libhtp2 >= 0.5.50 (Suricata 7.x)
+      echo "deb http://deb.debian.org/debian bookworm-backports main" \
+        > /etc/apt/sources.list.d/backports.list
+      apt-get update -qq
+      apt-get install -y -t bookworm-backports libhtp2 || { echo "❌ libhtp2 failed"; exit 1; }
+      apt-get install -y suricata suricata-update || { echo "❌ suricata install failed"; exit 1; }
+
+      suricata --build-info | grep -i "version" || true
+
+      suricata-update --no-reload || true
+      echo "Rules: $(find /var/lib/suricata/rules -name '*.rules' 2>/dev/null | head -1)"
+
+      sed -i 's/- interface: eth0/- interface: eth1/' /etc/suricata/suricata.yaml
+      ip link set eth1 promisc on || true
+      echo 'ip link set eth1 promisc on' >> /etc/rc.local
+      chmod +x /etc/rc.local
+
+      # community-id: yes — DEBT-ARGUSPP-COMMUNITY-ID-001
+      sed -i '/community-id:/s/false/yes/' /etc/suricata/suricata.yaml
+
+      mkdir -p /var/log/suricata
+      chown -R suricata:suricata /var/log/suricata 2>/dev/null || true
+
+      echo "=== Suricata ready ==="
+      suricata --build-info | grep -iE "version|AF_PACKET|PCAP" || true
+      echo "community-id: $(grep 'community-id' /etc/suricata/suricata.yaml | head -1)"
+      ip link show eth1 | grep -i promisc || echo "⚠️  eth1 promisc no activo aun"
+    SHELL
+  end  # End suricata VM
+
+  # ════════════════════════════════════════════════════════════════════════════
+  # ZEEK VM — protocol analysis / observability layer (ADR-048 F3)
+  # ════════════════════════════════════════════════════════════════════════════
+  config.vm.define "zeek", autostart: false do |zeek|
+    zeek.vm.box         = "debian/bookworm64"
+    zeek.vm.box_version = "12.20240905.1"
+    zeek.vm.hostname    = "argus-zeek"
+
+    zeek.vm.provider "virtualbox" do |vb|
+      vb.name   = "argus-zeek"
+      vb.memory = "2048"
+      vb.cpus   = 2
+      vb.customize ["modifyvm", :id, "--nictype1", "virtio"]
+      vb.customize ["modifyvm", :id, "--nictype2", "virtio"]
+      vb.customize ["modifyvm", :id, "--nicpromisc2", "allow-all"]
+      vb.customize ["modifyvm", :id, "--ioapic", "on"]
+      vb.customize ["modifyvm", :id, "--audio", "none"]
+      vb.customize ["modifyvm", :id, "--usb", "off"]
+    end
+
+    zeek.vm.network "private_network",
+      ip: "192.168.100.11",
+      virtualbox__intnet: "ml_defender_gateway_lan"
+
+    zeek.vm.synced_folder ".", "/vagrant", type: "virtualbox",
+      mount_options: ["dmode=775,fmode=775,exec"]
+
+    zeek.vm.provision "shell", name: "install-zeek", inline: <<-SHELL
+      export DEBIAN_FRONTEND=noninteractive
+      echo "=== Installing Zeek (ADR-048 F3) ==="
+
+      apt-get update -qq
+      apt-get install -y curl gnupg2 chrony net-tools procps
+
+      systemctl enable chrony
+      systemctl start chrony
+      chronyc makestep 1.0 3 2>/dev/null || true
+
+      # DNS fix DESPUES de chrony
+      echo "nameserver 8.8.8.8" > /etc/resolv.conf
+      echo "nameserver 1.1.1.1" >> /etc/resolv.conf
+      chattr +i /etc/resolv.conf
+
+      # Zeek repo oficial OpenSUSE
+      echo 'deb http://download.opensuse.org/repositories/security:/zeek/Debian_12/ /' \
+        > /etc/apt/sources.list.d/zeek.list
+      curl -fsSL https://download.opensuse.org/repositories/security:/zeek/Debian_12/Release.key \
+        | gpg --dearmor > /etc/apt/trusted.gpg.d/zeek.gpg
+      apt-get update -qq
+      apt-get install -y zeek || { echo "❌ zeek install failed"; exit 1; }
+
+      echo 'export PATH=/opt/zeek/bin:$PATH' >> /etc/profile.d/zeek.sh
+      chmod +x /etc/profile.d/zeek.sh
+      export PATH=/opt/zeek/bin:$PATH
+
+      sed -i 's/interface=eth0/interface=eth1/' /opt/zeek/etc/node.cfg
+      ip link set eth1 promisc on || true
+      echo 'ip link set eth1 promisc on' >> /etc/rc.local
+      chmod +x /etc/rc.local
+
+      # community-id — DEBT-ARGUSPP-COMMUNITY-ID-001
+      if [ ! -f /opt/zeek/etc/local.zeek ]; then
+        touch /opt/zeek/etc/local.zeek
+      fi
+      if ! grep -q "community-id" /opt/zeek/etc/local.zeek; then
+        echo "@load policy/protocols/conn/community-id-v1" >> /opt/zeek/etc/local.zeek
+      fi
+
+      mkdir -p /var/log/zeek
+      ln -sf /opt/zeek/logs/current /var/log/zeek/current 2>/dev/null || true
+
+      echo "=== Zeek ready ==="
+      /opt/zeek/bin/zeek --version || true
+      echo "community-id: $(grep community-id /opt/zeek/etc/local.zeek)"
+      ip link show eth1 | grep -i promisc || echo "⚠️  eth1 promisc no activo aun"
+    SHELL
+  end  # End zeek VM
+
+  # ════════════════════════════════════════════════════════════════════════════
+  # WAZUH VM — host-based events / HIDS (ADR-048 F4)
+  # ════════════════════════════════════════════════════════════════════════════
+  config.vm.define "wazuh", autostart: false do |wazuh|
+    wazuh.vm.box         = "debian/bookworm64"
+    wazuh.vm.box_version = "12.20240905.1"
+    wazuh.vm.hostname    = "argus-wazuh"
+
+    wazuh.vm.provider "virtualbox" do |vb|
+      vb.name   = "argus-wazuh"
+      vb.memory = "4096"
+      vb.cpus   = 2
+      vb.customize ["modifyvm", :id, "--nictype1", "virtio"]
+      vb.customize ["modifyvm", :id, "--nictype2", "virtio"]
+      vb.customize ["modifyvm", :id, "--ioapic", "on"]
+      vb.customize ["modifyvm", :id, "--audio", "none"]
+      vb.customize ["modifyvm", :id, "--usb", "off"]
+    end
+
+    wazuh.vm.network "private_network",
+      ip: "192.168.100.12",
+      virtualbox__intnet: "ml_defender_gateway_lan"
+
+    wazuh.vm.synced_folder ".", "/vagrant", type: "virtualbox",
+      mount_options: ["dmode=775,fmode=775,exec"]
+
+    wazuh.vm.provision "shell", name: "install-wazuh", inline: <<-SHELL
+      export DEBIAN_FRONTEND=noninteractive
+      echo "=== Installing Wazuh manager (ADR-048 F4) ==="
+
+      apt-get update -qq
+      apt-get install -y curl gnupg2 chrony net-tools procps
+
+      systemctl enable chrony
+      systemctl start chrony
+      chronyc makestep 1.0 3 2>/dev/null || true
+
+      # DNS fix DESPUES de chrony
+      echo "nameserver 8.8.8.8" > /etc/resolv.conf
+      echo "nameserver 1.1.1.1" >> /etc/resolv.conf
+      chattr +i /etc/resolv.conf
+
+      curl -s https://packages.wazuh.com/key/GPG-KEY-WAZUH \
+        | gpg --dearmor > /usr/share/keyrings/wazuh.gpg
+      echo "deb [signed-by=/usr/share/keyrings/wazuh.gpg] https://packages.wazuh.com/4.x/apt/ stable main" \
+        > /etc/apt/sources.list.d/wazuh.list
+      apt-get update -qq
+      apt-get install -y wazuh-manager || { echo "❌ wazuh-manager install failed"; exit 1; }
+
+      systemctl daemon-reload
+      systemctl enable wazuh-manager
+      systemctl start wazuh-manager || true
+
+      echo "=== Wazuh manager ready ==="
+      /var/ossec/bin/wazuh-control status | head -5 || true
+    SHELL
+  end  # End wazuh VM
 
 end  # End Vagrant configuration
