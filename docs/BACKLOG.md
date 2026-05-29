@@ -1,5 +1,5 @@
 # aRGus NDR — BACKLOG
-*Última actualización: DAY 166 — 2026-05-27*
+*Última actualización: DAY 169 — 2026-05-29*
 
 ---
 
@@ -86,6 +86,64 @@
 
 ---
 
+
+## ✅ CERRADO DAY 168
+
+### Vagrantfile multi-VM — Suricata 7.0.10 + Zeek 8.2.0 + Wazuh 4.x
+- **Status:** ✅ COMPLETADO DAY 168 — merge a main `21642e87`
+- Cuatro VMs en `ml_defender_gateway_lan` (192.168.100.0/24), `autostart: false`:
+  - `defender` 192.168.100.1 — aRGus NDR completo (primary)
+  - `suricata` 192.168.100.10 — Suricata 7.0.10, AF_PACKET, community-id:yes, PROMISC
+  - `zeek` 192.168.100.11 — Zeek 8.2.0, community-id-v1, PROMISC
+  - `wazuh` 192.168.100.12 — Wazuh 4.x manager running, NTP OK
+  - `client` 192.168.100.50 — tcpreplay + nmap/hydra/sqlmap/atomic-red-team
+- 50.248 reglas ET Open cargadas en Suricata.
+- `WAZUH_MANAGER_PASSWORD` eliminado del Vagrantfile (fix de seguridad).
+
+### DEBT-ARGUSPP-COMMUNITY-ID-001 — community_id en Suricata + Zeek (PARCIAL)
+- **Status:** 🟡 60% DAY 168 — configuración hecha, falta aRGus
+- community-id habilitado en Suricata (`community-id: yes`) y Zeek (`community-id-v1`).
+- **PENDIENTE (P0, DAY 169+):** campo `community_id` en el contrato protobuf y
+  cálculo en el sniffer de aRGus. El ID NO viene por defecto en aRGus — Suricata,
+  Zeek y Wazuh lo traen de fábrica, aRGus no.
+- **Catch crítico (Kimi):** el `community_id` del sniffer debe ser idéntico byte a byte
+  al de Zeek/Suricata para la misma 5-tupla. Canonicalización: `proto` numérico (6/17),
+  no string (`"tcp"`); orden de endpoints normalizado. Si difiere, el join cross-tool
+  falla en silencio — es el mismo bug de endianness que cazamos al principio.
+
+### REGLAS PERMANENTES nuevas DAY 168
+- **REGLA PERMANENTE (DAY 168):** Nunca `set -e` en provisions del Vagrantfile.
+  Usar `|| true` (no bloqueante) o `|| { exit 1; }` (bloqueante explícito).
+- **REGLA PERMANENTE (DAY 168):** El fix de DNS (`chattr +i /etc/resolv.conf`)
+  SIEMPRE después de instalar chrony — chrony reescribe resolv.conf al arrancar.
+- **REGLA PERMANENTE (DAY 168):** Nunca `cat << 'EOF'` anidado dentro de un
+  heredoc `<<-SHELL` en el Vagrantfile — usar `printf`. El anidamiento rompe el parser.
+
+## ✅ CERRADO DAY 167
+
+### DEBT-ARGUSPP-NTP-001 — NTP+chrony en todos los nodos (P0)
+- **Status:** ✅ COMPLETADO DAY 167 — merge a main `7b45feca`
+- chrony instalado y configurado en todos los nodos del pipeline.
+- Health-check rechaza el arranque si el offset NTP es >1s.
+- Gate P0 del correlation-engine: `community_id` es inútil sin timestamps sincronizados
+  entre las cinco fuentes (aRGus/Suricata/Zeek/Wazuh).
+
+### correlation-engine scaffold (ADR-048 F2)
+- **Status:** ✅ COMPLETADO DAY 167 — andamiaje inicial
+- Esqueleto C++20 del correlation-engine con `source_wait_timeout` por fuente
+  (argus 5s / suricata 10s / zeek 20s / wazuh 90s) y `crisis_idle_timeout` 120s.
+- Esquema Arrow con columnas opcionales para las 4 fuentes desde v1.0.
+
+### BACKLOG-CI-ENTERPRISE-001 — Jenkins gate make emecas++
+- **Status:** ✅ COMPLETADO DAY 167 — 11 pasadas Jenkins hasta verde
+- Stage `make emecas++` en `Jenkinsfile.dev`: tras Unit Tests, antes de Build .deb.
+- Precondición: Vault dev activo (`make vault-dev-start`).
+- Fallo del Acto I, II o III → pipeline rojo, no merge.
+- `package-deb` y `deploy-vagrant-test` marcados como deferred (skip) en dev.
+- Fix `pkill -x etcd-server` (self-match SIGTERM, Fase 5).
+- Deudas registradas: DEBT-PACKAGE-DEB-001 (deferred), DEBT-DEPLOY-VAGRANT-001
+  (deferred), KNOWN-FAIL-VM-PERF-001 (documentado), DEBT-XGBOOST-HEADERS-001
+  (headers desde pip + fallback curl en Vagrantfile).
 
 ## ✅ CERRADO DAY 166
 
@@ -1882,6 +1940,49 @@ ni de artefactos del proceso. La honestidad científica es no negociable.
 
 ---
 
+## 🏛️ DAY 169 — Día de arquitectura
+
+**Estado:** rama de arquitectura. Sin merge de código de pipeline — trabajo de diseño.
+
+- **ADR-046 v4 — APROBADO.** Cuarta iteración del Multi-Source Pipeline. Refina la
+  separación de planos: plano de datos (telemetría cruda por fuente) vs plano de
+  correlación (CrisisWindow + community_id como pegamento) vs plano de decisión.
+- **AdapterSpec v1 — CERRADO.** Contrato formal del adaptador por fuente: cómo cada
+  motor (Suricata/Zeek/Wazuh) entrega su Parquet con su esquema propio y cómo el
+  correlation-engine lo une de forma aditiva vía `community_id`.
+- **Separación de planos** consolidada como principio de diseño.
+- **ADR-050 — PENDIENTE de redacción.** Los seis vectores de ataque de la sesión MITRE,
+  el bootstrap de la víctima y la corrección criptográfica del canal de telemetría.
+  Se redactará como hicimos con ADR-046 (borrador → Consejo).
+
+### DEBT-ARGUSPP-COMMUNITY-ID-ARGUS-001 — community_id nativo en aRGus (P0)
+**Severidad:** 🔴 P0 — gate del dataset federado
+**Estado:** ABIERTO — DAY 169
+**Componente:** `protobuf/network_security.proto` + `sniffer`
+
+community_id viene de fábrica en Suricata, Zeek y Wazuh, pero NO en aRGus.
+Trabajo pendiente:
+1. `protobuf/network_security.proto`: añadir campo `community_id` (string, field ~20).
+   protobuf3 backwards-compatible — campos nuevos no rompen componentes existentes.
+2. `sniffer`: calcular community_id (SHA1 de la 5-tupla:
+   src_ip + dst_ip + src_port + dst_port + proto).
+3. Propagar por el pipeline: sniffer → ml-detector → correlation-engine.
+
+**Catch crítico (Kimi — gate real):** la canonicalización debe ser idéntica byte a byte
+a la de Zeek/Suricata para la misma 5-tupla. `proto` como número (6/17), no string;
+orden de endpoints normalizado (menor primero). Si difiere, el join cross-tool falla
+en silencio. Verificación obligatoria: misma 5-tupla → mismo community_id en las 4
+herramientas, comparado a mano antes de declararlo cerrado.
+
+**Test de cierre:** misma 5-tupla inyectada → community_id idéntico en aRGus, Suricata
+y Zeek. Diff byte a byte = 0.
+
+### ADR-050 — Sesión MITRE + corrección cripto telemetría (PENDIENTE redacción)
+**Estado:** ⏳ BORRADOR PENDIENTE — DAY 169
+**Contenido a redactar:** seis vectores de ataque de la sesión MITRE controlada,
+bootstrap de las dos víctimas, corrección criptográfica del canal de telemetría.
+Flujo: borrador → Consejo de Sabios → aprobación → implementación.
+
 ## 🔑 Decisiones de diseño consolidadas
 
 | Decisión | Resolución | DAY |
@@ -2346,7 +2447,7 @@ Un sistema con ACRL converge hacia cobertura de técnicas ATT&CK en tiempo polin
 
 ---
 
-*DAY 166 — 2026-05-27 · main @ main*
+*DAY 169 — 2026-05-29 · main @ 21642e87*
 *"Via Appia Quality — Un escudo que aprende de su propia sombra."*
 
 

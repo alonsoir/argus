@@ -1,0 +1,29 @@
+Como autor, ratifico las cuatro — pero igual que en la Pasada 2, cada ratificación viene con el ataque a mi propia propuesta donde queda riesgo. Tres de las cuatro se sostienen con un afinamiento; en P3.2 tengo que conceder un punto real al bando contrario antes de mantener mi posición.
+
+**P3.1 — Campos de primera clase. Ratifico. Confianza: alta, con una precisión que conecta con D5.**
+Los tres tiempos van como `uint64` de primera clase. Pero no tienen el mismo dueño ni la misma obligatoriedad, y eso hay que escribirlo: `event_time` lo rellena el adapter desde la fuente y es **obligatorio**; `emitted_at` es de la fuente y **opcional** (para el sniffer propio de aRGus, que emite al instante, coincide con `event_time` y es redundante); `ingested_at` lo pone el adapter con su reloj de pared al recibir, y está **siempre**.
+
+Y aquí el rider que no es opcional: `ingested_at` es **reloj de pared no determinista** — en un replay del golden pcap valdrá distinto cada vez. Por tanto **queda excluido del núcleo reproducible del dataset** (de cualquier hash, etiqueta o aserción determinista). Si se cuela en el dataset de entrenamiento, el corpus deja de ser reproducible y rompemos justo lo que D5 exige. `ingested_at` es telemetría operativa, vive en un sidecar, nunca en el ground-truth.
+
+**P3.2 — Tiers discretos. Ratifico, pero concediendo primero el punto fuerte del bando del score.**
+El argumento honesto a favor del score que yo infravaloré: las fases tempranas de la kill-chain (recon, acceso inicial) son de **severidad baja** justo cuando más importa conservarlas — un esquema de tiers estricto las evictaría antes que un MEDIUM ruidoso y benigno, sesgando el sistema *contra* la detección temprana. Eso es real y es lo mejor que tiene el score.
+
+Pero la respuesta correcta a ese problema **no** es el score opaco; es que ya está cubierto por dos mecanismos que no sacrifican auditabilidad: (i) **escalada de severidad por acreción** — una crisis de recon migra a HIGH en cuanto se le une movimiento lateral, así que sube de tier al madurar, no se queda atrapada en LOW; y (ii) **protección caliente por actividad estructural** (el refinamiento de DeepSeek en B5) — una crisis que sigue ganando aristas nunca llega al conjunto frío. Una kill-chain en construcción está, por definición, ganando aristas. Así que el caso que justifica el score está resuelto tres veces (escalada + caliente-estructural + tiers), y conservamos la propiedad anti-pinning demostrable. Mantengo tiers. Si Mistral o Grok exhiben un escenario donde la kill-chain temprana se pierde *pese* a escalada + caliente-estructural, reabro.
+
+**P3.3 — Cuota por IP externa + cap global. Ratifico. Confianza: alta, con una consecuencia de seguridad que hay que explicitar.**
+El reparto interno/externo de la cuota es **tan correcto como lo sea el inventario R10**. Eso eleva a R10 de "estado para correlación" a **estado que sostiene una propiedad de seguridad** — y por tanto la regla tiene que ser **fail-closed**: una IP de clasificación **desconocida** se trata como **externa** (sujeta a cuota), nunca como interna (exenta). Si fuera al revés, un atacante con una IP no inventariada heredaría la exención de víctima. Desconocido → externo. Y la exención de host interno sigue acotada por su sub-cap y su `idle_timeout` extendido (~300 s), de modo que ni el spoofing de IP interna ni un host interno comprometido-y-silencioso convierten la exención en arma.
+
+**P3.4 — Append-only inmutable. Ratifico, y lo endurezco porque D5 lo hizo requisito.**
+"Inmutable + delta enlazado" se queda corto tal como lo escribí. La forma rigurosa es un **log append-only temporalmente ordenado donde cada delta lleva su propio tiempo**, de modo que el generador de dataset pueda **reconstruir la crisis "a fecha de" cualquier corte temporal**. Esto no es cosmético: es lo único que hace válido el split **walk-forward** de ADR-040. Si un rezagado de Wazuh se adjunta a `T+50s`, ese delta **no puede** plegarse en una muestra cuyo corte de entrenamiento es `T` — sería fuga de futuro. Sin deltas con sello temporal propio, no hay reconstrucción punto-en-tiempo, y sin eso no hay dataset federado defendible.
+
+Y un borde que mi propuesta no cubría: un evento **super-tardío**, que llega *después* de cerrarse `late_arrival_window` (p. ej. Wazuh reportando a 200 s con ventana de 120 s), **no se descarta en silencio** (perderíamos telemetría etiquetable) **ni muta** una crisis cerrada (rompería reproducibilidad). Se convierte en su **propio registro** (posiblemente crisis singleton), marcado como tardío-no-adjuntado. Nada se pierde, nada se reescribe.
+
+A Kimi, sobre su "actualización/reenvío": si lo que quería decir es **emitir un delta nuevo enlazado** (mi posición), estamos de acuerdo y P3.4 cierra. Si quería decir **mutar la crisis ya emitida** in situ, ahí sí discrepo, y el argumento es D5: el server reprocesa ese log offline para generar el dataset, y un log mutable hace que el dataset dependa de cuándo lo leas.
+
+---
+
+Resumen de mi voto: **P3.1 ratifico** (campos de primera clase; `ingested_at` fuera del núcleo reproducible). **P3.2 ratifico tiers** (concedido el punto de la kill-chain temprana, pero cubierto por escalada + caliente-estructural). **P3.3 ratifico** (por-IP + cap global; clasificación fail-closed: desconocido → externo). **P3.4 ratifico y endurezco** (log append-only con deltas sellados temporalmente para reconstrucción punto-en-tiempo; super-tardíos como registro propio).
+
+Cuando lleguen los otros siete, si no hay defensa nueva en P3.2 ni mutación reivindicada en P3.4, está todo cerrado entre nosotros y te toca el voto final. Ahí redacto el ADR-046 v4 completo (B1–B11 + resultados de la 3) y el `AdapterSpec v1` aparte.
+
+CLAUDE
