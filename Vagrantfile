@@ -947,8 +947,14 @@ BASHRC_EOF
             tcpdump tcpreplay netcat-openbsd \
             iputils-ping procps chrony \
             nmap hydra sqlmap \
-            metasploit-framework \
             python3 python3-pip git
+
+          # Metasploit: NO está en apt. Instalador oficial Rapid7, no crítico.
+          if ! command -v msfconsole >/dev/null 2>&1; then
+            curl -fsSL https://raw.githubusercontent.com/rapid7/metasploit-omnibus/master/config/templates/metasploit-framework-wrappers/msfupdate.erb -o /tmp/msfinstall \
+            && chmod +x /tmp/msfinstall && /tmp/msfinstall \
+                   || echo "WARN: metasploit no instalado, continúo (no crítico)"
+           fi
 
           # Atomic Red Team (ground truth reproducible — DEBT-ARGUSPP-MITRE-001)
           if [ ! -d /opt/atomic-red-team ]; then

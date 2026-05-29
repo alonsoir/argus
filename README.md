@@ -36,22 +36,23 @@
 
 ---
 
-## Estado actual — DAY 166 (2026-05-27)
+## Estado actual — DAY 169 (2026-05-29)
 
 <!-- DAY-STATUS -->
 | Campo | Valor |
 |---|---|
-| DAY | 166 |
+| DAY | 169 |
 | Tag | v1.0.0-day166 |
-| Branch | main |
+| Branch | main @ 21642e87 |
 | EMECAS++ OSS | ✅ verde — test-all + test-e2e-synthetic-full + test-e2e-synthetic-firewall |
-| EMECAS++ Enterprise | ✅ VERDE — 3 actos verdes y reproducibles (DAY 166) |
+| EMECAS++ Enterprise | ✅ VERDE — 3 actos + Jenkins gate (DAY 167) |
 | Pipeline | 6/6 RUNNING |
-| Crypto lifecycle | FASE 0 ✅ + FASE 1 ✅ + FASE 2a ✅ + FASE 2b ✅ + FASE 3 ✅ + EMECAS++ ✅ |
-| Wire header epoch_id | ✅ [uint32_t][uint16_t epoch_id][2B reserved][LZ4] — 13/13 tests |
-| vendor.key | ✅ Modelo B — solo en Vault dev, nunca en disco |
-| ADR-045 v2 | ✅ Consejo 8/8 — implementado FASES 0-3 + EMECAS++ |
-| Próximo hito | DAY 167: BACKLOG-CI-ENTERPRISE-001 (Jenkins gate) + ADR-048 F2 (NTP + community_id) |
+| NTP/chrony | ✅ DEBT-ARGUSPP-NTP-001 — health-check rechaza offset >1s (DAY 167) |
+| correlation-engine | 🟡 scaffold ADR-048 F2 (DAY 167) |
+| Multi-VM | ✅ Suricata 7.0.10 + Zeek 8.2.0 + Wazuh 4.x en 192.168.100.0/24 (DAY 168) |
+| community_id | 🟡 Suricata+Zeek configurados · aRGus protobuf+sniffer PENDIENTE P0 (DAY 169) |
+| Arquitectura | ✅ ADR-046 v4 + AdapterSpec v1 (DAY 169) · ADR-050 pendiente |
+| Próximo hito | community_id nativo en aRGus (protobuf+sniffer) + ADR-050 |
 | Gate UEx/INCIBE | Datasets de valor científico (no deadline duro) |
 <!-- /DAY-STATUS -->
 
@@ -74,6 +75,19 @@
   - **DEBT-CRYPTO-RECONCILIATION-001 CERRADA + STALENESS GUARD (B1 post-Consejo)** — `AutonomySubscriber`: `shared_ptr<atomic<FirewallAutonomyMode>>` + `shared_ptr<atomic<int64_t>>` (last_update_ns). `poll_callback`: si `elapsed > staleness_timeout_sec` → NORMAL + log. Previene firewall congelado si etcd-server muere silenciosamente. 9/9 tests (T9: staleness guard).
   - **Consejo 8/8 consultado** — Dos bloqueantes identificados y resueltos antes del merge: B1 (staleness) + B2 (ExecStartPre= vs ExecStartPost= para fichero efímero, pendiente DAY 158).
   - **EMECAS DAY 157 VERDE** — `vagrant destroy → up → make bootstrap → make test-all` — TODO VERDE.
+
+### Hitos DAY 169 🏛️
+- **Día de arquitectura.** `ADR-046 v4` aprobado (Multi-Source Pipeline, separación de planos). `AdapterSpec v1` cerrado (contrato del adaptador por fuente). `ADR-050` pendiente de redacción (seis vectores de la sesión MITRE + corrección cripto telemetría).
+  - **DEBT-ARGUSPP-COMMUNITY-ID-ARGUS-001 abierta (P0)** — community_id nativo en aRGus: campo en protobuf + cálculo SHA1 de la 5-tupla en el sniffer. Catch de Kimi: canonicalización idéntica byte a byte a Zeek/Suricata o el join cross-tool falla en silencio.
+
+### Hitos DAY 168 🎉
+- **Vagrantfile multi-VM** — Suricata 7.0.10 + Zeek 8.2.0 + Wazuh 4.x + client en `ml_defender_gateway_lan` (192.168.100.0/24, `autostart: false`). community-id habilitado en Suricata y Zeek. 50.248 reglas ET Open. `WAZUH_MANAGER_PASSWORD` eliminado (fix seguridad). Merge a main `21642e87`.
+  - **3 reglas permanentes nuevas** — nunca `set -e` en provisions (usar `|| true` / `|| { exit 1; }`); DNS fix `chattr +i` SIEMPRE tras chrony; nunca heredoc `cat << 'EOF'` anidado en `<<-SHELL` (usar `printf`).
+
+### Hitos DAY 167 🎉
+- **DEBT-ARGUSPP-NTP-001 CERRADA (P0)** — chrony en todos los nodos, health-check rechaza arranque si offset >1s. Gate del correlation-engine: community_id es inútil sin timestamps sincronizados.
+  - **correlation-engine scaffold (ADR-048 F2)** — esqueleto C++20 con `source_wait_timeout` por fuente y `crisis_idle_timeout` 120s.
+  - **BACKLOG-CI-ENTERPRISE-001 CERRADA** — stage `make emecas++` en Jenkinsfile.dev (11 pasadas hasta verde). Vault dev como precondición. Acto I/II/III rojo → no merge. Merge a main `7b45feca`.
 
 ### Hitos DAY 163 🎉
 - **Fix CMake: test_ntp_health_check triplicado** — `test_ntp_health_check` definido 3 veces en `common/CMakeLists.txt`. Bloqueaba EMECAS++ Acto I (`-DARGUS_VAULT_ENABLED=ON`). Fix: `sed -i '291,302d;387,398d'`. Un comando, dos minutos. **Consejo DAY 163 (8/8):** invariante `if(NOT TARGET)` obligatorio. Los bloques `if(ARGUS_VAULT_ENABLED)` no crean targets — solo añaden comportamiento. Nueva deuda: `DEBT-CMAKE-GRAPH-INVARIANTS-001` con lint CI (ChatGPT, Kimi). ADR propuesto: `adr-028-cmake-target-naming.md`.
@@ -547,7 +561,10 @@ make hardened-full   # destroy → up → provision → build → deploy → che
   - ✅ DAY 164: **FASE 2a+2b enterprise · HttpEtcdRegistrar + CryptoEpochCoordinator · 10/10 tests** 🎉
   - ✅ DAY 165: **FASE 3 wire header epoch_id · 13/13 tests · EMECAS++ OSS verde · Consejo 8/8 protocolo 3 actos** 🎉
   - ✅ DAY 166: **EMECAS++ 3 actos verdes · merge enterprise a main · VaultProvider caché RCU confirmado · vault-fault-inject PASSED · Zero downtime demostrado · Tag v1.0.0-day166** 🎉
-  - 🔜 DAY 167: **BACKLOG-CI-ENTERPRISE-001 (Jenkins gate `make emecas++`) + ADR-048 F2 (DEBT-ARGUSPP-NTP-001 + DEBT-ARGUSPP-COMMUNITY-ID-001) + DEBT-ARGUSPP-SURICATA-001**
+  - ✅ DAY 167: **DEBT-ARGUSPP-NTP-001 (P0) · correlation-engine scaffold ADR-048 F2 · BACKLOG-CI-ENTERPRISE-001 Jenkins gate · merge main 7b45feca** 🎉
+  - ✅ DAY 168: **Vagrantfile multi-VM Suricata 7.0.10 + Zeek 8.2.0 + Wazuh 4.x · community-id Suricata/Zeek · 3 reglas permanentes · merge main 21642e87** 🎉
+  - ✅ DAY 169: **Día de arquitectura · ADR-046 v4 + AdapterSpec v1 · separación de planos · ADR-050 pendiente · community_id nativo aRGus P0 abierto** 🏛️
+  - 🔜 DAY 170: **community_id nativo en aRGus (protobuf + sniffer, canonicalización Kimi) + ADR-050 borrador + RSS bajo carga (pipeline+client+tcpreplay) + DEBT-ARGUSPP-SURICATA-001 (eve.json → correlation-engine)**
 
 ---
 
