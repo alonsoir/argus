@@ -938,23 +938,16 @@ BASHRC_EOF
 
     client.vm.provision "shell", name: "client-setup", run: "always", inline: <<-CLIENT
           export DEBIAN_FRONTEND=noninteractive
-          set -e
+          # NO set -e (regla de provisioning): un repo externo caído no debe tumbar el up
           echo "=== ML CLIENT — Traffic Generator + MITRE Attack Tools ==="
-
-          apt-get update -qq
+          apt-get update -qq || true
           apt-get install -y --no-install-recommends \
-            curl wget iproute2 net-tools dnsutils \
-            tcpdump tcpreplay netcat-openbsd \
-            iputils-ping procps chrony \
-            nmap hydra sqlmap \
-            python3 python3-pip git
-
-          # Metasploit: NO está en apt. Instalador oficial Rapid7, no crítico.
-          if ! command -v msfconsole >/dev/null 2>&1; then
-            curl -fsSL https://raw.githubusercontent.com/rapid7/metasploit-omnibus/master/config/templates/metasploit-framework-wrappers/msfupdate.erb -o /tmp/msfinstall \
-            && chmod +x /tmp/msfinstall && /tmp/msfinstall \
-                   || echo "WARN: metasploit no instalado, continúo (no crítico)"
-           fi
+          curl wget iproute2 net-tools dnsutils \
+          tcpdump tcpreplay netcat-openbsd \
+          iputils-ping procps chrony \
+          nmap hydra sqlmap \
+          python3 python3-pip git \
+          || { echo "FATAL: herramientas base no instaladas"; exit 1; }
 
           # Atomic Red Team (ground truth reproducible — DEBT-ARGUSPP-MITRE-001)
           if [ ! -d /opt/atomic-red-team ]; then
@@ -973,8 +966,10 @@ BASHRC_EOF
           ip route del default 2>/dev/null || true
           ip route add default via 192.168.100.1 dev eth1
 
+          chattr -i /etc/resolv.conf 2>/dev/null || true
           echo "nameserver 8.8.8.8" > /etc/resolv.conf
           echo "nameserver 1.1.1.1" >> /etc/resolv.conf
+          chattr +i /etc/resolv.conf 2>/dev/null || true
 
           echo "=== CLIENT READY ==="
           echo "   IP      : 192.168.100.50"

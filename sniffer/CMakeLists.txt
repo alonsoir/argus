@@ -51,7 +51,8 @@ endif()
 find_package(PkgConfig REQUIRED)
 find_package(Protobuf REQUIRED)
 find_package(Threads REQUIRED)
-
+# Community ID v1 (Corelight spec) — SHA1 vía EVP (no SHA1() deprecated bajo -Werror)
+find_package(OpenSSL REQUIRED)
 # Core eBPF and networking dependencies (REQUIRED)
 if(USE_LIBPCAP)
   message(STATUS "ADR-029 Variant B: libpcap backend — skipping libbpf")
@@ -303,7 +304,10 @@ set(SNIFFER_SOURCES
 set(SHARDED_FLOW_SOURCES
         src/flow/sharded_flow_manager.cpp
 )
-
+# Community ID v1 (Corelight spec) — DAY 170. Función pura de la 5-tupla.
+set(COMMUNITY_ID_SOURCES
+        src/flow/community_id.cpp
+)
 # Feature-specific sources
 set(SNIFFER_FEATURE_SOURCES "")
 
@@ -325,7 +329,8 @@ endif()
 if(NOT USE_LIBPCAP)  # Variant A only — Variant B usa sniffer-libpcap
 add_executable(sniffer
         ${SNIFFER_SOURCES}
-        ${SHARDED_FLOW_SOURCES})
+        ${SHARDED_FLOW_SOURCES}
+        ${COMMUNITY_ID_SOURCES})
 
 add_dependencies(sniffer bpf_program)
 
@@ -401,6 +406,7 @@ set(SNIFFER_CORE_LIBRARIES
         ${LZ4_LIBRARIES}
         ${ZSTD_LIBRARIES}
         Threads::Threads
+        OpenSSL::Crypto
         elf
         z
 )
@@ -543,9 +549,10 @@ if(USE_LIBPCAP)
   pkg_check_modules(LIBPCAP REQUIRED libpcap)
 
   add_executable(sniffer-libpcap
-    ${CMAKE_SOURCE_DIR}/src/userspace/main_libpcap.cpp
-    ${CMAKE_SOURCE_DIR}/src/userspace/pcap_backend.cpp
-    ${CMAKE_BINARY_DIR}/proto/network_security.pb.cc
+          ${CMAKE_SOURCE_DIR}/src/userspace/main_libpcap.cpp
+          ${CMAKE_SOURCE_DIR}/src/userspace/pcap_backend.cpp
+          ${CMAKE_SOURCE_DIR}/src/flow/community_id.cpp
+          ${CMAKE_BINARY_DIR}/proto/network_security.pb.cc
   )
 
   target_include_directories(sniffer-libpcap PRIVATE
@@ -565,6 +572,7 @@ if(USE_LIBPCAP)
     crypto_transport
     seed_client
     etcd_client
+    OpenSSL::Crypto
     ${CMAKE_DL_LIBS}
   )
 
@@ -959,3 +967,21 @@ target_link_libraries(test_pcap_backend_regression PRIVATE
 )
 add_test(NAME test_pcap_backend_regression COMMAND test_pcap_backend_regression)
 message(STATUS "🧪 Variant B Test: test_pcap_backend_regression configured")
+
+# ============================================================================
+# COMMUNITY ID v1 TEST — DAY 170 (Corelight spec, oráculo pycommunityid)
+# Valida: 6 vectores byte-idénticos + bidireccionalidad + ICMP diferido
+# ============================================================================
+add_executable(test_community_id
+        tests/test_community_id.cpp
+        src/flow/community_id.cpp
+)
+target_include_directories(test_community_id PRIVATE
+        ${CMAKE_SOURCE_DIR}/include
+        ${CMAKE_SOURCE_DIR}/include/flow
+)
+target_link_libraries(test_community_id
+        OpenSSL::Crypto
+)
+add_test(NAME test_community_id COMMAND test_community_id)
+message(STATUS "🧪 Unit Test: test_community_id configured (DAY 170 - Corelight spec)")

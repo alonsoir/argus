@@ -10,6 +10,7 @@
 #include <cstring>
 #include "feature_logger.hpp"
 #include "flow/sharded_flow_manager.hpp"  // ✅ DAY 45: Migrated
+#include "flow/community_id.hpp"
 #include "ml_defender_features.hpp"
 #include <iostream>
 #include <cstring>
@@ -875,7 +876,15 @@ void RingBufferConsumer::populate_protobuf_event(const SimpleEvent& event,
     features->set_destination_port(event.dst_port);
     features->set_protocol_number(event.protocol);
     features->set_protocol_name(protocol_to_string(event.protocol));
-
+    // 🔗 Community ID v1 (Corelight spec) — DAY 170. Sobre la 5-tupla ya fijada.
+    if (auto cid = sniffer::flow::compute_community_id(
+        features->source_ip(), features->destination_ip(),
+        static_cast<uint16_t>(features->source_port()),
+        static_cast<uint16_t>(features->destination_port()),
+        static_cast<uint8_t>(features->protocol_number()))) {
+            features->set_community_id(*cid);
+        }
+        // else -> community_id queda "" (default): ICMP/no-IP, diferido
     // Dual-NIC deployment metadata (Phase 1, Day 7)
     // [DEBUG] Dual-NIC values from eBPF
     std::cout << "[DUAL-NIC] ifindex=" << event.source_ifindex
@@ -1229,6 +1238,15 @@ void RingBufferConsumer::send_fast_alert(const SimpleEvent& event) {
         net_features->set_destination_port(event.dst_port);
         net_features->set_protocol_number(event.protocol);
         net_features->set_protocol_name(sniffer::protocol_to_string(event.protocol));
+        // 🔗 Community ID v1 (Corelight spec) — DAY 170. Sobre la 5-tupla ya fijada.
+        if (auto cid = sniffer::flow::compute_community_id(
+                net_features->source_ip(), net_features->destination_ip(),
+                static_cast<uint16_t>(net_features->source_port()),
+                static_cast<uint16_t>(net_features->destination_port()),
+                static_cast<uint8_t>(net_features->protocol_number()))) {
+                    net_features->set_community_id(*cid);
+                }
+        // else -> community_id queda "" (default): ICMP/no-IP, diferido
 		// FIX 76
 		init_embedded_sentinels(net_features);
 

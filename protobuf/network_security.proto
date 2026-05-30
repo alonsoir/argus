@@ -107,6 +107,12 @@ message NetworkFeatures {
     uint32 protocol_number = 5;
     string protocol_name = 6;
 
+    // 🔗 COMMUNITY ID v1 (Corelight spec) — clave de join cross-tool (DAY 170)
+    // Field 18 (no 20: ocupado por forward_packet_length_max).
+    // Función pura de la 5-tupla: "1:" + base64(sha1(seed‖5-tupla-canónica)).
+    // Idéntico string-a-string con Suricata/Zeek/Wazuh. Vacío "" = no computado (ICMP/no-IP, diferido).
+    string community_id = 18;
+
     // 🌐 DUAL-NIC DEPLOYMENT METADATA - Phase 1, Day 7
     uint32 interface_mode = 7;            // 0=disabled, 1=host-based, 2=gateway
     bool is_wan_facing = 8;               // true=WAN, false=LAN

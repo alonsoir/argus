@@ -103,7 +103,7 @@ void print_basic_summary(const protobuf::NetworkSecurityEvent& event) {
         );
     }
 
-    std::cout << "\n";
+    std::cout << "  cid=" << nf.community_id() << "\n";
 }
 
 void print_grouped_features(const protobuf::NetworkSecurityEvent& event) {
