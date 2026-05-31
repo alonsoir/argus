@@ -1120,8 +1120,13 @@ BASHRC_EOF
       SITE_LOCAL="${ZEEK_SITE}/local.zeek"
       mkdir -p "$ZEEK_SITE"
       touch "$SITE_LOCAL"
-      if ! grep -q "community-id-logging" "$SITE_LOCAL"; then
-        printf '\\n@load policy/protocols/conn/community-id-logging\\nredef CommunityID::seed = 0;\\n' >> "$SITE_LOCAL"
+      # Guardas separadas por linea: el paquete Zeek puede traer el @load (comentado o no)
+      # y una edicion manual previa pudo dejar el @load sin el seed. Idempotente por linea.
+      if ! grep -qE '^[[:space:]]*@load policy/protocols/conn/community-id-logging' "$SITE_LOCAL"; then
+        printf '\\n@load policy/protocols/conn/community-id-logging\\n' >> "$SITE_LOCAL"
+      fi
+      if ! grep -qE '^[[:space:]]*redef CommunityID::seed' "$SITE_LOCAL"; then
+        printf 'redef CommunityID::seed = 0;\\n' >> "$SITE_LOCAL"
       fi
 
       mkdir -p /var/log/zeek
