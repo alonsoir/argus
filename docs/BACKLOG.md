@@ -2769,7 +2769,7 @@ Un sistema con ACRL converge hacia cobertura de técnicas ATT&CK en tiempo polin
 ## 🆕 Entradas DAY 170 — community_id + backlog research/resilience
 
 ### DEBT-ZEEK-COMMUNITY-ID-PROVISION-001 — Persistir community_id en provision zeek
-**Estado:** ABIERTO — DAY 170 · **P1**
+**Estado:** CERRADO — DAY 170 · **P1** (commits 6930abb2 + 6c parche raiz; verificado: local.zeek site/ trae @load community-id-logging + redef seed=0 tras `vagrant provision zeek`, idempotente)
 `@load policy/protocols/conn/community-id-logging` + `redef CommunityID::seed=0` deben inyectarse en la provision del Vagrantfile de `experiments/zeek-comparative/`. Hoy es edicion manual volatil: se pierde en `vagrant destroy/up` y el join cross-tool falla en silencio. Verificado DAY 170: Zeek 8.2.0 emite `1:IN7uqVpMWxpmuhQTowSQB2XEe0E=` identico al oraculo pycommunityid con seed 0, sobre flujo Neris `147.32.84.165:1027 -> 74.125.232.195:80`.
 **Test de cierre:** `vagrant destroy && up` en VM zeek -> conn.log trae columna community_id poblada sin intervencion manual.
 
