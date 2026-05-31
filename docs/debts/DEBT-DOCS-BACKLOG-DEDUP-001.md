@@ -1,6 +1,6 @@
 # DEBT-DOCS-BACKLOG-DEDUP-001 — docs/BACKLOG.md tiene el cuerpo duplicado
 
-**Estado:** ABIERTO — DAY 170
+**Estado:** CERRADO — DAY 170 (commit caaebf32: 5336->2839 lineas, cabeceras 2->1, nudo final eliminado, nota DAY 149 reparada). Causa raiz: operacion manual en sesion DAY 158 (cat fichero >> mismo fichero), NO el update-day158-docs.sh (que tiene guard correcto).
 **Severidad:** P1 docs (no bloquea código; corrompe la memoria operativa)
 **Origen:** detectado DAY 170 al ir a indexar KALMAN + ZMQ-LIMITS
 
