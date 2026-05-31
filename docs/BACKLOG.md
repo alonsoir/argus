@@ -2794,7 +2794,7 @@ Filtro de Kalman para fusion multi-fuente (7 casos de uso: anomaly scoring, corr
 | ID | Descripción | Prioridad | Estado |
 |---|---|---|---|
 | DEBT-ARGUSPP-NTP-001 | NTP+chrony en todos los nodos. Health-check rechaza arranque si offset >1s. Gate P0 del correlation-engine. | P0 | OPEN |
-| DEBT-ARGUSPP-COMMUNITY-ID-001 | Habilitar community_id en Suricata y Zeek desde configuración inicial. Primary key del join cross-tool. | P0 en v1.1 | OPEN |
+| DEBT-ARGUSPP-COMMUNITY-ID-001 | Habilitar community_id en Suricata y Zeek desde configuración inicial. Primary key del join cross-tool. | P0 en v1.1 | CERRADO DAY170 — seed=0 explícito en aRGus(nativo)+Zeek(local.zeek)+Suricata(suricata.yaml) |
 | DEBT-ARGUSPP-SURICATA-001 | Integrar Suricata en Vagrantfile + EMECAS. eve.json → rag-security → servidor. | P1 | OPEN |
 | DEBT-ARGUSPP-ZEEK-001 | Integrar Zeek en Vagrantfile + EMECAS. conn/dns/ssl/files.log → servidor. | P1 | OPEN |
 | DEBT-ARGUSPP-CORRELATION-001 | Implementación C++20 correlation-engine v1.0. Disparador aRGus + buffer + flush Parquet. Esquema Arrow con columnas opcionales para 4 fuentes desde v1.0. | P1 | OPEN |
