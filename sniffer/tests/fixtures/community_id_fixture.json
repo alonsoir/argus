@@ -1,0 +1,72 @@
+[
+  {
+    "desc": "known_vector_spec",
+    "seed": 0,
+    "saddr": "128.232.110.120",
+    "daddr": "66.35.250.204",
+    "sport": 34855,
+    "dport": 80,
+    "proto": "tcp",
+    "community_id": "1:LQU9qZlK+B5F3KDmev6m5PMibrg="
+  },
+  {
+    "desc": "known_vector_reversed",
+    "seed": 0,
+    "saddr": "66.35.250.204",
+    "daddr": "128.232.110.120",
+    "sport": 80,
+    "dport": 34855,
+    "proto": "tcp",
+    "community_id": "1:LQU9qZlK+B5F3KDmev6m5PMibrg="
+  },
+  {
+    "desc": "udp_basic",
+    "seed": 0,
+    "saddr": "10.0.0.1",
+    "daddr": "10.0.0.2",
+    "sport": 1024,
+    "dport": 53,
+    "proto": "udp",
+    "community_id": "1:Hf/7Q2U2aD8ar7M9ZegCP1hng/0="
+  },
+  {
+    "desc": "udp_reversed",
+    "seed": 0,
+    "saddr": "10.0.0.2",
+    "daddr": "10.0.0.1",
+    "sport": 53,
+    "dport": 1024,
+    "proto": "udp",
+    "community_id": "1:Hf/7Q2U2aD8ar7M9ZegCP1hng/0="
+  },
+  {
+    "desc": "order_swap_by_ip",
+    "seed": 0,
+    "saddr": "192.168.1.200",
+    "daddr": "192.168.1.100",
+    "sport": 4000,
+    "dport": 4001,
+    "proto": "tcp",
+    "community_id": "1:HyweF4azkcrd2Hh9A3TQEmXD0VA="
+  },
+  {
+    "desc": "order_swap_same_ip_port",
+    "seed": 0,
+    "saddr": "1.1.1.1",
+    "daddr": "1.1.1.1",
+    "sport": 9000,
+    "dport": 22,
+    "proto": "tcp",
+    "community_id": "1:hdW84aSxL4vDrTLoUf56pUwaLiU="
+  },
+  {
+    "desc": "ephemeral_to_https",
+    "seed": 0,
+    "saddr": "172.16.5.5",
+    "daddr": "93.184.216.34",
+    "sport": 51000,
+    "dport": 443,
+    "proto": "tcp",
+    "community_id": "1:BFb/gXBC56pQTJM+Kk54Fzuai7Q="
+  }
+]
