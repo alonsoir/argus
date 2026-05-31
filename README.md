@@ -36,23 +36,23 @@
 
 ---
 
-## Estado actual — DAY 169 (2026-05-29)
+## Estado actual — DAY 170 (2026-05-31)
 
 <!-- DAY-STATUS -->
 | Campo | Valor |
 |---|---|
-| DAY | 169 |
+| DAY | 170 |
 | Tag | v1.0.0-day166 |
-| Branch | main @ 21642e87 |
+| Branch | feature/day170-community-id-protobuf @ af9cd812 |
 | EMECAS++ OSS | ✅ verde — test-all + test-e2e-synthetic-full + test-e2e-synthetic-firewall |
 | EMECAS++ Enterprise | ✅ VERDE — 3 actos + Jenkins gate (DAY 167) |
 | Pipeline | 6/6 RUNNING |
 | NTP/chrony | ✅ DEBT-ARGUSPP-NTP-001 — health-check rechaza offset >1s (DAY 167) |
 | correlation-engine | 🟡 scaffold ADR-048 F2 (DAY 167) |
 | Multi-VM | ✅ Suricata 7.0.10 + Zeek 8.2.0 + Wazuh 4.x en 192.168.100.0/24 (DAY 168) |
-| community_id | 🟡 Suricata+Zeek configurados · aRGus protobuf+sniffer PENDIENTE P0 (DAY 169) |
-| Arquitectura | ✅ ADR-046 v4 + AdapterSpec v1 (DAY 169) · ADR-050 pendiente |
-| Próximo hito | community_id nativo en aRGus (protobuf+sniffer) + ADR-050 |
+| community_id | ✅ aRGus (nativo, 8/8 vs oráculo) + Zeek + Suricata — seed 0 explícito en los 3 (DAY 170) |
+| Arquitectura | ✅ ADR-046 v4 + AdapterSpec v1 (DAY 169) · ADR-050 (MITRE) + ADR-051/052 pendientes |
+| Próximo hito | DAY 171 cross-check E2E community_id tres ventanas + ADR-051/052 borrador |
 | Gate UEx/INCIBE | Datasets de valor científico (no deadline duro) |
 <!-- /DAY-STATUS -->
 
@@ -75,6 +75,12 @@
   - **DEBT-CRYPTO-RECONCILIATION-001 CERRADA + STALENESS GUARD (B1 post-Consejo)** — `AutonomySubscriber`: `shared_ptr<atomic<FirewallAutonomyMode>>` + `shared_ptr<atomic<int64_t>>` (last_update_ns). `poll_callback`: si `elapsed > staleness_timeout_sec` → NORMAL + log. Previene firewall congelado si etcd-server muere silenciosamente. 9/9 tests (T9: staleness guard).
   - **Consejo 8/8 consultado** — Dos bloqueantes identificados y resueltos antes del merge: B1 (staleness) + B2 (ExecStartPre= vs ExecStartPost= para fichero efímero, pendiente DAY 158).
   - **EMECAS DAY 157 VERDE** — `vagrant destroy → up → make bootstrap → make test-all` — TODO VERDE.
+
+### Hitos DAY 170 🎉
+- **community_id cross-sensor sellado** — aRGus (nativo, 8/8 tests contra oráculo pycommunityid v1.5.0 byte a byte, campo protobuf field 18), Zeek 8.2.0 (provisión `local.zeek` site/: `@load community-id-logging` + `redef CommunityID::seed=0`) y Suricata 7.0.10 (`community-id:yes` + `community-id-seed:0`). Diana E2E `1:IN7uqVpMWxpmuhQTowSQB2XEe0E=` sobre flujo Neris. Seed 0 explícito en los 3 garantizado por provisión. `DEBT-ARGUSPP-COMMUNITY-ID-ARGUS-001` + `DEBT-ARGUSPP-COMMUNITY-ID-001` CERRADAS.
+  - **DEBT-ZEEK-COMMUNITY-ID-PROVISION-001 CERRADA** — guardas de idempotencia por línea en el Vagrantfile (no por bloque). `vagrant provision zeek` deja `local.zeek` con `@load` + `seed=0` sin intervención manual.
+  - **DEBT-DOCS-BACKLOG-DEDUP-001 CERRADA** — `docs/BACKLOG.md` corrupto desde DAY 158 (append manual `cat>>`, no el script). 5336->2839 líneas. Lección: verificar integridad con `grep secciones | sort | uniq -d` del fichero completo, no `grep -c` de cabecera.
+  - **Consejo de Sabios (8/8) — consenso unánime P1/P2/P3.** Gate seed por data-plane (no config), identidad de flujo `hash(node_id || community_id || flow_start_window)`, doble arista host<->red con host_id canónico. ADR-051 (Seed Parity Gate) + ADR-052 (Multi-node Flow Identity & Host<->Net) pendientes de redacción. DEBT-NEO4J-FLOW-KEY-001 (P0 esquema).
 
 ### Hitos DAY 169 🏛️
 - **Día de arquitectura.** `ADR-046 v4` aprobado (Multi-Source Pipeline, separación de planos). `AdapterSpec v1` cerrado (contrato del adaptador por fuente). `ADR-050` pendiente de redacción (seis vectores de la sesión MITRE + corrección cripto telemetría).
@@ -564,7 +570,8 @@ make hardened-full   # destroy → up → provision → build → deploy → che
   - ✅ DAY 167: **DEBT-ARGUSPP-NTP-001 (P0) · correlation-engine scaffold ADR-048 F2 · BACKLOG-CI-ENTERPRISE-001 Jenkins gate · merge main 7b45feca** 🎉
   - ✅ DAY 168: **Vagrantfile multi-VM Suricata 7.0.10 + Zeek 8.2.0 + Wazuh 4.x · community-id Suricata/Zeek · 3 reglas permanentes · merge main 21642e87** 🎉
   - ✅ DAY 169: **Día de arquitectura · ADR-046 v4 + AdapterSpec v1 · separación de planos · ADR-050 pendiente · community_id nativo aRGus P0 abierto** 🏛️
-  - 🔜 DAY 170: **community_id nativo en aRGus (protobuf + sniffer, canonicalización Kimi) + ADR-050 borrador + RSS bajo carga (pipeline+client+tcpreplay) + DEBT-ARGUSPP-SURICATA-001 (eve.json → correlation-engine)**
+  - ✅ DAY 170: **community_id cross-sensor sellado (aRGus+Zeek+Suricata, seed 0, vs oráculo) · de-dup BACKLOG · Consejo 8/8 P1/P2/P3 · ADR-051/052 pendientes** 🎉
+  - 🔜 DAY 171: **cross-check E2E community_id tres ventanas (.50 replaya Neris → aRGus+Suricata+Zeek paralelo eth1) + ADR-051/052 borrador + DEBT-NEO4J-FLOW-KEY-001 (esquema Neo4j) + RSS bajo carga + ADR-050 MITRE borrador**
 
 ---
 

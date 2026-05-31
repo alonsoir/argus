@@ -2783,6 +2783,59 @@ Filtro de Kalman para fusion multi-fuente (7 casos de uso: anomaly scoring, corr
 
 ---
 
+## 📝 Notas del Consejo de Sabios — DAY 170 (8/8)
+
+> "DAY 170 — Cierre community_id cross-sensor + saneamiento BACKLOG + ritual del Consejo. Veredicto 8/8: aprobado con nota alta. El community_id pasa de campo del protobuf a invariante de identidad operacional verificable.
+>
+> **community_id sellado en los tres sensores de red:** aRGus (nativo, 8/8 tests contra oráculo pycommunityid v1.5.0 byte a byte, campo protobuf field 18), Zeek 8.2.0 (provisión local.zeek site/ con @load community-id-logging + redef CommunityID::seed=0) y Suricata 7.0.10 (community-id:yes + community-id-seed:0 en suricata.yaml). Diana E2E: 1:IN7uqVpMWxpmuhQTowSQB2XEe0E= sobre flujo Neris 147.32.84.165:1027 -> 74.125.232.195:80. Seed 0 explícito garantizado por provisión en los tres. DEBT-ARGUSPP-COMMUNITY-ID-ARGUS-001 y DEBT-ARGUSPP-COMMUNITY-ID-001 CERRADAS.
+>
+> **De-duplicación BACKLOG (DEBT-DOCS-BACKLOG-DEDUP-001 CERRADA):** corrupción arrastrada desde DAY 158 (append manual cat>>, no el script). 5336->2839 líneas. Lección elevada a regla: integridad documental se verifica con `grep secciones | sort | uniq -d` sobre el fichero completo, no con `grep -c` de cabecera. Idempotencia de provisión por LÍNEA, no por bloque.
+>
+> **Consenso 8/8 en las tres preguntas de arquitectura (sin segunda pasada):**
+>
+> **P1 — Wazuh <-> red:** (A)+(C). Descartar (B) como base. Grafo de doble arista: flujo<->flujo por community_id (determinista), host<->flujo por nodo Host identificado por host_id/agent_id CANÓNICO (nunca IP cruda) + ventana temporal. Ventana host<->red más laxa y causal-bidireccional que red<->red. NAT = agujero peligroso: menú de mecanismos (Translation node / agent_id / proceso+puerto_local / fallback temporal), SIEMPRE anotando en grafo y log el método usado y su confianza. (B) solo enriquecimiento oportunista.
+>
+> **P2 — Invariante seed:** gate de arranque P0 (análogo a NTP) + health-check de huérfanos continuo. Refinamiento Alonso+Qwen+Gemini: el gate se basa en el DATA-PLANE (el community_id que cada componente EMITE en runtime sobre un flujo de referencia), NO en lectura de config JSON/yaml — el fichero puede mentir; engañar al pipeline exigiría modificar binarios/plugins. Este enfoque unifica el gate sobre los tres sensores y disuelve la bifurcación que propuso Gemini (gate-estricto-aRGus + canario-pasivo-externos), resolviendo su preocupación de fragilidad ante cambios de versión por otra vía.
+>
+> **P3 — Identidad de flujo multi-nodo:** clave compuesta CON componente temporal. Refinamiento (objeción DeepSeek + formalización Gemini/Qwen): la 5-tupla se recicla en el tiempo, luego (node_id, community_id) tampoco es único. Identidad del nodo-flujo en Neo4j = flow_uid = hash(node_id || community_id || flow_start_window). community_id permanece como propiedad indexada (clave de correlación intra-nodo + verificable contra oráculo), nunca como identidad de nodo.
+>
+> **DAY 171 aprobado sin bloqueos:** cross-check E2E tres ventanas (cliente .50 replaya Neris; aRGus+Suricata+Zeek capturan en paralelo de eth1; los 3 deben emitir el mismo community_id sobre el mismo paquete). Añadidos del Consejo: registrar timestamp relativo de emisión + nº de paquete/flow por sensor; caso de IPs invertidas (respuesta); NAT simulado si es posible.
+>
+> 'El verdadero activo no es el hash — es que todos los sensores producen exactamente el mismo hash.' — ChatGPT · DAY 170"
+> — Consejo de Sabios (8/8) · DAY 170
+
+### Entradas DAY 170 derivadas del Consejo — ADRs + DEBTs
+
+> **Nota de numeración (lección de hoy):** ADR-050 ya está reservado en este BACKLOG para la sesión MITRE + corrección cripto telemetría (DAY 169, pendiente redacción). Por tanto las dos ADRs nuevas toman 051 y 052. Verificado contra el BACKLOG antes de asignar.
+
+#### ADR-051 — Seed Parity Gate & Correlation Health (PENDIENTE redacción)
+**Estado:** ⏳ BORRADOR PENDIENTE — DAY 170 (Consejo 8/8) · recoge P2
+Gate de arranque P0 basado en data-plane: el correlation-engine mide el community_id que cada sensor EMITE en runtime sobre un flujo de referencia y verifica paridad. Divergencia -> `SEED_MISMATCH`, abort. Health-check continuo: métrica `community_id.orphan_rate` (flujos sin corroboración cross-sensor cuando deberían tenerla); caída de matches a ~0 u orfandad sistemática >umbral en N ventanas -> alerta CRITICAL. NO lee config JSON/yaml — el fichero puede mentir. Flujo: borrador -> Consejo -> aprobación -> implementación.
+
+#### ADR-052 — Multi-node Flow Identity & Host<->Net Correlation (PENDIENTE redacción)
+**Estado:** ⏳ BORRADOR PENDIENTE — DAY 170 (Consejo 8/8) · recoge P3 + P1
+Identidad del nodo-flujo en Neo4j = `flow_uid = hash(node_id || community_id || flow_start_window)`. community_id como propiedad indexada (clave de correlación intra-nodo). Doble arista: flujo<->flujo (community_id, determinista) + host<->flujo (host_id/agent_id canónico + ventana temporal laxa causal-bidireccional). NAT: menú de mecanismos con anotación de método y confianza en grafo+log. Esquema Neo4j compartido -> P1 y P3 en un mismo ADR (separable a ADR-053 si el Consejo lo pide).
+
+#### DEBT-NEO4J-FLOW-KEY-001 — Clave de flujo temporal compuesta en Neo4j
+**Severidad:** 🔴 P0 esquema — bloquea diseño del correlation-engine
+**Estado:** ABIERTO — DAY 170 (Consejo 8/8) · recoge ADR-052
+`flow_uid = hash(node_id || community_id || flow_start_window)` como identidad del nodo-flujo. `node_id` propiedad obligatoria en :NetworkFlow, :Alert, :TelemetryEvent. Constraint compuesto nativo Neo4j 5.x. Decidirlo con el grafo vacío es gratis; retrofitear con datos en producción es doloroso (unánime). Correlación intra-nodo por community_id; identidad/dedup inter-nodo por flow_uid.
+**Test de cierre:** dos flujos misma 5-tupla en nodos distintos -> flow_uid distinto. Misma 5-tupla reciclada en el tiempo en el mismo nodo -> flow_uid distinto.
+**Estimación:** 1 sesión (diseño esquema + constraint) antes de poblar el grafo.
+
+#### DEBT-CORRELATION-SEED-GATE-001 — Gate paridad seed data-plane + health-check huérfanos
+**Severidad:** 🟡 P1
+**Estado:** ABIERTO — DAY 170 (Consejo 8/8) · recoge ADR-051
+Implementación del gate P0 data-plane + health-check `community_id.orphan_rate`. Prerequisito: correlation-engine con al menos dos sensores emitiendo sobre el mismo flujo.
+**Test de cierre:** sensor con seed!=0 -> SEED_MISMATCH, abort. Orfandad sistemática inyectada -> alerta CRITICAL.
+**Estimación:** 1-2 sesiones.
+
+#### BACKLOG-RESEARCH-NAT-HOSTNET-001 — Puente host<->red bajo NAT
+**Estado:** RESEARCH/FUTURE — DAY 170 (Consejo 8/8) · recoge P1
+Mecanismos de correlación host<->red cuando IP interna (Wazuh) != IP observada (sensor red): Translation node con logs NAT / identidad agent_id-hostname / puente (proceso, puerto_local, timestamp) / fallback temporal degradado. SIEMPRE anotar en grafo y log el método usado y su confianza. Cubrir explícitamente los casos correctos, incorrectos e incompletos de medida. Nunca fallo silencioso por IP no coincidente. Prereq: Wazuh integrado (DEBT-ARGUSPP-WAZUH-001).
+
+---
+
 ## ADR-046 v3 — aRGus++ Multi-Source Pipeline (DAY 158)
 
 > Aprobado Consejo 8/8. Supersede ADR-046 v1 y v2.
