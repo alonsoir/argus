@@ -1041,6 +1041,9 @@ BASHRC_EOF
 
       # community-id: yes — DEBT-ARGUSPP-COMMUNITY-ID-001
       sed -i '/community-id:/s/false/yes/' /etc/suricata/suricata.yaml
+      # community-id-seed=0 explicito — paridad con aRGus y Zeek (FIX DAY170).
+      # No depender del default de fabrica; garantizar la clave del join cross-tool.
+      sed -i 's/^\([[:space:]]*\)community-id-seed:[[:space:]]*[0-9]*/\1community-id-seed: 0/' /etc/suricata/suricata.yaml
 
       mkdir -p /var/log/suricata
       chown -R suricata:suricata /var/log/suricata 2>/dev/null || true
