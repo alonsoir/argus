@@ -1112,12 +1112,16 @@ BASHRC_EOF
       echo 'ip link set eth1 promisc on' >> /etc/rc.local
       chmod +x /etc/rc.local
 
-      # community-id — DEBT-ARGUSPP-COMMUNITY-ID-001
-      if [ ! -f /opt/zeek/etc/local.zeek ]; then
-        touch /opt/zeek/etc/local.zeek
-      fi
-      if ! grep -q "community-id" /opt/zeek/etc/local.zeek; then
-        echo "@load policy/protocols/conn/community-id-v1" >> /opt/zeek/etc/local.zeek
+      # community-id — DEBT-ARGUSPP-COMMUNITY-ID-001 + DEBT-ZEEK-COMMUNITY-ID-PROVISION-001
+      # FIX DAY170: (1) ZeekControl carga site/local.zeek, NO etc/local.zeek (bug previo).
+      #             (2) policy correcto = community-id-logging (no community-id-v1).
+      #             (3) seed=0 explicito -> paridad con aRGus y Suricata (verificado: 1:IN7uq...).
+      ZEEK_SITE="$(/opt/zeek/bin/zeek-config --site_dir 2>/dev/null || echo /opt/zeek/share/zeek/site)"
+      SITE_LOCAL="${ZEEK_SITE}/local.zeek"
+      mkdir -p "$ZEEK_SITE"
+      touch "$SITE_LOCAL"
+      if ! grep -q "community-id-logging" "$SITE_LOCAL"; then
+        printf '\\n@load policy/protocols/conn/community-id-logging\\nredef CommunityID::seed = 0;\\n' >> "$SITE_LOCAL"
       fi
 
       mkdir -p /var/log/zeek
@@ -1125,7 +1129,7 @@ BASHRC_EOF
 
       echo "=== Zeek ready ==="
       /opt/zeek/bin/zeek --version || true
-      echo "community-id: $(grep community-id /opt/zeek/etc/local.zeek)"
+      echo "community-id: $(grep -h community-id "$SITE_LOCAL" 2>/dev/null || echo NO-CONFIGURADO)"
       ip link show eth1 | grep -i promisc || echo "⚠️  eth1 promisc no activo aun"
     SHELL
   end  # End zeek VM
