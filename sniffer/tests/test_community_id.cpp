@@ -1,5 +1,6 @@
 // test_community_id.cpp — RED->GREEN contra el oráculo pycommunityid (seed 0).
-// Vectores generados DAY 170. NO editar a mano: regenerar con el fixture.
+// Vectores inline, verificados byte-identico contra pycommunityid (Corelight spec v1, seed 0).
+// Para anadir uno: calcular el id con pycommunityid ANTES de pegarlo aqui. No hay autogen.
 #include "flow/community_id.hpp"
 
 #include <cstdint>
