@@ -307,6 +307,7 @@ set(SHARDED_FLOW_SOURCES
 # Community ID v1 (Corelight spec) — DAY 170. Función pura de la 5-tupla.
 set(COMMUNITY_ID_SOURCES
         src/flow/community_id.cpp
+        src/flow/community_id_log.cpp
 )
 # Feature-specific sources
 set(SNIFFER_FEATURE_SOURCES "")
@@ -552,6 +553,7 @@ if(USE_LIBPCAP)
           ${CMAKE_SOURCE_DIR}/src/userspace/main_libpcap.cpp
           ${CMAKE_SOURCE_DIR}/src/userspace/pcap_backend.cpp
           ${CMAKE_SOURCE_DIR}/src/flow/community_id.cpp
+          ${CMAKE_SOURCE_DIR}/src/flow/community_id_log.cpp
           ${CMAKE_BINARY_DIR}/proto/network_security.pb.cc
   )
 
@@ -985,3 +987,18 @@ target_link_libraries(test_community_id
 )
 add_test(NAME test_community_id COMMAND test_community_id)
 message(STATUS "🧪 Unit Test: test_community_id configured (DAY 170 - Corelight spec)")
+
+add_executable(test_community_id_log
+        tests/test_community_id_log.cpp
+        src/flow/community_id.cpp
+        src/flow/community_id_log.cpp
+)
+target_include_directories(test_community_id_log PRIVATE
+        ${CMAKE_SOURCE_DIR}/include
+        ${CMAKE_SOURCE_DIR}/include/flow
+)
+target_link_libraries(test_community_id_log
+        OpenSSL::Crypto
+)
+add_test(NAME test_community_id_log COMMAND test_community_id_log)
+message(STATUS "🧪 Unit Test: test_community_id_log configured (DAY 171 - cid emission log)")

@@ -87,6 +87,65 @@
 ---
 
 
+## ✅ CERRADO DAY 171
+
+### Cross-check E2E community_id — paridad OPERACIONAL demostrada (3 ventanas)
+- **Status:** ✅ COMPLETADO DAY 171 — rama `feature/day170-community-id-protobuf`
+- **Hito del día:** se cierra la paridad **operacional** del `community_id`. DAY 170 selló
+  la paridad de *especificación* y *provisión* (3 sensores, seed 0, byte a byte vs oráculo).
+  DAY 171 demuestra empíricamente que los tres sensores EMITEN el mismo string sobre el
+  **mismo paquete real**, no que "deberían coincidir porque la canonicalización es idéntica".
+- **Protocolo:** el cliente `.50` replaya el flujo Neris por `eth1` (tcpreplay) en
+  `ml_defender_gateway_lan`. aRGus + Suricata + Zeek capturan en PARALELO de `eth1`
+  (promiscuo) — el mismo paquete. Los tres convergen STRING A STRING al diana
+  `1:IN7uqVpMWxpmuhQTowSQB2XEe0E=`. ✅ VERDE.
+- **Validación P2 del Consejo (DAY 170):** se valida lo que el binario EMITE (data-plane),
+  no lo que dice la config. El cross-check valida empíricamente el CIMIENTO sobre el que
+  se apoya todo el AdapterSpec §10.
+- **Nota algoritmo:** `community_id` usa **SHA1** (Corelight), no HMAC-SHA256. Receta:
+  `"1:" + base64(sha1(seed ‖ saddr ‖ daddr ‖ proto ‖ 0x00 ‖ sport ‖ dport))`. Registrado
+  aquí porque en el Consejo DAY 170 Qwen y Mistral lo escribieron como SHA256 — corregido.
+
+### aRGus surfacea community_id de forma observable (helper + test TDH)
+- **Status:** ✅ COMPLETADO DAY 171
+- **`sniffer/src/flow/community_id_log.{hpp,cpp}`** — helper
+  `sniffer::flow::log_community_id_emission(cid, saddr, daddr, sport, dport, proto)`.
+- `compute_community_id` permanece **PURA** (5-tupla → `optional<string>`). No se tocó.
+  El log NO está dentro de `compute_community_id` (que no ve timestamps ni 5-tupla completa);
+  está en los call-sites, donde la 5-tupla ya está en scope.
+- **Gateado por env var `ARGUS_CID_CROSSCHECK=1`:** OFF por defecto (coste nulo en hot path:
+  lectura de atomic cacheado + branch no tomado), ON solo para el test. Apagado para el RSS.
+- **Punto único de log invocado desde los 3 call-sites** de sellado
+  (`ring_consumer.cpp` ×2: features y net_features; `main_libpcap.cpp` ×1). Cero duplicación.
+- **Escribe a fichero dedicado** `/vagrant/logs/lab/cid-xcheck-argus.tsv` — TSV de 7 campos
+  (`cid saddr daddr sport dport proto ts_emision_ns`), con mutex (ring_consumer es multihilo)
+  y `fflush` (visible para el parser sin esperar cierre). NO a stdout (contaminado con
+  `[DUAL-NIC]`/`[PKT #]`).
+- Compila y linka en **Variant A (eBPF) y Variant B (libpcap)** — un solo `.cpp` para ambos.
+- **Test TDH `test_community_id_log.cpp`:** verifica la diana DAY 170
+  (`147.32.84.165:1027 → 74.125.232.195:80` TCP seed 0 → `1:IN7uqVpMWxpmuhQTowSQB2XEe0E=`)
+  y las 7 columnas del TSV por contenido. Robusto a `NDEBUG` (checks explícitos con
+  `return 1`, no `assert` que `-DNDEBUG` borraría). PASSED.
+
+### Verificador de paridad cross-sensor
+- **Status:** ✅ COMPLETADO DAY 171
+- **`tools/community_id_crosscheck.py`** (HOST, no pipeline). Lee las salidas crudas de los
+  tres motores vía `vagrant ssh`, normaliza a `(cid, 5-tupla)`, compara.
+- **Decisión de diseño:** paridad por VALOR de `community_id` (el cid encapsula la 5-tupla
+  canónica del hash Corelight). La 5-tupla se conserva como ETIQUETA forense, no como clave
+  de comparación — evita el problema de que cada motor nombra el proto distinto
+  (Suricata `"TCP"`, Zeek `"tcp"`, aRGus `6`).
+- Tres categorías: **agree** (cids en la intersección de los tres — el solomillo) ·
+  **disagree** · **solo** (un sensor emite un cid que los otros no).
+
+### Criterio de aceptación congelado — docs/acceptance_criteria.md
+- **Status:** ✅ CONGELADO DAY 171 — Consejo 8/8, sin tercera ronda
+- **`docs/acceptance_criteria.md`** versionado. Incorpora el refinamiento de ChatGPT:
+  categorías de presencia **DROP / CONFIG / POLICY / BUG / UNKNOWN** (no solo "drop o bug").
+- Precondición `drop=0`. Nota de túneles/fragmentación/GRO/LRO de Gemini incorporada.
+- **P2 del Consejo dirimida 8/8 (NO):** el gate de seed se basa en data-plane, no en config.
+  No se relanzó — ya estaba cerrada en la segunda ronda.
+
 ## ✅ CERRADO DAY 168
 
 ### Vagrantfile multi-VM — Suricata 7.0.10 + Zeek 8.2.0 + Wazuh 4.x
@@ -833,6 +892,23 @@ DAY 129: CWE-78 CERRADO · EtcdClientHmac 9/9
 ---
 
 ## 🔴 DEUDAS ABIERTAS — Seguridad y arquitectura
+
+### DEBT-ARGUSPP-COUNTER-DUMP-001 — Volcado de contadores de aRGus a fichero parseable
+**Severidad:** 🟡 P1
+**Estado:** ABIERTO — DAY 171 (target DAY 172)
+**Componente:** `sniffer` / `ml-detector` — stats periódicas
+
+A diferencia de Suricata (`stats.log`) y Zeek (`conn.log`), aRGus NO expone sus contadores
+de flujo/eventos en un fichero parseable que el verificador de paridad pueda leer como
+fuente de verdad del data-plane. Es código nuevo (pequeño), no "leer un log que existe".
+Necesario para que el health-check de huérfanos (`community_id.orphan_rate`,
+DEBT-CORRELATION-SEED-GATE-001) tenga la cifra de aRGus con la que comparar.
+
+**Test de cierre:** aRGus vuelca stats periódicas a fichero parseable (TSV/JSON). El
+verificador de paridad lo lee sin `vagrant ssh` a stdout. Contadores coherentes con el TSV
+de community_id.
+**Estimación:** 1 sesión (DAY 172).
+
 
 ### DEBT-IRP-NFTABLES-001 — sesión 3/3 pendiente
 **Severidad:** 🔴 Alta — P0 pre-FEDER
@@ -2057,6 +2133,11 @@ Flujo: borrador → Consejo de Sabios → aprobación → implementación.
 
 ```
 Foundation + Thread-Safety:             100% ✅
+Cross-check E2E community_id (3 ventanas):  100% ✅  DAY 171 — aRGus+Suricata+Zeek convergen al diana sobre paquete real
+community_id helper observable + test TDH:  100% ✅  DAY 171 — community_id_log.{hpp,cpp}, ARGUS_CID_CROSSCHECK, TSV 7 campos
+tools/community_id_crosscheck.py:           100% ✅  DAY 171 — paridad por valor, agree/disagree/solo
+docs/acceptance_criteria.md congelado:      100% ✅  DAY 171 — Consejo 8/8, categorías DROP/CONFIG/POLICY/BUG/UNKNOWN
+DEBT-ARGUSPP-COUNTER-DUMP-001:                0% ⏳  P1 DAY 172 — volcado contadores aRGus a fichero parseable
 HMAC Infrastructure:                    100% ✅
 F1=0.9985 (CTU-13 Neris):              100% ✅
 CryptoTransport (HKDF+AEAD):            100% ✅

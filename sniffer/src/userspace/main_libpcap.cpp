@@ -9,6 +9,7 @@
 #include <crypto_transport/transport.hpp>
 #include <crypto_transport/contexts.hpp>
 #include "flow/community_id.hpp"
+#include "flow/community_id_log.hpp"
 #include <zmq.hpp>
 #include <lz4.h>
 #include <nlohmann/json.hpp>
@@ -142,7 +143,13 @@ static int packet_callback(void* ctx, void* data, size_t size) {
             static_cast<uint16_t>(nf->source_port()),
             static_cast<uint16_t>(nf->destination_port()),
             static_cast<uint8_t>(nf->protocol_number()))) {
-        nf->set_community_id(*cid);
+                nf->set_community_id(*cid);
+                if (sniffer::flow::cid_crosscheck_enabled())
+                    sniffer::flow::log_community_id_emission(*cid,
+                        nf->source_ip(), nf->destination_ip(),
+                        static_cast<uint16_t>(nf->source_port()),
+                        static_cast<uint16_t>(nf->destination_port()),
+                        static_cast<uint8_t>(nf->protocol_number()));
             }
 
     auto ts = std::chrono::duration_cast<std::chrono::nanoseconds>(  // <-- timestamp, ya existente

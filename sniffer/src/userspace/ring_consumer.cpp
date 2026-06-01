@@ -5,13 +5,12 @@
 #include "fast_detector.hpp"
 #include <reason_codes.hpp>
 // ADR-013 PHASE 2 — DAY 98
-// DEPRECATED DAY 98 — #include <crypto_transport/utils.hpp>
 #include <lz4.h>
 #include <cstring>
 #include "feature_logger.hpp"
-#include "flow/sharded_flow_manager.hpp"  // ✅ DAY 45: Migrated
+#include "flow/sharded_flow_manager.hpp"
 #include "flow/community_id.hpp"
-#include "ml_defender_features.hpp"
+#include "flow/community_id_log.hpp"
 #include <iostream>
 #include <cstring>
 #include <arpa/inet.h>
@@ -883,6 +882,12 @@ void RingBufferConsumer::populate_protobuf_event(const SimpleEvent& event,
         static_cast<uint16_t>(features->destination_port()),
         static_cast<uint8_t>(features->protocol_number()))) {
             features->set_community_id(*cid);
+            if (sniffer::flow::cid_crosscheck_enabled())
+                sniffer::flow::log_community_id_emission(*cid,
+                    features->source_ip(), features->destination_ip(),
+                    static_cast<uint16_t>(features->source_port()),
+                    static_cast<uint16_t>(features->destination_port()),
+                    static_cast<uint8_t>(features->protocol_number()));
         }
         // else -> community_id queda "" (default): ICMP/no-IP, diferido
     // Dual-NIC deployment metadata (Phase 1, Day 7)
@@ -1245,6 +1250,12 @@ void RingBufferConsumer::send_fast_alert(const SimpleEvent& event) {
                 static_cast<uint16_t>(net_features->destination_port()),
                 static_cast<uint8_t>(net_features->protocol_number()))) {
                     net_features->set_community_id(*cid);
+                    if (sniffer::flow::cid_crosscheck_enabled())
+                        sniffer::flow::log_community_id_emission(*cid,
+                            net_features->source_ip(), net_features->destination_ip(),
+                            static_cast<uint16_t>(net_features->source_port()),
+                            static_cast<uint16_t>(net_features->destination_port()),
+                            static_cast<uint8_t>(net_features->protocol_number()));
                 }
         // else -> community_id queda "" (default): ICMP/no-IP, diferido
 		// FIX 76

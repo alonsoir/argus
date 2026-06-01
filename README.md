@@ -41,7 +41,7 @@
 <!-- DAY-STATUS -->
 | Campo | Valor |
 |---|---|
-| DAY | 170 |
+| DAY | 171 |
 | Tag | v1.0.0-day166 |
 | Branch | feature/day170-community-id-protobuf @ af9cd812 |
 | EMECAS++ OSS | ✅ verde — test-all + test-e2e-synthetic-full + test-e2e-synthetic-firewall |
@@ -50,9 +50,9 @@
 | NTP/chrony | ✅ DEBT-ARGUSPP-NTP-001 — health-check rechaza offset >1s (DAY 167) |
 | correlation-engine | 🟡 scaffold ADR-048 F2 (DAY 167) |
 | Multi-VM | ✅ Suricata 7.0.10 + Zeek 8.2.0 + Wazuh 4.x en 192.168.100.0/24 (DAY 168) |
-| community_id | ✅ aRGus (nativo, 8/8 vs oráculo) + Zeek + Suricata — seed 0 explícito en los 3 (DAY 170) |
+| community_id | ✅ paridad OPERACIONAL — 3 sensores convergen al diana sobre paquete real (cross-check E2E DAY 171) |
 | Arquitectura | ✅ ADR-046 v4 + AdapterSpec v1 (DAY 169) · ADR-050 (MITRE) + ADR-051/052 pendientes |
-| Próximo hito | DAY 171 cross-check E2E community_id tres ventanas + ADR-051/052 borrador |
+| Próximo hito | DAY 172 volcado contadores aRGus + ADR-051/052 borrador + DEBT-NEO4J-FLOW-KEY-001 esquema |
 | Gate UEx/INCIBE | Datasets de valor científico (no deadline duro) |
 <!-- /DAY-STATUS -->
 
@@ -75,6 +75,14 @@
   - **DEBT-CRYPTO-RECONCILIATION-001 CERRADA + STALENESS GUARD (B1 post-Consejo)** — `AutonomySubscriber`: `shared_ptr<atomic<FirewallAutonomyMode>>` + `shared_ptr<atomic<int64_t>>` (last_update_ns). `poll_callback`: si `elapsed > staleness_timeout_sec` → NORMAL + log. Previene firewall congelado si etcd-server muere silenciosamente. 9/9 tests (T9: staleness guard).
   - **Consejo 8/8 consultado** — Dos bloqueantes identificados y resueltos antes del merge: B1 (staleness) + B2 (ExecStartPre= vs ExecStartPost= para fichero efímero, pendiente DAY 158).
   - **EMECAS DAY 157 VERDE** — `vagrant destroy → up → make bootstrap → make test-all` — TODO VERDE.
+
+### Hitos DAY 171 🎉
+- **Cross-check E2E community_id — paridad OPERACIONAL demostrada.** El cliente `.50` replaya el flujo Neris por `eth1`; aRGus + Suricata + Zeek capturan en paralelo (promiscuo) el MISMO paquete y los tres convergen STRING A STRING al diana `1:IN7uqVpMWxpmuhQTowSQB2XEe0E=`. Se cierra la paridad operacional (DAY 170 cerró especificación + provisión). Validación data-plane (P2 Consejo): se mide lo que el binario EMITE, no lo que dice la config.
+  - **aRGus surfacea community_id observable** — `sniffer/src/flow/community_id_log.{hpp,cpp}`. `compute_community_id` permanece pura; el log vive en los 3 call-sites de sellado (`ring_consumer.cpp` ×2, `main_libpcap.cpp` ×1). Gateado por `ARGUS_CID_CROSSCHECK=1` (OFF por defecto, coste nulo en hot path). TSV 7 campos a `/vagrant/logs/lab/cid-xcheck-argus.tsv` con mutex + `fflush`. Compila en Variant A y B. Test TDH `test_community_id_log.cpp` PASSED.
+  - **Verificador de paridad** — `tools/community_id_crosscheck.py` (host). Paridad por VALOR del cid; 5-tupla como etiqueta forense (cada motor nombra el proto distinto). Categorías: agree / disagree / solo.
+  - **Criterio de aceptación congelado** — `docs/acceptance_criteria.md`, Consejo 8/8 sin tercera ronda. Refinamiento ChatGPT: categorías de presencia DROP/CONFIG/POLICY/BUG/UNKNOWN, precondición drop=0, nota de túneles de Gemini.
+  - **DEBT-ARGUSPP-COUNTER-DUMP-001 abierta (P1, DAY 172)** — volcado de contadores de aRGus a fichero parseable (código nuevo, no "leer un log que existe" como Suricata/Zeek).
+  - **Nota algoritmo:** `community_id` usa SHA1 (Corelight), no HMAC-SHA256.
 
 ### Hitos DAY 170 🎉
 - **community_id cross-sensor sellado** — aRGus (nativo, 8/8 tests contra oráculo pycommunityid v1.5.0 byte a byte, campo protobuf field 18), Zeek 8.2.0 (provisión `local.zeek` site/: `@load community-id-logging` + `redef CommunityID::seed=0`) y Suricata 7.0.10 (`community-id:yes` + `community-id-seed:0`). Diana E2E `1:IN7uqVpMWxpmuhQTowSQB2XEe0E=` sobre flujo Neris. Seed 0 explícito en los 3 garantizado por provisión. `DEBT-ARGUSPP-COMMUNITY-ID-ARGUS-001` + `DEBT-ARGUSPP-COMMUNITY-ID-001` CERRADAS.
@@ -570,8 +578,9 @@ make hardened-full   # destroy → up → provision → build → deploy → che
   - ✅ DAY 167: **DEBT-ARGUSPP-NTP-001 (P0) · correlation-engine scaffold ADR-048 F2 · BACKLOG-CI-ENTERPRISE-001 Jenkins gate · merge main 7b45feca** 🎉
   - ✅ DAY 168: **Vagrantfile multi-VM Suricata 7.0.10 + Zeek 8.2.0 + Wazuh 4.x · community-id Suricata/Zeek · 3 reglas permanentes · merge main 21642e87** 🎉
   - ✅ DAY 169: **Día de arquitectura · ADR-046 v4 + AdapterSpec v1 · separación de planos · ADR-050 pendiente · community_id nativo aRGus P0 abierto** 🏛️
+  - ✅ DAY 171: **Cross-check E2E community_id 3 ventanas VERDE · paridad operacional demostrada · helper observable + verificador + acceptance_criteria.md congelado (Consejo 8/8) · DEBT-COUNTER-DUMP-001 abierta** 🎉
   - ✅ DAY 170: **community_id cross-sensor sellado (aRGus+Zeek+Suricata, seed 0, vs oráculo) · de-dup BACKLOG · Consejo 8/8 P1/P2/P3 · ADR-051/052 pendientes** 🎉
-  - 🔜 DAY 171: **cross-check E2E community_id tres ventanas (.50 replaya Neris → aRGus+Suricata+Zeek paralelo eth1) + ADR-051/052 borrador + DEBT-NEO4J-FLOW-KEY-001 (esquema Neo4j) + RSS bajo carga + ADR-050 MITRE borrador**
+  - 🔜 DAY 172: **volcado contadores aRGus a fichero parseable (DEBT-COUNTER-DUMP-001) + ADR-051/052 borrador + DEBT-NEO4J-FLOW-KEY-001 (esquema Neo4j) + ADR-050 MITRE borrador + DEBT-ARGUSPP-SURICATA-001 (eve.json → correlation-engine)**
 
 ---
 

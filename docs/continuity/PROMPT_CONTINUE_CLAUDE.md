@@ -1,67 +1,74 @@
-DAY 171 — aRGus NDR (arXiv:2604.04952)
+DAY 172 — aRGus NDR (arXiv:2604.04952)
 
-Estado: rama feature/day170-community-id-protobuf @ af9cd812 (community_id cross-sensor + de-dup BACKLOG + provisión Zeek/Suricata). Tag estable v1.0.0-day166.
-DAY 170 cerrado: community_id sellado en aRGus(nativo)+Zeek+Suricata con seed 0 explícito; BACKLOG de-duplicado (5336->2839); ritual del Consejo completado (síntesis en docs/counsil/). Consenso 8/8 en P1/P2/P3.
+Estado: rama feature/day170-community-id-protobuf (community_id cross-sensor + cross-check E2E operacional). Tag estable v1.0.0-day166.
+DAY 171 cerrado: paridad OPERACIONAL del community_id DEMOSTRADA — aRGus+Suricata+Zeek convergen STRING A STRING al diana 1:IN7uqVpMWxpmuhQTowSQB2XEe0E= sobre paquete real replayado por el cliente .50 en eth1. Helper observable (community_id_log.{hpp,cpp}, gateado ARGUS_CID_CROSSCHECK=1), verificador de paridad (tools/community_id_crosscheck.py), criterio de aceptación congelado (docs/acceptance_criteria.md, Consejo 8/8). PENDIENTE de commit/push.
 
 CONTEXTO DE LOS ÚLTIMOS DÍAS:
 DAY 167: NTP/chrony (P0). correlation-engine scaffold (ADR-048 F2). Jenkins gate make emecas++.
 DAY 168: Vagrantfile multi-VM Suricata 7.0.10 + Zeek 8.2.0 + Wazuh 4.x en 192.168.100.0/24.
 DAY 169: Día de arquitectura. ADR-046 v4 + AdapterSpec v1 + separación de planos. ADR-050 (MITRE) pendiente.
-DAY 170: community_id cross-sensor (3 sensores, seed 0, byte a byte vs oráculo pycommunityid; diana 1:IN7uqVpMWxpmuhQTowSQB2XEe0E=). De-dup BACKLOG (DEBT-DOCS-BACKLOG-DEDUP-001). Consejo 8/8.
+DAY 170: community_id cross-sensor (3 sensores, seed 0, byte a byte vs oráculo). De-dup BACKLOG. Consejo 8/8 P1/P2/P3.
+DAY 171: cross-check E2E 3 ventanas VERDE (paridad operacional). Helper observable + verificador + acceptance_criteria.md congelado.
 
 ═══════════════════════════════════════════════════════════════════════════════
-CONSENSO DEL CONSEJO DAY 170 — base de DAY 171 (síntesis en docs/counsil/)
+PRIMERO DE TODO DAY 172 — commit/push de DAY 171 (NO se hizo ayer)
+═══════════════════════════════════════════════════════════════════════════════
+El trabajo de DAY 171 (helper, verificador, acceptance_criteria.md, doc) quedó SIN commitear.
+Commitear DAY 171 + el script de doc juntos en la misma piedra (igual que DAY 170).
+Verificar antes: git status; secret-scan; grep -E '^## ✅ CERRADO DAY' docs/BACKLOG.md | sort | uniq -d (vacío).
+Recordatorio DAY 170: el commit final salió con mensaje "trabajo en curso" — usar git commit --amend
+antes de cualquier merge a main si quieres el mensaje completo. Cosa de 10 segundos.
+Dos limpiezas .gitignore arrastradas: sniffer/build/ y enterprise/enterprise_vendor.pub efímero
+(git rm --cached + patrón en .gitignore; la .pub no entró en historia, es pública, sin urgencia).
+
+═══════════════════════════════════════════════════════════════════════════════
+CONSENSO DEL CONSEJO DAY 170 — sigue siendo la base de la arquitectura de correlación
 ═══════════════════════════════════════════════════════════════════════════════
 P1 (Wazuh <-> red): (A)+(C). Doble arista en Neo4j. flujo<->flujo por community_id (determinista);
    host<->flujo por host_id/agent_id CANÓNICO (nunca IP cruda) + ventana temporal MÁS LAXA y
    causal-bidireccional. NAT = menú de mecanismos, SIEMPRE anotando método y confianza en grafo+log.
-   (B) solo enriquecimiento oportunista, nunca base.
 P2 (seed): gate de arranque P0 (análogo NTP) + health-check huérfanos continuo. Basado en DATA-PLANE:
-   se mide el community_id que cada sensor EMITE en runtime, NO se lee config JSON/yaml (el fichero miente).
+   se mide el community_id que cada sensor EMITE en runtime, NO se lee config JSON/yaml.
+   El cross-check E2E de DAY 171 es la PRIMERA validación práctica de este principio.
    -> ADR-051 + DEBT-CORRELATION-SEED-GATE-001.
 P3 (identidad flujo multi-nodo): flow_uid = hash(node_id || community_id || flow_start_window).
    community_id permanece como propiedad indexada (clave de correlación + verificable contra oráculo),
-   nunca como identidad de nodo. Decidir con grafo vacío = gratis; retrofit = doloroso.
-   -> ADR-052 + DEBT-NEO4J-FLOW-KEY-001 (P0 esquema).
+   nunca como identidad de nodo. -> ADR-052 + DEBT-NEO4J-FLOW-KEY-001 (P0 esquema).
 
 NUMERACIÓN ADR (verificado contra BACKLOG): ADR-050 ya cogido (MITRE, pendiente). Nuevos: 051 y 052.
 
-═══════════════════════════════════════════════════════════════════════════════
-PRIORIDAD DAY 171 #1 — cross-check E2E community_id (tres ventanas)
-═══════════════════════════════════════════════════════════════════════════════
-Cierra la paridad OPERACIONAL del community_id (la de especificación + provisión ya está).
-1. Cliente .50 replaya el flujo Neris por eth1 (tcpreplay) en la LAN ml_defender_gateway_lan.
-2. aRGus + Suricata + Zeek capturan en PARALELO de eth1 (promiscuo) — el MISMO paquete.
-3. Verificar que los 3 emiten el MISMO community_id STRING A STRING (diana 1:IN7uqVpMWxpmuhQTowSQB2XEe0E=).
-   No confiar en que coincidan: OBSERVARLO sobre el mismo paquete real.
-4. Añadidos del Consejo (Kimi/Grok/Mistral):
-   - Registrar por sensor: community_id + timestamp relativo de emisión + nº de paquete/flow.
-     (los 3 pueden converger en valor pero diferir en CUÁNDO emiten — Suricata flow.timeout, Zeek cierre TCP).
-   - Caso con IPs invertidas (paquete de respuesta) -> mismo community_id (bidireccionalidad canónica).
-   - NAT simulado si es viable.
-Resultado verde -> el join red<->red basado en community_id es viable en producción, no solo en lab.
+PRIORIDAD DAY 172 (arrastrado de DAY 171 + nuevo):
+1. commit/push DAY 171 (arriba).
+2. DEBT-ARGUSPP-COUNTER-DUMP-001 (P1, NUEVA DAY 171) — volcado de contadores de aRGus a fichero
+   parseable. Código nuevo (pequeño), no "leer un log que existe" como Suricata/Zeek. Necesario para
+   que el health-check de huérfanos (community_id.orphan_rate) tenga la cifra de aRGus con que comparar.
+3. ADR-051 (Seed Parity Gate & Correlation Health) — borrador para el Consejo. Recoge P2. El cross-check
+   E2E de DAY 171 es ya la evidencia empírica del gate data-plane.
+4. ADR-052 (Multi-node Flow Identity & Host<->Net Correlation) — borrador para el Consejo. Recoge P3+P1.
+5. DEBT-NEO4J-FLOW-KEY-001 (P0 esquema) — flow_uid + node_id obligatorio + constraint Neo4j 5.x ANTES
+   de poblar el grafo. Bloquea el diseño del correlation-engine.
+6. RSS bajo carga (arrastrado) — pipeline + client + tcpreplay escalonado. Mide CPU/RAM de las 4 fuentes
+   -> calibra tiers RPi5/N100 (DEBT-ARGUSPP-RESOURCE-001). NO necesita víctima MITRE. Apagar
+   ARGUS_CID_CROSSCHECK=1 para medir el hot path real.
+7. ADR-050 (MITRE) — borrador (arrastrado). 6 vectores + bootstrap víctima + corrección cripto telemetría.
+8. DEBT-ARGUSPP-SURICATA-001 (P1) — Suricata en EMECAS + eve.json -> correlation-engine.
+9. DEBT-CMAKE-GRAPH-INVARIANTS-001 (P1, arrastrado) — lint CI targets duplicados CMake. ADR-028 propuesto.
 
-PRIORIDAD DAY 171 (resto, arrastrado de DAY 170 + nuevo del Consejo):
-2. ADR-051 (Seed Parity Gate & Correlation Health) — borrador para el Consejo. Recoge P2.
-3. ADR-052 (Multi-node Flow Identity & Host<->Net Correlation) — borrador para el Consejo. Recoge P3+P1.
-4. DEBT-NEO4J-FLOW-KEY-001 (P0 esquema) — diseñar flow_uid + node_id obligatorio + constraint Neo4j 5.x
-   ANTES de poblar el grafo. Bloquea el diseño del correlation-engine.
-5. RSS bajo carga (arrastrado DAY 170) — pipeline + client + tcpreplay escalonado. Mide CPU/RAM de las
-   4 fuentes -> calibra tiers RPi5/N100 (DEBT-ARGUSPP-RESOURCE-001). NO necesita víctima MITRE.
-6. ADR-050 (MITRE) — borrador (arrastrado). 6 vectores + bootstrap víctima + corrección cripto telemetría.
-7. DEBT-ARGUSPP-SURICATA-001 (P1) — Suricata en EMECAS + eve.json -> correlation-engine.
-8. DEBT-CMAKE-GRAPH-INVARIANTS-001 (P1, arrastrado) — lint CI targets duplicados CMake. ADR-028 propuesto.
+DELTA DE TIEMPOS (Consejo DAY 170, recordatorio para cuando se calibre el correlation-engine):
+Los 3 sensores convergen en VALOR del community_id pero pueden diferir en CUÁNDO emiten
+(Suricata flow.timeout, Zeek cierre TCP, aRGus casi-real). Si en el cross-check DAY 171 se registró
+el timestamp relativo de emisión por sensor, ese delta es la entrada real para calibrar
+source_wait_timeout (argus 5s/suricata 10s/zeek 20s) en ADR-046 v4 — en vez de números supuestos.
 
-DEUDAS ABIERTAS NUEVAS DAY 170 (Consejo):
+DEUDAS ABIERTAS RELEVANTES (arrastradas):
+- DEBT-ARGUSPP-COUNTER-DUMP-001 — volcado contadores aRGus a fichero parseable (P1, NUEVA DAY 171).
 - ADR-051 — Seed Parity Gate & Correlation Health (data-plane). Borrador pendiente.
 - ADR-052 — Multi-node Flow Identity & Host<->Net Correlation. Borrador pendiente.
 - DEBT-NEO4J-FLOW-KEY-001 — flow_uid temporal compuesto (P0 esquema).
 - DEBT-CORRELATION-SEED-GATE-001 — gate data-plane + health-check huérfanos (P1).
 - BACKLOG-RESEARCH-NAT-HOSTNET-001 — puente host<->red bajo NAT (RESEARCH). Prereq: Wazuh.
-
-DEUDAS ABIERTAS RELEVANTES (arrastradas):
 - DEBT-ARGUSPP-SURICATA-001 — Suricata en EMECAS + eve.json -> correlation-engine. P1.
-- DEBT-ARGUSPP-WAZUH-001 — Wazuh password via Vault en prod FEDER. P2. (clave correlación = diseño abierto, host-based)
+- DEBT-ARGUSPP-WAZUH-001 — Wazuh password via Vault en prod FEDER. P2.
 - DEBT-ARGUSPP-MITRE-001 — script ataque MITRE con atomic-red-team (post-FEDER). ADR-047.
 - DEBT-ARGUSPP-RESOURCE-001 — medir CPU/RAM/disco 4 fuentes en RPi5/N100. P1 con hardware.
 - DEBT-CMAKE-GRAPH-INVARIANTS-001 — lint CI targets duplicados CMake. P1.
@@ -85,8 +92,11 @@ ARQUITECTURA MULTI-VM (ml_defender_gateway_lan 192.168.100.0/24):
   AdapterSpec v1 = contrato del adaptador por fuente.
 
 REGLAS CRÍTICAS:
-- community_id: canonicalización byte-idéntica a Zeek/Suricata o el join falla en silencio.
-  Verificar con pycommunityid (oráculo). Seed 0 idéntico en los 3 (garantizado por provisión DAY 170).
+- community_id: SHA1 (Corelight), NO HMAC-SHA256 (Qwen/Mistral lo escribieron mal en el Consejo).
+  Canonicalización byte-idéntica a Zeek/Suricata o el join falla en silencio. Oráculo: pycommunityid.
+  Seed 0 idéntico en los 3 (garantizado por provisión). Paridad operacional verificada DAY 171.
+- Helper community_id observable: gateado ARGUS_CID_CROSSCHECK=1 (OFF por defecto, coste nulo hot path).
+  compute_community_id permanece PURA — el log vive en los call-sites, no dentro.
 - Gate de seed (futuro): basado en data-plane (lo que el binario EMITE), nunca en config JSON/yaml.
 - Identidad de flujo Neo4j: flow_uid = hash(node_id || community_id || flow_start_window). community_id es
   propiedad indexada, no identidad de nodo.
@@ -110,5 +120,5 @@ PAPER: arXiv:2604.04952 · Draft v24 local · v3 en arXiv.
 FEDER: colaboración UEx/INCIBE con Dr. Andrés Caro Lindo. No deadline duro — gate real es demostrar
 datasets de valor científico (curva F1 multi-fuente, ADR-048). El 22-09-2026 era referencia de ritmo.
 
-PRIMER COMANDO DAY 171:
-git checkout feature/day170-community-id-protobuf && vagrant up suricata zeek defender client
+PRIMER COMANDO DAY 172:
+git status   # revisar lo de DAY 171 sin commitear, y commitear con el script de doc en la misma piedra
