@@ -36,23 +36,23 @@
 
 ---
 
-## Estado actual — DAY 170 (2026-05-31)
+## Estado actual — DAY 173 (2026-06-02)
 
 <!-- DAY-STATUS -->
 | Campo | Valor |
 |---|---|
-| DAY | 171 |
+| DAY | 173 |
 | Tag | v1.0.0-day166 |
-| Branch | feature/day170-community-id-protobuf @ af9cd812 |
+| Branch | feature/day170-community-id-protobuf |
 | EMECAS++ OSS | ✅ verde — test-all + test-e2e-synthetic-full + test-e2e-synthetic-firewall |
 | EMECAS++ Enterprise | ✅ VERDE — 3 actos + Jenkins gate (DAY 167) |
 | Pipeline | 6/6 RUNNING |
 | NTP/chrony | ✅ DEBT-ARGUSPP-NTP-001 — health-check rechaza offset >1s (DAY 167) |
 | correlation-engine | 🟡 scaffold ADR-048 F2 (DAY 167) |
 | Multi-VM | ✅ Suricata 7.0.10 + Zeek 8.2.0 + Wazuh 4.x en 192.168.100.0/24 (DAY 168) |
-| community_id | ✅ paridad OPERACIONAL — 3 sensores convergen al diana sobre paquete real (cross-check E2E DAY 171) |
-| Arquitectura | ✅ ADR-046 v4 + AdapterSpec v1 (DAY 169) · ADR-050 (MITRE) + ADR-051/052 pendientes |
-| Próximo hito | DAY 172 volcado contadores aRGus + ADR-051/052 borrador + DEBT-NEO4J-FLOW-KEY-001 esquema |
+| community_id | ✅ paridad OPERACIONAL cross-sensor — cross-check E2E reproducible (DAY 171/172) |
+| Arquitectura | ✅ ADR-046 v4 + AdapterSpec v1 · ✅ ADR-052 v3.2 RATIFICADA (8/8 DAY 173) · ⏳ ADR-050 (MITRE) + ADR-053 (JA3/JA4/BGP) + ADR-051 (Seed Parity) pendientes |
+| Próximo hito | DEBTs P0 identidad de flujo (NODEID + FLOWUID + NEO4J-FLOW-KEY) + ADR-051 borrador |
 | Gate UEx/INCIBE | Datasets de valor científico (no deadline duro) |
 <!-- /DAY-STATUS -->
 
@@ -75,6 +75,11 @@
   - **DEBT-CRYPTO-RECONCILIATION-001 CERRADA + STALENESS GUARD (B1 post-Consejo)** — `AutonomySubscriber`: `shared_ptr<atomic<FirewallAutonomyMode>>` + `shared_ptr<atomic<int64_t>>` (last_update_ns). `poll_callback`: si `elapsed > staleness_timeout_sec` → NORMAL + log. Previene firewall congelado si etcd-server muere silenciosamente. 9/9 tests (T9: staleness guard).
   - **Consejo 8/8 consultado** — Dos bloqueantes identificados y resueltos antes del merge: B1 (staleness) + B2 (ExecStartPre= vs ExecStartPost= para fichero efímero, pendiente DAY 158).
   - **EMECAS DAY 157 VERDE** — `vagrant destroy → up → make bootstrap → make test-all` — TODO VERDE.
+
+### Hitos DAY 173 🏛️
+- **ADR-052 v3.2 RATIFICADA — Consejo 8/8.** Multi-node Flow Identity & Host↔Net Correlation. Confirmación de fidelidad unánime, sin tercera deliberación. Principio ordenador §0: *"El grafo no es el producto. El producto es el corpus."* `flow_uid = base64(BLAKE2b(node_id ‖ community_id ‖ flow_start_window [‖ seq_in_window]))`; `node_id` = string legible declarado en inventario firmado (NO derivado del keypair efímero); `community_id` = clave de correlación, nunca identidad. Dos anulaciones de árbitro: hash anclado a libsodium (§3.1.1) y señales TCP/TLS de host dentro del ADR (§3.11). Entregable `ADR-052_v3.2.md`. **Desbloquea `DEBT-NEO4J-FLOW-KEY-001`.**
+  - **DEBTs de identidad de flujo registradas (orden de dependencia P0→P3):** P0 `DEBT-NODEID-CRYPTO-IDENTITY-001` (reescrita) + `DEBT-FLOWUID-CANONICAL-ENCODING-001` + `DEBT-NEO4J-FLOW-KEY-001`; P1 `DEBT-SENSOR-COVERAGE-MAP-001` / `DEBT-LABEL-WAL-001` (hash-chain) / `DEBT-ARGUSPP-ARP-MONITOR-001` / `DEBT-ARGUSPP-HOST-TCP-001`; P2 `DEBT-CERT-EXPECTATION-STORE-001` / `DEBT-SEQWINDOW-PERSIST-001` / `DEBT-ARGUSPP-OOB-MITM-001` / `DEBT-CORPUS-QUALITY-METRICS-001`; P3 `DEBT-ARCH-FLOW-OBSERVATION-001`.
+  - **ADR-053 stub abierto** — JA3/JA4, cadena TLS profunda, anomalía de ruta L3/BGP (diferido conscientemente de ADR-052 para evitar scope creep). **ADR-050 (MITRE) y ADR-051 (Seed Parity Gate) siguen pendientes de redacción.**
 
 ### Hitos DAY 171 🎉
 - **Cross-check E2E community_id — paridad OPERACIONAL demostrada.** El cliente `.50` replaya el flujo Neris por `eth1`; aRGus + Suricata + Zeek capturan en paralelo (promiscuo) el MISMO paquete y los tres convergen STRING A STRING al diana `1:IN7uqVpMWxpmuhQTowSQB2XEe0E=`. Se cierra la paridad operacional (DAY 170 cerró especificación + provisión). Validación data-plane (P2 Consejo): se mide lo que el binario EMITE, no lo que dice la config.
@@ -581,6 +586,7 @@ make hardened-full   # destroy → up → provision → build → deploy → che
   - ✅ DAY 171: **Cross-check E2E community_id 3 ventanas VERDE · paridad operacional demostrada · helper observable + verificador + acceptance_criteria.md congelado (Consejo 8/8) · DEBT-COUNTER-DUMP-001 abierta** 🎉
   - ✅ DAY 170: **community_id cross-sensor sellado (aRGus+Zeek+Suricata, seed 0, vs oráculo) · de-dup BACKLOG · Consejo 8/8 P1/P2/P3 · ADR-051/052 pendientes** 🎉
   - 🔜 DAY 172: **volcado contadores aRGus a fichero parseable (DEBT-COUNTER-DUMP-001) + ADR-051/052 borrador + DEBT-NEO4J-FLOW-KEY-001 (esquema Neo4j) + ADR-050 MITRE borrador + DEBT-ARGUSPP-SURICATA-001 (eve.json → correlation-engine)**
+  - ✅ DAY 173: **ADR-052 v3.2 RATIFICADA (Consejo 8/8)** — Multi-node Flow Identity & Host↔Net · DEBTs P0→P3 de identidad de flujo · ADR-053 stub (JA3/JA4/BGP) · desbloquea DEBT-NEO4J-FLOW-KEY-001 🏛️
 
 ---
 

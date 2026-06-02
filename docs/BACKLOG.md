@@ -1,5 +1,5 @@
 # aRGus NDR — BACKLOG
-*Última actualización: DAY 170 — 2026-05-31*
+*Última actualización: DAY 173 — 2026-06-02*
 
 ---
 
@@ -85,6 +85,111 @@
 | **aRGus-seL4** | ⏳ No iniciada | Apéndice científico. Kernel seL4, libpcap. Branch independiente. |
 
 ---
+
+
+## ✅ RATIFICADO DAY 173 — ADR-052 v3.2 (Consejo 8/8) + DEBTs de identidad de flujo
+
+### ADR-052 v3.2 — Multi-node Flow Identity & Host↔Net Correlation — RATIFICADA Y CERRADA
+- **Status:** ✅ RATIFICADA 8/8 DAY 173 — confirmación de fidelidad sin reservas, sin 3ª deliberación.
+- **Evolución:** v1→v2 (misión §0, Q1–Q7, node_id) → v3 (bug N1 `node_id ≠ SHA256(pubkey)`, `seq_in_window` transportado, WAL externo, hash anclado a libsodium, event time, TCP/TLS dentro por anulación de árbitro) → v3.1 (4 auto-correcciones C1–C4) → **v3.2** (3 retoques de cierre R1–R3).
+- **Principio ordenador (§0):** *"El grafo no es el producto. El producto es el corpus."* Neo4j fabrica el corpus de entrenamiento de modelos ensemble plugin firmados. Suricata/Zeek/Wazuh = testigos/oráculos/corroboradores (maestros del modelo), NUNCA activadores del firewall (3-paradigmas F1 Suricata=0.000/Zeek=0.042/aRGus=0.9985 + soberanía ENS/NIS2/GDPR). Invariante: retención + integridad de etiqueta ganan sobre correlación-online.
+- **Decisión núcleo:** `flow_uid = base64(BLAKE2b(node_id ‖ 0x00 ‖ community_id ‖ 0x00 ‖ uint64_be(flow_start_window) [‖ 0x00 ‖ uint32_be(seq_in_window)]))`. `H = BLAKE2b` (`crypto_generichash`, libsodium 1.0.19, fijado documentalmente además del invariante "lo que dé la libsodium congelada"). `node_id` = string legible declarado en inventario firmado, NO derivado del keypair efímero. `community_id` = clave de correlación, nunca identidad (recicla 5-tupla, colisiona multi-nodo). `seq_in_window` transportado en el evento Protobuf (no recomputado offline). `sensor_native_flow_id` = propiedad de trazabilidad, nunca componente del hash.
+- **Correlación host↔red:** doble arista (flujo↔flujo determinista por community_id; host↔flujo por `agent_id` canónico + ventana temporal asimétrica en EVENT TIME con watermark, Red→Host 5s / Host→Red 30s). NAT: menú de mecanismos con anotación obligatoria de método+confianza; conflicto → `CONFLICT_NAT`, peso de muestra penalizado en ADR-040.
+- **Anulaciones de árbitro (Alonso):** (1) función de hash anclada a libsodium congelada §3.1.1; (2) señales TCP/TLS de host dentro de ADR-052 §3.11 — TCP ligero (RST/seqnum) entra; mismatch TLS acotado a destinos gestionados con cert-expectation store. Límite §3.4.1: con host comprometido toda la telemetría de host miente → vector A indetectable sin fuente out-of-band. Cobertura L7 asimétrica (R1): limitada al perímetro gestionado hasta cerrar `DEBT-CERT-EXPECTATION-STORE-001`.
+- **Entregables:** `ADR-052_v3.2.md` (ratificada) + cadena v3.1/v3/v2 + síntesis de deliberación.
+- **Desbloquea:** `DEBT-NEO4J-FLOW-KEY-001` (P0 esquema) y el diseño del correlation-engine.
+
+### ADR-053 — JA3/JA4, cadena TLS profunda, anomalía de ruta L3/BGP (STUB)
+- **Status:** ⏳ STUB NUEVO — DAY 173. Diferido conscientemente desde ADR-052 para evitar scope creep.
+- **Contenido a redactar:** fingerprinting JA3/JA4, validación de cadena TLS profunda (más allá del cert-expectation store del perímetro gestionado), detección de anomalía de ruta L3/BGP (BGP hijack). Flujo: borrador → Consejo → aprobación.
+
+### DEBT-NODEID-CRYPTO-IDENTITY-001 — node_id como string declarado (REESCRITA)
+**Severidad:** 🔴 P0 — desbloquea Neo4j
+**Estado:** ABIERTO — DAY 173 (Consejo 8/8, ADR-052 v3.2 C1)
+**Componente:** inventario firmado (ADR-046 §3.9) + sniffer + correlation-engine
+`node_id` NO puede derivarse del keypair Ed25519 (se regenera en cada `vagrant destroy+up` → rompería la identidad de corpus). `node_id` = string canónico legible declarado en inventario firmado (ej. `argus-sensor-gw-lan-01`), estable a años vista, auditable en forense. El keypair firma los eventos (autenticidad, ADR-027); el inventario firmado protege la integridad del `node_id`. Dos líneas de defensa distintas que no deben confundirse (R3).
+**Test de cierre:** `flow_uid` idéntico antes/después de `vagrant destroy+up` con el mismo `node_id` declarado. `node_id` no presente en inventario → rechazo.
+**Estimación:** 1 sesión.
+
+### DEBT-FLOWUID-CANONICAL-ENCODING-001 — codificación canónica flow_uid + paridad
+**Severidad:** 🔴 P0 — desbloquea Neo4j
+**Estado:** ABIERTO — DAY 173 (Consejo 8/8, ADR-052 v3.2)
+**Componente:** sniffer (C++) + correlation-engine (Python) + common
+Implementar `flow_uid = base64(BLAKE2b(node_id ‖ 0x00 ‖ community_id ‖ 0x00 ‖ uint64_be(flow_start_window) [‖ 0x00 ‖ uint32_be(seq_in_window)]))` con `crypto_generichash` (libsodium 1.0.19). `node_id` entra como string canónico no derivado; `seq_in_window` es INPUT del vector (transportado en el evento, no recomputado offline). Test de paridad cross-implementación C++/Python sobre la MISMA versión de libsodium (mismo patrón que `pycommunityid`).
+**Test de cierre:** C++ y Python producen `flow_uid` idéntico sobre el vector + verifican misma versión de libsodium. Caso dos-sensores misma 5-tupla → `flow_uid` distinto por `node_id` distinto.
+**Estimación:** 1-2 sesiones.
+
+### DEBT-SENSOR-COVERAGE-MAP-001 — Mapa de cobertura sensor↔segmento
+**Severidad:** 🟡 P1 — prerrequisito de orphan_rate / IPW
+**Estado:** ABIERTO — DAY 173 (Consejo 8/8, ADR-052 v3.2 §3.8)
+**Componente:** orquestador (Vagrant/Ansible) + cache declarativa (Redis/etcd)
+Tabla/cache declarativa sensor↔segmento, DECLARADA (no auto-descubierta), versionada y timestampeada, fuente = orquestador. Validación por beacons. Sin este mapa, `community_id.orphan_rate` e IPW son ruido (no se sabe cuántos testigos se ESPERABAN por flujo: `expected_witnesses`).
+**Test de cierre:** `expected_witnesses` por flujo calculable desde el mapa. Beacon de validación detecta deriva mapa↔realidad.
+**Estimación:** 1-2 sesiones.
+
+### DEBT-LABEL-WAL-001 — WAL externo append-only con hash-chain
+**Severidad:** 🟡 P1
+**Estado:** ABIERTO — DAY 173 (Consejo 8/8, ADR-052 v3.2 §3.7, C4)
+**Componente:** correlation-engine + etcd HA (ADR-048)
+WAL externo append-only con hash-chain (`prev_hash = H(entrada_{i-1})`) como fuente de no-repudio del etiquetado; Neo4j = vista materializada. Verificación periódica de la cadena. Dos detecciones independientes: cadena rota (manipulación WAL) vs divergencia grafo↔WAL (manipulación Neo4j). Provenance en 2 campos ortogonales que nunca se colapsan: `provenance_suspected` (heurística runtime) vs `provenance_ground_truth` (manifiesto MITRE); su delta = métrica honesta precision/recall. Eje separado del enum congelado de `acceptance_criteria.md` (DROP/CONFIG/POLICY/BUG/UNKNOWN).
+**Test de cierre:** manipular una entrada del WAL → cadena rota detectada. Divergir Neo4j del WAL → divergencia detectada. `provenance_suspected` y `provenance_ground_truth` nunca colapsados.
+**Estimación:** 2 sesiones (depende de ADR-048 etcd HA).
+
+### DEBT-ARGUSPP-ARP-MONITOR-001 — ARP/NDP como nodo de estado de primera clase
+**Severidad:** 🟡 P1
+**Estado:** ABIERTO — DAY 173 (Consejo 8/8, ADR-052 v3.2 §3.9)
+**Componente:** sniffer / host plane
+ARP/NDP modelado como nodo de estado (`:IpMacBinding` con `valid_from`/`valid_to`), re-binding = señal (vector A / MITM L2). NO volcado de paquetes. Línea de defensa L2 del vector A (no sujeta a la limitación L7 asimétrica de §3.4).
+**Test de cierre:** re-binding IP↔MAC anómalo → `:IpMacBinding` con `valid_to` + señal. ARP gratuito legítimo no genera falso positivo.
+**Estimación:** 1-2 sesiones.
+
+### DEBT-ARGUSPP-HOST-TCP-001 — Señales TCP de host (RST/seqnum)
+**Severidad:** 🟡 P1
+**Estado:** ABIERTO — DAY 173 (Consejo 8/8, ADR-052 v3.2 §3.11a, anulación de árbitro)
+**Componente:** host plane (osquery / Wazuh ligero)
+Señales TCP ligeras de host (RST inesperados, saltos de seqnum del kernel) como ganchos del vector A ampliado. Límite documentado §3.4.1: con host comprometido toda la telemetría de host miente → vector A indetectable sin fuente out-of-band.
+**Test de cierre:** RST/seqnum anómalo bajo supuesto de host sano → `:HostAnomaly` TCP. Host comprometido documentado como límite, no como cobertura.
+**Estimación:** 1-2 sesiones.
+
+### DEBT-CERT-EXPECTATION-STORE-001 — Cert-expectation store (mismatch TLS)
+**Severidad:** 🟢 P2
+**Estado:** ABIERTO — DAY 173 (Consejo 8/8, ADR-052 v3.2 C2/R1)
+**Componente:** host plane + store declarativo
+Store de expectativa de certificado para destinos gestionados; habilita la señal de mismatch TLS del vector A en L7. Sin él, la cobertura L7 del vector A está limitada al perímetro gestionado (nota de cobertura asimétrica §3.4, R1): el tráfico saliente a destinos arbitrarios — donde más MITM real ocurre — no queda cubierto en L7. L2 (ARP/NDP) y L4 (RST/seqnum) no tienen esta limitación.
+**Test de cierre:** mismatch TLS en destino gestionado con expectativa declarada → señal. Destino arbitrario → sin falso positivo (no cubierto, documentado).
+**Estimación:** 2 sesiones.
+
+### DEBT-SEQWINDOW-PERSIST-001 — Persistencia de seq_in_window en el sensor
+**Severidad:** 🟢 P2
+**Estado:** ABIERTO — DAY 173 (Consejo 8/8, ADR-052 v3.2)
+**Componente:** sniffer
+Persistencia local (fsync) del contador `seq_in_window` para sobrevivir a reinicios del sensor dentro del mismo bucket temporal. Un crash justo tras computar el contador pero antes de emitir es delicado (riesgo de colisión UDP en el mismo `flow_start_window`).
+**Test de cierre:** crash del sensor + restart dentro del mismo window → `seq_in_window` no reutilizado.
+**Estimación:** 1 sesión.
+
+### DEBT-ARGUSPP-OOB-MITM-001 — Fuente out-of-band para vector A con host comprometido
+**Severidad:** 🟢 P2
+**Estado:** ABIERTO — DAY 173 (Consejo 8/8, ADR-052 v3.2 §3.4.1)
+**Componente:** switch (port-security / DAI / DHCP snooping) / SPAN-TAP / Canary Host
+Límite fundamental §3.4.1: con host comprometido toda la telemetría de host miente → vector A indetectable sin fuente out-of-band. La fuente OOB no elimina el problema, reubica la confianza al elemento menos comprometible ("escudo, nunca espada").
+**Test de cierre:** vector A con host comprometido + fuente OOB → detectable. Sin fuente OOB → documentado como indetectable por diseño.
+**Estimación:** post-hardware (switch gestionable).
+
+### DEBT-CORPUS-QUALITY-METRICS-001 — KPIs de calidad del corpus
+**Severidad:** 🟢 P2
+**Estado:** ABIERTO — DAY 173 (Consejo 8/8, ADR-052 v3.2 §0.1)
+**Componente:** correlation-engine + pipeline ML (ADR-040)
+KPIs §0.1: % flujos con `provenance_ground_truth` validado, % flujos con `witness_count ≥ 2` en segmentos de cobertura solapada, tiempo de reconstrucción de `flow_uid` desde pcap, cobertura de técnicas MITRE, balance de clases benigno/malicioso. Confianza-por-corroboración (feature, sube con testigos) y peso-de-de-duplicación (sampler, baja con testigos) SEPARADAS; el IPW real lo posee ADR-040. `trust_tier` enum en grafo, score continuo en pipeline ML (no en Neo4j). Normalizado por `expected_witnesses` del mapa de cobertura.
+**Test de cierre:** KPIs calculables por sesión. Confianza y peso de de-dup nunca colapsados en un solo número.
+**Estimación:** 1-2 sesiones.
+
+### DEBT-ARCH-FLOW-OBSERVATION-001 — Separar FlowObservation de FlowIdentity
+**Severidad:** ⚪ P3
+**Estado:** ABIERTO — DAY 173 (Consejo 8/8, ADR-052 v3.2)
+**Componente:** modelo de datos correlation-engine + Neo4j
+Distinguir formalmente `FlowObservation` (lo que un sensor concreto observó) de `FlowIdentity` (la identidad de corpus, `flow_uid`). Refactorización de modelo de datos post-FEDER.
+**Test de cierre:** el modelo separa observación de identidad. Múltiples `FlowObservation` → un `FlowIdentity` vía community_id.
+**Estimación:** post-FEDER.
 
 
 ## ✅ CERRADO DAY 171
@@ -2893,8 +2998,8 @@ Filtro de Kalman para fusion multi-fuente (7 casos de uso: anomaly scoring, corr
 **Estado:** ⏳ BORRADOR PENDIENTE — DAY 170 (Consejo 8/8) · recoge P2
 Gate de arranque P0 basado en data-plane: el correlation-engine mide el community_id que cada sensor EMITE en runtime sobre un flujo de referencia y verifica paridad. Divergencia -> `SEED_MISMATCH`, abort. Health-check continuo: métrica `community_id.orphan_rate` (flujos sin corroboración cross-sensor cuando deberían tenerla); caída de matches a ~0 u orfandad sistemática >umbral en N ventanas -> alerta CRITICAL. NO lee config JSON/yaml — el fichero puede mentir. Flujo: borrador -> Consejo -> aprobación -> implementación.
 
-#### ADR-052 — Multi-node Flow Identity & Host<->Net Correlation (PENDIENTE redacción)
-**Estado:** ⏳ BORRADOR PENDIENTE — DAY 170 (Consejo 8/8) · recoge P3 + P1
+#### ADR-052 — Multi-node Flow Identity & Host<->Net Correlation (RATIFICADA v3.2 — DAY 173)
+**Estado:** ✅ RATIFICADA v3.2 (Consejo 8/8) — DAY 173. Ver sección "RATIFICADO DAY 173" arriba. · recoge P3 + P1
 Identidad del nodo-flujo en Neo4j = `flow_uid = hash(node_id || community_id || flow_start_window)`. community_id como propiedad indexada (clave de correlación intra-nodo). Doble arista: flujo<->flujo (community_id, determinista) + host<->flujo (host_id/agent_id canónico + ventana temporal laxa causal-bidireccional). NAT: menú de mecanismos con anotación de método y confianza en grafo+log. Esquema Neo4j compartido -> P1 y P3 en un mismo ADR (separable a ADR-053 si el Consejo lo pide).
 
 #### DEBT-NEO4J-FLOW-KEY-001 — Clave de flujo temporal compuesta en Neo4j

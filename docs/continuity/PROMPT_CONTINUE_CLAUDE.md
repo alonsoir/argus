@@ -1,5 +1,11 @@
 DAY 173 — aRGus NDR (arXiv:2604.04952)
 
+ÚLTIMO HITO DAY 173: ADR-052 v3.2 RATIFICADA por el Consejo (8/8, confirmación de fidelidad sin reservas,
+sin 3ª deliberación). Entregable ADR-052_v3.2.md. Genera las DEBTs P0->P3 de identidad de flujo (abajo) y
+el stub ADR-053. PENDIENTE aún en DAY 173: commit/push DAY 172, ADR-051 borrador, y empezar las DEBTs P0
+(NODEID + FLOWUID + NEO4J-FLOW-KEY) que ADR-052 desbloquea.
+
+
 Estado: rama feature/day170-community-id-protobuf (community_id cross-sensor + cross-check E2E operacional). Tag estable v1.0.0-day166.
 DAY 172 cerrado: cross-check E2E community_id REPRODUCIDO (agree=1029 y 788 en dos corridas) tras reconstruir el entorno multi-VM completo, que NO era reproducible. Verificador parcheado con Opción A (delta inicio de flujo, sanity check). Dos targets nuevos en Makefile (crosscheck-up / crosscheck-run) que automatizan los ~20 comandos de arranque. Tres deudas nuevas registradas. PENDIENTE de commit/push DAY 172.
 
@@ -86,8 +92,12 @@ PRIORIDAD DAY 173 (arrastrado + nuevo):
 1. commit/push DAY 172 (arriba).
 2. ADR-051 (Seed Parity Gate & Correlation Health) — borrador para el Consejo. Recoge P2. El cross-check
    E2E (data-plane) es ya la evidencia empírica del gate. Trabajo de CABEZA — hacerlo fresco.
-3. ADR-052 (Multi-node Flow Identity & Host<->Net Correlation) — borrador para el Consejo. Recoge P3+P1.
-   Estaba a medio escribir en el working tree al empezar DAY 172. Ratifica flow_uid ANTES de Neo4j.
+3. ✅ ADR-052 v3.2 RATIFICADA (Consejo 8/8, DAY 173) — Multi-node Flow Identity & Host<->Net Correlation.
+   Confirmación de fidelidad unánime, sin 3a deliberacion. flow_uid = base64(BLAKE2b(node_id || community_id ||
+   flow_start_window [|| seq_in_window])); node_id = string legible declarado (no keypair efimero); community_id =
+   clave de correlacion, nunca identidad. Anulaciones de arbitro: hash libsodium (3.1.1) + TCP/TLS host (3.11).
+   Entregable ADR-052_v3.2.md. DESBLOQUEA DEBT-NEO4J-FLOW-KEY-001 (#4). Genera DEBTs P0->P3 de identidad de flujo
+   (ver lista de deudas) + stub ADR-053 (JA3/JA4, TLS profundo, BGP). ADR-051 (#2) SIGUE pendiente de redaccion.
 4. DEBT-NEO4J-FLOW-KEY-001 (P0 esquema) — flow_uid + node_id obligatorio + constraint Neo4j 5.x ANTES
    de poblar el grafo. Bloquea el diseño del correlation-engine. VA DESPUÉS de ADR-052 (lo ratifica).
 5. DEBT-ARGUSPP-COUNTER-DUMP-001 (P1) — volcado de contadores de aRGus a fichero parseable. Necesario
@@ -110,7 +120,19 @@ DEUDAS ABIERTAS RELEVANTES (arrastradas + nuevas DAY 172):
   cambiar la ruta --zeek-conn hardcodeada en el target crosscheck-run (NUEVA DAY 172).
 - DEBT-ARGUSPP-COUNTER-DUMP-001 — volcado contadores aRGus a fichero parseable (P1, DAY 171).
 - ADR-051 — Seed Parity Gate & Correlation Health (data-plane). Borrador pendiente.
-- ADR-052 — Multi-node Flow Identity & Host<->Net Correlation. Borrador pendiente (a medio escribir).
+- ADR-052 — Multi-node Flow Identity & Host<->Net Correlation. RATIFICADA v3.2 (8/8, DAY 173). Entregable ADR-052_v3.2.md.
+- ADR-053 — JA3/JA4, cadena TLS profunda, anomalia de ruta L3/BGP. STUB (diferido de ADR-052). Borrador pendiente.
+- DEBT-NODEID-CRYPTO-IDENTITY-001 — node_id = string declarado en inventario firmado, no keypair efimero (P0, ADR-052 C1). Desbloquea Neo4j.
+- DEBT-FLOWUID-CANONICAL-ENCODING-001 — codificacion canonica BLAKE2b + paridad C++/Python + seq_in_window transportado + caso 2-sensores (P0, ADR-052).
+- DEBT-SENSOR-COVERAGE-MAP-001 — mapa sensor<->segmento declarativo, versionado, beacons (P1, ADR-052 3.8). Prereq de orphan_rate/IPW.
+- DEBT-LABEL-WAL-001 — WAL externo append-only hash-chain (prev_hash), Neo4j vista materializada, doble deteccion (P1, ADR-052 3.7).
+- DEBT-ARGUSPP-ARP-MONITOR-001 — ARP/NDP como :IpMacBinding, re-binding=senal vector A L2 (P1, ADR-052 3.9).
+- DEBT-ARGUSPP-HOST-TCP-001 — senales TCP host RST/seqnum, vector A ampliado (P1, ADR-052 3.11a).
+- DEBT-CERT-EXPECTATION-STORE-001 — store expectativa cert para mismatch TLS; cobertura L7 asimetrica hasta cerrarlo (P2, ADR-052 C2/R1).
+- DEBT-SEQWINDOW-PERSIST-001 — persistencia fsync de seq_in_window en sensor (P2, ADR-052).
+- DEBT-ARGUSPP-OOB-MITM-001 — fuente out-of-band (port-security/SPAN/Canary) para vector A con host comprometido (P2, ADR-052 3.4.1).
+- DEBT-CORPUS-QUALITY-METRICS-001 — KPIs corpus 0.1; confianza-corroboracion vs peso-de-dedup separados; IPW en ADR-040 (P2, ADR-052).
+- DEBT-ARCH-FLOW-OBSERVATION-001 — separar FlowObservation de FlowIdentity (P3, ADR-052).
 - DEBT-NEO4J-FLOW-KEY-001 — flow_uid temporal compuesto (P0 esquema).
 - DEBT-CORRELATION-SEED-GATE-001 — gate data-plane + health-check huérfanos (P1).
 - BACKLOG-RESEARCH-NAT-HOSTNET-001 — puente host<->red bajo NAT (RESEARCH). Prereq: Wazuh.
