@@ -2915,6 +2915,48 @@ Implementación del gate P0 data-plane + health-check `community_id.orphan_rate`
 **Estado:** RESEARCH/FUTURE — DAY 170 (Consejo 8/8) · recoge P1
 Mecanismos de correlación host<->red cuando IP interna (Wazuh) != IP observada (sensor red): Translation node con logs NAT / identidad agent_id-hostname / puente (proceso, puerto_local, timestamp) / fallback temporal degradado. SIEMPRE anotar en grafo y log el método usado y su confianza. Cubrir explícitamente los casos correctos, incorrectos e incompletos de medida. Nunca fallo silencioso por IP no coincidente. Prereq: Wazuh integrado (DEBT-ARGUSPP-WAZUH-001).
 
+## DEBT-CORRELATION-TIMEOUT-CALIB-001 (P1)
+
+**Qué:** medir el `source_wait_timeout` real por sensor = wall-clock de *aparición*
+del cid diana relativo a T0 (lanzamiento de tcpreplay). NO el timestamp interno de
+inicio de flujo (eso es A, ya hecho como sanity check).
+
+**Por qué:** ADR-046 v4 usa 5s/10s/20s (argus/suricata/zeek) SUPUESTOS. El timeout
+real es retardo-de-emisión: Suricata `flow.timeout`, Zeek cierre TCP. aRGus casi-real.
+Calibrar con dato medido en vez de número inventado.
+
+**Cómo:** refactor verificador one-shot → poll. T0 = `time.monotonic()` al inyectar;
+sondear `read_*` en bucle corto hasta que el cid diana aparezca por sensor; estampar
+primer éxito; Δ = t_aparición − T0.
+
+**Rigor (no negociable):** medir sobre 2-3 FORMAS de flujo (sesión corta / larga /
+múltiples flujos concurrentes), NO una sola muestra replayada. El timeout depende de
+la forma del flujo. Resultado = suelo medido + margen explícito, NO distribución,
+hasta tener tráfico real. Documentar como tal en ADR-046 v4.
+
+**Alimenta:** `source_wait_timeout` argus/suricata/zeek en ADR-046 v4 (reemplaza supuestos).
+**Prereq:** NTP P0 (cerrado DAY 167 — garantiza comparabilidad cross-VM). Setup multi-VM VERDE.
+**Relación:** complementa DEBT-CORRELATION-SEED-GATE-001 (ambos data-plane).
+Origen: nota DELTA DE TIEMPOS del Consejo DAY 170.
+
+**Hallazgo DAY 172:** el TSV de cross-check de aRGus estampa timestamp SINTÉTICO
+(contador 1.7e18+N, no system_clock real) — community_id_log.cpp corre bajo reloj
+inyectado en el build de cross-check. Por eso A (minar artefacto) no aplica a aRGus.
+B debe medir aRGus por wall-clock de aparición en el host (time.monotonic), no por
+el ts interno. Verificar también si el path de PRODUCCIÓN usa reloj real o heredó el inyectado.
+**Hallazgo DAY 172 (corrida real):** A revela que Suricata (eve.json .timestamp en
+eventos flow = FIN de flujo / flow.timeout) y Zeek (conn.log ts = INICIO de conexión)
+NO anclan el timestamp al mismo punto del ciclo de vida. Spreads observados 9.7ms
+(flujos cortos) a 116s (flujos largos, dominados por flow.timeout de Suricata). El
+'delta de inicio de flujo' que A pretendía medir NO es medible restando estos dos
+campos: miden eventos distintos. CONSECUENCIA para B: source_wait_timeout debe medirse
+por WALL-CLOCK de aparición (time.monotonic en host), nunca por timestamps internos —
+quedan confirmados como no comparables entre sensores. CONSECUENCIA para ADR-046 v4:
+los 5/10/20s supuestos son casi seguro muy bajos para Suricata en flujos largos.
+
+## DEBT-MAKEFILE-CID-CROSSCHECK-001
+target dedicado que arranque el sniffer con la env var, para que el cross-check sea reproducible con un make y no dependa de tu memoria
+
 ---
 
 ## ADR-046 v3 — aRGus++ Multi-Source Pipeline (DAY 158)
@@ -2939,7 +2981,7 @@ Mecanismos de correlación host<->red cuando IP interna (Wazuh) != IP observada 
 | DEBT-ARGUSPP-BENCHMARK-001 | Re-ejecutar BACKLOG-BENCHMARK-CAPACITY-001 con las 4 fuentes activas. | P1 post-hardware | OPEN |
 | DEBT-ARGUSPP-WAZUH-001 | Wazuh agent en edge + manager en servidor central. P2 post-medición de recursos en hardware físico. | P2 | OPEN |
 | DEBT-PAPER-SYNTHETIC-001 | Sección paper v24: curva F1 vs ratio académico/sintético. Refs: Arp et al.[2022], Wagner et al.[2022], Sommer&Paxson[2010]. | P2 | OPEN |
-
+|DEBT-CORRELATION-TIMEOUT-CALIB-001 (P1)| OPEN |
 **ADR-047 pendiente:** mitre-generator — orquestador de experimentos MITRE ATT&CK para ground truth reproducible. Consenso 8/8 Consejo DAY 158.
 
 **Nota arquitectónica (DAY 158):** Cada herramienta genera su propio Parquet con su propio esquema.

@@ -2830,3 +2830,39 @@ correlation-engine-test: correlation-engine-build
 correlation-engine-clean:
 	@vagrant ssh -c "rm -rf /vagrant/correlation-engine/build"
 	@echo "✅ correlation-engine cleaned"
+
+# ── crosscheck-up — Reproduce el setup E2E community_id de DAY 171/172 ────────
+# Levanta el entorno minimo para el cross-check de paridad: etcd -> provision ->
+# sniffer(ARGUS_CID_CROSSCHECK=1) -> Zeek -> confirma Suricata. NO dispara replay
+# (eso es `make crosscheck-run`). Resuelve DEBT-MAKEFILE-CID-CROSSCHECK-001.
+# Ruta Zeek = spool (zeekctl deploy). Cambiar cuando DEBT-ZEEK-LOGPATH-001 cierre.
+crosscheck-up: etcd-server-start test-provision-1
+	@echo "── [1/4] Limpiando logs de los tres sensores ──"
+	@vagrant ssh suricata -c "sudo truncate -s 0 /var/log/suricata/eve.json" || true
+	@vagrant ssh zeek     -c "sudo truncate -s 0 /opt/zeek/spool/zeek/conn.log 2>/dev/null" || true
+	@vagrant ssh defender -c "sudo truncate -s 0 /vagrant/logs/lab/cid-xcheck-argus.tsv" || true
+	@echo "── [2/4] Arrancando sniffer aRGus con ARGUS_CID_CROSSCHECK=1 ──"
+	@vagrant ssh defender -c "tmux kill-session -t sniffer 2>/dev/null || true"
+	@vagrant ssh defender -c "tmux new-session -d -s sniffer \
+	  'cd $(SNIFFER_BUILD_DIR) && \
+	   sudo env LD_LIBRARY_PATH=/usr/local/lib ARGUS_CID_CROSSCHECK=1 \
+	   ./sniffer -c /vagrant/sniffer/config/sniffer.json \
+	   >> /vagrant/logs/lab/sniffer.log 2>&1'"
+	@sleep 4
+	@vagrant ssh defender -c "tmux has-session -t sniffer 2>/dev/null && echo '   OK sniffer VIVO' || (echo '   XX sniffer MUERTO — revisar /vagrant/logs/lab/sniffer.log' && exit 1)"
+	@echo "── [3/4] Arrancando Zeek (eth1) ──"
+	@vagrant ssh zeek -c "sudo /opt/zeek/bin/zeekctl deploy 2>&1 | tail -5"
+	@vagrant ssh zeek -c "sudo /opt/zeek/bin/zeekctl status | grep -q running && echo '   OK zeek running' || (echo '   XX zeek no arranco' && exit 1)"
+	@echo "── [4/4] Confirmando Suricata ──"
+	@vagrant ssh suricata -c "sudo systemctl is-active suricata | grep -q active && echo '   OK suricata active' || (echo '   XX suricata parada' && exit 1)"
+	@echo "OK Entorno cross-check LISTO. Ahora: make crosscheck-run"
+
+# ── crosscheck-run — Dispara el replay y corre el verificador ─────────────────
+crosscheck-run: test-replay-neris
+	@echo "── Drenaje (cierre TCP Zeek + flow.timeout Suricata) ──"
+	@sleep 45
+	@echo "── Verificador de paridad ──"
+	@python3 tools/community_id_crosscheck.py --zeek-conn /opt/zeek/spool/zeek/conn.log; \
+	 rc=$$?; \
+	 if [ $$rc -eq 2 ]; then echo "   [i] exit 2 = hay anomalias (esperado por cobertura asimetrica aRGus). Revisa anomalies.tsv si crece inesperadamente."; \
+	 elif [ $$rc -ne 0 ]; then echo "   XX verificador fallo (rc=$$rc)"; exit $$rc; fi
