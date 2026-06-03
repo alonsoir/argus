@@ -192,91 +192,6 @@ Distinguir formalmente `FlowObservation` (lo que un sensor concreto observó) de
 **Estimación:** post-FEDER.
 
 
-
-
-## ✅ RATIFICADO DAY 173 — ADR-051 v2.2 (Consejo 8/8) + DEBTs de paridad de community_id
-
-### ADR-051 v2.2 — Community ID Parity Gate & Correlation Health — RATIFICADA Y CERRADA
-- **Status:** ✅ RATIFICADA v2.2 (Consejo 8/8) DAY 173 — confirmación de fidelidad, sin 3ª deliberación.
-- **Título anterior (v1):** "Seed Parity Gate & Correlation Health". El identificador `DEBT-CORRELATION-SEED-GATE-001` se CONSERVA por trazabilidad pese al renombrado.
-- **Recoge:** P2 del Consejo DAY 170 (gate de arranque data-plane + health-check de huérfanos).
-- **Evolución:** v1 (3 preguntas abiertas) → v2 (consenso 8/8 + N-version oracle divergence) → v2.1 (3 correcciones quirúrgicas) → v2.2 (correcciones de fidelidad: reintegración binaria simétrica, ausencia≠divergencia blindada, split-brain léxico).
-- **Principio:** data-plane > control-plane. El gate mide el `community_id` que cada sensor EMITE en runtime, no lo que declara la config. El cross-check E2E DAY 171/172 es su implementación de referencia.
-- **Decisiones núcleo:**
-  - **Community ID Parity Gate (arranque):** BLOQUEANTE fail-closed. Diagnóstico verbose obligatorio (sensor / cid esperado / cid emitido / config-hash informativo).
-  - **Oracle Divergence (N-version):** sensores coinciden entre sí pero no con `pycommunityid` → ARRANCA con WARNING crítico, NO fail-closed. Fail-closed solo por disparidad ENTRE sensores. Válido por heterogeneidad de implementaciones; consenso-de-error mitigado por batería de vectores + orphan_rate, no por el oráculo.
-  - **Máquinas de estado:** gate (Correlation Safe / Oracle Divergence / Correlation Broken + split-brain) y confianza del sensor (TRUSTED / DEGRADED / QUARANTINED). DEGRADED por estadística (orphan_rate); QUARANTINED por divergencia binaria confirmada. Reintegración exige re-verificación binaria, no solo orphan_rate bajo.
-  - **orphan_rate per-sensor** + distinción huérfano/pendiente por wall-clock (hallazgo timestamps DAY 172). Umbrales 5%/15% = placeholder provisional, recalibrar desde baseline.
-  - **Inyección sintética** en segmento monitorizado, marca identificable, descarte en el correlation-engine antes de Neo4j (sensores SÍ procesan el flujo).
-  - **Despliegue por fases:** Fase 1 gate completo + health-check Suricata↔Zeek; Fase 2 +aRGus cuando cierre COUNTER-DUMP-001.
-- **Riesgo conocido documentado:** latencia de detección del orphan_rate en valles de tráfico (la sonda activa diferida lo mitigaría).
-- **Entregable:** `ADR-051_v2.2.md` (ratificada) + cadena v2.1/v2/v1 + síntesis de deliberación.
-- **ALCANCE (crítico para el plan del mes):** diseño ratificado PARA ARCHIVAR, no mandato de implementación. De todo el ADR, solo el gate de arranque mínimo (ya hecho como cross-check DAY 171/172) está en camino crítico. El resto duerme como backlog hasta que exista correlation-engine que proteger. Lo que desbloquea el engine es `DEBT-NEO4J-FLOW-KEY-001` (de ADR-052), no este ADR.
-
-### DEBT-CID-TEST-VECTORS-001 — Batería de vectores de referencia (fixture compartido)
-**Severidad:** 🟡 P1 (camino crítico del gate)
-**Estado:** ABIERTO — DAY 173 (Consejo 8/8, ADR-051 v2.2 §3.6)
-**Componente:** `tools/` + sniffer + correlation-engine
-Batería V1–V4: V1 TCP IPv4 (Neris, regresión `1:IN7uqVpMWxpmuhQTowSQB2XEe0E=`), V2 UDP IPv4 (mDNS), V3 TCP IPv6, V4 dirección invertida (canonicidad, verificar POR PROTOCOLO). Un único flujo TCP/IPv4 deja pasar bugs IPv6/canonicalización. **Fixture COMPARTIDO con `DEBT-FLOWUID-CANONICAL-ENCODING-001`** — no duplicar.
-**Test de cierre:** los N sensores emiten el mismo cid para cada vector vs oráculo. V4 A→B == B→A por protocolo. V3 valida implementación IPv6 (no cobertura operacional).
-**Estimación:** 1 sesión.
-
-### DEBT-SEED-GATE-DIAGNOSTIC-001 — Diagnóstico verbose del fallo del gate + runbook
-**Severidad:** 🟡 P1 (camino crítico del gate)
-**Estado:** ABIERTO — DAY 173 (Consejo 8/8, ADR-051 v2.2 §3.1)
-**Componente:** correlation-engine / gate de arranque
-Volcado por sensor: identidad, cid esperado (oráculo) + seed del oráculo, cid emitido, SHA-256 del config cargado (SOLO diagnóstico, nunca criterio del gate). Runbook de recuperación de fallo de paridad. Inferencia de seed = enhancement opcional acotado a set ENUMERADO (incluir seeds del mapa de provisión de cada sensor, no solo 0), nunca barrido ciego. Nota seguridad (Kimi): marca de inyección fija es vector DoS/insider → preferir token efímero HMAC de nonce.
-**Test de cierre:** gate falla → mensaje accionable con los 4 campos + referencia al runbook. Operador realinea sin arqueología.
-**Estimación:** 1 sesión.
-
-### DEBT-CID-STATE-MACHINE-001 — Máquinas de estado del gate y de confianza del sensor
-**Severidad:** 🟡 P1 (gate states = Fase 1; sensor states = con health-check)
-**Estado:** ABIERTO — DAY 173 (Consejo 8/8, ADR-051 v2.2 §3.3/§3.4, propuesta ChatGPT)
-**Componente:** correlation-engine
-Implementación + tests (unitarios + property-based) de: estados del gate (Correlation Safe / Oracle Divergence / Correlation Broken + split-brain) y confianza del sensor (TRUSTED / DEGRADED / QUARANTINED). Transiciones: gate_fail, orphan_rate_high (→DEGRADED), divergencia_confirmada (→QUARANTINED), recovery (re-verificación binaria), operator_override, split_brain (suspende correlación cross-sensor sin marcar QUARANTINED).
-**Test de cierre:** cada transición cubierta. QUARANTINED no se alcanza solo por orphan_rate. Reintegración exige prueba binaria. Split-brain no marca QUARANTINED a nadie.
-**Estimación:** 1-2 sesiones.
-
-### DEBT-CID-CROSSCHECK-CI-001 — make crosscheck-up/run como gate de CI
-**Severidad:** 🟡 P1
-**Estado:** ABIERTO — DAY 173 (Consejo 8/8, ADR-051 v2.2 §3.5, propuesta Grok)
-**Componente:** Jenkinsfile.dev + Makefile
-`make crosscheck-up`/`crosscheck-run` obligatorio en CI para cualquier cambio que toque sensores o `community_id`. El gate de regresión empírico del community_id.
-**Test de cierre:** PR que rompe la paridad cross-sensor → CI rojo.
-**Estimación:** 1 sesión (requiere Jenkins en hardware FEDER para el gate completo).
-
-### DEBT-CID-ORACLE-QUORUM-001 — Oráculo dos niveles + quórum + versionado
-**Severidad:** 🟢 P2
-**Estado:** ABIERTO — DAY 173 (Consejo 8/8, ADR-051 v2.2 §3.2, propuesta ChatGPT/Mistral)
-**Componente:** correlation-engine / gate
-Nivel 1 (paridad entre sensores) + Nivel 2 (paridad con oráculo). Lógica de quórum significativa solo con N≥3. Versionar el oráculo (hash/versión de `pycommunityid`) en el diagnóstico. El quórum NUNCA anula al oráculo como criterio; emite WARNING ("posible drift del oráculo o versión desincronizada").
-**Test de cierre:** sensores coinciden + oráculo discrepa → WARNING, arranca. Sensores discrepan → fail-closed. N=2 → sin quórum, WARNING elevado.
-**Estimación:** 1 sesión.
-
-### DEBT-SEED-CHAOS-TEST-001 — Pruebas de caos de drift de seed
-**Severidad:** 🟢 P2
-**Estado:** ABIERTO — DAY 173 (Consejo 8/8, ADR-051 v2.2, propuesta Mistral)
-**Componente:** tests E2E / correlation-engine
-Forzar drift de seed en un sensor y verificar: (a) el gate falla en arranque, (b) orphan_rate sube en runtime, (c) la degradación N-1 funciona y anota en el grafo.
-**Test de cierre:** drift inyectado → gate-fail en arranque; en runtime → DEGRADED→ (tras confirmación binaria) QUARANTINED, correlación continúa N-1 anotada.
-**Estimación:** 1-2 sesiones.
-
-### DEBT-SEED-ACTIVE-PROBE-001 — Sonda activa periódica no bloqueante (DIFERIDA)
-**Severidad:** ⚪ P3 — DIFERIDA / OPCIONAL
-**Estado:** ABIERTO — DAY 173 (Consejo 8/8, ADR-051 v2.2 §2/§5.1)
-**Componente:** correlation-engine (opcional, off por defecto)
-Sonda activa configurable que re-inyecta la batería periódicamente para detectar drift en valles de tráfico (donde orphan_rate tarda en acumular evidencia). NO entra en el núcleo: orphan_rate es el mecanismo continuo primario. Si se implementa, puede actuar como disparador de re-verificación binaria para reintegración. Mitiga el riesgo conocido §5.1.
-**Test de cierre:** sonda activa detecta drift en red sin tráfico orgánico, sin contaminar producción (off por defecto).
-**Estimación:** post-engine.
-
-### DEBT-ARGUSPP-CLOCK-INJECTION-PROD-001 — Verificar reloj inyectado en path de producción
-**Severidad:** 🟡 P1 — corrección latente (NO de ADR-051; hallazgo DAY 172)
-**Estado:** ABIERTO — DAY 173
-**Componente:** `sniffer/src/flow/community_id_log.cpp`
-El TSV de cross-check de aRGus estampa timestamp SINTÉTICO porque `community_id_log.cpp` corre bajo reloj inyectado en el build de cross-check. PENDIENTE VERIFICAR si el path de PRODUCCIÓN heredó ese reloj inyectado en vez de `system_clock` real. Si se filtró fuera del gate `ARGUS_CID_CROSSCHECK=1`, es un bug de corrección, no un artefacto del cross-check.
-**Test de cierre:** confirmar que el binario de producción usa `system_clock` real, no el reloj inyectado del build de cross-check. Si está contaminado → corregir y test de regresión.
-**Estimación:** 0.5 sesión (investigación) + fix si aplica.
-
 ## ✅ CERRADO DAY 171
 
 ### Cross-check E2E community_id — paridad OPERACIONAL demostrada (3 ventanas)
@@ -1082,13 +997,6 @@ DAY 129: CWE-78 CERRADO · EtcdClientHmac 9/9
 ---
 
 ## 🔴 DEUDAS ABIERTAS — Seguridad y arquitectura
-
-### DEBT-GITIGNORE-VENDOR-PUB-001 — enterprise_vendor.pub huérfana en raíz (CERRADA DAY 173)
-**Severidad:** 🟢 P3 (higiene, sin fuga)
-**Estado:** ✅ CERRADA DAY 173 — commit `5c8dc37d`
-`enterprise_vendor.pub` (clave pública huérfana de DAY 160, `b2ce9afc`) vivía trackeada en la raíz, distinta de la activa en `enterprise/` (correctamente ignorada por `.gitignore:268`). Verificado que NINGUNA clave privada estuvo nunca trackeada (`git log --all -- '*vendor.key'` vacío) — sin fuga. `git rm --cached` + borrado físico. La activa en `enterprise/` intacta.
-**Test de cierre:** `git ls-files | grep enterprise_vendor.pub` solo devuelve la de `enterprise/` (ignorada). ✅
-
 
 ### DEBT-ARGUSPP-COUNTER-DUMP-001 — Volcado de contadores de aRGus a fichero parseable
 **Severidad:** 🟡 P1
@@ -3103,7 +3011,7 @@ Identidad del nodo-flujo en Neo4j = `flow_uid = hash(node_id || community_id || 
 
 #### DEBT-CORRELATION-SEED-GATE-001 — Gate paridad seed data-plane + health-check huérfanos
 **Severidad:** 🟡 P1
-**Estado:** ABIERTO — DAY 170 (Consejo 8/8) · DISEÑO CERRADO por ADR-051 v2.2 (DAY 173) · recoge ADR-051
+**Estado:** ABIERTO — DAY 170 (Consejo 8/8) · recoge ADR-051
 Implementación del gate P0 data-plane + health-check `community_id.orphan_rate`. Prerequisito: correlation-engine con al menos dos sensores emitiendo sobre el mismo flujo.
 **Test de cierre:** sensor con seed!=0 -> SEED_MISMATCH, abort. Orfandad sistemática inyectada -> alerta CRITICAL.
 **Estimación:** 1-2 sesiones.

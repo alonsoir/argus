@@ -51,8 +51,8 @@
 | correlation-engine | 🟡 scaffold ADR-048 F2 (DAY 167) |
 | Multi-VM | ✅ Suricata 7.0.10 + Zeek 8.2.0 + Wazuh 4.x en 192.168.100.0/24 (DAY 168) |
 | community_id | ✅ paridad OPERACIONAL cross-sensor — cross-check E2E reproducible (DAY 171/172) |
-| Arquitectura | ✅ ADR-046 v4 + AdapterSpec v1 · ✅ ADR-052 v3.2 RATIFICADA · ✅ ADR-051 v2.2 RATIFICADA (Community ID Parity Gate, 8/8 DAY 173) · ⏳ ADR-050 (MITRE) + ADR-053 (JA3/JA4/BGP) pendientes |
-| Próximo hito | DEBT-NEO4J-FLOW-KEY-001 (esquema Neo4j) → correlation-engine. ADR-051/052 ratificados y archivados |
+| Arquitectura | ✅ ADR-046 v4 + AdapterSpec v1 · ✅ ADR-052 v3.2 RATIFICADA (8/8 DAY 173) · ⏳ ADR-050 (MITRE) + ADR-053 (JA3/JA4/BGP) + ADR-051 (Seed Parity) pendientes |
+| Próximo hito | DEBTs P0 identidad de flujo (NODEID + FLOWUID + NEO4J-FLOW-KEY) + ADR-051 borrador |
 | Gate UEx/INCIBE | Datasets de valor científico (no deadline duro) |
 <!-- /DAY-STATUS -->
 
@@ -77,9 +77,6 @@
   - **EMECAS DAY 157 VERDE** — `vagrant destroy → up → make bootstrap → make test-all` — TODO VERDE.
 
 ### Hitos DAY 173 🏛️
-- **ADR-051 v2.2 RATIFICADA — Consejo 8/8.** Community ID Parity Gate & Correlation Health. Confirmación de fidelidad sin 3ª deliberación (precedente ADR-052). Renombrado desde "Seed Parity Gate" (el gate valida paridad de `community_id` emitido, de la que el drift de seed es una causa, no la única). Decisión clave: **Oracle Divergence** — si los sensores heterogéneos coinciden entre sí pero no con `pycommunityid`, arranca con WARNING crítico, NO fail-closed (argumento N-version); fail-closed reservado a disparidad ENTRE sensores. Máquinas de estado del gate y de confianza del sensor (DEGRADED estadístico / QUARANTINED binario confirmado). **Diseño ratificado para archivar** — solo el gate de arranque mínimo (cross-check DAY 171/172) está en camino crítico; el resto duerme hasta que exista engine que proteger. Entregable `ADR-051_v2.2.md`.
-  - **DEBTs nuevas (corte camino-crítico/diferible):** P1 `DEBT-CID-TEST-VECTORS-001` (fixture compartido con FLOWUID), `DEBT-SEED-GATE-DIAGNOSTIC-001`, `DEBT-CID-STATE-MACHINE-001`, `DEBT-CID-CROSSCHECK-CI-001`; P2 `DEBT-CID-ORACLE-QUORUM-001`, `DEBT-SEED-CHAOS-TEST-001`; P3 diferida `DEBT-SEED-ACTIVE-PROBE-001`. Más `DEBT-ARGUSPP-CLOCK-INJECTION-PROD-001` (P1, hallazgo DAY 172: verificar que producción no heredó el reloj inyectado del cross-check).
-  - **Higiene DAY 173:** `enterprise_vendor.pub` huérfana destrackeada de la raíz (commit `5c8dc37d`). Verificado sin fuga de clave privada.
 - **ADR-052 v3.2 RATIFICADA — Consejo 8/8.** Multi-node Flow Identity & Host↔Net Correlation. Confirmación de fidelidad unánime, sin tercera deliberación. Principio ordenador §0: *"El grafo no es el producto. El producto es el corpus."* `flow_uid = base64(BLAKE2b(node_id ‖ community_id ‖ flow_start_window [‖ seq_in_window]))`; `node_id` = string legible declarado en inventario firmado (NO derivado del keypair efímero); `community_id` = clave de correlación, nunca identidad. Dos anulaciones de árbitro: hash anclado a libsodium (§3.1.1) y señales TCP/TLS de host dentro del ADR (§3.11). Entregable `ADR-052_v3.2.md`. **Desbloquea `DEBT-NEO4J-FLOW-KEY-001`.**
   - **DEBTs de identidad de flujo registradas (orden de dependencia P0→P3):** P0 `DEBT-NODEID-CRYPTO-IDENTITY-001` (reescrita) + `DEBT-FLOWUID-CANONICAL-ENCODING-001` + `DEBT-NEO4J-FLOW-KEY-001`; P1 `DEBT-SENSOR-COVERAGE-MAP-001` / `DEBT-LABEL-WAL-001` (hash-chain) / `DEBT-ARGUSPP-ARP-MONITOR-001` / `DEBT-ARGUSPP-HOST-TCP-001`; P2 `DEBT-CERT-EXPECTATION-STORE-001` / `DEBT-SEQWINDOW-PERSIST-001` / `DEBT-ARGUSPP-OOB-MITM-001` / `DEBT-CORPUS-QUALITY-METRICS-001`; P3 `DEBT-ARCH-FLOW-OBSERVATION-001`.
   - **ADR-053 stub abierto** — JA3/JA4, cadena TLS profunda, anomalía de ruta L3/BGP (diferido conscientemente de ADR-052 para evitar scope creep). **ADR-050 (MITRE) y ADR-051 (Seed Parity Gate) siguen pendientes de redacción.**
