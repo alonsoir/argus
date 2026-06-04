@@ -1,0 +1,54 @@
+{
+  "schema": "argus-correlation-vectors",
+  "note": "Fixture COMPARTIDO DEBT-FLOWUID + DEBT-CID-TEST-VECTORS-001. Columnas community_id_* las completa el 2o DEBT con pycommunityid. No duplicar.",
+  "flow_uid": {
+    "encoding_tag": "argus-flowuid-v1",
+    "blake2b_digest_size": 32,
+    "window_units": "microseconds_epoch",
+    "output": "base64_std",
+    "node_id_source": "NetworkSecurityEvent.originating_node_id",
+    "community_id_source": "NetworkFeatures.community_id (field 18)"
+  },
+  "vectors": [
+    {
+      "id": "V1",
+      "node_id": "defender",
+      "community_id": "1:IN7uqVpMWxpmuhQTowSQB2XEe0E=",
+      "flow_start_window": 1717480800000000,
+      "seq_in_window": 0,
+      "expected_flow_uid": "pxqKg7+4Q9f2OKu2KNg5uFnU5AsasZSI/V2kQnmFecQ=",
+      "community_id_inputs": null,
+      "expected_community_id": "1:IN7uqVpMWxpmuhQTowSQB2XEe0E="
+    },
+    {
+      "id": "V2",
+      "node_id": "sensor-edge-02",
+      "community_id": "1:IN7uqVpMWxpmuhQTowSQB2XEe0E=",
+      "flow_start_window": 1717480800000000,
+      "seq_in_window": 0,
+      "expected_flow_uid": "jaE6aqWJSTH9nOaM4ZnfnUF6JXDvmtNymYAyZIjKZHU=",
+      "community_id_inputs": null,
+      "expected_community_id": "1:IN7uqVpMWxpmuhQTowSQB2XEe0E="
+    },
+    {
+      "id": "V3",
+      "node_id": "defender",
+      "community_id": "1:IN7uqVpMWxpmuhQTowSQB2XEe0E=",
+      "flow_start_window": 1717480830000000,
+      "seq_in_window": 0,
+      "expected_flow_uid": "PqCA7jZx4MQWzyBI1TPGdWINOx6JRk60hMVs81HqJO8=",
+      "community_id_inputs": null,
+      "expected_community_id": "1:IN7uqVpMWxpmuhQTowSQB2XEe0E="
+    },
+    {
+      "id": "V4",
+      "node_id": "defender",
+      "community_id": "1:IN7uqVpMWxpmuhQTowSQB2XEe0E=",
+      "flow_start_window": 1717480800000000,
+      "seq_in_window": 1,
+      "expected_flow_uid": "hpJZgN+mb8bnX95Y4BUJN0Rs8wRIg+zSFOlpYCHQpt4=",
+      "community_id_inputs": null,
+      "expected_community_id": "1:IN7uqVpMWxpmuhQTowSQB2XEe0E="
+    }
+  ]
+}

@@ -1,142 +1,124 @@
-DAY 174 — aRGus NDR (arXiv:2604.04952)
-
-ÚLTIMO HITO DAY 173: ADR-051 v2.2 RATIFICADA (Consejo 8/8, confirmación de fidelidad, sin 3ª deliberación)
-— Community ID Parity Gate & Correlation Health. Junto con ADR-052 v3.2 (ratificada el mismo día), la
-arquitectura de identidad/correlación queda CERRADA Y ARCHIVADA. DAY 173 también cerró el cabo de
-enterprise_vendor.pub (commit 5c8dc37d). Tag estable v1.0.0-day166. Rama feature/day170-community-id-protobuf.
+# DAY 174 — correlation-engine (C++20) + zona bronce. Prompt de continuidad.
 
 ═══════════════════════════════════════════════════════════════════════════════
-EL PLAN DEL MES — leerlo antes de cualquier otra cosa
+ARRANQUE DAY 175 — LEER ESTO PRIMERO. Integrar el writer en ml-detector.
 ═══════════════════════════════════════════════════════════════════════════════
-La cadena de valor científico que define el próximo mes (ADR-048):
-    correlation-engine -> ingesta al grafo Neo4j con relaciones -> sesiones MITRE
-    -> datasets de cada fase -> plugins ensemble (curva F1 multi-fuente).
-Esa curva F1 es la contribución publicable para Andrés/UEx.
+El correlation-engine (consumidor) está VERDE en el guest (libsodium 1.0.19, OpenSSL 3.0.20,
+GTest 1.12.1, 2/2 suites). PERO su productor —el CorrelationWriter— sigue SUELTO en el ml-detector.
+Hasta cablearlo NO hay datos de bronce reales. Cuatro pasos, en orden:
 
-LECCIÓN DAY 173 (no repetir): dos días seguidos (052 ayer, 051 hoy) se fueron en ADRs de arquitectura
-cada vez más finos. El Consejo diverge hacia el detalle por naturaleza — cada sabio añade un caso de
-borde, y sumados producen robustez de producción para un sistema que aún no se ha construido. RESISTIR
-eso. La sobreingeniería se siente como rigor en el momento; la diferencia es si lo que endureces YA EXISTE.
-A partir de DAY 174 toca CONSTRUIR el engine, no diseñar más alrededor de él.
+1. ALTA EN ml-detector/CMakeLists.txt
+    - Añadir correlation_writer.cpp a las fuentes del ejecutable.
+    - Confirmar OpenSSL::Crypto/SSL linkado (el HMAC lo necesita; csv_event_writer ya usa OpenSSL → casi seguro está).
 
-═══════════════════════════════════════════════════════════════════════════════
-PRIMERO DE TODO DAY 174 — commit/push de DAY 173
-═══════════════════════════════════════════════════════════════════════════════
-Commitear en la misma piedra: ADR-051_v2.2.md (+ cadena v2.1/v2/v1 + síntesis), las entradas nuevas en
-docs/BACKLOG.md (sección RATIFICADO DAY 173 ADR-051 + 8 DEBTs nuevas), README.md (DAY-STATUS + Hitos DAY 173),
-y este prompt actualizado. El commit de higiene de enterprise_vendor.pub (5c8dc37d) ya está pusheado.
-Verificar antes: git status; git diff --cached | grep -iE 'PRIVATE KEY|vendor.key|password|token';
-grep -E '^## ✅ (CERRADO|RATIFICADO) DAY' docs/BACKLOG.md | sort | uniq -d (vacío).
-Docs puras = excepción razonada al PR obligatorio (igual que ADR-052), pero el commit incluye solo docs.
+2. HOOK EN zmq_handler.cpp
+    - Construir correlation_writer_ junto a csv_writer_ (~líneas 124-133): base_dir=/vagrant/logs/correlation/argus,
+      hmac_key_hex del config (nueva sección en config_loader).
+    - Llamada en el PUNTO ÚNICO del bucle, ANTES de la bifurcación rag/no-rag (~línea 516),
+      NO dentro del if(!rag_logger_ && csv_writer_) de la 518 (bug de los dos caminos).
+    - Filtro: if (correlation_writer_ && !event.network_features().community_id().empty()) write_record(event);
 
-═══════════════════════════════════════════════════════════════════════════════
-EL SIGUIENTE PASO REAL — DEBT-NEO4J-FLOW-KEY-001 (P0 esquema)
-═══════════════════════════════════════════════════════════════════════════════
-Esto es lo que DESBLOQUEA el correlation-engine. Es el primer eslabón de la cadena del mes y NO es de
-ADR-051 — es de ADR-052 (que lo ratifica). Trabajo de ESQUEMA, no de ADR. Antes de poblar el grafo:
-  - flow_uid = base64(BLAKE2b(node_id || community_id || uint64_be(flow_start_window) [|| seq_in_window]))
-    con crypto_generichash (libsodium 1.0.19). node_id = string canónico declarado (NO keypair efímero).
-  - node_id propiedad OBLIGATORIA en :NetworkFlow, :Alert, :TelemetryEvent.
-  - Constraint compuesto nativo Neo4j 5.x. Decidirlo con el grafo VACÍO es gratis; retrofitear con datos
-    en producción es doloroso (unánime Consejo DAY 170).
-  - Correlación intra-nodo por community_id (propiedad indexada); identidad/dedup inter-nodo por flow_uid.
-TEST DE CIERRE: dos flujos misma 5-tupla en nodos distintos -> flow_uid distinto. Misma 5-tupla reciclada
-en el tiempo en el mismo nodo -> flow_uid distinto.
-DEPENDE DE (ambas P0, también de ADR-052, hacer en este orden):
-  - DEBT-NODEID-CRYPTO-IDENTITY-001 — node_id = string declarado en inventario firmado, no keypair.
-  - DEBT-FLOWUID-CANONICAL-ENCODING-001 — codificación canónica BLAKE2b + paridad C++/Python sobre la
-    MISMA versión de libsodium (mismo patrón que pycommunityid). Caso 2-sensores misma 5-tupla -> distinto.
-    Su batería de vectores es COMPARTIDA con DEBT-CID-TEST-VECTORS-001 (ADR-051) — no duplicar.
+3. TEST UNITARIO DEL WRITER (en ml-detector, contra el .pb.h REAL)
+    - Construir un NetworkSecurityEvent, escribir, releer, validar HMAC + 19 columnas.
+    - Esto cierra el ROUND-TRIP real: writer (ml-detector) produce → parse_and_verify (correlation-engine) consume.
+      Es la PRUEBA DE ORO de que ambos lados hablan correlation_v1 byte a byte (principio de los vectores congelados).
 
-PRIORIDAD DAY 174 (en orden):
-1. commit/push DAY 173 (arriba).
-2. DEBT-NODEID-CRYPTO-IDENTITY-001 + DEBT-FLOWUID-CANONICAL-ENCODING-001 (P0) — la pieza de identidad
-   que el esquema necesita. Paridad C++/Python verificable contra vectores.
-3. DEBT-NEO4J-FLOW-KEY-001 (P0 esquema) — flow_uid + node_id obligatorio + constraint Neo4j 5.x.
-   Bloquea el diseño del correlation-engine. CONSTRUCCIÓN, no diseño.
-4. DEBT-ARGUSPP-COUNTER-DUMP-001 (P1) — volcado de contadores de aRGus a fichero parseable. Lo necesita
-   el health-check de orphan_rate (Fase 2 de ADR-051) Y la cadena ADR-048. 1 sesión.
-5. B = DEBT-CORRELATION-TIMEOUT-CALIB-001 (P1) — wall-clock de aparición, 2-3 formas de flujo. Entorno
-   reproducible (make crosscheck-up). Sesión propia. Recibe los inputs de calibración de ADR-051 §5.3.
-6. ADR-050 (MITRE) — borrador (arrastrado, P1 para la cadena del mes). 6 vectores + bootstrap víctima +
-   corrección cripto telemetría. Es el ground truth de los datasets. Trabajo de CABEZA — fresco.
-7. DEBT-ARGUSPP-SURICATA-001 (P1) — Suricata en EMECAS + eve.json -> correlation-engine (Fase 2 ADR-048).
-8. RSS bajo carga (arrastrado) — pipeline + tcpreplay escalonado, mide CPU/RAM 4 fuentes -> tiers RPi5/N100
-   (DEBT-ARGUSPP-RESOURCE-001). Apagar ARGUS_CID_CROSSCHECK=1 para medir el hot path real.
-9. DEBT-CMAKE-GRAPH-INVARIANTS-001 (P1, arrastrado) — lint CI targets duplicados. ADR-028 propuesto.
+4. TEST DE INTEGRACIÓN / EMECAS
+    - Arrancar ml-detector, inyectar tráfico, confirmar CSV en /vagrant/logs/correlation/argus/ con filas válidas.
 
-ADR-051 — DEBTs GENERADAS (todas DIFERIBLES salvo donde se indique; duermen hasta que exista engine):
-- DEBT-CID-TEST-VECTORS-001 (P1, camino crítico, fixture compartido con FLOWUID) — batería V1-V4.
-- DEBT-SEED-GATE-DIAGNOSTIC-001 (P1, camino crítico) — diagnóstico verbose + runbook.
-- DEBT-CID-STATE-MACHINE-001 (P1) — máquinas de estado gate + confianza sensor.
-- DEBT-CID-CROSSCHECK-CI-001 (P1) — crosscheck-up/run en CI (requiere Jenkins hardware FEDER).
-- DEBT-CID-ORACLE-QUORUM-001 (P2) — oráculo dos niveles + quórum N>=3.
-- DEBT-SEED-CHAOS-TEST-001 (P2) — pruebas de caos de drift.
-- DEBT-SEED-ACTIVE-PROBE-001 (P3, DIFERIDA) — sonda activa, mitiga latencia orphan_rate en valles.
-- DEBT-ARGUSPP-CLOCK-INJECTION-PROD-001 (P1) — verificar que producción no heredó el reloj inyectado
-  del build de cross-check (community_id_log.cpp). Bug latente, hallazgo DAY 172.
+DOS AVISOS:
+- RIESGO VIVO: el writer se compiló contra STUBS, no contra tu network_security.pb.h. Si overall_threat_score()
+  o authoritative_source() tienen otro nombre exacto en el proto generado, el build del ml-detector lo canta
+  al instante (fallo de compilación obvio, no silencioso). Es lo PRIMERO que puede chirriar.
+- ROUND-TRIP es la prueba de oro: hoy cada lado se probó por separado (writer vs stubs, reader vs fila a mano).
+  El test que escribe con CorrelationWriter y lee con parse_and_verify garantiza cero deriva entre las 19 columnas.
+
+PRIMER COMANDO DAY 175:
+vagrant ssh -c "grep -n 'csv_writer_\|add_executable\|target_link\|target_sources\|OpenSSL' /vagrant/ml-detector/CMakeLists.txt"
+# ver dónde dar de alta el .cpp y si OpenSSL ya está linkado. Luego paso 1→2→3→4.
 
 ═══════════════════════════════════════════════════════════════════════════════
-CONSENSO DEL CONSEJO DAY 170 — base de la arquitectura de correlación (ya ratificada en 051+052)
+RESUMEN DAY 174
 ═══════════════════════════════════════════════════════════════════════════════
-P1 (Wazuh <-> red): (A)+(C). Doble arista Neo4j. flujo<->flujo por community_id; host<->flujo por
-   host_id/agent_id CANÓNICO (nunca IP cruda) + ventana temporal MÁS LAXA causal-bidireccional. NAT =
-   menú de mecanismos, SIEMPRE anotando método+confianza. -> ADR-052 (RATIFICADA).
-P2 (seed): gate de arranque P0 data-plane + health-check huérfanos. -> ADR-051 (RATIFICADA v2.2).
-P3 (identidad flujo): flow_uid = hash(node_id || community_id || flow_start_window). community_id =
-   propiedad indexada, nunca identidad de nodo. -> ADR-052 (RATIFICADA) + DEBT-NEO4J-FLOW-KEY-001 (P0).
+Día de construcción, no de ADR. Nació el correlation-engine como componente C++20 sobre Debian.
+Se diseñó la arquitectura lambda/medallion de correlación, se eligió el motor de grafo, y se escribió
+el primer eslabón de la zona bronce (writer en ml-detector) + su consumidor (reader en correlation-engine).
+Todo verde y verificado.
 
-HALLAZGO TIMESTAMPS DAY 172 (sigue vigente): Suricata ancla a FIN de flujo (flow.timeout), Zeek a INICIO
-de conexión, aRGus reloj sintético. Spreads 9.7ms-116s. NO comparables. Correlación temporal por WALL-CLOCK
-de aparición (time.monotonic en host), nunca por ts interno. Los 5/10/20s de ADR-046 v4 son casi seguro
-muy bajos para Suricata en flujos largos -> los recalibra B (DEBT-CORRELATION-TIMEOUT-CALIB-001).
+## Decisiones de arquitectura (cerradas)
 
-VMs (autostart: false — arrancar individualmente):
-defender 192.168.100.1 aRGus completo · suricata .10 (7.0.10, community-id:yes seed 0, PROMISC)
-zeek .11 (8.2.0, community-id-logging seed 0, PROMISC, escribe en /opt/zeek/spool/zeek/) · wazuh .12 (4.x)
-client .50 (tcpreplay + nmap/hydra/sqlmap/atomic-red-team)
-NOTA: wazuh estaba 'aborted' en DAY 172 (no bloquea cross-check de los 3 sensores de red).
+1. flow_uid se calcula en el lado servidor (Kuzu), NO en el transporte. Hash de
+   node_id || community_id || flow_start_window. Encoding canónico: length-prefix, tag de versión
+   "argus-flowuid-v1", seq_in_window siempre presente. BLAKE2b (libsodium), digest_size=32 OBLIGATORIO.
 
-ARRANQUE CROSS-CHECK (reproducible, DAY 172):
-- make crosscheck-up   # etcd-server-start + test-provision-1 -> trunca 3 logs ->
-                       #   sniffer(ARGUS_CID_CROSSCHECK=1) -> zeekctl deploy -> confirma suricata. Idempotente.
-- make crosscheck-run  # test-replay-neris -> sleep 45 -> verificador --zeek-conn /opt/zeek/spool/zeek/conn.log.
-                       #   exit 2 = anomalías (esperado); exit 1 = fallo real.
-- sniffer eBPF: build-active -> build-debug, ./sniffer, NO libpcap. Requiere etcd vivo + claves o aborta.
-- diana: 1:IN7uqVpMWxpmuhQTowSQB2XEe0E= sobre flujo Neris 147.32.84.165:1027 -> 74.125.232.195:80.
+2. node_id = NetworkSecurityEvent.originating_node_id (campo 3), poblado por el sniffer desde config_.node_id.
+   Identidad opaca del PUNTO DE CAPTURA (sensor), no de la organización.
 
-REGLAS CRÍTICAS:
-- community_id: SHA1 (Corelight), NO HMAC-SHA256. Canonicalización byte-idéntica a Zeek/Suricata o el
-  join falla en silencio. Oráculo: pycommunityid. Seed 0 idéntico en los 3 (garantizado por provisión).
-- flow_uid: BLAKE2b (libsodium 1.0.19), NO la misma función que community_id. node_id = string declarado.
-- Oracle divergence (ADR-051): sensores coinciden entre sí pero no con oráculo -> WARNING, arranca.
-  Fail-closed SOLO por disparidad entre sensores. (N-version: 3 implementaciones independientes coincidiendo
-  es evidencia fuerte de corrección; un oráculo solo discrepante es más probablemente el desfasado.)
-- Helper community_id observable: gateado ARGUS_CID_CROSSCHECK=1 (OFF por defecto, coste nulo hot path).
-  compute_community_id permanece PURA. Apagar para medir RSS/hot path real.
-- Gate de seed: data-plane (lo que el binario EMITE), nunca config JSON/yaml.
-- NAT host<->red: SIEMPRE anotar método y confianza en grafo+log. Nunca fallo silencioso por IP no coincidente.
-- if(NOT TARGET) obligatorio en bloques CMake condicionales.
-- EMECAS = vagrant destroy -f && vagrant up && make bootstrap && make test-all.
-- EMECAS++ = 3 actos antes de cualquier merge enterprise. >1h. No negociable.
-- Python3 heredoc en macOS (nunca sed -i sin -e ''). vagrant ssh -c siempre con -c. -Werror permanente.
-- Nunca merge directo a main — siempre PR con EMECAS++ verde (docs puras = excepción razonada).
-- vendor.key nunca en disco ni repo — solo Vault dev (Modelo B).
-- ZMQ PUB hace bind() ANTES de SUB connect().
-- Nunca set -e en provisions Vagrantfile — usar || true o || { exit 1; } explícito.
-- DNS fix en provisions nuevos: chattr +i /etc/resolv.conf DESPUÉS de chrony.
-- Nunca cat << 'EOF' anidado en <<-SHELL — usar printf.
-- Idempotencia de provisión por LÍNEA, no por bloque (lección DAY 170 Zeek).
-- Integridad de docs grandes: grep secciones | sort | uniq -d del fichero completo (lección DAY 170 BACKLOG).
-- alert_client.hpp nunca incluido en componentes que linkan libetcd_client.so.
+3. Motor de grafo: Kuzu v0.11.3 vendoreado (embebido, Cypher, C++, MIT, Parquet nativo). Tras un IGraphSink
+   con contrato Cypher (patrón ICryptoProvider) para ser sustituible (LadybugDB si Kuzu se depreca del todo).
+   Kuzu archivado 2025-10; riesgo asumido conscientemente.
+    - Consecuencia: PRIMARY KEY(flow_uid) da dedup + obligatoriedad NATIVOS. Desaparece el split
+      Community/Enterprise de Neo4j. node_id obligatorio pasa a invariante de engine (Kuzu 0.11.3 no tiene
+      NOT NULL en no-PK ni PK compuesta). flow_uid único por construcción → PK simple = dedup compuesto.
 
-ENTORNO: macOS M2 Pro · i9 8 núcleos · 32GB RAM · Vagrant/VirtualBox Debian Bookworm · vagrant/dev/
-KEYPAIR: efímero, regenera en cada EMECAS.
-PAPER: arXiv:2604.04952 · Draft v24 local · v3 en arXiv.
-FEDER: colaboración UEx/INCIBE con Dr. Andrés Caro Lindo. No deadline duro — gate real es demostrar
-datasets de valor científico (curva F1 multi-fuente, ADR-048). El 22-09-2026 era referencia de ritmo.
+4. Arquitectura lambda / medallion para escala (miles de nodos: hospitales, ayuntamientos, pymes; España→Europa).
+    - Bronce: registro mínimo CSV correlation_v1 por componente (replayable).
+    - Transporte: Avro (row-oriented, optimizado para transmisión distribuida).
+    - Plata: Parquet por fichero/fuente. Gold: Parquet con el join hecho.
+    - El JOIN cross-sensor ocurre en Kuzu por community_id, NO casando ficheros en el sensor
+      (timestamps no comparables, hallazgo DAY 172).
 
-PRIMER COMANDO DAY 174:
-git status   # revisar lo de DAY 173 sin commitear (ADR-051 v2.2 + síntesis, BACKLOG, README, este prompt)
-             # commitear todo en la misma piedra tras secret-scan + uniq -d
-             # LUEGO: bajar a DEBT-NODEID/FLOWUID/NEO4J-FLOW-KEY. CONSTRUIR el engine, no más ADRs.
+5. Un contrato, una responsabilidad. El CSV de 127 columnas del RAG (csv_event_writer v1.0) queda INTACTO.
+   El registro de correlación es OTRO fichero/contrato/directorio (/vagrant/logs/correlation/argus/).
+
+6. Bronce PRESERVA, gold DECIDE. El registro lleva los 4 scores + authoritative_source; Kuzu elige la
+   confianza de la :Alert con todas las señales (aRGus hoy; Suricata/Zeek/Wazuh mañana).
+
+7. NO se parte el contrato protobuf todavía. Cambio de máximo radio (6 componentes); se aplaza hasta
+   estabilizar, con su propio ADR + EMECAS.
+
+## Entregables verificados (verdes)
+
+### ml-detector (productor) — PENDIENTE DE INTEGRAR (ver ARRANQUE DAY 175)
+- correlation_writer.hpp + .cpp — escribe correlation_v1 (19 cols + HMAC). Patrón del CsvEventWriter
+  (HMAC OpenSSL, rotación fecha+tamaño, append no-atómico, thread-safe). Descarta community_id vacío.
+  Compilado + smoke test verde CONTRA STUBS del proto.
+
+### correlation-engine (consumidor) — árbol completo, VERDE en el guest
+- flow_uid.hpp — flow_uid canónico, vectores verdes.
+- correlation_record.hpp — struct del contrato correlation_v1.
+- correlation_reader.{hpp,cpp} — valida HMAC (tiempo constante) + parsea; descarta tampering, truncado,
+  col count erróneo, no numérico. 6 casos de test verdes.
+- schema/schema.cypher — esquema Kuzu, verificado (carga, idempotencia, dedup sobre vectores reales).
+- CMakeLists alineado con convenciones del proyecto (LIBSODIUM pkg-config, nlohmann fallback header-only
+  a ../third_party/json/include, OpenSSL, GoogleTest). TODO COMPILA EN EL GUEST DEBIAN, nunca en macOS host.
+
+## Contrato correlation_v1 (19 columnas, sin header, validación por fila)
+0 schema_version · 1 source_sensor · 2 event_id · 3 node_id · 4 community_id (clave join) ·
+5 flow_start_sec · 6 flow_start_nano · 7 src_ip · 8 dst_ip · 9 src_port · 10 dst_port ·
+11 protocol · 12 final_classification · 13 threat_category · 14 fast_detector_score ·
+15 ml_detector_score · 16 overall_threat_score · 17 authoritative_source · 18 HMAC-SHA256(cols 0-17)
+
+## Frontera de confianza de bronce
+El writer escribe append NO-atómico. El reader valida HMAC ANTES de parsear: una fila truncada
+(escritura a medias) o manipulada (tampering) no valida y se DESCARTA, no lanza. El HMAC por fila
+es a la vez anti-tampering y detector de escritura-a-medias. Comparación de HMAC en tiempo constante.
+
+## Deudas abiertas (no bloqueantes)
+- DEBT-NODEID-CRYPTO-IDENTITY-001: node_id = UUID opaco generado en aprovisionamiento, fijado en
+  deployment.yaml (inventario firmado, rellenado vía Jinja2 al config.json de cada componente). Atributos
+  mutables (organización, tipo, país, dirección) como propiedades de un nodo :Node en el grafo, NUNCA dentro
+  del id (lección: Hospital Infanta Cristina → Universitario sin partir la historia del nodo). Lo que importa
+  es la GOBERNANZA de la unicidad global, no el tipo.
+- firewall-acl-agent: su BlockedEvent y el mensaje proto Detection no llevan community_id. Requiere campo
+  aditivo en proto para correlacionar. Entra como ENRIQUECIMIENTO ("flujo bloqueado"), no espina dorsal.
+- Suricata/Zeek/Wazuh: adaptadores a correlation_v1 desde eve.json / conn.log / alerts. Otra batalla.
+- IGraphSink + backend libkuzu: el sink Cypher en src/ del correlation-engine, con test que inserte
+  vectores y reproduzca en C++ real el dedup probado hoy en Python (binding Kuzu, solo banco de pruebas).
+- Lado Avro/transporte del correlation-engine: file_watch de bronce → conversión Avro → ZMQ al servidor.
+
+## Entorno y reglas vigentes
+- TODO compila en el guest Debian (eBPF/XDP es Linux-only). macOS = anfitrión. NUNCA cmake en el host
+  sobre este repo (contamina CMakeCache.txt por el montaje /vagrant compartido → rm -rf build).
+- vagrant ssh siempre con -c. -Werror invariante. Python3 heredoc en macOS (nunca sed -i sin -e '').
+- Kuzu como banco de pruebas se usó vía binding Python en sandbox; PRODUCCIÓN es C++ embebiendo libkuzu.
