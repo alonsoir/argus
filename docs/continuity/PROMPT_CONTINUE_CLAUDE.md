@@ -1,44 +1,99 @@
-# DAY 174 — correlation-engine (C++20) + zona bronce. Prompt de continuidad.
+# DAY 175 — Zona bronce correlation_v1 cableada + verificada E2E. Prompt de continuidad.
 
 ═══════════════════════════════════════════════════════════════════════════════
-ARRANQUE DAY 175 — LEER ESTO PRIMERO. Integrar el writer en ml-detector.
+ARRANQUE DAY 176 — LEER ESTO PRIMERO.
 ═══════════════════════════════════════════════════════════════════════════════
-El correlation-engine (consumidor) está VERDE en el guest (libsodium 1.0.19, OpenSSL 3.0.20,
-GTest 1.12.1, 2/2 suites). PERO su productor —el CorrelationWriter— sigue SUELTO en el ml-detector.
-Hasta cablearlo NO hay datos de bronce reales. Cuatro pasos, en orden:
+DAY 175 cerró el cableado del bronce: el CorrelationWriter (ml-detector) produce
+correlation_v1 REAL, consumible por el reader del correlation-engine. 4 pasos verdes
+(CMake + hook punto único + round-trip unitario + pipeline vivo: 3712 filas reales
+con community_id, una validada con la clave de PRODUCCIÓN de etcd).
 
-1. ALTA EN ml-detector/CMakeLists.txt
-    - Añadir correlation_writer.cpp a las fuentes del ejecutable.
-    - Confirmar OpenSSL::Crypto/SSL linkado (el HMAC lo necesita; csv_event_writer ya usa OpenSSL → casi seguro está).
+DOS BATALLAS DAY 176, ninguna bloqueada por lo de hoy:
 
-2. HOOK EN zmq_handler.cpp
-    - Construir correlation_writer_ junto a csv_writer_ (~líneas 124-133): base_dir=/vagrant/logs/correlation/argus,
-      hmac_key_hex del config (nueva sección en config_loader).
-    - Llamada en el PUNTO ÚNICO del bucle, ANTES de la bifurcación rag/no-rag (~línea 516),
-      NO dentro del if(!rag_logger_ && csv_writer_) de la 518 (bug de los dos caminos).
-    - Filtro: if (correlation_writer_ && !event.network_features().community_id().empty()) write_record(event);
+(A) INJECTORS SINTÉTICOS pueblan community_id — AMBOS modos (decisión Alonso, Q1):
+    1. ISOMORFO REALISTA: calcular community_id con la MISMA función que el sniffer
+       real (sniffer::flow::compute_community_id), NO reimplementación. Empezar por
+       tools/synthetic_sniffer_injector.cpp (alimenta el camino que hoy ejercita el
+       bronce). Sin esto, los E2E sintéticos NO ejercitan el bronce (community_id
+       vacío -> el hook lo descarta).
+    2. MOCK AUTO-IDENTIFICABLE: formato distinguible (estilo "synth:test:hash") para
+       no contaminar análisis con tráfico falso. El correlation-engine lo descarta
+       antes de Kuzu.
+    -> Esto desbloquea bronce DETERMINISTA en CI (hoy dependemos de pcap+eBPF, caro y
+       no determinista).
 
-3. TEST UNITARIO DEL WRITER (en ml-detector, contra el .pb.h REAL)
-    - Construir un NetworkSecurityEvent, escribir, releer, validar HMAC + 19 columnas.
-    - Esto cierra el ROUND-TRIP real: writer (ml-detector) produce → parse_and_verify (correlation-engine) consume.
-      Es la PRUEBA DE ORO de que ambos lados hablan correlation_v1 byte a byte (principio de los vectores congelados).
+(B) CAMBIO col 17 a STRING simbólico (decisión Alonso, Q2):
+    - correlation_writer.cpp: escribir DetectorSource_Name() en vez de
+      static_cast<int>. Reader (correlation_record.hpp) lee string.
+    - Motivo: contrato auto-descriptivo, estable frente a evolución del enum en el
+      .proto. Coste de tamaño irrelevante (dictionary-encoding Parquet aguas arriba).
+    - Es el momento más barato: primer día con bronce real (las 3712 filas son de
+      prueba, no histórico de valor).
 
-4. TEST DE INTEGRACIÓN / EMECAS
-    - Arrancar ml-detector, inyectar tráfico, confirmar CSV en /vagrant/logs/correlation/argus/ con filas válidas.
+(C) LADO CONSUMIDOR del engine (cuando toque): file_watch de bronce -> lectura de
+    clave desde etcd /secrets/<componente> -> parse_and_verify -> Avro -> ZMQ.
+    Aquí aterriza DEBT-BRONZE-KEY-PROVISIONING-001. parse_and_verify debe ser el
+    PRIMER paso del consumidor (validar antes de tocar Kuzu) — riesgo señalado por
+    Mistral: clave mala corrompe el grafo.
 
-DOS AVISOS:
-- RIESGO VIVO: el writer se compiló contra STUBS, no contra tu network_security.pb.h. Si overall_threat_score()
-  o authoritative_source() tienen otro nombre exacto en el proto generado, el build del ml-detector lo canta
-  al instante (fallo de compilación obvio, no silencioso). Es lo PRIMERO que puede chirriar.
-- ROUND-TRIP es la prueba de oro: hoy cada lado se probó por separado (writer vs stubs, reader vs fila a mano).
-  El test que escribe con CorrelationWriter y lee con parse_and_verify garantiza cero deriva entre las 19 columnas.
+PENDIENTE DE REDACCIÓN — ADR-054 (modelo de confianza bronce multi-nodo, Q3):
+    HMAC simétrico vale intra-nodo; no escala a N sensores -> Kuzu central. Explorar
+    Ed25519 (ya en uso, ADR-025) CON o EN VEZ DE HMAC. Eje de decisión: coste CPU/RAM
+    del central validando fila por fila con Ed25519 sobre cientos/miles de ficheros
+    bronce. Opción jerárquica (Kimi): Ed25519 firma clave de sesión HMAC corta;
+    HMAC valida el volumen. Flujo borrador -> Consejo -> aprobación, ANTES del lado
+    consumidor cross-nodo. (OJO numeración: ADR-053 ya RESERVADO para JA3/JA4+TLS+BGP.)
 
-PRIMER COMANDO DAY 175:
-vagrant ssh -c "grep -n 'csv_writer_\|add_executable\|target_link\|target_sources\|OpenSSL' /vagrant/ml-detector/CMakeLists.txt"
-# ver dónde dar de alta el .cpp y si OpenSSL ya está linkado. Luego paso 1→2→3→4.
+LECCIONES DAY 175 (no repetir):
+- STALE PROTO: construir SIEMPRE vía `make <target>` (corre dep `proto`, regenera y
+  distribuye network_security.pb.h fresco a build-debug/proto/, aplica -Werror del
+  Makefile). NUNCA `cmake -S . -B build` directo -> compila contra .pb.h rancio y
+  rompe confuso (incidente DAY 175: "NetworkFeatures has no member community_id").
+- KEY PROVISIONING: la clave HMAC del bronce NO es seed.hex, es la de etcd
+  /secrets/<componente> (campo key). El round-trip con clave hardcodeada valida el
+  contrato pero OCULTA el provisioning. El consumidor en prod DEBE pedirla a etcd.
+- INVARIANTE community_id: TODAS las variantes del sniffer (x86/ARM, eBPF/libpcap,
+  special/plain) DEBEN poblar community_id — es el punto de unión con Suricata/Zeek.
+
+PRIMER COMANDO DAY 176:
+vagrant ssh -c "grep -rn 'community_id\|compute_community_id\|set_community_id' /vagrant/tools/synthetic_sniffer_injector.cpp"
+# confirmar que el injector NO puebla community_id hoy, y localizar dónde sellar la
+# 5-tupla para invocar compute_community_id. Luego (A) modo isomorfo -> mock -> (B).
 
 ═══════════════════════════════════════════════════════════════════════════════
-RESUMEN DAY 174
+RESUMEN DAY 175 — Bronce cableado (los 4 pasos)
+═══════════════════════════════════════════════════════════════════════════════
+Día de cableado y verificación, no de ADR. El CorrelationWriter pasó de suelto a
+cableado y produciendo bronce real consumible.
+
+PASO 1 — CMake: correlation_writer.cpp dado de alta en SOURCES del ml-detector
+  (lista explícita, no GLOB). OpenSSL ya linkado por CsvEventWriter.
+PASO 2 — Hook punto único: correlation_writer_ construido junto a csv_writer_ en
+  zmq_handler, reutilizando el MISMO hmac_key_hex_ (cero divergencia de clave por
+  construcción). write_record() cableado ANTES de la bifurcación rag/no-rag (NO
+  dentro del if rag/csv) — evita el "bug de los dos caminos". Filtro:
+  if (correlation_writer_ && !community_id().empty()).
+PASO 3 — Round-trip unitario (prueba de oro): test_correlation_roundtrip en
+  ml-detector/tests/integration/. Escribe NetworkSecurityEvent con CorrelationWriter
+  REAL, relee última línea, parse_and_verify REAL del engine. 18 campos + HMAC.
+  El test vive en ml-detector (ya linka protobuf/OpenSSL) e incluye el reader del
+  engine, NO al revés — el correlation-engine se mantiene limpio de protobuf.
+  Gateado contra rebuild limpio (make ml-detector && make test-components). PASSED.
+PASO 4 — Pipeline vivo: replay smallFlows.pcap (14261 paquetes, 1209 flujos).
+  3712 filas reales en /vagrant/logs/correlation/argus/2026-06-05.csv, todas con
+  community_id poblado por el sniffer eBPF (formato 1:wKZ...=). Sello final: una
+  fila REAL validada por parse_and_verify con la clave de PRODUCCIÓN de etcd
+  (/secrets/ml-detector campo key) — NO seed.hex.
+
+DECISIONES DEL CONSEJO (8/8 respondieron):
+- Q1 injectors primero (unánime) -> AMBOS modos (Alonso).
+- Q2 col 17 -> STRING simbólico (Alonso; statu quo rechazado por consenso).
+- Q3 abrir ADR-054 modelo de confianza Ed25519 con/en-vez-de HMAC (Alonso).
+DEUDAS NUEVAS: DEBT-BRONZE-KEY-PROVISIONING-001, DEBT-BRONZE-PROVISIONING-E2E-001.
+
+═══════════════════════════════════════════════════════════════════════════════
+RESUMEN DAY 174 (histórico)
+═══════════════════════════════════════════════════════════════════════════════
 ═══════════════════════════════════════════════════════════════════════════════
 Día de construcción, no de ADR. Nació el correlation-engine como componente C++20 sobre Debian.
 Se diseñó la arquitectura lambda/medallion de correlación, se eligió el motor de grafo, y se escribió

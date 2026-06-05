@@ -87,6 +87,162 @@
 ---
 
 
+## ✅ CERRADO DAY 175 — Zona bronce correlation_v1 cableada + verificada E2E
+
+### Bronce correlation_v1 — writer CABLEADO en ml-detector (4 pasos verdes)
+- **Status:** ✅ COMPLETADO DAY 175 — rama `feature/day175-bronze-wiring`
+- **Hito del día:** el `CorrelationWriter` (productor, ml-detector) deja de estar
+  suelto. Cadena completa demostrada con datos REALES:
+  sniffer eBPF → community_id → ZMQ → ml-detector → bronce → reader valida.
+- **Paso 1 — CMake:** `correlation_writer.cpp` dado de alta en SOURCES del
+  ml-detector (lista explícita, no GLOB). OpenSSL ya linkado por `CsvEventWriter`.
+- **Paso 2 — Hook punto único:** `correlation_writer_` construido en `zmq_handler`
+  junto a `csv_writer_`, reutilizando el MISMO `hmac_key_hex_` (cero divergencia de
+  clave por construcción). `write_record()` cableado ANTES de la bifurcación
+  rag/no-rag — evita el "bug de los dos caminos". Filtro:
+  `if (correlation_writer_ && !community_id().empty())`.
+- **Paso 3 — Round-trip unitario (prueba de oro):** `test_correlation_roundtrip`
+  en `ml-detector/tests/integration/`. Escribe un `NetworkSecurityEvent` con el
+  `CorrelationWriter` REAL, relee la última línea y la pasa al `parse_and_verify`
+  REAL del correlation-engine. Verifica 18 campos + HMAC. El test vive en
+  ml-detector (que ya linka protobuf/OpenSSL) e incluye el reader del engine, NO al
+  revés — el correlation-engine se mantiene limpio de protobuf. Gateado contra
+  rebuild limpio (`make ml-detector && make test-components`). PASSED.
+- **Paso 4 — Pipeline vivo:** replay de `smallFlows.pcap` (14.261 paquetes, 1.209
+  flujos) por la interfaz del cliente. **3.712 filas reales** en
+  `/vagrant/logs/correlation/argus/2026-06-05.csv`, todas con `community_id`
+  poblado por el sniffer eBPF (formato `1:wKZ...=`). Sello final: una fila REAL
+  validada por el `parse_and_verify` del engine con la clave de PRODUCCIÓN de etcd.
+
+### Lección DAY 175 — la trampa del provisioning de clave
+- El round-trip unitario (paso 3) era necesario pero NO suficiente: validaba
+  writer↔reader con una clave de test compartida por construcción, lo que ocultaba
+  el problema de *provisioning*. La clave HMAC del ml-detector NO es `seed.hex`
+  sino la servida por etcd en `/secrets/ml-detector` (campo `key`). Validar una
+  fila real con `seed.hex` fue RECHAZADO (bien rechazado); con la clave de etcd,
+  VALIDÓ. Lección: el consumidor en producción debe pedir la clave a
+  `/secrets/<componente>` de etcd, igual que el ml-detector. → DEBT-BRONZE-KEY-PROVISIONING-001.
+
+### REGLA PERMANENTE nueva DAY 175
+- **REGLA PERMANENTE (DAY 175):** Construir SIEMPRE vía target del Makefile raíz
+  (`make ml-detector`, etc.), NUNCA `cmake -S . -B build` directo. El target corre
+  la dependencia `proto` (regenera y distribuye `network_security.pb.h` fresco a
+  `build-debug/proto/`) y aplica los flags `-Werror` desde el Makefile (fuente
+  única de verdad). Un `cmake` directo puede compilar contra un `.pb.h` RANCIO y
+  romper de forma confusa (incidente DAY 175: `NetworkFeatures has no member
+  community_id` con proto stale).
+
+### INVARIANTE confirmado DAY 175 — community_id en TODAS las variantes del sniffer
+- `community_id` es el punto de unión con Suricata/Zeek (y futuro Wazuh). TODAS las
+  variantes del sniffer (x86/ARM, eBPF/libpcap, special/plain) DEBEN poblarlo.
+  Confirmado por grep: solo el sniffer real lo puebla hoy (`ring_consumer.cpp` para
+  eBPF, `main_libpcap.cpp` para libpcap). Los injectors sintéticos NO lo rellenan
+  todavía → los tests sintéticos no ejercitan el bronce. → tarea DAY 176.
+
+### Council of Sages DAY 175 — decisiones (8/8 respondieron)
+- **Q1 — Orden de batalla: injectors PRIMERO (unánime 8/8).** Sin injectors que
+  pueblen community_id no hay bronce determinista en CI (pcap+eBPF es caro y no
+  determinista). Decisión Alonso: implementar AMBOS modos de injector — isomorfo
+  realista (reusa el algoritmo del sniffer real, `compute_community_id`) Y mock
+  auto-identificable (estilo `synth:test:hash`, no se confunde con tráfico real).
+- **Q2 — authoritative_source (col 17): cambiar a STRING simbólico.** El statu quo
+  (int crudo con mapeo implícito en el reader) fue rechazado por consenso. Decisión
+  Alonso: escribir el nombre simbólico (`ML_PRIORITY`, etc.) vía `DetectorSource_Name()`.
+  Argumento clínico (Qwen): Parquet aplica dictionary-encoding nativo aguas arriba,
+  así que el ahorro de tamaño del int es ~nulo tras compresión; gana la estabilidad
+  de contrato frente a la evolución del enum en el .proto. Es el momento más barato
+  de la historia del proyecto para el cambio (primer día con bronce real).
+- **Q3 — Modelo de confianza a escala: abrir ADR.** HMAC simétrico vale intra-nodo,
+  pero no escala a N sensores → Kuzu central (gestión de N claves + sin no-repudio).
+  Todos apuntan a Ed25519 (ya en uso para plugins, ADR-025). Matiz de Kimi: Ed25519
+  por-fila es lento a volumen → esquema jerárquico (Ed25519 firma una clave de sesión
+  HMAC de corta vida; HMAC valida el volumen de filas). → ADR-054 (ver abajo).
+
+### DEBT-BRONZE-KEY-PROVISIONING-001 — Clave HMAC del bronce desde etcd /secrets
+**Severidad:** 🟡 P1
+**Estado:** ABIERTO — DAY 175
+**Componente:** `correlation-engine` (lado consumidor) + `ml-detector` (productor)
+La clave HMAC del bronce NO es `seed.hex` — es la servida por etcd en
+`/secrets/<componente>` (campo `key`). El writer (ml-detector) ya la obtiene así.
+Cuando el correlation-engine consuma bronce en producción (file_watch → Avro), su
+arranque DEBE pedir la clave a etcd `/secrets/<componente>` EXACTAMENTE igual,
+no leerla de `seed.hex`. Descubierto DAY 175 al validar una fila real: `seed.hex`
+fue rechazado, la clave de etcd validó. Si esto se descubre con el lado Kuzu y
+miles de filas "que no validan", es un incidente de medianoche.
+**Test de cierre:** el consumidor obtiene la clave del mecanismo real de
+provisioning (etcd `/secrets/<componente>`) y valida una fila real escrita por el
+ml-detector. Validar con `seed.hex` → RECHAZO esperado.
+**Estimación:** 1 sesión (junto al file_watch del consumidor).
+
+### DEBT-BRONZE-PROVISIONING-E2E-001 — Test de provisioning real (no clave hardcodeada)
+**Severidad:** 🟡 P1
+**Estado:** ABIERTO — DAY 175 (propuesta ChatGPT + refinamiento Qwen — Consejo 8/8)
+**Componente:** `ml-detector/tests/integration/test_correlation_roundtrip.cpp`
+El round-trip actual usa una clave de test compartida por construcción (`KEY_HEX`
+hardcodeada en ambos lados), lo que VALIDA el contrato pero OCULTA fallos de
+provisioning. Modificar el test para que la clave venga de una variable de entorno
+o de un mock de etcd que AMBOS lados (writer y reader) consulten — validando así el
+*mecanismo de obtención de la confianza*, no solo el contrato de datos. El fallo
+real de DAY 175 pertenecía al provisioning, no al contrato de bronce; merece su
+propio test.
+**Test de cierre:** writer y reader obtienen la misma clave del mismo mecanismo
+real (env-var o mock etcd). Divergencia de clave entre lados → fila rechazada.
+**Estimación:** 1 sesión.
+
+### Tarea DAY 176 — Injectors sintéticos pueblan community_id (ambos modos)
+**Severidad:** 🟡 P1 — desbloquea bronce determinista en CI
+**Estado:** ABIERTO — DAY 175 (Consejo 8/8, Q1)
+**Componente:** `tools/synthetic_sniffer_injector.cpp` (primero) + resto de injectors
+Hoy solo el sniffer real puebla `community_id`; los injectors sintéticos lo dejan
+vacío y el hook del bronce los descarta → los E2E sintéticos NO ejercitan el bronce.
+Implementar AMBOS modos (decisión Alonso): (1) **isomorfo realista** — calcula el
+community_id con la MISMA función que el sniffer real (`compute_community_id`), no
+reimplementación, para que el bronce de CI sea byte a byte como el de producción;
+(2) **mock auto-identificable** — formato distinguible (estilo `synth:test:hash`)
+para no contaminar análisis con tráfico falso. Empezar por `synthetic_sniffer_injector`
+(alimenta el camino que hoy ejercita el bronce).
+**Test de cierre:** injector isomorfo → bronce de CI con community_id idéntico al de
+producción para la misma 5-tupla. Injector mock → community_id reconocible como
+sintético, descartado por el correlation-engine antes de Kuzu.
+**Estimación:** 1-2 sesiones.
+
+### Cambio DAY 176 — authoritative_source (col 17) a string simbólico
+**Severidad:** 🟡 P1 — contrato correlation_v1
+**Estado:** ABIERTO — DAY 175 (Consejo, Q2; decisión Alonso)
+**Componente:** `ml-detector/src/correlation_writer.cpp` + `correlation-engine` reader
+La columna 17 del contrato `correlation_v1` pasa de int crudo (`static_cast<int>`
+del enum `DetectorSource`) a nombre simbólico (`DetectorSource_Name()`:
+`ML_PRIORITY`, `DIVERGENCE`, etc.). El reader (`correlation_record.hpp`) se adapta a
+leer string. Motivo: bronce auto-descriptivo, estable frente a reordenación/inserción
+de valores del enum en el .proto; coste de tamaño irrelevante (dictionary-encoding en
+Parquet aguas arriba). Es el primer día con bronce real → el momento más barato para
+cambiarlo.
+**Test de cierre:** writer escribe `ML_PRIORITY` en col 17; reader parsea el string;
+round-trip verde. Bronce histórico migrado o re-generado (3.712 filas de DAY 175 son
+de prueba, no histórico de valor).
+**Estimación:** 0.5-1 sesión.
+
+### ADR-054 — Modelo de confianza de la zona bronce a escala multi-nodo (PENDIENTE redacción)
+**Estado:** ⏳ BORRADOR PENDIENTE — DAY 175 (Consejo 8/8, Q3; decisión Alonso)
+**Nota de numeración:** ADR-053 ya está RESERVADO (stub DAY 173: JA3/JA4 + cadena TLS
+profunda + anomalía L3/BGP). Por tanto este ADR toma el **054**. Verificado contra el
+BACKLOG antes de asignar.
+**Contenido a redactar:** el HMAC simétrico por-componente vale para integridad
+intra-nodo (detectar fila corrupta/truncada por append no-atómico), pero NO escala a
+la arquitectura medallion multi-nodo (N sensores → Kuzu central): obliga a que el
+central conozca N claves simétricas (superficie de ataque enorme; comprometer el
+central permite FALSIFICAR bronce de cualquier sensor) o a un llavero de N claves
+(pesadilla de rotación), y no da no-repudio. Explorar Ed25519 (ya en uso para plugins,
+ADR-025) JUNTO CON o EN VEZ DE HMAC. **Eje de decisión central (preocupación Alonso):**
+coste CPU/RAM del servidor central validando fila por fila con Ed25519 sobre
+cientos/miles de ficheros bronce. Opción jerárquica de Kimi sobre la mesa desde el
+día uno: Ed25519 firma una clave de sesión HMAC de corta vida (no-repudio +
+rotación granular del asimétrico) y el HMAC valida el volumen de filas (velocidad del
+simétrico). Flujo: borrador → Consejo → aprobación → implementación, ANTES de escribir
+el lado consumidor cross-nodo.
+
+
+
 ## ✅ RATIFICADO DAY 173 — ADR-052 v3.2 (Consejo 8/8) + DEBTs de identidad de flujo
 
 ### ADR-052 v3.2 — Multi-node Flow Identity & Host↔Net Correlation — RATIFICADA Y CERRADA

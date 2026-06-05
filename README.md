@@ -76,6 +76,26 @@
   - **Consejo 8/8 consultado** — Dos bloqueantes identificados y resueltos antes del merge: B1 (staleness) + B2 (ExecStartPre= vs ExecStartPost= para fichero efímero, pendiente DAY 158).
   - **EMECAS DAY 157 VERDE** — `vagrant destroy → up → make bootstrap → make test-all` — TODO VERDE.
 
+### Hitos DAY 175 🎉
+- **Zona bronce `correlation_v1` CABLEADA y verificada E2E.** El `CorrelationWriter`
+  (productor, ml-detector) deja de estar suelto. Cadena completa con datos reales:
+  sniffer eBPF → community_id → ZMQ → ml-detector → bronce → `parse_and_verify` del
+  correlation-engine. **3.712 filas reales** en `/vagrant/logs/correlation/argus/`,
+  todas con community_id poblado; una fila real validada con la clave de PRODUCCIÓN
+  de etcd. 4 pasos verdes: alta CMake + hook en punto único (antes de la bifurcación
+  rag/no-rag) + round-trip unitario (prueba de oro writer↔reader) + pipeline vivo.
+  - **Lección (DEBT-BRONZE-KEY-PROVISIONING-001):** la clave HMAC del bronce no es
+    `seed.hex` sino la de etcd `/secrets/<componente>`. El round-trip con clave
+    hardcodeada validaba el contrato pero ocultaba el provisioning.
+  - **REGLA PERMANENTE (DAY 175):** construir siempre vía `make <target>` (corre la
+    dependencia `proto` y aplica `-Werror` del Makefile), nunca `cmake` directo
+    (riesgo de `.pb.h` rancio).
+  - **INVARIANTE:** community_id es el punto de unión con Suricata/Zeek — TODAS las
+    variantes del sniffer (x86/ARM, eBPF/libpcap) deben poblarlo.
+  - **Consejo 8/8:** injectors sintéticos primero (ambos modos: isomorfo + mock) ·
+    col 17 `authoritative_source` → string simbólico · ADR-054 (modelo de confianza
+    Ed25519 con/en-vez-de HMAC a escala multi-nodo) pendiente de redacción.
+
 ### Hitos DAY 173 🏛️
 - **ADR-051 v2.2 RATIFICADA — Consejo 8/8.** Community ID Parity Gate & Correlation Health. Confirmación de fidelidad sin 3ª deliberación (precedente ADR-052). Renombrado desde "Seed Parity Gate" (el gate valida paridad de `community_id` emitido, de la que el drift de seed es una causa, no la única). Decisión clave: **Oracle Divergence** — si los sensores heterogéneos coinciden entre sí pero no con `pycommunityid`, arranca con WARNING crítico, NO fail-closed (argumento N-version); fail-closed reservado a disparidad ENTRE sensores. Máquinas de estado del gate y de confianza del sensor (DEGRADED estadístico / QUARANTINED binario confirmado). **Diseño ratificado para archivar** — solo el gate de arranque mínimo (cross-check DAY 171/172) está en camino crítico; el resto duerme hasta que exista engine que proteger. Entregable `ADR-051_v2.2.md`.
   - **DEBTs nuevas (corte camino-crítico/diferible):** P1 `DEBT-CID-TEST-VECTORS-001` (fixture compartido con FLOWUID), `DEBT-SEED-GATE-DIAGNOSTIC-001`, `DEBT-CID-STATE-MACHINE-001`, `DEBT-CID-CROSSCHECK-CI-001`; P2 `DEBT-CID-ORACLE-QUORUM-001`, `DEBT-SEED-CHAOS-TEST-001`; P3 diferida `DEBT-SEED-ACTIVE-PROBE-001`. Más `DEBT-ARGUSPP-CLOCK-INJECTION-PROD-001` (P1, hallazgo DAY 172: verificar que producción no heredó el reloj inyectado del cross-check).
