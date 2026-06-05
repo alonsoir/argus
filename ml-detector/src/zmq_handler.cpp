@@ -147,6 +147,20 @@ ZMQHandler::ZMQHandler(
         logger_->warn("⚠️  CsvEventWriter disabled — no HMAC key available");
     }
 
+    // DAY 175: CorrelationWriter (zona bronce). Misma clave HMAC que csv → cero divergencia.
+    if (!hmac_key_hex_.empty()) {
+        try {
+            ml_defender::CorrelationWriterConfig corr_cfg;
+            corr_cfg.base_dir     = "/vagrant/logs/correlation/argus";
+            corr_cfg.hmac_key_hex = hmac_key_hex_;
+            correlation_writer_ = std::make_shared<ml_defender::CorrelationWriter>(corr_cfg, logger_);
+            logger_->info("✅ CorrelationWriter initialized (bronce correlation_v1)");
+        } catch (const std::exception& e) {
+            logger_->error("❌ Failed to initialize CorrelationWriter: {}", e.what());
+            correlation_writer_ = nullptr;
+        }
+    }
+
     // =========================================================================
     // RAG Logger — opcional, su fallo no afecta al CSV
     // =========================================================================
@@ -501,6 +515,12 @@ void ZMQHandler::process_event(const std::string& message) {
             ml_context.investigation_priority = "MEDIUM";
         } else {
             ml_context.investigation_priority = "LOW";
+        }
+
+        // DAY 175: zona bronce correlation_v1 — punto UNICO, ANTES de la bifurcacion rag/no-rag.
+        // NO va dentro del if(!rag_logger_ && csv_writer_) (bug de los dos caminos).
+        if (correlation_writer_ && !event.network_features().community_id().empty()) {
+            correlation_writer_->write_record(event);
         }
 
         // RAG Logger — escribe JSON artifacts + delega en csv_writer_ si fue conectado

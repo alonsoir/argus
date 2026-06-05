@@ -211,6 +211,30 @@ if(GTest_FOUND AND
     message(STATUS "✅ test_csv_event_writer registered")
 endif()
 
+# ── test_correlation_roundtrip — DAY 175 PRUEBA DE ORO contrato correlation_v1 ──
+if(GTest_FOUND AND
+        EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/integration/test_correlation_roundtrip.cpp")
+    ml_gtest(test_correlation_roundtrip
+            integration/test_correlation_roundtrip.cpp
+            ../src/correlation_writer.cpp
+            ../../correlation-engine/src/correlation_reader.cpp
+            ${PROTO_SOURCES}
+    )
+    target_include_directories(test_correlation_roundtrip PRIVATE
+            ../../correlation-engine/include
+    )
+    target_link_libraries(test_correlation_roundtrip PRIVATE
+            ${Protobuf_LIBRARIES}
+            OpenSSL::SSL
+            OpenSSL::Crypto
+    )
+    if(DEFINED LIBSODIUM_LIBRARIES)
+        target_link_libraries(test_correlation_roundtrip PRIVATE ${LIBSODIUM_LIBRARIES})
+    endif()
+    ml_link_spdlog(test_correlation_roundtrip)
+    message(STATUS "✅ test_correlation_roundtrip registered")
+endif()
+
 # ── test_csv_feature_extraction ───────────────────────────────────────────────
 if(GTest_FOUND AND
         EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/integration/test_csv_feature_extraction.cpp")
