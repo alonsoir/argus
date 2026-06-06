@@ -153,11 +153,14 @@ target_include_directories(generate_synthetic_events
 
 add_executable(synthetic_sniffer_injector
         synthetic_sniffer_injector.cpp
+        # fuente compartida con sniffer — NO duplicar, paridad community_id (DAY 176)
+        ${CMAKE_CURRENT_SOURCE_DIR}/../sniffer/src/flow/community_id.cpp
         ${PROTO_SOURCES}
 )
 
 target_include_directories(synthetic_sniffer_injector
         PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/../sniffer/include
         ${CMAKE_CURRENT_SOURCE_DIR}/../protobuf
         ${CMAKE_CURRENT_SOURCE_DIR}/../etcd-client/include
         ${CMAKE_CURRENT_SOURCE_DIR}/../crypto-transport/include

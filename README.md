@@ -470,6 +470,23 @@ vagrant destroy -f && vagrant up && make bootstrap && make test-all
 
 
 
+### Lecciones operativas (DAY 176)
+
+> Lecciones de la sesión de cableado/verificación del bronce. Operacionales, no de diseño.
+
+- **Recetas `make` desde el HOST.** Los targets del Makefile raíz se ejecutan desde el
+  anfitrión macOS; envolverlos en `vagrant ssh -c` rompe con `vagrant: not found` (el
+  binario `vagrant` no existe dentro del guest). El Makefile ya hace `vagrant ssh -c`
+  internamente donde corresponde.
+- **Limpiar bronce SIEMPRE con el ml-detector parado.** Secuencia correcta:
+  `tmux kill-session` → `rm` del CSV → `make ml-detector-start`. Borrar el fichero en
+  caliente deja un inode huérfano (el proceso sigue escribiendo al inode borrado) →
+  filas perdidas silenciosamente.
+- **El injector necesita `sudo env LD_LIBRARY_PATH=/usr/local/lib`.** Lee `seed.bin`
+  (permisos `0400 root`), por lo que requiere `sudo`; y `env LD_LIBRARY_PATH=/usr/local/lib`
+  para localizar las `.so` instaladas (libsodium, crypto_provider, etc.).
+
+
 ### Hardened VM (ADR-030 Variant A)
 
 ```bash

@@ -1,3 +1,42 @@
+═══════════════════════════════════════════════════════════════════════════════
+ARRANQUE DAY 177 — LEER ESTO PRIMERO (encima del prompt DAY 175 histórico).
+═══════════════════════════════════════════════════════════════════════════════
+DAY 176 trabajó los injectors sintéticos que pueblan community_id (camino a un bronce
+determinista en CI). De ahí salieron 4 deudas nuevas y las decisiones del Consejo que
+alimentan ADR-055.
+
+PRIMER COMANDO DAY 177 — comando 0: resolver el ORDEN (B-vs-A) con datos, no intuición.
+¿test_correlation_roundtrip usa filas del injector o de referencia propias? Según eso se
+decide si va primero (B) el cambio de col 17 a string simbólico, o (A) los injectors.
+NO se decide por voto (Q3: "medir, no votar").
+
+  vagrant ssh -c "grep -rn 'synthetic\|inject\|create_synthetic\|hardcod\|reference\|expected\|fixture' /vagrant/ml-detector/tests/integration/test_correlation_roundtrip* 2>/dev/null; echo '=== como construye las filas ==='; sed -n '1,60p' /vagrant/ml-detector/tests/integration/test_correlation_roundtrip.cpp 2>/dev/null"
+
+DEUDAS NUEVAS DAY 176 (detalle en docs/BACKLOG.md → "Entradas DAY 176"):
+- DEBT-INJECTOR-NODEID-001 (P0 Alta): el injector deja node_id (col 3) vacío → flow_uid
+  degenerado. Fix: node_id sintético por eje de modo. Q1 → isomorfo usa `synth-node-00`;
+  mock usa `synth:node:<id>`.
+- DEBT-INJECTOR-ROWGAP-001 (P1, bloqueante CI): gap ~8 de 50 incluso en --attack; NO es
+  community_id. Sospechosos: `dontwait` (no determinista) o threshold del CorrelationWriter
+  (determinista). Q2 → perseguir con todos los métodos.
+- DEBT-LIB-001 (P1): extraer flow/community_id a libs/flow-identity/. Prereq de adaptadores
+  Suricata/Zeek. Refactor mecánico. Q5 → es prerrequisito.
+- DEBT-STRESS-BRONZE-001 (P2, no bloqueante): estrés CorrelationWriter (10 threads × 10K;
+  asserts conteo + 18 comas + HMAC). Q4 → no bloqueante.
+
+DECISIONES DEL CONSEJO (8/8) → ADR-055 (pendiente de redacción):
+- Q1: node_id sintético `synth-node-00` (isomorfo).
+- Q2: perseguir el gap de filas con todos los métodos.
+- Q3: medir el golden ANTES de decidir el orden B-vs-A. Voto dividido (ChatGPT 1 vs 7)
+  resuelto por "medir, no votar".
+- Q4: prueba de estrés no bloqueante.
+- Q5: extraer la lib (DEBT-LIB-001) como prerrequisito de los adaptadores.
+NUMERACIÓN: ADR-053 RESERVADO (JA3/JA4 + TLS + BGP) · ADR-054 PENDIENTE (modelo de
+confianza bronce multi-nodo Ed25519/HMAC) · ADR-055 = estas decisiones de injectors/golden/lib.
+
+(El prompt DAY 175 completo queda intacto debajo, como histórico.)
+
+
 # DAY 175 — Zona bronce correlation_v1 cableada + verificada E2E. Prompt de continuidad.
 
 ═══════════════════════════════════════════════════════════════════════════════

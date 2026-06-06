@@ -87,6 +87,72 @@
 ---
 
 
+## 🆕 Entradas DAY 176 — Deudas del cableado de injectors + ADR-055
+
+> Origen: sesión DAY 176 (injectors sintéticos + community_id). Decisiones del Consejo
+> de Sabios (8/8) destinadas a **ADR-055** (pendiente de redacción). Voto dividido en Q3
+> (ChatGPT 1 vs 7) resuelto por "medir, no votar".
+>
+> **Q1** → node_id sintético `synth-node-00` (isomorfo). **Q2** → perseguir el gap con
+> todos los métodos. **Q3** → medir el golden antes de decidir el orden B-vs-A. **Q4** →
+> estrés no bloqueante. **Q5** → extraer la lib como prerrequisito de los adaptadores.
+>
+> **Nota de numeración:** ADR-053 RESERVADO (JA3/JA4 + TLS profunda + anomalía L3/BGP),
+> ADR-054 PENDIENTE (modelo de confianza bronce multi-nodo Ed25519/HMAC). Estas decisiones
+> toman **ADR-055**. Verificado contra el BACKLOG antes de asignar.
+
+### DEBT-INJECTOR-NODEID-001 — node_id vacío en injector → flow_uid degenerado
+**Severidad:** 🔴 P0 — Alta
+**Estado:** ABIERTO — DAY 176 (Consejo 8/8, Q1)
+**Componente:** `tools/synthetic_sniffer_injector.cpp` + resto de injectors
+El injector deja `node_id` (col 3 del contrato `correlation_v1`) vacío. Como
+`flow_uid = hash(node_id ‖ community_id ‖ flow_start_window)`, un `node_id` vacío
+degenera el `flow_uid` (identidad no canónica / colisión). Fix: poblar `node_id`
+sintético por eje de modo — isomorfo realista → `synth-node-00`; mock
+auto-identificable → `synth:node:<id>`. Decisión Alonso/Consejo Q1: el isomorfo usa
+`synth-node-00`.
+**Test de cierre:** injector isomorfo → `node_id=synth-node-00`, `flow_uid` no
+degenerado. Injector mock → `node_id` reconocible como sintético (`synth:node:<id>`),
+descartado por el correlation-engine antes de Kuzu.
+**Estimación:** 0.5–1 sesión.
+
+### DEBT-INJECTOR-ROWGAP-001 — gap ~8 de 50 filas (no es community_id)
+**Severidad:** 🟡 P1 — bloqueante para conteo exacto en CI
+**Estado:** ABIERTO — DAY 176 (Consejo 8/8, Q2)
+**Componente:** `tools/synthetic_sniffer_injector.cpp` + `CorrelationWriter` (ml-detector)
+Con `--attack` aparece un gap de ~8 filas de 50; descartado que sea por `community_id`.
+Sospechosos: `dontwait` (no determinista — política NDR de no bloquear el loop de
+captura) o el threshold del `CorrelationWriter` (determinista). Consejo Q2: perseguir el
+gap con todos los métodos disponibles. Bloqueante para conteo exacto en CI (un bronce
+determinista exige N inyectadas → N filas).
+**Test de cierre:** inyectar N filas → exactamente N filas en bronce, reproducible en
+repeticiones. Causa raíz del gap identificada y documentada.
+**Estimación:** 1 sesión (investigación + fix).
+
+### DEBT-LIB-001 — extraer flow/community_id a libs/flow-identity/
+**Severidad:** 🟡 P1 — prerrequisito de adaptadores Suricata/Zeek
+**Estado:** ABIERTO — DAY 176 (Consejo 8/8, Q5)
+**Componente:** `sniffer/src/flow/community_id*` → `libs/flow-identity/`
+Extraer el cálculo de `community_id` (hoy en el sniffer) a una librería reutilizable
+`libs/flow-identity/`. Refactor mecánico (no cambia el algoritmo). Prerrequisito de los
+adaptadores Suricata/Zeek/Wazuh, que necesitan `compute_community_id` sin arrastrar el
+sniffer entero.
+**Test de cierre:** sniffer y banco de adaptadores enlazan `libs/flow-identity/`;
+`community_id` idéntico byte a byte al oráculo `pycommunityid` (sin regresión).
+**Estimación:** 1 sesión (refactor mecánico).
+
+### DEBT-STRESS-BRONZE-001 — prueba de estrés del CorrelationWriter
+**Severidad:** 🟢 P2 — pre-merge, no bloqueante
+**Estado:** ABIERTO — DAY 176 (Consejo 8/8, Q4)
+**Componente:** `ml-detector/tests/` — `CorrelationWriter`
+Prueba de estrés del `CorrelationWriter`: 10 threads × 10.000 escrituras con asserts de
+(1) conteo exacto de filas, (2) 18 comas por fila (19 columnas del contrato
+`correlation_v1`), (3) HMAC válido en cada fila. Pre-merge, no bloqueante (Consejo Q4).
+**Test de cierre:** 10×10K filas → conteo exacto, cada fila con 18 comas, todas validan
+HMAC en tiempo constante.
+**Estimación:** 1 sesión.
+
+
 ## ✅ CERRADO DAY 175 — Zona bronce correlation_v1 cableada + verificada E2E
 
 ### Bronce correlation_v1 — writer CABLEADO en ml-detector (4 pasos verdes)
