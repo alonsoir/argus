@@ -1,9 +1,14 @@
 ═══════════════════════════════════════════════════════════════════════════════
 ARRANQUE DAY 178 — aRGus NDR · branch feature/day170-community-id-protobuf
 ═══════════════════════════════════════════════════════════════════════════════
-Prompt LEAN a propósito: estado + dos frentes + primer comando + invariantes.
+Prompt LEAN a propósito: estado + frentes + primer comando + invariantes.
 El detalle vive en el repo (ver "DÓNDE LEER MÁS"). La cola histórica de días
 anteriores está en git log de este fichero, no aquí.
+
+> NOTA PARA CLAUDE: gran parte de lo que sigue salió de una conversación larga al
+> cerrar DAY 177 (tarde). Si necesitas el razonamiento fino (los "tres cubos" de
+> campos de SecurityEvent, la distinción Caso A / Caso B), pídele a Alonso que te
+> traiga esa conversación — aquí está el destilado, no el desarrollo.
 
 ───────────────────────────────────────────────────────────────────────────────
 QUÉ CERRÓ DAY 177 (hecho y commiteado — NO repetir)
@@ -26,29 +31,90 @@ Lado PRODUCTOR del bronce en forma final + injectors sellados E2E. 3 commits.
   realistic con semilla fija + aserción de ausencia en bronce; default deterministic).
 
 ───────────────────────────────────────────────────────────────────────────────
-DOS FRENTES DAY 178
+DESCUBIERTO EN EL CIERRE DAY 177 (relevante para hoy — leído, no implementado)
+───────────────────────────────────────────────────────────────────────────────
+- AdapterSpec v1 EXISTE y es NORMATIVO (no era una frase de intención). Vive en
+  docs/engineering_decisions/AdapterSpec v1 — Contrato de Ingesta de Adapters...md.
+  Define el contrato común de TODO adapter (Suricata/Zeek/Wazuh/sniffer aRGus) hacia el
+  engine: at-least-once + dedup idempotente por (source_engine, native_event_id);
+  exactly-once explícitamente FUERA de alcance. Tier determinista exige stream bit-a-bit
+  reproducible. → Tu decisión "diseñar alrededor del contrato" YA tiene contra qué diseñar.
+
+- DOS DECISIONES DE ARQUITECTURA QUE ALONSO CERRÓ (no re-litigar):
+  1. FRONTERA CON ANDRÉS / fuentes externas: Alonso publica el CONTRATO
+     (correlation_v1 + AdapterSpec); quien quiera entrar al grafo produce eso. El
+     correlation-engine NO conoce el formato nativo de nadie. La señal de Andrés (y Wazuh)
+     entra como OTRA ARISTA: si no tiene 5-tupla → sin community_id → se ancla por host_key,
+     domain=HOST. Ya está escrito en AdapterSpec §3/§10. Confirmar la geometría de la señal
+     de Andrés (red / host / física) en la charla, no adivinarla.
+  2. IDENTIDAD DEL EVENTO: event_id lo generamos NOSOTROS, en el sniffer, en origen.
+     NUNCA derivado de algo "que venga de fuera". Determinista, fiable, representativo.
+     Es el ancla de la dedup (Caso B) y la identidad del evento observado (Caso A).
+
+- CASO A vs CASO B (regla que ordena "qué hacer si un campo no llega"):
+  · Caso A — el sniffer OBSERVA el cable: campo ausente = HECHO observado, no error.
+  NUNCA rellenar, NUNCA descartar el evento por incompletitud. Ausencia y valor
+  manipulado son FEATURES legítimas (el modelo debe verlas). Disciplina: distinguir
+  "0 porque no se observó" de "0 porque el valor era 0" — usar optional/has_*()/flag
+  donde el default mudo sea ambiguo, no en todos.
+  · Caso B — el engine RECIBE de otro sensor por red: validar HMAC PRIMERO → fila
+  inválida/truncada/manipulada se DESCARTA (no rellenar, no adivinar) → dedup por
+  (source_engine, native_event_id) absorbe duplicados/reenvíos → nunca confiar en un
+  campo de IDENTIDAD que venga de fuera. (Respalda el arbitraje del dontwait de DAY 177.)
+
+───────────────────────────────────────────────────────────────────────────────
+⚠️ PREGUNTA ABIERTA #1 — RESOLVER ANTES DE ESCRIBIR CÓDIGO DEL CONSUMIDOR
+───────────────────────────────────────────────────────────────────────────────
+Hay DOS nombres de contrato que NO son el mismo mensaje, y la relación está SIN cerrar:
+· correlation_v1 = CSV de bronce (19 cols + HMAC) que ml-detector escribe. CERRADO.
+· SecurityEvent = envelope que AdapterSpec manda publicar al engine (source_engine,
+native_event_id, event_time_unix_ns, optional community_id/host_key, domain
+NETWORK|HOST|HYBRID, raw_payload, metadata).
+· NetworkSecurityEvent = lo que SÍ existe en el .proto (línea 569, campos 1-35). Es
+RICO y específico de aRGus (TricapaMLAnalysis, RAGAnalysis, GeoEnrichment...).
+
+HECHO verificado DAY 177: "message SecurityEvent" NO aparece en el grep del .proto. Solo
+existe NetworkSecurityEvent. → Puede que SecurityEvent (a) haya que CREARLO, (b) sea
+NetworkSecurityEvent con otro nombre, o (c) sean dos tramos distintos que conviven
+(adapter→engine = SecurityEvent ; engine→bronce/Avro→Kuzu = otra cosa).
+
+HIPÓTESIS (de Claude, A CONFIRMAR — no es decisión): NetworkSecurityEvent es DEMASIADO
+aRGus-específico para ser el envelope cross-engine; SecurityEvent es agnóstico por diseño
+(AdapterSpec). Lo natural sería: SecurityEvent = envelope del engine; raw_payload del
+adapter de aRGus = NetworkSecurityEvent (o NetworkFeatures) serializado dentro. Pero
+SecurityEvent quizá no existe aún → primer trabajo podría ser DEFINIR el mensaje, no el consumidor.
+
+Hasta resolver esto, NO se sabe si el consumidor produce Avro-de-correlation_v1,
+SecurityEvent, o NetworkSecurityEvent. Resolverlo es el gate de todo lo demás de hoy.
+
+───────────────────────────────────────────────────────────────────────────────
+FRENTES DAY 178 (en orden)
 ───────────────────────────────────────────────────────────────────────────────
 (1) CERRAR ADR-055 — confirmación de FIDELIDAD (barato, primero).
 Las 8 respuestas ya están en docs/counsil/ADR-055-*.md. NO es re-deliberación:
-verificar que ADR-055 v1 refleja el consenso y deja clara la anulación de árbitro
-en Q1 (solo instrumento). Si hay consenso → BORRADOR → ratificada (1 línea en
-ADR-055 + BACKLOG Estado + README DAY-STATUS). Si hay objeción → registrarla, NO ratificar.
+verificar que ADR-055 v1 refleja el consenso y deja clara la anulación de árbitro en
+Q1 (solo instrumento). Consenso → BORRADOR→ratificada (1 línea en ADR-055 + BACKLOG
+Estado + README DAY-STATUS). Objeción → registrarla, NO ratificar.
 
-(2) LADO CONSUMIDOR del engine (el grueso) — desbloqueado porque el contrato bronce ya
-está en forma final:
-file_watch del bronce → clave HMAC desde etcd /secrets/<componente> (campo key,
-NO seed.hex) → parse_and_verify PRIMERO → Avro → ZMQ al servidor.
-INVARIANTE (riesgo Mistral): parse_and_verify es el PRIMER paso; fila inválida / clave
-mala se DESCARTA antes de tocar Kuzu — una clave mala no corrompe el grafo.
-Deudas que aterrizan aquí: DEBT-BRONZE-KEY-PROVISIONING-001 (P1, clave de etcd no seed.hex)
-y DEBT-BRONZE-PROVISIONING-E2E-001 (P1, el test obtiene la clave del mecanismo real en
-AMBOS lados, no hardcodeada).
+(2) RESOLVER PREGUNTA ABIERTA #1 (arriba) — leer el .proto y el código de ingesta del
+engine; decidir CON ALONSO si SecurityEvent se crea, se mapea, o conviven tramos.
+Esto es diseño, no teclear: sale de mirar, no de asumir.
 
-NO HOY: DEBT-LIB-001 (extraer libs/flow-identity/) — su disparador son los adaptadores
-Suricata/Zeek, no el consumidor. ADR-054 (confianza bronce multi-nodo) sigue PENDIENTE.
+(3) CONSUMIDOR del engine (el grueso, SOLO tras resolver #1) — F1, aRGus únicamente:
+file_watch del bronce → clave HMAC desde etcd /secrets/<componente> (campo key, NO
+seed.hex) → parse_and_verify PRIMERO → [envelope que decida #1] → ZMQ al servidor.
+INVARIANTE (Mistral): parse_and_verify es el PRIMER paso; fila inválida/clave mala se
+DESCARTA antes de tocar Kuzu — una clave mala no corrompe el grafo.
+Deudas que aterrizan: DEBT-BRONZE-KEY-PROVISIONING-001 (P1, clave de etcd no seed.hex),
+DEBT-BRONZE-PROVISIONING-E2E-001 (P1, clave del mecanismo real en AMBOS lados).
+NOTA: el consumidor de aRGus es un RE-EMPAQUETADOR de lo que el sniffer ya produce —
+NO calcula features nuevas. F1 no pide medir nada que no se mida ya.
 
-PRIMER COMANDO — fotografiar el estado del consumidor antes de construir:
-vagrant ssh -c "ls -la /vagrant/correlation-engine/src /vagrant/correlation-engine/include/correlation_engine 2>/dev/null; echo '=== file_watch / avro / zmq / secrets presentes? ==='; grep -rn 'file_watch\|inotify\|avro\|Avro\|zmq\|parse_and_verify\|/secrets/' /vagrant/correlation-engine/ 2>/dev/null | head -40"
+NO HOY: DEBT-LIB-001 (extraer libs/flow-identity/) — disparador = adaptadores Suricata/Zeek,
+no el consumidor. ADR-054 (confianza bronce multi-nodo) sigue PENDIENTE de redacción.
+
+PRIMER COMANDO — resolver Pregunta Abierta #1 antes que nada:
+vagrant ssh -c "echo '=== SecurityEvent existe como message en algun .proto? ==='; grep -rn 'message SecurityEvent' /vagrant 2>/dev/null | head; echo '=== que mensaje/serializacion espera el engine al ingerir? ==='; grep -rn 'SecurityEvent\|NetworkSecurityEvent\|parse_and_verify\|avro\|Avro\|deserialize\|file_watch\|inotify\|/secrets/' /vagrant/correlation-engine/ 2>/dev/null | head -50"
 
 ───────────────────────────────────────────────────────────────────────────────
 INVARIANTES DURABLES (no re-litigar, no violar)
@@ -67,10 +133,14 @@ BRONCE / IDENTIDAD
   Reader valida HMAC ANTES de parsear (anti-tampering + detector de escritura a medias);
   fila inválida se DESCARTA, no lanza. col 17 = string simbólico (DetectorSource_Name()).
 - Clave HMAC del bronce = etcd /secrets/<componente> campo key. NO seed.hex.
+- event_id es NUESTRO, generado en el sniffer, determinista, único sobre el mismo input.
+  NUNCA derivado de algo que venga de fuera. Es el ancla de la dedup del engine.
 - flow_uid = hash(node_id ‖ community_id ‖ flow_start_window), BLAKE2b digest 32, calculado
   SERVER-SIDE en Kuzu (no en transporte). node_id = identidad opaca del PUNTO DE CAPTURA.
 - community_id = SHA1 Corelight; clave de correlación/join, NUNCA identidad. TODAS las variantes
   del sniffer deben poblarlo. compute_community_id() devuelve nullopt si proto ∉ {TCP6,UDP17}.
+- domain (NETWORK|HOST|HYBRID) = NATURALEZA de la señal; source_engine = QUIÉN la vio. Ortogonales.
+  NETWORK se une por community_id; HOST se ancla por host_key (Wazuh, señal de Andrés).
 - "Bronce PRESERVA, gold DECIDE": no aplanar la divergencia (DETECTOR_SOURCE_DIVERGENCE) al
   entrar en Kuzu (ADR-055 §3.5). Procedencia extremo a extremo.
 - Herramientas de tools/ son SUPLANTADORES FIELES del componente que imitan (ADR-055 §0): no
@@ -86,10 +156,13 @@ OPERATIVA
 ───────────────────────────────────────────────────────────────────────────────
 DÓNDE LEER MÁS (bajo demanda, no cargar todo)
 ───────────────────────────────────────────────────────────────────────────────
-- docs/BACKLOG.md → "Entradas DAY 177" (deudas + decisiones del día); deudas abiertas P0-P3.
-- docs/adr/ADR-055-inyectores-sinteticos.md → decisión completa (v1 BORRADOR).
-- docs/counsil/ADR-055-*.md y Consulta...DAY 177-*.md → las 8 respuestas para la fidelidad.
-- README.md → bloque <!-- DAY-STATUS --> (snapshot del día) + Hitos DAY 177.
+- docs/engineering_decisions/AdapterSpec v1 — ... .md → contrato de ingesta normativo (clave hoy).
+- proto/network_security.proto → message NetworkSecurityEvent (línea 569, campos 1-35).
+- docs/adr/ADR-046 V4 — Multi-Source Enriched Pipeline ... .md → §3.3/§3.8/§3.10/§3.11 (referenciado por AdapterSpec).
+- docs/BACKLOG.md → "Entradas DAY 177"; deudas abiertas P0-P3.
+- docs/adr/ADR-055-inyectores-sinteticos.md → decisión injectors (v1 BORRADOR).
+- docs/counsil/ADR-055-*.md → las 8 respuestas para la fidelidad de ADR-055.
+- README.md → bloque <!-- DAY-STATUS --> (snapshot) + Hitos DAY 177.
 - correlation-engine/ → reader (correlation_reader.{hpp,cpp}), flow_uid.hpp, schema/schema.cypher.
 - git log -- docs/continuity/PROMPT_CONTINUE_CLAUDE.md → prompts históricos de días anteriores.
 
