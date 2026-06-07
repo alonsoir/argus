@@ -1,5 +1,5 @@
 # aRGus NDR — BACKLOG
-*Última actualización: DAY 173 — 2026-06-02*
+*Última actualización: DAY 177 — 2026-06-07*
 
 ---
 
@@ -87,6 +87,52 @@
 ---
 
 
+## 🆕 Entradas DAY 177 — Bronce en forma final + injectors sellados (ADR-055 v1)
+
+> Origen: sesión DAY 177. Cierre del camino A/B de DAY 176 + reencuadre de ROWGAP.
+> Orden B-vs-A resuelto MIDIENDO (`test_correlation_roundtrip` es injector-independiente):
+> **B primero**. Decisiones alimentan **ADR-055 v1 (BORRADOR)** — 1ª pasada del Consejo cerrada.
+>
+> **Q1** (entrega) → sin mayoría 3/3/2; **arbitraje Alonso → solo instrumento** (el suplantador
+> no debe ser más fiable que el sniffer que imita; ADR-055 §0). **Q2** (realismo) → dos perillas
+> + semilla fija (8/8). **Q3** → ADR-055 absorbe todo (8/8). **Q4** → fix de proto NO es deuda,
+> es "completar A" (7/8). **Q5** → preservar divergencia, "no aplanar" en gold (8/8).
+>
+> **Sellos E2E (tráfico real):** col 17 simbólica en bronce (150 ML_PRIORITY + 9 DIVERGENCE) ·
+> node_id `synth-node-00` (102 filas) · community_id 0%→100% (159/159 `1:...=`).
+>
+> **Nota de numeración:** ADR-053 RESERVADO · ADR-054 PENDIENTE · ADR-055 = injectors/golden/entrega.
+
+### DEBT-INJECTOR-DELIVERY-METRIC-001 — Instrumento diff de conjuntos {enviados}/{escritos}
+**Severidad:** 🟢 P2 — aditivo, no toca comportamiento
+**Estado:** ABIERTO — DAY 177 (ADR-055 §3.3) · reemplaza el "fix" de ROWGAP
+El injector usa `send(dontwait)` igual que el sniffer real (fidelidad, ADR-055 §0). NO se
+añade maquinaria de entrega (a/b/c rechazadas). En su lugar, instrumentar la medida honesta:
+comparar el conjunto de `event_id` enviados (log del injector) con el conjunto escrito en
+bronce. Separa pérdidas de reenvíos sin ambigüedad — mismo gesto con el que se detectaron los
+gaps de features.
+**Test de cierre:** corrida sintética → `{enviados} \ {escritos}` reportado; pérdida y reenvío
+distinguibles. Aserto opcional de CI cuando el modo determinista lo exija.
+**Estimación:** 1 sesión.
+
+### DEBT-INJECTOR-PROTO-MIX-001 — Modo realistic con semilla fija (cobertura del discard path)
+**Severidad:** 🟢 P2 — no bloqueante
+**Estado:** ABIERTO — DAY 177 (ADR-055 §3.2, Consejo Q2 8/8)
+Hoy el benigno fuerza 100% TCP/UDP (determinista, bueno para CI) pero deja sin ejercitar el
+camino `compute_community_id() == nullopt → descarte`. Añadir modo `realistic` con semilla fija:
+fracción fija (~5%, p.ej. 5 ICMP de 100) de protocolos sin puertos, mismos `event_id` en cada
+corrida. Aserción: esos `event_id` NO aparecen en bronce. `{escritos} == {inyectados} \ {sin puertos}`.
+Default `deterministic` para no romper CI.
+**Test de cierre:** modo realistic → ICMP de semilla fija ausentes en bronce; conteo exacto verificable.
+**Estimación:** 1 sesión.
+
+### Fix proto benigno (DAY 177) — NO es deuda, es "completar A"
+El injector benigno ponía `protocol_number = rand_uint(1,255)` (~99% no-TCP/UDP →
+`compute_community_id() nullopt` → bronce a 0 filas), y además `protocol_number` y
+`protocol_name` no concordaban. Fix: coin flip `use_tcp` gobierna ambos. Es un bug de
+implementación corregido en el mismo ciclo, no deuda arquitectónica (Consejo Q4 7/8 + Alonso).
+Trazabilidad: comentario `DAY 177 (A)` en `tools/synthetic_sniffer_injector.cpp` + cita en el MR.
+
 ## 🆕 Entradas DAY 176 — Deudas del cableado de injectors + ADR-055
 
 > Origen: sesión DAY 176 (injectors sintéticos + community_id). Decisiones del Consejo
@@ -103,7 +149,7 @@
 
 ### DEBT-INJECTOR-NODEID-001 — node_id vacío en injector → flow_uid degenerado
 **Severidad:** 🔴 P0 — Alta
-**Estado:** ABIERTO — DAY 176 (Consejo 8/8, Q1)
+**Estado:** ✅ CERRADO — DAY 177 (synth-node-00 verificado E2E: 102 filas en bronce). Diseño en ADR-055 §3.1.
 **Componente:** `tools/synthetic_sniffer_injector.cpp` + resto de injectors
 El injector deja `node_id` (col 3 del contrato `correlation_v1`) vacío. Como
 `flow_uid = hash(node_id ‖ community_id ‖ flow_start_window)`, un `node_id` vacío
@@ -118,7 +164,7 @@ descartado por el correlation-engine antes de Kuzu.
 
 ### DEBT-INJECTOR-ROWGAP-001 — gap ~8 de 50 filas (no es community_id)
 **Severidad:** 🟡 P1 — bloqueante para conteo exacto en CI
-**Estado:** ABIERTO — DAY 176 (Consejo 8/8, Q2)
+**Estado:** ✅ REENCUADRADA y CERRADA como característica — DAY 177. No es pérdida de filas: `send(dontwait)` reproduce la entrega no-garantizada de ZMQ PUSH (síntoma bidireccional: pierde Y reenvía). Se INSTRUMENTA (DEBT-INJECTOR-DELIVERY-METRIC-001), no se corrige. Arbitraje Q1 / ADR-055 §3.3.
 **Componente:** `tools/synthetic_sniffer_injector.cpp` + `CorrelationWriter` (ml-detector)
 Con `--attack` aparece un gap de ~8 filas de 50; descartado que sea por `community_id`.
 Sospechosos: `dontwait` (no determinista — política NDR de no bloquear el loop de

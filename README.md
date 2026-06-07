@@ -36,23 +36,25 @@
 
 ---
 
-## Estado actual — DAY 173 (2026-06-02)
+## Estado actual — DAY 177 (2026-06-07)
 
 <!-- DAY-STATUS -->
 | Campo | Valor |
 |---|---|
-| DAY | 173 |
+| DAY | 177 |
 | Tag | v1.0.0-day166 |
 | Branch | feature/day170-community-id-protobuf |
 | EMECAS++ OSS | ✅ verde — test-all + test-e2e-synthetic-full + test-e2e-synthetic-firewall |
 | EMECAS++ Enterprise | ✅ VERDE — 3 actos + Jenkins gate (DAY 167) |
 | Pipeline | 6/6 RUNNING |
 | NTP/chrony | ✅ DEBT-ARGUSPP-NTP-001 — health-check rechaza offset >1s (DAY 167) |
+| Bronce correlation_v1 | ✅ cableado E2E (DAY 175) · col 17 → string simbólico SELLADO en bronce real (DAY 177) |
+| Injectors sintéticos | ✅ community_id 100% isomorfo · node_id `synth-node-00` (DEBT-INJECTOR-NODEID-001 cerrada, DAY 177) |
 | correlation-engine | 🟡 scaffold ADR-048 F2 (DAY 167) |
 | Multi-VM | ✅ Suricata 7.0.10 + Zeek 8.2.0 + Wazuh 4.x en 192.168.100.0/24 (DAY 168) |
 | community_id | ✅ paridad OPERACIONAL cross-sensor — cross-check E2E reproducible (DAY 171/172) |
-| Arquitectura | ✅ ADR-046 v4 + AdapterSpec v1 · ✅ ADR-052 v3.2 RATIFICADA · ✅ ADR-051 v2.2 RATIFICADA (Community ID Parity Gate, 8/8 DAY 173) · ⏳ ADR-050 (MITRE) + ADR-053 (JA3/JA4/BGP) pendientes |
-| Próximo hito | DEBT-NEO4J-FLOW-KEY-001 (esquema Neo4j) → correlation-engine. ADR-051/052 ratificados y archivados |
+| Arquitectura | ✅ ADR-046 v4 + AdapterSpec v1 · ✅ ADR-052 v3.2 · ✅ ADR-051 v2.2 · 🟡 ADR-055 v1 BORRADOR (injectors/golden/entrega) · ⏳ ADR-050 (MITRE) + ADR-053 (JA3/JA4/BGP) + ADR-054 (confianza bronce) |
+| Próximo hito | ADR-055 confirmación de fidelidad (Consejo) · lado consumidor del engine (file_watch → parse_and_verify → Avro → ZMQ) |
 | Gate UEx/INCIBE | Datasets de valor científico (no deadline duro) |
 <!-- /DAY-STATUS -->
 
@@ -75,6 +77,15 @@
   - **DEBT-CRYPTO-RECONCILIATION-001 CERRADA + STALENESS GUARD (B1 post-Consejo)** — `AutonomySubscriber`: `shared_ptr<atomic<FirewallAutonomyMode>>` + `shared_ptr<atomic<int64_t>>` (last_update_ns). `poll_callback`: si `elapsed > staleness_timeout_sec` → NORMAL + log. Previene firewall congelado si etcd-server muere silenciosamente. 9/9 tests (T9: staleness guard).
   - **Consejo 8/8 consultado** — Dos bloqueantes identificados y resueltos antes del merge: B1 (staleness) + B2 (ExecStartPre= vs ExecStartPost= para fichero efímero, pendiente DAY 158).
   - **EMECAS DAY 157 VERDE** — `vagrant destroy → up → make bootstrap → make test-all` — TODO VERDE.
+
+### Hitos DAY 177 🎉
+- **Contrato bronce `correlation_v1` en forma final + injectors sellados E2E.** Tres cambios verificados sobre tráfico real (`make pipeline-start` + `make test-e2e-synthetic-full`):
+  - **(B) col 17 `authoritative_source` → string simbólico.** `DetectorSource_Name()` en el writer; el reader almacena string (engine limpio de protobuf, decisión DAY 174 #5). Round-trip unitario verde + bronce real con `150 DETECTOR_SOURCE_ML_PRIORITY` + `9 DETECTOR_SOURCE_DIVERGENCE`. Orden B-vs-A resuelto MIDIENDO (`test_correlation_roundtrip` es injector-independiente) — "medir, no votar".
+  - **node_id sintético — DEBT-INJECTOR-NODEID-001 CERRADA (P0).** Isomorfo `synth-node-00` fijo, mock `synth:node:<id>`. `flow_uid` ya no degenera. 102 filas `synth-node-00` en bronce.
+  - **Proto benigno correlacionable (hallazgo de hoy, NO deuda — "completar A").** El injector ponía `protocol_number=rand[1,255]` → ~99% no-TCP/UDP → `compute_community_id() nullopt` → bronce a 0 filas. Fix: coin flip `use_tcp` gobierna number+name (antes divergían). community_id 0%→100% (159/159 `1:...=`).
+  - **DEBT-INJECTOR-ROWGAP-001 REENCUADRADA y cerrada como característica.** No es "se pierden filas": el `send(dontwait)` reproduce fielmente la semántica de entrega no-garantizada de ZMQ PUSH (síntoma bidireccional — observados 2 `event_id` duplicados con `community_id` distinto). Decisión Q1 (arbitraje Alonso vs mayoría del Consejo): INSTRUMENTAR (diff de conjuntos), no re-arquitecturar — el suplantador no debe ser más fiable que el sniffer que imita (ADR-055 §0).
+  - **ADR-055 v1 BORRADOR** (Inyectores Sintéticos: fidelidad, determinismo, entrega) — incorpora 1ª pasada del Consejo. Pendiente confirmación de fidelidad sobre la anulación de árbitro en Q1.
+  - **Consejo 8/8 (1ª pasada):** ratificaciones 8/8 · Q2 dos perillas + semilla fija · Q3 ADR-055 absorbe · Q4 no DEBT para proto (7/8) · Q5 preservar divergencia + "no aplanar" en gold. Q1 sin mayoría (3/3/2) → arbitraje. Deudas nuevas: DEBT-INJECTOR-DELIVERY-METRIC-001 (P2), DEBT-INJECTOR-PROTO-MIX-001 (P2).
 
 ### Hitos DAY 175 🎉
 - **Zona bronce `correlation_v1` CABLEADA y verificada E2E.** El `CorrelationWriter`
