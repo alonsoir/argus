@@ -276,3 +276,7 @@ output.md
 *.bak.[0-9]*-[0-9]*
 *.bak-*
 tools/build/
+
+# Herramientas de un solo uso DAY 177 (apply/verify) — no entran en el repo
+apply_day177_*.py
+verify_day177_*.py
