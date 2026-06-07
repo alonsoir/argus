@@ -1,218 +1,97 @@
 ═══════════════════════════════════════════════════════════════════════════════
-ARRANQUE DAY 177 — LEER ESTO PRIMERO (encima del prompt DAY 175 histórico).
+ARRANQUE DAY 178 — aRGus NDR · branch feature/day170-community-id-protobuf
 ═══════════════════════════════════════════════════════════════════════════════
-DAY 176 trabajó los injectors sintéticos que pueblan community_id (camino a un bronce
-determinista en CI). De ahí salieron 4 deudas nuevas y las decisiones del Consejo que
-alimentan ADR-055.
+Prompt LEAN a propósito: estado + dos frentes + primer comando + invariantes.
+El detalle vive en el repo (ver "DÓNDE LEER MÁS"). La cola histórica de días
+anteriores está en git log de este fichero, no aquí.
 
-PRIMER COMANDO DAY 177 — comando 0: resolver el ORDEN (B-vs-A) con datos, no intuición.
-¿test_correlation_roundtrip usa filas del injector o de referencia propias? Según eso se
-decide si va primero (B) el cambio de col 17 a string simbólico, o (A) los injectors.
-NO se decide por voto (Q3: "medir, no votar").
+───────────────────────────────────────────────────────────────────────────────
+QUÉ CERRÓ DAY 177 (hecho y commiteado — NO repetir)
+───────────────────────────────────────────────────────────────────────────────
+Lado PRODUCTOR del bronce en forma final + injectors sellados E2E. 3 commits.
+- (B) col 17 authoritative_source → string simbólico. DetectorSource_Name() en el
+  writer; reader almacena string; engine LIMPIO de protobuf. Round-trip verde +
+  bronce real: 150 ML_PRIORITY + 9 DIVERGENCE (strings). Orden B-vs-A resuelto
+  MIDIENDO: test_correlation_roundtrip es injector-independiente → B fue antes.
+- node_id sintético — DEBT-INJECTOR-NODEID-001 CERRADA. Isomorfo synth-node-00 fijo;
+  mock synth:node:<id>. flow_uid ya no degenera (102 filas synth-node-00 en bronce).
+- Proto benigno (hallazgo, NO deuda — "completar A"): el injector ponía protocol_number
+  aleatorio → ~99% no-TCP/UDP → compute_community_id() nullopt → bronce a 0 filas. Fix:
+  coin flip use_tcp gobierna number+name. community_id 0%→100% (159/159 "1:...=").
+- DEBT-INJECTOR-ROWGAP-001 REENCUADRADA y cerrada como característica: send(dontwait)
+  reproduce fielmente la entrega no-garantizada de ZMQ PUSH (bidireccional). Q1 arbitraje
+  Alonso vs mayoría Consejo → INSTRUMENTAR, no re-arquitecturar (ADR-055 §0).
+- Deudas nuevas (P2, no bloqueantes): DEBT-INJECTOR-DELIVERY-METRIC-001 (diff de conjuntos
+  {enviados}/{escritos}, reemplaza el "fix" de ROWGAP) · DEBT-INJECTOR-PROTO-MIX-001 (modo
+  realistic con semilla fija + aserción de ausencia en bronce; default deterministic).
 
-  vagrant ssh -c "grep -rn 'synthetic\|inject\|create_synthetic\|hardcod\|reference\|expected\|fixture' /vagrant/ml-detector/tests/integration/test_correlation_roundtrip* 2>/dev/null; echo '=== como construye las filas ==='; sed -n '1,60p' /vagrant/ml-detector/tests/integration/test_correlation_roundtrip.cpp 2>/dev/null"
+───────────────────────────────────────────────────────────────────────────────
+DOS FRENTES DAY 178
+───────────────────────────────────────────────────────────────────────────────
+(1) CERRAR ADR-055 — confirmación de FIDELIDAD (barato, primero).
+Las 8 respuestas ya están en docs/counsil/ADR-055-*.md. NO es re-deliberación:
+verificar que ADR-055 v1 refleja el consenso y deja clara la anulación de árbitro
+en Q1 (solo instrumento). Si hay consenso → BORRADOR → ratificada (1 línea en
+ADR-055 + BACKLOG Estado + README DAY-STATUS). Si hay objeción → registrarla, NO ratificar.
 
-DEUDAS NUEVAS DAY 176 (detalle en docs/BACKLOG.md → "Entradas DAY 176"):
-- DEBT-INJECTOR-NODEID-001 (P0 Alta): el injector deja node_id (col 3) vacío → flow_uid
-  degenerado. Fix: node_id sintético por eje de modo. Q1 → isomorfo usa `synth-node-00`;
-  mock usa `synth:node:<id>`.
-- DEBT-INJECTOR-ROWGAP-001 (P1, bloqueante CI): gap ~8 de 50 incluso en --attack; NO es
-  community_id. Sospechosos: `dontwait` (no determinista) o threshold del CorrelationWriter
-  (determinista). Q2 → perseguir con todos los métodos.
-- DEBT-LIB-001 (P1): extraer flow/community_id a libs/flow-identity/. Prereq de adaptadores
-  Suricata/Zeek. Refactor mecánico. Q5 → es prerrequisito.
-- DEBT-STRESS-BRONZE-001 (P2, no bloqueante): estrés CorrelationWriter (10 threads × 10K;
-  asserts conteo + 18 comas + HMAC). Q4 → no bloqueante.
+(2) LADO CONSUMIDOR del engine (el grueso) — desbloqueado porque el contrato bronce ya
+está en forma final:
+file_watch del bronce → clave HMAC desde etcd /secrets/<componente> (campo key,
+NO seed.hex) → parse_and_verify PRIMERO → Avro → ZMQ al servidor.
+INVARIANTE (riesgo Mistral): parse_and_verify es el PRIMER paso; fila inválida / clave
+mala se DESCARTA antes de tocar Kuzu — una clave mala no corrompe el grafo.
+Deudas que aterrizan aquí: DEBT-BRONZE-KEY-PROVISIONING-001 (P1, clave de etcd no seed.hex)
+y DEBT-BRONZE-PROVISIONING-E2E-001 (P1, el test obtiene la clave del mecanismo real en
+AMBOS lados, no hardcodeada).
 
-DECISIONES DEL CONSEJO (8/8) → ADR-055 (pendiente de redacción):
-- Q1: node_id sintético `synth-node-00` (isomorfo).
-- Q2: perseguir el gap de filas con todos los métodos.
-- Q3: medir el golden ANTES de decidir el orden B-vs-A. Voto dividido (ChatGPT 1 vs 7)
-  resuelto por "medir, no votar".
-- Q4: prueba de estrés no bloqueante.
-- Q5: extraer la lib (DEBT-LIB-001) como prerrequisito de los adaptadores.
-NUMERACIÓN: ADR-053 RESERVADO (JA3/JA4 + TLS + BGP) · ADR-054 PENDIENTE (modelo de
-confianza bronce multi-nodo Ed25519/HMAC) · ADR-055 = estas decisiones de injectors/golden/lib.
+NO HOY: DEBT-LIB-001 (extraer libs/flow-identity/) — su disparador son los adaptadores
+Suricata/Zeek, no el consumidor. ADR-054 (confianza bronce multi-nodo) sigue PENDIENTE.
 
-(El prompt DAY 175 completo queda intacto debajo, como histórico.)
+PRIMER COMANDO — fotografiar el estado del consumidor antes de construir:
+vagrant ssh -c "ls -la /vagrant/correlation-engine/src /vagrant/correlation-engine/include/correlation_engine 2>/dev/null; echo '=== file_watch / avro / zmq / secrets presentes? ==='; grep -rn 'file_watch\|inotify\|avro\|Avro\|zmq\|parse_and_verify\|/secrets/' /vagrant/correlation-engine/ 2>/dev/null | head -40"
 
+───────────────────────────────────────────────────────────────────────────────
+INVARIANTES DURABLES (no re-litigar, no violar)
+───────────────────────────────────────────────────────────────────────────────
+BUILD / ENTORNO
+- Construir SIEMPRE vía `make <target>` (corre dep proto, .pb.h fresco, -Werror del Makefile).
+  NUNCA `cmake -S . -B build` directo → compila contra .pb.h rancio.
+- Recetas make desde el HOST macOS; NO envolver en `vagrant ssh -c` (el Makefile ya lo hace
+  por dentro donde toca). Todo lo demás vía `vagrant ssh -c` (siempre con -c).
+- macOS es anfitrión; eBPF/XDP y el build son Linux-only (guest Debian). NUNCA cmake en el host.
+- macOS: nunca `sed -i` sin `-e ''`; usar heredoc Python3. Scripts: sin git, sin auto-commit.
+- Dos commits/día separados: código y docs. EMECAS = vagrant destroy -f && up && bootstrap && test-all.
 
-# DAY 175 — Zona bronce correlation_v1 cableada + verificada E2E. Prompt de continuidad.
+BRONCE / IDENTIDAD
+- Contrato correlation_v1: 19 columnas, sin header, HMAC-SHA256 por fila sobre cols 0-17.
+  Reader valida HMAC ANTES de parsear (anti-tampering + detector de escritura a medias);
+  fila inválida se DESCARTA, no lanza. col 17 = string simbólico (DetectorSource_Name()).
+- Clave HMAC del bronce = etcd /secrets/<componente> campo key. NO seed.hex.
+- flow_uid = hash(node_id ‖ community_id ‖ flow_start_window), BLAKE2b digest 32, calculado
+  SERVER-SIDE en Kuzu (no en transporte). node_id = identidad opaca del PUNTO DE CAPTURA.
+- community_id = SHA1 Corelight; clave de correlación/join, NUNCA identidad. TODAS las variantes
+  del sniffer deben poblarlo. compute_community_id() devuelve nullopt si proto ∉ {TCP6,UDP17}.
+- "Bronce PRESERVA, gold DECIDE": no aplanar la divergencia (DETECTOR_SOURCE_DIVERGENCE) al
+  entrar en Kuzu (ADR-055 §3.5). Procedencia extremo a extremo.
+- Herramientas de tools/ son SUPLANTADORES FIELES del componente que imitan (ADR-055 §0): no
+  hacerlas más fiables que el componente real; propagación bidireccional.
 
-═══════════════════════════════════════════════════════════════════════════════
-ARRANQUE DAY 176 — LEER ESTO PRIMERO.
-═══════════════════════════════════════════════════════════════════════════════
-DAY 175 cerró el cableado del bronce: el CorrelationWriter (ml-detector) produce
-correlation_v1 REAL, consumible por el reader del correlation-engine. 4 pasos verdes
-(CMake + hook punto único + round-trip unitario + pipeline vivo: 3712 filas reales
-con community_id, una validada con la clave de PRODUCCIÓN de etcd).
+OPERATIVA
+- Limpiar bronce SIEMPRE con el ml-detector parado (borrar en caliente deja inode huérfano →
+  filas perdidas). Secuencia: tmux kill-session → rm CSV → make ml-detector-start.
+- El injector necesita: sudo env LD_LIBRARY_PATH=/usr/local/lib (lee seed.bin 0400 + .so instaladas).
+- Consejo de Sabios = 8 modelos (Claude, ChatGPT, DeepSeek, Gemini, Grok, Kimi, Mistral, Qwen).
+  Principio: "medir, no votar".
 
-DOS BATALLAS DAY 176, ninguna bloqueada por lo de hoy:
+───────────────────────────────────────────────────────────────────────────────
+DÓNDE LEER MÁS (bajo demanda, no cargar todo)
+───────────────────────────────────────────────────────────────────────────────
+- docs/BACKLOG.md → "Entradas DAY 177" (deudas + decisiones del día); deudas abiertas P0-P3.
+- docs/adr/ADR-055-inyectores-sinteticos.md → decisión completa (v1 BORRADOR).
+- docs/counsil/ADR-055-*.md y Consulta...DAY 177-*.md → las 8 respuestas para la fidelidad.
+- README.md → bloque <!-- DAY-STATUS --> (snapshot del día) + Hitos DAY 177.
+- correlation-engine/ → reader (correlation_reader.{hpp,cpp}), flow_uid.hpp, schema/schema.cypher.
+- git log -- docs/continuity/PROMPT_CONTINUE_CLAUDE.md → prompts históricos de días anteriores.
 
-(A) INJECTORS SINTÉTICOS pueblan community_id — AMBOS modos (decisión Alonso, Q1):
-    1. ISOMORFO REALISTA: calcular community_id con la MISMA función que el sniffer
-       real (sniffer::flow::compute_community_id), NO reimplementación. Empezar por
-       tools/synthetic_sniffer_injector.cpp (alimenta el camino que hoy ejercita el
-       bronce). Sin esto, los E2E sintéticos NO ejercitan el bronce (community_id
-       vacío -> el hook lo descarta).
-    2. MOCK AUTO-IDENTIFICABLE: formato distinguible (estilo "synth:test:hash") para
-       no contaminar análisis con tráfico falso. El correlation-engine lo descarta
-       antes de Kuzu.
-    -> Esto desbloquea bronce DETERMINISTA en CI (hoy dependemos de pcap+eBPF, caro y
-       no determinista).
-
-(B) CAMBIO col 17 a STRING simbólico (decisión Alonso, Q2):
-    - correlation_writer.cpp: escribir DetectorSource_Name() en vez de
-      static_cast<int>. Reader (correlation_record.hpp) lee string.
-    - Motivo: contrato auto-descriptivo, estable frente a evolución del enum en el
-      .proto. Coste de tamaño irrelevante (dictionary-encoding Parquet aguas arriba).
-    - Es el momento más barato: primer día con bronce real (las 3712 filas son de
-      prueba, no histórico de valor).
-
-(C) LADO CONSUMIDOR del engine (cuando toque): file_watch de bronce -> lectura de
-    clave desde etcd /secrets/<componente> -> parse_and_verify -> Avro -> ZMQ.
-    Aquí aterriza DEBT-BRONZE-KEY-PROVISIONING-001. parse_and_verify debe ser el
-    PRIMER paso del consumidor (validar antes de tocar Kuzu) — riesgo señalado por
-    Mistral: clave mala corrompe el grafo.
-
-PENDIENTE DE REDACCIÓN — ADR-054 (modelo de confianza bronce multi-nodo, Q3):
-    HMAC simétrico vale intra-nodo; no escala a N sensores -> Kuzu central. Explorar
-    Ed25519 (ya en uso, ADR-025) CON o EN VEZ DE HMAC. Eje de decisión: coste CPU/RAM
-    del central validando fila por fila con Ed25519 sobre cientos/miles de ficheros
-    bronce. Opción jerárquica (Kimi): Ed25519 firma clave de sesión HMAC corta;
-    HMAC valida el volumen. Flujo borrador -> Consejo -> aprobación, ANTES del lado
-    consumidor cross-nodo. (OJO numeración: ADR-053 ya RESERVADO para JA3/JA4+TLS+BGP.)
-
-LECCIONES DAY 175 (no repetir):
-- STALE PROTO: construir SIEMPRE vía `make <target>` (corre dep `proto`, regenera y
-  distribuye network_security.pb.h fresco a build-debug/proto/, aplica -Werror del
-  Makefile). NUNCA `cmake -S . -B build` directo -> compila contra .pb.h rancio y
-  rompe confuso (incidente DAY 175: "NetworkFeatures has no member community_id").
-- KEY PROVISIONING: la clave HMAC del bronce NO es seed.hex, es la de etcd
-  /secrets/<componente> (campo key). El round-trip con clave hardcodeada valida el
-  contrato pero OCULTA el provisioning. El consumidor en prod DEBE pedirla a etcd.
-- INVARIANTE community_id: TODAS las variantes del sniffer (x86/ARM, eBPF/libpcap,
-  special/plain) DEBEN poblar community_id — es el punto de unión con Suricata/Zeek.
-
-PRIMER COMANDO DAY 176:
-vagrant ssh -c "grep -rn 'community_id\|compute_community_id\|set_community_id' /vagrant/tools/synthetic_sniffer_injector.cpp"
-# confirmar que el injector NO puebla community_id hoy, y localizar dónde sellar la
-# 5-tupla para invocar compute_community_id. Luego (A) modo isomorfo -> mock -> (B).
-
-═══════════════════════════════════════════════════════════════════════════════
-RESUMEN DAY 175 — Bronce cableado (los 4 pasos)
-═══════════════════════════════════════════════════════════════════════════════
-Día de cableado y verificación, no de ADR. El CorrelationWriter pasó de suelto a
-cableado y produciendo bronce real consumible.
-
-PASO 1 — CMake: correlation_writer.cpp dado de alta en SOURCES del ml-detector
-  (lista explícita, no GLOB). OpenSSL ya linkado por CsvEventWriter.
-PASO 2 — Hook punto único: correlation_writer_ construido junto a csv_writer_ en
-  zmq_handler, reutilizando el MISMO hmac_key_hex_ (cero divergencia de clave por
-  construcción). write_record() cableado ANTES de la bifurcación rag/no-rag (NO
-  dentro del if rag/csv) — evita el "bug de los dos caminos". Filtro:
-  if (correlation_writer_ && !community_id().empty()).
-PASO 3 — Round-trip unitario (prueba de oro): test_correlation_roundtrip en
-  ml-detector/tests/integration/. Escribe NetworkSecurityEvent con CorrelationWriter
-  REAL, relee última línea, parse_and_verify REAL del engine. 18 campos + HMAC.
-  El test vive en ml-detector (ya linka protobuf/OpenSSL) e incluye el reader del
-  engine, NO al revés — el correlation-engine se mantiene limpio de protobuf.
-  Gateado contra rebuild limpio (make ml-detector && make test-components). PASSED.
-PASO 4 — Pipeline vivo: replay smallFlows.pcap (14261 paquetes, 1209 flujos).
-  3712 filas reales en /vagrant/logs/correlation/argus/2026-06-05.csv, todas con
-  community_id poblado por el sniffer eBPF (formato 1:wKZ...=). Sello final: una
-  fila REAL validada por parse_and_verify con la clave de PRODUCCIÓN de etcd
-  (/secrets/ml-detector campo key) — NO seed.hex.
-
-DECISIONES DEL CONSEJO (8/8 respondieron):
-- Q1 injectors primero (unánime) -> AMBOS modos (Alonso).
-- Q2 col 17 -> STRING simbólico (Alonso; statu quo rechazado por consenso).
-- Q3 abrir ADR-054 modelo de confianza Ed25519 con/en-vez-de HMAC (Alonso).
-DEUDAS NUEVAS: DEBT-BRONZE-KEY-PROVISIONING-001, DEBT-BRONZE-PROVISIONING-E2E-001.
-
-═══════════════════════════════════════════════════════════════════════════════
-RESUMEN DAY 174 (histórico)
-═══════════════════════════════════════════════════════════════════════════════
-═══════════════════════════════════════════════════════════════════════════════
-Día de construcción, no de ADR. Nació el correlation-engine como componente C++20 sobre Debian.
-Se diseñó la arquitectura lambda/medallion de correlación, se eligió el motor de grafo, y se escribió
-el primer eslabón de la zona bronce (writer en ml-detector) + su consumidor (reader en correlation-engine).
-Todo verde y verificado.
-
-## Decisiones de arquitectura (cerradas)
-
-1. flow_uid se calcula en el lado servidor (Kuzu), NO en el transporte. Hash de
-   node_id || community_id || flow_start_window. Encoding canónico: length-prefix, tag de versión
-   "argus-flowuid-v1", seq_in_window siempre presente. BLAKE2b (libsodium), digest_size=32 OBLIGATORIO.
-
-2. node_id = NetworkSecurityEvent.originating_node_id (campo 3), poblado por el sniffer desde config_.node_id.
-   Identidad opaca del PUNTO DE CAPTURA (sensor), no de la organización.
-
-3. Motor de grafo: Kuzu v0.11.3 vendoreado (embebido, Cypher, C++, MIT, Parquet nativo). Tras un IGraphSink
-   con contrato Cypher (patrón ICryptoProvider) para ser sustituible (LadybugDB si Kuzu se depreca del todo).
-   Kuzu archivado 2025-10; riesgo asumido conscientemente.
-    - Consecuencia: PRIMARY KEY(flow_uid) da dedup + obligatoriedad NATIVOS. Desaparece el split
-      Community/Enterprise de Neo4j. node_id obligatorio pasa a invariante de engine (Kuzu 0.11.3 no tiene
-      NOT NULL en no-PK ni PK compuesta). flow_uid único por construcción → PK simple = dedup compuesto.
-
-4. Arquitectura lambda / medallion para escala (miles de nodos: hospitales, ayuntamientos, pymes; España→Europa).
-    - Bronce: registro mínimo CSV correlation_v1 por componente (replayable).
-    - Transporte: Avro (row-oriented, optimizado para transmisión distribuida).
-    - Plata: Parquet por fichero/fuente. Gold: Parquet con el join hecho.
-    - El JOIN cross-sensor ocurre en Kuzu por community_id, NO casando ficheros en el sensor
-      (timestamps no comparables, hallazgo DAY 172).
-
-5. Un contrato, una responsabilidad. El CSV de 127 columnas del RAG (csv_event_writer v1.0) queda INTACTO.
-   El registro de correlación es OTRO fichero/contrato/directorio (/vagrant/logs/correlation/argus/).
-
-6. Bronce PRESERVA, gold DECIDE. El registro lleva los 4 scores + authoritative_source; Kuzu elige la
-   confianza de la :Alert con todas las señales (aRGus hoy; Suricata/Zeek/Wazuh mañana).
-
-7. NO se parte el contrato protobuf todavía. Cambio de máximo radio (6 componentes); se aplaza hasta
-   estabilizar, con su propio ADR + EMECAS.
-
-## Entregables verificados (verdes)
-
-### ml-detector (productor) — PENDIENTE DE INTEGRAR (ver ARRANQUE DAY 175)
-- correlation_writer.hpp + .cpp — escribe correlation_v1 (19 cols + HMAC). Patrón del CsvEventWriter
-  (HMAC OpenSSL, rotación fecha+tamaño, append no-atómico, thread-safe). Descarta community_id vacío.
-  Compilado + smoke test verde CONTRA STUBS del proto.
-
-### correlation-engine (consumidor) — árbol completo, VERDE en el guest
-- flow_uid.hpp — flow_uid canónico, vectores verdes.
-- correlation_record.hpp — struct del contrato correlation_v1.
-- correlation_reader.{hpp,cpp} — valida HMAC (tiempo constante) + parsea; descarta tampering, truncado,
-  col count erróneo, no numérico. 6 casos de test verdes.
-- schema/schema.cypher — esquema Kuzu, verificado (carga, idempotencia, dedup sobre vectores reales).
-- CMakeLists alineado con convenciones del proyecto (LIBSODIUM pkg-config, nlohmann fallback header-only
-  a ../third_party/json/include, OpenSSL, GoogleTest). TODO COMPILA EN EL GUEST DEBIAN, nunca en macOS host.
-
-## Contrato correlation_v1 (19 columnas, sin header, validación por fila)
-0 schema_version · 1 source_sensor · 2 event_id · 3 node_id · 4 community_id (clave join) ·
-5 flow_start_sec · 6 flow_start_nano · 7 src_ip · 8 dst_ip · 9 src_port · 10 dst_port ·
-11 protocol · 12 final_classification · 13 threat_category · 14 fast_detector_score ·
-15 ml_detector_score · 16 overall_threat_score · 17 authoritative_source · 18 HMAC-SHA256(cols 0-17)
-
-## Frontera de confianza de bronce
-El writer escribe append NO-atómico. El reader valida HMAC ANTES de parsear: una fila truncada
-(escritura a medias) o manipulada (tampering) no valida y se DESCARTA, no lanza. El HMAC por fila
-es a la vez anti-tampering y detector de escritura-a-medias. Comparación de HMAC en tiempo constante.
-
-## Deudas abiertas (no bloqueantes)
-- DEBT-NODEID-CRYPTO-IDENTITY-001: node_id = UUID opaco generado en aprovisionamiento, fijado en
-  deployment.yaml (inventario firmado, rellenado vía Jinja2 al config.json de cada componente). Atributos
-  mutables (organización, tipo, país, dirección) como propiedades de un nodo :Node en el grafo, NUNCA dentro
-  del id (lección: Hospital Infanta Cristina → Universitario sin partir la historia del nodo). Lo que importa
-  es la GOBERNANZA de la unicidad global, no el tipo.
-- firewall-acl-agent: su BlockedEvent y el mensaje proto Detection no llevan community_id. Requiere campo
-  aditivo en proto para correlacionar. Entra como ENRIQUECIMIENTO ("flujo bloqueado"), no espina dorsal.
-- Suricata/Zeek/Wazuh: adaptadores a correlation_v1 desde eve.json / conn.log / alerts. Otra batalla.
-- IGraphSink + backend libkuzu: el sink Cypher en src/ del correlation-engine, con test que inserte
-  vectores y reproduzca en C++ real el dedup probado hoy en Python (binding Kuzu, solo banco de pruebas).
-- Lado Avro/transporte del correlation-engine: file_watch de bronce → conversión Avro → ZMQ al servidor.
-
-## Entorno y reglas vigentes
-- TODO compila en el guest Debian (eBPF/XDP es Linux-only). macOS = anfitrión. NUNCA cmake en el host
-  sobre este repo (contamina CMakeCache.txt por el montaje /vagrant compartido → rm -rf build).
-- vagrant ssh siempre con -c. -Werror invariante. Python3 heredoc en macOS (nunca sed -i sin -e '').
-- Kuzu como banco de pruebas se usó vía binding Python en sandbox; PRODUCCIÓN es C++ embebiendo libkuzu.
+NUMERACIÓN ADR: 053 RESERVADO (JA3/JA4 + TLS + BGP) · 054 PENDIENTE (confianza bronce
+multi-nodo Ed25519/HMAC) · 055 = injectors/golden/entrega (v1 BORRADOR, ratificable hoy).
