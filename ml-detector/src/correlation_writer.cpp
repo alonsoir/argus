@@ -116,7 +116,7 @@ std::string CorrelationWriter::build_row(const protobuf::NetworkSecurityEvent& e
        << ',' << fmt_double(event.fast_detector_score())     // 14
        << ',' << fmt_double(event.ml_detector_score())       // 15
        << ',' << fmt_double(event.overall_threat_score())    // 16
-       << ',' << static_cast<int>(event.authoritative_source()); // 17 enum DetectorSource
+       << ',' << csv_string(protobuf::DetectorSource_Name(event.authoritative_source())); // 17 enum DetectorSource (string simbolico)
     return ss.str();
 }
 

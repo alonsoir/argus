@@ -97,7 +97,7 @@ std::optional<CorrelationRecord> parse_and_verify(const std::string& line,
     if (!parse_double(f[14], r.fast_detector_score))  return std::nullopt;
     if (!parse_double(f[15], r.ml_detector_score))    return std::nullopt;
     if (!parse_double(f[16], r.overall_threat_score)) return std::nullopt;
-    if (!parse_num(f[17], r.authoritative_source))    return std::nullopt;
+    r.authoritative_source = f[17];
     return r;
 }
 

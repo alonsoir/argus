@@ -122,7 +122,7 @@ TEST(CorrelationRoundTrip, WriterToReader) {
     EXPECT_DOUBLE_EQ(rec->fast_detector_score,  0.91);
     EXPECT_DOUBLE_EQ(rec->ml_detector_score,    0.87);
     EXPECT_DOUBLE_EQ(rec->overall_threat_score, 0.89);
-    EXPECT_EQ(rec->authoritative_source, 4);  // SELLO columna 17: enum DetectorSource como int
+    EXPECT_EQ(rec->authoritative_source, "DETECTOR_SOURCE_ML_PRIORITY");  // SELLO columna 17: simbolo DetectorSource
 
     fs::remove_all(base);
 }

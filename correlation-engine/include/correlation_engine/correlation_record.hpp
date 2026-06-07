@@ -26,7 +26,7 @@ namespace argus::correlation {
         double      fast_detector_score   = 0.0;  // 14
         double      ml_detector_score     = 0.0;  // 15
         double      overall_threat_score  = 0.0;  // 16
-        int         authoritative_source  = 0;    // 17  enum DetectorSource
+        std::string authoritative_source;  // 17  simbolo DetectorSource (string auto-descriptivo)
         // col 18 (HMAC) se valida, no se almacena.
     };
 
