@@ -36,12 +36,12 @@
 
 ---
 
-## Estado actual — DAY 177 (2026-06-07)
+## Estado actual — DAY 178 (2026-06-08)
 
 <!-- DAY-STATUS -->
 | Campo | Valor |
 |---|---|
-| DAY | 177 |
+| DAY | 178 |
 | Tag | v1.0.0-day166 |
 | Branch | feature/day170-community-id-protobuf |
 | EMECAS++ OSS | ✅ verde — test-all + test-e2e-synthetic-full + test-e2e-synthetic-firewall |
@@ -53,8 +53,8 @@
 | correlation-engine | 🟡 scaffold ADR-048 F2 (DAY 167) |
 | Multi-VM | ✅ Suricata 7.0.10 + Zeek 8.2.0 + Wazuh 4.x en 192.168.100.0/24 (DAY 168) |
 | community_id | ✅ paridad OPERACIONAL cross-sensor — cross-check E2E reproducible (DAY 171/172) |
-| Arquitectura | ✅ ADR-046 v4 + AdapterSpec v1 · ✅ ADR-052 v3.2 · ✅ ADR-051 v2.2 · 🟡 ADR-055 v1 BORRADOR (injectors/golden/entrega) · ⏳ ADR-050 (MITRE) + ADR-053 (JA3/JA4/BGP) + ADR-054 (confianza bronce) |
-| Próximo hito | ADR-055 confirmación de fidelidad (Consejo) · lado consumidor del engine (file_watch → parse_and_verify → Avro → ZMQ) |
+| Arquitectura | ✅ ADR-046 v4 + AdapterSpec v1 · ✅ ADR-052 v3.2 · ✅ ADR-051 v2.2 · ✅ ADR-055 v1 RATIFICADA con enmiendas de fidelidad (DAY 178) · ⏳ ADR-050 (MITRE) + ADR-053 (JA3/JA4/BGP) + ADR-054 (confianza bronce) |
+| Próximo hito | Lado consumidor del engine (F1): file_watch bronce → clave HMAC etcd /secrets → parse_and_verify PRIMERO → SecurityEvent (mapeo aRGus desde NetworkSecurityEvent, NO mensaje nuevo) → ZMQ |
 | Gate UEx/INCIBE | Datasets de valor científico (no deadline duro) |
 <!-- /DAY-STATUS -->
 
@@ -84,8 +84,8 @@
   - **node_id sintético — DEBT-INJECTOR-NODEID-001 CERRADA (P0).** Isomorfo `synth-node-00` fijo, mock `synth:node:<id>`. `flow_uid` ya no degenera. 102 filas `synth-node-00` en bronce.
   - **Proto benigno correlacionable (hallazgo de hoy, NO deuda — "completar A").** El injector ponía `protocol_number=rand[1,255]` → ~99% no-TCP/UDP → `compute_community_id() nullopt` → bronce a 0 filas. Fix: coin flip `use_tcp` gobierna number+name (antes divergían). community_id 0%→100% (159/159 `1:...=`).
   - **DEBT-INJECTOR-ROWGAP-001 REENCUADRADA y cerrada como característica.** No es "se pierden filas": el `send(dontwait)` reproduce fielmente la semántica de entrega no-garantizada de ZMQ PUSH (síntoma bidireccional — observados 2 `event_id` duplicados con `community_id` distinto). Decisión Q1 (arbitraje Alonso vs mayoría del Consejo): INSTRUMENTAR (diff de conjuntos), no re-arquitecturar — el suplantador no debe ser más fiable que el sniffer que imita (ADR-055 §0).
-  - **ADR-055 v1 BORRADOR** (Inyectores Sintéticos: fidelidad, determinismo, entrega) — incorpora 1ª pasada del Consejo. Pendiente confirmación de fidelidad sobre la anulación de árbitro en Q1.
-  - **Consejo 8/8 (1ª pasada):** ratificaciones 8/8 · Q2 dos perillas + semilla fija · Q3 ADR-055 absorbe · Q4 no DEBT para proto (7/8) · Q5 preservar divergencia + "no aplanar" en gold. Q1 sin mayoría (3/3/2) → arbitraje. Deudas nuevas: DEBT-INJECTOR-DELIVERY-METRIC-001 (P2), DEBT-INJECTOR-PROTO-MIX-001 (P2).
+  - **ADR-055 v1 RATIFICADA con enmiendas de fidelidad (DAY 178)** (Inyectores Sintéticos: fidelidad, determinismo, entrega) — 8/8 confirman lo sustantivo. Enmiendas: DELIVERY-METRIC P2→P1; objeción formal de Kimi a la anulación de Q1 aceptada bajo protesta (condición P1 satisfecha); Q4 se mantiene 7/8 (Kimi sostiene 8/8, no verificable, decisión idéntica).
+  - **Consejo 8/8 (1ª pasada):** ratificaciones 8/8 · Q2 dos perillas + semilla fija · Q3 ADR-055 absorbe · Q4 no DEBT para proto (7/8) · Q5 preservar divergencia + "no aplanar" en gold. Q1 sin mayoría (3/3/2) → arbitraje. Deudas nuevas: DEBT-INJECTOR-DELIVERY-METRIC-001 (P1, elevada DAY 178), DEBT-INJECTOR-PROTO-MIX-001 (P2).
 
 ### Hitos DAY 175 🎉
 - **Zona bronce `correlation_v1` CABLEADA y verificada E2E.** El `CorrelationWriter`

@@ -91,7 +91,11 @@
 
 > Origen: sesión DAY 177. Cierre del camino A/B de DAY 176 + reencuadre de ROWGAP.
 > Orden B-vs-A resuelto MIDIENDO (`test_correlation_roundtrip` es injector-independiente):
-> **B primero**. Decisiones alimentan **ADR-055 v1 (BORRADOR)** — 1ª pasada del Consejo cerrada.
+> **B primero**. Decisiones alimentan **ADR-055 v1 → RATIFICADA con enmiendas de fidelidad (DAY 178)**.
+> Confirmación 8/8 en lo sustantivo. Enmiendas: (a) DELIVERY-METRIC P2→P1; (b) objeción formal de
+> Kimi a la anulación de Q1, aceptada bajo protesta con su condición (P1) satisfecha; (c) Q4 se
+> mantiene 7/8 — Kimi sostiene que el voto de Claude fue 'no' desde el origen (→8/8), no verificable
+> contra el acta original; la decisión (no abrir deuda) es idéntica en ambas lecturas.
 >
 > **Q1** (entrega) → sin mayoría 3/3/2; **arbitraje Alonso → solo instrumento** (el suplantador
 > no debe ser más fiable que el sniffer que imita; ADR-055 §0). **Q2** (realismo) → dos perillas
@@ -104,8 +108,8 @@
 > **Nota de numeración:** ADR-053 RESERVADO · ADR-054 PENDIENTE · ADR-055 = injectors/golden/entrega.
 
 ### DEBT-INJECTOR-DELIVERY-METRIC-001 — Instrumento diff de conjuntos {enviados}/{escritos}
-**Severidad:** 🟢 P2 — aditivo, no toca comportamiento
-**Estado:** ABIERTO — DAY 177 (ADR-055 §3.3) · reemplaza el "fix" de ROWGAP
+**Severidad:** 🟡 P1 — aditivo, no toca comportamiento; sin él el modo `deterministic` no es determinista (100–102 filas)
+**Estado:** ABIERTO — DAY 178 (ADR-055 §3.3, elevado de P2 a P1 por objeción de fidelidad de Kimi, avalada por Mistral) · reemplaza el "fix" de ROWGAP
 El injector usa `send(dontwait)` igual que el sniffer real (fidelidad, ADR-055 §0). NO se
 añade maquinaria de entrega (a/b/c rechazadas). En su lugar, instrumentar la medida honesta:
 comparar el conjunto de `event_id` enviados (log del injector) con el conjunto escrito en

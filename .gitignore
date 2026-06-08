@@ -280,3 +280,6 @@ tools/build/
 # Herramientas de un solo uso DAY 177 (apply/verify) — no entran en el repo
 apply_day177_*.py
 verify_day177_*.py
+
+# Scripts de aplicacion de un solo uso (DAY 178) - no son entregables
+apply_day178_*.py

@@ -3,9 +3,9 @@
 | Campo | Valor |
 |---|---|
 | **ADR** | 055 |
-| **Versión** | **v1 (borrador)** — incorpora la 1ª pasada del Consejo (DAY 177) |
+| **Versión** | **v1 (ratificada DAY 178)** — 1ª pasada del Consejo (DAY 177) + confirmación de fidelidad (DAY 178) |
 | **Fecha** | DAY 177 (2026-06-07) |
-| **Estado** | BORRADOR — pendiente confirmación de fidelidad del Consejo sobre la anulación de árbitro en Q1 (semántica de entrega) |
+| **Estado** | **RATIFICADA con enmiendas de fidelidad (DAY 178)** — 8/8 confirman lo sustantivo. Enmiendas: DELIVERY-METRIC P2→P1; objeción formal de Kimi a la anulación de Q1 aceptada bajo protesta (condición P1 satisfecha); Q4 se mantiene 7/8 (Kimi sostiene 8/8, no verificable, decisión idéntica). Decisión final: Alonso. |
 | **Decisión final** | Alonso |
 | **Deliberación** | Consejo de Sabios (Claude, ChatGPT, DeepSeek, Gemini, Grok, Kimi, Mistral, Qwen) — 1ª pasada cerrada |
 | **Recoge** | Decisiones de injectors / golden de DAY 176–177 (camino A/B), y el reencuadre de DEBT-INJECTOR-ROWGAP-001 |
@@ -96,6 +96,10 @@ Implementación sugerida: env var / flag (`ARGUS_PROTO_MIX=deterministic|realist
 
 > **Nota de arbitraje (para confirmación de fidelidad).** La 1ª pasada del Consejo NO alcanzó mayoría en el *mecanismo*: (a)+(d) → Grok, Mistral, Claude; (b) → Gemini, Qwen, Kimi; (a)+(b) → ChatGPT, DeepSeek. **Consenso 8/8 únicamente en**: rechazar (d) como solución única, rechazar (c) ahora, y adoptar la métrica de conjuntos. Alonso **anula la adición de maquinaria de entrega (a/b)** sobre el argumento de fidelidad de §0: el suplantador no debe ser más fiable que el sniffer que imita; si algún día se cambia el transporte del sniffer, se cambiará también el del injector (propagación bidireccional). Precedente de anulación: ADR-052 §3.11.
 
+> **Aclaración de fidelidad (ChatGPT, DAY 178).** El Consejo consensuó la *instrumentación* (métrica de conjuntos), NO el *mecanismo* de entrega. Mantener `send(dontwait)` es arbitraje exclusivo de Alonso, no respaldo del Consejo. "Decisión final" ≠ "consenso del Consejo" — se registra así para evitar reinterpretaciones históricas.
+
+> **Objeción formal de Kimi (DAY 178), aceptada bajo protesta con condición satisfecha.** Kimi objeta que §0 no basta para la anulación: el injector inyecta a velocidad de memoria mientras el sniffer real está limitado por la NIC, de modo que mantener `dontwait` expone un artefacto de saturación de HWM que el sniffer nunca alcanza en producción. Argumenta además que el modo `deterministic` no es realmente determinista sin la métrica (puede variar 100–102 filas). **Resolución:** la anulación se mantiene (§0 es invariante legítimo y 6/8 la aceptan), pero se satisface la condición de Kimi — `DEBT-INJECTOR-DELIVERY-METRIC-001` se eleva a **P1** (§8), avalado también por Mistral. Objeción convertida en acuerdo.
+
 ### 3.4 col 17 `authoritative_source` como string simbólico (referencia — ratificado)
 
 Decisión de contrato de bronce (writer/reader), sellada en DAY 177: `DetectorSource_Name()` en vez de `static_cast<int>`; reader almacena string; engine **limpio de protobuf** (decisión DAY-174 #5). **Ratificación Consejo 8/8.** Se referencia aquí porque ADR-055 registra su **sello desde el injector**: bronce real con `150 DETECTOR_SOURCE_ML_PRIORITY` + `9 DETECTOR_SOURCE_DIVERGENCE` (strings, no `"4"`).
@@ -130,7 +134,7 @@ Que 9/159 filas lleven `DETECTOR_SOURCE_DIVERGENCE` (ADR-051) confirma que el br
 | Q1 | Mecanismo de entrega | **Sin mayoría** (3/3/2). Consenso solo en métrica + rechazo de (c)/(d)-solo. **Arbitraje Alonso → solo instrumento** (§3.3). *Requiere confirmación de fidelidad.* |
 | Q2 | Realismo vs cobertura | **8/8** dos perillas + semilla fija (§3.2). |
 | Q3 | ¿ADR-055 absorbe? | **8/8** sí (§3.1–3.3, 3.5). |
-| Q4 | DEBT para proto | **7/8** no (Claude votó sí, se retractó). Cierra como "completar A" (§3.2). |
+| Q4 | DEBT para proto | **7/8** no. Cierra como "completar A" (§3.2). *Nota de fidelidad (DAY 178): Kimi sostiene que el voto de Claude fue "no" desde el origen → 8/8; no verificable contra el acta original en esta pasada. La decisión (no abrir deuda) es idéntica en ambas lecturas, por lo que se mantiene 7/8 de forma conservadora.* |
 | Q5 | Divergence en bronce | **8/8** preservar + aplazar + directriz "no aplanar" (§3.5). |
 
 **Para la confirmación de fidelidad (no deliberación nueva):** ¿refleja esta v1 fielmente el consenso de la 1ª pasada, y deja clara la anulación de árbitro en Q1 (§3.3, solo instrumento sobre el argumento de fidelidad de §0)?
@@ -166,7 +170,7 @@ Sobre el pipeline sintético (`make pipeline-start` + `make test-e2e-synthetic-f
 |---|---|---|
 | `DEBT-INJECTOR-NODEID-001` | P0 | **Cerrada** (§3.1). Verificada E2E DAY 177. |
 | `DEBT-INJECTOR-ROWGAP-001` | P1 | **Reencuadrada y cerrada como característica** (§3.3). El comportamiento bidireccional de ZMQ PUSH es fiel al sniffer; se instrumenta, no se corrige. |
-| `DEBT-INJECTOR-DELIVERY-METRIC-001` (NUEVA) | P2 | Instrumento de diff de conjuntos `{enviados}` vs `{escritos}` en el E2E sintético. Trabajo aditivo, no toca comportamiento. *(Reemplaza el "fix" de ROWGAP.)* |
+| `DEBT-INJECTOR-DELIVERY-METRIC-001` (NUEVA) | **P1** | Instrumento de diff de conjuntos `{enviados}` vs `{escritos}` en el E2E sintético. Trabajo aditivo, no toca comportamiento. *(Reemplaza el "fix" de ROWGAP.)* **Elevada P2→P1 en DAY 178** (objeción de fidelidad de Kimi avalada por Mistral): sin el instrumento, el modo `deterministic` no es determinista. |
 | `DEBT-INJECTOR-PROTO-MIX-001` (NUEVA) | P2 | Modo `realistic` con semilla fija + aserción de ausencia en bronce (§3.2). |
 | Fix de proto benigno (Q4) | — | **NO es deuda.** Cerrado como "completar A". Comentario `DAY 177 (A)` en código + cita en el MR. |
 | `DEBT-LIB-001` (extraer `libs/flow-identity/`) | P1 | **NO deliberada en esta pasada** — no estaba en la consulta. Dentro del ámbito de ADR-055 (lib); se trae a una pasada futura. |
@@ -180,5 +184,5 @@ Sobre el pipeline sintético (`make pipeline-start` + `make test-e2e-synthetic-f
 - ADR-051 (Oracle Divergence / N-version reasoning; `orphan_rate`). ADR-046 (`community_id` como P0 join key). ADR-054 *pendiente* (confianza bronce multi-nodo).
 - Cableado bronce DAY 175 (CorrelationWriter, contrato `correlation_v1`, hook punto único).
 - `corelight/community-id-spec`; `sniffer::flow::compute_community_id` (corte proto ∈ {6,17}).
-- Consejo de Sabios DAY 177 (1ª pasada, 8 modelos): ratificaciones 8/8; Q1 split 3/3/2 + arbitraje; Q2/Q3/Q5 8/8; Q4 7/8.
+- Consejo de Sabios DAY 177 (1ª pasada, 8 modelos): ratificaciones 8/8; Q1 split 3/3/2 + arbitraje; Q2/Q3/Q5 8/8; Q4 7/8 (ver nota de fidelidad §5).
 - Precedente herramientas de `tools/`: detección de gaps de features vía `synthetic_ml_output_injector`.
