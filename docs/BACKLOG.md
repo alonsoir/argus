@@ -1,5 +1,5 @@
 # aRGus NDR — BACKLOG
-*Última actualización: DAY 177 — 2026-06-07*
+*Última actualización: DAY 179 — 2026-06-09*
 
 ---
 
@@ -86,6 +86,84 @@
 
 ---
 
+
+## 🆕 Entradas DAY 179 — Consumidor F1 del bronce → grafo (IGraphSink + loop)
+
+> Origen: sesión DAY 179. Frente de CÓDIGO (no diseño — §10.1 cerrado DAY 178).
+> El `correlation-engine` deja de ser scaffold: nace el consumidor F1 (aRGus únicamente)
+> que lee bronce `correlation_v1`, valida HMAC, calcula `flow_uid` server-side y materializa
+> `:NetworkFlow + :Alert` vía la interfaz `IGraphSink`. Backend de hoy: `LoggingGraphSink`
+> (Cypher a log). Backend de mañana: Kuzu embebido (misma interfaz, sustitución de una clase).
+> Suricata/Zeek/Wazuh = F2/F3, deliberadamente fuera de hoy (el contrato unificado no necesita
+> reader por sensor: la diferencia vive en el productor, no en el consumidor).
+>
+> **Cerrado E2E (verde):** `IGraphSink` (interfaz Cypher) + `LoggingGraphSink` (Cypher completo
+> por write + contador agregado en `flush()`) + loop `one-shot`/`--follow` en `main.cpp`
+> (file_watch tail-poll → `parse_and_verify` → `compute_flow_uid` → `sink.write`) + binario
+> `correlation_engine_bin` linkado contra `libntp_utils.a` vía `find_library`. NTP gate (ADR-046 P0)
+> intacto delante del loop. Clave HMAC por env `ARGUS_BRONZE_HMAC_KEY_HEX` (lado lector de
+> DEBT-BRONZE-KEY-PROVISIONING-001). Invariante de Mistral confirmada por test: fila corrupta/
+> HMAC-malo descartada ANTES del sink (3 válidas pasan, corrupta + tampered no llegan).
+>
+> **Tests (3/3 verde):** `test_flow_uid` ✅ · `test_correlation_reader` ✅ · `test_graph_sink_loop` ✅
+> (caso A: MockGraphSink valida descarte; caso B: LoggingGraphSink valida formación de Cypher).
+>
+> **Lección de build DAY 179:** `add_subdirectory(../common)` para traer el target `ntp_utils`
+> contamina el `ctest` del engine — arrastra el `enable_testing()` del common y registra sus
+> 13 tests como "Not Run". Solución correcta: `find_library(NTP_UTILS_LIB)` sobre la `.a` ya
+> instalada por el build de common. No re-introducir `add_subdirectory` para libs externas.
+
+### DEBT-FLOWUID-SEQ-COLLISION-001 — seq_in_window fijo a 0 en el loop del engine
+**Severidad:** 🟢 P2 — no bloqueante
+**Estado:** ABIERTO — DAY 179
+**Componente:** `correlation-engine/src/main.cpp` (loop consumidor) + `flow_uid.hpp`
+El loop F1 llama `compute_flow_uid(node_id, community_id, window)` dejando `seq_in_window=0`
+(default). Dos flujos distintos con el mismo `(node_id, community_id, flow_start_window)` en
+micros colisionarían el `flow_uid`. El parámetro `seq_in_window` existe en la firma justo para
+esto (ADR-052 v3.2: transportado como INPUT del vector), pero quién lo asigna server-side
+(¿contador por ventana en el engine? ¿transportado desde el sensor?) no está decidido. En F1
+con un solo sensor y ventana en micros la probabilidad es baja, pero es deuda real de unicidad.
+**Test de cierre:** dos flujos misma `(node_id, community_id, window)` con `seq` distinto →
+`flow_uid` distinto. Mecanismo de asignación de `seq` server-side definido y testeado.
+**Estimación:** 1 sesión (depende de decisión de diseño sobre origen del `seq`).
+
+### DEBT-TEST-COL17-CONTRACT-DRIFT-001 — fixture del reader usa "4" donde producción escribe el símbolo
+**Severidad:** 🟢 P2 — no bloqueante (test compila y pasa; valida un valor que producción no genera)
+**Estado:** ABIERTO — DAY 179 (destapada al añadir el binario del engine al build)
+**Componente:** `correlation-engine/tests/test_correlation_reader.cpp`
+La col 17 (`authoritative_source`) del contrato `correlation_v1` es string simbólico
+(`DetectorSource_Name()`: `DETECTOR_SOURCE_CONSENSUS`, etc. — decidido Consejo DAY 175 Q2,
+escrito por el writer real). El fixture del test (`BODY`) pone `"4"` (entero-como-string) y la
+aserción comparaba contra el int `4` → no compilaba bajo C++20 (`EXPECT_EQ(string, int)`).
+Fix DAY 179: aserción alineada a string `"4"` para desbloquear compilación, SIN tocar el
+contrato. Pero el fixture sigue divergente de producción: usa `"4"` donde el ml-detector escribe
+el símbolo. El roundtrip de parseo pasa (string libre), pero el test no ejercita el valor real.
+**Test de cierre:** `BODY` del fixture usa el símbolo `DETECTOR_SOURCE_*` que produce el writer;
+aserción comparada contra ese símbolo. Alinear cuando se toque el enum `DetectorSource`.
+**Estimación:** 0.5 sesión (junto a cualquier cambio del enum `DetectorSource`).
+
+### DEBT-ENGINE-INOTIFY-001 — file_watch por tail-poll en vez de inotify
+**Severidad:** ⚪ P3 — refinamiento, no bloqueante
+**Estado:** ABIERTO — DAY 179
+**Componente:** `correlation-engine/src/main.cpp` (modo `--follow`)
+El modo daemon (`--follow`) usa tail-poll con `std::ifstream` + `sleep 1s` + `in.clear()` para
+releer la cola (append no-atómico del writer). Suficiente y portable para cerrar E2E F1, pero a
+volumen alto un `inotify` (IN_MODIFY) reduciría latencia y CPU ociosa. Refinamiento posterior si
+el volumen lo justifica.
+**Test de cierre:** modo `--follow` con inotify procesa filas nuevas con latencia < poll actual;
+sin busy-wait. Regresión cero en one-shot.
+**Estimación:** 1 sesión post-FEDER (si el volumen lo pide).
+
+### DEBT-DOC-FLOWUID-NEO4J-KUZU-001 — comentarios de flow_uid.hpp dicen "Neo4j", el backend es Kuzu
+**Severidad:** ⚪ P3 — higiene documental, sin impacto en código
+**Estado:** ABIERTO — DAY 179
+**Componente:** `correlation-engine/include/correlation_engine/flow_uid.hpp` (comentarios)
+La cabecera de `flow_uid.hpp` dice "se calcula EN EL ENGINE al insertar nodos en Neo4j" y "los
+Parquet de cada componente" — deriva de cuando Neo4j era el target (ADR-052), antes de adoptar
+Kuzu embebido tras `IGraphSink`. `flow_uid` no toca ningún backend (solo computa el hash), así
+que es deriva de documentación, no de código. Alinear los comentarios a Kuzu/`IGraphSink`.
+**Test de cierre:** `grep -i neo4j flow_uid.hpp` = 0 (o nota explícita de equivalencia histórica).
+**Estimación:** 5 minutos (junto a cualquier commit de docs del engine).
 
 ## 🆕 Entradas DAY 177 — Bronce en forma final + injectors sellados (ADR-055 v1)
 
@@ -2607,6 +2685,11 @@ community_id helper observable + test TDH:  100% ✅  DAY 171 — community_id_l
 tools/community_id_crosscheck.py:           100% ✅  DAY 171 — paridad por valor, agree/disagree/solo
 docs/acceptance_criteria.md congelado:      100% ✅  DAY 171 — Consejo 8/8, categorías DROP/CONFIG/POLICY/BUG/UNKNOWN
 DEBT-ARGUSPP-COUNTER-DUMP-001:                0% ⏳  P1 DAY 172 — volcado contadores aRGus a fichero parseable
+Consumidor F1 bronce→grafo (IGraphSink + loop):  100% ✅  DAY 179 — i_graph_sink.hpp + LoggingGraphSink + loop one-shot/--follow, 3/3 tests
+DEBT-FLOWUID-SEQ-COLLISION-001:                    0% ⏳  P2 (seq_in_window=0 fijo en el loop)
+DEBT-TEST-COL17-CONTRACT-DRIFT-001:                0% ⏳  P2 (fixture reader "4" vs símbolo DetectorSource)
+DEBT-ENGINE-INOTIFY-001:                           0% ⏳  P3 (tail-poll vs inotify en --follow)
+DEBT-DOC-FLOWUID-NEO4J-KUZU-001:                   0% ⏳  P3 (comentarios flow_uid.hpp dicen Neo4j)
 HMAC Infrastructure:                    100% ✅
 F1=0.9985 (CTU-13 Neris):              100% ✅
 CryptoTransport (HKDF+AEAD):            100% ✅
