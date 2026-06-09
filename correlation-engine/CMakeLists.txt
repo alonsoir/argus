@@ -30,10 +30,21 @@ else()
 endif()
 
 # ── librería del engine: flow_uid (header-only) + correlation_reader ──
-add_library(correlation_engine STATIC src/correlation_reader.cpp)
+add_library(correlation_engine STATIC src/correlation_reader.cpp src/logging_graph_sink.cpp)
 target_include_directories(correlation_engine PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 target_include_directories(correlation_engine PUBLIC ${LIBSODIUM_INCLUDE_DIRS})
 target_link_libraries(correlation_engine PUBLIC ${LIBSODIUM_LIBRARIES} OpenSSL::Crypto)
+
+
+# ── binario del engine (DAY 179: consumidor F1 bronce -> grafo) ──
+find_package(spdlog REQUIRED)
+# ntp_utils (ADR-046 P0): .a instalada por el build de common.
+# (find_library, NO subdir-include: este ultimo contaminaria el ctest del engine.)
+find_library(NTP_UTILS_LIB NAMES ntp_utils PATHS /usr/local/lib REQUIRED)
+find_path(NTP_UTILS_INC ntp_health_check.hpp PATHS /usr/local/include/vault_client REQUIRED)
+add_executable(correlation_engine_bin src/main.cpp)
+target_include_directories(correlation_engine_bin PRIVATE ${NTP_UTILS_INC})
+target_link_libraries(correlation_engine_bin PRIVATE correlation_engine spdlog::spdlog ${NTP_UTILS_LIB})
 
 # ── tests (GoogleTest) ──
 enable_testing()
@@ -48,3 +59,7 @@ add_test(NAME test_flow_uid COMMAND test_flow_uid)
 add_executable(test_correlation_reader tests/test_correlation_reader.cpp)
 target_link_libraries(test_correlation_reader PRIVATE correlation_engine GTest::gtest_main)
 add_test(NAME test_correlation_reader COMMAND test_correlation_reader)
+
+add_executable(test_graph_sink_loop tests/test_graph_sink_loop.cpp)
+target_link_libraries(test_graph_sink_loop PRIVATE correlation_engine spdlog::spdlog GTest::gtest_main)
+add_test(NAME test_graph_sink_loop COMMAND test_graph_sink_loop)

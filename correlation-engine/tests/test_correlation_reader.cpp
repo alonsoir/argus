@@ -42,7 +42,7 @@ TEST(CorrelationReader, ValidRoundTrip) {
     EXPECT_EQ(r->dst_port, 80u);
     EXPECT_EQ(r->protocol, "tcp");
     EXPECT_EQ(r->final_classification, "MALICIOUS");
-    EXPECT_EQ(r->authoritative_source, 4);
+    EXPECT_EQ(r->authoritative_source, "4");  // DEBT-TEST-COL17-CONTRACT-DRIFT-001: prod escribe simbolo DetectorSource_Name()
     EXPECT_DOUBLE_EQ(r->ml_detector_score, 0.87);
 }
 
