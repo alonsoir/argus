@@ -283,3 +283,7 @@ verify_day177_*.py
 
 # Scripts de aplicacion de un solo uso (DAY 178) - no son entregables
 apply_day178_*.py
+smoke_day*.sh
+update_backlog_day*.py
+update_prompt_day*.py
+apply_day*.py
