@@ -119,6 +119,8 @@ static int packet_callback(void* ctx, void* data, size_t size) {
     nf->set_protocol_number(iph->ip_p);
 
     size_t ip_hdr_len = static_cast<size_t>(iph->ip_hl) * 4;
+    // H-3 hardening: ip_hl < 5 (header IP < 20B) es malformado; no calcular offset con el.
+    if (ip_hdr_len < sizeof(struct ip)) return 0;
     size_t transport_offset = sizeof(struct ether_header) + ip_hdr_len;
 
     if (iph->ip_p == IPPROTO_TCP &&

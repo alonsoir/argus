@@ -29,11 +29,19 @@ inline bool is_alert(const CorrelationRecord& r) noexcept {
 }
 
 namespace detail {
-// Escapa comilla simple para literal Cypher. node_id/community_id son opacos.
+// Escapa literal Cypher. node_id/community_id/threat_category/... derivan de
+// trafico de red (fuente NO confiable): hay que escapar la barra invertida ANTES
+// que la comilla, o un campo terminado en '\' rompe el escape y abre el literal
+// (inyeccion Cypher, clase backslash). DEBT/H-1: esto es defensa minima; el fix
+// estructural es prepared statements parametrizados (ADR-057, cero interpolacion).
 inline std::string esc(std::string_view s) {
     std::string out;
     out.reserve(s.size());
-    for (char c : s) { if (c == '\'') out += "\\'"; else out += c; }
+    for (char c : s) {
+        if (c == '\\')      out += "\\\\";   // backslash primero
+        else if (c == '\'') out += "\\'";
+        else                out += c;
+    }
     return out;
 }
 }  // namespace detail
