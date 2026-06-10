@@ -1,0 +1,21 @@
+docs(day178): ratifica ADR-055 con enmiendas de fidelidad + mapeo aRGus en AdapterSpec
+
+ADR-055 — confirmación de fidelidad del Consejo (8/8 en lo sustantivo):
+- Estado BORRADOR → RATIFICADA con enmiendas (DAY 178).
+- §3.3: aclaración de ChatGPT (consenso en instrumentación, NO en mecanismo;
+  mantener dontwait es arbitraje exclusivo de Alonso) + objeción formal de Kimi
+  a la anulación de Q1, aceptada bajo protesta con condición satisfecha.
+- §8: DEBT-INJECTOR-DELIVERY-METRIC-001 elevada P2→P1 (objeción de Kimi avalada
+  por Mistral): sin el instrumento, el modo deterministic no es determinista.
+- §5 Q4: nota conservadora (Kimi sostiene voto de Claude 'no' desde origen → 8/8;
+  no verificable contra acta; decisión idéntica, se mantiene 7/8).
+
+AdapterSpec v1 — §10.1 nueva: mapeo normativo aRGus → SecurityEvent (F1):
+- Resuelve Pregunta Abierta #1: 'message SecurityEvent' NO existe en el .proto.
+  El adapter de aRGus NO crea mensaje nuevo (YAGNI) — mapea desde bronce.
+- raw_payload = fila CSV bronce (cols 0-17 + HMAC), opción (a).
+- severity derivado de cols 12/16, no recalculado (ya lo decide el ml-detector).
+- Declara explícitamente lo omitido en F1 (83 features, GeoEnrichment, provenance)
+  y la deuda de native_event_id no-determinista en tier golden.
+
+BACKLOG + README (DAY-STATUS, Hitos DAY 177): reflejan ratificación + P1.
