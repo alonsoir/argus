@@ -77,6 +77,11 @@ add_executable(test_graph_sink_loop tests/test_graph_sink_loop.cpp)
 target_link_libraries(test_graph_sink_loop PRIVATE correlation_engine spdlog::spdlog GTest::gtest_main)
 add_test(NAME test_graph_sink_loop COMMAND test_graph_sink_loop)
 
+# ── H-1: escape de literales Cypher resistente a backslash (anti-inyeccion) ──
+add_executable(test_cypher_injection tests/test_cypher_injection.cpp)
+target_link_libraries(test_cypher_injection PRIVATE correlation_engine GTest::gtest_main)
+add_test(NAME test_cypher_injection COMMAND test_cypher_injection)
+
 # ── test del backend Kuzu (DAY 180): materializacion real en BD efimera ──
 add_executable(test_kuzu_graph_sink tests/test_kuzu_graph_sink.cpp)
 target_include_directories(test_kuzu_graph_sink PRIVATE ${KUZU_INC})  # el test reabre la BD para verificar

@@ -334,6 +334,7 @@ if(BUILD_TESTS)
             tests/unit/test_ipset_wrapper.cpp
             tests/unit/test_logger.cpp
             tests/unit/test_config_loader_traversal.cpp
+            tests/unit/test_config_loader_setname.cpp
             tests/unit/test_safe_exec.cpp
             tests/test_globals_stub.cpp
     )
