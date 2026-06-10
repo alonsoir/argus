@@ -29,11 +29,24 @@ else()
     message(STATUS "nlohmann/json: ${nlohmann_json_VERSION}")
 endif()
 
-# ── librería del engine: flow_uid (header-only) + correlation_reader ──
-add_library(correlation_engine STATIC src/correlation_reader.cpp src/logging_graph_sink.cpp)
+# ── Kuzu v0.11.3 embebido (backend IGraphSink, DAY 180) ──────────────────────
+# Lib precompilada instalada en /usr/local por el provisioning (libkuzu.so + kuzu.hpp).
+# NO hay paquete apt (upstream archivado 10-oct-2025); pin por SHA256 en el Vagrantfile.
+# find_library, NO add_subdirectory: misma lección que ntp_utils.
+find_library(KUZU_LIB NAMES kuzu PATHS /usr/local/lib REQUIRED)
+find_path(KUZU_INC kuzu.hpp PATHS /usr/local/include REQUIRED)
+message(STATUS "libkuzu: ${KUZU_LIB}")
+
+# ── librería del engine: flow_uid (header-only) + reader + sinks ──
+add_library(correlation_engine STATIC
+        src/correlation_reader.cpp
+        src/logging_graph_sink.cpp
+        src/kuzu_graph_sink.cpp)
 target_include_directories(correlation_engine PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 target_include_directories(correlation_engine PUBLIC ${LIBSODIUM_INCLUDE_DIRS})
-target_link_libraries(correlation_engine PUBLIC ${LIBSODIUM_LIBRARIES} OpenSSL::Crypto)
+target_include_directories(correlation_engine PRIVATE ${KUZU_INC})  # solo el .cpp incluye kuzu.hpp
+target_link_libraries(correlation_engine PUBLIC
+        ${LIBSODIUM_LIBRARIES} OpenSSL::Crypto ${KUZU_LIB})  # KUZU_LIB PUBLIC -> se propaga a bin+tests
 
 
 # ── binario del engine (DAY 179: consumidor F1 bronce -> grafo) ──
@@ -63,3 +76,11 @@ add_test(NAME test_correlation_reader COMMAND test_correlation_reader)
 add_executable(test_graph_sink_loop tests/test_graph_sink_loop.cpp)
 target_link_libraries(test_graph_sink_loop PRIVATE correlation_engine spdlog::spdlog GTest::gtest_main)
 add_test(NAME test_graph_sink_loop COMMAND test_graph_sink_loop)
+
+# ── test del backend Kuzu (DAY 180): materializacion real en BD efimera ──
+add_executable(test_kuzu_graph_sink tests/test_kuzu_graph_sink.cpp)
+target_include_directories(test_kuzu_graph_sink PRIVATE ${KUZU_INC})  # el test reabre la BD para verificar
+target_link_libraries(test_kuzu_graph_sink PRIVATE correlation_engine spdlog::spdlog GTest::gtest_main)
+target_compile_definitions(test_kuzu_graph_sink PRIVATE
+        SCHEMA_PATH="${CMAKE_CURRENT_SOURCE_DIR}/schema/schema.cypher")
+add_test(NAME test_kuzu_graph_sink COMMAND test_kuzu_graph_sink)

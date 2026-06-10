@@ -18,6 +18,7 @@
 #include "correlation_engine/correlation_reader.hpp"
 #include "correlation_engine/flow_uid.hpp"
 #include "correlation_engine/logging_graph_sink.hpp"
+#include "correlation_engine/kuzu_graph_sink.hpp"
 
 // spdlog — disponible en el sistema (instalado en all-dependencies)
 #include <spdlog/spdlog.h>
@@ -85,7 +86,19 @@ int main(int argc, char* argv[]) {
             hmac_key.push_back(static_cast<uint8_t>(std::stoul(hx.substr(i, 2), nullptr, 16)));
     }
 
-    auto sink = std::make_unique<ac::LoggingGraphSink>(spdlog::default_logger());
+    // Backend de grafo seleccionable. Default: logging (no requiere Kuzu, util para CI).
+    //   ARGUS_GRAPH_BACKEND=kuzu  + ARGUS_KUZU_DB_PATH + ARGUS_KUZU_SCHEMA_PATH
+    std::unique_ptr<ac::IGraphSink> sink;
+    if (const char* be = std::getenv("ARGUS_GRAPH_BACKEND"); be && std::string(be) == "kuzu") {
+        const char* db     = std::getenv("ARGUS_KUZU_DB_PATH");
+        const char* schema = std::getenv("ARGUS_KUZU_SCHEMA_PATH");
+        sink = std::make_unique<ac::KuzuGraphSink>(
+            db     ? db     : "/var/lib/argus/argus_graph.kuzu",
+            schema ? schema : "/vagrant/correlation-engine/schema/schema.cypher",
+            spdlog::default_logger());
+    } else {
+        sink = std::make_unique<ac::LoggingGraphSink>(spdlog::default_logger());
+    }
 
     uint64_t total = 0, discarded = 0;
     std::ifstream in(bronze_path);

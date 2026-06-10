@@ -1,0 +1,51 @@
+# argus_graph.yaml — reglas Falco TEMPORALES (DAY 180) para el graph store de Kuzu.
+# Authors: Alonso Isidoro Roman + Claude (Anthropic).
+#
+# SITUACION TEMPORAL: /opt/argus/graph es el hogar del fichero .kuzu hasta que la
+# landing zone migre a Apache Iceberg (que gestionara sus propias rutas y politica).
+# Revisar / retirar / reescribir estas reglas cuando se consolide el almacenamiento.
+#
+# OBJETIVO: integridad del grafo. El grafo es propiedad EXCLUSIVA de Kuzu via el
+# correlation-engine; cualquier otro escritor bajo /opt/argus/graph es sospechoso.
+#
+# ⚠️  GOTCHA IMPORTANTE — proc.name esta TRUNCADO a 15 chars (kernel TASK_COMM_LEN=16).
+#     El binario "correlation_engine_bin" aparece en Falco como "correlation_eng".
+#     Verificar en el guest con:  cat /proc/$(pgrep -f correlation_engine_bin)/comm
+#     Si el nombre real difiere, ajustar la lista argus_graph_writers.
+#
+# DESPLIEGUE: instalar en /etc/falco/rules.d/ del variant endurecido (ADR-030 BSR);
+# en el VM defender de dev Falco no corre (solo se descarga el .deb a dist/vendor).
+
+- list: argus_graph_writers
+  items: [correlation_eng]   # comm truncado de correlation_engine_bin (ver GOTCHA)
+
+- macro: argus_graph_file
+  condition: fd.name startswith /opt/argus/graph/
+
+- rule: Escritura no autorizada en el graph store de aRGus
+  desc: >
+    Un proceso que NO es el correlation-engine ha abierto para escritura un fichero
+    bajo /opt/argus/graph. Posible tampering del grafo (vista derivada del bronce).
+  condition: >
+    open_write and argus_graph_file
+    and not proc.name in (argus_graph_writers)
+  output: >
+    Escritura no autorizada en graph store aRGus
+    (proceso=%proc.name pid=%proc.pid cmdline=%proc.cmdline fichero=%fd.name usuario=%user.name)
+  priority: WARNING
+  tags: [argus, filesystem, integrity, temporary, day180]
+
+# Regla de lectura: util para detectar exfiltracion del grafo. Puede ser RUIDOSA
+# (backups, herramientas de consulta). TEMPORAL — ampliar lista de lectores legitimos
+# o desactivar si genera demasiado ruido en el variant endurecido.
+- rule: Lectura del graph store de aRGus por proceso inesperado
+  desc: >
+    Lectura de ficheros del grafo por un proceso ajeno al correlation-engine.
+  condition: >
+    open_read and argus_graph_file
+    and not proc.name in (argus_graph_writers)
+  output: >
+    Lectura inesperada del graph store aRGus
+    (proceso=%proc.name pid=%proc.pid cmdline=%proc.cmdline fichero=%fd.name usuario=%user.name)
+  priority: NOTICE
+  tags: [argus, filesystem, integrity, temporary, day180]

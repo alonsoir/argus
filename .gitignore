@@ -287,3 +287,6 @@ smoke_day*.sh
 update_backlog_day*.py
 update_prompt_day*.py
 apply_day*.py
+dialect_smoke.cpp
+*.kuzu
+*.kuzu.wal

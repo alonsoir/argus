@@ -1,7 +1,8 @@
-// test_graph_sink_loop.cpp — DAY 179. Consumidor bronce -> sink.
+// test_graph_sink_loop.cpp — DAY 179 (Caso B actualizado DAY 180). Consumidor bronce -> sink.
 // Caso A: MockGraphSink cuenta writes -> valida invariante de descarte (Mistral):
 //         fila corrupta/HMAC-malo NO llega al sink.
-// Caso B: LoggingGraphSink real -> valida que el Cypher se forma (no vacio, contiene flow_uid).
+// Caso B: LoggingGraphSink real -> valida que el Cypher se forma con el MODELO NUEVO
+//         (NetworkFlow identidad + Alert + ALERT_ABOUT; sin RAISED, sin 5-tupla).
 // Authors: Alonso Isidoro Roman + Claude (Anthropic).
 #include <gtest/gtest.h>
 
@@ -124,7 +125,7 @@ TEST(GraphSinkLoop, DiscardsInvalidBeforeSink) {
     EXPECT_EQ(sink.count(), 3);       // exactamente las 3 llegaron al sink
 }
 
-// ── Caso B: el Cypher se forma con LoggingGraphSink real ────────────────────
+// ── Caso B: el Cypher se forma con LoggingGraphSink real (MODELO NUEVO) ──────
 TEST(GraphSinkLoop, LoggingSinkFormsCypher) {
     const auto key = hex_to_bytes(KEY_HEX);
     auto logger = std::make_shared<spdlog::logger>(
@@ -144,9 +145,16 @@ TEST(GraphSinkLoop, LoggingSinkFormsCypher) {
     const std::string fuid = compute_flow_uid(rec->node_id, rec->community_id, window);
     const std::string cypher = LoggingGraphSink::build_cypher(*rec, fuid);
 
+    // Modelo nuevo: la fila es MALICIOUS -> Alert + ALERT_ABOUT.
     EXPECT_NE(cypher.find("MERGE (f:NetworkFlow"), std::string::npos);
-    EXPECT_NE(cypher.find(":RAISED"), std::string::npos);
-    EXPECT_NE(cypher.find("a:Alert"), std::string::npos);
+    EXPECT_NE(cypher.find("e:Alert"), std::string::npos);
+    EXPECT_NE(cypher.find(":ALERT_ABOUT"), std::string::npos);
+    EXPECT_NE(cypher.find("final_classification='MALICIOUS'"), std::string::npos);
     EXPECT_NE(cypher.find(fuid), std::string::npos);           // flow_uid presente
     EXPECT_NE(cypher.find("ev-cypher"), std::string::npos);    // event_id presente
+
+    // Modelo viejo RETIRADO + identidad pura: ni :RAISED ni la 5-tupla en el grafo.
+    EXPECT_EQ(cypher.find(":RAISED"), std::string::npos);
+    EXPECT_EQ(cypher.find("10.0.0.1"), std::string::npos);     // src_ip NO viaja al grafo
+    EXPECT_EQ(cypher.find("TelemetryEvent"), std::string::npos); // MALICIOUS no enruta a Telemetry
 }

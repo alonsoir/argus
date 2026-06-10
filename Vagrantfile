@@ -668,7 +668,73 @@ BASHRC_EOF
       fi
 
       # Vault autostart movido a vault-enterprise-bootstrap (run: always) — DAY 163
+
+      # ── Kuzu v0.11.3 embebido (backend IGraphSink — DAY 180) ──────────────
+            # ⚠️  Upstream ARCHIVADO (10-oct-2025): v0.11.3 = release final, sin parches
+            #     futuros. Mitigado por abstracción IGraphSink. Plan B: fork
+            #     Vela-Engineering/kuzu. Ver nota BACKLOG DAY 180.
+            # C++ client = libkuzu.so + kuzu.hpp (NO hay .deb upstream). Pin URL+SHA256.
+            # DB = fichero único .kuzu desde v0.11.0 (no directorio).
+            if [ ! -f /usr/local/lib/libkuzu.so ]; then
+              echo "🗃️  Installing Kuzu v0.11.3 (embedded graph backend)..."
+              KUZU_URL="https://github.com/kuzudb/kuzu/releases/download/v0.11.3/libkuzu-linux-x86_64.tar.gz"
+              KUZU_SHA256="e99f9671ebfacf4d6208aa4b94490016e4ac9be242deed1fea78afb31c058ebd"   # ← pega aquí el sha256sum tras la 1ª descarga
+
+              cd /tmp && rm -rf kuzu-install && mkdir kuzu-install && cd kuzu-install
+              curl -fsSL "$KUZU_URL" -o libkuzu.tar.gz
+
+              GOT=$(sha256sum libkuzu.tar.gz | awk '{print $1}')
+              if [ "$KUZU_SHA256" = "PENDIENTE_PINEAR" ]; then
+                echo "⚠️  SHA256 sin pinear. Descargado: $GOT"
+                echo "    → Pégalo en KUZU_SHA256 y re-provisiona para fijar el pin."
+              elif [ "$GOT" != "$KUZU_SHA256" ]; then
+                echo "❌ SHA256 mismatch Kuzu: esperado $KUZU_SHA256, obtenido $GOT"; exit 1
+              else
+                echo "✅ SHA256 Kuzu verificado"
+              fi
+
+              tar xzf libkuzu.tar.gz
+              KUZU_SO=$(find . -name 'libkuzu.so*' | head -1)
+              KUZU_HPP=$(find . -name 'kuzu.hpp' | head -1)
+              KUZU_H=$(find . -name 'kuzu.h' | head -1)
+              if [ -z "$KUZU_SO" ] || [ -z "$KUZU_HPP" ]; then
+                echo "❌ Artefactos Kuzu no hallados en el tarball (so/hpp)"; exit 1
+              fi
+              cp "$KUZU_SO" /usr/local/lib/libkuzu.so
+              cp "$KUZU_HPP" /usr/local/include/
+              [ -n "$KUZU_H" ] && cp "$KUZU_H" /usr/local/include/
+              ldconfig
+              cd /tmp && rm -rf kuzu-install
+              echo "✅ Kuzu instalado: $(ls -la /usr/local/lib/libkuzu.so)"
+            else
+              echo "✅ Kuzu ya instalado"
+            fi
+
     DEPENDENCIES_EOF
+
+    # ════════════════════════════════════════════════════════════════════════
+    # Provisioning: directorio de runtime del grafo Kuzu (DAY 180)
+    # ════════════════════════════════════════════════════════════════════════
+    # SITUACIÓN TEMPORAL — leer antes de tocar:
+    #   · La landing zone bronce/plata/oro NO se crea aquí. Su destino real es
+    #     Apache Iceberg, que gestionará sus propias rutas y política de tablas.
+    #     Crear /var/lib/argus/{bronze,silver,gold} ahora sería trabajo que
+    #     Iceberg deshará. Paso a paso: hoy solo el grafo necesita hogar.
+    #   · El grafo es propiedad EXCLUSIVA de Kuzu (por ahora): fichero único .kuzu.
+    #   · NO puede vivir en /vagrant: es mount vboxsf y Kuzu mapea con mmap (rompe).
+    #     Por eso fs LOCAL del guest: /opt/argus/graph.
+    #   · Esta carpeta debe ser vigilada por Falco (ADR-030 BSR): reglas TEMPORALES
+    #     en falco/rules.d/argus_graph.yaml (revisar/retirar al migrar a Iceberg).
+    #   · Owner = vagrant (el correlation-engine corre como vagrant en dev). El
+    #     usuario de producción está por decidir (componentes de las Raspberry).
+    defender.vm.provision "shell", name: "configure-argus-graph-dir", run: "always",
+      inline: <<-ARGUS_GRAPH
+      echo "🗂️  Preparando runtime del grafo Kuzu (/opt/argus/graph)..."
+      mkdir -p /opt/argus/graph
+      chown -R vagrant:vagrant /opt/argus
+      chmod 750 /opt/argus/graph
+      echo "✅ /opt/argus/graph listo ($(stat -c '%U:%G %a' /opt/argus/graph))"
+    ARGUS_GRAPH
 
     # ════════════════════════════════════════════════════════════════════════
     # Provisioning: Auto-configure sniffer.json
