@@ -2866,3 +2866,5 @@ crosscheck-run: test-replay-neris
 	 rc=$$?; \
 	 if [ $$rc -eq 2 ]; then echo "   [i] exit 2 = hay anomalias (esperado por cobertura asimetrica aRGus). Revisa anomalies.tsv si crece inesperadamente."; \
 	 elif [ $$rc -ne 0 ]; then echo "   XX verificador fallo (rc=$$rc)"; exit $$rc; fi
+# ── Security audit (DAY 180): cppcheck + semgrep taint. Ver contrib/audit/ ──
+-include contrib/audit/audit.mk
