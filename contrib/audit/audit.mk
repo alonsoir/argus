@@ -17,11 +17,15 @@ AUDIT_DIRS := sniffer/src ml-detector/src firewall-acl-agent/src \
               etcd-server/src correlation-engine/src crypto-transport \
               plugin-loader rag-ingester/src common-rag-ingester libs
 
-# Instala cppcheck + semgrep en el guest si faltan (idempotente).
+# Verifica que cppcheck + semgrep estan en el guest (se instalan en provision,
+# ver Vagrantfile bloque all-dependencies). NO instala en runtime (ADR-039:
+# separacion build/runtime). Si faltan -> re-provisionar.
 audit-tools:
 	@echo "🔧 Verificando herramientas de auditoria en el guest..."
-	@vagrant ssh -c "command -v cppcheck >/dev/null 2>&1 || (sudo apt-get update -qq && sudo apt-get install -y -qq cppcheck)"
-	@vagrant ssh -c "command -v semgrep >/dev/null 2>&1 || pip3 install --quiet --user semgrep"
+	@vagrant ssh -c "command -v cppcheck >/dev/null 2>&1" \
+	  || { echo "❌ cppcheck ausente. Re-provisiona: vagrant provision defender"; exit 1; }
+	@vagrant ssh -c "command -v semgrep >/dev/null 2>&1" \
+	  || { echo "❌ semgrep ausente. Re-provisiona: vagrant provision defender"; exit 1; }
 	@echo "✅ cppcheck + semgrep disponibles"
 
 # ── Analisis estatico C++ (cppcheck) ────────────────────────────────────────

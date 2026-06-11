@@ -605,6 +605,27 @@ BASHRC_EOF
         echo "✅ Ansible ya instalado: $(ansible --version | head -1)"
       fi
 
+      # ── Auditoría de seguridad: cppcheck + semgrep (make audit, DAY 181) ──
+      # Dev-only (ADR-039): análisis estático/taint, no van a prod. cppcheck por
+      # apt; semgrep por pip con --break-system-packages (convención del guest
+      # desechable, igual que xgboost/pandas/jinja2). Provisión, NO runtime:
+      # contrib/audit/audit.mk solo VERIFICA presencia (separación build/runtime).
+      if ! command -v cppcheck &>/dev/null; then
+        echo "🔬 Instalando cppcheck (análisis estático C++)..."
+        apt-get install -y cppcheck
+        echo "✅ cppcheck $(cppcheck --version)"
+      else
+        echo "✅ cppcheck ya instalado: $(cppcheck --version)"
+      fi
+
+      if ! command -v semgrep &>/dev/null; then
+        echo "🛡️  Instalando semgrep (taint H-1/H-2)..."
+        pip3 install semgrep --break-system-packages --quiet
+        echo "✅ semgrep $(semgrep --version 2>/dev/null | head -1)"
+      else
+        echo "✅ semgrep ya instalado: $(semgrep --version 2>/dev/null | head -1)"
+      fi
+
       # ── HashiCorp Vault (DEBT-CRYPTO-MATERIAL-STORAGE-001) ─────────────────
       # Fix DAY 160: repo hashicorp OK con dearmor directo
       if ! command -v vault &>/dev/null; then
