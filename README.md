@@ -36,25 +36,25 @@
 
 ---
 
-## Estado actual — DAY 178 (2026-06-08)
+## Estado actual — DAY 181 (2026-06-11)
 
 <!-- DAY-STATUS -->
 | Campo | Valor |
 |---|---|
-| DAY | 178 |
+| DAY | 181 |
 | Tag | v1.0.0-day166 |
 | Branch | feature/day170-community-id-protobuf |
 | EMECAS++ OSS | ✅ verde — test-all + test-e2e-synthetic-full + test-e2e-synthetic-firewall |
 | EMECAS++ Enterprise | ✅ VERDE — 3 actos + Jenkins gate (DAY 167) |
 | Pipeline | 6/6 RUNNING |
-| NTP/chrony | ✅ DEBT-ARGUSPP-NTP-001 — health-check rechaza offset >1s (DAY 167) |
-| Bronce correlation_v1 | ✅ cableado E2E (DAY 175) · col 17 → string simbólico SELLADO en bronce real (DAY 177) |
-| Injectors sintéticos | ✅ community_id 100% isomorfo · node_id `synth-node-00` (DEBT-INJECTOR-NODEID-001 cerrada, DAY 177) |
-| correlation-engine | 🟡 scaffold ADR-048 F2 (DAY 167) |
-| Multi-VM | ✅ Suricata 7.0.10 + Zeek 8.2.0 + Wazuh 4.x en 192.168.100.0/24 (DAY 168) |
-| community_id | ✅ paridad OPERACIONAL cross-sensor — cross-check E2E reproducible (DAY 171/172) |
-| Arquitectura | ✅ ADR-046 v4 + AdapterSpec v1 · ✅ ADR-052 v3.2 · ✅ ADR-051 v2.2 · ✅ ADR-055 v1 RATIFICADA con enmiendas de fidelidad (DAY 178) · ⏳ ADR-050 (MITRE) + ADR-053 (JA3/JA4/BGP) + ADR-054 (confianza bronce) |
-| Próximo hito | Lado consumidor del engine (F1): file_watch bronce → clave HMAC etcd /secrets → parse_and_verify PRIMERO → SecurityEvent (mapeo aRGus desde NetworkSecurityEvent, NO mensaje nuevo) → ZMQ |
+| Frente A — Backend Kuzu | ✅ DAY 180 — `KuzuGraphSink` real detrás de `IGraphSink`, 4/4 tests · Kuzu v0.11.3 (upstream archivado, pin SHA256) · BD en `/opt/argus/graph` (vboxsf rompe mmap) |
+| Auditoría de seguridad (Fable) | ✅ DAY 181 — H-1 (cypher esc), H-2 (set_name allow-list), H-3 (ip_hl≥5) + tests RED→GREEN · EMECAS verde · `make audit` cppcheck limpio · `audit-taint` semgrep en cuarentena (DEBT-SEMGREP-CPP-HANG-001) |
+| Frente C — event_id replay-stable | 🟡 diagnosticado + escalado al Consejo (8 respuestas) — veredicto SIN sintetizar · DEBT-ARGUSPP-CLOCK-INJECTION-PROD-001 (P1) |
+| Bronce correlation_v1 | ✅ cableado E2E (DAY 175) · col 17 → string simbólico SELLADO (DAY 177) |
+| Grafo | ✅ Kuzu hot tier (~90d) detrás de `IGraphSink`; Parquet/Iceberg (DuckDB) cold tier — join por `flow_uid` + `community_id` |
+| correlation-engine | 🟢 consumidor F1 bronce→grafo (DAY 179) + backend Kuzu real (DAY 180) |
+| Arquitectura | ✅ ADR-046 v4 · ADR-052 v3.2 · ADR-051 v2.2 · ADR-055 v1 · ⏳ ADR-057 borrador (capa consulta Kuzu + bitemporalidad + NL→plantilla) · ⏳ ADR-050/053/054 |
+| Próximo hito | DOC: backlog al día → refinar ADR-057 (3 ejes) · sintetizar veredicto event_id · E2E Kuzu real (`ARGUS_GRAPH_BACKEND=kuzu`, poblar `/opt/argus/graph`) |
 | Gate UEx/INCIBE | Datasets de valor científico (no deadline duro) |
 <!-- /DAY-STATUS -->
 

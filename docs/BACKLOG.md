@@ -1,5 +1,5 @@
 # aRGus NDR — BACKLOG
-*Última actualización: DAY 179 — 2026-06-09*
+*Última actualización: DAY 181 — 2026-06-11*
 
 ---
 
@@ -86,6 +86,117 @@
 
 ---
 
+
+## 🆕 Entradas DAY 180-181 — Backend Kuzu real + auditoría de seguridad (Fable)
+
+> Origen: DAY 180 (backend Kuzu embebido real detrás de `IGraphSink`, 4/4 tests verdes)
+> y DAY 181 (aplicación de la auditoría de seguridad DAY 180 de Fable: H-1/H-2/H-3 +
+> tests RED→GREEN + target `make audit`). EMECAS verde en clean-room valida los fixes.
+> Deuda anotada en los prompts de continuidad, volcada aquí.
+>
+> **Recordatorio de proceso (no es DEBT de código):** el gate `make audit` queda
+> ASPIRACIONAL, NO encadenado a `test-all`. Con H-1/H-2 mitigados defensivamente pero sin
+> cura estructural (prepared statements ADR-057 + migración a safe_exec), las reglas semgrep
+> disparan sobre el código actual. No convertir `audit` en gate duro hasta cerrar ADR-057.
+> `audit-static` (cppcheck) pasa limpio; `audit-taint` (semgrep) en cuarentena por
+> DEBT-SEMGREP-CPP-HANG-001.
+
+### DEBT-KUZU-UPSTREAM-ARCHIVED-001 — Upstream Kuzu archivado (v0.11.3 release final)
+**Severidad:** 🟡 P2
+**Estado:** ABIERTO — DAY 180
+**Componente:** Vagrantfile (provisión Kuzu) + `correlation-engine` (backend)
+kuzudb archivó el repositorio upstream el 10-oct-2025; v0.11.3 es el release final
+(pin SHA256 `e99f9671...c058ebd`). No hay `.deb` upstream — tarball de release de GitHub.
+Mitigado por la abstracción `IGraphSink` (backend intercambiable sin tocar el engine).
+Plan B = fork `Vela-Engineering/kuzu`. Vigilar CVEs sin parche del proyecto archivado.
+Candidato a ADR corto que documente la vendorización y el criterio de salto a fork.
+**Test de cierre:** ADR corto redactado + criterio documentado de cuándo migrar a fork /
+otro backend + procedimiento de vigilancia de CVEs anotado.
+**Estimación:** 0.5 sesión (ADR) + vigilancia continua.
+
+### DEBT-KUZU-SCHEMA-EMBED-001 — schema.cypher leído de fichero en runtime
+**Severidad:** ⚪ P3
+**Estado:** ABIERTO — DAY 180
+**Componente:** `correlation-engine` — `KuzuGraphSink` (carga de schema)
+El sink lee `schema.cypher` de fichero en el arranque (idempotente, `IF NOT EXISTS`). Para
+el binario de producción desplegado (Raspberry / N100), el DDL debería embeberse en el
+ejecutable o instalarse junto a él, no depender de una ruta de `/vagrant`.
+**Test de cierre:** binario de producción carga el schema sin depender de ruta de
+desarrollo (`/vagrant/...`). DDL embebido o instalado junto al ejecutable.
+**Estimación:** 0.5 sesión (junto al empaquetado de producción del engine).
+
+### DEBT-KUZU-DB-LOCATION-PROD-001 — Ruta de la BD Kuzu en producción por decidir
+**Severidad:** ⚪ P3
+**Estado:** ABIERTO — DAY 180
+**Componente:** deployment + `correlation-engine` (db_path)
+`/opt/argus/graph` es la ruta de desarrollo (fs LOCAL del guest — `/vagrant`/vboxsf rompe el
+`mmap` de Kuzu). La ruta de producción (Raspberry) está por decidir: ligada a quién corre el
+engine (usuario/permisos) y a la migración a Iceberg (tier frío). Coordinar con
+`storage_type: nvme` (DEBT-HARDWARE-STORAGE-001) y la calculadora de despliegue.
+**Test de cierre:** ruta de BD de producción definida en `deployment.yaml`, con permisos y
+propietario documentados, sobre almacenamiento que soporta `mmap` (no vboxsf, no SD bajo carga).
+**Estimación:** 0.5 sesión (con la calculadora de despliegue / hardware físico).
+
+### DEBT-FALCO-ARGUS-GRAPH-RULES-001 — argus_graph.yaml en la raíz (parking)
+**Severidad:** 🟡 P2
+**Estado:** ABIERTO — DAY 180
+**Componente:** `argus_graph.yaml` (raíz del repo) + hardening Falco (ADR-030)
+`argus_graph.yaml` (reglas Falco temporales de integridad del graph store) vive en la RAÍZ
+del repo como parking. Su hogar definitivo es donde ADR-030 materialice las 10-11 reglas
+`argus_` (que hoy no existen como `.yaml` versionado en el repo — verificar dónde las genera
+el hardening). Nota: `proc.name` truncado a 15 chars → `correlation_eng` (no el nombre
+completo). Sumar bajo DEBT-PROD-FALCO-RULES-EXTENDED-001.
+**Test de cierre:** reglas Falco del graph store en su ubicación versionada definitiva (junto
+al resto de reglas `argus_` del hardening). `argus_graph.yaml` ya no en la raíz. Truncado de
+`proc.name` documentado o resuelto.
+**Estimación:** 0.5 sesión (junto a la consolidación de reglas Falco de producción).
+
+### DEBT-LIBSODIUM-SO-VERSION-CONFLICT-001 — ld avisa libsodium.so.26 vs .so.23
+**Severidad:** ⚪ P3
+**Estado:** ABIERTO — DAY 180
+**Componente:** link de `crypto-transport` + libkuzu (libsodium transitivo)
+`ld` avisa de `libsodium.so.26` vs `.so.23` al linkar `crypto-transport` (Kuzu trae libsodium
+transitivo/embebido). Ruido conocido; los tests pasan. Vigilar por si el conflicto de versión
+deja de ser benigno (símbolo divergente, no solo soname).
+**Test de cierre:** conflicto de soname resuelto o confirmado inocuo con evidencia (`ldd` +
+verificación de que ambos resuelven al símbolo correcto). Sin warning de `ld`, o warning
+documentado como esperado.
+**Estimación:** 0.5 sesión (investigación).
+
+### DEBT-SEMGREP-CPP-HANG-001 — semgrep-core se cuelga sobre el árbol C++ completo
+**Severidad:** 🟡 P2
+**Estado:** ABIERTO — DAY 181
+**Componente:** `contrib/audit/audit.mk` (`audit-taint`) + provisión semgrep (Vagrantfile)
+`semgrep-core` se CUELGA analizando el árbol C++ completo del firewall (`api/`, `core/`,
+`rules/` — timeout 124), pero NO sobre ficheros individuales (`ipset_wrapper.cpp` OK en
+segundos). El ruleset estándar `p/c` también cuelga sobre el directorio. Descartado: NO es
+memoria (5.6 GB libres, 2.1 usados), NO es paralelismo (`-j 1 --timeout 30` también cuelga).
+Las reglas custom (`argus-shell-from-constructed-string`, `argus-cypher-string-concat`) están
+VALIDADAS funcionalmente sobre ficheros sueltos (4 hallazgos `system()`/`popen()` en
+`ipset_wrapper.cpp`, líneas 97/199/450/529). `audit-taint` queda EN CUARENTENA — no apto como
+gate CI hasta resolver. Pendiente investigar: exclusión `--exclude='*.pb.cc'` (protobuf
+generado, sospechoso), `--max-memory`, o escanear con el pipeline parado.
+Pendiente asociado (aplicar JUNTO con el fix del cuelgue): migrar la provisión de semgrep a
+pipx en el Vagrantfile (`sudo -u vagrant pipx install semgrep`) + rutas absolutas
+`/home/vagrant/.local/bin/semgrep` en las 3 invocaciones de `audit.mk` + `--metrics off`.
+**Test de cierre:** semgrep recorre el árbol C++ del firewall sin colgarse, con las reglas
+custom disparando los hallazgos conocidos. `audit-taint` sale de cuarentena. Provisión pipx
+fijada en el Vagrantfile.
+**Estimación:** 1 sesión (investigación + provisión).
+
+### DEBT-SEMGREP-DEPS-001 — Conflicto urllib3 al instalar semgrep por pip (CERRADA DAY 181)
+**Severidad:** 🟢 P2
+**Estado:** ✅ CERRADA — DAY 181
+**Componente:** provisión Python del guest (Vagrantfile)
+`semgrep` instalado por `pip --break-system-packages` quedaba roto: conflicto IRRESOLUBLE de
+`urllib3` (`requests 2.28.1` exige `<2`, `semgrep 1.165.0` exige `~=2.0` — mutuamente
+excluyentes en el Python del guest). Solución: aislar `semgrep` con **pipx**
+(`pipx install semgrep` → `/home/vagrant/.local/bin/semgrep` arranca limpio, sin warnings).
+Refina la convención de provisión: librerías importadas (xgboost/pandas/jinja2) →
+`--break-system-packages`; apps CLI aisladas (semgrep) → pipx. **Nota:** el cableado de la
+provisión pipx en el Vagrantfile se aplica junto al fix de DEBT-SEMGREP-CPP-HANG-001 (probado
+a mano en el guest, pendiente de fijar en el fichero).
+**Test de cierre:** ✅ `pipx install semgrep` → `semgrep --version` limpio sin conflicto urllib3.
 
 ## 🆕 Entradas DAY 179 — Consumidor F1 del bronce → grafo (IGraphSink + loop)
 
