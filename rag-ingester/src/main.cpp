@@ -162,7 +162,9 @@ int main(int argc, char* argv[]) {
         plugin_loader.load_plugins();
         spdlog::info("PluginLoader: {} plugin(s) loaded", plugin_loader.loaded_count());
 
-        // Set global pointer for save_indices_to_disk()
+        // index_manager vive en main() durante todo el proceso; el puntero global
+        // nunca cuelga. NO refactorizar esta init a una funcion que retorne.
+        // cppcheck-suppress danglingLifetime
         g_index_manager = &index_manager;
 
         // ====================================================================
