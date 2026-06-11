@@ -3,7 +3,7 @@
 //
 //   flow_uid = base64_std( BLAKE2b-256( ENCODE(node_id, community_id, window, seq) ) )
 //
-// Se calcula EN EL ENGINE al insertar nodos en Neo4j, leyendo los tres inputs ya
+// Se calcula EN EL ENGINE al insertar nodos en el grafo (Kuzu, vía IGraphSink; ver ADR-052), leyendo los tres inputs ya
 // disponibles en los Parquet de cada componente. NO viaja en protobuf, NO se computa
 // en el sniffer. node_id = NetworkSecurityEvent.originating_node_id (string declarado).
 // community_id = NetworkFeatures.community_id (campo 18). window = flow_start_time en micros.
