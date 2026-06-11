@@ -1,158 +1,130 @@
 ═══════════════════════════════════════════════════════════════════════════════
-ARRANQUE DAY 181 — aRGus NDR · branch feature/day170-community-id-protobuf
+ARRANQUE DAY 182 — aRGus NDR · branch feature/day170-community-id-protobuf
 ═══════════════════════════════════════════════════════════════════════════════
 Prompt LEAN a propósito: estado + frentes + invariantes. El detalle vive en el repo.
 
-> NOTA PARA CLAUDE: DAY 180 cerró el frente A (BACKEND KUZU real detrás de IGraphSink),
-> VERDE (4/4 tests). Quedó MUCHA deuda anotada pero NO documentada en docs/BACKLOG.md
-> todavía (Alonso se cayó de sueño tras el código). El frente NATURAL de hoy es
-> DOCUMENTAR: volcar la deuda de abajo a docs/BACKLOG.md + refinar ADR-057 (borrador
-> ya en docs/adr/) + actualizar README DAY-STATUS. NADA de esto pasó por el Consejo aún.
-> PERO Alonso decide el frente al arrancar. No asumas; pregunta o mira su primer mensaje.
+> NOTA PARA CLAUDE: DAY 181 fue día de ORDEN (DOC) + 1ª vuelta del Consejo sobre ADR-057.
+> Cerrado: auditoría de seguridad de Fable aplicada (H-1/H-2/H-3 + tests + make audit),
+> backlog DAY 180-181 volcado, README DAY-STATUS a 181, DEBT-DOC-FLOWUID-NEO4J-KUZU-001
+> cerrada, ADR-057 refinado a v2 tras Consejo 8/8 + arbitraje. El frente NATURAL de hoy es
+> la FASE 0 de ADR-057 (código: ingested_at + smoke de concurrencia adelantado), o sintetizar
+> el veredicto event_id que sigue pendiente. PERO Alonso decide. No asumas; mira su 1er mensaje.
 
 ───────────────────────────────────────────────────────────────────────────────
-QUÉ CERRÓ DAY 180 (hecho — verificar en commits antes de repetir)
+QUÉ CERRÓ DAY 181 (hecho — verificar en commits antes de repetir)
 ───────────────────────────────────────────────────────────────────────────────
-Frente A: BACKEND KUZU embebido real detrás de IGraphSink. 4/4 tests verdes.
+DÍA DE ORDEN (frente DOC) + Consejo ADR-057.
 
-- Kuzu v0.11.3 PROVISIONADO en el guest (Vagrantfile, bloque en all-dependencies):
-  libkuzu.so → /usr/local/lib, kuzu.hpp/kuzu.h → /usr/local/include. NO hay .deb upstream;
-  tarball de release GitHub, pin por SHA256 = e99f9671ebfacf4d6208aa4b94490016e4ac9be242deed1fea78afb31c058ebd.
-  ⚠️ UPSTREAM ARCHIVADO (kuzudb archivó el repo 10-oct-2025; v0.11.3 = release final).
-  Mitigado por la abstracción IGraphSink. Plan B = fork Vela-Engineering/kuzu.
-- schema.cypher (correlation-engine/schema/): NetworkFlow IDENTIDAD PURA (flow_uid PK,
-  node_id, community_id, flow_start_window, seq_in_window). Alert + TelemetryEvent
-  ENRIQUECIDOS con veredicto (cols 12-17: final_classification, threat_category, 3 scores,
-  authoritative_source). Aristas: CORRELATES_FLOW, ALERT_ABOUT, TELEMETRY_ABOUT (method,confidence).
-  La 5-tupla NO va al grafo: vive en bronce + Parquet ORO (datasets salen de ORO, no del grafo).
-- cypher_builder.hpp (NUEVO, header compartido): is_alert(r) := final_classification=="MALICIOUS"
-  (predicado verificado en zmq_handler.cpp:438, el sink LEE el veredicto, no recalcula).
-  build_cypher() emite el modelo nuevo: MERGE {pk} ON CREATE SET, 3 cláusulas en un statement
-  (atómico por auto-commit). CRÍTICO: imbue(locale::classic()) en el stream → doubles con
-  PUNTO decimal (el guest tiene locale es_ES → habría salido coma → Cypher inválido).
-- KuzuGraphSink (NUEVO, .hpp/.cpp): implementa IGraphSink sobre Kuzu embebido. Forward-decl
-  de Database/Connection (header NO arrastra kuzu.hpp). Constructor(db_path, schema_path, logger)
-  carga schema idempotente (IF NOT EXISTS). write() lleva GUARD: rechaza node_id/flow_uid vacíos
-  (invariante de engine — Kuzu no permite NOT NULL en no-PK). flush() = contador (auto-commit).
-- LoggingGraphSink: build_cypher() ahora DELEGA en el builder compartido (paridad total).
-  Modelo viejo (:NetworkFlow)-[:RAISED]->(:Alert) con 5-tupla+scores aplanados RETIRADO.
-- main.cpp: backend seleccionable por env. ARGUS_GRAPH_BACKEND=kuzu → KuzuGraphSink
-  (default db /opt/argus/graph/argus_graph.kuzu, schema /vagrant/.../schema.cypher);
-  cualquier otro valor / ausente → LoggingGraphSink (default, no requiere Kuzu, CI-safe).
-- CMakeLists: kuzu_graph_sink.cpp en la lib; find_library(KUZU_LIB) + link PUBLIC
-  (se propaga a bin+tests, patrón ntp_utils); target test_kuzu_graph_sink con SCHEMA_PATH.
-- Vagrantfile: bloque "configure-argus-graph-dir" crea /opt/argus/graph (fs LOCAL del guest,
-  NO /vagrant: vboxsf rompe el mmap de Kuzu). chown vagrant, chmod 750.
-- argus_graph.yaml (reglas Falco TEMPORALES, parking en RAÍZ del repo): integridad del
-  graph store. ⚠️ proc.name truncado a 15 chars → "correlation_eng" (no el nombre completo).
-- Dialecto Kuzu VALIDADO contra lib real (dialect_smoke.cpp, throwaway): IF NOT EXISTS OK,
-  MERGE/ON CREATE SET encadenado OK, enrutado Alert/TelemetryEvent OK, aristas OK.
+- AUDITORÍA DE SEGURIDAD (Fable, DAY 180) APLICADA a la rama. 3 parches vía git am:
+  H-1 cypher_builder.hpp esc() escapa la barra invertida antes de la comilla simple ·
+  H-2 config_loader allow-list set_name [A-Za-z0-9_-]{1,31} · H-3 main_libpcap rechaza ip_hl<5.
+  + 2 tests RED→GREEN. + target `make audit` (contrib/audit/audit.mk). EMECAS verde. Pusheado.
+- `make audit`: audit-static (cppcheck) solo tumba en [error], excluye eBPF, PASA limpio.
+  audit-taint (semgrep) EN CUARENTENA — semgrep-core se cuelga sobre el árbol C++ completo.
+- BACKLOG volcado: deuda DAY 180-181 (5 Kuzu + 2 semgrep) a docs/BACKLOG.md vía script
+  idempotente. README <!-- DAY-STATUS --> a DAY 181. Pusheado (commit de docs).
+- DEBT-DOC-FLOWUID-NEO4J-KUZU-001 CERRADA: comentario de flow_uid.hpp refleja Kuzu vía
+  IGraphSink (antes Neo4j). grep -i neo4j = 0. Pusheado (commit de código).
+- ADR-057 REFINADO A v2 tras 1ª vuelta del Consejo (8/8) + arbitraje de Alonso. Acta redactada
+  (formato backlog). ⚠️ PENDIENTE DE COMMITEAR si no se hizo al cierre de DAY 181.
 
-Frente C (de DAY 180): DIAGNOSTICADO + ESCALADO al Consejo, decisión POSTERGADA.
-event_id = bpf_ktime_get_ns() (sniffer.bpf.c:246) → monótono-desde-boot → NO replay-stable.
-El mismo pcap da event_ids distintos entre runs → rompe golden tier. Deuda P1 REAL.
-Brief medible redactado (docs/counsil/Consulta...event_id.md) + respuestas de los 8 modelos
-YA recogidas en docs/counsil/ — PENDIENTE: sintetizar el veredicto del Consejo (no hecho).
+CONSEJO ADR-057 — 1ª vuelta (8/8). Veredicto: dirección aprobada, Fase 0 (ingested_at) verde
+unánime, resto condicionado a MEDIR. Choque factual de concurrencia Kuzu (Kimi: issues #3295/#3872
+RW+RO no → in-process obligatorio; Qwen: MVCC sí) → se resuelve con SMOKE, no con voto.
+Arbitraje de Alonso: NL rechazo duro · T5 eliminada · T6 sobrevive como bridge-ORO (con condición
+de muerte) · T4 acotada y honesta (no point-in-time) · T7 attack-path adoptada · smoke adelantado.
+Corrección al ponente: ingested_at desacopla el eje de transacción del reloj envenenado pero NO
+inmuniza el eje de evento (es first_seen, no transaction-time completo) → flag temporal_anomaly.
 
 ───────────────────────────────────────────────────────────────────────────────
-DEUDA TÉCNICA ACUMULADA DAY 180 — VOLCAR A docs/BACKLOG.md (no hecho aún)
+DEUDA DAY 181 — verificar en docs/BACKLOG.md
 ───────────────────────────────────────────────────────────────────────────────
-NUEVAS (DAY 180):
-- DEBT-KUZU-UPSTREAM-ARCHIVED-001 (P2): upstream Kuzu archivado 10-oct-2025. Mitigado por
-  IGraphSink; plan B fork Vela-Engineering/kuzu. Vigilar CVEs sin parche. Candidato a ADR corto.
-- DEBT-KUZU-SCHEMA-EMBED-001 (P3): el sink lee schema.cypher de fichero en runtime. Para el
-  binario de producción desplegado, embeber el DDL o instalarlo junto al ejecutable.
-- DEBT-KUZU-DB-LOCATION-PROD-001 (P3): /opt/argus/graph es dev. La ruta de prod (Raspberry)
-  está por decidir; ligada a quién corre el engine (usuario) y a la migración Iceberg.
-- DEBT-FALCO-ARGUS-GRAPH-RULES-001 (P2): argus_graph.yaml está en la RAÍZ (parking). Su hogar
-  es donde ADR-030 materialice las 10-11 reglas argus_ (no existen como .yaml versionado en el
-  repo — verificar dónde las genera el hardening). Sumar bajo DEBT-PROD-FALCO-RULES-EXTENDED-001.
-- DEBT-LIBSODIUM-SO-VERSION-CONFLICT-001 (P3): ld avisa libsodium.so.26 vs .so.23 al linkar
-  crypto-transport (Kuzu trae libsodium transitivo/embebido). Ruido conocido, tests pasan. Vigilar.
+NUEVAS (DAY 181):
+- DEBT-SEMGREP-CPP-HANG-001 (P2): semgrep-core se cuelga sobre el árbol C++ del firewall (no
+  ficheros sueltos; NO es memoria). audit-taint en cuarentena. Pendiente asociado: cablear pipx
+  en Vagrantfile (sudo -u vagrant pipx install semgrep) + rutas absolutas en audit.mk + --metrics off.
+- DEBT-NL-BENCHMARK-001 (P2): corpus etiquetado + métricas del clasificador NL antes de Fase 3 ADR-057.
+- DEBT-KUZU-CONCURRENCY-SMOKE-001 (P1): smoke multiproceso RW+RO + contención lectura bajo carga (Fase 0).
+- restore_from_wal_smoke_test: bajo DEBT-LABEL-WAL-001 (recuperación ante corrupción del WAL).
 
-ARRASTRADAS (siguen abiertas):
-- DEBT-ARGUSPP-CLOCK-INJECTION-PROD-001 (P1): event_id no reproducible (ver Frente C). EN CONSEJO.
-- DEBT-FLOWUID-SEQ-COLLISION-001 (P2): seq=0 fijo. Hermano del problema del desambiguador de
-  event_id (Opción 1 del brief al Consejo los unifica).
-- DEBT-DOC-FLOWUID-NEO4J-KUZU-001 (P3): comentarios de flow_uid.hpp dicen "Neo4j", es Kuzu (5 min).
-- DEBT-TEST-COL17-CONTRACT-DRIFT-001 (P2): alinear fixture al símbolo DetectorSource.
-- DEBT-ENGINE-INOTIFY-001 (P3): el --follow es tail-poll, no inotify.
-- DEBT-PROD-FALCO-RULES-EXTENDED-001: ptrace, DNS tunneling, /dev/mem, conexiones salientes.
+CERRADAS (DAY 181):
+- DEBT-SEMGREP-DEPS-001: conflicto urllib3 resuelto aislando semgrep con pipx.
+- DEBT-DOC-FLOWUID-NEO4J-KUZU-001: comentario alineado a Kuzu.
 
-PENDIENTES DE PROCESO (no son deuda de código):
-- Sintetizar veredicto del Consejo sobre reproducibilidad event_id (8 respuestas ya recogidas).
-- Pasar por el Consejo: lo realizado en DAY 180 (backend Kuzu) + el ADR-057 nuevo. NO hecho.
-- Actualización al Consejo arrastrada desde DAY 178/179: ADR-055 ratificada + §10.1 + F1 cerrado.
-- README bloque <!-- DAY-STATUS --> sin actualizar a DAY 180.
+HIGIENE PENDIENTE (destapada hoy por el guard del script de backlog):
+- 7 cabeceras DUPLICADAS preexistentes en docs/BACKLOG.md: 5 IRP (cross-ref índice/día, ¿deliberado?)
+  · DEBT-IRP-FLOAT-TYPES-001 (estado contradictorio CERRADA vs ABIERTA) · BACKLOG-CRYPTO-VENDOR-KEY-001
+  (stub vacío x2). Decidir convención del índice "DEUDAS ABIERTAS" + fundir las derivas reales.
+  Ofrecido auditor de solo-lectura (audit_backlog_dupes.py) — no ejecutado aún.
+
+ARRASTRADAS (siguen abiertas, sin tocar hoy):
+- DEBT-ARGUSPP-CLOCK-INJECTION-PROD-001 (P1): event_id no reproducible. EN CONSEJO, veredicto SIN sintetizar.
+- DEBT-FLOWUID-SEQ-COLLISION-001 (P2) · DEBT-TEST-COL17-CONTRACT-DRIFT-001 (P2) ·
+  DEBT-ENGINE-INOTIFY-001 (P3) · DEBT-PROD-FALCO-RULES-EXTENDED-001 · las 5 Kuzu (P2/P3).
 
 ───────────────────────────────────────────────────────────────────────────────
-ADR-057 (BORRADOR — refinar entre Alonso y Claude ANTES del Consejo)
+ADR-057 v2 — estado tras Consejo (docs/adr/)
 ───────────────────────────────────────────────────────────────────────────────
-"Capa de consulta del grafo (Kuzu), bitemporalidad y acceso NL→plantilla"
-docs/adr/ADR-057-... .md (borrador inicial creado DAY 180). Tres ejes a desarrollar:
-1. Capa de CONSULTA sobre Kuzu: cómo se exponen las queries del grafo (API, plantillas
-   parametrizadas, no Cypher crudo al usuario). Quién puede leer el grafo (ligado a Falco).
-2. BITEMPORALIDAD: tiempo de evento (flow_start_window) vs tiempo de ingestión/decisión.
-   El grafo hoy solo tiene tiempo de evento; falta el eje de cuándo se materializó/supo.
-3. Acceso NL→PLANTILLA: lenguaje natural a plantilla Cypher acotada (NO NL→Cypher libre,
-   por seguridad/inyección). Catálogo de plantillas auditables.
-   Estado: embrión. Se refina iterativamente día a día antes de convocar al Consejo.
+"Capa de consulta del grafo (Kuzu), bitemporalidad y acceso NL→plantilla" — v2, 1ª vuelta cerrada.
+Catálogo: T1 vecindario (LIMIT fan-out+timeout) · T2 contexto alerta · T3 densidad (acotada tiempo) ·
+T4 retro-hunt IOC acotado · T5 ELIMINADA · T6 bridge-ORO (condición de muerte) · T7 attack-path ·
+T-hist futura (WAL). Fase 0 = ingested_at (ON CREATE SET, ns UTC, first_seen) + temporal_anomaly +
+índice + SMOKE adelantado (concurrencia + contención + monotonía NTP). NL = rechazo duro, params por
+gramática, LLM solo clasifica, ADR propio. Firma diferida Fase 4. Pendiente: ejecutar smoke y
+adjuntar números → 2ª vuelta o cierre.
 
 ───────────────────────────────────────────────────────────────────────────────
 FRENTES VIVOS — Alonso elige al arrancar
 ───────────────────────────────────────────────────────────────────────────────
-DOC) DOCUMENTAR DAY 180 (frente natural): volcar la deuda de arriba a docs/BACKLOG.md,
-refinar ADR-057, actualizar README DAY-STATUS. Día de orden, bajo en energía.
-B)   ADR-054 — confianza bronce multi-nodo (DISEÑO, sigue PENDIENTE). Ed25519 jerárquico (Kimi).
-D)   Deudas baratas: DEBT-DOC-FLOWUID-NEO4J-KUZU-001 (5 min) / DEBT-TEST-COL17-CONTRACT-DRIFT-001.
-CONSEJO) Sintetizar el veredicto sobre event_id + convocar Consejo sobre Kuzu/ADR-057.
-E2E) Ejecutar el engine en modo Kuzu real (ARGUS_GRAPH_BACKEND=kuzu) contra bronce real,
-verificar que /opt/argus/graph se puebla. PRIMERA vez que se corre fuera de tests.
+ADR-057-F0) FASE 0 (código, frente natural): ingested_at en schema.cypher (3 tablas) +
+cypher_builder.hpp (ON CREATE SET) + temporal_anomaly + índice + smoke de concurrencia/contención
+contra libkuzu real. NO toca bronce/protobuf/sniffer. El smoke ZANJA Kimi-vs-Qwen.
+CONSEJO) Sintetizar el veredicto event_id (8 respuestas en docs/counsil/, SIN sintetizar desde DAY 180).
+DOC-HIGIENE) audit_backlog_dupes.py + fundir los 7 duplicados + commitear ADR v2 + acta si falta.
+D) DEBT-TEST-COL17-CONTRACT-DRIFT-001 (P2, 0.5 sesión).
+B) ADR-054 confianza bronce multi-nodo (Ed25519 jerárquico, Kimi). Sigue pendiente.
+E2E) Engine en ARGUS_GRAPH_BACKEND=kuzu contra bronce real, verificar /opt/argus/graph se puebla.
 
-NO HOY salvo decisión explícita: Suricata/Zeek/Wazuh (F2/F3).
+NO HOY salvo decisión explícita: Suricata/Zeek/Wazuh (F2/F3) · implementar la capa NL (necesita benchmark).
 
 ───────────────────────────────────────────────────────────────────────────────
-INVARIANTES DURABLES (no re-litigar, no violar) — + nuevas de DAY 180
+INVARIANTES DURABLES (no re-litigar, no violar) — + nuevas de ADR-057
 ───────────────────────────────────────────────────────────────────────────────
 BUILD / ENTORNO
-- Construir SIEMPRE vía `make <target>`. Recetas make desde el HOST macOS; lo demás vía
-  `vagrant ssh -c`. macOS anfitrión; build Linux-only (guest). NUNCA cmake en el host.
-- macOS: nunca `sed -i` sin `-e ''`; heredoc Python3. Scripts un-solo-uso → gitignored.
+- Construir SIEMPRE vía `make <target>` desde el HOST macOS; lo demás vía `vagrant ssh -c`.
+  NUNCA cmake en el host. macOS: nunca `sed -i` sin `-e ''`; heredoc Python3; scripts un-uso gitignored.
 - Dos commits/día separados: código y docs. EMECAS = vagrant destroy -f && up && bootstrap && test-all.
-- ntp_utils Y libkuzu se linkan por find_library sobre la lib instalada (NO add_subdirectory).
+- ntp_utils Y libkuzu por find_library sobre la lib instalada (NO add_subdirectory).
 
-KUZU / GRAFO (NUEVO DAY 180)
-- Kuzu v0.11.3, upstream ARCHIVADO. Vendorizado tras IGraphSink (intercambiable). Pin SHA256.
-- BD Kuzu = fichero único .kuzu (v0.11.0+). NO en /vagrant (vboxsf rompe mmap) → /opt/argus/graph.
-- Schema-first OBLIGATORIO: Kuzu exige DDL declarado antes de insertar. PK STRING/numérica.
-  node_id NO puede ser NOT NULL (no-PK) → el GUARD del sink lo hace cumplir en código.
-- cypher_builder.hpp = ÚNICA fuente del Cypher; ambos sinks delegan (paridad). Stream con
-  locale::classic() SIEMPRE (el guest es es_ES → coma decimal rompería el Cypher).
-- is_alert(r) := final_classification=="MALICIOUS" (el sink LEE el veredicto, NO recalcula).
-- Grafo = vista DERIVADA del bronce (reconstruible). NetworkFlow identidad pura; veredicto
-  en Alert/TelemetryEvent. Datasets cruzados → Parquet ORO, NO el grafo.
+KUZU / GRAFO
+- Kuzu v0.11.3, upstream ARCHIVADO. Tras IGraphSink (intercambiable). Pin SHA256. BD en
+  /opt/argus/graph (vboxsf rompe mmap). Schema-first. cypher_builder = única fuente del Cypher,
+  locale::classic() siempre. is_alert := final_classification=="MALICIOUS". Grafo = vista derivada
+  del bronce; NetworkFlow identidad pura; veredicto en Alert/TelemetryEvent; datasets → Parquet ORO.
 
-BRONCE / IDENTIDAD (sin cambios)
-- Contrato correlation_v1: 19 cols (18 + HMAC). Reader valida HMAC ANTES de parsear; inválida DESCARTA.
-- event_id NUESTRO, determinista (PERO ver DEBT-CLOCK-INJECTION: bpf_ktime no es replay-stable).
-- flow_uid = base64(BLAKE2b-256(encode(node_id, community_id, flow_start_window, seq))), server-side.
-- community_id = SHA1 Corelight; clave de join, NUNCA identidad.
-- "Bronce PRESERVA, gold DECIDE": no aplanar DETECTOR_SOURCE_DIVERGENCE.
-- Consejo de Sabios = 8 modelos. "Medir, no votar".
+BRONCE / IDENTIDAD
+- correlation_v1: 19 cols (18 + HMAC), HMAC-first (inválida descarta). event_id determinista (PERO
+  CLOCK-INJECTION: bpf_ktime no replay-stable). flow_uid = base64(BLAKE2b(node_id, community_id,
+  flow_start_window, seq)) server-side. community_id = SHA1 Corelight, clave de join NUNCA identidad.
+  "Bronce PRESERVA, gold DECIDE". Consejo = 8 modelos. "Medir, no votar".
+
+NUEVAS (ADR-057 v2 — pendientes de 2ª vuelta/cierre)
+- Capa de consulta IN-PROCESS (probablemente obligatoria por el lock de Kuzu — confirmar con smoke).
+- NL→plantilla = RECHAZO DURO ante ambigüedad (decisión Alonso). LLM clasifica; params por gramática.
+- ingested_at = first_seen (ON CREATE SET), NO transaction-time completo (eso vive en el WAL).
+- temporal_anomaly=TRUE si flow_start_window > ingested_at + margen (aísla CLOCK-INJECTION).
+- Catálogo de plantillas = frontera de portabilidad: no acumular Cypher nativo fuera de él.
+- SMOKE antes de implementar plantillas (medir, no votar).
 
 ───────────────────────────────────────────────────────────────────────────────
 DÓNDE LEER MÁS
 ───────────────────────────────────────────────────────────────────────────────
-- correlation-engine/include/correlation_engine/{i_graph_sink,cypher_builder,kuzu_graph_sink,flow_uid}.hpp
-- correlation-engine/src/{kuzu_graph_sink,logging_graph_sink,main}.cpp
-- correlation-engine/schema/schema.cypher → modelo del grafo (DAY 180).
-- correlation-engine/CMakeLists.txt → find_library(KUZU_LIB), target test_kuzu_graph_sink.
-- Vagrantfile → bloque Kuzu en all-dependencies + configure-argus-graph-dir.
-- argus_graph.yaml (raíz, parking) → reglas Falco temporales del graph store.
-- docs/adr/ADR-057-... → borrador capa de consulta + bitemporalidad + NL→plantilla.
+- docs/adr/ADR-057-... → v2 tras Consejo (catálogo + fases + tabla de arbitraje).
+- docs/BACKLOG.md → acta Consejo DAY 181 + deuda DAY 180-181 volcada.
+- contrib/audit/audit.mk → make audit (audit-static OK, audit-taint en cuarentena).
+- correlation-engine/schema/schema.cypher → modelo del grafo (Fase 0 añade ingested_at).
+- correlation-engine/include/correlation_engine/cypher_builder.hpp → ON CREATE SET (Fase 0).
 - docs/counsil/Consulta...event_id*.md → brief + 8 respuestas (sintetizar veredicto).
-- docs/BACKLOG.md → deudas P0-P3 (PENDIENTE volcar las de DAY 180 listadas arriba).
-- ml-detector/src/zmq_handler.cpp:438 → final_classification (predicado de is_alert).
 
-NUMERACIÓN ADR: 053 RESERVADO (JA3/JA4+TLS+BGP) · 054 PENDIENTE (confianza bronce multi-nodo)
-· 055 RATIFICADA (injectors/golden) · 056 ? · 057 BORRADOR (consulta grafo + bitemporal + NL→plantilla).
+NUMERACIÓN ADR: 053 RESERVADO · 054 PENDIENTE (confianza bronce) · 055 RATIFICADA · 056 ? ·
+057 v2 1ª-vuelta-cerrada (consulta grafo + bitemporal + NL→plantilla).
