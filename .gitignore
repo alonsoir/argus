@@ -270,7 +270,7 @@ enterprise/enterprise.token
 enterprise/enterprise.token
 common/build-vault/
 common/build-vault/
-output.md
+emecas.md
 
 # backups generados por update_day173.py
 *.bak.[0-9]*-[0-9]*
