@@ -4,6 +4,8 @@
 //===----------------------------------------------------------------------===//
 
 #include "firewall/config_loader.hpp"
+#include <algorithm>
+#include <cctype>
 #include <fstream>
 #include <safe_path/safe_path.hpp>
 #include <stdexcept>
@@ -351,8 +353,21 @@ void ConfigLoader::validate_config(const FirewallAgentConfig& config) {
     }
 
     // Validate IPSet name
+    // H-2: set_name se interpola en system()/popen() (ipset_wrapper.cpp) y el agente
+    // corre como root. Allow-list estricta = el unico contenido que ipset acepta
+    // ([A-Za-z0-9_-], <=31 chars). Cierra inyeccion de comandos via config.
     if (config.ipset.set_name.empty()) {
         errors.push_back("IPSet name cannot be empty");
+    } else {
+        const auto& n = config.ipset.set_name;
+        const bool ok = n.size() <= 31 &&
+            std::all_of(n.begin(), n.end(), [](unsigned char c) {
+                return std::isalnum(c) || c == '_' || c == '-';
+            });
+        if (!ok) {
+            errors.push_back("IPSet name must match [A-Za-z0-9_-]{1,31} "
+                             "(got: '" + n + "')");
+        }
     }
 
     // Validate chain name

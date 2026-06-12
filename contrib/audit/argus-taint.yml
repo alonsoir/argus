@@ -1,0 +1,43 @@
+# argus-taint.yml — reglas semgrep especificas de aRGus NDR.
+# Cazan las dos clases de bug de la auditoria DAY 180 que NO detectan
+# Trivy (CVEs de deps) ni -Werror (memoria/tipos): inyeccion por
+# interpolacion de datos en sinks peligrosos (shell / Cypher).
+# Authors: Alonso Isidoro Roman + Claude (Anthropic).
+rules:
+  # H-2: cadena construida (operator+ / ostringstream) que llega a system/popen.
+  - id: argus-shell-from-constructed-string
+    languages: [cpp]
+    severity: ERROR
+    message: >
+      system()/popen() recibe una cadena construida en runtime. Si algun
+      fragmento deriva de config o de red es inyeccion de comandos (el
+      firewall corre como root). Valida con allow-list estricta o migra a
+      safe_exec (execv sin shell).
+    patterns:
+      - pattern-either:
+          - pattern: system($CMD.c_str())
+          - pattern: std::system($CMD.c_str())
+          - pattern: popen($CMD.c_str(), ...)
+      # Excluye literales constantes (system("sysctl ...")) y tests.
+      - pattern-not: system("...")
+      - pattern-not: std::system("...")
+      - pattern-not: popen("...", ...)
+
+  # H-1: query() con Cypher en variable (no prepared statement parametrizado).
+  - id: argus-cypher-string-concat
+    languages: [cpp]
+    severity: ERROR
+    message: >
+      conn->query() recibe Cypher en una variable construida en runtime. Los
+      campos del CorrelationRecord derivan de red (no confiable). ADR-057: usar
+      prepared statements parametrizados (prepare()+execute()), cero
+      interpolacion de strings.
+    patterns:
+      - pattern-either:
+          - pattern: $CONN->query($Q + $R)
+          - pattern: $CONN->query($CYPHER)
+      # No marcar el paso de DDL del schema (statements del .cypher de confianza).
+      - pattern-not: $CONN->query(stmt)
+      - pattern-not: $CONN->query("...")
+      # No marcar el flujo correcto (prepared statement).
+      - pattern-not: $CONN->execute($PREP, ...)

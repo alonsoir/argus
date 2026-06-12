@@ -36,24 +36,28 @@
 
 ---
 
-## Estado actual — DAY 169 (2026-05-29)
+## Estado actual — DAY 182 (2026-06-12)
 
 <!-- DAY-STATUS -->
 | Campo | Valor |
 |---|---|
-| DAY | 169 |
+| DAY | 182 |
 | Tag | v1.0.0-day166 |
-| Branch | main @ 21642e87 |
+| Branch | feature/day170-community-id-protobuf |
 | EMECAS++ OSS | ✅ verde — test-all + test-e2e-synthetic-full + test-e2e-synthetic-firewall |
 | EMECAS++ Enterprise | ✅ VERDE — 3 actos + Jenkins gate (DAY 167) |
 | Pipeline | 6/6 RUNNING |
-| NTP/chrony | ✅ DEBT-ARGUSPP-NTP-001 — health-check rechaza offset >1s (DAY 167) |
-| correlation-engine | 🟡 scaffold ADR-048 F2 (DAY 167) |
-| Multi-VM | ✅ Suricata 7.0.10 + Zeek 8.2.0 + Wazuh 4.x en 192.168.100.0/24 (DAY 168) |
-| community_id | 🟡 Suricata+Zeek configurados · aRGus protobuf+sniffer PENDIENTE P0 (DAY 169) |
-| Arquitectura | ✅ ADR-046 v4 + AdapterSpec v1 (DAY 169) · ADR-050 pendiente |
-| Próximo hito | community_id nativo en aRGus (protobuf+sniffer) + ADR-050 |
-| Gate UEx/INCIBE | Datasets de valor científico (no deadline duro) |
+| Frente A — Backend Kuzu | ✅ DAY 180 — `KuzuGraphSink` real detrás de `IGraphSink`, 4/4 tests · Kuzu v0.11.3 (upstream archivado, pin SHA256) · BD en `/tmp` guest-nativo (vboxsf rompe mmap) |
+| Smoke Kuzu B1 (D1+D2) | ✅ DAY 182 — RESUELTAS POR MEDICIÓN: un grafo (D1) · Kuzu stock, Vela NO (D2). UNWIND batch = ×55–61 (164→12.200 ups/s). Multi-writer no escala (373k rechazos write-tx). ADR-057 v2 §3.0 |
+| Fase 0 grafo | ✅ DAY 182 — `ingested_at` + `temporal_anomaly` unilateral + `build_cypher(ingested_at_ns)` + 3 guardas (UNWIND-batch+flush, `DatabaseRegistry`, `bufferPoolSize` capado) · EMECAS verde · cierra DEBT-CE-TESTS-UNGATED-001 |
+| Auditoría de seguridad (Fable) | ✅ DAY 181 — H-1 (cypher esc), H-2 (set_name allow-list), H-3 (ip_hl≥5) + tests RED→GREEN · `make audit` cppcheck limpio · `audit-taint` semgrep en cuarentena (DEBT-SEMGREP-CPP-HANG-001) |
+| Frente C — event_id replay-stable | 🟡 diagnosticado + escalado al Consejo (8 respuestas) — veredicto SIN sintetizar · DEBT-ARGUSPP-CLOCK-INJECTION-PROD-001 (P1) |
+| Bronce correlation_v1 | ✅ cableado E2E (DAY 175) · col 17 → string simbólico SELLADO (DAY 177) |
+| Grafo | ✅ Kuzu hot tier (~90d) detrás de `IGraphSink`; Parquet/Iceberg (DuckDB) cold tier — join por `flow_uid` + `community_id` |
+| Componentes | ⚠️ `correlation-engine` (alimenta bronce Iceberg) y `graph-engine` (lee GOLD, dueño del `.kuzu`) son DOS componentes — clases de grafo a extraer (DEBT-GRAPH-ENGINE-EXTRACTION-001) |
+| Arquitectura | ✅ ADR-046 v4 · ADR-052 v3.2 · ADR-051 v2.2 · ADR-055 v1 · 🟢 ADR-057 v2 (D1+D2 resueltas por medición; D3 abierta) · ⏳ ADR-050/053/054 |
+| Próximo hito | Tortura del pipeline a 33 Mb/s (Vagrant) → x86 RAW · B2 (Arrow vs DuckDB, D3) · sintetizar veredicto event_id · MITRE A–M / N–Z disjuntos (ADR-040) |
+| Gate UEx/INCIBE | Datasets de valor científico (no deadline duro) — se entregan salga corroborada o seca la hipótesis ensemble |
 <!-- /DAY-STATUS -->
 
 **Tag activo:** `v1.0.0-day166` | **Branch activa:** `main`
@@ -68,6 +72,18 @@
   - `make PROFILE=production all`: Gate ODR — ALL COMPONENTS BUILT ✅
   - `make argus-network-isolate-test`: dry-run PASSED ✅
 
+### Hitos DAY 182 🎉 — Smoke B1: D1+D2 resueltas por medición
+- **Smoke de concurrencia/upsert Kuzu EJECUTADO** (`DEBT-KUZU-CONCURRENCY-SMOKE-001`, adelantado a Fase 0 por arbitraje DAY 181). **D1 y D2 RESUELTAS POR MEDICIÓN** (ADR-057 v2 §3.0):
+  - **D1 — un grafo vs N grafos → UN GRAFO.** run3 (4 writers) midió 373.000 rechazos por la única write-tx del sistema, +37% throughput, lectura p99 ×11.37. Multi-writer no escala. Sharding —si alguna vez— TEMPORAL, nunca semántico.
+  - **D2 — Kuzu stock vs fork Vela → KUZU STOCK, VELA NO.** El cuello era el overhead por-`query()`, no el escritor único. **UNWIND batch (1 query = N upserts) da ×55–61** (run1 164–229 ups/s → run2 10.000–12.200 ups/s). Vela solo añade writers paralelos = lo que run3 probó que no escala.
+  - **Descomposición:** `coste(n)=P+S+n·E` → E≈88 µs/fila (MERGE irreducible), P+S≈5.93 ms (parse/plan+fsync, fijo, amortizable). El ×55–61 es amortizar el coste fijo.
+  - **Lock medido:** cross-proceso rechazado (exit=2 ✅); in-process 2º `Database` ABRE (footgun → corrupción) → `DatabaseRegistry` obligatorio.
+  - **Corrección honesta (ninguno de los otros 7 modelos la cazó):** el `unordered_map::at` al reabrir tras crash fue auto-infligido (borrar `.kuzu` dejando `.wal` huérfano = inconsistencia artificial), NO prueba de que la recuperación de Kuzu esté rota. La recuperación real queda sin validar (diferida, ADR-057 §8).
+- **Fase 0 del grafo verde (EMECAS DAY 182):** `ingested_at` (first_seen, wall clock) + `temporal_anomaly` unilateral (futuro-datación = firma de clock-injection) + `build_cypher(ingested_at_ns)` (función libre, testeable, `locale::classic()`). **Tres guardas que protegen LA MEDICIÓN** (que el andamiaje trague la tortura de datos a 33 Mb/s — y más en x86 RAW — sin perder/corromper): sink UNWIND-batch + flush-by-(size|time), `DatabaseRegistry`, `bufferPoolSize` capado. NO production-readiness — distinción explícita en ADR-057 §7.
+- **`correlation-engine` y `graph-engine` separados** por Apache Iceberg: el primero alimenta bronce, el segundo lee GOLD y posee el `.kuzu`. Clases de grafo a extraer → `DEBT-GRAPH-ENGINE-EXTRACTION-001`.
+- **`DEBT-CE-TESTS-UNGATED-001` CERRADA** — `make test-components` corre `correlation-engine-test` primero; H-1 y el backend Kuzu ya gatean merges.
+- **Consejo de Sabios (2ª vuelta, 8/8)** sobre los datos del smoke: 5 "bloqueantes" leídos como production-readiness → reclasificados bajo ADR-057 §8 (endurecimiento DIFERIDO), porque el eje del proyecto es *¿aguanta el andamiaje la medición?*, no *¿es production-ready?*. Insight de síntesis: los 5 son UN problema — una cola hacia un único consumidor de tasa fija.
+
 ### Hitos DAY 157 🎉
 - **DEBT-AUTONOMY-STATE-PERSISTENCE-001 CERRADA** — `common/autonomy_state_writer.h` header-only. Escritura atómica fsync+rename, firma Ed25519, lectura fail-safe (AUTONOMOUS expirado >24h → NORMAL). 9/9 tests RED→GREEN. Integrado en etcd-server STEP 0c.
   - **DEBT-BOOTSTRAP-STATUS-SIGNATURE-001 CERRADA** — `bootstrap-status.json` firmado Ed25519. JSON canónico → `crypto_sign_detached` → `signature_hex`. Escritura atómica tmp→rename+fsync. Misma cadena de confianza que ADR-025.
@@ -75,6 +91,57 @@
   - **DEBT-CRYPTO-RECONCILIATION-001 CERRADA + STALENESS GUARD (B1 post-Consejo)** — `AutonomySubscriber`: `shared_ptr<atomic<FirewallAutonomyMode>>` + `shared_ptr<atomic<int64_t>>` (last_update_ns). `poll_callback`: si `elapsed > staleness_timeout_sec` → NORMAL + log. Previene firewall congelado si etcd-server muere silenciosamente. 9/9 tests (T9: staleness guard).
   - **Consejo 8/8 consultado** — Dos bloqueantes identificados y resueltos antes del merge: B1 (staleness) + B2 (ExecStartPre= vs ExecStartPost= para fichero efímero, pendiente DAY 158).
   - **EMECAS DAY 157 VERDE** — `vagrant destroy → up → make bootstrap → make test-all` — TODO VERDE.
+
+### Hitos DAY 177 🎉
+- **Contrato bronce `correlation_v1` en forma final + injectors sellados E2E.** Tres cambios verificados sobre tráfico real (`make pipeline-start` + `make test-e2e-synthetic-full`):
+  - **(B) col 17 `authoritative_source` → string simbólico.** `DetectorSource_Name()` en el writer; el reader almacena string (engine limpio de protobuf, decisión DAY 174 #5). Round-trip unitario verde + bronce real con `150 DETECTOR_SOURCE_ML_PRIORITY` + `9 DETECTOR_SOURCE_DIVERGENCE`. Orden B-vs-A resuelto MIDIENDO (`test_correlation_roundtrip` es injector-independiente) — "medir, no votar".
+  - **node_id sintético — DEBT-INJECTOR-NODEID-001 CERRADA (P0).** Isomorfo `synth-node-00` fijo, mock `synth:node:<id>`. `flow_uid` ya no degenera. 102 filas `synth-node-00` en bronce.
+  - **Proto benigno correlacionable (hallazgo de hoy, NO deuda — "completar A").** El injector ponía `protocol_number=rand[1,255]` → ~99% no-TCP/UDP → `compute_community_id() nullopt` → bronce a 0 filas. Fix: coin flip `use_tcp` gobierna number+name (antes divergían). community_id 0%→100% (159/159 `1:...=`).
+  - **DEBT-INJECTOR-ROWGAP-001 REENCUADRADA y cerrada como característica.** No es "se pierden filas": el `send(dontwait)` reproduce fielmente la semántica de entrega no-garantizada de ZMQ PUSH (síntoma bidireccional — observados 2 `event_id` duplicados con `community_id` distinto). Decisión Q1 (arbitraje Alonso vs mayoría del Consejo): INSTRUMENTAR (diff de conjuntos), no re-arquitecturar — el suplantador no debe ser más fiable que el sniffer que imita (ADR-055 §0).
+  - **ADR-055 v1 RATIFICADA con enmiendas de fidelidad (DAY 178)** (Inyectores Sintéticos: fidelidad, determinismo, entrega) — 8/8 confirman lo sustantivo. Enmiendas: DELIVERY-METRIC P2→P1; objeción formal de Kimi a la anulación de Q1 aceptada bajo protesta (condición P1 satisfecha); Q4 se mantiene 7/8 (Kimi sostiene 8/8, no verificable, decisión idéntica).
+  - **Consejo 8/8 (1ª pasada):** ratificaciones 8/8 · Q2 dos perillas + semilla fija · Q3 ADR-055 absorbe · Q4 no DEBT para proto (7/8) · Q5 preservar divergencia + "no aplanar" en gold. Q1 sin mayoría (3/3/2) → arbitraje. Deudas nuevas: DEBT-INJECTOR-DELIVERY-METRIC-001 (P1, elevada DAY 178), DEBT-INJECTOR-PROTO-MIX-001 (P2).
+
+### Hitos DAY 175 🎉
+- **Zona bronce `correlation_v1` CABLEADA y verificada E2E.** El `CorrelationWriter`
+  (productor, ml-detector) deja de estar suelto. Cadena completa con datos reales:
+  sniffer eBPF → community_id → ZMQ → ml-detector → bronce → `parse_and_verify` del
+  correlation-engine. **3.712 filas reales** en `/vagrant/logs/correlation/argus/`,
+  todas con community_id poblado; una fila real validada con la clave de PRODUCCIÓN
+  de etcd. 4 pasos verdes: alta CMake + hook en punto único (antes de la bifurcación
+  rag/no-rag) + round-trip unitario (prueba de oro writer↔reader) + pipeline vivo.
+  - **Lección (DEBT-BRONZE-KEY-PROVISIONING-001):** la clave HMAC del bronce no es
+    `seed.hex` sino la de etcd `/secrets/<componente>`. El round-trip con clave
+    hardcodeada validaba el contrato pero ocultaba el provisioning.
+  - **REGLA PERMANENTE (DAY 175):** construir siempre vía `make <target>` (corre la
+    dependencia `proto` y aplica `-Werror` del Makefile), nunca `cmake` directo
+    (riesgo de `.pb.h` rancio).
+  - **INVARIANTE:** community_id es el punto de unión con Suricata/Zeek — TODAS las
+    variantes del sniffer (x86/ARM, eBPF/libpcap) deben poblarlo.
+  - **Consejo 8/8:** injectors sintéticos primero (ambos modos: isomorfo + mock) ·
+    col 17 `authoritative_source` → string simbólico · ADR-054 (modelo de confianza
+    Ed25519 con/en-vez-de HMAC a escala multi-nodo) pendiente de redacción.
+
+### Hitos DAY 173 🏛️
+- **ADR-051 v2.2 RATIFICADA — Consejo 8/8.** Community ID Parity Gate & Correlation Health. Confirmación de fidelidad sin 3ª deliberación (precedente ADR-052). Renombrado desde "Seed Parity Gate" (el gate valida paridad de `community_id` emitido, de la que el drift de seed es una causa, no la única). Decisión clave: **Oracle Divergence** — si los sensores heterogéneos coinciden entre sí pero no con `pycommunityid`, arranca con WARNING crítico, NO fail-closed (argumento N-version); fail-closed reservado a disparidad ENTRE sensores. Máquinas de estado del gate y de confianza del sensor (DEGRADED estadístico / QUARANTINED binario confirmado). **Diseño ratificado para archivar** — solo el gate de arranque mínimo (cross-check DAY 171/172) está en camino crítico; el resto duerme hasta que exista engine que proteger. Entregable `ADR-051_v2.2.md`.
+  - **DEBTs nuevas (corte camino-crítico/diferible):** P1 `DEBT-CID-TEST-VECTORS-001` (fixture compartido con FLOWUID), `DEBT-SEED-GATE-DIAGNOSTIC-001`, `DEBT-CID-STATE-MACHINE-001`, `DEBT-CID-CROSSCHECK-CI-001`; P2 `DEBT-CID-ORACLE-QUORUM-001`, `DEBT-SEED-CHAOS-TEST-001`; P3 diferida `DEBT-SEED-ACTIVE-PROBE-001`. Más `DEBT-ARGUSPP-CLOCK-INJECTION-PROD-001` (P1, hallazgo DAY 172: verificar que producción no heredó el reloj inyectado del cross-check).
+  - **Higiene DAY 173:** `enterprise_vendor.pub` huérfana destrackeada de la raíz (commit `5c8dc37d`). Verificado sin fuga de clave privada.
+- **ADR-052 v3.2 RATIFICADA — Consejo 8/8.** Multi-node Flow Identity & Host↔Net Correlation. Confirmación de fidelidad unánime, sin tercera deliberación. Principio ordenador §0: *"El grafo no es el producto. El producto es el corpus."* `flow_uid = base64(BLAKE2b(node_id ‖ community_id ‖ flow_start_window [‖ seq_in_window]))`; `node_id` = string legible declarado en inventario firmado (NO derivado del keypair efímero); `community_id` = clave de correlación, nunca identidad. Dos anulaciones de árbitro: hash anclado a libsodium (§3.1.1) y señales TCP/TLS de host dentro del ADR (§3.11). Entregable `ADR-052_v3.2.md`. **Desbloquea `DEBT-NEO4J-FLOW-KEY-001`.**
+  - **DEBTs de identidad de flujo registradas (orden de dependencia P0→P3):** P0 `DEBT-NODEID-CRYPTO-IDENTITY-001` (reescrita) + `DEBT-FLOWUID-CANONICAL-ENCODING-001` + `DEBT-NEO4J-FLOW-KEY-001`; P1 `DEBT-SENSOR-COVERAGE-MAP-001` / `DEBT-LABEL-WAL-001` (hash-chain) / `DEBT-ARGUSPP-ARP-MONITOR-001` / `DEBT-ARGUSPP-HOST-TCP-001`; P2 `DEBT-CERT-EXPECTATION-STORE-001` / `DEBT-SEQWINDOW-PERSIST-001` / `DEBT-ARGUSPP-OOB-MITM-001` / `DEBT-CORPUS-QUALITY-METRICS-001`; P3 `DEBT-ARCH-FLOW-OBSERVATION-001`.
+  - **ADR-053 stub abierto** — JA3/JA4, cadena TLS profunda, anomalía de ruta L3/BGP (diferido conscientemente de ADR-052 para evitar scope creep). **ADR-050 (MITRE) y ADR-051 (Seed Parity Gate) siguen pendientes de redacción.**
+
+### Hitos DAY 171 🎉
+- **Cross-check E2E community_id — paridad OPERACIONAL demostrada.** El cliente `.50` replaya el flujo Neris por `eth1`; aRGus + Suricata + Zeek capturan en paralelo (promiscuo) el MISMO paquete y los tres convergen STRING A STRING al diana `1:IN7uqVpMWxpmuhQTowSQB2XEe0E=`. Se cierra la paridad operacional (DAY 170 cerró especificación + provisión). Validación data-plane (P2 Consejo): se mide lo que el binario EMITE, no lo que dice la config.
+  - **aRGus surfacea community_id observable** — `sniffer/src/flow/community_id_log.{hpp,cpp}`. `compute_community_id` permanece pura; el log vive en los 3 call-sites de sellado (`ring_consumer.cpp` ×2, `main_libpcap.cpp` ×1). Gateado por `ARGUS_CID_CROSSCHECK=1` (OFF por defecto, coste nulo en hot path). TSV 7 campos a `/vagrant/logs/lab/cid-xcheck-argus.tsv` con mutex + `fflush`. Compila en Variant A y B. Test TDH `test_community_id_log.cpp` PASSED.
+  - **Verificador de paridad** — `tools/community_id_crosscheck.py` (host). Paridad por VALOR del cid; 5-tupla como etiqueta forense (cada motor nombra el proto distinto). Categorías: agree / disagree / solo.
+  - **Criterio de aceptación congelado** — `docs/acceptance_criteria.md`, Consejo 8/8 sin tercera ronda. Refinamiento ChatGPT: categorías de presencia DROP/CONFIG/POLICY/BUG/UNKNOWN, precondición drop=0, nota de túneles de Gemini.
+  - **DEBT-ARGUSPP-COUNTER-DUMP-001 abierta (P1, DAY 172)** — volcado de contadores de aRGus a fichero parseable (código nuevo, no "leer un log que existe" como Suricata/Zeek).
+  - **Nota algoritmo:** `community_id` usa SHA1 (Corelight), no HMAC-SHA256.
+
+### Hitos DAY 170 🎉
+- **community_id cross-sensor sellado** — aRGus (nativo, 8/8 tests contra oráculo pycommunityid v1.5.0 byte a byte, campo protobuf field 18), Zeek 8.2.0 (provisión `local.zeek` site/: `@load community-id-logging` + `redef CommunityID::seed=0`) y Suricata 7.0.10 (`community-id:yes` + `community-id-seed:0`). Diana E2E `1:IN7uqVpMWxpmuhQTowSQB2XEe0E=` sobre flujo Neris. Seed 0 explícito en los 3 garantizado por provisión. `DEBT-ARGUSPP-COMMUNITY-ID-ARGUS-001` + `DEBT-ARGUSPP-COMMUNITY-ID-001` CERRADAS.
+  - **DEBT-ZEEK-COMMUNITY-ID-PROVISION-001 CERRADA** — guardas de idempotencia por línea en el Vagrantfile (no por bloque). `vagrant provision zeek` deja `local.zeek` con `@load` + `seed=0` sin intervención manual.
+  - **DEBT-DOCS-BACKLOG-DEDUP-001 CERRADA** — `docs/BACKLOG.md` corrupto desde DAY 158 (append manual `cat>>`, no el script). 5336->2839 líneas. Lección: verificar integridad con `grep secciones | sort | uniq -d` del fichero completo, no `grep -c` de cabecera.
+  - **Consejo de Sabios (8/8) — consenso unánime P1/P2/P3.** Gate seed por data-plane (no config), identidad de flujo `hash(node_id || community_id || flow_start_window)`, doble arista host<->red con host_id canónico. ADR-051 (Seed Parity Gate) + ADR-052 (Multi-node Flow Identity & Host<->Net) pendientes de redacción. DEBT-NEO4J-FLOW-KEY-001 (P0 esquema).
 
 ### Hitos DAY 169 🏛️
 - **Día de arquitectura.** `ADR-046 v4` aprobado (Multi-Source Pipeline, separación de planos). `AdapterSpec v1` cerrado (contrato del adaptador por fuente). `ADR-050` pendiente de redacción (seis vectores de la sesión MITRE + corrección cripto telemetría).
@@ -428,6 +495,23 @@ vagrant destroy -f && vagrant up && make bootstrap && make test-all
 
 
 
+### Lecciones operativas (DAY 176)
+
+> Lecciones de la sesión de cableado/verificación del bronce. Operacionales, no de diseño.
+
+- **Recetas `make` desde el HOST.** Los targets del Makefile raíz se ejecutan desde el
+  anfitrión macOS; envolverlos en `vagrant ssh -c` rompe con `vagrant: not found` (el
+  binario `vagrant` no existe dentro del guest). El Makefile ya hace `vagrant ssh -c`
+  internamente donde corresponde.
+- **Limpiar bronce SIEMPRE con el ml-detector parado.** Secuencia correcta:
+  `tmux kill-session` → `rm` del CSV → `make ml-detector-start`. Borrar el fichero en
+  caliente deja un inode huérfano (el proceso sigue escribiendo al inode borrado) →
+  filas perdidas silenciosamente.
+- **El injector necesita `sudo env LD_LIBRARY_PATH=/usr/local/lib`.** Lee `seed.bin`
+  (permisos `0400 root`), por lo que requiere `sudo`; y `env LD_LIBRARY_PATH=/usr/local/lib`
+  para localizar las `.so` instaladas (libsodium, crypto_provider, etc.).
+
+
 ### Hardened VM (ADR-030 Variant A)
 
 ```bash
@@ -564,7 +648,11 @@ make hardened-full   # destroy → up → provision → build → deploy → che
   - ✅ DAY 167: **DEBT-ARGUSPP-NTP-001 (P0) · correlation-engine scaffold ADR-048 F2 · BACKLOG-CI-ENTERPRISE-001 Jenkins gate · merge main 7b45feca** 🎉
   - ✅ DAY 168: **Vagrantfile multi-VM Suricata 7.0.10 + Zeek 8.2.0 + Wazuh 4.x · community-id Suricata/Zeek · 3 reglas permanentes · merge main 21642e87** 🎉
   - ✅ DAY 169: **Día de arquitectura · ADR-046 v4 + AdapterSpec v1 · separación de planos · ADR-050 pendiente · community_id nativo aRGus P0 abierto** 🏛️
-  - 🔜 DAY 170: **community_id nativo en aRGus (protobuf + sniffer, canonicalización Kimi) + ADR-050 borrador + RSS bajo carga (pipeline+client+tcpreplay) + DEBT-ARGUSPP-SURICATA-001 (eve.json → correlation-engine)**
+  - ✅ DAY 171: **Cross-check E2E community_id 3 ventanas VERDE · paridad operacional demostrada · helper observable + verificador + acceptance_criteria.md congelado (Consejo 8/8) · DEBT-COUNTER-DUMP-001 abierta** 🎉
+  - ✅ DAY 170: **community_id cross-sensor sellado (aRGus+Zeek+Suricata, seed 0, vs oráculo) · de-dup BACKLOG · Consejo 8/8 P1/P2/P3 · ADR-051/052 pendientes** 🎉
+  - 🔜 DAY 172: **volcado contadores aRGus a fichero parseable (DEBT-COUNTER-DUMP-001) + ADR-051/052 borrador + DEBT-NEO4J-FLOW-KEY-001 (esquema Neo4j) + ADR-050 MITRE borrador + DEBT-ARGUSPP-SURICATA-001 (eve.json → correlation-engine)**
+  - ✅ DAY 173: **ADR-052 v3.2 RATIFICADA (Consejo 8/8)** — Multi-node Flow Identity & Host↔Net · DEBTs P0→P3 de identidad de flujo · ADR-053 stub (JA3/JA4/BGP) · desbloquea DEBT-NEO4J-FLOW-KEY-001 🏛️
+  - ✅ DAY 182: **Smoke B1 ejecutado — D1 (un grafo) + D2 (Kuzu stock, Vela NO) RESUELTAS POR MEDICIÓN · UNWIND batch ×55–61 · Fase 0 grafo verde · ADR-057 v2 · graph-engine como componente** 🎉
 
 ---
 

@@ -605,6 +605,27 @@ BASHRC_EOF
         echo "✅ Ansible ya instalado: $(ansible --version | head -1)"
       fi
 
+      # ── Auditoría de seguridad: cppcheck + semgrep (make audit, DAY 181) ──
+      # Dev-only (ADR-039): análisis estático/taint, no van a prod. cppcheck por
+      # apt; semgrep por pip con --break-system-packages (convención del guest
+      # desechable, igual que xgboost/pandas/jinja2). Provisión, NO runtime:
+      # contrib/audit/audit.mk solo VERIFICA presencia (separación build/runtime).
+      if ! command -v cppcheck &>/dev/null; then
+        echo "🔬 Instalando cppcheck (análisis estático C++)..."
+        apt-get install -y cppcheck
+        echo "✅ cppcheck $(cppcheck --version)"
+      else
+        echo "✅ cppcheck ya instalado: $(cppcheck --version)"
+      fi
+
+      if ! command -v semgrep &>/dev/null; then
+        echo "🛡️  Instalando semgrep (taint H-1/H-2)..."
+        pip3 install semgrep --break-system-packages --quiet
+        echo "✅ semgrep $(semgrep --version 2>/dev/null | head -1)"
+      else
+        echo "✅ semgrep ya instalado: $(semgrep --version 2>/dev/null | head -1)"
+      fi
+
       # ── HashiCorp Vault (DEBT-CRYPTO-MATERIAL-STORAGE-001) ─────────────────
       # Fix DAY 160: repo hashicorp OK con dearmor directo
       if ! command -v vault &>/dev/null; then
@@ -668,7 +689,73 @@ BASHRC_EOF
       fi
 
       # Vault autostart movido a vault-enterprise-bootstrap (run: always) — DAY 163
+
+      # ── Kuzu v0.11.3 embebido (backend IGraphSink — DAY 180) ──────────────
+            # ⚠️  Upstream ARCHIVADO (10-oct-2025): v0.11.3 = release final, sin parches
+            #     futuros. Mitigado por abstracción IGraphSink. Plan B: fork
+            #     Vela-Engineering/kuzu. Ver nota BACKLOG DAY 180.
+            # C++ client = libkuzu.so + kuzu.hpp (NO hay .deb upstream). Pin URL+SHA256.
+            # DB = fichero único .kuzu desde v0.11.0 (no directorio).
+            if [ ! -f /usr/local/lib/libkuzu.so ]; then
+              echo "🗃️  Installing Kuzu v0.11.3 (embedded graph backend)..."
+              KUZU_URL="https://github.com/kuzudb/kuzu/releases/download/v0.11.3/libkuzu-linux-x86_64.tar.gz"
+              KUZU_SHA256="e99f9671ebfacf4d6208aa4b94490016e4ac9be242deed1fea78afb31c058ebd"   # ← pega aquí el sha256sum tras la 1ª descarga
+
+              cd /tmp && rm -rf kuzu-install && mkdir kuzu-install && cd kuzu-install
+              curl -fsSL "$KUZU_URL" -o libkuzu.tar.gz
+
+              GOT=$(sha256sum libkuzu.tar.gz | awk '{print $1}')
+              if [ "$KUZU_SHA256" = "PENDIENTE_PINEAR" ]; then
+                echo "⚠️  SHA256 sin pinear. Descargado: $GOT"
+                echo "    → Pégalo en KUZU_SHA256 y re-provisiona para fijar el pin."
+              elif [ "$GOT" != "$KUZU_SHA256" ]; then
+                echo "❌ SHA256 mismatch Kuzu: esperado $KUZU_SHA256, obtenido $GOT"; exit 1
+              else
+                echo "✅ SHA256 Kuzu verificado"
+              fi
+
+              tar xzf libkuzu.tar.gz
+              KUZU_SO=$(find . -name 'libkuzu.so*' | head -1)
+              KUZU_HPP=$(find . -name 'kuzu.hpp' | head -1)
+              KUZU_H=$(find . -name 'kuzu.h' | head -1)
+              if [ -z "$KUZU_SO" ] || [ -z "$KUZU_HPP" ]; then
+                echo "❌ Artefactos Kuzu no hallados en el tarball (so/hpp)"; exit 1
+              fi
+              cp "$KUZU_SO" /usr/local/lib/libkuzu.so
+              cp "$KUZU_HPP" /usr/local/include/
+              [ -n "$KUZU_H" ] && cp "$KUZU_H" /usr/local/include/
+              ldconfig
+              cd /tmp && rm -rf kuzu-install
+              echo "✅ Kuzu instalado: $(ls -la /usr/local/lib/libkuzu.so)"
+            else
+              echo "✅ Kuzu ya instalado"
+            fi
+
     DEPENDENCIES_EOF
+
+    # ════════════════════════════════════════════════════════════════════════
+    # Provisioning: directorio de runtime del grafo Kuzu (DAY 180)
+    # ════════════════════════════════════════════════════════════════════════
+    # SITUACIÓN TEMPORAL — leer antes de tocar:
+    #   · La landing zone bronce/plata/oro NO se crea aquí. Su destino real es
+    #     Apache Iceberg, que gestionará sus propias rutas y política de tablas.
+    #     Crear /var/lib/argus/{bronze,silver,gold} ahora sería trabajo que
+    #     Iceberg deshará. Paso a paso: hoy solo el grafo necesita hogar.
+    #   · El grafo es propiedad EXCLUSIVA de Kuzu (por ahora): fichero único .kuzu.
+    #   · NO puede vivir en /vagrant: es mount vboxsf y Kuzu mapea con mmap (rompe).
+    #     Por eso fs LOCAL del guest: /opt/argus/graph.
+    #   · Esta carpeta debe ser vigilada por Falco (ADR-030 BSR): reglas TEMPORALES
+    #     en falco/rules.d/argus_graph.yaml (revisar/retirar al migrar a Iceberg).
+    #   · Owner = vagrant (el correlation-engine corre como vagrant en dev). El
+    #     usuario de producción está por decidir (componentes de las Raspberry).
+    defender.vm.provision "shell", name: "configure-argus-graph-dir", run: "always",
+      inline: <<-ARGUS_GRAPH
+      echo "🗂️  Preparando runtime del grafo Kuzu (/opt/argus/graph)..."
+      mkdir -p /opt/argus/graph
+      chown -R vagrant:vagrant /opt/argus
+      chmod 750 /opt/argus/graph
+      echo "✅ /opt/argus/graph listo ($(stat -c '%U:%G %a' /opt/argus/graph))"
+    ARGUS_GRAPH
 
     # ════════════════════════════════════════════════════════════════════════
     # Provisioning: Auto-configure sniffer.json
@@ -938,23 +1025,16 @@ BASHRC_EOF
 
     client.vm.provision "shell", name: "client-setup", run: "always", inline: <<-CLIENT
           export DEBIAN_FRONTEND=noninteractive
-          set -e
+          # NO set -e (regla de provisioning): un repo externo caído no debe tumbar el up
           echo "=== ML CLIENT — Traffic Generator + MITRE Attack Tools ==="
-
-          apt-get update -qq
+          apt-get update -qq || true
           apt-get install -y --no-install-recommends \
-            curl wget iproute2 net-tools dnsutils \
-            tcpdump tcpreplay netcat-openbsd \
-            iputils-ping procps chrony \
-            nmap hydra sqlmap \
-            python3 python3-pip git
-
-          # Metasploit: NO está en apt. Instalador oficial Rapid7, no crítico.
-          if ! command -v msfconsole >/dev/null 2>&1; then
-            curl -fsSL https://raw.githubusercontent.com/rapid7/metasploit-omnibus/master/config/templates/metasploit-framework-wrappers/msfupdate.erb -o /tmp/msfinstall \
-            && chmod +x /tmp/msfinstall && /tmp/msfinstall \
-                   || echo "WARN: metasploit no instalado, continúo (no crítico)"
-           fi
+          curl wget iproute2 net-tools dnsutils \
+          tcpdump tcpreplay netcat-openbsd \
+          iputils-ping procps chrony \
+          nmap hydra sqlmap \
+          python3 python3-pip git \
+          || { echo "FATAL: herramientas base no instaladas"; exit 1; }
 
           # Atomic Red Team (ground truth reproducible — DEBT-ARGUSPP-MITRE-001)
           if [ ! -d /opt/atomic-red-team ]; then
@@ -973,8 +1053,10 @@ BASHRC_EOF
           ip route del default 2>/dev/null || true
           ip route add default via 192.168.100.1 dev eth1
 
+          chattr -i /etc/resolv.conf 2>/dev/null || true
           echo "nameserver 8.8.8.8" > /etc/resolv.conf
           echo "nameserver 1.1.1.1" >> /etc/resolv.conf
+          chattr +i /etc/resolv.conf 2>/dev/null || true
 
           echo "=== CLIENT READY ==="
           echo "   IP      : 192.168.100.50"
@@ -1046,6 +1128,9 @@ BASHRC_EOF
 
       # community-id: yes — DEBT-ARGUSPP-COMMUNITY-ID-001
       sed -i '/community-id:/s/false/yes/' /etc/suricata/suricata.yaml
+      # community-id-seed=0 explicito — paridad con aRGus y Zeek (FIX DAY170).
+      # No depender del default de fabrica; garantizar la clave del join cross-tool.
+      sed -i 's/^\([[:space:]]*\)community-id-seed:[[:space:]]*[0-9]*/\1community-id-seed: 0/' /etc/suricata/suricata.yaml
 
       mkdir -p /var/log/suricata
       chown -R suricata:suricata /var/log/suricata 2>/dev/null || true
@@ -1117,12 +1202,21 @@ BASHRC_EOF
       echo 'ip link set eth1 promisc on' >> /etc/rc.local
       chmod +x /etc/rc.local
 
-      # community-id — DEBT-ARGUSPP-COMMUNITY-ID-001
-      if [ ! -f /opt/zeek/etc/local.zeek ]; then
-        touch /opt/zeek/etc/local.zeek
+      # community-id — DEBT-ARGUSPP-COMMUNITY-ID-001 + DEBT-ZEEK-COMMUNITY-ID-PROVISION-001
+      # FIX DAY170: (1) ZeekControl carga site/local.zeek, NO etc/local.zeek (bug previo).
+      #             (2) policy correcto = community-id-logging (no community-id-v1).
+      #             (3) seed=0 explicito -> paridad con aRGus y Suricata (verificado: 1:IN7uq...).
+      ZEEK_SITE="$(/opt/zeek/bin/zeek-config --site_dir 2>/dev/null || echo /opt/zeek/share/zeek/site)"
+      SITE_LOCAL="${ZEEK_SITE}/local.zeek"
+      mkdir -p "$ZEEK_SITE"
+      touch "$SITE_LOCAL"
+      # Guardas separadas por linea: el paquete Zeek puede traer el @load (comentado o no)
+      # y una edicion manual previa pudo dejar el @load sin el seed. Idempotente por linea.
+      if ! grep -qE '^[[:space:]]*@load policy/protocols/conn/community-id-logging' "$SITE_LOCAL"; then
+        printf '\\n@load policy/protocols/conn/community-id-logging\\n' >> "$SITE_LOCAL"
       fi
-      if ! grep -q "community-id" /opt/zeek/etc/local.zeek; then
-        echo "@load policy/protocols/conn/community-id-v1" >> /opt/zeek/etc/local.zeek
+      if ! grep -qE '^[[:space:]]*redef CommunityID::seed' "$SITE_LOCAL"; then
+        printf 'redef CommunityID::seed = 0;\\n' >> "$SITE_LOCAL"
       fi
 
       mkdir -p /var/log/zeek
@@ -1130,7 +1224,7 @@ BASHRC_EOF
 
       echo "=== Zeek ready ==="
       /opt/zeek/bin/zeek --version || true
-      echo "community-id: $(grep community-id /opt/zeek/etc/local.zeek)"
+      echo "community-id: $(grep -h community-id "$SITE_LOCAL" 2>/dev/null || echo NO-CONFIGURADO)"
       ip link show eth1 | grep -i promisc || echo "⚠️  eth1 promisc no activo aun"
     SHELL
   end  # End zeek VM

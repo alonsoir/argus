@@ -99,7 +99,7 @@ nuestro código propio. Aparecen prefijados con `defender:` en el output de EMEC
 
 Filtrar del grep de verificación:
 ```bash
-grep 'warning:' output.md | grep -v 'defender:'
+grep 'warning:' emecas.md | grep -v 'defender:'
 ```
 
 ### Criterio de revisión

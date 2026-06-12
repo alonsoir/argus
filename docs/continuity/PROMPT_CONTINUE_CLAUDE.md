@@ -1,85 +1,124 @@
-DAY 170 — aRGus NDR (arXiv:2604.04952)
+# Prompt de continuidad — DAY 183 (aRGus NDR)
 
-Estado: main @ 21642e87 (post-merge DAY 168). Tag estable v1.0.0-day166.
-Rama activa: ninguna — DAY 169 fue día de arquitectura sin merge de código.
-Próxima rama sugerida: feature/day170-community-id-protobuf
+Soy Alonso, investigador solo en Badajoz construyendo **aRGus NDR** (C++20, NDR open-source
+embebido para hospitales/infraestructura crítica), colaborando con Dr. Andrés Caro Lindo
+(UEx/INCIBE). Trabajo en sesiones de madrugada. Uso el **Consejo de Sabios** (8 modelos:
+Claude, Grok, ChatGPT, DeepSeek, Qwen, Gemini, Kimi, Mistral) como revisión adversarial.
+Principios: **"medir, no votar"**, **Via Appia Quality** (construir para durar), honestidad
+científica por encima de todo.
 
-CONTEXTO DE LOS ÚLTIMOS DÍAS:
-DAY 164-166: Enterprise crypto lifecycle completo. EMECAS++ 3 actos. Merge a main. Tag v1.0.0-day166.
-DAY 167: DEBT-ARGUSPP-NTP-001 (P0) ✅ — chrony en todos los nodos, health-check rechaza offset >1s.
-correlation-engine scaffold (ADR-048 F2). BACKLOG-CI-ENTERPRISE-001 ✅ — Jenkins gate make emecas++
-(11 pasadas hasta verde). Merge a main → 7b45feca.
-DAY 168: Vagrantfile multi-VM: Suricata 7.0.10 + Zeek 8.2.0 + Wazuh 4.x en ml_defender_gateway_lan
-(192.168.100.0/24). community-id habilitado en Suricata y Zeek. 50.248 reglas ET Open.
-WAZUH_MANAGER_PASSWORD eliminado (fix seguridad). Merge a main → 21642e87.
-DAY 169: Día de arquitectura. ADR-046 v4 APROBADO (Multi-Source Pipeline, separación de planos).
-AdapterSpec v1 CERRADO (contrato del adaptador por fuente). ADR-050 PENDIENTE de redacción
-(seis vectores de la sesión MITRE + corrección cripto del canal de telemetría).
-Documentación 167/168/169 actualizada en local (script update_docs_day169.py).
+Repo: `/Users/aironman/CLionProjects/test-zeromq-docker`. Branch:
+`feature/day170-community-id-protobuf`. **Invariante de build:** SIEMPRE `make <target>` desde
+el host macOS; el Makefile hace `vagrant ssh -c` internamente; NUNCA `cmake` directo (riesgo
+`.pb.h` rancio) ni `vagrant ssh -c` envolviendo un `make` (el binario vagrant no está en el
+guest). **EMECAS** = `vagrant destroy -f && vagrant up && make bootstrap && make test-all`.
+**Kuzu** v0.11.3 (upstream archivado oct-2025, pin SHA256), embebido tras `IGraphSink`,
+BD en `/tmp` guest-nativo (vboxsf rompe el mmap de Kuzu).
 
-CLARIFICACIÓN IMPORTANTE sobre community_id:
-community_id viene de fábrica en Suricata, Zeek y Wazuh, pero NO en aRGus.
-No está calculado en el sniffer ni hay campo en el protobuf. Es el gate real del dataset federado.
+---
 
-VMs (autostart: false — arrancar individualmente):
-defender   192.168.100.1   aRGus NDR completo (primary)
-suricata   192.168.100.10  Suricata 7.0.10, AF_PACKET, community-id:yes, PROMISC
-zeek       192.168.100.11  Zeek 8.2.0, community-id-v1, PROMISC
-wazuh      192.168.100.12  Wazuh 4.x manager running, NTP OK
-client     192.168.100.50  tcpreplay + nmap/hydra/sqlmap/atomic-red-team
+## QUÉ PASÓ EN DAY 182 (lo que cierro hoy)
 
-PRIORIDAD DAY 170 (en orden):
-1. DEBT-ARGUSPP-COMMUNITY-ID-ARGUS-001 (P0) — community_id nativo en aRGus
-   - protobuf/network_security.proto → añadir campo community_id (string, field ~20)
-     protobuf3 backwards-compatible: campos nuevos no rompen componentes existentes
-   - sniffer: calcular community_id = SHA1(5-tupla: src_ip+dst_ip+src_port+dst_port+proto)
-   - propagar: sniffer → ml-detector → correlation-engine
-   - CATCH CRÍTICO (Kimi, gate real): canonicalización idéntica byte a byte a Zeek/Suricata.
-     proto NUMÉRICO (6/17) no string ("tcp"); orden de endpoints normalizado (menor primero).
-     Si difiere → join cross-tool falla EN SILENCIO. Es el mismo bug de endianness del inicio.
-     Verificación obligatoria: misma 5-tupla → mismo ID en las 4 herramientas, diff a mano = 0.
-2. RSS bajo carga (lo más barato que cierra el debate de hardware con evidencia)
-   - pipeline + client + tcpreplay escalonado. No necesita la víctima MITRE.
-   - Medir CPU/RAM de las 4 fuentes bajo carga → calibra tiers RPi5/N100 (DEBT-ARGUSPP-RESOURCE-001)
-3. ADR-050 — borrador para el Consejo (Claude tiene los 6 vectores + bootstrap + corrección cripto)
-   - flujo: borrador → Consejo → aprobación → implementación (como ADR-046)
-4. DEBT-CMAKE-GRAPH-INVARIANTS-001 (P1) — lint CI targets duplicados CMake
-   - arrastrado desde DAY 169. ChatGPT/Kimi: check cmake -DARGUS_VAULT_ENABLED=ON + grep target dup.
-   - ADR propuesto: docs/adr/adr-028-cmake-target-naming.md
+**El smoke `DEBT-KUZU-CONCURRENCY-SMOKE-001` se EJECUTÓ y MIDIÓ. D1 y D2 quedan RESUELTAS POR
+MEDICIÓN.** Esto es B1 del ADR-057 ejecutado, no "production-readiness".
 
-DEUDAS ABIERTAS RELEVANTES:
-- DEBT-ARGUSPP-COMMUNITY-ID-ARGUS-001 — community_id nativo aRGus (protobuf+sniffer). P0.
-- DEBT-ARGUSPP-SURICATA-001 — Suricata en EMECAS + eve.json → correlation-engine. P1.
-- DEBT-ARGUSPP-WAZUH-001 — Wazuh password via Vault en prod FEDER. P2.
-- DEBT-ARGUSPP-MITRE-001 — script ataque MITRE con atomic-red-team (post-FEDER). ADR-047.
-- DEBT-ARGUSPP-RESOURCE-001 — medir CPU/RAM/disco 4 fuentes en RPi5/N100. P1 con hardware.
-- DEBT-CMAKE-GRAPH-INVARIANTS-001 — lint CI targets duplicados CMake. P1.
-- ADR-050 — sesión MITRE + corrección cripto telemetría. Borrador pendiente.
+- **D1 = UN GRAFO** (no N grafos por eje). run3 (4 writers) = 373k rechazos por la única
+  write-tx del sistema, +37% throughput, lectura p99 ×11.37. Multi-writer NO escala. Sharding
+  futuro —si lo hubiera— TEMPORAL, nunca semántico.
+- **D2 = KUZU STOCK, VELA NO.** El cuello era el overhead por-`query()` (parse/plan+fsync por
+  llamada), no el escritor único. **UNWIND batch (1 query = N upserts) → ×55–61** (164–229
+  ups/s con MERGE-por-fila → 10.000–12.200 con UNWIND batch=1000). Vela solo añade writers
+  paralelos = exactamente lo que no escala. Reconsiderar Vela SOLO si UNWIND+1writer se mide
+  corto en hardware real.
+- **Descomposición:** `coste(n)=P+S+n·E`, E≈88µs/fila (MERGE irreducible), P+S≈5.93ms (fijo,
+  amortizable). El ×55–61 es amortizar el coste fijo de 1-por-fila a 1-por-1000.
+- **Lock:** cross-proceso rechazado (exit=2 ✅); in-process 2º Database ABRE (footgun →
+  corrupción) → `DatabaseRegistry` obligatorio.
+- **Corrección honesta mía (la cacé yo, no los otros 7):** el `unordered_map::at` al reabrir
+  tras crash fue AUTO-INFLIGIDO (borré el `.kuzu` y dejé el `.wal` huérfano = inconsistencia
+  artificial). NO es prueba de que Kuzu no recupere. La recuperación real sigue sin validar
+  (diferida).
 
-ARQUITECTURA MULTI-VM (ml_defender_gateway_lan 192.168.100.0/24):
-- eth0: NAT (gestión)
-- eth1: intnet ml_defender_gateway_lan (tráfico de ataque, promiscuo en sniffer/suricata/zeek)
-- client inyecta tráfico → todos los engines ven el mismo flujo → community_id coherente
-- correlation-engine: source_wait_timeout argus=5s/suricata=10s/zeek=20s/wazuh=90s; crisis_idle 120s
-- Neo4j: grafo de correlación cross-engine sobre community_id (post-FEDER)
-- separación de planos (DAY 169): datos (telemetría cruda por fuente) / correlación (CrisisWindow +
-  community_id) / decisión. AdapterSpec v1 es el contrato del adaptador por fuente.
+**Fase 0 del grafo VERDE (EMECAS):** `ingested_at` (first_seen, wall clock deliberado, distinto
+del bpf_ktime envenenable) + `temporal_anomaly` unilateral (futuro-datación = firma de
+clock-injection, margen 2s PLACEHOLDER a calibrar) + `build_cypher(ingested_at_ns)` (función
+libre, testeable, `locale::classic()`, cierra inyección Cypher H-1). Tres guardas que protegen
+LA MEDICIÓN: sink UNWIND-batch + flush-by-(size|time), `DatabaseRegistry`, `bufferPoolSize`
+capado. `DEBT-CE-TESTS-UNGATED-001` cerrada (test-components corre correlation-engine-test 1º).
 
-REGLAS CRÍTICAS:
-- if(NOT TARGET) obligatorio en bloques CMake condicionales.
-- EMECAS++ = 3 actos antes de cualquier merge enterprise. Tarda >1h. No negociable.
-- Python3 heredoc en macOS (nunca sed -i sin -e ''). vagrant ssh -c siempre con -c. -Werror permanente.
-- Nunca merge directo a main — siempre PR con EMECAS++ verde.
-- vendor.key nunca en disco ni en repo — solo Vault dev (Modelo B).
-- ZMQ PUB hace bind() ANTES de SUB connect().
-- Nunca set -e en provisions Vagrantfile — usar || true o || { exit 1; } explícito.
-- DNS fix en provisions nuevos: chattr +i /etc/resolv.conf DESPUÉS de chrony.
-- Nunca cat << 'EOF' anidado en <<-SHELL — usar printf.
-- alert_client.hpp nunca incluido en componentes que linkan libetcd_client.so.
-- community_id: canonicalización byte-idéntica a Zeek/Suricata o el join falla en silencio.
+**Decisión arquitectónica importante:** `correlation-engine` y `graph-engine` son DOS
+componentes, separados por **Apache Iceberg** (gobierna LZ bronce/plata/oro). correlation-engine
+alimenta bronce; graph-engine lee GOLD y es dueño del `.kuzu`. Las clases de grafo viven hoy en
+correlation-engine pero hay que extraerlas → `DEBT-GRAPH-ENGINE-EXTRACTION-001`.
 
-ENTORNO: macOS M2 Pro · i9 8 núcleos · 32GB RAM · Vagrant/VirtualBox Debian Bookworm · vagrant/dev/
-KEYPAIR: efímero, regenera en cada EMECAS.
-PAPER: arXiv:2604.04952 · Draft v24 local · v3 en arXiv.
-FEDER: colaboración UEx/INCIBE con Dr. Andrés Caro Lindo. No deadline duro — gate real es demostrar
-datasets de valor científico (curva F1 multi-fuente, ADR-048). El 22-09-2026 era referencia de ritmo.
+**Entregables DAY 182 — ✅ APLICADOS Y COMMITEADOS DAY 182 (no buscar en outputs, ya están en el repo):**
+1. ✅ ADR-057 v2 en `docs/adr/ADR-057: ...NL V2.md`. D1+D2 resueltas, §3.0 tabla run1/2/3,
+   §3.1 Fase 0, §2.8 sin índice de rango, §8 endurecimiento diferido, componente graph-engine.
+2. ✅ Bloque DAY 182 en `docs/BACKLOG.md`. Paraguas CONCURRENCY-SMOKE con 8 sub-ejes diferidos
+    + GRAPH-ENGINE-EXTRACTION + CE-TESTS-UNGATED cerrada.
+3. ✅ README.md: tabla DAY-STATUS en 182 + hitos + milestone.
+4. ✅ Este prompt.
+5. ⏳ LinkedIn post (inglés) — escrito (`linkedin-day182.md`), PENDIENTE solo de mi OK:
+   ¿nombro los 8 modelos? ¿versión corta? Único entregable sin cerrar de DAY 182.
+
+> **Nota de higiene pendiente (no urgente):** el BACKLOG tiene 7 cabeceras duplicadas
+> PREEXISTENTES (DEBT-IRP-*, BACKLOG-CRYPTO-VENDOR-KEY-001) que vienen de antes de DAY 182.
+> No las metí yo. Limpieza opcional cuando apetezca, mirando cada par para conservar la
+> entrada con el estado correcto. No bloquea nada.
+
+---
+
+## QUÉ HACER EN DAY 183 (el camino crítico, en orden)
+
+**El objetivo NO es la mejor implementación del grafo. Es torturar el pipeline.** A 33 Mb/s
+(techo de la NIC virtual de Vagrant) y luego más en un **servidor x86 RAW** en la misma red,
+fuera de Vagrant. El andamiaje tiene que tragar esa riada sin perder ni corromper datos del
+experimento. Eso es lo que las 3 guardas de Fase 0 protegen.
+
+**EMPIEZA AQUÍ (punto 2). El punto 1 ya está hecho.**
+
+1. ✅ **HECHO DAY 182:** ADR-057 v2 + BACKLOG + README aplicados y commiteados. NO hay que
+   aplicar nada. Si dudas, `git log -1` lo confirma. (Antes de tocar código nuevo: EMECAS verde.)
+2. **← ARRANCA POR AQUÍ. Cablear el sink real con UNWIND batch + flush-by-(size|time)** en el
+   camino vivo. Hoy el smoke lo probó AISLADO; falta que el `KuzuGraphSink` de PRODUCCIÓN lo
+   use. Esta es la pieza que convierte el ×55–61 medido en throughput real del pipeline. Es el
+   primer paso de mano que da resultado tangible — bueno para arrancar amodorrado.
+3. **Diseñar la tortura E2E:** pcap-relay MITRE → correlation-engine → bronce Iceberg →
+   silver → gold (join por `community_id`) → graph-engine (Kuzu COPY+upsert flood). Medir:
+   ¿se pierden filas?, ¿el grafo va stale?, ¿RSS acotada por el pool?
+4. **MITRE disjunto (no negociable, ADR-040):** escenarios A–M (experiencia/entrenamiento) vs
+   N–Z (evaluación, no vistos). Mejora sobre N–Z = publicable; solo sobre A–M = overfitting.
+
+---
+
+## FRENTES ABIERTOS (no perder)
+
+- **D3 (Arrow vs DuckDB) SIGUE ABIERTA.** El smoke de Kuzu NO la toca. Se resuelve con B2
+  (banco de promoción/join silver→gold + scan dataset). Sin ejecutar. ADR-057 §2.7/§3.2.
+- **event_id replay-stable (Frente C):** 8 respuestas del Consejo desde DAY 180, veredicto SIN
+  sintetizar. `DEBT-ARGUSPP-CLOCK-INJECTION-PROD-001` (P1). Verificar si el path de PRODUCCIÓN
+  heredó el reloj inyectado del build de cross-check.
+- **Extracción graph-engine** (`DEBT-GRAPH-ENGINE-EXTRACTION-001`) cuando se materialice Iceberg.
+- **Calibrar margen `temporal_anomaly`** (2s placeholder) con dato real.
+- **Endurecimiento diferido (ADR-057 §8, bajo el paraguas CONCURRENCY-SMOKE):** durabilidad WAL
+  (Q7), poison/atomicidad (Q5), backpressure sostenido (Q10), reader real traversal (Q3),
+  memoria a escala+tiering (Q4), batch sweep (Q6), decomposición fsync en x86 RAW (Q1),
+  shardability (Q8). TODO esto es post-corroboración / pre-despliegue. NO es camino crítico del
+  experimento. Insight: los cinco "bloqueantes" del Consejo son UN problema — gestionar una cola
+  hacia un único consumidor de tasa fija (el writer único de Kuzu) = subsistema `IngestQueue`.
+- **`audit-taint` semgrep en cuarentena** (`DEBT-SEMGREP-CPP-HANG-001`).
+
+---
+
+## EL EJE QUE NO SE NEGOCIA (recordatorio para mí mismo)
+
+La hipótesis fundamental: ¿pueden los modelos ensemble (árboles) aprender de la experiencia
+acumulada que han visto los nodos distribuidos y mejorar con ella? **El resultado se publica
+salga como salga.** Corroborada con estos datos → hallazgo. Camino seco con estos otros datos →
+también hallazgo (lo escribimos en el paper, buscamos otra hipótesis en el futuro). **Pase lo
+que pase, entregamos datasets de valor al equipo de Andrés.** La decisión de publicar una cosa
+u otra NO depende de tener la mejor implementación del grafo. Si el diseño solo pudiera
+confirmar, no sería medición, sería búsqueda de confirmación.
+
+paper arXiv:2604.04952 · BACKLOG-FEDER-001: sin deadline duro (22-sep-2026 era ritmo); gate real
+= demostrar datasets de valor científico a Andrés.

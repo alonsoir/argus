@@ -243,6 +243,7 @@ set(SOURCES
         src/internal_detector.cpp
         src/etcd_client.cpp
         src/csv_event_writer.cpp
+        src/correlation_writer.cpp
         ${PROTO_SOURCES}
 )
 

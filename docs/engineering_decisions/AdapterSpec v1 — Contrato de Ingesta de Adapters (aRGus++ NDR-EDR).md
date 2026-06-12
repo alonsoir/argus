@@ -120,6 +120,49 @@ Estas alimentan la observabilidad de degradación de ADR-047 y la telemetría de
 
 ---
 
+## 10.1 Mapeo normativo aRGus → SecurityEvent (F1 — consumidor de bronce)
+
+> **Alcance.** Esta tabla es el contrato F1 del adapter de aRGus. Su fuente NO es el
+> `NetworkSecurityEvent` rico del sniffer, sino la **fila de bronce `correlation_v1`**
+> (18 columnas de contenido 0-17 + HMAC) que el ml-detector escribe. El consumidor es un
+> **re-empaquetador**: no calcula features, lee lo ya escrito. El veredicto ya viene
+> resuelto del ml-detector (`zmq_handler.cpp`), no se recalcula.
+>
+> **Hecho verificado (DAY 178):** `message SecurityEvent` NO existe en `network_security.proto`
+> (único `.proto` del repo). El adapter de aRGus NO crea un mensaje nuevo: produce el envelope
+> agnóstico rellenando sus campos desde bronce (decisión YAGNI — el `message SecurityEvent`
+> formal se definirá cuando exista un 2º productor real, F2/F3).
+
+| Campo `SecurityEvent` | Origen en bronce `correlation_v1` | Regla |
+|---|---|---|
+| `source_engine` | — | Constante `"argus"`. |
+| `native_event_id` | col 2 `event_id` | Mapeo directo. ⚠️ Ver nota determinismo. |
+| `event_time_unix_ns` | cols 5+6 `flow_start_sec`,`flow_start_nano` | `sec * 1_000_000_000 + nano`. Tiempo de **ocurrencia** del flujo (cumple §5: no emisión/ingesta). |
+| `emitted_time_unix_ns` (opt) | — | Omitir en tier determinista (§5). En vivo ≈ `event_time` (emisión inmediata, redundante). |
+| `ingested_time_unix_ns` (opt) | — | Lo pone el **engine** al recibir, no el adapter. |
+| `community_id` (opt) | col 4 `community_id` | Mapeo directo. Vacío `""` en bronce → campo omitido. |
+| `host_key` (opt) | — | **n/a** para aRGus (señal NETWORK; se une por `community_id`, no por host). |
+| `domain` | — | Constante `NETWORK`. |
+| `severity` | col 16 `overall_threat_score` + col 12 `final_classification` | Derivado: score 0-1 (col 16) con etiqueta (col 12). NO se recalcula — ya lo decidió el ml-detector. |
+| `raw_payload` | **fila CSV bronce completa (cols 0-17 + HMAC)** | Opción (a): el blob crudo es la línea de bronce tal cual se escribió, byte a byte (HMAC auditable incluido). |
+| `metadata` (map) | cols 0,1,3,7-11,13-15,17 | Ver desglose abajo. |
+
+**Desglose de `metadata`** (lo que no es campo de primer nivel del envelope pero bronce sí lleva):
+`schema_version` (col 0), `source_sensor` (col 1), `node_id`/`originating_node_id` (col 3 — en F1 sintético = `synth-node-00`), `source_ip`/`destination_ip` (cols 7-8), `source_port`/`destination_port` (cols 9-10), `protocol_name` (col 11), `threat_category` (col 13), `fast_detector_score` (col 14), `ml_detector_score` (col 15), `authoritative_source` (col 17, string simbólico `DETECTOR_SOURCE_*`).
+
+**Omitido por diseño en F1 (declarado, no escondido):** las 83 features ML, `GeoEnrichment`,
+`TricapaMLAnalysis`, `DetectionProvenance` del `NetworkSecurityEvent` **NO** sobreviven a bronce
+— bronce preserva identidad + veredicto, no el detalle de features. El `raw_payload` (a) es
+lossy en features pero íntegro en veredicto. Si un caso de uso forense exige las features,
+se reabre como deuda (candidata: `raw_payload` enriquecido o segunda fuente). Hoy YAGNI.
+
+> ⚠️ **Nota determinismo `native_event_id` (deuda abierta, no resuelta en F1).** AdapterSpec §4
+> exige, en el tier determinista (golden pcap), que `native_event_id` derive de
+> `(offset-pcap + índice-de-evento)`. Hoy el `event_id` de aRGus (col 2) es un id interno
+> (`synthetic-N` en el injector; id de origen en vivo), **no** anclado al offset del pcap.
+> Cumple para el tier vivo (dedup estable); **no** garantiza reproducibilidad bit-a-bit en el
+> tier golden. → Pendiente de diseño antes de declarar el tier determinista de aRGus cerrado.
+
 ## 11. Obligaciones de reproducibilidad
 
 - El adapter participa en el **artefacto autoritativo (B)** de ADR-046 v4 §3.11: el stream de `SecurityEvent` que emite, una vez grabado y sellado, es parte del corpus reproducible.

@@ -8,6 +8,8 @@
 #include <seed_client/seed_client.hpp>
 #include <crypto_transport/transport.hpp>
 #include <crypto_transport/contexts.hpp>
+#include "flow/community_id.hpp"
+#include "flow/community_id_log.hpp"
 #include <zmq.hpp>
 #include <lz4.h>
 #include <nlohmann/json.hpp>
@@ -117,6 +119,8 @@ static int packet_callback(void* ctx, void* data, size_t size) {
     nf->set_protocol_number(iph->ip_p);
 
     size_t ip_hdr_len = static_cast<size_t>(iph->ip_hl) * 4;
+    // H-3 hardening: ip_hl < 5 (header IP < 20B) es malformado; no calcular offset con el.
+    if (ip_hdr_len < sizeof(struct ip)) return 0;
     size_t transport_offset = sizeof(struct ether_header) + ip_hdr_len;
 
     if (iph->ip_p == IPPROTO_TCP &&
@@ -131,9 +135,26 @@ static int packet_callback(void* ctx, void* data, size_t size) {
             static_cast<const uint8_t*>(data) + transport_offset);
         nf->set_source_port(ntohs(udp->source));
         nf->set_destination_port(ntohs(udp->dest));
-    }
+               }  // <-- cierre del else if (UDP)
 
-    auto ts = std::chrono::duration_cast<std::chrono::nanoseconds>(
+    // 🔗 Community ID v1 (Corelight spec) — DAY 170. Tras las ramas TCP/UDP.
+    // No-TCP/UDP (ICMP, etc.) -> puertos a 0 -> compute_community_id devuelve
+    // nullopt por proto no soportado -> community_id queda "" (diferido).
+    if (auto cid = sniffer::flow::compute_community_id(
+            nf->source_ip(), nf->destination_ip(),
+            static_cast<uint16_t>(nf->source_port()),
+            static_cast<uint16_t>(nf->destination_port()),
+            static_cast<uint8_t>(nf->protocol_number()))) {
+                nf->set_community_id(*cid);
+                if (sniffer::flow::cid_crosscheck_enabled())
+                    sniffer::flow::log_community_id_emission(*cid,
+                        nf->source_ip(), nf->destination_ip(),
+                        static_cast<uint16_t>(nf->source_port()),
+                        static_cast<uint16_t>(nf->destination_port()),
+                        static_cast<uint8_t>(nf->protocol_number()));
+            }
+
+    auto ts = std::chrono::duration_cast<std::chrono::nanoseconds>(  // <-- timestamp, ya existente
         std::chrono::system_clock::now().time_since_epoch()).count();
     event.mutable_event_timestamp()->set_seconds(ts / 1'000'000'000LL);
     event.mutable_event_timestamp()->set_nanos(

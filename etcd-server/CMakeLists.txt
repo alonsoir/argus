@@ -404,3 +404,14 @@ message(STATUS "========================================")
 message(STATUS "🎯 Single Source of Truth:")
 message(STATUS "  Compiler Flags: Controlled by root Makefile via PROFILE")
 message(STATUS "========================================")
+
+# [DAY182] -UNDEBUG: assert() vivo en production (regla DAY 144)
+# Reactiva assert() bajo -DNDEBUG en estos test standalone.
+# if(TARGET) protege ante targets en bloques condicionales desactivados.
+if(TARGET test_secrets_manager)
+    target_compile_options(test_secrets_manager PRIVATE -UNDEBUG)
+endif()
+if(TARGET test_hmac_integration)
+    target_compile_options(test_hmac_integration PRIVATE -UNDEBUG)
+endif()
+

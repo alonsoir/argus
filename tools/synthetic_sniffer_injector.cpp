@@ -9,11 +9,13 @@
 #include <chrono>
 #include <thread>
 #include <random>
+#include <cstdlib>
 #include <iomanip>
 #include <memory>
 
 // Protobuf
 #include "network_security.pb.h"
+#include "flow/community_id.hpp"  // paridad cross-sensor (DAY 176)
 
 // Crypto-transport (ADR-013 PHASE 2 — DAY 159)
 #include <seed_client/seed_client.hpp>
@@ -82,15 +84,40 @@ private:
     }
 
     // Create complete NetworkSecurityEvent with all 142 features
+    // ── community_id mode (DAY 176) ──────────────────────────────────────────
+    // default=isomorphic: community_id es feature que se calcula SIEMPRE.
+    // ARGUS_CID_MODE=mock -> formato auto-identificable "synth:test:<id>".
+    enum class CidMode { Isomorphic, Mock };
+    static CidMode parse_cid_mode() {
+        const char* e = std::getenv("ARGUS_CID_MODE");
+        std::string v = e ? std::string(e) : std::string("isomorphic");
+        if (v == "isomorphic") return CidMode::Isomorphic;
+        if (v == "mock")       return CidMode::Mock;
+        std::cerr << "[FATAL] ARGUS_CID_MODE invalido: '" << v
+                  << "' (esperado: isomorphic|mock)\n";
+        std::exit(2);  // fail-closed: no swallowear typo de env var
+    }
     protobuf::NetworkSecurityEvent create_synthetic_event(
         uint64_t event_id,
         bool is_attack = false,
         bool is_ransomware = false)
     {
         protobuf::NetworkSecurityEvent event;
+        // community_id mode resuelto una sola vez (C++11 thread-safe static local)
+        static const CidMode cid_mode = parse_cid_mode();
 
         // Event ID and timestamp
         event.set_event_id("synthetic-" + std::to_string(event_id));
+
+        // DEBT-INJECTOR-NODEID-001 (DAY 177): node_id sintetico por eje de modo.
+        // Col 3 vacia degenera flow_uid = hash(node_id || community_id || window).
+        // Isomorfo emula UN punto de captura real -> node_id estable;
+        // Mock es auto-identificable, se descarta antes de Kuzu -> id por evento.
+        if (cid_mode == CidMode::Mock) {
+            event.set_originating_node_id("synth:node:" + std::to_string(event_id));
+        } else {
+            event.set_originating_node_id("synth-node-00");
+        }
         auto* timestamp = event.mutable_event_timestamp();
         auto now = std::chrono::system_clock::now();
         event.set_overall_threat_score(0.9f);  // synthetic — fuerza escritura en CSV
@@ -125,9 +152,28 @@ private:
             nf->set_protocol_number(6);   // TCP
             nf->set_protocol_name("TCP");
         } else {
-            nf->set_protocol_number(is_attack ? 6 : rand_uint(1, 255));
-            nf->set_protocol_name(is_attack ? "TCP" : (rand_uint(0, 1) ? "TCP" : "UDP"));
+            // DAY 177 (A): benigno correlacionable. proto=rand[1,255] daba ~99% no-TCP/UDP
+            // -> compute_community_id() nullopt -> community_id vacio -> bronce vacio.
+            // Un sensor real ve casi solo TCP/UDP; ademas number/name deben concordar.
+            const bool use_tcp = is_attack ? true : (rand_uint(0, 1) == 1);
+            nf->set_protocol_number(use_tcp ? 6 : 17);
+            nf->set_protocol_name(use_tcp ? "TCP" : "UDP");
             nf->set_destination_port(is_attack ? 443 : rand_uint(1, 1024));
+        }
+        // 🔗 community_id — feature SIEMPRE poblada (DAY 176). Modo via ARGUS_CID_MODE.
+        if (cid_mode == CidMode::Mock) {
+            // auto-identificable: el correlation-engine lo descarta antes de Kuzu
+            nf->set_community_id("synth:test:" + std::to_string(event_id));
+        } else {
+            // ISOMORFO: misma funcion pura que el sniffer real (NO reimplementacion)
+            if (auto cid = sniffer::flow::compute_community_id(
+                    nf->source_ip(), nf->destination_ip(),
+                    static_cast<uint16_t>(nf->source_port()),
+                    static_cast<uint16_t>(nf->destination_port()),
+                    static_cast<uint8_t>(nf->protocol_number()))) {
+                nf->set_community_id(*cid);
+            }
+            // else -> community_id "" diferido: proto no soportado, igual que produccion
         }
 
         // Dual-NIC deployment (4 features)
@@ -655,6 +701,17 @@ int main(int argc, char* argv[]) {
     uint64_t rate         = std::stoull(argv[2]);
     bool     is_attack    = (argc == 4 && std::string(argv[3]) == "--attack");
     bool     is_ransomware = (argc == 4 && std::string(argv[3]) == "--ransomware");
+
+    // fail-closed ANTES de tocar etcd/crypto/ZMQ (DAY 176): valida ARGUS_CID_MODE.
+    {
+        const char* e = std::getenv("ARGUS_CID_MODE");
+        std::string v = e ? std::string(e) : std::string("isomorphic");
+        if (v != "isomorphic" && v != "mock") {
+            std::cerr << "[FATAL] ARGUS_CID_MODE invalido: '" << v
+                      << "' (esperado: isomorphic|mock)\n";
+            return 2;  // fail-closed antes de construir el injector
+        }
+    }
 
     try {
         SyntheticSnifferInjector injector;

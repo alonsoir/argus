@@ -1853,6 +1853,7 @@ class NetworkFeatures final :
     kDestinationIpFieldNumber = 2,
     kProtocolNameFieldNumber = 6,
     kSourceInterfaceFieldNumber = 10,
+    kCommunityIdFieldNumber = 18,
     kFlowStartTimeFieldNumber = 11,
     kFlowDurationFieldNumber = 12,
     kRansomwareFieldNumber = 106,
@@ -2106,6 +2107,20 @@ class NetworkFeatures final :
   const std::string& _internal_source_interface() const;
   inline PROTOBUF_ALWAYS_INLINE void _internal_set_source_interface(const std::string& value);
   std::string* _internal_mutable_source_interface();
+  public:
+
+  // string community_id = 18;
+  void clear_community_id();
+  const std::string& community_id() const;
+  template <typename ArgT0 = const std::string&, typename... ArgT>
+  void set_community_id(ArgT0&& arg0, ArgT... args);
+  std::string* mutable_community_id();
+  PROTOBUF_NODISCARD std::string* release_community_id();
+  void set_allocated_community_id(std::string* community_id);
+  private:
+  const std::string& _internal_community_id() const;
+  inline PROTOBUF_ALWAYS_INLINE void _internal_set_community_id(const std::string& value);
+  std::string* _internal_mutable_community_id();
   public:
 
   // .google.protobuf.Timestamp flow_start_time = 11;
@@ -2890,6 +2905,7 @@ class NetworkFeatures final :
     ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr destination_ip_;
     ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr protocol_name_;
     ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr source_interface_;
+    ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr community_id_;
     ::PROTOBUF_NAMESPACE_ID::Timestamp* flow_start_time_;
     ::PROTOBUF_NAMESPACE_ID::Duration* flow_duration_;
     ::protobuf::RansomwareFeatures* ransomware_;
@@ -11222,6 +11238,56 @@ inline void NetworkFeatures::set_allocated_protocol_name(std::string* protocol_n
   }
 #endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
   // @@protoc_insertion_point(field_set_allocated:protobuf.NetworkFeatures.protocol_name)
+}
+
+// string community_id = 18;
+inline void NetworkFeatures::clear_community_id() {
+  _impl_.community_id_.ClearToEmpty();
+}
+inline const std::string& NetworkFeatures::community_id() const {
+  // @@protoc_insertion_point(field_get:protobuf.NetworkFeatures.community_id)
+  return _internal_community_id();
+}
+template <typename ArgT0, typename... ArgT>
+inline PROTOBUF_ALWAYS_INLINE
+void NetworkFeatures::set_community_id(ArgT0&& arg0, ArgT... args) {
+ 
+ _impl_.community_id_.Set(static_cast<ArgT0 &&>(arg0), args..., GetArenaForAllocation());
+  // @@protoc_insertion_point(field_set:protobuf.NetworkFeatures.community_id)
+}
+inline std::string* NetworkFeatures::mutable_community_id() {
+  std::string* _s = _internal_mutable_community_id();
+  // @@protoc_insertion_point(field_mutable:protobuf.NetworkFeatures.community_id)
+  return _s;
+}
+inline const std::string& NetworkFeatures::_internal_community_id() const {
+  return _impl_.community_id_.Get();
+}
+inline void NetworkFeatures::_internal_set_community_id(const std::string& value) {
+  
+  _impl_.community_id_.Set(value, GetArenaForAllocation());
+}
+inline std::string* NetworkFeatures::_internal_mutable_community_id() {
+  
+  return _impl_.community_id_.Mutable(GetArenaForAllocation());
+}
+inline std::string* NetworkFeatures::release_community_id() {
+  // @@protoc_insertion_point(field_release:protobuf.NetworkFeatures.community_id)
+  return _impl_.community_id_.Release();
+}
+inline void NetworkFeatures::set_allocated_community_id(std::string* community_id) {
+  if (community_id != nullptr) {
+    
+  } else {
+    
+  }
+  _impl_.community_id_.SetAllocated(community_id, GetArenaForAllocation());
+#ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  if (_impl_.community_id_.IsDefault()) {
+    _impl_.community_id_.Set("", GetArenaForAllocation());
+  }
+#endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  // @@protoc_insertion_point(field_set_allocated:protobuf.NetworkFeatures.community_id)
 }
 
 // uint32 interface_mode = 7;

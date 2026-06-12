@@ -167,3 +167,20 @@ target_link_libraries(test_trace_id
         spdlog::spdlog
 )
 add_test(NAME test_trace_id COMMAND test_trace_id)
+
+# [DAY182] -UNDEBUG: assert() vivo en production (regla DAY 144)
+# Reactiva assert() bajo -DNDEBUG en estos test standalone.
+# if(TARGET) protege ante targets en bloques condicionales desactivados.
+if(TARGET test_config_parser)
+    target_compile_options(test_config_parser PRIVATE -UNDEBUG)
+endif()
+if(TARGET test_file_watcher)
+    target_compile_options(test_file_watcher PRIVATE -UNDEBUG)
+endif()
+if(TARGET test_csv_dir_watcher)
+    target_compile_options(test_csv_dir_watcher PRIVATE -UNDEBUG)
+endif()
+if(TARGET test_firewall_csv_event_loader)
+    target_compile_options(test_firewall_csv_event_loader PRIVATE -UNDEBUG)
+endif()
+

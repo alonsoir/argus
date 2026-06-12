@@ -211,6 +211,30 @@ if(GTest_FOUND AND
     message(STATUS "✅ test_csv_event_writer registered")
 endif()
 
+# ── test_correlation_roundtrip — DAY 175 PRUEBA DE ORO contrato correlation_v1 ──
+if(GTest_FOUND AND
+        EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/integration/test_correlation_roundtrip.cpp")
+    ml_gtest(test_correlation_roundtrip
+            integration/test_correlation_roundtrip.cpp
+            ../src/correlation_writer.cpp
+            ../../correlation-engine/src/correlation_reader.cpp
+            ${PROTO_SOURCES}
+    )
+    target_include_directories(test_correlation_roundtrip PRIVATE
+            ../../correlation-engine/include
+    )
+    target_link_libraries(test_correlation_roundtrip PRIVATE
+            ${Protobuf_LIBRARIES}
+            OpenSSL::SSL
+            OpenSSL::Crypto
+    )
+    if(DEFINED LIBSODIUM_LIBRARIES)
+        target_link_libraries(test_correlation_roundtrip PRIVATE ${LIBSODIUM_LIBRARIES})
+    endif()
+    ml_link_spdlog(test_correlation_roundtrip)
+    message(STATUS "✅ test_correlation_roundtrip registered")
+endif()
+
 # ── test_csv_feature_extraction ───────────────────────────────────────────────
 if(GTest_FOUND AND
         EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/integration/test_csv_feature_extraction.cpp")
@@ -272,3 +296,14 @@ message(STATUS "    test_csv_feature_extraction")
 message(STATUS "    test_etcd_client_hmac")
 message(STATUS "─────────────────────────────────────────────")
 message(STATUS "")
+
+# [DAY182] -UNDEBUG: assert() vivo en production (regla DAY 144)
+# Reactiva assert() bajo -DNDEBUG en estos test standalone.
+# if(TARGET) protege ante targets en bloques condicionales desactivados.
+if(TARGET test_ransomware_detector_unit)
+    target_compile_options(test_ransomware_detector_unit PRIVATE -UNDEBUG)
+endif()
+if(TARGET test_detectors)
+    target_compile_options(test_detectors PRIVATE -UNDEBUG)
+endif()
+

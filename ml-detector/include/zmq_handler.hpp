@@ -31,6 +31,7 @@
 
 // Day 63: CSV Event Writer
 #include "csv_event_writer.hpp"
+#include "correlation_writer.hpp"
 #include "plugin_loader/plugin_loader.hpp"  // ADR-012 PHASE 2d
 
 namespace ml_detector {
@@ -128,6 +129,8 @@ private:
 
     // Day 66: CsvEventWriter standalone (activo aunque RAG Logger falle)
     std::shared_ptr<ml_defender::CsvEventWriter> csv_writer_;
+    // DAY 175: CorrelationWriter (zona bronce, contrato correlation_v1)
+    std::shared_ptr<ml_defender::CorrelationWriter> correlation_writer_;
 
     // Memory monitoring thread
     std::thread memory_monitor_thread_;

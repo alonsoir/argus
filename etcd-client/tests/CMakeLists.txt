@@ -151,3 +151,20 @@ message(STATUS "  ⚠️  test_etcd_client_hmac_grace_period (DISABLED - require
 message(STATUS "========================================")
 message(STATUS "OpenSSL: ${OPENSSL_VERSION}")
 message(STATUS "========================================")
+
+# [DAY182] -UNDEBUG: assert() vivo en production (regla DAY 144)
+# Reactiva assert() bajo -DNDEBUG en estos test standalone.
+# if(TARGET) protege ante targets en bloques condicionales desactivados.
+if(TARGET test_compression)
+    target_compile_options(test_compression PRIVATE -UNDEBUG)
+endif()
+if(TARGET test_encryption)
+    target_compile_options(test_encryption PRIVATE -UNDEBUG)
+endif()
+if(TARGET test_pipeline)
+    target_compile_options(test_pipeline PRIVATE -UNDEBUG)
+endif()
+if(TARGET test_service_discovery)
+    target_compile_options(test_service_discovery PRIVATE -UNDEBUG)
+endif()
+

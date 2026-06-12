@@ -31,6 +31,7 @@
 .PHONY: crypto-transport-build crypto-transport-clean crypto-transport-test
 .PHONY: plugin-loader-build plugin-loader-clean plugin-loader-test
 .PHONY: plugin-hello-build plugin-hello-clean validate-prod-configs
+.PHONY: correlation-engine-smoke correlation-engine-smoke-matrix
 # DEBT-HELLO-001 (PHASE 3, DAY 115)
 # Falla si algún JSON de producción referencia libplugin_hello.
 # Ejecutar antes de pipeline-start en CI/CD (TEST-PROVISION-1).
@@ -1183,7 +1184,7 @@ test-libs:
 	@$(MAKE) plugin-loader-test
 	@$(MAKE) plugin-integ-test
 
-test-components:
+test-components: correlation-engine-test
 	@echo ""
 	@echo "╔════════════════════════════════════════════════════════════╗"
 	@echo "║  🧪 Running Component Tests [$(PROFILE)]                  ║"
@@ -2830,3 +2831,76 @@ correlation-engine-test: correlation-engine-build
 correlation-engine-clean:
 	@vagrant ssh -c "rm -rf /vagrant/correlation-engine/build"
 	@echo "✅ correlation-engine cleaned"
+
+# ════════════════════════════════════════════════════════════════════════════
+# SMOKE Kuzu — ADR-057 Fase 0 · DEBT-KUZU-CONCURRENCY-SMOKE-001
+# Escenario NDR real: grafo inicial + RIADA DE UPSERTS write-heavy, lecturas esporadicas.
+# Mide UPSERTS/s y aisla dos palancas (fsync via batch; single-writer via writers) para
+# decidir Kuzu-stock vs fork Vela. Ajusta numeros por variable; defaults razonables:
+#   make correlation-engine-smoke
+#   make correlation-engine-smoke SMOKE_RATIO=1000 SMOKE_INIT=500000 SMOKE_DUR=10
+#   make correlation-engine-smoke-matrix     # run1/run2/run3 = baseline/batched/multi-writer
+# Args binario: <dur_s> <writers> <batch> <writes_per_read> <init_nodes> <db_path>
+# DB en /tmp (fs NATIVO del guest). NUNCA /vagrant (vboxsf rompe el mmap de Kuzu).
+# ════════════════════════════════════════════════════════════════════════════
+SMOKE_DUR     ?= 5
+SMOKE_WRITERS ?= 1
+SMOKE_BATCH   ?= 1000
+SMOKE_RATIO   ?= 100
+SMOKE_INIT    ?= 100000
+SMOKE_DB      ?= /tmp/argus_kuzu_smoke.kuzu
+
+correlation-engine-smoke: correlation-engine-build
+	@echo "── SMOKE upsert Kuzu: dur=$(SMOKE_DUR)s writers=$(SMOKE_WRITERS) batch=$(SMOKE_BATCH) ratio=$(SMOKE_RATIO):1 init=$(SMOKE_INIT) ──"
+	@vagrant ssh -c "cd /vagrant/correlation-engine/build && \
+	   time ./kuzu_concurrency_smoke $(SMOKE_DUR) $(SMOKE_WRITERS) $(SMOKE_BATCH) $(SMOKE_RATIO) $(SMOKE_INIT) $(SMOKE_DB)"
+
+correlation-engine-smoke-matrix: correlation-engine-build
+	@echo "── MATRIZ smoke Kuzu (decision fsync / multi-writer) ──"
+	@vagrant ssh -c "cd /vagrant/correlation-engine/build && \
+	   echo '### run1: 1 writer, auto-commit (baseline fsync-por-upsert)' && \
+	   time ./kuzu_concurrency_smoke $(SMOKE_DUR) 1 1              $(SMOKE_RATIO) $(SMOKE_INIT) $(SMOKE_DB) ; \
+	   echo '### run2: 1 writer, batched (¿muere el fsync?)' && \
+	   time ./kuzu_concurrency_smoke $(SMOKE_DUR) 1 $(SMOKE_BATCH) $(SMOKE_RATIO) $(SMOKE_INIT) $(SMOKE_DB) ; \
+	   echo '### run3: 4 writers, batched (¿ayuda multi-writer? Kuzu=1 write-tx)' && \
+	   time ./kuzu_concurrency_smoke $(SMOKE_DUR) 4 $(SMOKE_BATCH) $(SMOKE_RATIO) $(SMOKE_INIT) $(SMOKE_DB)"
+
+
+# ── crosscheck-up — Reproduce el setup E2E community_id de DAY 171/172 ────────
+# Levanta el entorno minimo para el cross-check de paridad: etcd -> provision ->
+# sniffer(ARGUS_CID_CROSSCHECK=1) -> Zeek -> confirma Suricata. NO dispara replay
+# (eso es `make crosscheck-run`). Resuelve DEBT-MAKEFILE-CID-CROSSCHECK-001.
+# Ruta Zeek = spool (zeekctl deploy). Cambiar cuando DEBT-ZEEK-LOGPATH-001 cierre.
+crosscheck-up: etcd-server-start test-provision-1
+	@echo "── [1/4] Limpiando logs de los tres sensores ──"
+	@vagrant ssh suricata -c "sudo truncate -s 0 /var/log/suricata/eve.json" || true
+	@vagrant ssh zeek     -c "sudo truncate -s 0 /opt/zeek/spool/zeek/conn.log 2>/dev/null" || true
+	@vagrant ssh defender -c "sudo truncate -s 0 /vagrant/logs/lab/cid-xcheck-argus.tsv" || true
+	@echo "── [2/4] Arrancando sniffer aRGus con ARGUS_CID_CROSSCHECK=1 ──"
+	@vagrant ssh defender -c "tmux kill-session -t sniffer 2>/dev/null || true"
+	@vagrant ssh defender -c "tmux new-session -d -s sniffer \
+	  'cd $(SNIFFER_BUILD_DIR) && \
+	   sudo env LD_LIBRARY_PATH=/usr/local/lib ARGUS_CID_CROSSCHECK=1 \
+	   ./sniffer -c /vagrant/sniffer/config/sniffer.json \
+	   >> /vagrant/logs/lab/sniffer.log 2>&1'"
+	@sleep 4
+	@vagrant ssh defender -c "tmux has-session -t sniffer 2>/dev/null && echo '   OK sniffer VIVO' || (echo '   XX sniffer MUERTO — revisar /vagrant/logs/lab/sniffer.log' && exit 1)"
+	@echo "── [3/4] Arrancando Zeek (eth1) ──"
+	@vagrant ssh zeek -c "sudo /opt/zeek/bin/zeekctl deploy 2>&1 | tail -5"
+	@vagrant ssh zeek -c "sudo /opt/zeek/bin/zeekctl status | grep -q running && echo '   OK zeek running' || (echo '   XX zeek no arranco' && exit 1)"
+	@echo "── [4/4] Confirmando Suricata ──"
+	@vagrant ssh suricata -c "sudo systemctl is-active suricata | grep -q active && echo '   OK suricata active' || (echo '   XX suricata parada' && exit 1)"
+	@echo "OK Entorno cross-check LISTO. Ahora: make crosscheck-run"
+
+# ── crosscheck-run — Dispara el replay y corre el verificador ─────────────────
+crosscheck-run: test-replay-neris
+	@echo "── Drenaje (cierre TCP Zeek + flow.timeout Suricata) ──"
+	@sleep 45
+	@echo "── Verificador de paridad ──"
+	@python3 tools/community_id_crosscheck.py --zeek-conn /opt/zeek/spool/zeek/conn.log; \
+	 rc=$$?; \
+	 if [ $$rc -eq 2 ]; then echo "   [i] exit 2 = hay anomalias (esperado por cobertura asimetrica aRGus). Revisa anomalies.tsv si crece inesperadamente."; \
+	 elif [ $$rc -ne 0 ]; then echo "   XX verificador fallo (rc=$$rc)"; exit $$rc; fi
+# ── Security audit (DAY 180): cppcheck + semgrep taint. Ver contrib/audit/ ──
+-include contrib/audit/audit.mk
+

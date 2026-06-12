@@ -334,6 +334,7 @@ if(BUILD_TESTS)
             tests/unit/test_ipset_wrapper.cpp
             tests/unit/test_logger.cpp
             tests/unit/test_config_loader_traversal.cpp
+            tests/unit/test_config_loader_setname.cpp
             tests/unit/test_safe_exec.cpp
             tests/test_globals_stub.cpp
     )
@@ -461,3 +462,14 @@ message(STATUS "🔬 Day 50 Motto: Fiat Lux - Let there be light")
 message(STATUS "")
 message(STATUS "╚════════════════════════════════════════════════════════╝")
 message(STATUS "")
+
+# [DAY182] -UNDEBUG: assert() vivo en production (regla DAY 144)
+# Reactiva assert() bajo -DNDEBUG en estos test standalone.
+# if(TARGET) protege ante targets en bloques condicionales desactivados.
+if(TARGET test_auto_isolate)
+    target_compile_options(test_auto_isolate PRIVATE -UNDEBUG)
+endif()
+if(TARGET test_autonomy_subscriber)
+    target_compile_options(test_autonomy_subscriber PRIVATE -UNDEBUG)
+endif()
+

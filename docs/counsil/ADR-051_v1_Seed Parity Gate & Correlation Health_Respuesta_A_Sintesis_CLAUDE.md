@@ -1,0 +1,33 @@
+Tienes razón — la síntesis es el destilado de los ocho, pero no es *mi* voto sobre lo que los otros siete proponen. Ahora que veo sus aportaciones, me mojo punto por punto, incluido donde discrepo de mis colegas. Un Consejo en el que todos asienten a todo no vale para nada.
+
+**Renombrado a "Community ID Parity Gate" — A FAVOR, con una salvedad de trazabilidad.** ChatGPT tiene razón de fondo: el seed es una de varias causas, no la única. Pero al renombrar, **conserva el nombre de la DEBT** `DEBT-CORRELATION-SEED-GATE-001` aunque amplíes el título del ADR. Romper el identificador de una DEBT ya referenciada en BACKLOG por un retítulo es deuda de trazabilidad. Título amplio, identificador estable.
+
+**Batería de vectores — A FAVOR fuerte, pero con un agujero que nadie nombró.** El vector C (IPv6) valida que tu *implementación* es correcta, pero no detecta a un sensor que en producción nunca ve IPv6 porque el lab no genera tráfico IPv6. Validar la implementación ≠ validar la cobertura operacional. Y el vector D (dirección invertida) es el que más me gusta porque ataca canonicidad directamente — pero ojo, la canonicalización de UDP/ICMP tiene reglas distintas de TCP, así que "A→B == B→A" hay que verificarlo *por protocolo*, no asumir que vale el mismo razonamiento. Con esos dos matices, adelante. Y mantengo lo de la síntesis: que la batería sea **compartida** con `DEBT-FLOWUID-CANONICAL-ENCODING-001`, no duplicada.
+
+**Oráculo en dos niveles + quórum — A FAVOR del nivel doble, pero DISCREPO de cómo Mistral plantea el quórum.** El quórum tiene un peligro que hay que blindar: *"si N-1 sensores coinciden entre sí pero no con el oráculo, el problema es el oráculo"* puede degenerar en consenso-de-error. Si tres sensores comparten el mismo bug de normalización, coinciden entre sí y "votan" que el oráculo está equivocado — cuando el equivocado es el consenso. El oráculo (`pycommunityid`, RFC) es la verdad de referencia *precisamente* para no caer en eso. Mi voto: el quórum **genera una alerta** ("posible discrepancia oráculo/sensores, revisar versión del oráculo"), pero **nunca anula al oráculo como criterio del gate**. El gate sigue siendo fail-closed contra oráculo. La alerta de quórum es para el operador, no para que el sistema decida que su referencia está mal. Además, el quórum solo es significativo con N≥3; con 2 sensores no hay quórum posible y eso debe quedar escrito.
+
+**Hash SHA-256 del config en el diagnóstico (Qwen) — A FAVOR, reafirmando el límite.** Es info de control-plane. Sirve para diagnóstico ("el binario está ignorando el config" vs "el config fue alterado"), y solo para eso. **Jamás** como criterio del gate, o contaminas el principio data-plane que es el alma del ADR. Diagnóstico sí, criterio no.
+
+**Inferencia del seed por fuerza bruta (Mistral, Grok) — DISCREPO de meterlo sin acotar.** Fuerza bruta sobre el espacio de seed puede ser caro según el rango. Solo tiene sentido si pruebas un **set acotado de seeds conocidos/comunes** (0, los defaults de cada sensor), no un barrido ciego del espacio. Acotado y enumerado: útil. Brute-force abierto: no. Que entre como enhancement opcional con esa restricción explícita, o no entra.
+
+**Despliegue por fases — A FAVOR fuerte.** Es la consecuencia honesta de que COUNTER-DUMP-001 bloquea el `orphan_rate` de aRGus. La métrica parcial provisional de DeepSeek (flujos que Suri+Zeek ven y aRGus debería corroborar) es buena, pero **depende del mapa de cobertura** para saber qué "debería" ver aRGus — así que esa métrica provisional no es gratis, arrastra COVERAGE-MAP. Nombrarlo.
+
+**La sonda activa periódica — mantengo DIFERIR, pero con una concesión honesta a DeepSeek y Qwen.** Sigo pensando que no va en el núcleo. Pero el argumento más fuerte de ellos es real y no lo despaché bien antes: el `orphan_rate` tiene **latencia de detección dependiente del volumen de tráfico**. Un hospital a las 4am con poca actividad → el `orphan_rate` tarda horas en acumular evidencia de un drift → un sensor desincronizado pasa desapercibido durante esa ventana. Eso es un agujero genuino. Mi resolución: diferir la sonda como `DEBT-SEED-ACTIVE-PROBE-001` P3, **pero nombrar ese agujero explícitamente en v2 como riesgo conocido** — "en valles de tráfico, la detección de drift por `orphan_rate` se degrada; la sonda activa lo mitigaría y queda diferida". Así diferir es una decisión informada, no una omisión. Honestidad científica: el agujero existe aunque decidamos no taparlo ahora.
+
+**Umbrales de alerta 5%/15% (Grok) — DISCREPO de fijarlos a priori.** Esos números están inventados sin datos. Mejor: **derivar los umbrales de la primera semana de baseline** en lugar de hardcodearlos antes de tener una sola medición. Fijar 5%/15% el día 1 es exactamente el tipo de número-mágico-sin-evidencia que tu filosofía Via Appia rechaza. El valor conservador de 120s para la ventana "pendiente" (Grok) sí lo acepto como provisional, porque ahí pecar por exceso solo retrasa marcar huérfanos, no genera falsos positivos.
+
+**Inputs de B (jitter de Qwen, matriz de Gemini, percentiles de Mistral) — A FAVOR, pero NO son de ADR-051.** Son requisitos de diseño de B (`DEBT-CORRELATION-TIMEOUT-CALIB-001`). Que se registren ahí, no que inflen este ADR. El de Qwen (sumar jitter del pipeline al timeout) es el más importante de los tres.
+
+**`match_rate`, chaos test, CI regression — A FAVOR.** Trivial el primero (cosmético para dashboards), buenas DEBTs los otros dos.
+
+---
+
+**Mi veredicto sobre la ruta:** confirmación de fidelidad, no 3ª deliberación — **con una excepción que vigilar.** Casi todo es aditivo y se ratifica leyendo si v2 es fiel. Pero el **quórum del oráculo** es el único punto donde la redacción puede esconder un desacuerdo de fondo: si v2 lo redacta como "quórum alerta, oráculo sigue siendo criterio fail-closed" (mi postura), es fiel al espíritu y se ratifica. Si lo redactara como "quórum puede anular al oráculo" (lectura literal de Mistral), eso *sí* sería un cambio de fondo que merecería mirada del Consejo. Lo redacto en la versión segura y lo señalo explícitamente en v2 para que la confirmación de fidelidad lo valide conscientemente.
+
+Firmado, como uno de los ocho.
+
+¿Te redacto el `ADR-051_v2.md` con todo esto incorporado —consenso, la sonda diferida con su agujero nombrado, el quórum en versión segura, las fases, los vectores— para que vaya junto a la síntesis en la ronda de confirmación?
+
+FDO
+
+CLAUDE

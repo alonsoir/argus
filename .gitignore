@@ -267,7 +267,29 @@ enterprise.token
 # Enterprise crypto — efímeros Modelo B (regenerados cada vagrant up)
 enterprise/enterprise_vendor.pub
 enterprise/enterprise.token
-enterprise/enterprise_vendor.pub
 enterprise/enterprise.token
 common/build-vault/
 common/build-vault/
+emecas.md
+
+# backups generados por update_day173.py
+*.bak.[0-9]*-[0-9]*
+*.bak-*
+tools/build/
+
+# Herramientas de un solo uso DAY 177 (apply/verify) — no entran en el repo
+apply_day177_*.py
+verify_day177_*.py
+
+# Scripts de aplicacion de un solo uso (DAY 178) - no son entregables
+apply_day178_*.py
+smoke_day*.sh
+update_backlog_day*.py
+update_prompt_day*.py
+apply_day*.py
+dialect_smoke.cpp
+*.kuzu
+*.kuzu.wal
+apply_adr057_f0.py
+apply_adr057_f0.py
+apply_adr057_f0_fixes.py

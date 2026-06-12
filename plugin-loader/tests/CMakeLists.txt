@@ -37,3 +37,11 @@ target_compile_definitions(test_invoke_all PRIVATE PLUGIN_LOADER_ENABLED)
 
 enable_testing()
 add_test(NAME TEST-PLUGIN-INVOKE-1 COMMAND test_invoke_all)
+
+# [DAY182] -UNDEBUG: assert() vivo en production (regla DAY 144)
+# Reactiva assert() bajo -DNDEBUG en estos test standalone.
+# if(TARGET) protege ante targets en bloques condicionales desactivados.
+if(TARGET test_invoke_all)
+    target_compile_options(test_invoke_all PRIVATE -UNDEBUG)
+endif()
+
