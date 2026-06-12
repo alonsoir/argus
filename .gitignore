@@ -290,3 +290,6 @@ apply_day*.py
 dialect_smoke.cpp
 *.kuzu
 *.kuzu.wal
+apply_adr057_f0.py
+apply_adr057_f0.py
+apply_adr057_f0_fixes.py

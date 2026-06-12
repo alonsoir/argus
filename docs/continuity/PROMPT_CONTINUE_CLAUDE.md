@@ -51,17 +51,20 @@ componentes, separados por **Apache Iceberg** (gobierna LZ bronce/plata/oro). co
 alimenta bronce; graph-engine lee GOLD y es dueño del `.kuzu`. Las clases de grafo viven hoy en
 correlation-engine pero hay que extraerlas → `DEBT-GRAPH-ENGINE-EXTRACTION-001`.
 
-**Entregables DAY 182 (en /mnt/user-data/outputs/ de la sesión y a aplicar al repo):**
-1. `ADR-057-v2.md` → reemplaza `docs/adr/ADR-057: ...V2.md`. D1+D2 resueltas, §3.0 con tabla
-   run1/2/3, §3.1 Fase 0, §2.8 sin índice de rango, §8 endurecimiento diferido, componente
-   renombrado graph-engine.
-2. `BACKLOG-day182-bloque.md` → pegar al inicio de las entradas DAY de `docs/BACKLOG.md`.
-   Paraguas CONCURRENCY-SMOKE con 8 sub-ejes diferidos + GRAPH-ENGINE-EXTRACTION +
-   CE-TESTS-UNGATED cerrada. (Asumí dedup; verificar con
-   `grep '^## ' docs/BACKLOG.md | sort | uniq -d` — debe salir vacío.)
-3. `README-day182-edits.md` → 3 str_replace (fecha, tabla DAY-STATUS, hitos+milestone).
-4. Este prompt.
-5. LinkedIn post (inglés) — pendiente de tu OK sobre el ángulo.
+**Entregables DAY 182 — ✅ APLICADOS Y COMMITEADOS DAY 182 (no buscar en outputs, ya están en el repo):**
+1. ✅ ADR-057 v2 en `docs/adr/ADR-057: ...NL V2.md`. D1+D2 resueltas, §3.0 tabla run1/2/3,
+   §3.1 Fase 0, §2.8 sin índice de rango, §8 endurecimiento diferido, componente graph-engine.
+2. ✅ Bloque DAY 182 en `docs/BACKLOG.md`. Paraguas CONCURRENCY-SMOKE con 8 sub-ejes diferidos
+    + GRAPH-ENGINE-EXTRACTION + CE-TESTS-UNGATED cerrada.
+3. ✅ README.md: tabla DAY-STATUS en 182 + hitos + milestone.
+4. ✅ Este prompt.
+5. ⏳ LinkedIn post (inglés) — escrito (`linkedin-day182.md`), PENDIENTE solo de mi OK:
+   ¿nombro los 8 modelos? ¿versión corta? Único entregable sin cerrar de DAY 182.
+
+> **Nota de higiene pendiente (no urgente):** el BACKLOG tiene 7 cabeceras duplicadas
+> PREEXISTENTES (DEBT-IRP-*, BACKLOG-CRYPTO-VENDOR-KEY-001) que vienen de antes de DAY 182.
+> No las metí yo. Limpieza opcional cuando apetezca, mirando cada par para conservar la
+> entrada con el estado correcto. No bloquea nada.
 
 ---
 
@@ -72,11 +75,14 @@ correlation-engine pero hay que extraerlas → `DEBT-GRAPH-ENGINE-EXTRACTION-001
 fuera de Vagrant. El andamiaje tiene que tragar esa riada sin perder ni corromper datos del
 experimento. Eso es lo que las 3 guardas de Fase 0 protegen.
 
-1. **Aplicar los 5 entregables al repo** (ADR-057 v2, BACKLOG, README, commit). EMECAS verde
-   antes de seguir.
-2. **Cablear el sink real con UNWIND batch + flush-by-(size|time)** en el camino vivo
-   (hoy el smoke lo probó aislado; falta que el `KuzuGraphSink` de producción lo use). Esta es
-   la pieza que convierte el ×55–61 medido en throughput real del pipeline.
+**EMPIEZA AQUÍ (punto 2). El punto 1 ya está hecho.**
+
+1. ✅ **HECHO DAY 182:** ADR-057 v2 + BACKLOG + README aplicados y commiteados. NO hay que
+   aplicar nada. Si dudas, `git log -1` lo confirma. (Antes de tocar código nuevo: EMECAS verde.)
+2. **← ARRANCA POR AQUÍ. Cablear el sink real con UNWIND batch + flush-by-(size|time)** en el
+   camino vivo. Hoy el smoke lo probó AISLADO; falta que el `KuzuGraphSink` de PRODUCCIÓN lo
+   use. Esta es la pieza que convierte el ×55–61 medido en throughput real del pipeline. Es el
+   primer paso de mano que da resultado tangible — bueno para arrancar amodorrado.
 3. **Diseñar la tortura E2E:** pcap-relay MITRE → correlation-engine → bronce Iceberg →
    silver → gold (join por `community_id`) → graph-engine (Kuzu COPY+upsert flood). Medir:
    ¿se pierden filas?, ¿el grafo va stale?, ¿RSS acotada por el pool?
