@@ -373,3 +373,29 @@ add_executable(test_vault_client
 
     # NTP-1/2/3 — DEBT-ARGUSPP-NTP-001 (DAY 167)
 endif()
+
+# [DAY182] -UNDEBUG: assert() vivo en production (regla DAY 144)
+# Reactiva assert() bajo -DNDEBUG en estos test standalone.
+# if(TARGET) protege ante targets en bloques condicionales desactivados.
+if(TARGET test_crypto_deriver)
+    target_compile_options(test_crypto_deriver PRIVATE -UNDEBUG)
+endif()
+if(TARGET test_etcd_registrar)
+    target_compile_options(test_etcd_registrar PRIVATE -UNDEBUG)
+endif()
+if(TARGET test_vault_client)
+    target_compile_options(test_vault_client PRIVATE -UNDEBUG)
+endif()
+if(TARGET test_crypto_provider_community)
+    target_compile_options(test_crypto_provider_community PRIVATE -UNDEBUG)
+endif()
+if(TARGET test_autonomy_publisher)
+    target_compile_options(test_autonomy_publisher PRIVATE -UNDEBUG)
+endif()
+if(TARGET test_crypto_provider_enterprise)
+    target_compile_options(test_crypto_provider_enterprise PRIVATE -UNDEBUG)
+endif()
+if(TARGET test_wire_protocol)
+    target_compile_options(test_wire_protocol PRIVATE -UNDEBUG)
+endif()
+

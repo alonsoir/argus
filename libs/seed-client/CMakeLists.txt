@@ -103,3 +103,14 @@ add_test(NAME seed_client_traversal_tests
         COMMAND test_seed_client_traversal
         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
 )
+
+# [DAY182] -UNDEBUG: assert() vivo en production (regla DAY 144)
+# Reactiva assert() bajo -DNDEBUG en estos test standalone.
+# if(TARGET) protege ante targets en bloques condicionales desactivados.
+if(TARGET test_seed_client)
+    target_compile_options(test_seed_client PRIVATE -UNDEBUG)
+endif()
+if(TARGET test_seed_client_traversal)
+    target_compile_options(test_seed_client_traversal PRIVATE -UNDEBUG)
+endif()
+
