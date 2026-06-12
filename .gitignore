@@ -176,12 +176,8 @@ logs/
 
 contrib/claude/pca_pipeline/models/
 contrib/claude/pca_pipeline/*.npz# Build artifacts
-*.o
-*.a
-*.so
 *.dylib
 build/
-cmake-build-*/
 contrib/claude/pca_pipeline/training_data.npz
 *.npz
 
@@ -197,7 +193,6 @@ rm --cached ml-detector/build-asan/ml-detector
 shared/indices/*.db-wal
 shared/indices/*.db-shm
 shared/indices/*.db
-.DS_Store
 .cache_ggshield
 
 # Backups locales (no para el repo)
@@ -206,8 +201,6 @@ Vagrantfile.backup
 Vagrantfile.backup*
 
 # macOS
-.DS_Store
-.cache_ggshield
 
 # Logs en raíz
 stress_*.log
@@ -242,7 +235,6 @@ dist/vendor/*
 !dist/vendor/CHECKSUMS
 *.deb
 */build-prod/
-*/build-production/
 firewall-acl-agent/fuzz/corpus/
 ml-training/.venv/
 tools/build-argus-network-isolate/
@@ -267,8 +259,6 @@ enterprise.token
 # Enterprise crypto — efímeros Modelo B (regenerados cada vagrant up)
 enterprise/enterprise_vendor.pub
 enterprise/enterprise.token
-enterprise/enterprise.token
-common/build-vault/
 common/build-vault/
 emecas.md
 
@@ -291,5 +281,10 @@ dialect_smoke.cpp
 *.kuzu
 *.kuzu.wal
 apply_adr057_f0.py
-apply_adr057_f0.py
 apply_adr057_f0_fixes.py
+
+# Andamiaje de sesiones (scripts generadores, backups, logs)
+*.bak.*
+apply_undebug*.py
+audit_undebug.py
+*_smoke.cpp
