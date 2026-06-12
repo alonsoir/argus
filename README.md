@@ -36,26 +36,28 @@
 
 ---
 
-## Estado actual — DAY 181 (2026-06-11)
+## Estado actual — DAY 182 (2026-06-12)
 
 <!-- DAY-STATUS -->
 | Campo | Valor |
 |---|---|
-| DAY | 181 |
+| DAY | 182 |
 | Tag | v1.0.0-day166 |
 | Branch | feature/day170-community-id-protobuf |
 | EMECAS++ OSS | ✅ verde — test-all + test-e2e-synthetic-full + test-e2e-synthetic-firewall |
 | EMECAS++ Enterprise | ✅ VERDE — 3 actos + Jenkins gate (DAY 167) |
 | Pipeline | 6/6 RUNNING |
-| Frente A — Backend Kuzu | ✅ DAY 180 — `KuzuGraphSink` real detrás de `IGraphSink`, 4/4 tests · Kuzu v0.11.3 (upstream archivado, pin SHA256) · BD en `/opt/argus/graph` (vboxsf rompe mmap) |
-| Auditoría de seguridad (Fable) | ✅ DAY 181 — H-1 (cypher esc), H-2 (set_name allow-list), H-3 (ip_hl≥5) + tests RED→GREEN · EMECAS verde · `make audit` cppcheck limpio · `audit-taint` semgrep en cuarentena (DEBT-SEMGREP-CPP-HANG-001) |
+| Frente A — Backend Kuzu | ✅ DAY 180 — `KuzuGraphSink` real detrás de `IGraphSink`, 4/4 tests · Kuzu v0.11.3 (upstream archivado, pin SHA256) · BD en `/tmp` guest-nativo (vboxsf rompe mmap) |
+| Smoke Kuzu B1 (D1+D2) | ✅ DAY 182 — RESUELTAS POR MEDICIÓN: un grafo (D1) · Kuzu stock, Vela NO (D2). UNWIND batch = ×55–61 (164→12.200 ups/s). Multi-writer no escala (373k rechazos write-tx). ADR-057 v2 §3.0 |
+| Fase 0 grafo | ✅ DAY 182 — `ingested_at` + `temporal_anomaly` unilateral + `build_cypher(ingested_at_ns)` + 3 guardas (UNWIND-batch+flush, `DatabaseRegistry`, `bufferPoolSize` capado) · EMECAS verde · cierra DEBT-CE-TESTS-UNGATED-001 |
+| Auditoría de seguridad (Fable) | ✅ DAY 181 — H-1 (cypher esc), H-2 (set_name allow-list), H-3 (ip_hl≥5) + tests RED→GREEN · `make audit` cppcheck limpio · `audit-taint` semgrep en cuarentena (DEBT-SEMGREP-CPP-HANG-001) |
 | Frente C — event_id replay-stable | 🟡 diagnosticado + escalado al Consejo (8 respuestas) — veredicto SIN sintetizar · DEBT-ARGUSPP-CLOCK-INJECTION-PROD-001 (P1) |
 | Bronce correlation_v1 | ✅ cableado E2E (DAY 175) · col 17 → string simbólico SELLADO (DAY 177) |
 | Grafo | ✅ Kuzu hot tier (~90d) detrás de `IGraphSink`; Parquet/Iceberg (DuckDB) cold tier — join por `flow_uid` + `community_id` |
-| correlation-engine | 🟢 consumidor F1 bronce→grafo (DAY 179) + backend Kuzu real (DAY 180) |
-| Arquitectura | ✅ ADR-046 v4 · ADR-052 v3.2 · ADR-051 v2.2 · ADR-055 v1 · ⏳ ADR-057 borrador (capa consulta Kuzu + bitemporalidad + NL→plantilla) · ⏳ ADR-050/053/054 |
-| Próximo hito | DOC: backlog al día → refinar ADR-057 (3 ejes) · sintetizar veredicto event_id · E2E Kuzu real (`ARGUS_GRAPH_BACKEND=kuzu`, poblar `/opt/argus/graph`) |
-| Gate UEx/INCIBE | Datasets de valor científico (no deadline duro) |
+| Componentes | ⚠️ `correlation-engine` (alimenta bronce Iceberg) y `graph-engine` (lee GOLD, dueño del `.kuzu`) son DOS componentes — clases de grafo a extraer (DEBT-GRAPH-ENGINE-EXTRACTION-001) |
+| Arquitectura | ✅ ADR-046 v4 · ADR-052 v3.2 · ADR-051 v2.2 · ADR-055 v1 · 🟢 ADR-057 v2 (D1+D2 resueltas por medición; D3 abierta) · ⏳ ADR-050/053/054 |
+| Próximo hito | Tortura del pipeline a 33 Mb/s (Vagrant) → x86 RAW · B2 (Arrow vs DuckDB, D3) · sintetizar veredicto event_id · MITRE A–M / N–Z disjuntos (ADR-040) |
+| Gate UEx/INCIBE | Datasets de valor científico (no deadline duro) — se entregan salga corroborada o seca la hipótesis ensemble |
 <!-- /DAY-STATUS -->
 
 **Tag activo:** `v1.0.0-day166` | **Branch activa:** `main`
@@ -69,6 +71,18 @@
   - `make test-all`: ALL TESTS COMPLETE (50/50 firewall · 3/3 etcd-server · 9/9 sniffer · 10/10 ml-detector · 8/8 rag-ingester · 1/1 argus-network-isolate) ✅
   - `make PROFILE=production all`: Gate ODR — ALL COMPONENTS BUILT ✅
   - `make argus-network-isolate-test`: dry-run PASSED ✅
+
+### Hitos DAY 182 🎉 — Smoke B1: D1+D2 resueltas por medición
+- **Smoke de concurrencia/upsert Kuzu EJECUTADO** (`DEBT-KUZU-CONCURRENCY-SMOKE-001`, adelantado a Fase 0 por arbitraje DAY 181). **D1 y D2 RESUELTAS POR MEDICIÓN** (ADR-057 v2 §3.0):
+  - **D1 — un grafo vs N grafos → UN GRAFO.** run3 (4 writers) midió 373.000 rechazos por la única write-tx del sistema, +37% throughput, lectura p99 ×11.37. Multi-writer no escala. Sharding —si alguna vez— TEMPORAL, nunca semántico.
+  - **D2 — Kuzu stock vs fork Vela → KUZU STOCK, VELA NO.** El cuello era el overhead por-`query()`, no el escritor único. **UNWIND batch (1 query = N upserts) da ×55–61** (run1 164–229 ups/s → run2 10.000–12.200 ups/s). Vela solo añade writers paralelos = lo que run3 probó que no escala.
+  - **Descomposición:** `coste(n)=P+S+n·E` → E≈88 µs/fila (MERGE irreducible), P+S≈5.93 ms (parse/plan+fsync, fijo, amortizable). El ×55–61 es amortizar el coste fijo.
+  - **Lock medido:** cross-proceso rechazado (exit=2 ✅); in-process 2º `Database` ABRE (footgun → corrupción) → `DatabaseRegistry` obligatorio.
+  - **Corrección honesta (ninguno de los otros 7 modelos la cazó):** el `unordered_map::at` al reabrir tras crash fue auto-infligido (borrar `.kuzu` dejando `.wal` huérfano = inconsistencia artificial), NO prueba de que la recuperación de Kuzu esté rota. La recuperación real queda sin validar (diferida, ADR-057 §8).
+- **Fase 0 del grafo verde (EMECAS DAY 182):** `ingested_at` (first_seen, wall clock) + `temporal_anomaly` unilateral (futuro-datación = firma de clock-injection) + `build_cypher(ingested_at_ns)` (función libre, testeable, `locale::classic()`). **Tres guardas que protegen LA MEDICIÓN** (que el andamiaje trague la tortura de datos a 33 Mb/s — y más en x86 RAW — sin perder/corromper): sink UNWIND-batch + flush-by-(size|time), `DatabaseRegistry`, `bufferPoolSize` capado. NO production-readiness — distinción explícita en ADR-057 §7.
+- **`correlation-engine` y `graph-engine` separados** por Apache Iceberg: el primero alimenta bronce, el segundo lee GOLD y posee el `.kuzu`. Clases de grafo a extraer → `DEBT-GRAPH-ENGINE-EXTRACTION-001`.
+- **`DEBT-CE-TESTS-UNGATED-001` CERRADA** — `make test-components` corre `correlation-engine-test` primero; H-1 y el backend Kuzu ya gatean merges.
+- **Consejo de Sabios (2ª vuelta, 8/8)** sobre los datos del smoke: 5 "bloqueantes" leídos como production-readiness → reclasificados bajo ADR-057 §8 (endurecimiento DIFERIDO), porque el eje del proyecto es *¿aguanta el andamiaje la medición?*, no *¿es production-ready?*. Insight de síntesis: los 5 son UN problema — una cola hacia un único consumidor de tasa fija.
 
 ### Hitos DAY 157 🎉
 - **DEBT-AUTONOMY-STATE-PERSISTENCE-001 CERRADA** — `common/autonomy_state_writer.h` header-only. Escritura atómica fsync+rename, firma Ed25519, lectura fail-safe (AUTONOMOUS expirado >24h → NORMAL). 9/9 tests RED→GREEN. Integrado en etcd-server STEP 0c.
@@ -638,6 +652,7 @@ make hardened-full   # destroy → up → provision → build → deploy → che
   - ✅ DAY 170: **community_id cross-sensor sellado (aRGus+Zeek+Suricata, seed 0, vs oráculo) · de-dup BACKLOG · Consejo 8/8 P1/P2/P3 · ADR-051/052 pendientes** 🎉
   - 🔜 DAY 172: **volcado contadores aRGus a fichero parseable (DEBT-COUNTER-DUMP-001) + ADR-051/052 borrador + DEBT-NEO4J-FLOW-KEY-001 (esquema Neo4j) + ADR-050 MITRE borrador + DEBT-ARGUSPP-SURICATA-001 (eve.json → correlation-engine)**
   - ✅ DAY 173: **ADR-052 v3.2 RATIFICADA (Consejo 8/8)** — Multi-node Flow Identity & Host↔Net · DEBTs P0→P3 de identidad de flujo · ADR-053 stub (JA3/JA4/BGP) · desbloquea DEBT-NEO4J-FLOW-KEY-001 🏛️
+  - ✅ DAY 182: **Smoke B1 ejecutado — D1 (un grafo) + D2 (Kuzu stock, Vela NO) RESUELTAS POR MEDICIÓN · UNWIND batch ×55–61 · Fase 0 grafo verde · ADR-057 v2 · graph-engine como componente** 🎉
 
 ---
 

@@ -27,6 +27,8 @@ CREATE NODE TABLE IF NOT EXISTS NetworkFlow (
     community_id      STRING,
     flow_start_window UINT64,
     seq_in_window     UINT32 DEFAULT 0,
+    ingested_at       UINT64,                 // + ns UTC (CLOCK_REALTIME), first_seen, ON CREATE SET por el engine
+    temporal_anomaly  BOOLEAN   DEFAULT false,   // + ON CREATE SET (unilateral: flow_start_window > ingested_at + margen)
     PRIMARY KEY (flow_uid)
 );
 
@@ -41,6 +43,7 @@ CREATE NODE TABLE IF NOT EXISTS Alert (
     ml_detector_score    DOUBLE,
     overall_threat_score DOUBLE,
     authoritative_source STRING,
+    ingested_at          UINT64,   // + first_seen, ON CREATE SET
     PRIMARY KEY (event_id)
 );
 
@@ -60,6 +63,7 @@ CREATE NODE TABLE IF NOT EXISTS TelemetryEvent (
     ml_detector_score    DOUBLE,
     overall_threat_score DOUBLE,
     authoritative_source STRING,
+    ingested_at          UINT64,   // + first_seen, ON CREATE SET
     PRIMARY KEY (event_id)
 );
 

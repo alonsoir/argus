@@ -2,6 +2,7 @@
 // Authors: Alonso Isidoro Roman + Claude (Anthropic).
 #include "correlation_engine/kuzu_graph_sink.hpp"
 #include "correlation_engine/cypher_builder.hpp"
+#include "correlation_engine/ingest_clock.hpp"
 
 #include <kuzu.hpp>
 
@@ -71,7 +72,7 @@ bool KuzuGraphSink::write(const CorrelationRecord& record, std::string_view flow
                        record.event_id);
         return false;
     }
-    const std::string cypher = build_cypher(record, flow_uid);
+    const std::string cypher = build_cypher(record, flow_uid, ingest_now_ns());
     auto r = conn_->query(cypher);
     if (!r->isSuccess()) {
         logger_->error("[KUZU-SINK] write fallo: {} | cypher: {}", r->getErrorMessage(), cypher);

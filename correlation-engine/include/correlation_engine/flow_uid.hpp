@@ -66,5 +66,10 @@ inline std::string compute_flow_uid(std::string_view node_id,
 inline uint64_t window_micros(int64_t seconds, int32_t nanos = 0) {
     return static_cast<uint64_t>(seconds) * 1'000'000ULL + static_cast<uint64_t>(nanos) / 1'000ULL;
 }
+// ADR-057 F0: ventana (epoch-us) -> epoch-ns, para comparar con ingested_at (CLOCK_REALTIME ns).
+// Centraliza la conversion de unidad junto a window_micros; el builder no hardcodea *1000.
+inline uint64_t window_to_epoch_nanos(uint64_t window_micros_value) {
+    return window_micros_value * 1'000ULL;
+}
 
 }  // namespace argus::correlation

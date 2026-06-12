@@ -89,3 +89,10 @@ target_link_libraries(test_kuzu_graph_sink PRIVATE correlation_engine spdlog::sp
 target_compile_definitions(test_kuzu_graph_sink PRIVATE
         SCHEMA_PATH="${CMAKE_CURRENT_SOURCE_DIR}/schema/schema.cypher")
 add_test(NAME test_kuzu_graph_sink COMMAND test_kuzu_graph_sink)
+
+# ── SMOKE concurrencia Kuzu (ADR-057 F0, DEBT-KUZU-CONCURRENCY-SMOKE-001) ──
+# Medicion, NO test: se corre a mano. correlation_engine ya propaga KUZU_LIB (PUBLIC).
+find_package(Threads REQUIRED)
+add_executable(kuzu_concurrency_smoke experiments/kuzu_concurrency_smoke.cpp)
+target_include_directories(kuzu_concurrency_smoke PRIVATE ${KUZU_INC})
+target_link_libraries(kuzu_concurrency_smoke PRIVATE correlation_engine Threads::Threads)

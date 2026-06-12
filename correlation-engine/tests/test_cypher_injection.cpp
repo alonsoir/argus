@@ -8,11 +8,16 @@
 #include "correlation_engine/cypher_builder.hpp"
 #include "correlation_engine/correlation_record.hpp"
 
+#include <cstdint>
 #include <string>
 
 using namespace argus::correlation;
 
 namespace {
+
+// ADR-057 F0: now_ns fijo -> Cypher determinista. 2e12 ns > window de make_record() (1e12)
+// => los tests de inyeccion NO disparan temporal_anomaly (irrelevante para el escape).
+constexpr uint64_t kTestIngestNs = 2'000'000'000'000ULL;
 
 // Record minimo valido (MALICIOUS -> Alert) con un campo bajo control del test.
 CorrelationRecord make_record() {
@@ -51,7 +56,7 @@ TEST(CypherInjection, TrailingBackslashDoesNotBreakLiteral) {
     auto r = make_record();
     r.threat_category = "evil\\";   // un solo backslash final
 
-    const std::string cypher = build_cypher(r, "flow-uid-x");
+    const std::string cypher = build_cypher(r, "flow-uid-x", kTestIngestNs);
 
     // El backslash del dato debe quedar duplicado (escapado), no crudo.
     EXPECT_NE(cypher.find("evil\\\\"), std::string::npos)
@@ -67,7 +72,7 @@ TEST(CypherInjection, QuoteAndClauseStayInsideLiteral) {
     // Si el escape fallara, esto cerraria el literal e inyectaria un MATCH/DELETE.
     r.community_id = "x'}) DETACH DELETE f //";
 
-    const std::string cypher = build_cypher(r, "flow-uid-y");
+    const std::string cypher = build_cypher(r, "flow-uid-y", kTestIngestNs);
 
     // La comilla del dato debe ir escapada (\') -> el literal no se cierra ahi.
     EXPECT_NE(cypher.find("x\\'"), std::string::npos)
@@ -81,8 +86,31 @@ TEST(CypherInjection, BackslashBeforeQuoteIsNeutralized) {
     auto r = make_record();
     r.authoritative_source = "a\\'; MATCH (n) DELETE n //";
 
-    const std::string cypher = build_cypher(r, "flow-uid-z");
+    const std::string cypher = build_cypher(r, "flow-uid-z", kTestIngestNs);
 
     EXPECT_EQ(unescaped_single_quotes(cypher) % 2, 0u)
         << "literal Cypher descuadrado con \\' : " << cypher;
+}
+
+// ── ADR-057 Fase 0: ingested_at (first_seen) + temporal_anomaly (unilateral) ──
+// build_cypher recibe now_ns por parametro -> determinista con reloj fijo, sin DI.
+// make_record(): flow_start_sec=1000 -> window 1e12 ns.
+
+TEST(CypherFase0, IngestedAtStampedAndNoAnomalyForPastFlow) {
+    auto r = make_record();
+    const uint64_t now_ns = 2'000'000'000'000ULL;   // 2e12 ns, posterior al flujo (1e12)
+    const std::string cypher = build_cypher(r, "flow-uid-f0", now_ns);
+
+    EXPECT_NE(cypher.find("f.ingested_at=2000000000000"), std::string::npos) << cypher;
+    EXPECT_NE(cypher.find("f.temporal_anomaly=false"),    std::string::npos) << cypher;
+    EXPECT_NE(cypher.find("e.ingested_at=2000000000000"), std::string::npos) << cypher;
+    EXPECT_EQ(cypher.find("e.temporal_anomaly"),          std::string::npos) << cypher; // solo NetworkFlow
+}
+
+TEST(CypherFase0, TemporalAnomalyTrueForFutureDatedFlow) {
+    auto r = make_record();                          // window 1e12 ns
+    const uint64_t now_ns = 100'000'000'000ULL;      // 1e11 ns -> flujo fechado en el futuro
+    const std::string cypher = build_cypher(r, "flow-uid-f0b", now_ns);
+
+    EXPECT_NE(cypher.find("f.temporal_anomaly=true"), std::string::npos) << cypher;
 }

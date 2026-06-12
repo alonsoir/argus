@@ -31,6 +31,7 @@
 .PHONY: crypto-transport-build crypto-transport-clean crypto-transport-test
 .PHONY: plugin-loader-build plugin-loader-clean plugin-loader-test
 .PHONY: plugin-hello-build plugin-hello-clean validate-prod-configs
+.PHONY: correlation-engine-smoke correlation-engine-smoke-matrix
 # DEBT-HELLO-001 (PHASE 3, DAY 115)
 # Falla si algún JSON de producción referencia libplugin_hello.
 # Ejecutar antes de pipeline-start en CI/CD (TEST-PROVISION-1).
@@ -1183,7 +1184,7 @@ test-libs:
 	@$(MAKE) plugin-loader-test
 	@$(MAKE) plugin-integ-test
 
-test-components:
+test-components: correlation-engine-test
 	@echo ""
 	@echo "╔════════════════════════════════════════════════════════════╗"
 	@echo "║  🧪 Running Component Tests [$(PROFILE)]                  ║"
@@ -2831,6 +2832,40 @@ correlation-engine-clean:
 	@vagrant ssh -c "rm -rf /vagrant/correlation-engine/build"
 	@echo "✅ correlation-engine cleaned"
 
+# ════════════════════════════════════════════════════════════════════════════
+# SMOKE Kuzu — ADR-057 Fase 0 · DEBT-KUZU-CONCURRENCY-SMOKE-001
+# Escenario NDR real: grafo inicial + RIADA DE UPSERTS write-heavy, lecturas esporadicas.
+# Mide UPSERTS/s y aisla dos palancas (fsync via batch; single-writer via writers) para
+# decidir Kuzu-stock vs fork Vela. Ajusta numeros por variable; defaults razonables:
+#   make correlation-engine-smoke
+#   make correlation-engine-smoke SMOKE_RATIO=1000 SMOKE_INIT=500000 SMOKE_DUR=10
+#   make correlation-engine-smoke-matrix     # run1/run2/run3 = baseline/batched/multi-writer
+# Args binario: <dur_s> <writers> <batch> <writes_per_read> <init_nodes> <db_path>
+# DB en /tmp (fs NATIVO del guest). NUNCA /vagrant (vboxsf rompe el mmap de Kuzu).
+# ════════════════════════════════════════════════════════════════════════════
+SMOKE_DUR     ?= 5
+SMOKE_WRITERS ?= 1
+SMOKE_BATCH   ?= 1000
+SMOKE_RATIO   ?= 100
+SMOKE_INIT    ?= 100000
+SMOKE_DB      ?= /tmp/argus_kuzu_smoke.kuzu
+
+correlation-engine-smoke: correlation-engine-build
+	@echo "── SMOKE upsert Kuzu: dur=$(SMOKE_DUR)s writers=$(SMOKE_WRITERS) batch=$(SMOKE_BATCH) ratio=$(SMOKE_RATIO):1 init=$(SMOKE_INIT) ──"
+	@vagrant ssh -c "cd /vagrant/correlation-engine/build && \
+	   time ./kuzu_concurrency_smoke $(SMOKE_DUR) $(SMOKE_WRITERS) $(SMOKE_BATCH) $(SMOKE_RATIO) $(SMOKE_INIT) $(SMOKE_DB)"
+
+correlation-engine-smoke-matrix: correlation-engine-build
+	@echo "── MATRIZ smoke Kuzu (decision fsync / multi-writer) ──"
+	@vagrant ssh -c "cd /vagrant/correlation-engine/build && \
+	   echo '### run1: 1 writer, auto-commit (baseline fsync-por-upsert)' && \
+	   time ./kuzu_concurrency_smoke $(SMOKE_DUR) 1 1              $(SMOKE_RATIO) $(SMOKE_INIT) $(SMOKE_DB) ; \
+	   echo '### run2: 1 writer, batched (¿muere el fsync?)' && \
+	   time ./kuzu_concurrency_smoke $(SMOKE_DUR) 1 $(SMOKE_BATCH) $(SMOKE_RATIO) $(SMOKE_INIT) $(SMOKE_DB) ; \
+	   echo '### run3: 4 writers, batched (¿ayuda multi-writer? Kuzu=1 write-tx)' && \
+	   time ./kuzu_concurrency_smoke $(SMOKE_DUR) 4 $(SMOKE_BATCH) $(SMOKE_RATIO) $(SMOKE_INIT) $(SMOKE_DB)"
+
+
 # ── crosscheck-up — Reproduce el setup E2E community_id de DAY 171/172 ────────
 # Levanta el entorno minimo para el cross-check de paridad: etcd -> provision ->
 # sniffer(ARGUS_CID_CROSSCHECK=1) -> Zeek -> confirma Suricata. NO dispara replay
@@ -2868,3 +2903,4 @@ crosscheck-run: test-replay-neris
 	 elif [ $$rc -ne 0 ]; then echo "   XX verificador fallo (rc=$$rc)"; exit $$rc; fi
 # ── Security audit (DAY 180): cppcheck + semgrep taint. Ver contrib/audit/ ──
 -include contrib/audit/audit.mk
+

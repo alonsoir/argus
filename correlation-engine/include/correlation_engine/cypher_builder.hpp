@@ -54,10 +54,17 @@ inline std::string esc(std::string_view s) {
 // DIALECTO KUZU: MERGE {pk} ON CREATE SET. Las propiedades son deterministas sobre el
 // mismo input, asi que la re-llegada por dedup (ON MATCH) no necesita re-SET. Un solo
 // statement con 3 MERGE encadenados -> escritura atomica por registro (auto-commit Kuzu).
-inline std::string build_cypher(const CorrelationRecord& r, std::string_view flow_uid) {
+inline std::string build_cypher(const CorrelationRecord& r, std::string_view flow_uid,
+                                uint64_t ingested_at_ns) {
     using detail::esc;
     const uint64_t window  = window_micros(r.flow_start_sec, r.flow_start_nano);
     const uint32_t seq     = 0;  // DEBT-FLOWUID-SEQ-COLLISION-001
+    // ADR-057 F0: window=epoch-us, ingested_at=epoch-ns -> comparo en ns.
+    // Anomalia UNILATERAL (solo futuro): el flujo dice empezar TRAS su propia ingesta.
+    // kTemporalMarginNs absorbe skew NTP sensor<->engine -> A CALIBRAR (medir, no votar).
+    constexpr uint64_t kTemporalMarginNs = 2'000'000'000ULL;  // 2s placeholder
+    const bool temporal_anomaly =
+        window_to_epoch_nanos(window) > (ingested_at_ns + kTemporalMarginNs);
     const bool alert       = is_alert(r);
     const char* evt_label  = alert ? "Alert"       : "TelemetryEvent";
     const char* rel_label  = alert ? "ALERT_ABOUT" : "TELEMETRY_ABOUT";
@@ -73,7 +80,9 @@ inline std::string build_cypher(const CorrelationRecord& r, std::string_view flo
       << "f.node_id='" << esc(r.node_id) << "', "
       << "f.community_id='" << esc(r.community_id) << "', "
       << "f.flow_start_window=" << window << ", "
-      << "f.seq_in_window=" << seq << " ";
+      << "f.seq_in_window=" << seq << ", "
+      << "f.ingested_at=" << ingested_at_ns << ", "
+      << "f.temporal_anomaly=" << (temporal_anomaly ? "true" : "false") << " ";
 
     // 2. Alert | TelemetryEvent — veredicto (cols 12-17 del contrato correlation_v1).
     q << "MERGE (e:" << evt_label << " {event_id:'" << esc(r.event_id) << "'}) "
@@ -86,7 +95,8 @@ inline std::string build_cypher(const CorrelationRecord& r, std::string_view flo
       << "e.fast_detector_score=" << r.fast_detector_score << ", "
       << "e.ml_detector_score=" << r.ml_detector_score << ", "
       << "e.overall_threat_score=" << r.overall_threat_score << ", "
-      << "e.authoritative_source='" << esc(r.authoritative_source) << "' ";
+      << "e.authoritative_source='" << esc(r.authoritative_source) << "', "
+      << "e.ingested_at=" << ingested_at_ns << " ";
 
     // 3. (evento)-[*_ABOUT {method,confidence}]->(flujo). F1 single-node: direct/1.0.
     //    Metodos NAT/cross-nodo (confidence<1) -> multi-nodo (ADR-054).

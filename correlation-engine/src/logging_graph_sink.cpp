@@ -6,6 +6,7 @@
 // El modelo viejo (:NetworkFlow)-[:RAISED]->(:Alert) con 5-tupla+scores aplanados queda RETIRADO.
 #include "correlation_engine/logging_graph_sink.hpp"
 #include "correlation_engine/cypher_builder.hpp"
+#include "correlation_engine/ingest_clock.hpp"
 
 namespace argus::correlation {
 
@@ -13,7 +14,7 @@ namespace argus::correlation {
     // funcion libre (no el metodo estatico homonimo) y evitar recursion infinita.
     std::string LoggingGraphSink::build_cypher(const CorrelationRecord& record,
                                                std::string_view flow_uid) {
-        return ::argus::correlation::build_cypher(record, flow_uid);
+        return ::argus::correlation::build_cypher(record, flow_uid, ingest_now_ns());
     }
 
     bool LoggingGraphSink::write(const CorrelationRecord& record, std::string_view flow_uid) {

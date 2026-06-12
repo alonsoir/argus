@@ -86,6 +86,94 @@
 
 ---
 
+## 🆕 Entradas DAY 182 — Smoke B1 ejecutado (D1+D2 resueltas) + graph-engine como componente
+
+> Origen: sesión DAY 182. El smoke `DEBT-KUZU-CONCURRENCY-SMOKE-001` (adelantado a Fase 0
+> por arbitraje DAY 181) se EJECUTÓ y MIDIÓ. Resultado: **D1 (un grafo) y D2 (Kuzu stock,
+> Vela NO) RESUELTAS POR MEDICIÓN** — ver ADR-057 v2 §3.0. 2ª vuelta del Consejo de Sabios
+> (8/8) sobre los datos. La Fase 0 del grafo (`ingested_at` + `temporal_anomaly` + 3 guardas
+> que protegen la MEDICIÓN) queda verde en EMECAS.
+>
+> **Encuadre arquitectónico (decisión Alonso DAY 182):** `correlation-engine` y `graph-engine`
+> son DOS componentes distintos, separados por **Apache Iceberg** (que gobierna las LZ
+> bronce/plata/oro). `correlation-engine` alimenta bronce; `graph-engine` lee la zona GOLD y
+> es el dueño del `.kuzu` (crea/actualiza/sirve el grafo). Las clases de grafo viven hoy
+> físicamente en `correlation-engine` pero su hogar es `graph-engine`
+> (→ DEBT-GRAPH-ENGINE-EXTRACTION-001). Todas las deudas del smoke se registran contra
+> `graph-engine` y se ENCUADRAN bajo el paraguas DEBT-KUZU-CONCURRENCY-SMOKE-001 (NO como
+> deudas sueltas), para que el hilo resurja con la noticia — corroborada o seca — sobre la
+> hipótesis de mejora del ensemble (§7 ADR-057).
+
+### DEBT-KUZU-CONCURRENCY-SMOKE-001 — Smoke de concurrencia/upsert Kuzu (PARAGUAS · ACTUALIZADA DAY 182)
+**Severidad:** 🟡 P1
+**Estado:** 🟢 NÚCLEO RESUELTO — DAY 182 (D1+D2 cerradas por medición) · sub-ejes de endurecimiento DIFERIDOS
+**Componente:** `graph-engine` (clases hoy en `correlation-engine`)
+**Origen:** DAY 181 (arbitraje: adelantar el smoke a Fase 0, no eliminarlo) → ejecutado DAY 182.
+
+**RESUELTO (medición, no votación):**
+- **D1 — un grafo vs N grafos → UN GRAFO.** run3 (4 writers) midió 373.000 rechazos por la
+  única write-tx del sistema, +37% throughput, lectura p99 ×11.37. Multi-writer NO escala.
+  Sharding —si alguna vez— TEMPORAL, nunca semántico.
+- **D2 — Kuzu stock vs fork Vela → KUZU STOCK, VELA NO.** El cuello era el overhead
+  por-`query()`, no el escritor único. UNWIND batch (1 query = N upserts) da **×55–61** en
+  Kuzu stock (run1 164–229 ups/s → run2 10.000–12.200 ups/s). Vela solo añade writers
+  paralelos = lo que run3 probó que no escala. Reconsiderar Vela SOLO si UNWIND+1writer se
+  mide corto en hardware real (x86 RAW / N100 / RPi5).
+- **Lock (smoke [B]):** cross-proceso rechazado (exit=2, ✅). In-process: 2º `Database` sobre
+  el mismo path ABRE (footgun → corrupción) → guarda obligatoria (DatabaseRegistry, hecha).
+- **Fase 0 verde (EMECAS DAY 182):** `ingested_at` + `temporal_anomaly` unilateral +
+  `build_cypher(ingested_at_ns)` + sink UNWIND-batch + flush-by-(size|time) + `DatabaseRegistry`
+  + `bufferPoolSize` capado. Estas 3 guardas protegen LA MEDICIÓN (que el banco trague la
+    tortura de datos a 33 Mb/s — y más en x86 RAW — sin perder/corromper), NO production-readiness.
+
+**DIFERIDO bajo este paraguas (endurecimiento de PRODUCCIÓN, no camino crítico del experimento
+— activable si/cuando la hipótesis se corrobore y se decida desplegar; ADR-057 §8):**
+| Sub-eje | Qué falta | Experimento de cierre |
+|---|---|---|
+| Durabilidad WAL (Q7) | recuperación real tras crash sin validar (el smoke borra el WAL) | `restore_from_wal_smoke_test`: SIGKILL a media riada, AMBOS ficheros intactos → 0 commits ackeados perdidos. Liga DEBT-LABEL-WAL-001 |
+| Atomicidad/poison (Q5) | UNWIND=1tx → 1 fila maligna tira el batch | validación tipada en borde (liga H-1) + bisección-retry + quarantine; confirmar rollback total |
+| Backpressure sostenido (Q10) | cola productor→writer único sin política bajo sobrecarga | productor=2×writer 30 min → RSS acotada + degradar resolución antes que cegar |
+| Reader real (Q3) | contención medida con `count(*)`, no traversal | traversal 2–3 hop por `community_id`; p99 lectura + degradación writer + RSS |
+| Memoria a escala (Q4) | curva RSS vs nodos a pool fijo; tiering | 100k/500k/1M a pool 2 GB → RSS acotado por pool (no OOM lineal) + latencia thrashing; tiering Parquet/DuckDB |
+| Batch sweep (Q6) | `batch=1000` sin barrido | sweep `{1,10,100,300,500,1000}`; codo Δthroughput<5% (predicción ~300–500) |
+| Decomposición fsync (Q1) | P+S≈5.93ms sin separar fsync/parse; en VM | tmpfs vs disco + prepared-stmt, en x86 RAW (calibración ADR-041, no gate) |
+| Shardability (Q8) | preservar sharding temporal futuro sin reescritura | routing key explícita (`community_id` ya existe) + `IGraphQuery` espejo de `IGraphSink` |
+
+**Insight (no perder):** los cinco "bloqueantes de producción" del Consejo (flush, poison,
+backpressure, guard, reader) son UN problema, no cinco: gestionar una cola hacia un único
+consumidor de tasa fija (el writer único de Kuzu). En despliegue = subsistema `IngestQueue`
+de `graph-engine`. En el experimento basta la versión mínima de Fase 0.
+
+**Test de cierre del paraguas (núcleo):** ✅ B1 ejecutado, tabla run1/2/3 en ADR-057 §3.0,
+D1+D2 marcadas RESUELTAS. **Sub-ejes:** cada uno cierra con su experimento cuando se active.
+**Estimación restante:** 0 para el núcleo; los sub-ejes son post-corroboración / pre-despliegue.
+
+### DEBT-GRAPH-ENGINE-EXTRACTION-001 — Extraer clases de grafo de correlation-engine a graph-engine
+**Severidad:** 🟡 P1
+**Estado:** ABIERTO — DAY 182
+**Componente:** `correlation-engine` → `graph-engine` (componente nuevo)
+`graph-engine` es un componente propio: lee la zona GOLD de Iceberg y es el único dueño
+`READ_WRITE` del `.kuzu` (crea/actualiza/sirve el grafo). Hoy las clases de grafo
+(`IGraphSink`, `KuzuGraphSink`, `LoggingGraphSink`, `cypher_builder`, `flow_uid`,
+`ingest_clock`/`ingested_at`, el futuro `IGraphQuery` y `DatabaseRegistry`) viven físicamente
+en `correlation-engine`. Extraerlas a `graph-engine` cuando la frontera Iceberg se materialice.
+Refactor mecánico (no cambia algoritmos); el seam `IGraphSink` ya aísla el backend.
+**Test de cierre:** `graph-engine` compila y testea de forma independiente con las clases de
+grafo; `correlation-engine` ya no enlaza Kuzu; los 4/4 tests de grafo siguen verdes tras la
+extracción. `grep -r kuzu correlation-engine/src/` = 0 (o solo el seam IPC hacia graph-engine).
+**Estimación:** 1-2 sesiones (cuando se materialice Iceberg).
+
+### DEBT-CE-TESTS-UNGATED-001 — correlation-engine-test no gateaba merges (CERRADA DAY 182)
+**Severidad:** 🟢 P2
+**Estado:** ✅ CERRADA — DAY 182
+**Componente:** `Makefile` (`test-components`) + `correlation-engine/tests`
+Desde DAY 180 los tests del backend Kuzu real (4/4) y de H-1 (escape Cypher) existían pero
+NO entraban en `make test-components` → no gateaban merges. Un fallo de Kuzu o una regresión
+de H-1 podían colarse a main sin que el gate lo viera. Fix DAY 182: `test-components` corre
+`correlation-engine-test` PRIMERO. La Fase 0 (`ingested_at` + `temporal_anomaly` +
+`build_cypher` parametrizado) queda cubierta por el mismo gate.
+**Test de cierre:** ✅ `make test-components` ejecuta correlation-engine-test; regresión en
+H-1 o en el backend Kuzu → gate rojo.
 
 ## 🆕 Entradas DAY 180-181 — Backend Kuzu real + auditoría de seguridad (Fable)
 
