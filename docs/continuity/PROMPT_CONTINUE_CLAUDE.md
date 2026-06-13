@@ -1,124 +1,108 @@
-# Prompt de continuidad — DAY 183 (aRGus NDR)
+# Prompt de continuidad — DAY 184 (aRGus NDR)
 
 Soy Alonso, investigador solo en Badajoz construyendo **aRGus NDR** (C++20, NDR open-source
-embebido para hospitales/infraestructura crítica), colaborando con Dr. Andrés Caro Lindo
-(UEx/INCIBE). Trabajo en sesiones de madrugada. Uso el **Consejo de Sabios** (8 modelos:
-Claude, Grok, ChatGPT, DeepSeek, Qwen, Gemini, Kimi, Mistral) como revisión adversarial.
-Principios: **"medir, no votar"**, **Via Appia Quality** (construir para durar), honestidad
-científica por encima de todo.
+embebido para hospitales/infraestructura crítica), con Dr. Andrés Caro Lindo (UEx/INCIBE).
+Sesiones de madrugada. **Consejo de Sabios** (8 modelos) como revisión adversarial.
+Principios: **"medir, no votar"**, **Via Appia Quality**, honestidad científica por encima de todo.
 
-Repo: `/Users/aironman/CLionProjects/test-zeromq-docker`. Branch:
-`feature/day170-community-id-protobuf`. **Invariante de build:** SIEMPRE `make <target>` desde
-el host macOS; el Makefile hace `vagrant ssh -c` internamente; NUNCA `cmake` directo (riesgo
-`.pb.h` rancio) ni `vagrant ssh -c` envolviendo un `make` (el binario vagrant no está en el
-guest). **EMECAS** = `vagrant destroy -f && vagrant up && make bootstrap && make test-all`.
-**Kuzu** v0.11.3 (upstream archivado oct-2025, pin SHA256), embebido tras `IGraphSink`,
-BD en `/tmp` guest-nativo (vboxsf rompe el mmap de Kuzu).
+Repo: `/Users/aironman/CLionProjects/test-zeromq-docker`.
+Branch: `feature/day183-kuzu-sink-unwind-flush` (creada en DAY 183 desde main tras el merge
+del PR#100). **Invariante de build:** SIEMPRE `make <target>` desde el host macOS; NUNCA
+`cmake` directo ni `vagrant ssh -c` envolviendo un `make`. **EMECAS** = `vagrant destroy -f &&
+vagrant up && make bootstrap && make test-all`. **Kuzu** v0.11.3, embebido tras `IGraphSink`,
+BD en `/tmp` guest-nativo (vboxsf rompe el mmap).
 
 ---
 
-## QUÉ PASÓ EN DAY 182 (lo que cierro hoy)
+## QUÉ PASÓ EN DAY 183 (cerrado; commit tras este prompt)
 
-**El smoke `DEBT-KUZU-CONCURRENCY-SMOKE-001` se EJECUTÓ y MIDIÓ. D1 y D2 quedan RESUELTAS POR
-MEDICIÓN.** Esto es B1 del ADR-057 ejecutado, no "production-readiness".
+**La BASE del path parametrizado (ADR-057) está PROBADA en BD real, no afirmada.** Cerramos
+el punto 2 del camino crítico en su parte fundacional.
 
-- **D1 = UN GRAFO** (no N grafos por eje). run3 (4 writers) = 373k rechazos por la única
-  write-tx del sistema, +37% throughput, lectura p99 ×11.37. Multi-writer NO escala. Sharding
-  futuro —si lo hubiera— TEMPORAL, nunca semántico.
-- **D2 = KUZU STOCK, VELA NO.** El cuello era el overhead por-`query()` (parse/plan+fsync por
-  llamada), no el escritor único. **UNWIND batch (1 query = N upserts) → ×55–61** (164–229
-  ups/s con MERGE-por-fila → 10.000–12.200 con UNWIND batch=1000). Vela solo añade writers
-  paralelos = exactamente lo que no escala. Reconsiderar Vela SOLO si UNWIND+1writer se mide
-  corto en hardware real.
-- **Descomposición:** `coste(n)=P+S+n·E`, E≈88µs/fila (MERGE irreducible), P+S≈5.93ms (fijo,
-  amortizable). El ×55–61 es amortizar el coste fijo de 1-por-fila a 1-por-1000.
-- **Lock:** cross-proceso rechazado (exit=2 ✅); in-process 2º Database ABRE (footgun →
-  corrupción) → `DatabaseRegistry` obligatorio.
-- **Corrección honesta mía (la cacé yo, no los otros 7):** el `unordered_map::at` al reabrir
-  tras crash fue AUTO-INFLIGIDO (borré el `.kuzu` y dejé el `.wal` huérfano = inconsistencia
-  artificial). NO es prueba de que Kuzu no recupere. La recuperación real sigue sin validar
-  (diferida).
+- **`cypher_builder.hpp` refactorizado**: `make_bindings()` = fuente única de valores
+  derivados (`window`, `temporal_anomaly`), Kuzu-free (lo incluye `LoggingGraphSink`).
+  Dos plantillas `kAlert/kTelemetryCypherTemplate` (Cypher NO parametriza labels → 2, no 1).
+  `build_cypher` (logging) rebasado sobre `make_bindings` → salida byte-idéntica a DAY 180.
+- **`test_cypher_prepared.cpp`** (nuevo, GTest, en `correlation-engine-test` → gate permanente
+  en test-components/test-all/EMECAS). 6/6 verde. Zanjado por medición:
+    - **VERIFY-1**: UINT64 (sentinela `0xFEDCBA98...` > 2⁶³) y UINT32 round-trip íntegro.
+      Sin colapso a INT64.
+    - **VERIFY-2**: API real de Kuzu 0.11.3 = `execute(PreparedStatement*, pair<string,Args>...)`.
+      **El overload con `unordered_map` NO existe.** Claves `std::string`.
+    - **VERIFY-3**: `$flow_uid` reusado coincide en `MERGE(f)` y `e.flow_uid`.
+    - **H-1**: `node_id="a'b\c"` vuelve byte-idéntico → inyección Cypher cerrada
+      ESTRUCTURALMENTE por el param tipado, no por `esc()`. Lo prometido en ADR-057.
 
-**Fase 0 del grafo VERDE (EMECAS):** `ingested_at` (first_seen, wall clock deliberado, distinto
-del bpf_ktime envenenable) + `temporal_anomaly` unilateral (futuro-datación = firma de
-clock-injection, margen 2s PLACEHOLDER a calibrar) + `build_cypher(ingested_at_ns)` (función
-libre, testeable, `locale::classic()`, cierra inyección Cypher H-1). Tres guardas que protegen
-LA MEDICIÓN: sink UNWIND-batch + flush-by-(size|time), `DatabaseRegistry`, `bufferPoolSize`
-capado. `DEBT-CE-TESTS-UNGATED-001` cerrada (test-components corre correlation-engine-test 1º).
+**DOS LECCIONES caras que NO se pierden (las pagamos hoy):**
+1. **Bind = variádico de 14 pares por fila**, claves `std::string`. El `bind_params`-devuelve-map
+   que esbocé NO aplica. El binder de producción es una función que hace `execute(prep, par1..par14)`.
+2. **Ciclo de vida Kuzu**: los `QueryResult` y `PreparedStatement` sostienen refs al BufferManager
+   de la `Database`. DEBEN morir ANTES que `conn`/`db`. **Nunca `db.reset()` con un `QueryResult`
+   vivo** = el SIGSEGV de hoy (`BufferManager::unpin` sobre FileHandle liberado).
 
-**Decisión arquitectónica importante:** `correlation-engine` y `graph-engine` son DOS
-componentes, separados por **Apache Iceberg** (gobierna LZ bronce/plata/oro). correlation-engine
-alimenta bronce; graph-engine lee GOLD y es dueño del `.kuzu`. Las clases de grafo viven hoy en
-correlation-engine pero hay que extraerlas → `DEBT-GRAPH-ENGINE-EXTRACTION-001`.
-
-**Entregables DAY 182 — ✅ APLICADOS Y COMMITEADOS DAY 182 (no buscar en outputs, ya están en el repo):**
-1. ✅ ADR-057 v2 en `docs/adr/ADR-057: ...NL V2.md`. D1+D2 resueltas, §3.0 tabla run1/2/3,
-   §3.1 Fase 0, §2.8 sin índice de rango, §8 endurecimiento diferido, componente graph-engine.
-2. ✅ Bloque DAY 182 en `docs/BACKLOG.md`. Paraguas CONCURRENCY-SMOKE con 8 sub-ejes diferidos
-    + GRAPH-ENGINE-EXTRACTION + CE-TESTS-UNGATED cerrada.
-3. ✅ README.md: tabla DAY-STATUS en 182 + hitos + milestone.
-4. ✅ Este prompt.
-5. ⏳ LinkedIn post (inglés) — escrito (`linkedin-day182.md`), PENDIENTE solo de mi OK:
-   ¿nombro los 8 modelos? ¿versión corta? Único entregable sin cerrar de DAY 182.
-
-> **Nota de higiene pendiente (no urgente):** el BACKLOG tiene 7 cabeceras duplicadas
-> PREEXISTENTES (DEBT-IRP-*, BACKLOG-CRYPTO-VENDOR-KEY-001) que vienen de antes de DAY 182.
-> No las metí yo. Limpieza opcional cuando apetezca, mirando cada par para conservar la
-> entrada con el estado correcto. No bloquea nada.
+`kuzu_graph_sink.{hpp,cpp}` SIGUE INTACTO — la base se probó aislada. Mañana se cablea.
 
 ---
 
-## QUÉ HACER EN DAY 183 (el camino crítico, en orden)
+## QUÉ HACER EN DAY 184 — "TODO LO DEMÁS" (camino crítico, en orden)
 
-**El objetivo NO es la mejor implementación del grafo. Es torturar el pipeline.** A 33 Mb/s
-(techo de la NIC virtual de Vagrant) y luego más en un **servidor x86 RAW** en la misma red,
-fuera de Vagrant. El andamiaje tiene que tragar esa riada sin perder ni corromper datos del
-experimento. Eso es lo que las 3 guardas de Fase 0 protegen.
+Recordatorio del eje (punto 3): el objetivo NO es la mejor implementación del grafo, es
+**torturar el pipeline** a 33 Mb/s y luego x86 RAW sin perder ni corromper datos. Lo de hoy es
+el suelo que protege esa medición.
 
-**EMPIEZA AQUÍ (punto 2). El punto 1 ya está hecho.**
-
-1. ✅ **HECHO DAY 182:** ADR-057 v2 + BACKLOG + README aplicados y commiteados. NO hay que
-   aplicar nada. Si dudas, `git log -1` lo confirma. (Antes de tocar código nuevo: EMECAS verde.)
-2. **← ARRANCA POR AQUÍ. Cablear el sink real con UNWIND batch + flush-by-(size|time)** en el
-   camino vivo. Hoy el smoke lo probó AISLADO; falta que el `KuzuGraphSink` de PRODUCCIÓN lo
-   use. Esta es la pieza que convierte el ×55–61 medido en throughput real del pipeline. Es el
-   primer paso de mano que da resultado tangible — bueno para arrancar amodorrado.
-3. **Diseñar la tortura E2E:** pcap-relay MITRE → correlation-engine → bronce Iceberg →
-   silver → gold (join por `community_id`) → graph-engine (Kuzu COPY+upsert flood). Medir:
-   ¿se pierden filas?, ¿el grafo va stale?, ¿RSS acotada por el pool?
-4. **MITRE disjunto (no negociable, ADR-040):** escenarios A–M (experiencia/entrenamiento) vs
-   N–Z (evaluación, no vistos). Mejora sobre N–Z = publicable; solo sobre A–M = overfitting.
+0. **EMECAS verde de partida** en la rama antes de tocar código (señal limpia).
+1. **Cablear el `KuzuGraphSink` real** (esto es el resto del punto 2):
+    - Ctor: `prepare()` las DOS plantillas una vez (miembros `prep_alert_`/`prep_telemetry_`,
+      forward-decl `PreparedStatement`). Fail-closed si una no prepara.
+    - **Binder de producción**: función que hace `conn_->execute(prep.get(), par1..par14)` por
+      fila (variádico, claves `std::string`). NO map.
+    - **`write()`**: sella `ingest_now_ns()` a la ENTRADA (first_seen, per-fila) y empuja
+      `{record, flow_uid, ts}` al acumulador. Devuelve true=aceptado. Flush inline si `size≥N` o
+      `now−last_flush≥T`.
+    - **`flush()`**: `BEGIN TRANSACTION` → bucle `execute` por fila → `COMMIT` (1 checkpoint por
+      batch = la amortización). Fallo → `ROLLBACK`, buffer SE QUEDA (reintento, nunca drop
+      silencioso), surface del fallo. Limpia buffer solo en éxito.
+      **Orden de vida**: cada `QueryResult` del execute muere dentro del bucle, antes de cerrar nada.
+    - **Cambio de contrato `flush()→estado`** (hoy es `void` → oculta fallo de durabilidad).
+      Afecta también a `LoggingGraphSink`.
+    - Acumulador síncrono mono-hilo = acotado + backpressure POR CONSTRUCCIÓN (el flush inline
+      en el mismo hilo frena al productor). NO hay `IngestQueue` async todavía: eso es decisión
+      MEDIDA del punto 3, solo si UNWIND/execute-loop síncrono se mide corto en x86 RAW.
+    - **Caveat T-en-idle**: el trigger de tiempo no dispara si `write()` deja de llamarse.
+      No muerde para reproducir throughput; sí cuando T sea SLA de staleness (→ writer en su
+      hilo con tick, frontera del async). Apuntado, diferido.
+2. **Decisión a medir, no asumir**: ¿el `execute`-por-fila-en-1-tx alcanza los 10–12k ups/s del
+   smoke (UNWIND batch)? Si sí → cerrado. Si corto → recién ahí spike de UNWIND con `LIST<STRUCT>`
+   param (sin verificar que 0.11.3 lo soporte).
+3. **Diseñar la tortura E2E**: pcap-relay MITRE → correlation-engine → bronce Iceberg → silver →
+   gold (join `community_id`) → graph-engine (Kuzu flood). Medir: ¿se pierden filas?, ¿grafo stale?,
+   ¿RSS acotada? (pool capado **y** acumulador acotado: dos regiones distintas).
+4. **MITRE disjunto (ADR-040)**: A–M (experiencia) vs N–Z (evaluación). Mejora sobre N–Z = publicable.
 
 ---
 
 ## FRENTES ABIERTOS (no perder)
 
-- **D3 (Arrow vs DuckDB) SIGUE ABIERTA.** El smoke de Kuzu NO la toca. Se resuelve con B2
-  (banco de promoción/join silver→gold + scan dataset). Sin ejecutar. ADR-057 §2.7/§3.2.
-- **event_id replay-stable (Frente C):** 8 respuestas del Consejo desde DAY 180, veredicto SIN
-  sintetizar. `DEBT-ARGUSPP-CLOCK-INJECTION-PROD-001` (P1). Verificar si el path de PRODUCCIÓN
-  heredó el reloj inyectado del build de cross-check.
+- **D3 (Arrow vs DuckDB)** sigue abierta. B2 (banco promoción/join silver→gold). ADR-057 §2.7/§3.2.
+- **event_id replay-stable (Frente C)**: 8 respuestas del Consejo sin sintetizar.
+  `DEBT-ARGUSPP-CLOCK-INJECTION-PROD-001` (P1): ¿el path de PRODUCCIÓN heredó el reloj inyectado?
 - **Extracción graph-engine** (`DEBT-GRAPH-ENGINE-EXTRACTION-001`) cuando se materialice Iceberg.
-- **Calibrar margen `temporal_anomaly`** (2s placeholder) con dato real.
-- **Endurecimiento diferido (ADR-057 §8, bajo el paraguas CONCURRENCY-SMOKE):** durabilidad WAL
-  (Q7), poison/atomicidad (Q5), backpressure sostenido (Q10), reader real traversal (Q3),
-  memoria a escala+tiering (Q4), batch sweep (Q6), decomposición fsync en x86 RAW (Q1),
-  shardability (Q8). TODO esto es post-corroboración / pre-despliegue. NO es camino crítico del
-  experimento. Insight: los cinco "bloqueantes" del Consejo son UN problema — gestionar una cola
-  hacia un único consumidor de tasa fija (el writer único de Kuzu) = subsistema `IngestQueue`.
+- **Calibrar margen `temporal_anomaly`** (2s placeholder, `kTemporalMarginNs` en cypher_builder.hpp).
+- **Endurecimiento diferido (ADR-057 §8)**: WAL durabilidad, poison/atomicidad, backpressure
+  sostenido, reader traversal, memoria a escala, fsync en x86 RAW, shardability. Post-corroboración.
+  Insight: los cinco "bloqueantes" son UN problema = cola hacia el writer único = `IngestQueue`.
 - **`audit-taint` semgrep en cuarentena** (`DEBT-SEMGREP-CPP-HANG-001`).
+- **Higiene BACKLOG**: 7 cabeceras duplicadas preexistentes (no urgente). Pendiente: entrada
+  DAY 183 en ADR-057/BACKLOG documentando la base parametrizada + las dos lecciones Kuzu.
 
 ---
 
-## EL EJE QUE NO SE NEGOCIA (recordatorio para mí mismo)
+## EL EJE QUE NO SE NEGOCIA
 
-La hipótesis fundamental: ¿pueden los modelos ensemble (árboles) aprender de la experiencia
-acumulada que han visto los nodos distribuidos y mejorar con ella? **El resultado se publica
-salga como salga.** Corroborada con estos datos → hallazgo. Camino seco con estos otros datos →
-también hallazgo (lo escribimos en el paper, buscamos otra hipótesis en el futuro). **Pase lo
-que pase, entregamos datasets de valor al equipo de Andrés.** La decisión de publicar una cosa
-u otra NO depende de tener la mejor implementación del grafo. Si el diseño solo pudiera
-confirmar, no sería medición, sería búsqueda de confirmación.
+¿Pueden los modelos ensemble aprender de la experiencia acumulada de los nodos distribuidos y
+mejorar con ella? **Se publica salga como salga.** Corroborada → hallazgo. Camino seco → también
+hallazgo. **Pase lo que pase, entregamos datasets de valor al equipo de Andrés.** Si el diseño solo
+pudiera confirmar, no sería medición.
 
 paper arXiv:2604.04952 · BACKLOG-FEDER-001: sin deadline duro (22-sep-2026 era ritmo); gate real
-= demostrar datasets de valor científico a Andrés.
+= datasets de valor científico a Andrés.

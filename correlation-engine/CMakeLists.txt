@@ -90,6 +90,15 @@ target_compile_definitions(test_kuzu_graph_sink PRIVATE
         SCHEMA_PATH="${CMAKE_CURRENT_SOURCE_DIR}/schema/schema.cypher")
 add_test(NAME test_kuzu_graph_sink COMMAND test_kuzu_graph_sink)
 
+# ── DAY 183: path PARAMETRIZADO (ADR-057) — prepare + bind_params + execute ──
+# Verifica VERIFY-1/2/3 + H-1 estructural en BD efimera. NO toca el sink de produccion.
+add_executable(test_cypher_prepared tests/test_cypher_prepared.cpp)
+target_include_directories(test_cypher_prepared PRIVATE ${KUZU_INC})
+target_link_libraries(test_cypher_prepared PRIVATE correlation_engine spdlog::spdlog GTest::gtest_main)
+target_compile_definitions(test_cypher_prepared PRIVATE
+        SCHEMA_PATH="${CMAKE_CURRENT_SOURCE_DIR}/schema/schema.cypher")
+add_test(NAME test_cypher_prepared COMMAND test_cypher_prepared)
+
 # ── SMOKE concurrencia Kuzu (ADR-057 F0, DEBT-KUZU-CONCURRENCY-SMOKE-001) ──
 # Medicion, NO test: se corre a mano. correlation_engine ya propaga KUZU_LIB (PUBLIC).
 find_package(Threads REQUIRED)
