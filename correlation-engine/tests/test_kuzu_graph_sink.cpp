@@ -72,19 +72,25 @@ TEST(KuzuGraphSink, WritesRouteAndMaterialize) {
     std::remove(kDbPath);
     const auto mal = make_record("ev-mal", "1:commMal", "MALICIOUS", "RANSOMWARE");
     const auto ben = make_record("ev-ben", "1:commBen", "BENIGN", "NORMAL");
-
     {
         KuzuGraphSink sink(kDbPath, SCHEMA_PATH, null_logger());
         EXPECT_TRUE(sink.write(mal, fuid_of(mal)));
         EXPECT_TRUE(sink.write(ben, fuid_of(ben)));
-        EXPECT_EQ(sink.writes(), 2u);
-    }  // sink fuera de scope -> libera el lock de la BD single-file
-
+        // DAY 184: write() ACEPTA (acumula); aun NO durable -> writes()==0, 2 pendientes.
+        EXPECT_EQ(sink.writes(),  0u);
+        EXPECT_EQ(sink.pending(), 2u);
+        // flush() materializa el batch en 1 tx y reporta durabilidad.
+        const auto fr = sink.flush();
+        EXPECT_TRUE(fr);                       // ok
+        EXPECT_EQ(fr.rows_flushed, 2u);        // 2 committeadas en este flush
+        EXPECT_EQ(fr.rows_pending, 0u);        // buffer vaciado
+        EXPECT_EQ(sink.writes(),  2u);         // total durable
+        EXPECT_EQ(sink.pending(), 0u);
+    }  // dtor: buffer vacio -> NO grita (guard de durabilidad satisfecho)
     // Reabrir y verificar materializacion + enrutado.
     kuzu::main::SystemConfig cfg;
     auto db   = std::make_unique<kuzu::main::Database>(kDbPath, cfg);
     auto conn = std::make_unique<kuzu::main::Connection>(db.get());
-
     EXPECT_EQ(count_query(*conn, "MATCH (n:NetworkFlow) RETURN count(*)"), 2);
     EXPECT_EQ(count_query(*conn, "MATCH (a:Alert) RETURN count(*)"), 1);
     EXPECT_EQ(count_query(*conn, "MATCH (t:TelemetryEvent) RETURN count(*)"), 1);
@@ -92,19 +98,22 @@ TEST(KuzuGraphSink, WritesRouteAndMaterialize) {
         "MATCH (:Alert)-[:ALERT_ABOUT]->(:NetworkFlow) RETURN count(*)"), 1);
     EXPECT_EQ(count_query(*conn,
         "MATCH (:TelemetryEvent)-[:TELEMETRY_ABOUT]->(:NetworkFlow) RETURN count(*)"), 1);
-
     std::remove(kDbPath);
 }
 
 // ── Idempotencia: re-escribir el mismo registro no duplica (MERGE) ──────────
+// DAY 184: flush ENTRE los dos writes -> el 2º MERGE ve el nodo ya COMMITTEADO
+// (idempotencia entre transacciones, que es el caso real de re-llegada por dedup).
 TEST(KuzuGraphSink, MergeIsIdempotent) {
     std::remove(kDbPath);
     const auto mal = make_record("ev-dup", "1:commDup", "MALICIOUS", "ATTACK");
     {
         KuzuGraphSink sink(kDbPath, SCHEMA_PATH, null_logger());
         EXPECT_TRUE(sink.write(mal, fuid_of(mal)));
-        EXPECT_TRUE(sink.write(mal, fuid_of(mal)));  // re-llegada por dedup
-        EXPECT_EQ(sink.writes(), 2u);                // 2 writes...
+        EXPECT_TRUE(sink.flush());                   // 1ª tx: crea el nodo
+        EXPECT_TRUE(sink.write(mal, fuid_of(mal)));  // re-llegada por dedup (otra tx)
+        EXPECT_TRUE(sink.flush());                   // 2ª tx: MERGE no duplica
+        EXPECT_EQ(sink.writes(), 2u);                // 2 filas committeadas...
     }
     kuzu::main::SystemConfig cfg;
     auto db   = std::make_unique<kuzu::main::Database>(kDbPath, cfg);
@@ -125,5 +134,24 @@ TEST(KuzuGraphSink, RejectsEmptyNodeIdOrFlowUid) {
     EXPECT_FALSE(sink.write(make_record("ev-ok", "1:c", "MALICIOUS", "ATTACK"), ""));  // flow_uid vacio
     EXPECT_EQ(sink.writes(), 0u);
 
+    std::remove(kDbPath);
+}
+
+// ── Durabilidad: flush() vacia el buffer; sin flush, el dtor avisa y NADA se materializa ──
+TEST(KuzuGraphSink, UnflushedBufferIsNotDurable) {
+    std::remove(kDbPath);
+    const auto r = make_record("ev-noflush", "1:commNF", "MALICIOUS", "ATTACK");
+    {
+        KuzuGraphSink sink(kDbPath, SCHEMA_PATH, null_logger());
+        EXPECT_TRUE(sink.write(r, fuid_of(r)));
+        EXPECT_EQ(sink.pending(), 1u);
+        EXPECT_EQ(sink.writes(),  0u);
+        // SIN flush a proposito: el dtor logea el error de durabilidad (no se puede surface).
+    }  // dtor con buffer no vacio -> guard salta (verificable por log; aqui basta no-crash)
+    // La fila NO se materializo: reabrir muestra grafo vacio.
+    kuzu::main::SystemConfig cfg;
+    auto db   = std::make_unique<kuzu::main::Database>(kDbPath, cfg);
+    auto conn = std::make_unique<kuzu::main::Connection>(db.get());
+    EXPECT_EQ(count_query(*conn, "MATCH (n:NetworkFlow) RETURN count(*)"), 0);
     std::remove(kDbPath);
 }
