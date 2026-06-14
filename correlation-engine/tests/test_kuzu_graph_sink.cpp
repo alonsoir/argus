@@ -7,13 +7,14 @@
 #include "correlation_engine/kuzu_graph_sink.hpp"
 #include "correlation_engine/correlation_record.hpp"
 #include "correlation_engine/flow_uid.hpp"
-
+#include "correlation_engine/cypher_builder.hpp"
 #include <kuzu.hpp>
 
 #include <spdlog/spdlog.h>
 #include <spdlog/sinks/null_sink.h>
 
 #include <cstdio>
+#include <utility>
 #include <memory>
 #include <string>
 
@@ -155,3 +156,81 @@ TEST(KuzuGraphSink, UnflushedBufferIsNotDurable) {
     EXPECT_EQ(count_query(*conn, "MATCH (n:NetworkFlow) RETURN count(*)"), 0);
     std::remove(kDbPath);
 }
+
+// Replica del binder de produccion (exec_row, anon-ns en kuzu_graph_sink.cpp).
+// El test es spec INDEPENDIENTE: si el binder de produccion deriva, este sigue clavando
+// los 14 params a mano. std::string materializado (Value no tiene ctor desde string_view).
+bool exec_alert_row_raw(kuzu::main::Connection& conn,
+                        kuzu::main::PreparedStatement* prep,
+                        const CypherBindings& b) {
+    auto r = conn.execute(prep,
+        std::pair{std::string("flow_uid"),             std::string(b.flow_uid)},
+        std::pair{std::string("node_id"),              std::string(b.node_id)},
+        std::pair{std::string("community_id"),         std::string(b.community_id)},
+        std::pair{std::string("flow_start_window"),    b.flow_start_window},
+        std::pair{std::string("seq_in_window"),        b.seq_in_window},
+        std::pair{std::string("ingested_at"),          b.ingested_at},
+        std::pair{std::string("temporal_anomaly"),     b.temporal_anomaly},
+        std::pair{std::string("event_id"),             std::string(b.event_id)},
+        std::pair{std::string("final_classification"), std::string(b.final_classification)},
+        std::pair{std::string("threat_category"),      std::string(b.threat_category)},
+        std::pair{std::string("fast_detector_score"),  b.fast_detector_score},
+        std::pair{std::string("ml_detector_score"),    b.ml_detector_score},
+        std::pair{std::string("overall_threat_score"), b.overall_threat_score},
+        std::pair{std::string("authoritative_source"), std::string(b.authoritative_source)});
+    return r->isSuccess();  // QueryResult muere aqui, antes de cerrar nada
+}
+
+// ── VERIFY-3 (DAY 184): BEGIN/execute×N/{COMMIT|ROLLBACK} es UNA transaccion real ──
+// La API de 0.11.3 NO expone metodo tipado de tx: control manual por string. Esto prueba
+// que ese control AGRUPA los execute(prepared) = amortizacion de 1 checkpoint por batch,
+// premisa sobre la que descansa la medicion de la tortura E2E (punto 3).
+
+TEST(KuzuGraphSink, ExplicitCommitPersistsBatch) {
+    std::remove(kDbPath);
+    { KuzuGraphSink sink(kDbPath, SCHEMA_PATH, null_logger()); }  // crea BD + persiste schema
+    kuzu::main::SystemConfig cfg;
+    auto db   = std::make_unique<kuzu::main::Database>(kDbPath, cfg);
+    auto conn = std::make_unique<kuzu::main::Connection>(db.get());
+    auto prep = conn->prepare(kAlertCypherTemplate);
+    ASSERT_TRUE(prep && prep->isSuccess());
+
+    const auto r1 = make_record("ev-c1", "1:commC1", "MALICIOUS", "ATTACK");
+    const auto r2 = make_record("ev-c2", "1:commC2", "MALICIOUS", "ATTACK");
+    const auto b1 = make_bindings(r1, fuid_of(r1), 1'000);
+    const auto b2 = make_bindings(r2, fuid_of(r2), 2'000);
+
+    ASSERT_TRUE(conn->query("BEGIN TRANSACTION")->isSuccess());
+    EXPECT_TRUE(exec_alert_row_raw(*conn, prep.get(), b1));
+    EXPECT_TRUE(exec_alert_row_raw(*conn, prep.get(), b2));
+    ASSERT_TRUE(conn->query("COMMIT")->isSuccess());
+
+    EXPECT_EQ(count_query(*conn, "MATCH (n:NetworkFlow) RETURN count(*)"), 2);  // durable
+    std::remove(kDbPath);
+}
+
+TEST(KuzuGraphSink, ExplicitRollbackRevertsBatch) {
+    std::remove(kDbPath);
+    { KuzuGraphSink sink(kDbPath, SCHEMA_PATH, null_logger()); }  // mismo schema persistido
+    kuzu::main::SystemConfig cfg;
+    auto db   = std::make_unique<kuzu::main::Database>(kDbPath, cfg);
+    auto conn = std::make_unique<kuzu::main::Connection>(db.get());
+    auto prep = conn->prepare(kAlertCypherTemplate);
+    ASSERT_TRUE(prep && prep->isSuccess());
+
+    const auto r1 = make_record("ev-r1", "1:commR1", "MALICIOUS", "ATTACK");
+    const auto r2 = make_record("ev-r2", "1:commR2", "MALICIOUS", "ATTACK");
+    const auto b1 = make_bindings(r1, fuid_of(r1), 1'000);
+    const auto b2 = make_bindings(r2, fuid_of(r2), 2'000);
+
+    ASSERT_TRUE(conn->query("BEGIN TRANSACTION")->isSuccess());
+    EXPECT_TRUE(exec_alert_row_raw(*conn, prep.get(), b1));
+    EXPECT_TRUE(exec_alert_row_raw(*conn, prep.get(), b2));
+    ASSERT_TRUE(conn->query("ROLLBACK")->isSuccess());
+
+    // DECISIVO: mismas 2 filas que el test de arriba; SOLO cambia ROLLBACK por COMMIT.
+    // 0 => estaban dentro de la tx => agrupadas. !=0 => auto-commit por fila => batching roto.
+    EXPECT_EQ(count_query(*conn, "MATCH (n:NetworkFlow) RETURN count(*)"), 0);
+    std::remove(kDbPath);
+}
+
