@@ -131,8 +131,14 @@ int main(int argc, char* argv[]) {
         }
     }
 
-    sink->flush();
+    const auto fr = sink->flush();
     spdlog::info("[CONSUMER] one-shot fin: {} materializados, {} descartados", total, discarded);
-    return EXIT_SUCCESS;
+    if (!fr) {
+        // Fallo de durabilidad: filas aceptadas por write() pero NO committeadas.
+        // EXIT_FAILURE para que el harness E2E no lea 'ok' sobre datos perdidos (eje punto 3).
+        spdlog::error("[CONSUMER] flush final FALLO: {} filas sin materializar (NO durable)",
+                      fr.rows_pending);
+        return EXIT_FAILURE;
+    }
 
 }

@@ -78,7 +78,7 @@ std::string make_valid_row(const std::vector<uint8_t>& key, const std::string& e
 class MockGraphSink final : public IGraphSink {
 public:
     bool write(const CorrelationRecord&, std::string_view) override { ++n_; return true; }
-    void flush() override {}
+    FlushResult flush() override { return FlushResult{true, 0, 0}; }
     int count() const { return n_; }
 private:
     int n_ = 0;
@@ -97,7 +97,9 @@ int process_lines(const std::vector<std::string>& lines,
         const std::string fuid = compute_flow_uid(rec->node_id, rec->community_id, window);
         if (sink.write(*rec, fuid)) ++delivered;
     }
-    sink.flush();
+
+    EXPECT_TRUE(sink.flush());   // consume el [[nodiscard]] Y asierta durabilidad (mock/logging siempre ok)
+
     return delivered;
 }
 

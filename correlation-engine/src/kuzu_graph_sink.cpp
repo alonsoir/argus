@@ -82,10 +82,13 @@ bool KuzuGraphSink::write(const CorrelationRecord& record, std::string_view flow
     return true;
 }
 
-void KuzuGraphSink::flush() {
-    // Kuzu auto-commitea cada query (1 statement = 1 transaccion). No hay buffer que vaciar.
+FlushResult KuzuGraphSink::flush() {
+    // DAY 184 (solo contrato): hoy Kuzu auto-commitea cada query en write() (1 stmt = 1 tx),
+    // NO hay buffer que vaciar -> exito trivial. El batch real (BEGIN/COMMIT sobre
+    // acumulador) llega en el CABLEADO; entonces rows_flushed/rows_pending seran reales.
     logger_->info("[KUZU-SINK] flush: {} registros materializados "
                   "(NetworkFlow + Alert/TelemetryEvent + arista)", writes_);
+    return FlushResult{true, 0, 0};
 }
 
 }  // namespace argus::correlation
