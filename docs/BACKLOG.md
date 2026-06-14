@@ -1,5 +1,5 @@
 # aRGus NDR — BACKLOG
-*Última actualización: DAY 181 — 2026-06-11*
+*Última actualización: DAY 184 — 2026-06-14*
 
 ---
 
@@ -85,6 +85,126 @@
 | **aRGus-seL4** | ⏳ No iniciada | Apéndice científico. Kernel seL4, libpcap. Branch independiente. |
 
 ---
+
+## 🆕 Entradas DAY 184 — flush()→FlushResult + batch transaccional Kuzu + Consejo banco de tortura
+
+> Origen: sesión DAY 184 (branch `feature/day183-kuzu-sink-unwind-flush`). Endurecimiento del
+> sink de durabilidad que protege LA MEDICIÓN (no production-readiness) + síntesis del Consejo
+> (8/8) sobre las 5 decisiones del banco de tortura del DAY 185. Todo lo de hoy es "suelo que
+> protege la medición": que el camino bronce→Kuzu trague la tortura sin perder/corromper filas.
+
+### ✅ CERRADO DAY 184 — contrato de durabilidad del sink
+
+- **flush()→FlushResult (commit `4e221ede`).** `IGraphSink::flush()` deja de devolver `void`
+  (ocultaba el fallo de durabilidad) y devuelve un POD `[[nodiscard]] FlushResult
+  {bool ok; uint64_t rows_flushed; uint64_t rows_pending; explicit operator bool}`. El
+  `[[nodiscard]]` está sobre el TIPO, no sobre cada método → ningún sink presente o futuro
+  puede descartar el fallo bajo `-Werror` (cierre estructural, mismo espíritu que H-1: tipado,
+  no `esc()`). `main.cpp:134` → flush fallido = `EXIT_FAILURE`. 8 touchpoints de `IGraphSink`
+  revisados por grep, cero fuga a ml-detector/firewall/etc.
+- **KuzuGraphSink batch (commit `112b9df1`).** `write()` acumula (copia `CorrelationRecord` +
+  `flow_uid` materializado + `ingested_at` sellado a la entrada vía `ingest_now_ns()`).
+  `flush()` ejecuta el batch en UNA transacción (`BEGIN`/loop `execute(prepared)`/`COMMIT`,
+  `ROLLBACK`+buffer retenido en fallo — retry, nunca descarte). **Cierra H-1 en el path
+  EJECUTADO de Kuzu** (el sink corre `execute(prepared, params)`, no `query(string)`).
+  Orden de miembros `db_→conn_→prep_*→accumulator_` resuelve lifetimes por RAII; el destructor
+  grita si el buffer no está vacío (durabilidad violada).
+- **VERIFY-3 (test-only, commit separado).** Dos tests gemelos en `test_kuzu_graph_sink.cpp`:
+  mismas N filas, solo cambia COMMIT vs ROLLBACK. COMMIT→2 nodos durables, ROLLBACK→0. Prueba
+  que `BEGIN/COMMIT` por string envuelve los `execute(prepared)` en 1 transacción = 1 checkpoint
+  por batch (la premisa que `flush()` amortiza, ahora medida). Baseline 0.48s→0.86s
+  (contabilizado). 6/6 verde.
+- **3 lecciones del header Kuzu 0.11.3** (verificadas contra `/usr/local/include/kuzu.hpp`, no de
+  memoria): control transaccional por string (no método tipado); `execute(prepared, pair<string,
+  Args>...)` variádico; `common::Value` sin ctor desde `string_view` → materializar texto a
+  `std::string`; el header documenta el SIGSEGV de DAY 183
+  (`preventTransactionRollbackOnDestruction`).
+
+### DEBT-LIBCORRELATION-V1-EXTRACT-001 — Extraer CorrelationWriter → libcorrelation_v1 (Opción B)
+**Severidad:** 🟡 P1 — prerrequisito del injector adversarial
+**Estado:** ABIERTO — DAY 184 (decisión Alonso: Opción B sobre A; Consejo 8/8 con condiciones)
+**Componente:** `ml-detector/src/correlation_writer.cpp` → `libs/correlation-v1/`
+Extraer la serialización `correlation_v1` a una librería compartida con `struct CorrelationV1Row`
+(18 campos planos = mismos que `CorrelationRecord` del consumidor) + `build_row(const
+CorrelationV1Row&)`. ml-detector pasa a ser adaptador fino `NetworkSecurityEvent→CorrelationV1Row
+→build_row`. La librería debe ser **PURA** (struct + serialización, CERO `LogReader`/`ZmqPublisher`/
+`FileWatcher`) — se justifica por DOS consumidores reales (ml-detector + injector), NO por el
+`argus-adapter-producer` hipotético (que es lectura+transporte, no serialización-desde-struct;
+condición Kimi/Gemini/Qwen + dissenso Claude). Mitigación: test de equivalencia byte-idéntica
+`event→row→build_row(row)` vs `build_row(event)`, **sobre un fuzzer de protobuf (1M iteraciones,
+ejerce todos los optional/repeated)**, NO un caso único (chatgpt/Kimi/Mistral). Nota: validar
+además el DOMINIO de los campos enum-derivados (col 17 `authoritative_source`) — el injector no
+debe poder emitir un símbolo que el enum protobuf jamás produciría.
+**Test de cierre:** equivalencia byte-idéntica verde sobre 1M de eventos fuzzed; la librería no
+enlaza ninguna clase de I/O; ml-detector e injector la usan idéntica.
+**Estimación:** 1-2 sesiones (DAY 185).
+
+### DEBT-INJECTOR-ADVERSARIAL-BRONZE-001 — Injector adversarial del banco de tortura
+**Severidad:** 🟡 P1 — sin él el injector es cómplice (prueba contenido, asume stream bien formado)
+**Estado:** ABIERTO — DAY 184 (Consejo 8/8 + síntesis Claude)
+**Componente:** `tools/` (tercer hermano de la familia de stress-testers) + bronce `correlation_v1`
+Injector que emula el contrato AspectV1/correlation_v1 (append CSV+HMAC a fichero, consumidor lo
+lee por `--follow` tail-poll). Batería adversarial = contenido + **forma del stream**:
+- **Contenido:** H-1 strings (comillas/backslash/Cypher), `temporal_anomaly`, colisiones de
+  `flow_uid`, ráfagas que fuerzan flush inline, volumen que desborda el acumulador.
+- **Topología (Gemini/DeepSeek/Kimi):** **nodo-estrella / alta cardinalidad** — un `node_id` con
+  10^6 aristas en una ráfaga (= un scan nmap real: un origen, miles de destinos) que satura las
+  adjacency lists de Kuzu antes del flush. Colisión de hash 64-bit, no de string (Kimi).
+- **Forma del stream (Claude, P3):** **línea truncada** (writer a media línea durante append
+  no-atómico; el consumidor debe descartarla y aceptarla al completarse, sin contar dos veces ni
+  perder); **HMAC válido sobre contenido en frontera** (firma correcta, 18 cols donde se esperan
+  19, o campo vacío que no debería); **duplicado exacto con contador** (MERGE deduplica → si el
+  contador del banco cuenta 2 y el grafo tiene 1, la métrica de pérdida va a negativo y envenena la
+  medición); **out-of-order causal** (evento de cierre antes que el de apertura).
+**Test de cierre:** cada vector documentado con la hipótesis que prueba; el consumidor descarta lo
+inválido ANTES del grafo; la métrica de pérdida nunca da negativo (duplicado contemplado).
+**Estimación:** 2-3 sesiones.
+
+### DEBT-BRONZE-TORTURE-TMPFS-001 — CSV bronce de tortura en /dev/shm (tmpfs), no disco físico
+**Severidad:** 🟡 P1 — condición de validez de la primera tortura (aísla la variable I/O)
+**Estado:** ABIERTO — DAY 184 (Gemini/Qwen — mejor aportación del Consejo que Claude no vio)
+**Componente:** banco de tortura (injector + correlation-engine `--follow`)
+Escribir el CSV bronce de la tortura en disco físico **sustituye el cuello del NIC por el cuello
+del VFS/page-cache** y, peor, mete contención de write-lock con los `COMMIT` de Kuzu sobre el mismo
+disco — medirías contención de I/O, no tu pipeline. El CSV bronce debe vivir en `/dev/shm` (tmpfs,
+RAM) para aislar la I/O física como variable. Misma lógica que "BD Kuzu en /tmp guest-nativo, no
+vboxsf", una capa más arriba.
+**Test de cierre:** la primera tortura corre con bronce en `/dev/shm`; medición documentada como
+"pipeline de cómputo, sin I/O física ni red" (etiqueta honesta P4).
+**Estimación:** 0.5 sesión (config del banco).
+
+### DEBT-CONTRACT-DRIFT-PROTOBUF-001 — Un campo nuevo en el protobuf toca muchos tests, no uno
+**Severidad:** 🟢 P2 — fragilidad de contrato (no un test, una clase)
+**Estado:** ABIERTO — DAY 184 (observación Alonso, refina P2 de Claude)
+**Componente:** `protobuf/network_security.proto` + reader + writer + roundtrip + fuzzer
+Añadir un campo al contrato `correlation_v1`/protobuf no rompe *un* test: toca el reader, el
+writer, el roundtrip, el fuzzer de equivalencia y `DEBT-TEST-COL17-CONTRACT-DRIFT-001`
+simultáneamente. No es un parche puntual — es una **clase de drift** que necesita política: un gate
+que liste explícitamente los puntos de contacto del contrato y falle si un campo nuevo no los
+actualiza todos. Ref. cruzada: `DEBT-TEST-COL17-CONTRACT-DRIFT-001`.
+**Test de cierre:** añadir un campo de prueba al .proto → el gate enumera y exige actualizar todos
+los puntos de contacto; ninguno queda obsoleto en silencio.
+**Estimación:** 1 sesión (cuando se toque el contrato).
+
+### BACKLOG-THROUGHPUT-TARGET-001 — Estimar caudal objetivo de producción (BLOQUEADO POR HARDWARE)
+**Estado:** ⏳ BLOQUEADO — DAY 184 · **Bloqueado por:** BACKLOG-HARDWARE-FEDER-001 (RPi5/N100)
+**Prioridad:** P1 cuando llegue hardware físico
+El criterio de "suelo suficiente" de Kimi ("si CSV-directo aguanta 10× el caudal de producción sin
+pérdida, el suelo es válido") requiere un número: eventos/seg o Mb/s monitorizados por una Raspberry
+en un hospital/municipio pequeño. **Ese número NO se estima desde la silla** — hasta tener tarjetas
+físicas no hay forma honesta de fijarlo. Decisión Alonso: no se inventa. La primera tortura mide
+**pérdida absoluta** (rows-in vs nodos-materializados = 0 o no), criterio binario válido sin el
+target. El "suelo suficiente" relativo espera al hardware.
+**Test de cierre:** con RPi5/N100 desplegados, medir caudal real (eventos/seg, Mb/s) bajo carga MITRE
+→ fijar el target → declarar criterio de suelo suficiente operable.
+**Estimación:** post-hardware.
+
+### Regla del banco de tortura (DAY 184 — Consejo 8/8 + arbitraje Claude)
+- **HMAC por env var compartida, nunca hardcode, nunca `--skip-hmac`.** El injector firma con la
+  misma clave que el consumidor (`ARGUS_BRONZE_HMAC_KEY_HEX`); ambos la toman de fuera, ninguno la
+  provisiona (cero acople nuevo con DEBT-BRONZE-KEY-PROVISIONING-001). RECHAZADO: `--skip-hmac` en el
+  consumidor (puerta trasera que mata el invariante de integridad), clave hardcodeada (segunda fuente
+  de verdad). Ausencia de clave = error ruidoso, no default silencioso (Kimi).
 
 ## 🆕 Entradas DAY 182 — Smoke B1 ejecutado (D1+D2 resueltas) + graph-engine como componente
 

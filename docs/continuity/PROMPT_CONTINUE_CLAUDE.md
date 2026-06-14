@@ -1,108 +1,132 @@
-# Prompt de continuidad — DAY 184 (aRGus NDR)
+# PROMPT DE CONTINUIDAD — aRGus NDR — DAY 184 → DAY 185
 
-Soy Alonso, investigador solo en Badajoz construyendo **aRGus NDR** (C++20, NDR open-source
-embebido para hospitales/infraestructura crítica), con Dr. Andrés Caro Lindo (UEx/INCIBE).
-Sesiones de madrugada. **Consejo de Sabios** (8 modelos) como revisión adversarial.
-Principios: **"medir, no votar"**, **Via Appia Quality**, honestidad científica por encima de todo.
-
-Repo: `/Users/aironman/CLionProjects/test-zeromq-docker`.
-Branch: `feature/day183-kuzu-sink-unwind-flush` (creada en DAY 183 desde main tras el merge
-del PR#100). **Invariante de build:** SIEMPRE `make <target>` desde el host macOS; NUNCA
-`cmake` directo ni `vagrant ssh -c` envolviendo un `make`. **EMECAS** = `vagrant destroy -f &&
-vagrant up && make bootstrap && make test-all`. **Kuzu** v0.11.3, embebido tras `IGraphSink`,
-BD en `/tmp` guest-nativo (vboxsf rompe el mmap).
+**Repo:** `/Users/aironman/CLionProjects/test-zeromq-docker`
+**Branch:** `feature/day183-kuzu-sink-unwind-flush`
+**Tag activo:** `v1.0.0-day166` · **Keypair efímero:** regenera en cada EMECAS
+**Sesión:** madrugada (~4–6 AM), Badajoz.
 
 ---
 
-## QUÉ PASÓ EN DAY 183 (cerrado; commit tras este prompt)
+## 0. EJE NO NEGOCIABLE (no perder nunca de vista)
 
-**La BASE del path parametrizado (ADR-057) está PROBADA en BD real, no afirmada.** Cerramos
-el punto 2 del camino crítico en su parte fundacional.
-
-- **`cypher_builder.hpp` refactorizado**: `make_bindings()` = fuente única de valores
-  derivados (`window`, `temporal_anomaly`), Kuzu-free (lo incluye `LoggingGraphSink`).
-  Dos plantillas `kAlert/kTelemetryCypherTemplate` (Cypher NO parametriza labels → 2, no 1).
-  `build_cypher` (logging) rebasado sobre `make_bindings` → salida byte-idéntica a DAY 180.
-- **`test_cypher_prepared.cpp`** (nuevo, GTest, en `correlation-engine-test` → gate permanente
-  en test-components/test-all/EMECAS). 6/6 verde. Zanjado por medición:
-    - **VERIFY-1**: UINT64 (sentinela `0xFEDCBA98...` > 2⁶³) y UINT32 round-trip íntegro.
-      Sin colapso a INT64.
-    - **VERIFY-2**: API real de Kuzu 0.11.3 = `execute(PreparedStatement*, pair<string,Args>...)`.
-      **El overload con `unordered_map` NO existe.** Claves `std::string`.
-    - **VERIFY-3**: `$flow_uid` reusado coincide en `MERGE(f)` y `e.flow_uid`.
-    - **H-1**: `node_id="a'b\c"` vuelve byte-idéntico → inyección Cypher cerrada
-      ESTRUCTURALMENTE por el param tipado, no por `esc()`. Lo prometido en ADR-057.
-
-**DOS LECCIONES caras que NO se pierden (las pagamos hoy):**
-1. **Bind = variádico de 14 pares por fila**, claves `std::string`. El `bind_params`-devuelve-map
-   que esbocé NO aplica. El binder de producción es una función que hace `execute(prep, par1..par14)`.
-2. **Ciclo de vida Kuzu**: los `QueryResult` y `PreparedStatement` sostienen refs al BufferManager
-   de la `Database`. DEBEN morir ANTES que `conn`/`db`. **Nunca `db.reset()` con un `QueryResult`
-   vivo** = el SIGSEGV de hoy (`BufferManager::unpin` sobre FileHandle liberado).
-
-`kuzu_graph_sink.{hpp,cpp}` SIGUE INTACTO — la base se probó aislada. Mañana se cablea.
+**¿Pueden los modelos ensemble aprender de la experiencia acumulada de nodos distribuidos?**
+Se publica salga **corroborada o seca** la hipótesis. Condición de validez innegociable:
+**split MITRE disjunto** (entrenar en técnicas A–M, evaluar en N–Z) por ADR-040/ADR-057 §7.
+Todo lo que se construye estos días es **"suelo que protege la medición"**, no production-readiness.
 
 ---
 
-## QUÉ HACER EN DAY 184 — "TODO LO DEMÁS" (camino crítico, en orden)
+## 1. INVARIANTES DE TRABAJO (romperlos rompe la sesión)
 
-Recordatorio del eje (punto 3): el objetivo NO es la mejor implementación del grafo, es
-**torturar el pipeline** a 33 Mb/s y luego x86 RAW sin perder ni corromper datos. Lo de hoy es
-el suelo que protege esa medición.
-
-0. **EMECAS verde de partida** en la rama antes de tocar código (señal limpia).
-1. **Cablear el `KuzuGraphSink` real** (esto es el resto del punto 2):
-    - Ctor: `prepare()` las DOS plantillas una vez (miembros `prep_alert_`/`prep_telemetry_`,
-      forward-decl `PreparedStatement`). Fail-closed si una no prepara.
-    - **Binder de producción**: función que hace `conn_->execute(prep.get(), par1..par14)` por
-      fila (variádico, claves `std::string`). NO map.
-    - **`write()`**: sella `ingest_now_ns()` a la ENTRADA (first_seen, per-fila) y empuja
-      `{record, flow_uid, ts}` al acumulador. Devuelve true=aceptado. Flush inline si `size≥N` o
-      `now−last_flush≥T`.
-    - **`flush()`**: `BEGIN TRANSACTION` → bucle `execute` por fila → `COMMIT` (1 checkpoint por
-      batch = la amortización). Fallo → `ROLLBACK`, buffer SE QUEDA (reintento, nunca drop
-      silencioso), surface del fallo. Limpia buffer solo en éxito.
-      **Orden de vida**: cada `QueryResult` del execute muere dentro del bucle, antes de cerrar nada.
-    - **Cambio de contrato `flush()→estado`** (hoy es `void` → oculta fallo de durabilidad).
-      Afecta también a `LoggingGraphSink`.
-    - Acumulador síncrono mono-hilo = acotado + backpressure POR CONSTRUCCIÓN (el flush inline
-      en el mismo hilo frena al productor). NO hay `IngestQueue` async todavía: eso es decisión
-      MEDIDA del punto 3, solo si UNWIND/execute-loop síncrono se mide corto en x86 RAW.
-    - **Caveat T-en-idle**: el trigger de tiempo no dispara si `write()` deja de llamarse.
-      No muerde para reproducir throughput; sí cuando T sea SLA de staleness (→ writer en su
-      hilo con tick, frontera del async). Apuntado, diferido.
-2. **Decisión a medir, no asumir**: ¿el `execute`-por-fila-en-1-tx alcanza los 10–12k ups/s del
-   smoke (UNWIND batch)? Si sí → cerrado. Si corto → recién ahí spike de UNWIND con `LIST<STRUCT>`
-   param (sin verificar que 0.11.3 lo soporte).
-3. **Diseñar la tortura E2E**: pcap-relay MITRE → correlation-engine → bronce Iceberg → silver →
-   gold (join `community_id`) → graph-engine (Kuzu flood). Medir: ¿se pierden filas?, ¿grafo stale?,
-   ¿RSS acotada? (pool capado **y** acumulador acotado: dos regiones distintas).
-4. **MITRE disjunto (ADR-040)**: A–M (experiencia) vs N–Z (evaluación). Mejora sobre N–Z = publicable.
+- **Construir SIEMPRE con `make <target>` desde el host macOS.** Nunca `cmake -S . -B build` directo
+  (riesgo de `.pb.h` rancio + se salta `-Werror`). Nunca envolver `make` en `vagrant ssh -c`
+  (el binario `vagrant` no existe en el guest; el Makefile ya hace `vagrant ssh -c` por dentro).
+- **EMECAS** = `vagrant destroy -f && vagrant up && make bootstrap && make test-all`.
+- **BD Kuzu en `/tmp` guest-nativo** (vboxsf rompe el `mmap`).
+- **Ediciones de fichero en macOS por heredoc Python3** — nunca `sed -i` sin `-e ''`.
+- **Dos commits por día**: código y docs separados.
+- **Makefile = única fuente de verdad.** `-Werror` invariante permanente, 0 warnings.
+- Principios: *medir, no votar* · *Via Appia Quality* · *piano piano* · honestidad científica.
 
 ---
 
-## FRENTES ABIERTOS (no perder)
+## 2. HECHO EN DAY 184 (cerrado)
 
-- **D3 (Arrow vs DuckDB)** sigue abierta. B2 (banco promoción/join silver→gold). ADR-057 §2.7/§3.2.
-- **event_id replay-stable (Frente C)**: 8 respuestas del Consejo sin sintetizar.
-  `DEBT-ARGUSPP-CLOCK-INJECTION-PROD-001` (P1): ¿el path de PRODUCCIÓN heredó el reloj inyectado?
-- **Extracción graph-engine** (`DEBT-GRAPH-ENGINE-EXTRACTION-001`) cuando se materialice Iceberg.
-- **Calibrar margen `temporal_anomaly`** (2s placeholder, `kTemporalMarginNs` en cypher_builder.hpp).
-- **Endurecimiento diferido (ADR-057 §8)**: WAL durabilidad, poison/atomicidad, backpressure
-  sostenido, reader traversal, memoria a escala, fsync en x86 RAW, shardability. Post-corroboración.
-  Insight: los cinco "bloqueantes" son UN problema = cola hacia el writer único = `IngestQueue`.
-- **`audit-taint` semgrep en cuarentena** (`DEBT-SEMGREP-CPP-HANG-001`).
-- **Higiene BACKLOG**: 7 cabeceras duplicadas preexistentes (no urgente). Pendiente: entrada
-  DAY 183 en ADR-057/BACKLOG documentando la base parametrizada + las dos lecciones Kuzu.
+Endurecimiento del **contrato de durabilidad del sink** + síntesis del Consejo (8/8) del banco
+de tortura del DAY 185.
+
+- **flush()→FlushResult (commit `4e221ede`).** `IGraphSink::flush()` deja de devolver `void`
+  (ocultaba el fallo de durabilidad) → POD `[[nodiscard]] FlushResult {bool ok; uint64_t
+  rows_flushed; uint64_t rows_pending; explicit operator bool}`. `[[nodiscard]]` sobre el **TIPO**,
+  no sobre cada método → ningún sink presente ni futuro puede descartar el fallo bajo `-Werror`
+  (cierre **estructural**, mismo espíritu que H-1: tipado, no `esc()`). `main.cpp:134` → flush
+  fallido = `EXIT_FAILURE` (el harness E2E no lee "ok" sobre datos perdidos). 8 touchpoints de
+  `IGraphSink` revisados por grep, cero fuga a ml-detector/firewall/etc.
+- **KuzuGraphSink batch (commit `112b9df1`).** `write()` acumula (copia `CorrelationRecord` +
+  `flow_uid` materializado + `ingested_at` sellado a la entrada). `flush()` ejecuta el batch en
+  UNA transacción (`BEGIN`/loop `execute(prepared)`/`COMMIT`, `ROLLBACK`+buffer retenido en fallo).
+  **Cierra H-1 en el path EJECUTADO de Kuzu** (`execute(prepared, params)`, no `query(string)`).
+  Orden de miembros `db_→conn_→prep_*→accumulator_` por RAII; el destructor grita si el buffer no
+  está vacío.
+- **VERIFY-3 (test-only).** Dos tests gemelos: mismas N filas, solo cambia COMMIT vs ROLLBACK.
+  COMMIT→2 nodos durables, ROLLBACK→0. Prueba que `BEGIN/COMMIT` por string envuelve los
+  `execute(prepared)` en 1 transacción = 1 checkpoint por batch. Baseline `test_kuzu_graph_sink`
+  0.48s→0.86s (contabilizado). 6/6 verde.
+- **3 lecciones del header Kuzu 0.11.3** (verificadas contra `/usr/local/include/kuzu.hpp`):
+  (1) control transaccional por string, no método tipado; (2) `execute(prepared, pair<string,
+  Args>...)` variádico; (3) `common::Value` sin ctor desde `string_view` → materializar texto a
+  `std::string`; el header documenta el SIGSEGV de DAY 183 (`preventTransactionRollbackOnDestruction`).
+- **Consejo de Sabios (8/8)** revisó las 5 decisiones del banco de tortura → aprobadas con
+  condiciones de validez (ver §3).
+- **Docs DAY 184** volcadas con `update_docs_day184.py` (BACKLOG + README a DAY 184, idempotente,
+  con backup y verificación de marcadores únicos).
 
 ---
 
-## EL EJE QUE NO SE NEGOCIA
+## 3. FIRME PARA DAY 185 (destilado de los 8 modelos + arbitraje)
 
-¿Pueden los modelos ensemble aprender de la experiencia acumulada de los nodos distribuidos y
-mejorar con ella? **Se publica salga como salga.** Corroborada → hallazgo. Camino seco → también
-hallazgo. **Pase lo que pase, entregamos datasets de valor al equipo de Andrés.** Si el diseño solo
-pudiera confirmar, no sería medición.
+- **CSV bronce de la tortura en `/dev/shm` (tmpfs), no disco físico.** Escribir a disco sustituye
+  el cuello del NIC por el del VFS/page-cache y mete contención de write-lock con los COMMIT de
+  Kuzu → medirías I/O, no el pipeline. Misma lógica que "BD en /tmp, no vboxsf".
+  → `DEBT-BRONZE-TORTURE-TMPFS-001`.
+- **Test de equivalencia B sobre fuzzer de protobuf (1M iteraciones)**, no caso único. Además
+  validar el **dominio de los campos enum-derivados** (col 17 `authoritative_source`): el injector
+  no debe poder emitir un símbolo que el enum protobuf jamás produciría.
+- **Injector adversarial = contenido + forma del stream:**
+    - contenido: H-1 strings, `temporal_anomaly`, colisiones `flow_uid`, ráfagas (flush inline),
+      volumen (desbordar acumulador);
+    - topología: **nodo-estrella / alta cardinalidad** (un `node_id`, 10^6 aristas = scan nmap real);
+    - forma: **línea truncada** (append no-atómico), **HMAC válido sobre contenido en frontera**
+      (19→18 cols, campo vacío que no debe), **duplicado exacto con contador** (MERGE deduplica → si
+      el banco cuenta 2 y el grafo 1, la métrica de pérdida va a negativo), **out-of-order causal**.
+      → `DEBT-INJECTOR-ADVERSARIAL-BRONZE-001`.
+- **`libcorrelation_v1` PURA** (struct `CorrelationV1Row` + `build_row`, CERO `LogReader`/
+  `ZmqPublisher`/`FileWatcher`). Se justifica por DOS consumidores reales (ml-detector + injector),
+  NO por el `argus-adapter-producer` hipotético (lectura+transporte ≠ serialización-desde-struct).
+  → `DEBT-LIBCORRELATION-V1-EXTRACT-001`.
+- **HMAC por env var compartida** (`ARGUS_BRONZE_HMAC_KEY_HEX`), nunca hardcode, nunca `--skip-hmac`.
+  Ausencia de clave = error ruidoso. Cero acople nuevo con `DEBT-BRONZE-KEY-PROVISIONING-001`.
+- **Caudal objetivo de producción: BLOQUEADO POR HARDWARE.** El "suelo suficiente" relativo (10×)
+  necesita un número (eventos/seg, Mb/s de una RPi) que **no se inventa desde la silla** — espera a
+  las Raspberries. La primera tortura mide **pérdida absoluta** (rows-in vs nodos-materializados =
+  0 o no), criterio binario válido sin el target. → `BACKLOG-THROUGHPUT-TARGET-001`.
+- **Drift de contrato protobuf:** un campo nuevo toca reader+writer+roundtrip+fuzzer+col17-drift a
+  la vez — es una clase, no un test. → `DEBT-CONTRACT-DRIFT-PROTOBUF-001`.
 
-paper arXiv:2604.04952 · BACKLOG-FEDER-001: sin deadline duro (22-sep-2026 era ritmo); gate real
-= datasets de valor científico a Andrés.
+### Orden de trabajo DAY 185
+1. Extraer `CorrelationWriter` → `libcorrelation_v1` (Opción B): struct plano + `build_row`, lib
+   pura. Equivalencia byte-idéntica `event→row→build_row(row)` vs `build_row(event)` **sobre fuzzer
+   1M** + validación de dominio de enums.
+2. Construir el **injector adversarial** (`tools/`, tercer hermano de la familia de stress-testers).
+3. **Primera tortura:** injector → bronce en `/dev/shm` → `correlation-engine --follow` → Kuzu.
+   Medir: rows-in vs nodos-materializados (pérdida), RSS acotado, staleness. Etiqueta honesta:
+   "pipeline de cómputo, sin red".
+
+---
+
+## 4. FRENTES ABIERTOS (arrastrados)
+
+- **D3** (Arrow/C++ solo vs +DuckDB para joins silver→gold) — ABIERTO. ADR-057 §2.7/§3.2. La
+  primera tortura es el camino crítico antes de B2 (Arrow vs DuckDB).
+- **Frente C — event_id replay-stable.** `DEBT-ARGUSPP-CLOCK-INJECTION-PROD-001` (P1): verificar si
+  el path de PRODUCCIÓN heredó el reloj inyectado del build de cross-check (`bpf_ktime_get_ns`).
+- **`kTemporalMarginNs` = 2s placeholder** — calibrar.
+- **ADR-057 §8 (endurecimiento DIFERIDO)** = un solo problema = cola hacia un único writer de tasa
+  fija → subsistema `IngestQueue` (WAL durability real, poison/atomicidad, backpressure sostenido).
+  No es camino crítico del experimento.
+- **`DEBT-GRAPH-ENGINE-EXTRACTION-001`** — extraer clases de grafo de `correlation-engine` a
+  `graph-engine` cuando se materialice la frontera Iceberg.
+- **`DEBT-SEMGREP-CPP-HANG-001`** — `audit-taint` en cuarentena.
+- **Higiene BACKLOG:** ~7 headings duplicados preexistentes (no introducidos hoy; el script de docs
+  no los toca, los lista con `--audit`).
+
+---
+
+## 5. RECORDATORIOS DE PROCESO
+
+- Consejo de Sabios = 8 modelos (Claude, Grok, ChatGPT, DeepSeek, Qwen, Gemini, Kimi, Mistral) como
+  peer review adversarial. Brief → 8 respuestas → síntesis (señal vs ruido) → arbitraje Alonso.
+- La síntesis del DAY 184 separó ruido (`--skip-hmac`, clave hardcodeada, "SQL injection" mal
+  categorizada) de señal (tmpfs, fuzzer protobuf, nodo-estrella, librería pura).
+- **El riesgo de este plan no es construir mal — es etiquetar mal lo que mides.** Para un proyecto
+  cuyo eje es "se publica salga como salga", la **precisión del claim es el producto**.

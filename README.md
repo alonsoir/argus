@@ -41,22 +41,21 @@
 <!-- DAY-STATUS -->
 | Campo | Valor |
 |---|---|
-| DAY | 182 |
+| DAY | 184 |
 | Tag | v1.0.0-day166 |
-| Branch | feature/day170-community-id-protobuf |
+| Branch | feature/day183-kuzu-sink-unwind-flush |
 | EMECAS++ OSS | ✅ verde — test-all + test-e2e-synthetic-full + test-e2e-synthetic-firewall |
 | EMECAS++ Enterprise | ✅ VERDE — 3 actos + Jenkins gate (DAY 167) |
 | Pipeline | 6/6 RUNNING |
-| Frente A — Backend Kuzu | ✅ DAY 180 — `KuzuGraphSink` real detrás de `IGraphSink`, 4/4 tests · Kuzu v0.11.3 (upstream archivado, pin SHA256) · BD en `/tmp` guest-nativo (vboxsf rompe mmap) |
-| Smoke Kuzu B1 (D1+D2) | ✅ DAY 182 — RESUELTAS POR MEDICIÓN: un grafo (D1) · Kuzu stock, Vela NO (D2). UNWIND batch = ×55–61 (164→12.200 ups/s). Multi-writer no escala (373k rechazos write-tx). ADR-057 v2 §3.0 |
-| Fase 0 grafo | ✅ DAY 182 — `ingested_at` + `temporal_anomaly` unilateral + `build_cypher(ingested_at_ns)` + 3 guardas (UNWIND-batch+flush, `DatabaseRegistry`, `bufferPoolSize` capado) · EMECAS verde · cierra DEBT-CE-TESTS-UNGATED-001 |
-| Auditoría de seguridad (Fable) | ✅ DAY 181 — H-1 (cypher esc), H-2 (set_name allow-list), H-3 (ip_hl≥5) + tests RED→GREEN · `make audit` cppcheck limpio · `audit-taint` semgrep en cuarentena (DEBT-SEMGREP-CPP-HANG-001) |
-| Frente C — event_id replay-stable | 🟡 diagnosticado + escalado al Consejo (8 respuestas) — veredicto SIN sintetizar · DEBT-ARGUSPP-CLOCK-INJECTION-PROD-001 (P1) |
-| Bronce correlation_v1 | ✅ cableado E2E (DAY 175) · col 17 → string simbólico SELLADO (DAY 177) |
-| Grafo | ✅ Kuzu hot tier (~90d) detrás de `IGraphSink`; Parquet/Iceberg (DuckDB) cold tier — join por `flow_uid` + `community_id` |
-| Componentes | ⚠️ `correlation-engine` (alimenta bronce Iceberg) y `graph-engine` (lee GOLD, dueño del `.kuzu`) son DOS componentes — clases de grafo a extraer (DEBT-GRAPH-ENGINE-EXTRACTION-001) |
-| Arquitectura | ✅ ADR-046 v4 · ADR-052 v3.2 · ADR-051 v2.2 · ADR-055 v1 · 🟢 ADR-057 v2 (D1+D2 resueltas por medición; D3 abierta) · ⏳ ADR-050/053/054 |
-| Próximo hito | Tortura del pipeline a 33 Mb/s (Vagrant) → x86 RAW · B2 (Arrow vs DuckDB, D3) · sintetizar veredicto event_id · MITRE A–M / N–Z disjuntos (ADR-040) |
+| Frente A — Backend Kuzu | ✅ `KuzuGraphSink` real detrás de `IGraphSink` · Kuzu v0.11.3 (upstream archivado, pin SHA256) · BD en `/tmp` guest-nativo (vboxsf rompe mmap) |
+| flush()→FlushResult | ✅ DAY 184 — contrato POD `[[nodiscard]]` sobre el TIPO; ningún sink puede descartar en silencio el fallo de durabilidad bajo -Werror (cierre estructural, mismo espíritu que H-1) |
+| KuzuGraphSink batch | ✅ DAY 184 — write() acumula, flush() ejecuta el batch en UNA transacción (BEGIN/execute(prepared)/COMMIT, ROLLBACK+retención en fallo). Cierra H-1 en el path EJECUTADO de Kuzu |
+| VERIFY-3 | ✅ DAY 184 — test gemelo COMMIT(2 nodos)/ROLLBACK(0): el batch va en 1 transacción. Baseline test_kuzu_graph_sink 0.48s→0.86s (contabilizado) |
+| Kuzu 0.11.3 API | ✅ DAY 184 — verificada contra header vendorizado: control transaccional por string, execute(prepared) variádico, Value sin ctor desde string_view (materializar a std::string) |
+| Frente C — event_id replay-stable | 🟡 diagnosticado + escalado al Consejo · DEBT-ARGUSPP-CLOCK-INJECTION-PROD-001 (P1) |
+| Consejo de Sabios | ✅ DAY 184 — 8/8 revisaron las 5 decisiones del banco de tortura: aprobadas con condiciones de validez (tmpfs, fuzzer protobuf, nodo-estrella, librería pura, HMAC por env) |
+| Arquitectura | ✅ ADR-046 v4 · ADR-052 v3.2 · ADR-051 v2.2 · ADR-055 v1 · 🟢 ADR-057 v2 (D1+D2 resueltas; D3 abierta) · ⏳ ADR-050/053/054 |
+| Próximo hito (DAY 185) | Extraer `libcorrelation_v1` (Opción B) + injector adversarial a /dev/shm + primera tortura (rows-in vs nodos materializados, RSS acotado, staleness) |
 | Gate UEx/INCIBE | Datasets de valor científico (no deadline duro) — se entregan salga corroborada o seca la hipótesis ensemble |
 <!-- /DAY-STATUS -->
 
@@ -71,6 +70,13 @@
   - `make test-all`: ALL TESTS COMPLETE (50/50 firewall · 3/3 etcd-server · 9/9 sniffer · 10/10 ml-detector · 8/8 rag-ingester · 1/1 argus-network-isolate) ✅
   - `make PROFILE=production all`: Gate ODR — ALL COMPONENTS BUILT ✅
   - `make argus-network-isolate-test`: dry-run PASSED ✅
+
+### Hitos DAY 184 🎉 — flush()→FlushResult + batch transaccional + Consejo del banco de tortura
+- **`IGraphSink::flush()` deja de devolver `void` → `FlushResult`** (POD `{bool ok; uint64_t rows_flushed; uint64_t rows_pending; explicit operator bool}`). `[[nodiscard]]` sobre el TIPO, no sobre cada método → ningún sink presente o futuro puede descartar en silencio el fallo de durabilidad bajo `-Werror`. Cierre **estructural** (mismo espíritu que H-1, cerrado por parámetro tipado y no por `esc()`). `main.cpp`: flush fallido → `EXIT_FAILURE` (el harness E2E no lee "ok" sobre datos perdidos). 8 touchpoints de `IGraphSink` revisados por grep, cero fuga a otros componentes. Commit `4e221ede`.
+- **`KuzuGraphSink` cableado en batch.** `write()` acumula (copia `CorrelationRecord` + `flow_uid` materializado + `ingested_at` sellado a la entrada). `flush()` ejecuta el batch en UNA transacción: `BEGIN`/loop `execute(prepared)`/`COMMIT`; `ROLLBACK` + buffer retenido en fallo (retry, nunca descarte silencioso). **Cierra H-1 en el path EJECUTADO de Kuzu** — el sink ya no corre `query(string interpolado)`, corre `execute(prepared, params)`. Orden de miembros `db_→conn_→prep_*→accumulator_` resuelve lifetimes por RAII. Destructor grita si el buffer no está vacío. Commit `112b9df1`.
+- **VERIFY-3 — test de agrupación transaccional.** Dos tests gemelos: mismas N filas, solo cambia `COMMIT` vs `ROLLBACK`. COMMIT → 2 nodos durables; ROLLBACK → 0. Prueba que `BEGIN/COMMIT` por string envuelve los `execute(prepared)` en UNA transacción = 1 checkpoint por batch (la premisa que `flush()` amortiza, ahora medida). Baseline `test_kuzu_graph_sink` 0.48s→0.86s (batch + aperturas extra de BD, contabilizado). 6/6 verde.
+- **API Kuzu 0.11.3 verificada contra el header vendorizado** (`/usr/local/include/kuzu.hpp`, NO de memoria): (1) NO hay método de transacción tipado — el control es por string `query("BEGIN TRANSACTION"/"COMMIT"/"ROLLBACK")`, cada uno devuelve `QueryResult`, se comprueba `isSuccess()`; (2) `execute(PreparedStatement*, pair<string,Args>...)` variádico, claves `std::string`; (3) `common::Value` SIN ctor desde `string_view`, todos los ctors `explicit` → materializar cada campo de texto a `std::string` (`string_view::data()` no termina en nul); (4) el header documenta el SIGSEGV de DAY 183 (`preventTransactionRollbackOnDestruction`: rollback en destrucción sobre Database cerrada = SEGFAULT).
+- **Consejo de Sabios (8/8) — revisión del banco de tortura del DAY 185.** Las 5 decisiones (medir-primero, Opción B, extraer librería, injector-a-fichero, HMAC=correctitud) **aprobadas con condiciones de validez**. Señal incorporada: CSV bronce en `/dev/shm` (tmpfs, no disco — aísla I/O de la contención con los COMMIT de Kuzu); test de equivalencia sobre fuzzer de protobuf (1M iteraciones, no caso único); injector adversarial += nodo-estrella/alta cardinalidad + línea truncada + duplicado exacto con contador + out-of-order causal; `libcorrelation_v1` PURA (struct + serialización, cero I/O); HMAC por env var compartida, nunca hardcode, nunca `--skip-hmac`. Ruido rechazado: `--skip-hmac` (puerta trasera), clave HMAC hardcodeada (segunda fuente de verdad), "SQL injection" en payload (categoría errónea — Kuzu es Cypher, ya cubierto por H-1).
 
 ### Hitos DAY 182 🎉 — Smoke B1: D1+D2 resueltas por medición
 - **Smoke de concurrencia/upsert Kuzu EJECUTADO** (`DEBT-KUZU-CONCURRENCY-SMOKE-001`, adelantado a Fase 0 por arbitraje DAY 181). **D1 y D2 RESUELTAS POR MEDICIÓN** (ADR-057 v2 §3.0):
