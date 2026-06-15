@@ -225,6 +225,7 @@ if(GTest_FOUND AND
     )
     target_link_libraries(test_correlation_roundtrip PRIVATE
             ${Protobuf_LIBRARIES}
+            ${CORRELATION_V1_LIB}        # ← DAY 185: serialización ahora en libcorrelation_v1
             OpenSSL::SSL
             OpenSSL::Crypto
     )
@@ -276,6 +277,32 @@ if(GTest_FOUND AND
     ml_link_nlohmann(test_etcd_client_hmac)
 endif()
 
+# ── test_correlation_v1_oracle — DAY 185 byte-identidad refactor libcorrelation_v1 ──
+# Golden: serialize(to_row(event)) == bytes congelados del build_row PRE-refactor.
+# Complementa (no sustituye) test_correlation_roundtrip: el roundtrip prueba
+# write↔read; este prueba que el refactor movió CERO bytes.
+if(GTest_FOUND AND
+        EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/integration/test_correlation_v1_oracle.cpp")
+    ml_gtest(test_correlation_v1_oracle
+            integration/test_correlation_v1_oracle.cpp
+            ../src/correlation_writer.cpp
+            ${PROTO_SOURCES}
+    )
+    target_link_libraries(test_correlation_v1_oracle PRIVATE
+            ${Protobuf_LIBRARIES}
+            ${CORRELATION_V1_LIB}
+            OpenSSL::SSL
+            OpenSSL::Crypto
+    )
+    target_compile_definitions(test_correlation_v1_oracle PRIVATE
+            GOLDEN_PATH="${CMAKE_CURRENT_SOURCE_DIR}/data/correlation_v1_golden.tsv")
+    ml_link_spdlog(test_correlation_v1_oracle)
+    if(TARGET test_correlation_v1_oracle)
+        target_compile_options(test_correlation_v1_oracle PRIVATE -UNDEBUG)
+    endif()
+    message(STATUS "✅ test_correlation_v1_oracle registered (DAY 185 B3)")
+endif()
+
 # ============================================================================
 # SUMMARY
 # ============================================================================
@@ -307,3 +334,23 @@ if(TARGET test_detectors)
     target_compile_options(test_detectors PRIVATE -UNDEBUG)
 endif()
 
+# ── capture_golden — DAY 185 B2: genera el golden del oráculo (NO es un test) ──
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/integration/capture_golden.cpp")
+    add_executable(capture_golden
+            integration/capture_golden.cpp
+            ../src/correlation_writer.cpp
+            ${PROTO_SOURCES}
+    )
+    target_include_directories(capture_golden PRIVATE
+            ${CMAKE_CURRENT_SOURCE_DIR}/../include
+            ${CMAKE_BINARY_DIR}/proto
+    )
+    target_link_libraries(capture_golden PRIVATE
+            ${Protobuf_LIBRARIES}
+            ${CORRELATION_V1_LIB}
+            OpenSSL::SSL
+            OpenSSL::Crypto
+    )
+    ml_link_spdlog(capture_golden)
+    message(STATUS "✅ capture_golden registered (DAY 185 B2, standalone)")
+endif()

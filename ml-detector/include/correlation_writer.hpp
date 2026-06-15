@@ -34,6 +34,7 @@
 
 #include <spdlog/spdlog.h>
 #include <network_security.pb.h>
+#include <correlation_v1/correlation_v1.hpp>
 
 namespace ml_defender {
 
@@ -97,5 +98,27 @@ private:
     std::atomic<uint64_t> rows_failed_{0};
     std::atomic<size_t>   events_in_current_file_{0};
 };
+
+// ── to_row — capa protobuf→Row (DAY 185, extracción libcorrelation_v1) ────────
+// Mapea NetworkSecurityEvent → CorrelationV1Row; la lib serializa el Row.
+// Tri-estado: Ok(row) | Skip (community_id vacío = filtrado legítimo, D-F) | Error.
+// v1 (refactor byte-idéntico): SIN caso Error — el guard D-D es commit aparte.
+// Función LIBRE (no método) para que el test de oráculo la invoque directamente.
+struct ToRowResult {
+    enum class Status { Ok, Skip, Error };
+    Status status = Status::Error;
+    correlation_v1::CorrelationV1Row row{};
+    std::string error;
+
+    static ToRowResult ok(correlation_v1::CorrelationV1Row r) {
+        return {Status::Ok, std::move(r), ""};
+    }
+    static ToRowResult skip() { return {Status::Skip, {}, ""}; }
+    static ToRowResult err(std::string e) {
+        return {Status::Error, {}, std::move(e)};
+    }
+};
+
+ToRowResult to_correlation_v1_row(const protobuf::NetworkSecurityEvent& event);
 
 } // namespace ml_defender

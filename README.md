@@ -59,6 +59,18 @@
 | Gate UEx/INCIBE | Datasets de valor científico (no deadline duro) — se entregan salga corroborada o seca la hipótesis ensemble |
 <!-- /DAY-STATUS -->
 
+> **Nota DAY 185 — claim honesto de la extracción `libcorrelation_v1`:** Extracción de la capa de
+> serialización del contrato `correlation_v1` a librería compartida, **verificada byte-idéntica**
+> contra el oráculo `build_row` sobre **27 vectores enumerados y bajo locale classic** (3 tests
+> verdes: lib P0-P3, oracle 27/27, scaffold 46 OK). Salvedades: (a) equivalencia general **acotada
+> por enumeración, no probada** (D-B); (b) golden capturado en classic — locale de producción
+> **verificado a favor** (bronce histórico en punto decimal, classic de facto), luego D-E es
+> endurecimiento, no breaking change; (c) `\n` embebido rompe readers `getline`
+> (DEBT-BRONZE-EMBEDDED-NEWLINE-001); (d) guard de enum desconocido (D-D) diferido sin regresión;
+> (e) la identidad cross-productor cubre cols 0-17, la col 18 (HMAC) depende de política de claves.
+> B4 (rewire + borrar `build_row`) pendiente DAY 186.
+
+
 **Tag activo:** `v1.0.0-day166` | **Branch activa:** `main`
 **Keypair activo:** `c76e5e10e2a5a5ebcbf249a2d36a2a18d88b05aa75552bb7042353221484cf90` *(regenera en cada EMECAS)*
 **Paper:** arXiv:2604.04952 · Draft v24 local · v3 en arXiv

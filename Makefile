@@ -662,7 +662,7 @@ ml-detector-start:
 	@vagrant ssh -c "tmux new-session -d -s ml-detector 'mkdir -p /vagrant/logs/lab && cd /vagrant/ml-detector/build-debug && export LD_LIBRARY_PATH=/usr/local/lib:$$LD_LIBRARY_PATH && sudo env LD_LIBRARY_PATH=/usr/local/lib ./ml-detector >> /vagrant/logs/lab/ml-detector.log 2>&1'"
 	@sleep 3
 
-ml-detector: proto etcd-client-build plugin-loader-build
+ml-detector: proto etcd-client-build plugin-loader-build correlation-v1-build
 	@echo ""
 	@echo "╔════════════════════════════════════════════════════════════╗"
 	@echo "║  🔨 Building ML Detector [$(PROFILE)]                     ║"
@@ -1112,6 +1112,7 @@ clean-libs:
 	@echo "╚═══════════════════════════════════════════════════════════════════════════════════════╝"
 	@echo ""
 	@$(MAKE) seed-client-clean
+	@$(MAKE) correlation-v1-clean
 	@$(MAKE) crypto-transport-clean
 	@$(MAKE) etcd-client-clean
 	@$(MAKE) plugin-loader-clean
@@ -1182,6 +1183,8 @@ test-libs:
 	@vagrant ssh -c "cd /vagrant/etcd-client/build/tests && ./test_hmac_client"
 	@echo "Testing plugin-loader..."
 	@$(MAKE) plugin-loader-test
+	@echo "Testing correlation-v1..."
+	@$(MAKE) correlation-v1-test
 	@$(MAKE) plugin-integ-test
 
 test-components: correlation-engine-test
@@ -2904,3 +2907,58 @@ crosscheck-run: test-replay-neris
 # ── Security audit (DAY 180): cppcheck + semgrep taint. Ver contrib/audit/ ──
 -include contrib/audit/audit.mk
 
+# ─── correlation-v1 ──────────────────────────────────────────────────────────
+# libcorrelation_v1 — capa de serialización bronce (contrato correlation_v1).
+# Compartida por ml-detector + (futuro) adapters Suricata/Zeek/Wazuh/Andrés.
+# Patrón IDÉNTICO a seed-client: build standalone (Release) → install /usr/local.
+# Sin -Werror (las libs no reciben $(CMAKE_FLAGS); solo Release).
+# OJO: el Makefile usa TABS, no espacios — al pegar, reconvierte la indentación.
+.PHONY: correlation-v1-build correlation-v1-test correlation-v1-clean correlation-v1-rebuild
+
+correlation-v1-build:
+	@echo "╔══════════════════════════════════════════════╗"
+	@echo "║  Building correlation-v1...                  ║"
+	@echo "╚══════════════════════════════════════════════╝"
+	@vagrant ssh -c 'cd /vagrant/libs/correlation-v1 && rm -rf build && mkdir -p build && cd build && cmake -DCMAKE_BUILD_TYPE=Release .. && make -j4'
+	@vagrant ssh -c 'cd /vagrant/libs/correlation-v1/build && sudo make install && sudo ldconfig'
+	@echo "✅ correlation-v1 instalado"
+
+correlation-v1-test:
+	@echo "─── correlation-v1 tests ────────────────────"
+	@vagrant ssh -c 'cd /vagrant/libs/correlation-v1/build && ctest --output-on-failure'
+
+correlation-v1-clean:
+	@vagrant ssh -c 'rm -rf /vagrant/libs/correlation-v1/build'
+	@vagrant ssh -c 'sudo rm -f /usr/local/lib/libcorrelation_v1.so*'
+	@vagrant ssh -c 'sudo rm -rf /usr/local/include/correlation_v1'
+	@echo "✅ correlation-v1 limpiado"
+
+correlation-v1-rebuild: correlation-v1-clean correlation-v1-build correlation-v1-test
+
+
+# ════════════════════════════════════════════════════════════════════════════
+# TRES INSERCIONES en targets existentes (editar in situ, NO duplicar):
+# ════════════════════════════════════════════════════════════════════════════
+#
+# (1) Prereq de ml-detector — garantiza lib instalada ANTES de compilar ml-detector
+#     (find_library da FATAL_ERROR si no está). Punto de inserción declarativo,
+#     mejor que tocar pipeline-build: vale para all/pipeline-build/detector/etc.
+#
+#   ANTES:
+#     ml-detector: proto etcd-client-build plugin-loader-build
+#   DESPUÉS:
+#     ml-detector: proto etcd-client-build plugin-loader-build correlation-v1-build
+#
+# (2) test-libs — colgar el test de la lib (mirror de seed-client-test).
+#     Añadir tras la línea "@$(MAKE) seed-client-test":
+#
+#     @echo "Testing correlation-v1..."
+#     @$(MAKE) correlation-v1-test
+#
+# (3) clean-libs — añadir tras "@$(MAKE) seed-client-clean":
+#
+#     @$(MAKE) correlation-v1-clean
+#
+# Con (1)+(2): EMECAS completo (destroy→up→bootstrap→test-all) cubre build Y test
+# de la lib sin tocar nada más. bootstrap→pipeline-build→ml-detector arrastra (1);
+# test-all→test-libs arrastra (2).

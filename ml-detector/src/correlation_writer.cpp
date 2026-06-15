@@ -120,6 +120,42 @@ std::string CorrelationWriter::build_row(const protobuf::NetworkSecurityEvent& e
     return ss.str();
 }
 
+// to_row — NO toca build_row ni write_record. Mapeo fiel campo a campo.
+// El csv_string de cada string y el de col 17 lo aplica serialize() en la lib,
+// igual que build_row los aplicaba inline → bytes idénticos.
+ToRowResult to_correlation_v1_row(const protobuf::NetworkSecurityEvent& event) {
+    const auto& nf = event.network_features();
+
+    // D-F: community_id vacío = SKIP legítimo (no es pérdida). Igual que el
+    // guard de defensa en profundidad de write_record.
+    if (nf.community_id().empty()) {
+        return ToRowResult::skip();
+    }
+
+    const auto& ts = nf.flow_start_time();
+    correlation_v1::CorrelationV1Row r;
+    r.schema_version       = CORRELATION_SCHEMA_VERSION;                       // 0  "1"
+    r.source_sensor        = CORRELATION_SOURCE_SENSOR;                        // 1  "argus"
+    r.event_id             = event.event_id();                                // 2
+    r.node_id              = event.originating_node_id();                     // 3
+    r.community_id         = nf.community_id();                               // 4
+    r.flow_start_sec       = ts.seconds();                                    // 5
+    r.flow_start_nano      = ts.nanos();                                      // 6
+    r.src_ip               = nf.source_ip();                                  // 7
+    r.dst_ip               = nf.destination_ip();                             // 8
+    r.src_port             = nf.source_port();                               // 9
+    r.dst_port             = nf.destination_port();                          // 10
+    r.protocol             = nf.protocol_name();                             // 11
+    r.final_classification = event.final_classification();                   // 12
+    r.threat_category      = event.threat_category();                        // 13
+    r.fast_detector_score  = event.fast_detector_score();                    // 14
+    r.ml_detector_score    = event.ml_detector_score();                      // 15
+    r.overall_threat_score = event.overall_threat_score();                   // 16
+    r.authoritative_source = protobuf::DetectorSource_Name(                   // 17
+                                 event.authoritative_source());
+    return ToRowResult::ok(std::move(r));
+}
+
 // ----------------------------------------------------------------------------
 // write_record
 // ----------------------------------------------------------------------------
