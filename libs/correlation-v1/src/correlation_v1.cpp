@@ -94,15 +94,53 @@ std::string build_cols_0_17(const CorrelationV1Row& r) {
 } // anonymous namespace
 
 // ----------------------------------------------------------------------------
-// validate — NOTARIO ÚNICO (P3). v1: solo invariantes pre-existentes del oráculo.
+// validate — NOTARIO ÚNICO (P3). v1: invariantes pre-existentes del oráculo
+//            + DEBT-BRONZE-EMBEDDED-NEWLINE-001 (Camino A, fail-closed).
 // ----------------------------------------------------------------------------
 ValidationResult validate(const CorrelationV1Row& row) noexcept {
     // D-F (defensa en profundidad): community_id vacío = clave de join ausente.
     // to_row debió emitir SKIP; si una fila así llega aquí, es bug del productor.
     // No toca el golden: el oráculo ya saltaba (no escribía) estas filas.
+    // ORDEN: este guard va primero — es el Error más fundamental (clave de join
+    // ausente). Si una fila llega vacía Y con \n, el diagnóstico raíz es este.
     if (row.community_id.empty()) {
         return ValidationResult{
             false, "community_id vacío: clave de join ausente (to_row debió hacer SKIP)"};
+    }
+
+    // DEBT-BRONZE-EMBEDDED-NEWLINE-001 (Camino A, fail-closed). \n/\r embebidos
+    // rompen el reader: main.cpp hace getline (corta en \n físico) ANTES de que
+    // split_csv vea las comillas → fila lógica fragmentada → ambas mitades fallan
+    // HMAC → pérdida silenciosa disfrazada de "corrupto". Invariante del contrato:
+    // 1 fila lógica = 1 línea física. Se rechaza en ORIGEN (no se sanea: no hay
+    // dato legítimo que conservar — ml-detector escribe veredictos de conjunto
+    // cerrado; el guard protege a los productores de texto libre del contrato:
+    // Suricata/Wazuh/Zeek/Andrés, ADR-057). \t NO se rechaza: no rompe getline
+    // ni split_csv.
+    auto tiene_newline = [](const std::string& s) noexcept {
+        return s.find('\n') != std::string::npos ||
+               s.find('\r') != std::string::npos;
+    };
+    const std::pair<const std::string&, const char*> campos_texto[] = {
+        {row.schema_version,        "schema_version"},
+        {row.source_sensor,         "source_sensor"},
+        {row.event_id,              "event_id"},
+        {row.node_id,               "node_id"},
+        {row.community_id,          "community_id"},
+        {row.src_ip,                "src_ip"},
+        {row.dst_ip,                "dst_ip"},
+        {row.protocol,              "protocol"},
+        {row.final_classification,  "final_classification"},
+        {row.threat_category,       "threat_category"},
+        {row.authoritative_source,  "authoritative_source"},
+    };
+    for (const auto& campo : campos_texto) {
+        if (tiene_newline(campo.first)) {
+            return ValidationResult{
+                false, std::string("col texto '") + campo.second +
+                "' contiene \\n o \\r embebido: rompe el reader getline "
+                "(1 fila lógica != 1 línea física; DEBT-BRONZE-EMBEDDED-NEWLINE-001)"};
+        }
     }
 
     // D-D — DIFERIDO al commit de contrato. v1 NO exige símbolo legal en col 17,
@@ -110,7 +148,6 @@ ValidationResult validate(const CorrelationV1Row& row) noexcept {
     // En el commit de contrato, añadir aquí:
     //   if (!es_simbolo_DetectorSource_legal(row.authoritative_source))
     //       return {false, "col 17: símbolo DetectorSource desconocido (drift de contrato)"};
-
     return ValidationResult{true, ""};
 }
 

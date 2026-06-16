@@ -127,6 +127,40 @@ static void test_P2_confinement() {
     //     row.authoritative_source = "SURICATA_SIG"; // no es símbolo DetectorSource
     //     CHECK(!validate(row), "col 17 no-DetectorSource -> validate RECHAZA (guard D-D)");
     // }
+    // ── DEBT-BRONZE-EMBEDDED-NEWLINE-001 (Camino A, fail-closed) ─────────────
+    // \n/\r embebido en campo de texto rompe el reader getline (main.cpp parte
+    // la línea física ANTES de que split_csv vea las comillas) -> fila fragmentada
+    // -> ambas mitades fallan HMAC -> pérdida silenciosa disfrazada de "corrupto".
+    // validate RECHAZA en origen; serialize NO emite. Origen MEDIDO: imposible en
+    // ml-detector (veredictos de conjunto cerrado, zmq_handler.cpp:437,547+); el
+    // guard protege a los productores de texto libre (Suricata/Wazuh/Zeek/Andres).
+    {
+        auto row = make_valid_row();
+        row.final_classification = "LINEA1\nLINEA2";          // \n embebido (rincon_04)
+        CHECK(!validate(row),
+              "\\n embebido en final_classification -> validate RECHAZA");
+        CHECK(!serialize(row, kTestKey),
+              "\\n embebido en final_classification -> serialize NO emite");
+    }
+    {
+        auto row = make_valid_row();
+        row.event_id = "evt\rCR";                             // \r embebido (linea 116)
+        CHECK(!validate(row),
+              "\\r embebido en event_id -> validate RECHAZA");
+        CHECK(!serialize(row, kTestKey),
+              "\\r embebido en event_id -> serialize NO emite");
+    }
+    {
+        // \t NO se rechaza: no rompe getline ni split_csv. Regresion contra el
+        // sobre-celo: fija que la frontera del guard es newline-class, no control-char.
+        auto row = make_valid_row();
+        row.threat_category = "A\tB";                         // \t embebido
+        CHECK(validate(row),
+              "\\t embebido en threat_category -> validate ACEPTA (no rompe el reader)");
+        CHECK(serialize(row, kTestKey),
+              "\\t embebido en threat_category -> serialize SI emite");
+    }
+
     std::printf("  (guard col 17 -> commit de contrato D-D, no este refactor)\n");
 }
 
