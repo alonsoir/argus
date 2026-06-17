@@ -29,9 +29,12 @@ namespace argus::correlation {
         return true;
     }
 
-    void LoggingGraphSink::flush() {
+    FlushResult LoggingGraphSink::flush() {
         logger_->info("[GRAPH-SINK] flush: {} registros materializados "
                       "(NetworkFlow + Alert/TelemetryEvent + arista)", writes_);
+        // Sin buffer: cada write() ya volco su Cypher al log (commit inmediato).
+        // Este flush no vuelca nada NUEVO -> exito trivial, 0 en este flush, 0 pendientes.
+        return FlushResult{true, 0, 0};
     }
 
     LoggingGraphSink::LoggingGraphSink(std::shared_ptr<spdlog::logger> logger)

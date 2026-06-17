@@ -288,3 +288,11 @@ apply_adr057_f0_fixes.py
 apply_undebug*.py
 audit_undebug.py
 *_smoke.cpp
+crash-*
+*.pre-rewire-*
+golden_expect_reject.py
+capture_golden_reject_state.py
+kill_arbiter.py
+rewire_write_record.py
+place_fuzz_harness.py
+update_docs_day187.py

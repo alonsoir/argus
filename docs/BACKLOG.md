@@ -1,5 +1,5 @@
 # aRGus NDR — BACKLOG
-*Última actualización: DAY 181 — 2026-06-11*
+*Última actualización: DAY 187 — 2026-06-17*
 
 ---
 
@@ -85,6 +85,352 @@
 | **aRGus-seL4** | ⏳ No iniciada | Apéndice científico. Kernel seL4, libpcap. Branch independiente. |
 
 ---
+
+## 🆕 Entradas DAY 187 — B4: rewire write_record→serialize + árbitro build_row BORRADO (Camino A)
+
+> Origen: sesión DAY 187 (branch `feature/day183-kuzu-sink-unwind-flush`). Cierre de B4:
+> `write_record` reescrito de `build_row+compute_hmac` a `to_correlation_v1_row+serialize`,
+> y el árbitro `build_row` (más `compute_hmac`, `fmt_double`, `csv_string` y el oracle test)
+> BORRADO. `serialize` es ahora el notario único de los bytes (P3). Camino A: saber borrar
+> código deprecado es parte del oficio. EMECAS++ verde (3 actos enterprise).
+
+### ✅ HITO DAY 187 — DEBT-CORRELATION-V1-EXTRACT-B4-REWIRE-001 CERRADA (cierra DEBT-LIBCORRELATION-V1-EXTRACT-001)
+
+- **Pre-B4 obligatorio cumplido (los tres del Consejo):**
+  - **(1) Fuzz diferencial con el oráculo VIVO** (shadow mode de F1): `fuzz-correlation-equiv`
+    comparó `serialize(to_row(event))` vs `write_record`/`build_row` sobre dominio aleatorio
+    (7 símbolos `DetectorSource`, puertos/scores/strings sin `\n`/`\r`). **240.810 ejecuciones
+    en 61s, CERO crashes, CERO divergencias.** El refactor es byte-idéntico no solo sobre los
+    27 vectores del golden, sino sobre el dominio aleatorio. Esta es la red que justificó
+    matar el árbitro con confianza.
+  - **(2) Camino de fallo de clave HMAC decidido:** `serialize` valida la clave internamente
+    (error tipado si `!= 32` bytes). `hex_decode` ya lanzaba si el hex no son 64 chars. El
+    guard `throw` explícito del constructor (defensa en profundidad, invariante de
+    `CsvEventWriter`) queda como commit opcional aparte — NO bloqueante.
+  - **(3) `grep -rn build_row` antes de borrar:** ejecutado, dependencias confirmadas
+    (`csv_string`/`fmt_double` exclusivas de `build_row`, sin uso externo).
+- **B4 — rewire `write_record`** (verde): cuerpo reescrito a `to_correlation_v1_row(event)`
+  + `serialize(tr.row, hmac_key_)`. SKIP si community_id vacío (D-F), Error tipado en fallo de
+  mapeo, fallo ruidoso (log) si `serialize` rechaza. `validate` (Camino A, DAY 186) rechaza
+  `\n`/`\r` en origen: `rincon_04`/`rincon_05` pasan de WRITTEN a REJECTED.
+- **Golden recongelado** (27 vectores, contrato nuevo): `WRITTEN=24 SKIPPED=1 REJECTED=2
+  mismatches=0`. `capture_golden` aprendió el tercer estado (REJECTED) y SOBREVIVE (captura
+  vía `write_record`→`serialize`, infra reutilizable para futuros recongelados). Backup del
+  golden pre-rewire en `correlation_v1_golden.tsv.pre-rewire-day187`.
+- **Árbitro BORRADO (Camino A):** `build_row`, `compute_hmac`, `fmt_double`, `csv_string`
+  retirados de `correlation_writer.{cpp,hpp}`. `test_correlation_v1_oracle` retirado (fuente +
+  registro CMake). **Matiz de honestidad sobre el criterio de cierre original:** el test de
+  cierre de DAY 185 pedía que el oracle test "siguiera verde" — en Camino A NO se mantuvo
+  verde, se BORRÓ. Su comparación (`serialize` vs `write_record` en vivo) se volvió tautológica
+  al desaparecer `build_row` (`serialize` contra sí mismo). El oracle test cumplió su misión
+  (validar el refactor byte-idéntico mientras existían dos caminos); su sucesor más fuerte es
+  el fuzz diferencial de hoy (dominio aleatorio vs 27 puntos fijos).
+- **Sello del día (grep de cierre, criterio original):** `grep -rn "build_row|CorrelationWriter::compute_hmac"
+  ml-detector/src ml-detector/include` (excluyendo `.bak` y comentarios) = **0 resultados**.
+  El árbitro ha muerto.
+- **Verificación E2E:** `test_correlation_roundtrip` verde (incluye los 2 tests de coma
+  caracterizados hoy: `QuotedCommaFieldSurvivesRoundTrip` + `EscapedQuoteFieldSurvivesRoundTrip`).
+  **EMECAS++ 3 actos verdes** — rama lista para merge.
+
+### DEBT-FUZZ-EQUIV-HARNESS-ORPHANED-001 — fuzz-correlation-equiv referencia build_row borrado
+**Severidad:** 🟢 P2 — andamio cumplido, ahora roto
+**Estado:** ABIERTO — DAY 187
+**Componente:** `ml-detector/tests/integration/fuzz_correlation_v1_equiv.cpp` + Makefile (`fuzz-correlation-equiv`, `fuzz-all`)
+El fuzz diferencial de hoy comparaba `serialize` contra `build_row`/`write_record`. Al borrar
+`build_row` (Camino A), el harness referencia código inexistente → el target `fuzz-correlation-equiv`
+YA NO COMPILA. Cumplió su misión (blindar el rewire byte-idéntico, 240k casos). Dos caminos de
+cierre, decisión de diseño: (a) RETIRARLO (target + harness + entrada en `fuzz-all`), coherente
+con Camino A — el andamio se va con la viga que validaba; (b) CONVERTIRLO en fuzz de propiedad
+standalone sobre `serialize` (determinismo, escape CSV, HMAC sobre cols 0-17) SIN oráculo de bytes
+— esto es exactamente lo que pide `DEBT-CORRELATION-V1-FUZZ-PROPERTY-001` pata (b). Recomendación:
+fusionar con FUZZ-PROPERTY-001 — el harness roto es el esqueleto del fuzz de propiedad permanente.
+**Test de cierre:** o `fuzz-correlation-equiv` retirado de Makefile/`fuzz-all` + harness borrado;
+o reescrito como fuzz de propiedad de `serialize` integrado en `make correlation-v1-test`.
+**Estimación:** 0.5 sesión (retirar) o 1 sesión (reescribir como propiedad).
+
+## 🆕 Entradas DAY 185 — Extracción libcorrelation_v1 (B1-B3) + locale verificado + Consejo
+
+> Origen: sesión DAY 185 (branch `feature/day183-kuzu-sink-unwind-flush`). Extracción de la
+> capa de serialización del contrato bronce `correlation_v1` a una librería compartida,
+> siguiendo Via Appia "por adición" (B1→B4). Hoy: B1-B3 hechos y verdes (réplica construida y
+> PROBADA byte-idéntica); B4 (rewire + borrar `build_row`) queda para DAY 186 con cabeza fresca.
+> Síntesis del Consejo (8/8) incorporada. Todo esto es "suelo que protege la medición".
+
+### ✅ HITO DAY 185 — libcorrelation_v1 extraída y probada byte-idéntica (B1-B3)
+
+- **Corte en tres capas** (frontera = `struct CorrelationV1Row`): `to_row()` [protobuf→Row,
+  exclusivo de ml-detector] · `serialize()` [Row→bytes, LIB COMPARTIDA = notario único de los
+  bytes] · `CorrelationWriter` [bytes→disco]. El viejo `build_row` fundía mapeo protobuf
+  (exclusivo, se queda) + serialización CSV (común, extraída).
+- **B1 — `to_row` por adición** (verde): `ml_defender::to_correlation_v1_row(event)` añadido a
+  `correlation_writer.{hpp,cpp}` SIN tocar `build_row`. Tri-estado `Ok/Skip/Error`. ml-detector
+  compila limpio bajo `-Werror`.
+- **B2 — golden congelado** (27 vectores): `capture_golden` escribe por el path del ORÁCULO
+  (`write_record`/`build_row`, nunca `serialize`) a `tests/data/correlation_v1_golden.tsv`.
+  3 realistas + 24 rincón (comas, comillas, `\n`/`\r`/`\t` embebidos, NaN, Inf, negativos, alta
+  precisión, UTF-8, vacíos, puertos/ts extremos, los 7 enums de `DetectorSource`, enum desconocido,
+  `community_id` vacío→SKIP). Capturado forzando locale classic (asunción de producción).
+  Resultado: `WRITTEN=26 SKIPPED=1 mismatches=0`.
+- **B3 — test de oráculo** (verde, 27/27): `test_correlation_v1_oracle` prueba que
+  `serialize(to_row(e))` es byte-idéntico contra el golden congelado Y contra `write_record` en
+  vivo; vectores SKIPPED → `to_row` devuelve `Skip` exacto (sella D-F). Diagnóstico por byte en
+  divergencia. **Este es el primer verde que prueba la corrección del refactor, no solo su
+  colocación.**
+- **Validador estructural** `validate_correlation_v1_scaffold.py` (rev B2): 46 OK · 0 FALTA.
+- **Decisión de proceso (Via Appia):** B1-B3 se commitean como hito ANTES de B4. Separar
+  "construí y probé la réplica" de "borré el original" — dos afirmaciones distintas.
+
+### 🔬 HALLAZGO DAY 185 — locale de producción verificado (a favor)
+
+Verificado por inspección directa del bronce histórico en `/vagrant/logs/correlation/argus/`:
+los scores se escribieron con **punto decimal** (`0.038306`, no `0,038306`), a pesar de que el
+shell de login corre `es_ES.UTF-8`. Causa: no hay unit systemd; el pipeline arranca vía
+`vagrant ssh -c` con entorno vacío → locale **C de facto**. Consecuencias:
+- **D-E (`imbue(classic)` en `serialize`) es ENDURECIMIENTO, no corrección de bug.** El golden
+  capturado en classic casa con el histórico real. NO hay breaking change.
+- El escenario catastrófico que 3 modelos dieron por plausible (bronce histórico corrupto con
+  comas) queda **descartado con evidencia**.
+- Pero el classic actual es **por accidente** (entorno vacío), no por diseño: una unit systemd con
+  `LANG=es_ES`, o un arranque desde sesión interactiva, habría producido comas. El refactor blinda
+  ese futuro por construcción → ver `DEBT-CORRELATION-V1-LOCALE-MATRIX-001`.
+
+### 🧭 Síntesis del Consejo (8/8) — DAY 185
+
+Brief retrospectivo (B1-B3) + prospectivo (plan B4). Veredicto agregado: **nadie bloquea B4;
+piden cinco endurecimientos baratos antes.** Señal de oro (hallazgos que el brief NO teleó):
+(a) el HMAC rompe la promesa "mismos bytes" entre productores — lo común es cols 0-17, la 18 es
+integridad por-productor (DeepSeek); (b) el golden bajo classic forzado solo es fiel si producción
+era classic — VERIFICADO a favor hoy (Kimi/DeepSeek/Qwen); (c) shadow mode de B4 = el fuzzing
+pre-B4 de F1 (Gemini/ChatGPT/DeepSeek convergen); (d) formateo numérico locale-agnóstico por
+construcción (Kimi/Qwen). Ruido descartado: binario viejo en Docker, semana de doble escritura en
+staging (production-readiness, fuera de alcance), matriz de 5+ locales (4 bastan).
+
+### DEBT-CORRELATION-V1-EXTRACT-B4-REWIRE-001 — Rewire write_record→serialize + borrar build_row
+**Severidad:** 🟡 P1 — cierra DEBT-LIBCORRELATION-V1-EXTRACT-001
+**Estado:** ABIERTO — DAY 185 (B1-B3 hechos; B4 para DAY 186, cabeza fresca)
+**Componente:** `ml-detector/src/correlation_writer.cpp` + `.hpp`
+`write_record` pasa a llamar `to_correlation_v1_row(event)` → si `Ok`, `serialize(row, hmac_key)`
+→ escribe la línea; si `Skip`, cuenta skip. Se BORRAN `build_row` y `compute_hmac` de
+`CorrelationWriter` (su lógica ya vive en la lib). Tras B4 el guard "vs oráculo en vivo" se vuelve
+tautológico (serialize vs sí mismo); solo sobrevive "vs golden" (por eso se congeló antes).
+**Pre-B4 obligatorio (Consejo):** (1) fuzz `serialize` vs `write_record` en vivo, N millones de
+eventos, mientras el oráculo aún existe = shadow mode de F1; (2) decidir camino de fallo de clave
+HMAC mal formada — excepción en constructor (hoy) vs error tipado en `serialize` (dos caminos para
+la misma condición); (3) `grep -r build_row` para dependencias ocultas antes de borrar.
+**Test de cierre:** `test_correlation_v1_oracle` y `test_correlation_roundtrip` siguen verdes tras
+el rewire; `grep -rn build_row ml-detector/` = 0 (o solo comentarios); fuzzer pre-B4 sin divergencias.
+**Estimación:** 1 sesión (DAY 186).
+
+### DEBT-CORRELATION-V1-FUZZ-PROPERTY-001 — Red permanente de byte-identidad (fuzzing)
+**Severidad:** 🟡 P1 — el golden de 27 vectores no basta como única red permanente
+**Estado:** ABIERTO — DAY 185 (Consejo 8/8 — F1)
+**Componente:** `libs/correlation-v1/tests/` + `ml-detector/tests/integration/`
+27 vectores enumerados son una instantánea, no una propiedad (D-B: acotado, no probado). Dos
+patas que se reconcilian: (a) ANTES de B4, fuzz `serialize(to_row(e))` vs `write_record` en vivo
+sobre N millones de eventos aleatorios — congela divergencias mientras el oráculo existe (parte de
+B4-REWIRE); (b) DESPUÉS de B4, fuzzing de propiedad sobre `CorrelationV1Row` (determinismo, reglas
+de escape CSV, HMAC correcto sobre cols 0-17) como red permanente sin oráculo de bytes.
+**Test de cierre:** fuzzer (a) sin divergencias sobre N≥1M eventos pre-B4; fuzzer (b) de propiedad
+integrado en `make correlation-v1-test`, dispara sobre structs aleatorios.
+**Estimación:** 1-2 sesiones.
+
+### DEBT-CORRELATION-V1-LOCALE-MATRIX-001 — Matriz de locales hostiles como gate de inmunidad
+**Severidad:** 🟡 P1 — inmunidad de locale verificada en UN solo locale (es_ES)
+**Estado:** ABIERTO — DAY 185 (Consejo 8/8 — F2; locale de producción ya verificado a favor)
+**Componente:** `libs/correlation-v1/tests/test_correlation_v1.cpp`
+El contrato bronce debe ser **locale-invariante por diseño** (mismo `0.910000` en Badajoz, Tokio o
+São Paulo). `serialize` fuerza classic; el test P0b prueba inmunidad ante UN locale hostil
+(es_ES). Falta MATRIZ como gate: parametrizar P0b sobre {es_ES (coma decimal), de_DE (millares),
+ar_SA (dígitos no latinos), C}. No es "soportar" locales, es **comprobar inmunidad**. NOTA: el
+locale de producción ya se verificó a favor en DAY 185 (bronce histórico en punto decimal, classic
+de facto) — esta deuda es blindaje del futuro (una unit systemd con LANG podría reintroducir el
+riesgo), no investigación de corrupción activa.
+**Test de cierre:** P0b corre los 4 locales; bajo cada uno la salida de `serialize` es byte-idéntica.
+Un solo byte distinto = fallo de aislamiento.
+**Estimación:** 0.5 sesión (parametrizar el test existente).
+
+### DEBT-BRONZE-EMBEDDED-NEWLINE-001 — Saltos de línea embebidos rompen reader getline
+**Severidad:** 🟡 P1 (defensa barata YA) / arreglo de formato post-FEDER
+**Estado:** ABIERTO — DAY 185 (Consejo 8/8 — F4; destapado por vector rincon_04)
+**Componente:** `libs/correlation-v1/` (validate/to_row) + `correlation-engine` (parse_and_verify)
+Un campo string con `\n`/`\r` embebido → `csv_string` lo entrecomilla pero mantiene el byte literal
+→ la "fila" bronce ocupa varias líneas físicas → un reader basado en `getline` (probablemente
+`parse_and_verify`) parte el registro y el HMAC no valida. Es debilidad del FORMATO, no del
+refactor (el golden lo captura leyendo el fichero entero). Distinción del Consejo: diferir el
+ARREGLO del reader es legítimo (post-FEDER); diferir la DETECCIÓN no. Defensa barata YA: `validate`
+(o `to_row`) rechaza con error ruidoso cualquier campo con `\n`/`\r` embebido. NOTA: añadir esa
+defensa hace que `rincon_04` deje de producir bytes → su entrada en el golden pasa de WRITTEN a
+rechazada y hay que regenerarla.
+**Investigación pre-cierre:** ¿`parse_and_verify` usa `getline` o un parser CSV RFC 4180? Si
+`getline` y hay `\n` en bronce histórico → corrupción activa (poco probable: ningún productor
+actual mete `\n`).
+**Test de cierre:** `validate` rechaza campo con `\n`/`\r` embebido (error tipado, no silencioso);
+golden regenerado; decisión de formato (escapar vs prohibir vs parser RFC 4180) documentada para v2.
+**Estimación:** 0.5 sesión (defensa) + decisión de formato post-FEDER.
+
+### DEBT-BRONZE-HMAC-KEY-POLICY-001 — La col 18 (HMAC) no es "mismos bytes" entre productores
+**Severidad:** 🟢 P2 — precisión del claim del contrato, no bloqueante de B4
+**Estado:** ABIERTO — DAY 185 (Consejo 8/8 — F6 no listado, DeepSeek)
+**Componente:** contrato bronce `correlation_v1` (especificación) + adaptadores futuros
+El contrato exige "mismos bytes para el mismo dato lógico", pero la col 18 es HMAC-SHA256 con clave
+de fuera. Si cada adaptador firma con su clave, dos filas con cols 0-17 idénticas tienen col 18
+distinta → NO son los mismos bytes en la 18. Reencuadre correcto: lo común entre productores son
+las **columnas 0-17**; la 18 es integridad por-productor, no identidad. NO bloquea B4 (B4 no toca
+la semántica HMAC; DeepSeek exageró ahí). Sí obliga a precisar el claim del contrato cuando entren
+adaptadores reales y a decidir política de claves (clave de contrato compartida vs HMAC como
+apéndice externo a las cols 0-17). Liga con DEBT-BRONZE-KEY-PROVISIONING-001 (ya existente).
+**Test de cierre:** especificación del contrato declara explícitamente que la identidad cross-productor
+cubre cols 0-17; política de clave HMAC para multi-productor decidida y documentada.
+**Estimación:** 0.5 sesión (decisión + doc) cuando entre el primer adaptador no-aRGus.
+
+### DEBT-CORRELATION-V1-NUMERIC-FORMAT-AGNOSTIC-001 — Formateo numérico locale-agnóstico por construcción
+**Severidad:** 🟢 P2 — endurecimiento, no urgente
+**Estado:** ABIERTO — DAY 185 (Consejo — Kimi/Qwen)
+**Componente:** `libs/correlation-v1/src/correlation_v1.cpp` (`fmt_double`)
+`serialize` fuerza `imbue(classic)`, correcto pero frágil: cualquier código futuro que use
+`std::to_string`/`printf`/`fmt::format` sin locale explícito rompería la invariante. Encapsular el
+formateo numérico en una función interna que NUNCA dependa de `operator<<`+`imbue` sino de
+`std::to_chars` (C++17) o `snprintf("%.6f")` — inmunidad por construcción, no por disciplina.
+**Test de cierre:** `fmt_double` usa formateo locale-agnóstico nativo; el test de matriz de locales
+(DEBT-CORRELATION-V1-LOCALE-MATRIX-001) pasa sin depender de `imbue`.
+**Estimación:** 0.5 sesión.
+
+### DEBT-DD-ENUM-GUARD-COL17-001 — Guard de símbolo de enum desconocido en col 17 (diferido legítimo)
+**Severidad:** 🟢 P2 — endurecimiento, sin regresión
+**Estado:** ABIERTO — DAY 185 (Consejo 8/8 — F3; D-D diferido)
+**Componente:** `libs/correlation-v1/` (validate) + `to_row`
+El `write_record` actual emite `""` en col 17 para un enum desconocido (lleva así desde siempre);
+el refactor lo preserva byte a byte (`rincon_16` en el golden). Diferir el guard NO introduce
+regresión — es endurecimiento (rechazar en vez de aceptar silenciosamente), no corrección. Por eso
+NO bloquea el merge. Criterio de cierre (convergencia Claude/DeepSeek/Gemini): **cerrar cuando el
+primer adaptador no-aRGus (Suricata) entre al pipeline** — ahí un productor que no usa
+`DetectorSource_Name` podría meter un símbolo arbitrario y el guard deja de ser cosmético. Atado a
+evento real, no a fecha. Nota de breaking change (DeepSeek): productores que hoy emiten `""`
+empezarían a ser rechazados → coordinar.
+**Test de cierre:** `validate` rechaza (error tipado) un símbolo de col 17 fuera del conjunto legal;
+test positivo (7 símbolos válidos) + negativo (símbolo inválido). Activar al integrar Suricata.
+**Estimación:** 0.5 sesión (al integrar el primer adaptador).
+
+
+## 🆕 Entradas DAY 184 — flush()→FlushResult + batch transaccional Kuzu + Consejo banco de tortura
+
+> Origen: sesión DAY 184 (branch `feature/day183-kuzu-sink-unwind-flush`). Endurecimiento del
+> sink de durabilidad que protege LA MEDICIÓN (no production-readiness) + síntesis del Consejo
+> (8/8) sobre las 5 decisiones del banco de tortura del DAY 185. Todo lo de hoy es "suelo que
+> protege la medición": que el camino bronce→Kuzu trague la tortura sin perder/corromper filas.
+
+### ✅ CERRADO DAY 184 — contrato de durabilidad del sink
+
+- **flush()→FlushResult (commit `4e221ede`).** `IGraphSink::flush()` deja de devolver `void`
+  (ocultaba el fallo de durabilidad) y devuelve un POD `[[nodiscard]] FlushResult
+  {bool ok; uint64_t rows_flushed; uint64_t rows_pending; explicit operator bool}`. El
+  `[[nodiscard]]` está sobre el TIPO, no sobre cada método → ningún sink presente o futuro
+  puede descartar el fallo bajo `-Werror` (cierre estructural, mismo espíritu que H-1: tipado,
+  no `esc()`). `main.cpp:134` → flush fallido = `EXIT_FAILURE`. 8 touchpoints de `IGraphSink`
+  revisados por grep, cero fuga a ml-detector/firewall/etc.
+- **KuzuGraphSink batch (commit `112b9df1`).** `write()` acumula (copia `CorrelationRecord` +
+  `flow_uid` materializado + `ingested_at` sellado a la entrada vía `ingest_now_ns()`).
+  `flush()` ejecuta el batch en UNA transacción (`BEGIN`/loop `execute(prepared)`/`COMMIT`,
+  `ROLLBACK`+buffer retenido en fallo — retry, nunca descarte). **Cierra H-1 en el path
+  EJECUTADO de Kuzu** (el sink corre `execute(prepared, params)`, no `query(string)`).
+  Orden de miembros `db_→conn_→prep_*→accumulator_` resuelve lifetimes por RAII; el destructor
+  grita si el buffer no está vacío (durabilidad violada).
+- **VERIFY-3 (test-only, commit separado).** Dos tests gemelos en `test_kuzu_graph_sink.cpp`:
+  mismas N filas, solo cambia COMMIT vs ROLLBACK. COMMIT→2 nodos durables, ROLLBACK→0. Prueba
+  que `BEGIN/COMMIT` por string envuelve los `execute(prepared)` en 1 transacción = 1 checkpoint
+  por batch (la premisa que `flush()` amortiza, ahora medida). Baseline 0.48s→0.86s
+  (contabilizado). 6/6 verde.
+- **3 lecciones del header Kuzu 0.11.3** (verificadas contra `/usr/local/include/kuzu.hpp`, no de
+  memoria): control transaccional por string (no método tipado); `execute(prepared, pair<string,
+  Args>...)` variádico; `common::Value` sin ctor desde `string_view` → materializar texto a
+  `std::string`; el header documenta el SIGSEGV de DAY 183
+  (`preventTransactionRollbackOnDestruction`).
+
+### DEBT-LIBCORRELATION-V1-EXTRACT-001 — Extraer CorrelationWriter → libcorrelation_v1 (Opción B)
+**Severidad:** 🟡 P1 — prerrequisito del injector adversarial
+**Estado:** ABIERTO — DAY 184 (decisión Alonso: Opción B sobre A; Consejo 8/8 con condiciones)
+**Componente:** `ml-detector/src/correlation_writer.cpp` → `libs/correlation-v1/`
+Extraer la serialización `correlation_v1` a una librería compartida con `struct CorrelationV1Row`
+(18 campos planos = mismos que `CorrelationRecord` del consumidor) + `build_row(const
+CorrelationV1Row&)`. ml-detector pasa a ser adaptador fino `NetworkSecurityEvent→CorrelationV1Row
+→build_row`. La librería debe ser **PURA** (struct + serialización, CERO `LogReader`/`ZmqPublisher`/
+`FileWatcher`) — se justifica por DOS consumidores reales (ml-detector + injector), NO por el
+`argus-adapter-producer` hipotético (que es lectura+transporte, no serialización-desde-struct;
+condición Kimi/Gemini/Qwen + dissenso Claude). Mitigación: test de equivalencia byte-idéntica
+`event→row→build_row(row)` vs `build_row(event)`, **sobre un fuzzer de protobuf (1M iteraciones,
+ejerce todos los optional/repeated)**, NO un caso único (chatgpt/Kimi/Mistral). Nota: validar
+además el DOMINIO de los campos enum-derivados (col 17 `authoritative_source`) — el injector no
+debe poder emitir un símbolo que el enum protobuf jamás produciría.
+**Test de cierre:** equivalencia byte-idéntica verde sobre 1M de eventos fuzzed; la librería no
+enlaza ninguna clase de I/O; ml-detector e injector la usan idéntica.
+**Estimación:** 1-2 sesiones (DAY 185).
+
+### DEBT-INJECTOR-ADVERSARIAL-BRONZE-001 — Injector adversarial del banco de tortura
+**Severidad:** 🟡 P1 — sin él el injector es cómplice (prueba contenido, asume stream bien formado)
+**Estado:** ABIERTO — DAY 184 (Consejo 8/8 + síntesis Claude)
+**Componente:** `tools/` (tercer hermano de la familia de stress-testers) + bronce `correlation_v1`
+Injector que emula el contrato AspectV1/correlation_v1 (append CSV+HMAC a fichero, consumidor lo
+lee por `--follow` tail-poll). Batería adversarial = contenido + **forma del stream**:
+- **Contenido:** H-1 strings (comillas/backslash/Cypher), `temporal_anomaly`, colisiones de
+  `flow_uid`, ráfagas que fuerzan flush inline, volumen que desborda el acumulador.
+- **Topología (Gemini/DeepSeek/Kimi):** **nodo-estrella / alta cardinalidad** — un `node_id` con
+  10^6 aristas en una ráfaga (= un scan nmap real: un origen, miles de destinos) que satura las
+  adjacency lists de Kuzu antes del flush. Colisión de hash 64-bit, no de string (Kimi).
+- **Forma del stream (Claude, P3):** **línea truncada** (writer a media línea durante append
+  no-atómico; el consumidor debe descartarla y aceptarla al completarse, sin contar dos veces ni
+  perder); **HMAC válido sobre contenido en frontera** (firma correcta, 18 cols donde se esperan
+  19, o campo vacío que no debería); **duplicado exacto con contador** (MERGE deduplica → si el
+  contador del banco cuenta 2 y el grafo tiene 1, la métrica de pérdida va a negativo y envenena la
+  medición); **out-of-order causal** (evento de cierre antes que el de apertura).
+**Test de cierre:** cada vector documentado con la hipótesis que prueba; el consumidor descarta lo
+inválido ANTES del grafo; la métrica de pérdida nunca da negativo (duplicado contemplado).
+**Estimación:** 2-3 sesiones.
+
+### DEBT-BRONZE-TORTURE-TMPFS-001 — CSV bronce de tortura en /dev/shm (tmpfs), no disco físico
+**Severidad:** 🟡 P1 — condición de validez de la primera tortura (aísla la variable I/O)
+**Estado:** ABIERTO — DAY 184 (Gemini/Qwen — mejor aportación del Consejo que Claude no vio)
+**Componente:** banco de tortura (injector + correlation-engine `--follow`)
+Escribir el CSV bronce de la tortura en disco físico **sustituye el cuello del NIC por el cuello
+del VFS/page-cache** y, peor, mete contención de write-lock con los `COMMIT` de Kuzu sobre el mismo
+disco — medirías contención de I/O, no tu pipeline. El CSV bronce debe vivir en `/dev/shm` (tmpfs,
+RAM) para aislar la I/O física como variable. Misma lógica que "BD Kuzu en /tmp guest-nativo, no
+vboxsf", una capa más arriba.
+**Test de cierre:** la primera tortura corre con bronce en `/dev/shm`; medición documentada como
+"pipeline de cómputo, sin I/O física ni red" (etiqueta honesta P4).
+**Estimación:** 0.5 sesión (config del banco).
+
+### DEBT-CONTRACT-DRIFT-PROTOBUF-001 — Un campo nuevo en el protobuf toca muchos tests, no uno
+**Severidad:** 🟢 P2 — fragilidad de contrato (no un test, una clase)
+**Estado:** ABIERTO — DAY 184 (observación Alonso, refina P2 de Claude)
+**Componente:** `protobuf/network_security.proto` + reader + writer + roundtrip + fuzzer
+Añadir un campo al contrato `correlation_v1`/protobuf no rompe *un* test: toca el reader, el
+writer, el roundtrip, el fuzzer de equivalencia y `DEBT-TEST-COL17-CONTRACT-DRIFT-001`
+simultáneamente. No es un parche puntual — es una **clase de drift** que necesita política: un gate
+que liste explícitamente los puntos de contacto del contrato y falle si un campo nuevo no los
+actualiza todos. Ref. cruzada: `DEBT-TEST-COL17-CONTRACT-DRIFT-001`.
+**Test de cierre:** añadir un campo de prueba al .proto → el gate enumera y exige actualizar todos
+los puntos de contacto; ninguno queda obsoleto en silencio.
+**Estimación:** 1 sesión (cuando se toque el contrato).
+
+### BACKLOG-THROUGHPUT-TARGET-001 — Estimar caudal objetivo de producción (BLOQUEADO POR HARDWARE)
+**Estado:** ⏳ BLOQUEADO — DAY 184 · **Bloqueado por:** BACKLOG-HARDWARE-FEDER-001 (RPi5/N100)
+**Prioridad:** P1 cuando llegue hardware físico
+El criterio de "suelo suficiente" de Kimi ("si CSV-directo aguanta 10× el caudal de producción sin
+pérdida, el suelo es válido") requiere un número: eventos/seg o Mb/s monitorizados por una Raspberry
+en un hospital/municipio pequeño. **Ese número NO se estima desde la silla** — hasta tener tarjetas
+físicas no hay forma honesta de fijarlo. Decisión Alonso: no se inventa. La primera tortura mide
+**pérdida absoluta** (rows-in vs nodos-materializados = 0 o no), criterio binario válido sin el
+target. El "suelo suficiente" relativo espera al hardware.
+**Test de cierre:** con RPi5/N100 desplegados, medir caudal real (eventos/seg, Mb/s) bajo carga MITRE
+→ fijar el target → declarar criterio de suelo suficiente operable.
+**Estimación:** post-hardware.
+
+### Regla del banco de tortura (DAY 184 — Consejo 8/8 + arbitraje Claude)
+- **HMAC por env var compartida, nunca hardcode, nunca `--skip-hmac`.** El injector firma con la
+  misma clave que el consumidor (`ARGUS_BRONZE_HMAC_KEY_HEX`); ambos la toman de fuera, ninguno la
+  provisiona (cero acople nuevo con DEBT-BRONZE-KEY-PROVISIONING-001). RECHAZADO: `--skip-hmac` en el
+  consumidor (puerta trasera que mata el invariante de integridad), clave hardcodeada (segunda fuente
+  de verdad). Ausencia de clave = error ruidoso, no default silencioso (Kimi).
 
 ## 🆕 Entradas DAY 182 — Smoke B1 ejecutado (D1+D2 resueltas) + graph-engine como componente
 

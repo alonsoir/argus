@@ -225,6 +225,7 @@ if(GTest_FOUND AND
     )
     target_link_libraries(test_correlation_roundtrip PRIVATE
             ${Protobuf_LIBRARIES}
+            ${CORRELATION_V1_LIB}        # ← DAY 185: serialización ahora en libcorrelation_v1
             OpenSSL::SSL
             OpenSSL::Crypto
     )
@@ -276,6 +277,12 @@ if(GTest_FOUND AND
     ml_link_nlohmann(test_etcd_client_hmac)
 endif()
 
+# test_correlation_v1_oracle — RETIRADO DAY187 (Camino A). Era el árbitro del
+# refactor byte-idéntico (DAY185 B3): comparaba serialize(to_row) vs bytes del
+# build_row PRE-refactor. Cumplida su misión, build_row borrado, su sucesor es el
+# fuzz diferencial de DAY187 (fuzz-correlation-equiv, 240k casos). El golden sigue
+# cubierto por capture_golden + test_correlation_roundtrip (write↔read real).
+
 # ============================================================================
 # SUMMARY
 # ============================================================================
@@ -307,3 +314,23 @@ if(TARGET test_detectors)
     target_compile_options(test_detectors PRIVATE -UNDEBUG)
 endif()
 
+# ── capture_golden — DAY 185 B2: genera el golden del oráculo (NO es un test) ──
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/integration/capture_golden.cpp")
+    add_executable(capture_golden
+            integration/capture_golden.cpp
+            ../src/correlation_writer.cpp
+            ${PROTO_SOURCES}
+    )
+    target_include_directories(capture_golden PRIVATE
+            ${CMAKE_CURRENT_SOURCE_DIR}/../include
+            ${CMAKE_BINARY_DIR}/proto
+    )
+    target_link_libraries(capture_golden PRIVATE
+            ${Protobuf_LIBRARIES}
+            ${CORRELATION_V1_LIB}
+            OpenSSL::SSL
+            OpenSSL::Crypto
+    )
+    ml_link_spdlog(capture_golden)
+    message(STATUS "✅ capture_golden registered (DAY 185 B2, standalone)")
+endif()

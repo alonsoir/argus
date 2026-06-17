@@ -17,7 +17,7 @@ public:
     explicit LoggingGraphSink(std::shared_ptr<spdlog::logger> logger);
 
     bool write(const CorrelationRecord& record, std::string_view flow_uid) override;
-    void flush() override;
+    FlushResult flush() override;
 
     uint64_t writes() const noexcept { return writes_; }
 

@@ -185,6 +185,22 @@ else()
     message(FATAL_ERROR "❌ seed-client not found. Run make seed-client-build from project root")
 endif()
 
+# DAY 185 — libcorrelation_v1 (capa de serialización bronce compartida)
+find_library(CORRELATION_V1_LIB
+        NAMES correlation_v1
+        PATHS /usr/local/lib
+        NO_DEFAULT_PATH)
+find_path(CORRELATION_V1_INCLUDE_DIR
+        NAMES correlation_v1/correlation_v1.hpp
+        PATHS /usr/local/include
+        NO_DEFAULT_PATH)
+if(CORRELATION_V1_LIB AND CORRELATION_V1_INCLUDE_DIR)
+    message(STATUS "✅ Found correlation_v1: ${CORRELATION_V1_LIB}")
+    include_directories(${CORRELATION_V1_INCLUDE_DIR})
+else()
+    message(FATAL_ERROR "❌ correlation_v1 not found. Run make correlation-v1-build from project root")
+endif()
+
 # LZ4 (para compresión directa — DAY 98)
 pkg_check_modules(LZ4 REQUIRED liblz4)
 if(NOT LZ4_FOUND)
@@ -387,6 +403,7 @@ target_link_libraries(ml-detector PRIVATE
         ${ETCD_CLIENT_LIB}
         ${CRYPTO_TRANSPORT_LIB}
         ${SEED_CLIENT_LIB}
+        ${CORRELATION_V1_LIB}
         ${LZ4_LIBRARIES}
         OpenSSL::SSL          # Day 63: HMAC-SHA256 para CsvEventWriter
         OpenSSL::Crypto       # Day 63

@@ -43,22 +43,8 @@ std::vector<uint8_t> hex_decode(const std::string& hex) {
 
 // ----------------------------------------------------------------------------
 // Formatting helpers
-// ----------------------------------------------------------------------------
-std::string CorrelationWriter::fmt_double(double v) {
-    if (std::isnan(v) || std::isinf(v)) return "0.000000";
-    std::ostringstream ss;
-    ss << std::fixed << std::setprecision(6) << v;
-    return ss.str();
-}
-
-std::string CorrelationWriter::csv_string(const std::string& s) {
-    bool needs_quote = s.find_first_of(",\"\n") != std::string::npos;
-    if (!needs_quote) return s;
-    std::string out = "\"";
-    for (char c : s) { if (c == '"') out += "\"\""; else out += c; }
-    out += "\"";
-    return out;
-}
+// fmt_double / csv_string: RETIRADOS DAY187 (Camino A). Eran helpers EXCLUSIVOS
+// de build_row (el árbitro). La serialización vive ahora en libcorrelation_v1.
 
 // ----------------------------------------------------------------------------
 // Construction
@@ -76,62 +62,76 @@ CorrelationWriter::~CorrelationWriter() {
     if (current_file_.is_open()) { current_file_.flush(); current_file_.close(); }
 }
 
-// ----------------------------------------------------------------------------
-// HMAC — idéntico a CsvEventWriter (OpenSSL HMAC-SHA256, 64-char lowercase hex)
-// ----------------------------------------------------------------------------
-std::string CorrelationWriter::compute_hmac(const std::string& row_content) const {
-    unsigned char digest[EVP_MAX_MD_SIZE];
-    unsigned int digest_len = 0;
-    HMAC(EVP_sha256(), hmac_key_.data(), static_cast<int>(hmac_key_.size()),
-         reinterpret_cast<const unsigned char*>(row_content.data()), row_content.size(),
-         digest, &digest_len);
-    std::ostringstream ss;
-    ss << std::hex << std::setfill('0');
-    for (unsigned int i = 0; i < digest_len; ++i)
-        ss << std::setw(2) << static_cast<unsigned int>(digest[i]);
-    return ss.str();
-}
-
-// ----------------------------------------------------------------------------
-// Row builder — contrato correlation_v1, cols 0-17 (HMAC se añade aparte)
-// ----------------------------------------------------------------------------
-std::string CorrelationWriter::build_row(const protobuf::NetworkSecurityEvent& event) const {
+// compute_hmac / build_row: RETIRADOS DAY187 (Camino A). Eran EL ÁRBITRO del
+// refactor byte-idéntico. Su sucesor: el fuzz diferencial de DAY187 (240k casos)
+// + serialize() en libcorrelation_v1, que es ahora el NOTARIO ÚNICO (P3).
+//
+// to_row — protobuf -> CorrelationV1Row. La serialización (incl. entrecomillado
+// y HMAC) la hace serialize() en la lib. Solo ml-detector habla NetworkSecurityEvent.
+ToRowResult to_correlation_v1_row(const protobuf::NetworkSecurityEvent& event) {
     const auto& nf = event.network_features();
+
+    // D-F: community_id vacío = SKIP legítimo (no es pérdida). Igual que el
+    // guard de defensa en profundidad de write_record.
+    if (nf.community_id().empty()) {
+        return ToRowResult::skip();
+    }
+
     const auto& ts = nf.flow_start_time();
-    std::ostringstream ss;
-    ss << CORRELATION_SCHEMA_VERSION                          // 0
-       << ',' << CORRELATION_SOURCE_SENSOR                    // 1
-       << ',' << csv_string(event.event_id())                // 2
-       << ',' << csv_string(event.originating_node_id())     // 3
-       << ',' << csv_string(nf.community_id())               // 4  clave de join
-       << ',' << ts.seconds()                                // 5  flow_start_sec
-       << ',' << ts.nanos()                                  // 6  flow_start_nano
-       << ',' << csv_string(nf.source_ip())                  // 7
-       << ',' << csv_string(nf.destination_ip())             // 8
-       << ',' << nf.source_port()                            // 9
-       << ',' << nf.destination_port()                       // 10
-       << ',' << csv_string(nf.protocol_name())              // 11
-       << ',' << csv_string(event.final_classification())    // 12
-       << ',' << csv_string(event.threat_category())         // 13
-       << ',' << fmt_double(event.fast_detector_score())     // 14
-       << ',' << fmt_double(event.ml_detector_score())       // 15
-       << ',' << fmt_double(event.overall_threat_score())    // 16
-       << ',' << csv_string(protobuf::DetectorSource_Name(event.authoritative_source())); // 17 enum DetectorSource (string simbolico)
-    return ss.str();
+    correlation_v1::CorrelationV1Row r;
+    r.schema_version       = CORRELATION_SCHEMA_VERSION;                       // 0  "1"
+    r.source_sensor        = CORRELATION_SOURCE_SENSOR;                        // 1  "argus"
+    r.event_id             = event.event_id();                                // 2
+    r.node_id              = event.originating_node_id();                     // 3
+    r.community_id         = nf.community_id();                               // 4
+    r.flow_start_sec       = ts.seconds();                                    // 5
+    r.flow_start_nano      = ts.nanos();                                      // 6
+    r.src_ip               = nf.source_ip();                                  // 7
+    r.dst_ip               = nf.destination_ip();                             // 8
+    r.src_port             = nf.source_port();                               // 9
+    r.dst_port             = nf.destination_port();                          // 10
+    r.protocol             = nf.protocol_name();                             // 11
+    r.final_classification = event.final_classification();                   // 12
+    r.threat_category      = event.threat_category();                        // 13
+    r.fast_detector_score  = event.fast_detector_score();                    // 14
+    r.ml_detector_score    = event.ml_detector_score();                      // 15
+    r.overall_threat_score = event.overall_threat_score();                   // 16
+    r.authoritative_source = protobuf::DetectorSource_Name(                   // 17
+                                 event.authoritative_source());
+    return ToRowResult::ok(std::move(r));
 }
 
 // ----------------------------------------------------------------------------
 // write_record
 // ----------------------------------------------------------------------------
 bool CorrelationWriter::write_record(const protobuf::NetworkSecurityEvent& event) {
-    // Defensa en profundidad: el hook ya filtra, pero el writer NO escribe sin clave de join.
-    if (event.network_features().community_id().empty()) {
+    // DAY187 — NOTARIO ÚNICO (P3): protobuf -> Row -> bytes embuda por serialize(),
+    // que llama a validate() primero. build_row/compute_hmac RETIRADOS (el fuzz
+    // diferencial de DAY187 garantizó byte-identidad sobre 240k casos aleatorios).
+    auto tr = to_correlation_v1_row(event);
+
+    // SKIP: community_id vacío (D-F, filtrado legítimo). Sin línea, sin fallo.
+    if (tr.status == ToRowResult::Status::Skip) {
         records_skipped_.fetch_add(1, std::memory_order_relaxed);
         return false;
     }
+    // ERROR de mapeo (v1 no lo emite; D-D diferido). Defensa en profundidad.
+    if (tr.status == ToRowResult::Status::Error) {
+        rows_failed_.fetch_add(1, std::memory_order_relaxed);
+        if (logger_) logger_->warn("correlation_v1 to_row error [{}]: {}",
+                                   event.event_id(), tr.error);
+        return false;
+    }
 
-    std::string row = build_row(event);
-    std::string full_line = row + "," + compute_hmac(row);   // col 18
+    // serialize() = validate() + cols 0-17 + HMAC col 18. Rechaza \n/\r (Camino A)
+    // y clave HMAC mal formada. Lo que rechaza, NO se emite (frontera de confianza).
+    auto sr = serialize(tr.row, hmac_key_);
+    if (!sr) {
+        rows_failed_.fetch_add(1, std::memory_order_relaxed);
+        if (logger_) logger_->warn("correlation_v1 serialize rechazó [{}]: {}",
+                                   event.event_id(), sr.error);
+        return false;
+    }
 
     std::lock_guard<std::mutex> lock(mutex_);
     rotate_if_needed();
@@ -140,7 +140,7 @@ bool CorrelationWriter::write_record(const protobuf::NetworkSecurityEvent& event
         rows_failed_.fetch_add(1, std::memory_order_relaxed);
         return false;
     }
-    current_file_ << full_line << "\n";
+    current_file_ << sr.line << "\n";
     if (!current_file_) {
         rows_failed_.fetch_add(1, std::memory_order_relaxed);
         return false;
