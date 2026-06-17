@@ -36,7 +36,7 @@
 
 ---
 
-## Estado actual — DAY 182 (2026-06-12)
+## Estado actual — DAY 182 (2026-06-17)
 
 <!-- DAY-STATUS -->
 | Campo | Valor |
