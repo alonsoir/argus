@@ -126,3 +126,209 @@ TEST(CorrelationRoundTrip, WriterToReader) {
 
     fs::remove_all(base);
 }
+
+// ── Coma en campos de texto libre: RFC-4180 de extremo a extremo ─────────────
+// CIERRA EL HUECO DE COBERTURA (DAY 187): los vectores con coma (rincon_01/03/17)
+// se CONGELAN en el golden pero NUNCA pasan por parse_and_verify REAL. Aquí sí.
+// GREEN por construcción: writer entrecomilla (csv_string), rfind aísla el HMAC
+// (hex sin comas), guard de conteo estricto (18 cols), split_csv quote-aware
+// reconstruye el campo intacto. Si esto se pone RED, alguien rompió uno de esos
+// cuatro y la coma de Suricata/Andrés empezaría a perder o ensuciar filas.
+TEST(CorrelationRoundtrip, QuotedCommaFieldsSurviveRoundTrip) {
+    auto logger = std::make_shared<spdlog::logger>(
+        "rt-coma", std::make_shared<spdlog::sinks::null_sink_mt>());
+
+    const std::string base =
+        (fs::temp_directory_path() / "corr_rt_coma").string();
+    fs::remove_all(base);
+
+    // Evento con coma en final_classification y coma+comilla en threat_category
+    // (clon de rincon_01 + rincon_03). Lo demás, base válido para no fallar por
+    // otra razón.
+    protobuf::NetworkSecurityEvent event;
+    event.set_event_id("evt-coma-001");
+    event.set_originating_node_id("node-uuid-coma");
+    event.set_final_classification("DDOS,LATERAL_MOVEMENT");   // coma
+    event.set_threat_category("A,\"B\"");                       // coma + comilla escapada
+    event.set_fast_detector_score(0.910000);
+    event.set_ml_detector_score(0.870000);
+    event.set_overall_threat_score(0.890000);
+    event.set_authoritative_source(::protobuf::DETECTOR_SOURCE_ML_PRIORITY);
+    auto* nf = event.mutable_network_features();
+    nf->set_community_id("1:IN7uqVpMWxpmuhQTowSQB2XEe0E=");
+    nf->set_source_ip("147.32.84.165");
+    nf->set_destination_ip("74.125.232.195");
+    nf->set_source_port(1027u);
+    nf->set_destination_port(80u);
+    nf->set_protocol_name("tcp");
+    nf->mutable_flow_start_time()->set_seconds(1717480800);
+    nf->mutable_flow_start_time()->set_nanos(123456000);
+
+    // 1. Escribe con el CorrelationWriter REAL.
+    ml_defender::CorrelationWriterConfig cfg;
+    cfg.base_dir     = base;
+    cfg.hmac_key_hex = KEY_HEX;
+
+    std::string written_path;
+    {
+        ml_defender::CorrelationWriter writer(cfg, logger);
+        ASSERT_TRUE(writer.write_record(event));
+        writer.flush();
+        written_path = writer.get_stats().current_file;
+    }
+    ASSERT_FALSE(written_path.empty());
+    ASSERT_TRUE(fs::exists(written_path));
+
+    // 2. Lee con parse_and_verify REAL (el reader de producción).
+    std::string line = last_line(written_path);
+    ASSERT_FALSE(line.empty());
+
+    auto rec = parse_and_verify(line, hex_to_bytes(KEY_HEX));
+    // Riesgo #1 (pérdida de fila por desalineo de columnas): si esto es nullopt,
+    // split_csv no respetó las comillas -> 19 cols -> rechazo -> Suricata perdería
+    // toda alerta con coma en msg/signature.
+    ASSERT_TRUE(rec.has_value())
+        << "fila con coma entrecomillada rechazada: " << line;
+
+    // Riesgo #2 (deriva de valor: comillas residuales dentro del campo).
+    // El valor debe llegar EXACTO, sin comillas de framing.
+    EXPECT_EQ(rec->final_classification, "DDOS,LATERAL_MOVEMENT");
+    EXPECT_EQ(rec->threat_category,      "A,\"B\"");
+
+    // Columnas vecinas intactas (la coma no se "derramó" a campos adyacentes).
+    EXPECT_EQ(rec->event_id,    "evt-coma-001");
+    EXPECT_EQ(rec->community_id, "1:IN7uqVpMWxpmuhQTowSQB2XEe0E=");
+    EXPECT_EQ(rec->protocol,    "tcp");
+    EXPECT_EQ(rec->src_port,    1027u);
+
+    fs::remove_all(base);
+}
+
+// ── Coma en campos de texto libre: RFC-4180 de extremo a extremo ─────────────
+// CIERRA EL HUECO DE COBERTURA (DAY 187): los vectores con coma (rincon_01/03/17)
+// se CONGELAN en el golden pero NUNCA pasan por parse_and_verify REAL. Aquí sí.
+// GREEN por construcción: writer entrecomilla (csv_string), rfind aísla el HMAC
+// (hex sin comas), guard de conteo estricto (18 cols), split_csv quote-aware
+// reconstruye el campo intacto.
+TEST(CorrelationRoundTrip, QuotedCommaFieldSurvivesRoundTrip) {
+    auto logger = std::make_shared<spdlog::logger>(
+        "rt-coma", std::make_shared<spdlog::sinks::null_sink_mt>());
+
+    const std::string base = (fs::temp_directory_path() /
+        ("corr_rt_coma_" + std::to_string(::getpid()))).string();
+    fs::remove_all(base);
+
+    protobuf::NetworkSecurityEvent event;
+    event.set_event_id("evt-coma-001");
+    event.set_originating_node_id("node-uuid-coma");
+    event.set_final_classification("DDOS,LATERAL_MOVEMENT");   // coma en texto libre
+    event.set_threat_category("DDOS");                          // sin comilla: aislamos la coma
+    event.set_fast_detector_score(0.910000);
+    event.set_ml_detector_score(0.870000);
+    event.set_overall_threat_score(0.890000);
+    event.set_authoritative_source(::protobuf::DETECTOR_SOURCE_ML_PRIORITY);
+    auto* nf = event.mutable_network_features();
+    nf->set_community_id("1:IN7uqVpMWxpmuhQTowSQB2XEe0E=");
+    nf->set_source_ip("147.32.84.165");
+    nf->set_destination_ip("74.125.232.195");
+    nf->set_source_port(1027u);
+    nf->set_destination_port(80u);
+    nf->set_protocol_name("tcp");
+    nf->mutable_flow_start_time()->set_seconds(1717480800);
+    nf->mutable_flow_start_time()->set_nanos(123456000);
+
+    ml_defender::CorrelationWriterConfig cfg;
+    cfg.base_dir     = base;
+    cfg.hmac_key_hex = KEY_HEX;
+
+    std::string written_path;
+    {
+        ml_defender::CorrelationWriter writer(cfg, logger);
+        ASSERT_TRUE(writer.write_record(event));
+        writer.flush();
+        written_path = writer.get_stats().current_file;
+    }
+    ASSERT_FALSE(written_path.empty());
+    ASSERT_TRUE(fs::exists(written_path));
+
+    std::string line = last_line(written_path);
+    ASSERT_FALSE(line.empty());
+
+    auto rec = parse_and_verify(line, hex_to_bytes(KEY_HEX));
+    // Riesgo #1 (pérdida de fila): si nullopt, split_csv no respetó las comillas
+    // -> 19 cols -> rechazo -> Suricata perdería toda alerta con coma en msg.
+    ASSERT_TRUE(rec.has_value())
+        << "fila con coma entrecomillada rechazada: " << line;
+
+    // Riesgo #2 (deriva de valor): valor EXACTO, sin comillas de framing.
+    EXPECT_EQ(rec->final_classification, "DDOS,LATERAL_MOVEMENT");
+
+    // Columnas vecinas intactas (la coma no se derramó a campos adyacentes).
+    EXPECT_EQ(rec->event_id,       "evt-coma-001");
+    EXPECT_EQ(rec->threat_category, "DDOS");
+    EXPECT_EQ(rec->community_id,   "1:IN7uqVpMWxpmuhQTowSQB2XEe0E=");
+    EXPECT_EQ(rec->protocol,       "tcp");
+    EXPECT_EQ(rec->src_port,       1027u);
+
+    fs::remove_all(base);
+}
+
+// ── Comilla escapada ("" -> ") de extremo a extremo ──────────────────────────
+// SEPARADO del de la coma A PROPÓSITO: este ejercita el escapado de comilla del
+// writer (csv_string debe emitir "" por cada " interno) Y el des-escapado del
+// reader (split_csv:21). Si el writer entrecomilla pero NO duplica la comilla
+// interna, este test es RED por un bug REAL del writer — y queremos esa señal
+// aislada, no mezclada con la coma (que sí es GREEN garantizado).
+TEST(CorrelationRoundTrip, EscapedQuoteFieldSurvivesRoundTrip) {
+    auto logger = std::make_shared<spdlog::logger>(
+        "rt-comilla", std::make_shared<spdlog::sinks::null_sink_mt>());
+
+    const std::string base = (fs::temp_directory_path() /
+        ("corr_rt_comilla_" + std::to_string(::getpid()))).string();
+    fs::remove_all(base);
+
+    protobuf::NetworkSecurityEvent event;
+    event.set_event_id("evt-comilla-001");
+    event.set_originating_node_id("node-uuid-comilla");
+    event.set_final_classification("MALICIOUS");
+    event.set_threat_category("A,\"B\"");   // coma + comilla escapada (rincon_03)
+    event.set_fast_detector_score(0.910000);
+    event.set_ml_detector_score(0.870000);
+    event.set_overall_threat_score(0.890000);
+    event.set_authoritative_source(::protobuf::DETECTOR_SOURCE_ML_PRIORITY);
+    auto* nf = event.mutable_network_features();
+    nf->set_community_id("1:IN7uqVpMWxpmuhQTowSQB2XEe0E=");
+    nf->set_source_ip("147.32.84.165");
+    nf->set_destination_ip("74.125.232.195");
+    nf->set_source_port(1027u);
+    nf->set_destination_port(80u);
+    nf->set_protocol_name("tcp");
+    nf->mutable_flow_start_time()->set_seconds(1717480800);
+    nf->mutable_flow_start_time()->set_nanos(123456000);
+
+    ml_defender::CorrelationWriterConfig cfg;
+    cfg.base_dir     = base;
+    cfg.hmac_key_hex = KEY_HEX;
+
+    std::string written_path;
+    {
+        ml_defender::CorrelationWriter writer(cfg, logger);
+        ASSERT_TRUE(writer.write_record(event));
+        writer.flush();
+        written_path = writer.get_stats().current_file;
+    }
+    ASSERT_FALSE(written_path.empty());
+
+    std::string line = last_line(written_path);
+    ASSERT_FALSE(line.empty());
+
+    auto rec = parse_and_verify(line, hex_to_bytes(KEY_HEX));
+    ASSERT_TRUE(rec.has_value())
+        << "fila con comilla escapada rechazada: " << line;
+
+    // El round-trip RFC-4180 completo: " interno sobrevive intacto.
+    EXPECT_EQ(rec->threat_category, "A,\"B\"");
+    EXPECT_EQ(rec->final_classification, "MALICIOUS");
+
+    fs::remove_all(base);
+}

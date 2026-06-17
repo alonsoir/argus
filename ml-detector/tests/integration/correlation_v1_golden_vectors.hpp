@@ -17,6 +17,7 @@
 #pragma once
 
 #include <cmath>
+#include <cassert>
 #include <limits>
 #include <string>
 #include <vector>
@@ -30,8 +31,16 @@ struct GoldenVector {
     std::string category;  // "realista" | "rincon"
     std::string note;      // qué ejercita (solo informativo)
     bool expect_skip;      // true si community_id vacío -> write_record SKIP, sin línea
+    bool expect_reject = false;  // DAY187 Camino A: \n/\r -> validate rechaza, sin línea
     protobuf::NetworkSecurityEvent event;
 };
+
+// Estados mutuamente excluyentes: un vector NO puede ser SKIP y REJECT a la vez.
+// SKIP = community_id vacío (D-F, to_row filtra). REJECT = \n/\r (validate Camino A).
+inline void assert_golden_state_legal(const GoldenVector& gv) {
+    assert(!(gv.expect_skip && gv.expect_reject)
+           && "GoldenVector ilegal: expect_skip y expect_reject simultáneos");
+}
 
 // Evento base válido y realista (clon de los valores de test_correlation_roundtrip).
 inline protobuf::NetworkSecurityEvent base_event() {
@@ -60,8 +69,10 @@ inline std::vector<GoldenVector> make_golden_vectors() {
     std::vector<GoldenVector> v;
     auto add = [&](const std::string& id, const std::string& cat,
                    const std::string& note, bool skip,
-                   protobuf::NetworkSecurityEvent ev) {
-        v.push_back(GoldenVector{id, cat, note, skip, std::move(ev)});
+                   protobuf::NetworkSecurityEvent ev, bool reject = false) {
+        GoldenVector gv{id, cat, note, skip, reject, std::move(ev)};
+        assert_golden_state_legal(gv);
+        v.push_back(std::move(gv));
     };
 
     // ── BLOQUE REALISTA ──────────────────────────────────────────────────────
@@ -110,11 +121,13 @@ inline std::vector<GoldenVector> make_golden_vectors() {
     {   auto e = base_event();
         e.set_final_classification("LINEA1\nLINEA2");          // \n -> registro multilínea físico
         add("rincon_04_newline", "rincon",
-            "newline embebido (DEBT-BRONZE-EMBEDDED-NEWLINE-001: reader getline)", false, e); }
+            "newline embebido (DEBT-BRONZE-EMBEDDED-NEWLINE-001: reader getline)",
+            false, e, /*reject=*/true); }
 
     {   auto e = base_event();
         e.set_event_id("evt\rCR");                             // \r NO entrecomillado (csv_string solo ,"\n)
-        add("rincon_05_cr", "rincon", "carriage return crudo en event_id", false, e); }
+        add("rincon_05_cr", "rincon", "carriage return crudo en event_id",
+            false, e, /*reject=*/true); }
 
     {   auto e = base_event();
         e.mutable_network_features()->set_protocol_name("t\tcp");  // tab crudo (no entrecomillado)

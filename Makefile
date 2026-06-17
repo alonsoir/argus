@@ -1538,6 +1538,40 @@ fuzz-safe-exec:
 			fuzz_validate_chain.cpp -o fuzz_validate_chain && \
 		./fuzz_validate_chain -max_total_time=60 -jobs=2 corpus/ 2>&1 | tail -5"
 	@echo "✅ fuzz-safe-exec completado"
+# ════════════════════════════════════════════════════════════════════════════
+# DEBT-FUZZING-CORRELATION-EQUIV-001 — DAY 187
+# Fuzz diferencial: serialize(to_row) vs write_record/build_row (ÁRBITRO VIVO).
+# Dominio SIN \n/\r (esa frontera la cubre el test P2). Prueba byte-identidad del
+# refactor sobre dominio ALEATORIO antes de matar el oráculo build_row.
+#
+# Prereq ml-detector: el proto se compila y COPIA al build dir por el camino
+# canónico (fuente de la verdad). El fuzz REUTILIZA ese .pb.cc — cero divergencia
+# con el build real. Deps vía pkg-config (protobuf + spdlog tienen .pc en la VM).
+# spdlog: --cflags incluye -DSPDLOG_COMPILED_LIB (modo compilado en Debian);
+# omitirlo rompería el link por mismatch header-only vs compiled.
+# ════════════════════════════════════════════════════════════════════════════
+.PHONY: fuzz-correlation-equiv
+
+fuzz-correlation-equiv: ml-detector
+	@echo "🔍 Fuzz diferencial correlation_v1: serialize(to_row) vs build_row (árbitro vivo)..."
+	@vagrant ssh -c ' \
+	  cd /vagrant/ml-detector && \
+	  clang++ -std=c++20 -g -O1 -fsanitize=fuzzer,address \
+	    -I include \
+	    -I $(ML_DETECTOR_BUILD_DIR)/proto \
+	    -I /usr/local/include \
+	    $$(pkg-config --cflags protobuf spdlog) \
+	    tests/integration/fuzz_correlation_v1_equiv.cpp \
+	    src/correlation_writer.cpp \
+	    $(ML_DETECTOR_BUILD_DIR)/proto/network_security.pb.cc \
+	    -L /usr/local/lib -lcorrelation_v1 \
+	    $$(pkg-config --libs protobuf spdlog) \
+	    -lssl -lcrypto \
+	    -Wl,-rpath,/usr/local/lib \
+	    -o /tmp/fuzz_correlation_equiv && \
+	  mkdir -p /tmp/fuzz_corr_corpus && \
+	  /tmp/fuzz_correlation_equiv -max_total_time=60 -jobs=2 /tmp/fuzz_corr_corpus 2>&1 | tail -20'
+	@echo "✅ fuzz-correlation-equiv completado (sin divergencias si no hubo crash/trap)"
 
 fuzz-validate-filepath:
 	@echo "🔍 Building and running libFuzzer on validate_filepath..."
@@ -1550,7 +1584,7 @@ fuzz-validate-filepath:
 		./fuzz_validate_filepath -max_total_time=60 -jobs=2 corpus/ 2>&1 | tail -5"
 	@echo "✅ fuzz-validate-filepath completado"
 
-fuzz-all: fuzz-safe-exec fuzz-validate-filepath
+fuzz-all: fuzz-safe-exec fuzz-validate-filepath fuzz-correlation-equiv
 	@echo "✅ All fuzz targets completed — corpus en firewall-acl-agent/fuzz/corpus/"
 
 # ============================================================================

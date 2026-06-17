@@ -72,11 +72,8 @@ public:
     Stats get_stats() const noexcept;
 
 private:
-    std::string build_row(const protobuf::NetworkSecurityEvent& event) const;
-    std::string compute_hmac(const std::string& row_content) const;
-
-    static std::string fmt_double(double v);
-    static std::string csv_string(const std::string& s);
+    // build_row / compute_hmac / fmt_double / csv_string: RETIRADOS DAY187
+    // (Camino A). Serialización movida a libcorrelation_v1 (serialize, NOTARIO P3).
 
     void ensure_open();
     void rotate_if_needed();   // mutex_ held by caller

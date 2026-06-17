@@ -82,7 +82,7 @@ int main(int argc, char* argv[]) {
         << "# fuente de vectores: correlation_v1_golden_vectors.hpp (compartida con B3)\n";
 
     const auto vectors = argus_golden::make_golden_vectors();
-    int written = 0, skipped = 0, mismatches = 0;
+    int written = 0, skipped = 0, rejected = 0, mismatches = 0;
 
     for (const auto& gv : vectors) {
         const std::string base =
@@ -102,11 +102,18 @@ int main(int argc, char* argv[]) {
             path = w.get_stats().current_file;
         }
 
-        // Sanity: el SKIP esperado debe casar con lo que hizo write_record.
-        if (ok == gv.expect_skip) {
+        // Sanity: lo que esperamos del vector debe casar con lo que hizo
+        // write_record. Tres estados: SKIP (community_id vacío, D-F) y REJECT
+        // (\n/\r, validate Camino A) esperan NO-escribió (ok=false); el resto
+        // espera escribió (ok=true). NOTA: REJECT solo casa tras el rewire de
+        // write_record a serialize+validate; con build_row vivo dará mismatch.
+        const bool expected_no_write = gv.expect_skip || gv.expect_reject;
+        if (ok == expected_no_write) {  // ok=true cuando esperábamos no-escribir, o viceversa
             std::cerr << "⚠️  [" << gv.id << "] expect_skip=" << gv.expect_skip
-                      << " pero write_record devolvió " << ok
-                      << " — vector o contrato incoherente.\n";
+                      << " expect_reject=" << gv.expect_reject
+                      << " pero write_record devolvió ok=" << ok
+                      << " — vector o contrato incoherente "
+                      << "(¿recongelando antes del rewire de write_record?).\n";
             ++mismatches;
         }
 
@@ -118,6 +125,13 @@ int main(int argc, char* argv[]) {
             status = "WRITTEN";
             hexbytes = hex_encode(content);
             ++written;
+        } else if (gv.expect_reject) {
+            // \n/\r rechazado en origen por validate (Camino A). Sin bytes, igual
+            // que SKIP, pero semánticamente distinto: REJECT = veneno rechazado,
+            // SKIP = filtrado legítimo (community_id vacío).
+            status = "REJECTED";
+            hexbytes = "";
+            ++rejected;
         } else {
             status = "SKIPPED";
             hexbytes = "";
@@ -135,6 +149,7 @@ int main(int argc, char* argv[]) {
               << "   vectores=" << vectors.size()
               << "  WRITTEN=" << written
               << "  SKIPPED=" << skipped
+              << "  REJECTED=" << rejected
               << "  mismatches=" << mismatches << "\n";
     if (mismatches) {
         std::cerr << "❌ " << mismatches

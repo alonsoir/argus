@@ -277,31 +277,11 @@ if(GTest_FOUND AND
     ml_link_nlohmann(test_etcd_client_hmac)
 endif()
 
-# ── test_correlation_v1_oracle — DAY 185 byte-identidad refactor libcorrelation_v1 ──
-# Golden: serialize(to_row(event)) == bytes congelados del build_row PRE-refactor.
-# Complementa (no sustituye) test_correlation_roundtrip: el roundtrip prueba
-# write↔read; este prueba que el refactor movió CERO bytes.
-if(GTest_FOUND AND
-        EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/integration/test_correlation_v1_oracle.cpp")
-    ml_gtest(test_correlation_v1_oracle
-            integration/test_correlation_v1_oracle.cpp
-            ../src/correlation_writer.cpp
-            ${PROTO_SOURCES}
-    )
-    target_link_libraries(test_correlation_v1_oracle PRIVATE
-            ${Protobuf_LIBRARIES}
-            ${CORRELATION_V1_LIB}
-            OpenSSL::SSL
-            OpenSSL::Crypto
-    )
-    target_compile_definitions(test_correlation_v1_oracle PRIVATE
-            GOLDEN_PATH="${CMAKE_CURRENT_SOURCE_DIR}/data/correlation_v1_golden.tsv")
-    ml_link_spdlog(test_correlation_v1_oracle)
-    if(TARGET test_correlation_v1_oracle)
-        target_compile_options(test_correlation_v1_oracle PRIVATE -UNDEBUG)
-    endif()
-    message(STATUS "✅ test_correlation_v1_oracle registered (DAY 185 B3)")
-endif()
+# test_correlation_v1_oracle — RETIRADO DAY187 (Camino A). Era el árbitro del
+# refactor byte-idéntico (DAY185 B3): comparaba serialize(to_row) vs bytes del
+# build_row PRE-refactor. Cumplida su misión, build_row borrado, su sucesor es el
+# fuzz diferencial de DAY187 (fuzz-correlation-equiv, 240k casos). El golden sigue
+# cubierto por capture_golden + test_correlation_roundtrip (write↔read real).
 
 # ============================================================================
 # SUMMARY
