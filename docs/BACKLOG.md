@@ -1,5 +1,5 @@
 # aRGus NDR — BACKLOG
-*Última actualización: DAY 185 — 2026-06-15*
+*Última actualización: DAY 187 — 2026-06-17*
 
 ---
 
@@ -85,6 +85,68 @@
 | **aRGus-seL4** | ⏳ No iniciada | Apéndice científico. Kernel seL4, libpcap. Branch independiente. |
 
 ---
+
+## 🆕 Entradas DAY 187 — B4: rewire write_record→serialize + árbitro build_row BORRADO (Camino A)
+
+> Origen: sesión DAY 187 (branch `feature/day183-kuzu-sink-unwind-flush`). Cierre de B4:
+> `write_record` reescrito de `build_row+compute_hmac` a `to_correlation_v1_row+serialize`,
+> y el árbitro `build_row` (más `compute_hmac`, `fmt_double`, `csv_string` y el oracle test)
+> BORRADO. `serialize` es ahora el notario único de los bytes (P3). Camino A: saber borrar
+> código deprecado es parte del oficio. EMECAS++ verde (3 actos enterprise).
+
+### ✅ HITO DAY 187 — DEBT-CORRELATION-V1-EXTRACT-B4-REWIRE-001 CERRADA (cierra DEBT-LIBCORRELATION-V1-EXTRACT-001)
+
+- **Pre-B4 obligatorio cumplido (los tres del Consejo):**
+  - **(1) Fuzz diferencial con el oráculo VIVO** (shadow mode de F1): `fuzz-correlation-equiv`
+    comparó `serialize(to_row(event))` vs `write_record`/`build_row` sobre dominio aleatorio
+    (7 símbolos `DetectorSource`, puertos/scores/strings sin `\n`/`\r`). **240.810 ejecuciones
+    en 61s, CERO crashes, CERO divergencias.** El refactor es byte-idéntico no solo sobre los
+    27 vectores del golden, sino sobre el dominio aleatorio. Esta es la red que justificó
+    matar el árbitro con confianza.
+  - **(2) Camino de fallo de clave HMAC decidido:** `serialize` valida la clave internamente
+    (error tipado si `!= 32` bytes). `hex_decode` ya lanzaba si el hex no son 64 chars. El
+    guard `throw` explícito del constructor (defensa en profundidad, invariante de
+    `CsvEventWriter`) queda como commit opcional aparte — NO bloqueante.
+  - **(3) `grep -rn build_row` antes de borrar:** ejecutado, dependencias confirmadas
+    (`csv_string`/`fmt_double` exclusivas de `build_row`, sin uso externo).
+- **B4 — rewire `write_record`** (verde): cuerpo reescrito a `to_correlation_v1_row(event)`
+  + `serialize(tr.row, hmac_key_)`. SKIP si community_id vacío (D-F), Error tipado en fallo de
+  mapeo, fallo ruidoso (log) si `serialize` rechaza. `validate` (Camino A, DAY 186) rechaza
+  `\n`/`\r` en origen: `rincon_04`/`rincon_05` pasan de WRITTEN a REJECTED.
+- **Golden recongelado** (27 vectores, contrato nuevo): `WRITTEN=24 SKIPPED=1 REJECTED=2
+  mismatches=0`. `capture_golden` aprendió el tercer estado (REJECTED) y SOBREVIVE (captura
+  vía `write_record`→`serialize`, infra reutilizable para futuros recongelados). Backup del
+  golden pre-rewire en `correlation_v1_golden.tsv.pre-rewire-day187`.
+- **Árbitro BORRADO (Camino A):** `build_row`, `compute_hmac`, `fmt_double`, `csv_string`
+  retirados de `correlation_writer.{cpp,hpp}`. `test_correlation_v1_oracle` retirado (fuente +
+  registro CMake). **Matiz de honestidad sobre el criterio de cierre original:** el test de
+  cierre de DAY 185 pedía que el oracle test "siguiera verde" — en Camino A NO se mantuvo
+  verde, se BORRÓ. Su comparación (`serialize` vs `write_record` en vivo) se volvió tautológica
+  al desaparecer `build_row` (`serialize` contra sí mismo). El oracle test cumplió su misión
+  (validar el refactor byte-idéntico mientras existían dos caminos); su sucesor más fuerte es
+  el fuzz diferencial de hoy (dominio aleatorio vs 27 puntos fijos).
+- **Sello del día (grep de cierre, criterio original):** `grep -rn "build_row|CorrelationWriter::compute_hmac"
+  ml-detector/src ml-detector/include` (excluyendo `.bak` y comentarios) = **0 resultados**.
+  El árbitro ha muerto.
+- **Verificación E2E:** `test_correlation_roundtrip` verde (incluye los 2 tests de coma
+  caracterizados hoy: `QuotedCommaFieldSurvivesRoundTrip` + `EscapedQuoteFieldSurvivesRoundTrip`).
+  **EMECAS++ 3 actos verdes** — rama lista para merge.
+
+### DEBT-FUZZ-EQUIV-HARNESS-ORPHANED-001 — fuzz-correlation-equiv referencia build_row borrado
+**Severidad:** 🟢 P2 — andamio cumplido, ahora roto
+**Estado:** ABIERTO — DAY 187
+**Componente:** `ml-detector/tests/integration/fuzz_correlation_v1_equiv.cpp` + Makefile (`fuzz-correlation-equiv`, `fuzz-all`)
+El fuzz diferencial de hoy comparaba `serialize` contra `build_row`/`write_record`. Al borrar
+`build_row` (Camino A), el harness referencia código inexistente → el target `fuzz-correlation-equiv`
+YA NO COMPILA. Cumplió su misión (blindar el rewire byte-idéntico, 240k casos). Dos caminos de
+cierre, decisión de diseño: (a) RETIRARLO (target + harness + entrada en `fuzz-all`), coherente
+con Camino A — el andamio se va con la viga que validaba; (b) CONVERTIRLO en fuzz de propiedad
+standalone sobre `serialize` (determinismo, escape CSV, HMAC sobre cols 0-17) SIN oráculo de bytes
+— esto es exactamente lo que pide `DEBT-CORRELATION-V1-FUZZ-PROPERTY-001` pata (b). Recomendación:
+fusionar con FUZZ-PROPERTY-001 — el harness roto es el esqueleto del fuzz de propiedad permanente.
+**Test de cierre:** o `fuzz-correlation-equiv` retirado de Makefile/`fuzz-all` + harness borrado;
+o reescrito como fuzz de propiedad de `serialize` integrado en `make correlation-v1-test`.
+**Estimación:** 0.5 sesión (retirar) o 1 sesión (reescribir como propiedad).
 
 ## 🆕 Entradas DAY 185 — Extracción libcorrelation_v1 (B1-B3) + locale verificado + Consejo
 

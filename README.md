@@ -41,7 +41,7 @@
 <!-- DAY-STATUS -->
 | Campo | Valor |
 |---|---|
-| DAY | 184 |
+| DAY | 187 |
 | Tag | v1.0.0-day166 |
 | Branch | feature/day183-kuzu-sink-unwind-flush |
 | EMECAS++ OSS | ✅ verde — test-all + test-e2e-synthetic-full + test-e2e-synthetic-firewall |
@@ -58,6 +58,17 @@
 | Próximo hito (DAY 185) | Extraer `libcorrelation_v1` (Opción B) + injector adversarial a /dev/shm + primera tortura (rows-in vs nodos materializados, RSS acotado, staleness) |
 | Gate UEx/INCIBE | Datasets de valor científico (no deadline duro) — se entregan salga corroborada o seca la hipótesis ensemble |
 <!-- /DAY-STATUS -->
+
+> **Nota DAY 187 — B4 cerrada: árbitro `build_row` BORRADO (Camino A).** `write_record` pasa
+> por `to_correlation_v1_row` + `serialize` (notario único P3). `build_row`, `compute_hmac`,
+> `fmt_double`, `csv_string` y `test_correlation_v1_oracle` RETIRADOS. Validación: fuzz
+> diferencial contra el oráculo vivo **240.810 runs / 61s, cero divergencias** (pre-borrado) +
+> `test_correlation_roundtrip` verde + golden recongelado `WRITTEN=24 SKIPPED=1 REJECTED=2
+> mismatches=0` + grep de cierre `build_row|compute_hmac` = 0 + EMECAS++ 3 actos verdes.
+> `DEBT-CORRELATION-V1-EXTRACT-B4-REWIRE-001` CERRADA (cierra `DEBT-LIBCORRELATION-V1-EXTRACT-001`).
+> Deuda nueva honesta: `fuzz-correlation-equiv` quedó roto al morir `build_row`
+> (`DEBT-FUZZ-EQUIV-HARNESS-ORPHANED-001`, P2) — andamio cumplido, candidato a fusionar con
+> el fuzz de propiedad permanente (`DEBT-CORRELATION-V1-FUZZ-PROPERTY-001`).
 
 > **Nota DAY 185 — claim honesto de la extracción `libcorrelation_v1`:** Extracción de la capa de
 > serialización del contrato `correlation_v1` a librería compartida, **verificada byte-idéntica**
