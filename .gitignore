@@ -296,3 +296,6 @@ kill_arbiter.py
 rewire_write_record.py
 place_fuzz_harness.py
 update_docs_day187.py
+
+# DAY188: scripts de un solo uso (no versionar)
+*_day188.py
