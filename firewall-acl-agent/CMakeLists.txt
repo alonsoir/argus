@@ -331,6 +331,7 @@ if(BUILD_TESTS)
     endif()
 
     set(TEST_SOURCES
+            tests/unit/test_ipset_is_valid_ip.cpp
             tests/unit/test_ipset_wrapper.cpp
             tests/unit/test_logger.cpp
             tests/unit/test_config_loader_traversal.cpp
@@ -405,6 +406,23 @@ target_link_libraries(test_autonomy_e2e PRIVATE
     zmq
 )
 add_test(NAME test_autonomy_e2e COMMAND test_autonomy_e2e)
+
+    # [H-2 DAY188 tests wired]
+    # H-2 DAY188: ipset injection (INTEGRACION, requiere root+ipset -> VM, no make test normal)
+    add_executable(test_ipset_injection_integration
+        tests/unit/test_ipset_injection_integration.cpp
+    )
+    target_include_directories(test_ipset_injection_integration PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/include
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/core
+    )
+    target_link_libraries(test_ipset_injection_integration PRIVATE
+        firewall_core
+        GTest::gtest
+        GTest::gtest_main
+    )
+    add_test(NAME test_ipset_injection_integration COMMAND test_ipset_injection_integration)
+    set_tests_properties(test_ipset_injection_integration PROPERTIES LABELS "e2e;root")
 
     gtest_discover_tests(firewall_tests)
 

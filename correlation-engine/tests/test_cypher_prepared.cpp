@@ -187,3 +187,98 @@ TEST(CypherPrepared, RoundTripUint64AndAdversarialStrings) {
 
     cleanup_db(kDbPath);  // db ya cerrada -> lock liberado, seguro borrar
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// H-1 SEGUNDO ORDEN: el prepared statement NO re-interpreta sus propios params.
+// test_cypher_prepared (DAY 183) probo que  '  y  \  sobreviven byte-identicos
+// (el dato no ROMPE la query). Este test prueba lo complementario: un dato que
+// PARECE sintaxis de parametro ($flow_uid, $ingested_at) se almacena LITERAL, no
+// se expande al valor del otro binding. Cierra el vector de inyeccion de 2o orden:
+// no existe una segunda pasada de interpolacion sobre la salida del bind.
+// Si Kuzu re-expandiera, node_id volveria como el flow_uid real (o como el entero
+// de ingested_at) en vez de la cadena "$flow_uid". -> H-1 cerrada con ATAQUE, no
+// solo con ausencia de concatenacion.
+// ─────────────────────────────────────────────────────────────────────────────
+TEST(CypherPrepared, SecondOrderParamTokensStoredLiterally) {
+    cleanup_db(kDbPath);
+
+    {
+        SystemConfig cfg;
+        auto db   = std::make_unique<Database>(kDbPath, cfg);
+        auto conn = std::make_unique<Connection>(db.get());
+
+        for (const auto& stmt : split_statements(SCHEMA_PATH)) {
+            auto r = conn->query(stmt);
+            ASSERT_TRUE(r->isSuccess()) << "DDL: " << r->getErrorMessage() << " | " << stmt;
+        }
+
+        // Datos cuyo CONTENIDO es sintaxis de parametro Cypher. Si hubiera una 2a
+        // pasada de interpolacion, estos se expandirian; deben volver literales.
+        CorrelationRecord r;
+        r.schema_version = "1";
+        r.source_sensor  = "argus";
+        r.event_id       = "$event_id";        // token que referencia su propio param
+        r.node_id        = "$flow_uid";        // <-- 2o orden: nombre de OTRO binding
+        r.community_id   = "$ingested_at";     // <-- 2o orden: binding de tipo UINT64
+        r.flow_start_sec = 1700000000;
+        r.flow_start_nano = 654321;
+        r.final_classification = "MALICIOUS";  // -> plantilla Alert
+        r.threat_category      = "RANSOMWARE";
+        r.fast_detector_score  = 0.42;
+        r.ml_detector_score    = 0.88;
+        r.overall_threat_score = 0.73;
+        r.authoritative_source = "DETECTOR_SOURCE_CONSENSUS";
+
+        const std::string fuid = compute_flow_uid(
+            r.node_id, r.community_id, window_micros(r.flow_start_sec, r.flow_start_nano));
+
+        const uint64_t kIngested = 1'700'000'001'000'000'000ULL;
+        const CypherBindings b = make_bindings(r, fuid, kIngested);
+        ASSERT_TRUE(b.is_alert);
+
+        auto prep = conn->prepare(std::string(cypher_template(b.is_alert)));
+        ASSERT_TRUE(prep->isSuccess()) << "prepare: " << prep->getErrorMessage();
+        auto res = conn->execute(prep.get(),
+            std::make_pair(std::string("flow_uid"),             std::string(b.flow_uid)),
+            std::make_pair(std::string("node_id"),              std::string(b.node_id)),
+            std::make_pair(std::string("community_id"),         std::string(b.community_id)),
+            std::make_pair(std::string("event_id"),             std::string(b.event_id)),
+            std::make_pair(std::string("final_classification"), std::string(b.final_classification)),
+            std::make_pair(std::string("threat_category"),      std::string(b.threat_category)),
+            std::make_pair(std::string("authoritative_source"), std::string(b.authoritative_source)),
+            std::make_pair(std::string("flow_start_window"),    b.flow_start_window),
+            std::make_pair(std::string("seq_in_window"),        b.seq_in_window),
+            std::make_pair(std::string("ingested_at"),          b.ingested_at),
+            std::make_pair(std::string("temporal_anomaly"),     b.temporal_anomaly),
+            std::make_pair(std::string("fast_detector_score"),  b.fast_detector_score),
+            std::make_pair(std::string("ml_detector_score"),    b.ml_detector_score),
+            std::make_pair(std::string("overall_threat_score"), b.overall_threat_score));
+        ASSERT_TRUE(res->isSuccess()) << "execute: " << res->getErrorMessage();
+
+        // Read-back parametrizado (no interpolo el fuid: el match va por $u).
+        auto rprep = conn->prepare(
+            "MATCH (f:NetworkFlow {flow_uid:$u}) RETURN f.node_id, f.community_id");
+        ASSERT_TRUE(rprep->isSuccess()) << rprep->getErrorMessage();
+        auto rr = conn->execute(rprep.get(), std::make_pair(std::string("u"), fuid));
+        ASSERT_TRUE(rr->isSuccess()) << rr->getErrorMessage();
+        ASSERT_TRUE(rr->hasNext());
+        auto t = rr->getNext();
+
+        // CLAVE: vuelven como las cadenas literales, NO expandidas.
+        EXPECT_EQ(t->getValue(0)->toString(), std::string("$flow_uid"));     // no -> fuid real
+        EXPECT_EQ(t->getValue(1)->toString(), std::string("$ingested_at")); // no -> entero kIngested
+
+        // Y el event_id literal "$event_id" localiza el nodo Alert (no se expandio).
+        auto eprep = conn->prepare(
+            "MATCH (e:Alert {event_id:$e}) RETURN e.node_id, e.flow_uid");
+        ASSERT_TRUE(eprep->isSuccess()) << eprep->getErrorMessage();
+        auto er = conn->execute(eprep.get(), std::make_pair(std::string("e"), std::string("$event_id")));
+        ASSERT_TRUE(er->isSuccess()) << er->getErrorMessage();
+        ASSERT_TRUE(er->hasNext());
+        auto et = er->getNext();
+        EXPECT_EQ(et->getValue(0)->toString(), std::string("$flow_uid"));    // node_id literal
+        EXPECT_EQ(et->getValue(1)->toString(), fuid);                        // $flow_uid bindeado = fuid real
+    }
+
+    cleanup_db(kDbPath);
+}
