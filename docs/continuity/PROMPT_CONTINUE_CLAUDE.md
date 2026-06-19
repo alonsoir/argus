@@ -1,75 +1,65 @@
-## Estado de arranque (verificado al cierre de DAY 188)
-- Rama `feature/day188-security-debt-audit` sobre `b6352fa9` (main actual; el prompt
-  de DAY 188 decía 888ed69a pero main avanzó con el merge del PR #102, README).
-- Dos commits limpios, separados por naturaleza:
-  - `b3f4a3df` — seguridad: H-1 (Cypher injection) + H-2 movimiento 1 (IP injection).
-  - `429e40ac` — infra: targets test-firewall por perfil + .gitignore (*_day188.py).
-- H-1 (Cypher injection): CERRADA. Producción 100% parametrizada (ADR-057).
-  `dialect_smoke.cpp` (huérfano que ejecutaba la salida interpolada) eliminado.
-  Evidencia: test_cypher_prepared.cpp 7/7, incl. test de 2º orden (param-token como
-  dato literal, no re-interpolación).
-- H-2 movimiento 1 (IP injection): CERRADO. `is_valid_ip` endurecido contra bypass
-  CIDR+`\n` (allowlist estricto + prefijo CIDR en rango). `is_valid_ip` movido a public.
-  Evidencia: unit test_ipset_is_valid_ip 7/7 + e2e test_ipset_injection_integration 1/1
-  (canario set_exists(evil)==false contra ipset real, requiere root).
-- Build en /vagrant/firewall-acl-agent/build-$(PROFILE); profiles: debug, production, etc.
+## CIERRE DAY 189 (07:03) — H-2 NÚCLEO 1+3 cerrados; audit destapó foco nuevo
 
-## INVARIANTE DE ARRANQUE — REGLA EMECAS (no negociable)
-- main pasó EMECAS al cierre de DAY 187; la rama de hoy NO ha tocado el invariante de
-  arranque. Mañana: confirmar verde en la RAMA antes de seguir:
-  make build && make test-all   (perfil debug)
-  make test-firewall            (no-root, debe ir verde)
-  (Si no sale verde, NO se toca nada más hasta que lo esté.)
-- PENDIENTE de decisión: pushear rama como backup esta noche. NO abrir PR-a-main hasta
-  cerrar H-2 mov.2 (make audit no puede estar verde para H-2 hasta entonces).
+### COMPLETADO HOY (verificado)
+- **H-2 NÚCLEO 1 (set_name en add_batch/delete_batch): CERRADO.**
+  - Validador `is_valid_set_name` extraído a header standalone `set_name_validator.hpp`
+    (allowlist [A-Za-z0-9_-], ≤IPSET_MAXNAMELEN-1=31, rechaza '-' inicial CWE-88 + \n/control).
+  - config_loader REUSA el validador (inline retirado, sin duplicación DRY).
+  - Wrapper llama al guard en add/delete ANTES de set_exists_unlocked (orden verificado).
+  - Enum INVALID_SET_NAME añadido y usado.
+  - Tests: unit #42-#48 (config + standalone, 2 ejes ortogonales) VERDES.
+  - Canario e2e #70 (set_name "\nadd evil" + "-X", aserta sobre efecto) VERDE con root.
+- **H-2 NÚCLEO 3 (retirar shell de 11 métodos + validación universal): CERRADO.**
+  - 12 focos shell (system/popen/execute_command) → safe_exec* (sin shell). grep = 0 focos reales.
+  - execute_command eliminada.
+  - Validación de entrada en CADA superficie: is_valid_set_name en create/destroy/flush/
+    rename/swap/test/get_stats/list_entries; validate_filepath en save/restore.
+  - kIpsetBin="/sbin/ipset" (execv NO usa PATH — ruta absoluta).
+  - Canarios e2e #69+#70 VERDES tras conversión = comportamiento preservado.
+  - test-firewall 68/68. semgrep acotado a ipset_wrapper.cpp: LIMPIO.
 
-## OBJETIVO DE HOY (DAY 189): H-2 movimiento 2 — cerrar H-2 del todo
-MISMA rama `feature/day188-security-debt-audit` (H-1 + H-2 completa = un audit coherente).
-Tesis: dejar `make audit` verde para H-2 retirando el shell y validando los campos
-restantes que alimentan el fichero `ipset restore`.
+### 🔴 DESCUBIERTO HOY POR EL AUDIT — VIVO, SIN MITIGAR (PRIMERO MAÑANA)
+- **DEBT-AUTONOMY-REACTOR-CWE78-001 — autonomy_reactor.cpp:11**
+  - `default_executor`: `std::system(cmd.c_str())` con cmd construido por concatenación.
+  - cmd línea 87: `"iptables -A "+ch+" -s "+cidr+...` donde cidr ∈ whitelist_cidrs_.
+  - whitelist_cidrs viene de firewall.json["autonomy"]["whitelist_cidrs"], parseado por
+    parse_autonomy (config_loader.cpp:493) SIN validar contenido (solo existe/array/no-vacío).
+  - => CWE-78 VIVO: CIDR malicioso en JSON ("1.2.3.0/24; iptables -F") → system() root.
+  - MISMA clase que H-2-ipset, en otro punto. El audit hizo su trabajo.
+  - ESTADO: no tocado hoy (mismo estado que al empezar — ni introducido ni cerrado).
 
-### NÚCLEO
-**1. set_name crudo al fichero restore** (firewall-acl-agent/src/core/ipset_wrapper.cpp:
-~L329 add_batch, ~L416 delete_batch). Un `\n` en set_name inyecta línea restore igual
-que lo hacía la IP. PRIMER PASO = DIAGNÓSTICO, no validar a ciegas:
-- Mirar tests/unit/test_config_loader_setname.cpp y de dónde sale el validador que
-  prueba. HIPÓTESIS: ya existe un validador de set_name reutilizable. NO duplicar.
-- Si sirve, reusarlo. Si no, allowlist `[A-Za-z0-9_.:-]`, longitud ≤ IPSET_MAXNAMELEN,
-  RECHAZAR `-` inicial (CWE-88 argument injection).
-- Test que ataque: set_name = "x\nadd evil 6.6.6.6" y set_name = "-X".
+### PLAN DAY 190 (en orden, mitigación PRIMERO)
+1. **MITIGAR CWE-78 (lo único vivo):** en parse_autonomy, validar cada CIDR ANTES de
+   aceptarlo. Función libre is_valid_ip_cidr (extraer de IPSetWrapper::is_valid_ip, hoy
+   es método — patrón idéntico a set_name_validator). Fail-fast: throw si CIDR inválido.
+  + TEST DE ATAQUE: cargar JSON con CIDR malicioso → verificar throw.
+2. **Refactor a safe_exec (defensa en profundidad):** IptablesExecutor de
+   function<int(const string&)> → function<int(const vector<string>&)>. Reescribir los
+   ~10 run("iptables...") a tokens + default_executor a safe_exec({...}). Toca mock de
+   tests #66/#67/#68 — su propia rama, su propio EMECAS.
+3. **NÚCLEO 2 (comment en add_batch):** medir qué hace `ipset restore` con `"`/`\n`/`\`
+   en comment (parser real, ya SIN shell tras NÚCLEO 3). Rechazar \n (no stripear).
+4. **make audit completo VERDE:** tras mitigación CIDR, semgrep aún marca línea 11 (ve el
+   system(), no la validación en otro fichero). Opciones: nosemgrep JUSTIFICADO con ref a
+   deuda + test de ataque como prueba (legítimo: falso-positivo-tras-mitigación), O cerrar
+   el refactor safe_exec (mata el system() del todo, mejor). Decisión mañana.
+5. **Canario cobertura 11 métodos:** un test parametrizado e2e que ataque
+   destroy/rename/swap/etc con nombre malicioso (hoy solo add/delete tienen canario).
 
-**2. comment solo escapa `"`, no `\n`** (~L343). Sanear saltos antes del fichero restore.
-Test: comment con `\n` no inyecta línea restore.
+### ESTADO AUDIT (honesto)
+- ipset_wrapper.cpp (H-2): LIMPIO en semgrep.
+- H-1 Cypher (cypher_builder, DAY 188): cerrado.
+- **make audit COMPLETO: NO verde.** autonomy_reactor.cpp:11 dispara (blocking).
+  NO afirmar "audit verde" hasta resolver punto 1+4. Evidencia actual de H-1/H-2 =
+  audit ACOTADO a ipset_wrapper.cpp + ml-detector/src, no el completo.
+- DEBT-AUDIT-SEMGREP-PERF: descartado — el "timeout" de autonomy_reactor era HIT real
+  (exit≠0 por --error), no backtracking. semgrep termina rápido, el finding es legítimo.
 
-**3. Retirar popen/system de los ~13 métodos** → safe_exec/execvp (patrón ya probado,
-ver tests/unit/test_safe_exec.cpp). create_set, destroy_set, flush_set,
-set_exists_unlocked, test, rename_set, swap_sets, save, restore, list_sets, get_stats,
-list_entries. Para los que leen stdout (list_sets, get_stats, list_entries): variante
-que captura salida; el `| grep '^add'` de list_entries → a C++.
-
-**4. make audit (semgrep) VERDE para H-2** — solo legítimo TRAS 1-3. Cualquier supresor
-con justificación + test de ataque como prueba. NO contorsionar código para callar al
-linter. Medir, no votar.
-
-### RELLENO SI SOBRA SESIÓN
-- Comentario huérfano `/// Validate IP address format` en ipset_wrapper.hpp (quedó tras
-  mover la declaración a public). Borrar.
-
-### FUERA DE ESTA RAMA (a propósito)
-- Limpieza de huérfanos TRACKED: ipset_wrapper.hpp.old + 4 .py de merges previos
-  (add_newline_guard_test.py, update_docs_day184/185.py, validate_correlation_v1_scaffold.py).
-  Su propio commit/rama. Herramienta lista: cleanup_tracked_cruft_day188.py (--discover
-  para ver la deuda TOTAL de backups en el árbol; era intuición de DAY 188, medirla).
-- Enganchar test-firewall a test-all (toca el invariante EMECAS de arranque) → decisión
-  separada, con calma.
-
-## Cierre del día (DAY 189)
-- make audit VERDE para H-1 Y H-2 + EMECAS verde.
-- Commits separados por naturaleza. Marcar H-2 CERRADA en docs/BACKLOG.md (con día +
-  evidencia: unit+e2e mov1, tests mov2, audit verde).
-- AHORA SÍ: PR a main "DAY 188-189: cierre audit H-1/H-2". Unidad revisable.
-- Continuity DAY 190 + post LinkedIn.
-
-## Contacto / referencias
-Dr. Andrés Caro Lindo (andresc@unex.es, UEx/INCIBE). Paper arXiv:2604.04952 Draft v18.
-Consejo de Sabios (8 modelos) para revisión adversarial si mov.2 lo merece.
+### ESTADO GIT (decidir antes de cerrar terminal)
+- Rama feature/day188-security-debt-audit con NÚCLEO 1+3 sin commitear aún.
+- NÚCLEO 1+3 son cierre coherente y testeado → COMMITEAR hoy (no dejar working tree sucio
+  toda la noche). Mensaje: "DAY189 H-2 NÚCLEO 1+3: set_name validation + shell removal en
+  ipset_wrapper (safe_exec, 0 focos shell, canarios e2e verdes)".
+- autonomy_reactor NO entra en este commit (no tocado). Su mitigación = commit/rama propia mañana.
+- NÚCLEO 2 pendiente → NO marcar H-2 CERRADA en BACKLOG todavía (falta comment + audit verde).
+- Pushear rama como backup esta noche (estaba pendiente desde arranque DAY 188).
