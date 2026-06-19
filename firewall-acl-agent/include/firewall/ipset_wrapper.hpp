@@ -98,6 +98,7 @@ enum class IPSetErrorCode {
     PERMISSION_DENIED,
     BATCH_PARTIAL_FAILURE,
     SESSION_ERROR,
+    INVALID_SET_NAME,
 };
 
 struct IPSetError {

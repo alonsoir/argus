@@ -4,6 +4,7 @@
 //===----------------------------------------------------------------------===//
 
 #include "firewall/config_loader.hpp"
+#include "firewall/set_name_validator.hpp"
 #include <algorithm>
 #include <cctype>
 #include <fstream>
@@ -358,16 +359,9 @@ void ConfigLoader::validate_config(const FirewallAgentConfig& config) {
     // ([A-Za-z0-9_-], <=31 chars). Cierra inyeccion de comandos via config.
     if (config.ipset.set_name.empty()) {
         errors.push_back("IPSet name cannot be empty");
-    } else {
-        const auto& n = config.ipset.set_name;
-        const bool ok = n.size() <= 31 &&
-            std::all_of(n.begin(), n.end(), [](unsigned char c) {
-                return std::isalnum(c) || c == '_' || c == '-';
-            });
-        if (!ok) {
-            errors.push_back("IPSet name must match [A-Za-z0-9_-]{1,31} "
-                             "(got: '" + n + "')");
-        }
+    } else if (!is_valid_set_name(config.ipset.set_name)) {
+        errors.push_back("IPSet name must match [A-Za-z0-9_-]{1,31}, "
+                         "no leading '-' (got: '" + config.ipset.set_name + "')");
     }
 
     // Validate chain name

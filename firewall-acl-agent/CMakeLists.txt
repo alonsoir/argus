@@ -336,6 +336,7 @@ if(BUILD_TESTS)
             tests/unit/test_logger.cpp
             tests/unit/test_config_loader_traversal.cpp
             tests/unit/test_config_loader_setname.cpp
+            tests/unit/test_set_name_validator.cpp
             tests/unit/test_safe_exec.cpp
             tests/test_globals_stub.cpp
     )
@@ -423,6 +424,22 @@ add_test(NAME test_autonomy_e2e COMMAND test_autonomy_e2e)
     )
     add_test(NAME test_ipset_injection_integration COMMAND test_ipset_injection_integration)
     set_tests_properties(test_ipset_injection_integration PROPERTIES LABELS "e2e;root")
+
+    # H-2 DAY189: ipset SET_NAME injection (INTEGRACION, root+ipset -> VM)
+    add_executable(test_ipset_setname_injection_integration
+            tests/unit/test_ipset_setname_injection_integration.cpp
+    )
+    target_include_directories(test_ipset_setname_injection_integration PRIVATE
+            ${CMAKE_CURRENT_SOURCE_DIR}/include
+            ${CMAKE_CURRENT_SOURCE_DIR}/src/core
+    )
+    target_link_libraries(test_ipset_setname_injection_integration PRIVATE
+            firewall_core
+            GTest::gtest
+            GTest::gtest_main
+    )
+    add_test(NAME test_ipset_setname_injection_integration COMMAND test_ipset_setname_injection_integration)
+    set_tests_properties(test_ipset_setname_injection_integration PROPERTIES LABELS "e2e;root")
 
     gtest_discover_tests(firewall_tests)
 

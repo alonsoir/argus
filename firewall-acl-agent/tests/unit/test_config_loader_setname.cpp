@@ -65,3 +65,17 @@ TEST(ConfigLoaderSetName, RejectsEmptyAndTooLong) {
     // 31 chars es el limite -> debe pasar.
     EXPECT_NO_THROW(ConfigLoader::validate_config(make_config(std::string(31, 'a'))));
 }
+
+// RED: CWE-88 — guion inicial se interpreta como flag de ipset.
+TEST(ConfigLoaderSetName, RejectsLeadingDash) {
+    EXPECT_THROW(ConfigLoader::validate_config(make_config("-X")),
+                 std::invalid_argument);
+    EXPECT_THROW(ConfigLoader::validate_config(make_config("-exist")),
+                 std::invalid_argument);
+}
+
+// RED: newline (defensa explícita, no incidental).
+TEST(ConfigLoaderSetName, RejectsNewline) {
+    EXPECT_THROW(ConfigLoader::validate_config(make_config("x\nadd evil 6.6.6.6")),
+                 std::invalid_argument);
+}
