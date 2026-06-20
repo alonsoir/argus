@@ -36,27 +36,29 @@
 
 ---
 
-## Estado actual — DAY 182 (2026-06-17)
+## Estado actual — DAY 190 (2026-06-20)
 
 <!-- DAY-STATUS -->
-| Campo | Valor |
-|---|---|
-| DAY | 187 |
-| Tag | v1.0.0-day166 |
-| Branch | feature/day183-kuzu-sink-unwind-flush |
-| EMECAS++ OSS | ✅ verde — test-all + test-e2e-synthetic-full + test-e2e-synthetic-firewall |
-| EMECAS++ Enterprise | ✅ VERDE — 3 actos + Jenkins gate (DAY 167) |
-| Pipeline | 6/6 RUNNING |
-| Frente A — Backend Kuzu | ✅ `KuzuGraphSink` real detrás de `IGraphSink` · Kuzu v0.11.3 (upstream archivado, pin SHA256) · BD en `/tmp` guest-nativo (vboxsf rompe mmap) |
-| flush()→FlushResult | ✅ DAY 184 — contrato POD `[[nodiscard]]` sobre el TIPO; ningún sink puede descartar en silencio el fallo de durabilidad bajo -Werror (cierre estructural, mismo espíritu que H-1) |
-| KuzuGraphSink batch | ✅ DAY 184 — write() acumula, flush() ejecuta el batch en UNA transacción (BEGIN/execute(prepared)/COMMIT, ROLLBACK+retención en fallo). Cierra H-1 en el path EJECUTADO de Kuzu |
-| VERIFY-3 | ✅ DAY 184 — test gemelo COMMIT(2 nodos)/ROLLBACK(0): el batch va en 1 transacción. Baseline test_kuzu_graph_sink 0.48s→0.86s (contabilizado) |
-| Kuzu 0.11.3 API | ✅ DAY 184 — verificada contra header vendorizado: control transaccional por string, execute(prepared) variádico, Value sin ctor desde string_view (materializar a std::string) |
-| Frente C — event_id replay-stable | 🟡 diagnosticado + escalado al Consejo · DEBT-ARGUSPP-CLOCK-INJECTION-PROD-001 (P1) |
-| Consejo de Sabios | ✅ DAY 184 — 8/8 revisaron las 5 decisiones del banco de tortura: aprobadas con condiciones de validez (tmpfs, fuzzer protobuf, nodo-estrella, librería pura, HMAC por env) |
-| Arquitectura | ✅ ADR-046 v4 · ADR-052 v3.2 · ADR-051 v2.2 · ADR-055 v1 · 🟢 ADR-057 v2 (D1+D2 resueltas; D3 abierta) · ⏳ ADR-050/053/054 |
-| Próximo hito (DAY 185) | Extraer `libcorrelation_v1` (Opción B) + injector adversarial a /dev/shm + primera tortura (rows-in vs nodos materializados, RSS acotado, staleness) |
-| Gate UEx/INCIBE | Datasets de valor científico (no deadline duro) — se entregan salga corroborada o seca la hipótesis ensemble |
+| Campo | Valor                                                                                                                                 |
+|---|---------------------------------------------------------------------------------------------------------------------------------------|
+| DAY | 190                                                                                                                                   |
+| Tag | v1.0.0-day190                                                                                                                         |
+| Branch | main                                                                                                                                  |
+| EMECAS++ OSS | ✅ verde — test-all + test-e2e-synthetic-full + test-e2e-synthetic-firewall                                                            |
+| EMECAS++ Enterprise | ✅ VERDE — 3 actos + Jenkins gate (DAY 167)                                                                                            |
+| Pipeline | 6/6 RUNNING                                                                                                                           |
+| Frente seguridad — H-1 Cypher | ✅ mitigada (prepared statements ADR-057, path ejecutado Kuzu)                                                                         |
+| Frente seguridad — H-2 ipset (NÚCLEO 1+3) | ✅ DAY 189 (`0db706c8`) — set_name validado + shell eliminado, safe_exec, 0 focos de shell                                             |
+| Frente seguridad — H-2 comment (NÚCLEO 2) | 🟡 PENDIENTE DAY 191 — `comment` escapa `"` pero NO rechaza `\n` en `add_batch`                                                       |
+| CWE-78 autonomy.whitelist_cidrs (punto 1) | ✅ DAY 190 CERRADO Y PROBADO — `parse_autonomy` valida CIDR fail-fast, `is_valid_ip_cidr` extraído, 5 tests verdes                     |
+| Auditoría firewall | ✅ DAY 190 — único `system()` vivo en scope (autonomy_reactor) mitigado en frontera; `nosemgrep` INTERINO justificado pegado al return |
+| PR #103 | ✅ mergeado a main (`395ee014`) · commit DAY 190 `68ab3eb9` (10 ficheros, 246+/61−)                                                    |
+| Tests firewall | ✅ 73/73 (nuevos: #49-#52 ParseAutonomyCidrInjection, #72 test_ip_cidr_validator)                                                      |
+| Consejo de Sabios | 8/8 — Claude, Grok, ChatGPT, DeepSeek, Qwen, Gemini, Kimi, Mistral                                                                    |
+| Arquitectura | ✅ ADR-046 v4 · ADR-052 v3.2 · ADR-051 v2.2 · ADR-055 v1 · ADR-057 v2 · ⏳ ADR-050/053/054                                              |
+| Próximo hito (DAY 191) | H-2 NÚCLEO 2 — medir `ipset restore` con `\n`/`"`/`\` en comment, rechazar `\n` fail-fast, test ataque + canario e2e → cerrar H-2     |
+| Deudas abiertas DAY 190 | DEBT-AUTONOMY-REACTOR-SAFEEXEC-002 (P2 post-FEDER) · DEBT-AUDIT-VBOXSF-IO-001 (P2)                                                    |
+| Gate UEx/INCIBE | Datasets de valor científico (no deadline duro)                                                                                       |
 <!-- /DAY-STATUS -->
 
 > **Nota DAY 187 — B4 cerrada: árbitro `build_row` BORRADO (Camino A).** `write_record` pasa
@@ -93,6 +95,15 @@
   - `make test-all`: ALL TESTS COMPLETE (50/50 firewall · 3/3 etcd-server · 9/9 sniffer · 10/10 ml-detector · 8/8 rag-ingester · 1/1 argus-network-isolate) ✅
   - `make PROFILE=production all`: Gate ODR — ALL COMPONENTS BUILT ✅
   - `make argus-network-isolate-test`: dry-run PASSED ✅
+
+### Hitos DAY 188-190 🎉 — Auditoría de deuda de seguridad del firewall
+- **H-2 NÚCLEO 1+3 CERRADO (DAY 189, `0db706c8`)** — `set_name` validado + shell eliminado de `ipset_wrapper`, `safe_exec`, 0 focos de shell.
+- **CWE-78 autonomy.whitelist_cidrs CERRADO Y PROBADO (DAY 190, `68ab3eb9`)** — `parse_autonomy` valida cada CIDR antes de aceptarlo (`throw` fail-fast). `is_valid_ip_cidr` extraído a `firewall/ip_cidr_validator.hpp` (behavior-preserving; `is_valid_ip` delega). `parse_autonomy` movido a `public` (testabilidad directa, patrón `parse_irp`).
+  - **Tests:** 4 GTest de inyección (`;`, `\n`, `$()` → throw; CIDRs legítimos → no throw) + 1 standalone `test_ip_cidr_validator` (29 asserts). `make firewall && make test-firewall` → **73/73**, cero regresión.
+  - **system() interino:** silenciado con `nosemgrep` PEGADO al `return` (justificado, no huérfano). semgrep acotado al fichero = limpio. → `DEBT-AUTONOMY-REACTOR-SAFEEXEC-002` (refactor safe_exec post-FEDER).
+  - **H-2 SIGUE ABIERTA** — falta NÚCLEO 2 (campo `comment` de `add_batch`: rechazar `\n`). Cierre en DAY 191.
+- **EMECAS++ 3 actos verde · PR #103 → main `395ee014`.**
+- **Deudas nuevas:** `DEBT-AUTONOMY-REACTOR-SAFEEXEC-002` (P2 post-FEDER) · `DEBT-AUDIT-VBOXSF-IO-001` (P2, `make audit` estrangulado por I/O vboxsf — workaround: semgrep acotado por fichero).
 
 ### Hitos DAY 184 🎉 — flush()→FlushResult + batch transaccional + Consejo del banco de tortura
 - **`IGraphSink::flush()` deja de devolver `void` → `FlushResult`** (POD `{bool ok; uint64_t rows_flushed; uint64_t rows_pending; explicit operator bool}`). `[[nodiscard]]` sobre el TIPO, no sobre cada método → ningún sink presente o futuro puede descartar en silencio el fallo de durabilidad bajo `-Werror`. Cierre **estructural** (mismo espíritu que H-1, cerrado por parámetro tipado y no por `esc()`). `main.cpp`: flush fallido → `EXIT_FAILURE` (el harness E2E no lee "ok" sobre datos perdidos). 8 touchpoints de `IGraphSink` revisados por grep, cero fuga a otros componentes. Commit `4e221ede`.
@@ -321,6 +332,8 @@
 | DEBT-LICENSE-VAULT-001 | ⏳ P2 post-FEDER | Servidor licencias en Vault (plugin system) |
 | DEBT-PLUGIN-ENTERPRISE-001 | ⏳ P2 post-FEDER | Definir plugins enterprise vs community |
 | DEBT-KPSEUDO-HKDF-HIERARCHY-001 | ⏳ P3 post-FEDER | Jerarquía HKDF para K_pseudo (host/flow/model desde K_root) |
+| DEBT-AUTONOMY-REACTOR-SAFEEXEC-002 | 🟢 P2 post-FEDER | Eliminar `std::system` de autonomy_reactor (safe_exec/execv); retirar nosemgrep interino |
+| DEBT-AUDIT-VBOXSF-IO-001 | 🟢 P2 | `make audit` full-tree estrangulado por I/O vboxsf; workaround semgrep acotado por fichero |
 ### Próxima frontera — DAY 158+
 1. ✅ **DEBT-AUTONOMY-CRYPTO-INTEGRATION-001 CERRADA DAY 156**
    2. ✅ **DEBT-AUTONOMY-STATE-PERSISTENCE-001 CERRADA DAY 157**
@@ -681,6 +694,7 @@ make hardened-full   # destroy → up → provision → build → deploy → che
   - ✅ DAY 170: **community_id cross-sensor sellado (aRGus+Zeek+Suricata, seed 0, vs oráculo) · de-dup BACKLOG · Consejo 8/8 P1/P2/P3 · ADR-051/052 pendientes** 🎉
   - 🔜 DAY 172: **volcado contadores aRGus a fichero parseable (DEBT-COUNTER-DUMP-001) + ADR-051/052 borrador + DEBT-NEO4J-FLOW-KEY-001 (esquema Neo4j) + ADR-050 MITRE borrador + DEBT-ARGUSPP-SURICATA-001 (eve.json → correlation-engine)**
   - ✅ DAY 173: **ADR-052 v3.2 RATIFICADA (Consejo 8/8)** — Multi-node Flow Identity & Host↔Net · DEBTs P0→P3 de identidad de flujo · ADR-053 stub (JA3/JA4/BGP) · desbloquea DEBT-NEO4J-FLOW-KEY-001 🏛️
+  - ✅ DAY 190: **Auditoría de deuda de seguridad — CWE-78 autonomy.whitelist_cidrs CERRADO (parse_autonomy valida CIDR fail-fast) · H-2 NÚCLEO 1+3 (DAY 189) · is_valid_ip_cidr extraído · 73/73 tests · nosemgrep interino justificado · PR #103 → main 395ee014** 🎉
   - ✅ DAY 182: **Smoke B1 ejecutado — D1 (un grafo) + D2 (Kuzu stock, Vela NO) RESUELTAS POR MEDICIÓN · UNWIND batch ×55–61 · Fase 0 grafo verde · ADR-057 v2 · graph-engine como componente** 🎉
 
 ---
