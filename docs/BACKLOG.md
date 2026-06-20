@@ -1,5 +1,5 @@
 # aRGus NDR — BACKLOG
-*Última actualización: DAY 187 — 2026-06-17*
+*Última actualización: DAY 190 — 2026-06-20*
 
 ---
 
@@ -85,6 +85,45 @@
 | **aRGus-seL4** | ⏳ No iniciada | Apéndice científico. Kernel seL4, libpcap. Branch independiente. |
 
 ---
+## 🆕 Entradas DAY 188-190 — Auditoría de deuda de seguridad (H-1/H-2/CWE-78)
+
+> Origen: rama `feature/day188-security-debt-audit`. DAY 188 abrió el frente de deuda de
+> seguridad del firewall. Cierres: H-1 (Cypher injection) ya mitigada por prepared statements
+> (ADR-057) en el path EJECUTADO de Kuzu; H-2 NÚCLEO 1+3 (DAY 189, commit `0db706c8`) —
+> `set_name` validado + shell eliminado de `ipset_wrapper`, `safe_exec`, 0 focos de shell;
+> punto-1 CWE-78 (DAY 190, commit `68ab3eb9`) — inyección de comando vía
+> `autonomy.whitelist_cidrs` MITIGADA en frontera. EMECAS++ 3 actos verde. PR #103 → main `395ee014`.
+
+### ✅ HITO DAY 190 — CWE-78 autonomy.whitelist_cidrs CERRADO Y PROBADO (punto 1)
+
+- **Vulnerabilidad:** `autonomy_reactor.cpp` interpola `cidr` (de
+  `firewall.json["autonomy"]["whitelist_cidrs"]`, parseado por `parse_autonomy` SIN validar
+  contenido) dentro de `std::system(cmd)` ejecutado como root. CIDR tipo
+  `"1.2.3.0/24; iptables -F"` → shell injection.
+- **Mitigación en frontera (fail-fast):** `parse_autonomy` (config_loader.cpp) valida cada CIDR
+  ANTES de aceptarlo; CIDR inválido → `throw std::runtime_error`. Cierra el agujero vivo al 100%
+  porque `cidr` es el único campo alcanzable por atacante en la línea de `system()` (censo de
+  procedencia: `ch`/COMMENT_* son `static constexpr`).
+- **`is_valid_ip_cidr` extraído** a header compartido `firewall/ip_cidr_validator.hpp` (lógica
+  byte-idéntica al viejo `IPSetWrapper::is_valid_ip` — behavior-preserving; `is_valid_ip` ahora
+  delega en una línea). `parse_autonomy` movido a `public` (patrón `parse_irp`, testabilidad directa).
+- **Tests (verdes):** 4 GTest de inyección (`;`, `\n`, `$()` → throw; CIDRs legítimos → no throw)
+  + 1 standalone `test_ip_cidr_validator` (29 asserts). `make firewall && make test-firewall` →
+  **73/73**, nuevos #49-#52 (ParseAutonomyCidrInjection) y #72 (test_ip_cidr_validator) ejecutados,
+  cero regresión (test_autonomy_subscriber #71 y test_autonomy_e2e #73 siguen verdes).
+- **system() interino:** el `std::system` de `autonomy_reactor` sigue estructuralmente presente,
+  silenciado con `// nosemgrep: argus-shell-from-constructed-string` PEGADO al `return` (no huérfano
+  — semgrep solo honra misma línea o inmediatamente anterior). Verificado: semgrep acotado al fichero
+  = limpio. → DEBT-AUTONOMY-REACTOR-SAFEEXEC-002 (refactor a safe_exec, post-FEDER).
+- **H-2 SIGUE ABIERTA:** el commit cierra punto-1-autonomy, NO H-2 completa. Falta NÚCLEO 2 (campo
+  `comment` de `IPSetWrapper::add_batch`: escapa `"` pero NO rechaza `\n`). Ver prompt de continuidad DAY 191.
+
+### Flujo del día (lecciones, no repetir)
+- `make test-firewall` = SOLO ctest, NO compila. Para recoger tests nuevos: `make firewall &&
+  make test-firewall` (el `&&` corta si el build falla → evita correr el binario viejo).
+- `nosemgrep` debe tocar la línea del finding (misma o inmediatamente anterior, sin comentarios en medio).
+- Tools de un solo uso (.py/.sh) → `.gitignore` explícito (los patrones genéricos `day*` no cazan todo).
+
 ## DEBT-AUTONOMY-REACTOR-SAFEEXEC-002 (P2, POST-FEDER)
 **Origen:** DAY190, audit DEBT-AUTONOMY-REACTOR-CWE78-001.
 **Estado:** CWE-78 MITIGADA en frontera (parse_autonomy valida CIDR, tests verdes).

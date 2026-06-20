@@ -302,3 +302,5 @@ update_docs_day187.py
 apply_h2_cidr_mitigation.py
 convert_ipset_wrapper_nucleo3.py
 verify_h2_mov2_setname.sh
+*.pre-day190
+update_docs_day190.py # tool de un solo uso, como convención
