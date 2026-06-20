@@ -14,8 +14,11 @@
 //===----------------------------------------------------------------------===//
 
 #include "firewall/ipset_wrapper.hpp"
-
+#include "firewall/set_name_validator.hpp"
+#include "firewall/ip_cidr_validator.hpp"
+#include "safe_exec.hpp"
 #include <cstring>
+#include <cctype>
 #include <sstream>
 #include <fstream>
 #include <regex>
@@ -50,6 +53,9 @@ IPSetWrapper::~IPSetWrapper() = default;
 // Helper Functions
 //===----------------------------------------------------------------------===//
 
+// H-2 DAY189: ipset vive en /sbin (no en PATH de usuario). execv NO usa PATH → ruta absoluta.
+static constexpr const char* kIpsetBin = "/sbin/ipset";
+
 const char* IPSetWrapper::type_to_string(IPSetType type) {
     switch (type) {
         case IPSetType::HASH_IP:      return "hash:ip";
@@ -67,47 +73,17 @@ const char* IPSetWrapper::family_to_string(IPSetFamily family) {
     return "inet";
 }
 
-bool IPSetWrapper::is_valid_ip(const std::string& ip) const {
-    // Check for CIDR notation
-    std::string ip_part = ip;
-    if (auto pos = ip.find('/'); pos != std::string::npos) {
-        ip_part = ip.substr(0, pos);
-    }
-
-    // Try IPv4
-    struct sockaddr_in sa4;
-    if (inet_pton(AF_INET, ip_part.c_str(), &(sa4.sin_addr)) == 1) {
-        return true;
-    }
-
-    // Try IPv6
-    struct sockaddr_in6 sa6;
-    if (inet_pton(AF_INET6, ip_part.c_str(), &(sa6.sin6_addr)) == 1) {
-        return true;
-    }
-
-    return false;
-}
+// [H-2 DAY188 is_valid_ip hardened] — lógica MOVIDA a firewall/ip_cidr_validator.hpp
+// (DAY190, DEBT-AUTONOMY-REACTOR-CWE78-001). Este método es ahora un alias de
+// compatibilidad de la API pública; la implementación y su modelo de amenaza viven
+// en el header compartido. NO BORRAR este marcador (idempotencia del parche).
+bool IPSetWrapper::is_valid_ip(const std::string& ip) const { return is_valid_ip_cidr(ip); }
 
 //===----------------------------------------------------------------------===//
 // System Command Execution
 //===----------------------------------------------------------------------===//
 
-static std::pair<int, std::string> execute_command(const std::string& cmd) {
-    FILE* pipe = popen(cmd.c_str(), "r");
-    if (!pipe) {
-        return {-1, "Failed to execute command"};
-    }
-
-    char buffer[512];
-    std::string result;
-    while (fgets(buffer, sizeof(buffer), pipe)) {
-        result += buffer;
-    }
-
-    int ret = pclose(pipe);
-    return {ret, result};
-}
+// execute_command ELIMINADA (H-2 DAY189): toda ejecución pasa por safe_exec* (sin shell).
 
 //===----------------------------------------------------------------------===//
 // Set Management
@@ -124,49 +100,59 @@ IPSetResult<void> IPSetWrapper::create_set(const IPSetConfig& config) {
         });
     }
 
-    // Build ipset create command
-    std::ostringstream cmd;
-    cmd << "ipset create " << config.name << " " << type_to_string(config.type)
-        << " family " << family_to_string(config.family)
-        << " hashsize " << config.hashsize
-        << " maxelem " << config.maxelem;
-
-    if (config.timeout > 0) {
-        cmd << " timeout " << config.timeout;
-    }
-
-    if (config.counters) {
-        cmd << " counters";
-    }
-
-    if (config.comment) {
-        cmd << " comment";
-    }
-
-    if (config.type == IPSetType::HASH_NET) {
-        cmd << " netmask " << config.netmask;
-    }
-
-    cmd << " 2>&1";
-
-    if (m_dry_run) {
-        std::cout << "[DRY-RUN] Would execute: " << cmd.str() << std::endl;
-        return IPSetResult<void>(); // Success in dry-run
-    }
-    auto [ret, output] = execute_command(cmd.str());
-
-    if (ret != 0) {
+    // H-2 DAY189: validar nombre antes de construir argv (sin shell).
+    if (!is_valid_set_name(config.name)) {
         return IPSetResult<void>(IPSetError{
-            IPSetErrorCode::KERNEL_ERROR,
-            "Failed to create set: " + output
+            IPSetErrorCode::INVALID_SET_NAME,
+            "Invalid set name: '" + config.name + "'"
         });
     }
 
+    // Build ipset create argv (token a token, NUNCA concatenado en shell).
+    std::vector<std::string> args = {
+        kIpsetBin, "create", config.name, type_to_string(config.type),
+        "family", family_to_string(config.family),
+        "hashsize", std::to_string(config.hashsize),
+        "maxelem", std::to_string(config.maxelem)
+    };
+    if (config.timeout > 0) {
+        args.push_back("timeout");
+        args.push_back(std::to_string(config.timeout));
+    }
+    if (config.counters) {
+        args.push_back("counters");
+    }
+    if (config.comment) {
+        args.push_back("comment");
+    }
+    if (config.type == IPSetType::HASH_NET) {
+        args.push_back("netmask");
+        args.push_back(std::to_string(config.netmask));
+    }
+
+    if (m_dry_run) {
+        std::cout << "[DRY-RUN] Would execute: " << kIpsetBin << " create "
+                  << config.name << std::endl;
+        return IPSetResult<void>(); // Success in dry-run
+    }
+    int ret = safe_exec(args);
+    if (ret != 0) {
+        return IPSetResult<void>(IPSetError{
+            IPSetErrorCode::KERNEL_ERROR, "Failed to create set"
+        });
+    }
     return IPSetResult<void>();
 }
 
 IPSetResult<void> IPSetWrapper::destroy_set(const std::string& set_name) {
     std::lock_guard<std::mutex> lock(mutex_);
+
+    if (!is_valid_set_name(set_name)) {
+        return IPSetResult<void>(IPSetError{
+            IPSetErrorCode::INVALID_SET_NAME,
+            "Invalid set name: '" + set_name + "'"
+        });
+    }
 
     if (!set_exists_unlocked(set_name)) {
         return IPSetResult<void>(IPSetError{
@@ -175,28 +161,28 @@ IPSetResult<void> IPSetWrapper::destroy_set(const std::string& set_name) {
         });
     }
 
-    std::string cmd = "ipset destroy " + set_name + " 2>&1";
     if (m_dry_run) {
-        std::cout << "[DRY-RUN] Would execute: " << cmd << std::endl;
+        std::cout << "[DRY-RUN] Would execute: " << kIpsetBin << " destroy "
+                  << set_name << std::endl;
         return IPSetResult<void>(); // Success in dry-run
     }
-    auto [ret, output] = execute_command(cmd);
-
+    int ret = safe_exec({kIpsetBin, "destroy", set_name});
     if (ret != 0) {
         return IPSetResult<void>(IPSetError{
-            IPSetErrorCode::KERNEL_ERROR,
-            "Failed to destroy set: " + output
+            IPSetErrorCode::KERNEL_ERROR, "Failed to destroy set"
         });
     }
-
     return IPSetResult<void>();
 }
 
 bool IPSetWrapper::set_exists_unlocked(const std::string& set_name) const {
     // Internal version - assumes caller already holds mutex_
     // NO lock here
-    std::string cmd = "ipset list " + set_name + " -n > /dev/null 2>&1";
-    int ret = system(cmd.c_str());
+    // H-2 DAY189: nombre inválido → el set no puede existir. Sin shell.
+    if (!is_valid_set_name(set_name)) {
+        return false;
+    }
+    int ret = safe_exec({kIpsetBin, "list", set_name, "-n"});
     return (ret == 0);
 }
 
@@ -210,30 +196,32 @@ std::vector<std::string> IPSetWrapper::list_sets() const {
 
     std::vector<std::string> sets;
 
-    FILE* pipe = popen("ipset list -n 2>/dev/null", "r");
-    if (!pipe) {
+    auto [ret, output] = safe_exec_with_output({kIpsetBin, "list", "-n"});
+    if (ret != 0) {
         return sets;
     }
 
-    char buffer[256];
-    while (fgets(buffer, sizeof(buffer), pipe)) {
-        std::string line(buffer);
-        // Remove trailing newline
-        if (!line.empty() && line.back() == '\n') {
-            line.pop_back();
-        }
+    std::istringstream iss(output);
+    std::string line;
+    while (std::getline(iss, line)) {
+        if (!line.empty() && line.back() == '\r') line.pop_back();
         if (!line.empty()) {
             sets.push_back(line);
         }
     }
-
-    pclose(pipe);
 
     return sets;
 }
 
 IPSetResult<void> IPSetWrapper::flush_set(const std::string& set_name) {
     std::lock_guard<std::mutex> lock(mutex_);
+
+    if (!is_valid_set_name(set_name)) {
+        return IPSetResult<void>(IPSetError{
+            IPSetErrorCode::INVALID_SET_NAME,
+            "Invalid set name: '" + set_name + "'"
+        });
+    }
 
     if (!set_exists_unlocked(set_name)) {
         return IPSetResult<void>(IPSetError{
@@ -242,20 +230,17 @@ IPSetResult<void> IPSetWrapper::flush_set(const std::string& set_name) {
         });
     }
 
-    std::string cmd = "ipset flush " + set_name + " 2>&1";
     if (m_dry_run) {
-        std::cout << "[DRY-RUN] Would execute: " << cmd << std::endl;
+        std::cout << "[DRY-RUN] Would execute: " << kIpsetBin << " flush "
+                  << set_name << std::endl;
         return IPSetResult<void>(); // Success in dry-run
     }
-    auto [ret, output] = execute_command(cmd);
-
+    int ret = safe_exec({kIpsetBin, "flush", set_name});
     if (ret != 0) {
         return IPSetResult<void>(IPSetError{
-            IPSetErrorCode::KERNEL_ERROR,
-            "Failed to flush set: " + output
+            IPSetErrorCode::KERNEL_ERROR, "Failed to flush set"
         });
     }
-
     return IPSetResult<void>();
 }
 
@@ -271,6 +256,13 @@ IPSetResult<void> IPSetWrapper::add_batch(
 
     if (entries.empty()) {
         return IPSetResult<void>();
+    }
+
+	if (!is_valid_set_name(set_name)) {
+        return IPSetResult<void>(IPSetError{
+            IPSetErrorCode::INVALID_SET_NAME,  // ¿hay un código mejor? ver nota
+            "Invalid set name (rejected by allowlist): '" + set_name + "'"
+        });
     }
 
     if (!set_exists_unlocked(set_name)) {
@@ -331,22 +323,19 @@ IPSetResult<void> IPSetWrapper::add_batch(
     outfile.close();
 
     // Execute ipset restore (SINGLE SYSCALL for entire batch)
-    std::string cmd = "ipset restore < " + std::string(tmpfile) + " 2>&1";
     if (m_dry_run) {
-        std::cout << "[DRY-RUN] Would execute: " << cmd << std::endl;
-        return IPSetResult<void>(); // Success in dry-run
+        std::cout << "[DRY-RUN] Would execute: " << kIpsetBin
+                  << " restore < " << tmpfile << std::endl;
+        return IPSetResult<void>();
     }
-    auto [ret, output] = execute_command(cmd);
-
+    int ret = safe_exec_with_file_in({kIpsetBin, "restore"}, tmpfile);
     std::remove(tmpfile);
-
-    if (ret != 0 && !output.empty()) {
+    if (ret != 0) {
         return IPSetResult<void>(IPSetError{
             IPSetErrorCode::KERNEL_ERROR,
-            "Batch add failed: " + output
+            "Batch add failed (ipset restore exit=" + std::to_string(ret) + ")"
         });
     }
-
     return IPSetResult<void>();
 }
 
@@ -358,6 +347,13 @@ IPSetResult<void> IPSetWrapper::delete_batch(
 
     if (ips.empty()) {
         return IPSetResult<void>();
+    }
+
+	if (!is_valid_set_name(set_name)) {
+        return IPSetResult<void>(IPSetError{
+            IPSetErrorCode::INVALID_SET_NAME,  // ¿hay un código mejor? ver nota
+            "Invalid set name (rejected by allowlist): '" + set_name + "'"
+        });
     }
 
     if (!set_exists_unlocked(set_name)) {
@@ -399,22 +395,19 @@ IPSetResult<void> IPSetWrapper::delete_batch(
     outfile << restore_input.str();
     outfile.close();
 
-    std::string cmd = "ipset restore -exist < " + std::string(tmpfile) + " 2>&1";
     if (m_dry_run) {
-        std::cout << "[DRY-RUN] Would execute: " << cmd << std::endl;
-        return IPSetResult<void>(); // Success in dry-run
+        std::cout << "[DRY-RUN] Would execute: " << kIpsetBin
+                  << " restore -exist < " << tmpfile << std::endl;
+        return IPSetResult<void>();
     }
-    auto [ret, output] = execute_command(cmd);
-
+    int ret = safe_exec_with_file_in({kIpsetBin, "restore", "-exist"}, tmpfile);
     std::remove(tmpfile);
-
-    if (ret != 0 && !output.empty()) {
+    if (ret != 0) {
         return IPSetResult<void>(IPSetError{
             IPSetErrorCode::KERNEL_ERROR,
-            "Batch delete failed: " + output
+            "Batch delete failed (ipset restore exit=" + std::to_string(ret) + ")"
         });
     }
-
     return IPSetResult<void>();
 }
 
@@ -442,13 +435,13 @@ bool IPSetWrapper::test(
 ) const {
     std::lock_guard<std::mutex> lock(mutex_);
 
+    if (!is_valid_set_name(set_name)) {
+        return false;
+    }
     if (!is_valid_ip(ip)) {
         return false;
     }
-
-    std::string cmd = "ipset test " + set_name + " " + ip + " > /dev/null 2>&1";
-    int ret = system(cmd.c_str());
-
+    int ret = safe_exec({kIpsetBin, "test", set_name, ip});
     return (ret == 0);
 }
 
@@ -480,14 +473,12 @@ IPSetResult<IPSetStats> IPSetWrapper::get_stats(
     IPSetStats stats;
     stats.name = set_name;
 
-    // Get stats via ipset list
-    std::string cmd = "ipset list " + set_name + " 2>&1";
-    auto [ret, output] = execute_command(cmd);
+    // Get stats via ipset list (sin shell). set_name ya validado por set_exists_unlocked arriba.
+    auto [ret, output] = safe_exec_with_output({kIpsetBin, "list", set_name});
 
     if (ret != 0) {
         return IPSetResult<IPSetStats>(IPSetError{
-            IPSetErrorCode::KERNEL_ERROR,
-            "Failed to get stats: " + output
+            IPSetErrorCode::KERNEL_ERROR, "Failed to get stats"
         });
     }
 
@@ -525,25 +516,30 @@ std::vector<std::string> IPSetWrapper::list_entries(
 
     std::vector<std::string> entries;
 
-    std::string cmd = "ipset save " + set_name + " 2>/dev/null | grep '^add'";
-    FILE* pipe = popen(cmd.c_str(), "r");
-    if (!pipe) {
+    // H-2 DAY189: validar nombre antes de pasarlo a ipset (sin shell, grep → C++).
+    if (!is_valid_set_name(set_name)) {
         return entries;
     }
 
-    char buffer[512];
-    while (fgets(buffer, sizeof(buffer), pipe)) {
-        std::string line(buffer);
-        // Parse: "add setname ip [options]"
-        std::istringstream iss(line);
+    auto [ret, output] = safe_exec_with_output({kIpsetBin, "save", set_name});
+    if (ret != 0) {
+        return entries;
+    }
+
+    std::istringstream iss(output);
+    std::string line;
+    while (std::getline(iss, line)) {
+        // Filtro equivalente al antiguo '| grep ^add', ahora en C++.
+        if (line.rfind("add ", 0) != 0) {
+            continue;
+        }
+        std::istringstream line_ss(line);
         std::string cmd_word, setname, ip;
-        iss >> cmd_word >> setname >> ip;
+        line_ss >> cmd_word >> setname >> ip;
         if (!ip.empty()) {
             entries.push_back(ip);
         }
     }
-
-    pclose(pipe);
 
     return entries;
 }
@@ -558,20 +554,24 @@ IPSetResult<void> IPSetWrapper::rename_set(
 ) {
     std::lock_guard<std::mutex> lock(mutex_);
 
-    std::string cmd = "ipset rename " + old_name + " " + new_name + " 2>&1";
-    if (m_dry_run) {
-        std::cout << "[DRY-RUN] Would execute: " << cmd << std::endl;
-        return IPSetResult<void>(); // Success in dry-run
-    }
-    auto [ret, output] = execute_command(cmd);
-
-    if (ret != 0) {
+    if (!is_valid_set_name(old_name) || !is_valid_set_name(new_name)) {
         return IPSetResult<void>(IPSetError{
-            IPSetErrorCode::KERNEL_ERROR,
-            "Failed to rename set: " + output
+            IPSetErrorCode::INVALID_SET_NAME,
+            "Invalid set name in rename"
         });
     }
 
+    if (m_dry_run) {
+        std::cout << "[DRY-RUN] Would execute: " << kIpsetBin << " rename "
+                  << old_name << " " << new_name << std::endl;
+        return IPSetResult<void>(); // Success in dry-run
+    }
+    int ret = safe_exec({kIpsetBin, "rename", old_name, new_name});
+    if (ret != 0) {
+        return IPSetResult<void>(IPSetError{
+            IPSetErrorCode::KERNEL_ERROR, "Failed to rename set"
+        });
+    }
     return IPSetResult<void>();
 }
 
@@ -581,60 +581,70 @@ IPSetResult<void> IPSetWrapper::swap_sets(
 ) {
     std::lock_guard<std::mutex> lock(mutex_);
 
-    std::string cmd = "ipset swap " + set1 + " " + set2 + " 2>&1";
-    if (m_dry_run) {
-        std::cout << "[DRY-RUN] Would execute: " << cmd << std::endl;
-        return IPSetResult<void>(); // Success in dry-run
-    }
-    auto [ret, output] = execute_command(cmd);
-
-    if (ret != 0) {
+    if (!is_valid_set_name(set1) || !is_valid_set_name(set2)) {
         return IPSetResult<void>(IPSetError{
-            IPSetErrorCode::KERNEL_ERROR,
-            "Failed to swap sets: " + output
+            IPSetErrorCode::INVALID_SET_NAME,
+            "Invalid set name in swap"
         });
     }
 
+    if (m_dry_run) {
+        std::cout << "[DRY-RUN] Would execute: " << kIpsetBin << " swap "
+                  << set1 << " " << set2 << std::endl;
+        return IPSetResult<void>(); // Success in dry-run
+    }
+    int ret = safe_exec({kIpsetBin, "swap", set1, set2});
+    if (ret != 0) {
+        return IPSetResult<void>(IPSetError{
+            IPSetErrorCode::KERNEL_ERROR, "Failed to swap sets"
+        });
+    }
     return IPSetResult<void>();
 }
 
 IPSetResult<void> IPSetWrapper::save(const std::string& filepath) const {
     std::lock_guard<std::mutex> lock(mutex_);
 
-    std::string cmd = "ipset save > " + filepath + " 2>&1";
-    if (m_dry_run) {
-        std::cout << "[DRY-RUN] Would execute: " << cmd << std::endl;
-        return IPSetResult<void>(); // Success in dry-run
-    }
-    auto [ret, output] = execute_command(cmd);
-
-    if (ret != 0) {
+    if (!validate_filepath(filepath)) {
         return IPSetResult<void>(IPSetError{
             IPSetErrorCode::KERNEL_ERROR,
-            "Failed to save ipsets: " + output
+            "Invalid filepath for save"
         });
     }
-
+    if (m_dry_run) {
+        std::cout << "[DRY-RUN] Would execute: " << kIpsetBin << " save > "
+                  << filepath << std::endl;
+        return IPSetResult<void>(); // Success in dry-run
+    }
+    int ret = safe_exec_with_file_out({kIpsetBin, "save"}, filepath);
+    if (ret != 0) {
+        return IPSetResult<void>(IPSetError{
+            IPSetErrorCode::KERNEL_ERROR, "Failed to save ipsets"
+        });
+    }
     return IPSetResult<void>();
 }
 
 IPSetResult<void> IPSetWrapper::restore(const std::string& filepath) {
     std::lock_guard<std::mutex> lock(mutex_);
 
-    std::string cmd = "ipset restore < " + filepath + " 2>&1";
-    if (m_dry_run) {
-        std::cout << "[DRY-RUN] Would execute: " << cmd << std::endl;
-        return IPSetResult<void>(); // Success in dry-run
-    }
-    auto [ret, output] = execute_command(cmd);
-
-    if (ret != 0) {
+    if (!validate_filepath(filepath)) {
         return IPSetResult<void>(IPSetError{
             IPSetErrorCode::KERNEL_ERROR,
-            "Failed to restore ipsets: " + output
+            "Invalid filepath for restore"
         });
     }
-
+    if (m_dry_run) {
+        std::cout << "[DRY-RUN] Would execute: " << kIpsetBin << " restore < "
+                  << filepath << std::endl;
+        return IPSetResult<void>(); // Success in dry-run
+    }
+    int ret = safe_exec_with_file_in({kIpsetBin, "restore"}, filepath);
+    if (ret != 0) {
+        return IPSetResult<void>(IPSetError{
+            IPSetErrorCode::KERNEL_ERROR, "Failed to restore ipsets"
+        });
+    }
     return IPSetResult<void>();
 }
 

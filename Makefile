@@ -2996,3 +2996,20 @@ correlation-v1-rebuild: correlation-v1-clean correlation-v1-build correlation-v1
 # Con (1)+(2): EMECAS completo (destroy→up→bootstrap→test-all) cubre build Y test
 # de la lib sin tocar nada más. bootstrap→pipeline-build→ml-detector arrastra (1);
 # test-all→test-libs arrastra (2).
+
+# [H-2 DAY188 test-firewall targets]
+.PHONY: test-firewall test-firewall-e2e
+# No-root: tests puros del firewall (validacion/parsing). Entra en make test-all.
+# Los tests que tocan ipset real hacen GTEST_SKIP sin root -> 'Skipped', no 'Failed'.
+test-firewall:
+	@echo "🧪 firewall tests (perfil=$(PROFILE), sin root)"
+	@vagrant ssh -c 'cd $(FIREWALL_BUILD_DIR) && \
+		LD_LIBRARY_PATH=/usr/local/lib \
+		ctest -LE "e2e" --output-on-failure'
+
+# e2e/root: integracion contra ipset real (canario de inyeccion H-2). Solo VM, con sudo.
+test-firewall-e2e:
+	@echo "🧪 firewall e2e (perfil=$(PROFILE), CON root)"
+	@vagrant ssh -c 'cd $(FIREWALL_BUILD_DIR) && \
+		sudo env LD_LIBRARY_PATH=/usr/local/lib \
+		ctest -L "e2e" --output-on-failure'

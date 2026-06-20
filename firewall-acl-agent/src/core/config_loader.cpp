@@ -4,6 +4,8 @@
 //===----------------------------------------------------------------------===//
 
 #include "firewall/config_loader.hpp"
+#include "firewall/set_name_validator.hpp"
+#include "firewall/ip_cidr_validator.hpp"
 #include <algorithm>
 #include <cctype>
 #include <fstream>
@@ -358,16 +360,9 @@ void ConfigLoader::validate_config(const FirewallAgentConfig& config) {
     // ([A-Za-z0-9_-], <=31 chars). Cierra inyeccion de comandos via config.
     if (config.ipset.set_name.empty()) {
         errors.push_back("IPSet name cannot be empty");
-    } else {
-        const auto& n = config.ipset.set_name;
-        const bool ok = n.size() <= 31 &&
-            std::all_of(n.begin(), n.end(), [](unsigned char c) {
-                return std::isalnum(c) || c == '_' || c == '-';
-            });
-        if (!ok) {
-            errors.push_back("IPSet name must match [A-Za-z0-9_-]{1,31} "
-                             "(got: '" + n + "')");
-        }
+    } else if (!is_valid_set_name(config.ipset.set_name)) {
+        errors.push_back("IPSet name must match [A-Za-z0-9_-]{1,31}, "
+                         "no leading '-' (got: '" + config.ipset.set_name + "')");
     }
 
     // Validate chain name
@@ -520,6 +515,21 @@ CsvBatchLoggerConfig ConfigLoader::parse_csv_batch_logger(const Json::Value& jso
             "   Fix: Especificar al menos un CIDR permitido durante modo autónomo.\n"
             "   Un array vacío bloquearía toda la LAN clínica."
         );
+    }
+
+    // H-2 DAY190 — DEBT-AUTONOMY-REACTOR-CWE78-001 (CWE-78): cada CIDR se interpola
+    // en system("iptables ... -s <cidr>") (autonomy_reactor.cpp) bajo root. Allowlist
+    // estricto ANTES de aceptar = cierra inyección de comandos vía config. Fail-fast:
+    // un solo CIDR inválido aborta la carga (JSON is LAW — config mala no arranca).
+    for (const auto& cidr : config.whitelist_cidrs) {
+        if (!is_valid_ip_cidr(cidr)) {
+            throw std::runtime_error(
+                "❌ INVALID CIDR en 'autonomy.whitelist_cidrs': '" + cidr + "' ("
+                + config_path + ")\n"
+                "   Debe ser IPv4/IPv6 o CIDR válido ([0-9a-fA-F.:/], prefijo en rango).\n"
+                "   Rechazado por allowlist — ver DEBT-AUTONOMY-REACTOR-CWE78-001 (CWE-78)."
+            );
+        }
     }
 
     config.reconcile_interval_sec = get_optional<int>(json, "reconcile_interval_sec", 90);

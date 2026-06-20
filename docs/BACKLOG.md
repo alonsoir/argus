@@ -85,6 +85,35 @@
 | **aRGus-seL4** | ⏳ No iniciada | Apéndice científico. Kernel seL4, libpcap. Branch independiente. |
 
 ---
+## DEBT-AUTONOMY-REACTOR-SAFEEXEC-002 (P2, POST-FEDER)
+**Origen:** DAY190, audit DEBT-AUTONOMY-REACTOR-CWE78-001.
+**Estado:** CWE-78 MITIGADA en frontera (parse_autonomy valida CIDR, tests verdes).
+El std::system de autonomy_reactor.cpp:11 sigue estructuralmente presente,
+silenciado con nosemgrep INTERINO justificado.
+**Acción pendiente (B):** eliminar el system() de raíz.
+- IptablesExecutor: function<int(const string&)> → function<int(const vector<string>&)>.
+- default_executor → safe_exec({...}) (execv sin shell, ruta absoluta /sbin/iptables).
+- Reescribir los ~10 run("iptables...") de apply/lift_default_deny a tokens.
+- Al tokenizar, las comillas \"...\" de --comment DESAPARECEN (execv no usa shell).
+- Toca mock StubExecutor (test_firewall_stubs.hpp) + T1–T9 de test_autonomy_subscriber.
+  → su propia rama, su propio EMECAS++.
+  **Cierre:** retirar el nosemgrep cuando el system() desaparezca. semgrep dejará de
+  disparar por ausencia de system(), no por silenciado.
+  **Por qué post-FEDER:** mitigación actual cierra el riesgo real; el refactor es
+  defensa en profundidad, no urgencia. Hay fondos para hacerlo bien, sin prisa.
+
+## DEBT-AUDIT-VBOXSF-IO-001 (P2)
+**Origen:** DAY190. make audit (semgrep árbol completo) se estrangula por I/O de
+vboxsf sobre /vagrant. Proceso semgrep-core en estado 'D' (uninterruptible sleep,
+espera de disco), CPU ~50% del wall-time. ~16 min sin terminar → cortado.
+**NO es DEBT-SEMGREP-CPP-HANG-001** (ese es CPU-bound/backtracking; este es I/O-bound).
+**Workaround validado:** semgrep acotado por fichero termina en segundos (misma
+táctica DAY189 ipset_wrapper). Para findings puntuales, acotar.
+**Mitigación candidata:** copiar árbol a fs NATIVO del guest (/tmp, /home/vagrant)
+antes de semgrep — misma lección que kuzu_concurrency_smoke ("BD en fs NATIVO,
+NUNCA /vagrant, vboxsf rompe mmap"). Mismo enemigo, otra herramienta.
+**Impacto:** make audit completo no es gate fiable hasta resolver esto. Hoy el gate
+se valida por (a) cppcheck completo verde + (b) semgrep acotado a ficheros tocados.
 
 ## 🆕 Entradas DAY 187 — B4: rewire write_record→serialize + árbitro build_row BORRADO (Camino A)
 

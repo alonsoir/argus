@@ -98,6 +98,7 @@ enum class IPSetErrorCode {
     PERMISSION_DENIED,
     BATCH_PARTIAL_FAILURE,
     SESSION_ERROR,
+    INVALID_SET_NAME,
 };
 
 struct IPSetError {
@@ -180,6 +181,8 @@ struct IPSetStats {
 
 class IPSetWrapper {
 public:
+    // [H-2 DAY188 is_valid_ip -> public]
+    bool is_valid_ip(const std::string& ip) const;  // H-2: validador publico
     /// Constructor - initializes libipset session
     IPSetWrapper();
 
@@ -405,7 +408,6 @@ private:
     bool set_exists_unlocked(const std::string& set_name) const;
 
     /// Validate IP address format
-    bool is_valid_ip(const std::string& ip) const;
 
     /// Convert IPSetType to string
     static const char* type_to_string(IPSetType type);
