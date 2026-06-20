@@ -39,26 +39,26 @@
 ## Estado actual — DAY 190 (2026-06-20)
 
 <!-- DAY-STATUS -->
-| Campo | Valor |
-|---|---|
-| DAY | 190 |
-| Tag | v1.0.0-day166 |
-| Branch | main |
-| EMECAS++ OSS | ✅ verde — test-all + test-e2e-synthetic-full + test-e2e-synthetic-firewall |
-| EMECAS++ Enterprise | ✅ VERDE — 3 actos + Jenkins gate (DAY 167) |
-| Pipeline | 6/6 RUNNING |
-| Frente seguridad — H-1 Cypher | ✅ mitigada (prepared statements ADR-057, path ejecutado Kuzu) |
-| Frente seguridad — H-2 ipset (NÚCLEO 1+3) | ✅ DAY 189 (`0db706c8`) — set_name validado + shell eliminado, safe_exec, 0 focos de shell |
-| Frente seguridad — H-2 comment (NÚCLEO 2) | 🟡 PENDIENTE DAY 191 — `comment` escapa `"` pero NO rechaza `\n` en `add_batch` |
-| CWE-78 autonomy.whitelist_cidrs (punto 1) | ✅ DAY 190 CERRADO Y PROBADO — `parse_autonomy` valida CIDR fail-fast, `is_valid_ip_cidr` extraído, 5 tests verdes |
+| Campo | Valor                                                                                                                                 |
+|---|---------------------------------------------------------------------------------------------------------------------------------------|
+| DAY | 190                                                                                                                                   |
+| Tag | v1.0.0-day190                                                                                                                         |
+| Branch | main                                                                                                                                  |
+| EMECAS++ OSS | ✅ verde — test-all + test-e2e-synthetic-full + test-e2e-synthetic-firewall                                                            |
+| EMECAS++ Enterprise | ✅ VERDE — 3 actos + Jenkins gate (DAY 167)                                                                                            |
+| Pipeline | 6/6 RUNNING                                                                                                                           |
+| Frente seguridad — H-1 Cypher | ✅ mitigada (prepared statements ADR-057, path ejecutado Kuzu)                                                                         |
+| Frente seguridad — H-2 ipset (NÚCLEO 1+3) | ✅ DAY 189 (`0db706c8`) — set_name validado + shell eliminado, safe_exec, 0 focos de shell                                             |
+| Frente seguridad — H-2 comment (NÚCLEO 2) | 🟡 PENDIENTE DAY 191 — `comment` escapa `"` pero NO rechaza `\n` en `add_batch`                                                       |
+| CWE-78 autonomy.whitelist_cidrs (punto 1) | ✅ DAY 190 CERRADO Y PROBADO — `parse_autonomy` valida CIDR fail-fast, `is_valid_ip_cidr` extraído, 5 tests verdes                     |
 | Auditoría firewall | ✅ DAY 190 — único `system()` vivo en scope (autonomy_reactor) mitigado en frontera; `nosemgrep` INTERINO justificado pegado al return |
-| PR #103 | ✅ mergeado a main (`395ee014`) · commit DAY 190 `68ab3eb9` (10 ficheros, 246+/61−) |
-| Tests firewall | ✅ 73/73 (nuevos: #49-#52 ParseAutonomyCidrInjection, #72 test_ip_cidr_validator) |
-| Consejo de Sabios | 8/8 — Claude, Grok, ChatGPT, DeepSeek, Qwen, Gemini, Kimi, Mistral |
-| Arquitectura | ✅ ADR-046 v4 · ADR-052 v3.2 · ADR-051 v2.2 · ADR-055 v1 · ADR-057 v2 · ⏳ ADR-050/053/054 |
-| Próximo hito (DAY 191) | H-2 NÚCLEO 2 — medir `ipset restore` con `\n`/`"`/`\` en comment, rechazar `\n` fail-fast, test ataque + canario e2e → cerrar H-2 |
-| Deudas abiertas DAY 190 | DEBT-AUTONOMY-REACTOR-SAFEEXEC-002 (P2 post-FEDER) · DEBT-AUDIT-VBOXSF-IO-001 (P2) |
-| Gate UEx/INCIBE | Datasets de valor científico (no deadline duro) |
+| PR #103 | ✅ mergeado a main (`395ee014`) · commit DAY 190 `68ab3eb9` (10 ficheros, 246+/61−)                                                    |
+| Tests firewall | ✅ 73/73 (nuevos: #49-#52 ParseAutonomyCidrInjection, #72 test_ip_cidr_validator)                                                      |
+| Consejo de Sabios | 8/8 — Claude, Grok, ChatGPT, DeepSeek, Qwen, Gemini, Kimi, Mistral                                                                    |
+| Arquitectura | ✅ ADR-046 v4 · ADR-052 v3.2 · ADR-051 v2.2 · ADR-055 v1 · ADR-057 v2 · ⏳ ADR-050/053/054                                              |
+| Próximo hito (DAY 191) | H-2 NÚCLEO 2 — medir `ipset restore` con `\n`/`"`/`\` en comment, rechazar `\n` fail-fast, test ataque + canario e2e → cerrar H-2     |
+| Deudas abiertas DAY 190 | DEBT-AUTONOMY-REACTOR-SAFEEXEC-002 (P2 post-FEDER) · DEBT-AUDIT-VBOXSF-IO-001 (P2)                                                    |
+| Gate UEx/INCIBE | Datasets de valor científico (no deadline duro)                                                                                       |
 <!-- /DAY-STATUS -->
 
 > **Nota DAY 187 — B4 cerrada: árbitro `build_row` BORRADO (Camino A).** `write_record` pasa
