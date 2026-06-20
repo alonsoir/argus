@@ -7,9 +7,16 @@
 
 namespace mldefender::firewall {
 
-static int default_executor(const std::string& cmd) {
-    return std::system(cmd.c_str());
-}
+    static int default_executor(const std::string& cmd) {
+        // INTERINO (DAY190) — CWE-78 MITIGADA en la frontera de config, NO aquí:
+        // el único fragmento de `cmd` derivado de input es <cidr>, validado por
+        // is_valid_ip_cidr() en ConfigLoader::parse_autonomy (fail-fast throw) antes
+        // de construir FirewallAutonomyReactor. CHAIN_NAME/COMMENT_* son constexpr.
+        // Prueba: tests ParseAutonomyCidrInjection.{Semicolon,Newline,CommandSub} (verdes).
+        // Silencia al analizador, NO al riesgo: el std::system sigue presente.
+        // Eliminación definitiva (execv sin shell) = DEBT-AUTONOMY-REACTOR-SAFEEXEC-002, POST-FEDER.
+        return std::system(cmd.c_str()); // nosemgrep: argus-shell-from-constructed-string
+    }
 
 FirewallAutonomyReactor::FirewallAutonomyReactor(
             std::vector<std::string> whitelist_cidrs,

@@ -15,6 +15,7 @@
 
 #include "firewall/ipset_wrapper.hpp"
 #include "firewall/set_name_validator.hpp"
+#include "firewall/ip_cidr_validator.hpp"
 #include "safe_exec.hpp"
 #include <cstring>
 #include <cctype>
@@ -72,62 +73,11 @@ const char* IPSetWrapper::family_to_string(IPSetFamily family) {
     return "inet";
 }
 
-bool IPSetWrapper::is_valid_ip(const std::string& ip) const {
-    // [H-2 DAY188 is_valid_ip hardened] — NO BORRAR este marcador (idempotencia del parche).
-    // La entrada cruda alimenta un fichero 'ipset restore' (mini-lenguaje por lineas):
-    // un '\n' inyecta una linea add/del nueva. El bypass historico validaba SOLO el trozo
-    // pre-'/' y aprobaba el todo (p.ej. "1.2.3.4/24\nadd evil 6.6.6.6"). Defensa: allowlist
-    // estricto de caracteres ANTES de descomponer + prefijo CIDR numerico y en rango.
-    if (ip.empty() || ip.size() > 64) {  // IPv6 textual ~45; /128 ~49; 64 holgado
-        return false;
-    }
-
-    // Allowlist: solo el alfabeto de una IP/CIDR. Excluye \n \r \t espacio ; $ ` | & ( ) etc.
-    for (unsigned char c : ip) {
-        const bool ok = std::isxdigit(c) || c == '.' || c == ':' || c == '/';
-        if (!ok) {
-            return false;
-        }
-    }
-
-    // A lo sumo un '/'.
-    const auto slash = ip.find('/');
-    if (slash != std::string::npos &&
-        ip.find('/', slash + 1) != std::string::npos) {
-        return false;
-    }
-    const std::string ip_part = (slash == std::string::npos) ? ip : ip.substr(0, slash);
-
-    // La direccion debe ser IPv4 o IPv6 textual valida.
-    struct sockaddr_in  sa4;
-    struct sockaddr_in6 sa6;
-    const bool is_v4 = inet_pton(AF_INET,  ip_part.c_str(), &sa4.sin_addr)  == 1;
-    const bool is_v6 = inet_pton(AF_INET6, ip_part.c_str(), &sa6.sin6_addr) == 1;
-    if (!is_v4 && !is_v6) {
-        return false;
-    }
-
-    // Prefijo CIDR: 1-3 digitos numericos, en rango [0, 32|128]. Sin excepciones.
-    if (slash != std::string::npos) {
-        const std::string prefix = ip.substr(slash + 1);
-        if (prefix.empty() || prefix.size() > 3) {
-            return false;
-        }
-        int bits = 0;
-        for (unsigned char c : prefix) {
-            if (!std::isdigit(c)) {
-                return false;
-            }
-            bits = bits * 10 + (c - '0');
-        }
-        const int max_bits = is_v6 ? 128 : 32;
-        if (bits > max_bits) {
-            return false;
-        }
-    }
-
-    return true;
-}
+// [H-2 DAY188 is_valid_ip hardened] — lógica MOVIDA a firewall/ip_cidr_validator.hpp
+// (DAY190, DEBT-AUTONOMY-REACTOR-CWE78-001). Este método es ahora un alias de
+// compatibilidad de la API pública; la implementación y su modelo de amenaza viven
+// en el header compartido. NO BORRAR este marcador (idempotencia del parche).
+bool IPSetWrapper::is_valid_ip(const std::string& ip) const { return is_valid_ip_cidr(ip); }
 
 //===----------------------------------------------------------------------===//
 // System Command Execution

@@ -206,6 +206,9 @@ class ConfigLoader {
 public:
     // public para testabilidad directa — función pura de parseo (ADR-042, DEBT-IRP-AUTOISO-FALSE-001)
     static IrpConfig parse_irp(const std::string& isolate_json_path);
+    // public para testabilidad directa — valida CIDRs contra inyección (DEBT-AUTONOMY-REACTOR-CWE78-001)
+    static AutonomyConfig parse_autonomy(const Json::Value& json,
+                                         const std::string& config_path);
     // Load configuration from JSON file
     static FirewallAgentConfig load_from_file(const std::string& config_path,
                                                 const std::string& allowed_prefix = "/etc/ml-defender/");
@@ -240,8 +243,7 @@ private:
 
     static CsvBatchLoggerConfig parse_csv_batch_logger(const Json::Value& json);
 
-    static AutonomyConfig parse_autonomy(const Json::Value& json,
-                                         const std::string& config_path);
+
 };
 
 } // namespace mldefender::firewall

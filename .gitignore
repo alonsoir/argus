@@ -299,3 +299,6 @@ update_docs_day187.py
 
 # DAY188: scripts de un solo uso (no versionar)
 *_day188.py
+apply_h2_cidr_mitigation.py
+convert_ipset_wrapper_nucleo3.py
+verify_h2_mov2_setname.sh

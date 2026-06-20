@@ -337,6 +337,7 @@ if(BUILD_TESTS)
             tests/unit/test_config_loader_traversal.cpp
             tests/unit/test_config_loader_setname.cpp
             tests/unit/test_set_name_validator.cpp
+            tests/unit/test_parse_autonomy_cidr_injection.cpp   # ← DAY190 CWE-78
             tests/unit/test_safe_exec.cpp
             tests/test_globals_stub.cpp
     )
@@ -391,6 +392,17 @@ if(BUILD_TESTS)
             ${ZMQ_LIBRARIES}
     )
     add_test(NAME test_autonomy_subscriber COMMAND test_autonomy_subscriber)
+
+    # test_ip_cidr_validator — standalone (propio main CHECK, sin GTest) — DAY190 CWE-78
+    add_executable(test_ip_cidr_validator
+            tests/unit/test_ip_cidr_validator.cpp
+    )
+    target_include_directories(test_ip_cidr_validator
+            PRIVATE
+            ${CMAKE_CURRENT_SOURCE_DIR}/include
+    )
+    add_test(NAME test_ip_cidr_validator COMMAND test_ip_cidr_validator)
+
 # ── Test A: Autonomy E2E DAY 156 ─────────────────────────────────────────────
 add_executable(test_autonomy_e2e
     tests/test_autonomy_e2e.cpp
@@ -506,5 +518,8 @@ if(TARGET test_auto_isolate)
 endif()
 if(TARGET test_autonomy_subscriber)
     target_compile_options(test_autonomy_subscriber PRIVATE -UNDEBUG)
+endif()
+if(TARGET test_ip_cidr_validator)
+    target_compile_options(test_ip_cidr_validator PRIVATE -UNDEBUG)
 endif()
 
