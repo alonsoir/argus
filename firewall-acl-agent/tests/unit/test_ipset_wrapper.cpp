@@ -513,6 +513,43 @@ TEST_F(IPSetWrapperTest, StressTestLargeSet) {
 }
 
 //===----------------------------------------------------------------------===//
+// CWE-93 Comment Injection Canary — DAY191 H-2 NÚCLEO 2
+//===----------------------------------------------------------------------===//
+
+TEST_F(IPSetWrapperTest, CommentInjectionRejected) {
+    // Canario e2e: verifica que is_valid_comment está CABLEADO en add_batch
+    // (no solo que la función pura devuelve false), que el rechazo es ATÓMICO
+    // (ninguna entrada del batch se aplica), y que la IP inyectada nunca entra.
+    // Aserta el CONTRATO de add_batch, NO la indulgencia de ipset (que varía
+    // v7.17 vs v7.19) -> invariante a la versión del parser.
+    auto config = make_blacklist_config(TEST_SET_NAME);
+    ASSERT_TRUE(wrapper_->create_set(config));
+
+    // Payload DEMOSTRADO inyectando 66.66.66.66 en Bookworm ipset v7.17.
+    const std::string evil = "x\"\nadd test_ipset 66.66.66.66 comment \"y";
+
+    std::vector<IPSetEntry> entries = {
+        IPSetEntry{"192.168.55.1"},               // entrada legítima
+        IPSetEntry{"192.168.55.2", 600, evil},    // comment malicioso (timeout+comment)
+    };
+
+    auto result = wrapper_->add_batch(TEST_SET_NAME, entries);
+
+    // (1) add_batch rechaza con el código dedicado
+    EXPECT_FALSE(result);
+    EXPECT_EQ(result.get_error().code, IPSetErrorCode::INVALID_COMMENT);
+
+    // (2) la IP inyectada NUNCA entró en el set
+    EXPECT_FALSE(wrapper_->test(TEST_SET_NAME, "66.66.66.66"))
+        << "INYECCION: 66.66.66.66 entro en el set via comment malicioso";
+
+    // (3) atomicidad: ni siquiera la entrada legítima se aplicó
+    //     (add_batch retorna ANTES de escribir el restore si hay failed_*)
+    EXPECT_EQ(wrapper_->get_entry_count(TEST_SET_NAME), 0u)
+        << "el batch debia rechazarse atomicamente, sin aplicar nada";
+}
+
+//===----------------------------------------------------------------------===//
 // Main
 //===----------------------------------------------------------------------===//
 

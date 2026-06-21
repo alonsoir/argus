@@ -338,6 +338,7 @@ if(BUILD_TESTS)
             tests/unit/test_config_loader_setname.cpp
             tests/unit/test_set_name_validator.cpp
             tests/unit/test_parse_autonomy_cidr_injection.cpp   # ← DAY190 CWE-78
+            tests/unit/test_comment_validator.cpp
             tests/unit/test_safe_exec.cpp
             tests/test_globals_stub.cpp
     )
