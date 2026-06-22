@@ -99,6 +99,7 @@ enum class IPSetErrorCode {
     BATCH_PARTIAL_FAILURE,
     SESSION_ERROR,
     INVALID_SET_NAME,
+    INVALID_COMMENT,
 };
 
 struct IPSetError {

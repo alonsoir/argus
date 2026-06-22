@@ -1,5 +1,5 @@
 # aRGus NDR — BACKLOG
-*Última actualización: DAY 190 — 2026-06-20*
+*Última actualización: DAY 191 — 2026-06-21*
 
 ---
 
@@ -85,6 +85,52 @@
 | **aRGus-seL4** | ⏳ No iniciada | Apéndice científico. Kernel seL4, libpcap. Branch independiente. |
 
 ---
+## 🆕 Entradas DAY 191 — H-2 NÚCLEO 2 CERRADA · H-2 COMPLETA (CWE-93 ipset comment injection)
+
+> Origen: rama `feature/day191-h2-nucleo2-comment`. Cierra el último foco de H-2 (auditoría de
+> seguridad del firewall abierta DAY 188). Con NÚCLEO 1 (`set_name`, DAY 189) + NÚCLEO 3 (retirada
+> de shell, DAY 189) + NÚCLEO 2 (`comment`, hoy), **H-2 queda CERRADA al 100%**.
+
+### ✅ HITO DAY 191 — H-2 NÚCLEO 2: comment de IPSetWrapper::add_batch CERRADO Y PROBADO
+
+- **Vulnerabilidad (medida, no supuesta):** el campo `comment` de `IPSetWrapper::add_batch` se
+  escribe en un stream `ipset restore` (mini-lenguaje por líneas). El código previo ESCAPABA `"`
+  pero NO rechazaba `\n`. Inyección DEMOSTRADA sobre Debian 12 Bookworm, **ipset v7.17**: el payload
+  `x"\nadd <set> 66.66.66.66 comment "y` (la `"` cierra el token, el `\n` abre línea nueva) inyectó
+  la entrada `66.66.66.66` en el set. La línea inyectada puede ser `flush`/`destroy` → vaciar la
+  blocklist entera del NDR con un comentario. **CWE-93** (no CWE-78: el shell ya se retiró en
+  NÚCLEO 3 — no hay inyección de comando de SO, solo del mini-lenguaje de restore).
+- **Lección transversal (justifica el diseño):** la indulgencia del parser de `ipset` DIFIERE entre
+  versiones — v7.17 abortó la comilla suelta; v7.19 la aceptó. La defensa vive en la frontera C++,
+  NUNCA delegada en `ipset`. Mismo principio que `is_valid_set_name` / `is_valid_ip_cidr`.
+- **Mitigación (allowlist fail-fast):** nuevo `include/firewall/comment_validator.hpp` —
+  `is_valid_comment()` rechaza control chars (`\n` `\r` `\t` `\0` …), `"` y `\`, longitud <= 255
+  (IPSET_MAX_COMMENT_SIZE). Cableado en `add_batch` con el patrón `failed_*` existente →
+  `IPSetErrorCode::INVALID_COMMENT`. El bloque de escape de comillas BORRADO: no funcionaba — `"` es
+  delimitador del tokenizer de restore, no carácter embebible; escapar dejaba basura.
+- **Tests (verdes):** 6 GTest puros `CommentValidator.*` (version-independientes, sin root) + canario
+  e2e `IPSetWrapperTest.CommentInjectionRejected` (kernel real, sudo): verifica rechazo
+  `INVALID_COMMENT`, IP inyectada AUSENTE, y atomicidad (`get_entry_count == 0` — el batch se rechaza
+  entero, ni la entrada legítima se aplica). `make firewall && make test-firewall` → **79/79 sin
+  root** (73 → 79). En el guest con `sudo`, tanda filtrada `CommentValidator.*` + canario → **7/7**.
+- **Conteo separado (no leer Skipped como hueco de cobertura):** 79 en `make test-firewall` (sin
+  root — el canario hace `GTEST_SKIP` limpio); 80 con el canario bajo `sudo`. El canario solo se
+  ejerce con privilegios; CI sin root lo salta por diseño.
+
+### Pregunta abierta (severidad del finding)
+- El fix es idéntico en cualquier caso, pero la SEVERIDAD redactable depende del origen del `comment`
+  en producción: si lleva algo derivado del tráfico observado (dominio, firma, hostname detectado) →
+  vector remoto; si es texto fijo generado por el agente → defensa en profundidad. Pendiente confirmar.
+
+### Flujo del día DAY 191 (lecciones, no repetir)
+- Script de endurecimiento de un solo uso (`tools/harden_comment_h2_day191.py`) → `.gitignore` del
+  REPO (no del componente; `tools/` cuelga de la raíz del repo, un nivel por encima del componente).
+- El cableado CMake de tests se ancla sobre el fichero de referencia en TODO el `CMakeLists`: el
+  `set(TEST_SOURCES ...)` con comentario de fin de línea despistó al detector que solo miraba el
+  bloque `add_executable`. Anclar sobre la referencia en el fichero completo, no en un sub-bloque.
+
+---
+
 ## 🆕 Entradas DAY 188-190 — Auditoría de deuda de seguridad (H-1/H-2/CWE-78)
 
 > Origen: rama `feature/day188-security-debt-audit`. DAY 188 abrió el frente de deuda de
@@ -115,8 +161,10 @@
   silenciado con `// nosemgrep: argus-shell-from-constructed-string` PEGADO al `return` (no huérfano
   — semgrep solo honra misma línea o inmediatamente anterior). Verificado: semgrep acotado al fichero
   = limpio. → DEBT-AUTONOMY-REACTOR-SAFEEXEC-002 (refactor a safe_exec, post-FEDER).
-- **H-2 SIGUE ABIERTA:** el commit cierra punto-1-autonomy, NO H-2 completa. Falta NÚCLEO 2 (campo
-  `comment` de `IPSetWrapper::add_batch`: escapa `"` pero NO rechaza `\n`). Ver prompt de continuidad DAY 191.
+- **H-2 CERRADA (DAY 191):** NÚCLEO 2 cerrado — campo `comment` de `IPSetWrapper::add_batch`.
+  Inyección CWE-93 (newline/quote) demostrada sobre Bookworm ipset v7.17 y bloqueada en
+  la frontera C++ (`is_valid_comment`, allowlist fail-fast). H-2 completa (NÚCLEOS 1+2+3).
+  Ver Entradas DAY 191.
 
 ### Flujo del día (lecciones, no repetir)
 - `make test-firewall` = SOLO ctest, NO compila. Para recoger tests nuevos: `make firewall &&

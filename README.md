@@ -36,27 +36,27 @@
 
 ---
 
-## Estado actual — DAY 190 (2026-06-20)
+## Estado actual — DAY 191 (2026-06-21)
 
 <!-- DAY-STATUS -->
 | Campo | Valor                                                                                                                                 |
 |---|---------------------------------------------------------------------------------------------------------------------------------------|
-| DAY | 190                                                                                                                                   |
-| Tag | v1.0.0-day190                                                                                                                         |
+| DAY | 191                                                                                                                                   |
+| Tag | v1.0.0-day191                                                                                                                         |
 | Branch | main                                                                                                                                  |
 | EMECAS++ OSS | ✅ verde — test-all + test-e2e-synthetic-full + test-e2e-synthetic-firewall                                                            |
 | EMECAS++ Enterprise | ✅ VERDE — 3 actos + Jenkins gate (DAY 167)                                                                                            |
 | Pipeline | 6/6 RUNNING                                                                                                                           |
 | Frente seguridad — H-1 Cypher | ✅ mitigada (prepared statements ADR-057, path ejecutado Kuzu)                                                                         |
 | Frente seguridad — H-2 ipset (NÚCLEO 1+3) | ✅ DAY 189 (`0db706c8`) — set_name validado + shell eliminado, safe_exec, 0 focos de shell                                             |
-| Frente seguridad — H-2 comment (NÚCLEO 2) | 🟡 PENDIENTE DAY 191 — `comment` escapa `"` pero NO rechaza `\n` en `add_batch`                                                       |
+| Frente seguridad — H-2 comment (NÚCLEO 2) | ✅ DAY 191 CERRADO — `comment` rechaza `\n`/`\"`/`\` fail-fast (`is_valid_comment`, allowlist). CWE-93. **H-2 COMPLETA** (NÚCLEOS 1+2+3) |
 | CWE-78 autonomy.whitelist_cidrs (punto 1) | ✅ DAY 190 CERRADO Y PROBADO — `parse_autonomy` valida CIDR fail-fast, `is_valid_ip_cidr` extraído, 5 tests verdes                     |
 | Auditoría firewall | ✅ DAY 190 — único `system()` vivo en scope (autonomy_reactor) mitigado en frontera; `nosemgrep` INTERINO justificado pegado al return |
 | PR #103 | ✅ mergeado a main (`395ee014`) · commit DAY 190 `68ab3eb9` (10 ficheros, 246+/61−)                                                    |
-| Tests firewall | ✅ 73/73 (nuevos: #49-#52 ParseAutonomyCidrInjection, #72 test_ip_cidr_validator)                                                      |
+| Tests firewall | ✅ 79/79 sin root (73→79, +6 `CommentValidator.*`) · canario `IPSetWrapperTest.CommentInjectionRejected` 7/7 con sudo en guest |
 | Consejo de Sabios | 8/8 — Claude, Grok, ChatGPT, DeepSeek, Qwen, Gemini, Kimi, Mistral                                                                    |
 | Arquitectura | ✅ ADR-046 v4 · ADR-052 v3.2 · ADR-051 v2.2 · ADR-055 v1 · ADR-057 v2 · ⏳ ADR-050/053/054                                              |
-| Próximo hito (DAY 191) | H-2 NÚCLEO 2 — medir `ipset restore` con `\n`/`"`/`\` en comment, rechazar `\n` fail-fast, test ataque + canario e2e → cerrar H-2     |
+| Próximo hito (DAY 192) | H-1/H-2 cerradas (auditoría de seguridad del firewall completa) — siguiente frente por definir |
 | Deudas abiertas DAY 190 | DEBT-AUTONOMY-REACTOR-SAFEEXEC-002 (P2 post-FEDER) · DEBT-AUDIT-VBOXSF-IO-001 (P2)                                                    |
 | Gate UEx/INCIBE | Datasets de valor científico (no deadline duro)                                                                                       |
 <!-- /DAY-STATUS -->
@@ -96,12 +96,20 @@
   - `make PROFILE=production all`: Gate ODR — ALL COMPONENTS BUILT ✅
   - `make argus-network-isolate-test`: dry-run PASSED ✅
 
+### Hitos DAY 191 🎉 — H-2 NÚCLEO 2 CERRADO · H-2 COMPLETA (CWE-93 ipset comment injection)
+- **H-2 NÚCLEO 2 CERRADO Y PROBADO** — campo `comment` de `IPSetWrapper::add_batch`. Inyección **CWE-93** (newline/quote) DEMOSTRADA sobre Debian 12 Bookworm **ipset v7.17**: el payload `x"\nadd <set> 66.66.66.66 comment "y` (la `"` cierra el token, el `\n` abre línea nueva) inyectó la entrada `66.66.66.66` en el set. La línea inyectada puede ser `flush`/`destroy` → vaciar la blocklist entera con un comentario. No es CWE-78: el shell ya se retiró en NÚCLEO 3.
+  - **Mitigación (allowlist fail-fast):** nuevo `include/firewall/comment_validator.hpp` — `is_valid_comment()` rechaza control chars (`\n` `\r` `\t` `\0`), `"` y `\`, longitud ≤255. Cableado en `add_batch` → `IPSetErrorCode::INVALID_COMMENT`. Bloque de escape de comillas BORRADO: no funcionaba — `"` es delimitador del tokenizer de restore, no carácter embebible.
+  - **Lección transversal:** la indulgencia del parser de `ipset` DIFIERE entre versiones (v7.17 abortó la comilla suelta, v7.19 la aceptó) → la defensa vive en la frontera C++, nunca delegada en `ipset`. Mismo principio que `is_valid_set_name` / `is_valid_ip_cidr`.
+  - **Tests:** 6 GTest puros `CommentValidator.*` (version-independientes, sin root) + canario e2e `IPSetWrapperTest.CommentInjectionRejected` (kernel real, sudo): rechazo `INVALID_COMMENT` + IP inyectada AUSENTE + atomicidad (`get_entry_count == 0`). `make firewall && make test-firewall` → **79/79 sin root** (73→79); canario **7/7 con sudo** en el guest.
+  - **H-2 COMPLETA** — NÚCLEO 1 (`set_name`, DAY 189) + NÚCLEO 3 (retirada de shell, DAY 189) + NÚCLEO 2 (`comment`, hoy). El frente de auditoría de seguridad del firewall (H-1/H-2) queda cerrado.
+  - **Pregunta abierta (severidad):** depende del origen del `comment` en producción — derivado del tráfico observado (vector remoto) vs texto fijo del agente (defensa en profundidad). El fix es idéntico en ambos casos.
+
 ### Hitos DAY 188-190 🎉 — Auditoría de deuda de seguridad del firewall
 - **H-2 NÚCLEO 1+3 CERRADO (DAY 189, `0db706c8`)** — `set_name` validado + shell eliminado de `ipset_wrapper`, `safe_exec`, 0 focos de shell.
 - **CWE-78 autonomy.whitelist_cidrs CERRADO Y PROBADO (DAY 190, `68ab3eb9`)** — `parse_autonomy` valida cada CIDR antes de aceptarlo (`throw` fail-fast). `is_valid_ip_cidr` extraído a `firewall/ip_cidr_validator.hpp` (behavior-preserving; `is_valid_ip` delega). `parse_autonomy` movido a `public` (testabilidad directa, patrón `parse_irp`).
   - **Tests:** 4 GTest de inyección (`;`, `\n`, `$()` → throw; CIDRs legítimos → no throw) + 1 standalone `test_ip_cidr_validator` (29 asserts). `make firewall && make test-firewall` → **73/73**, cero regresión.
   - **system() interino:** silenciado con `nosemgrep` PEGADO al `return` (justificado, no huérfano). semgrep acotado al fichero = limpio. → `DEBT-AUTONOMY-REACTOR-SAFEEXEC-002` (refactor safe_exec post-FEDER).
-  - **H-2 SIGUE ABIERTA** — falta NÚCLEO 2 (campo `comment` de `add_batch`: rechazar `\n`). Cierre en DAY 191.
+  - **H-2 NÚCLEO 2 CERRADO (DAY 191)** — `comment` de `add_batch` rechaza `\n`/`\"`/`\` fail-fast (`is_valid_comment`). CWE-93. **H-2 COMPLETA**. Ver Hitos DAY 191.
 - **EMECAS++ 3 actos verde · PR #103 → main `395ee014`.**
 - **Deudas nuevas:** `DEBT-AUTONOMY-REACTOR-SAFEEXEC-002` (P2 post-FEDER) · `DEBT-AUDIT-VBOXSF-IO-001` (P2, `make audit` estrangulado por I/O vboxsf — workaround: semgrep acotado por fichero).
 
@@ -694,6 +702,7 @@ make hardened-full   # destroy → up → provision → build → deploy → che
   - ✅ DAY 170: **community_id cross-sensor sellado (aRGus+Zeek+Suricata, seed 0, vs oráculo) · de-dup BACKLOG · Consejo 8/8 P1/P2/P3 · ADR-051/052 pendientes** 🎉
   - 🔜 DAY 172: **volcado contadores aRGus a fichero parseable (DEBT-COUNTER-DUMP-001) + ADR-051/052 borrador + DEBT-NEO4J-FLOW-KEY-001 (esquema Neo4j) + ADR-050 MITRE borrador + DEBT-ARGUSPP-SURICATA-001 (eve.json → correlation-engine)**
   - ✅ DAY 173: **ADR-052 v3.2 RATIFICADA (Consejo 8/8)** — Multi-node Flow Identity & Host↔Net · DEBTs P0→P3 de identidad de flujo · ADR-053 stub (JA3/JA4/BGP) · desbloquea DEBT-NEO4J-FLOW-KEY-001 🏛️
+  - ✅ DAY 191: **H-2 NÚCLEO 2 CERRADO — comment de add_batch rechaza \n/\"/\ (CWE-93) · is_valid_comment allowlist · 79/79 sin root + canario 7/7 sudo · H-2 COMPLETA** 🎉
   - ✅ DAY 190: **Auditoría de deuda de seguridad — CWE-78 autonomy.whitelist_cidrs CERRADO (parse_autonomy valida CIDR fail-fast) · H-2 NÚCLEO 1+3 (DAY 189) · is_valid_ip_cidr extraído · 73/73 tests · nosemgrep interino justificado · PR #103 → main 395ee014** 🎉
   - ✅ DAY 182: **Smoke B1 ejecutado — D1 (un grafo) + D2 (Kuzu stock, Vela NO) RESUELTAS POR MEDICIÓN · UNWIND batch ×55–61 · Fase 0 grafo verde · ADR-057 v2 · graph-engine como componente** 🎉
 

@@ -304,3 +304,8 @@ convert_ipset_wrapper_nucleo3.py
 verify_h2_mov2_setname.sh
 *.pre-day190
 update_docs_day190.py # tool de un solo uso, como convención
+tools/harden_comment_h2_day191.py
+*.pre-day191
+update_docs_day*.py
+tools/close_h2_backlog_day191.py
+tools/update_readme_day191.py

@@ -15,6 +15,7 @@
 
 #include "firewall/ipset_wrapper.hpp"
 #include "firewall/set_name_validator.hpp"
+#include "firewall/comment_validator.hpp"
 #include "firewall/ip_cidr_validator.hpp"
 #include "safe_exec.hpp"
 #include <cstring>
@@ -275,10 +276,17 @@ IPSetResult<void> IPSetWrapper::add_batch(
     // Validate and build restore input
     std::ostringstream restore_input;
     std::vector<std::string> failed_ips;
+    std::vector<std::string> failed_comments;
 
     for (const auto& entry : entries) {
         if (!is_valid_ip(entry.ip)) {
             failed_ips.push_back(entry.ip);
+            continue;
+        }
+
+        // DAY191 H-2 NÚCLEO 2: comment con \n/"/\ -> inyección en 'ipset restore' (CWE-93)
+        if (entry.comment && !is_valid_comment(*entry.comment)) {
+            failed_comments.push_back(entry.ip);
             continue;
         }
 
@@ -289,14 +297,10 @@ IPSetResult<void> IPSetWrapper::add_batch(
         }
 
         if (entry.comment) {
-            // Escape quotes in comment
-            std::string safe_comment = *entry.comment;
-            size_t pos = 0;
-            while ((pos = safe_comment.find('"', pos)) != std::string::npos) {
-                safe_comment.replace(pos, 1, "\\\"");
-                pos += 2;
-            }
-            restore_input << " comment \"" << safe_comment << "\"";
+            // DAY191 H-2: comment ya validado por is_valid_comment (sin \n/"/\).
+            // NO escapar: '"' es delimitador del tokenizer de 'ipset restore', no un
+            // carácter embebible -- escapar dejaría basura. Whitelist fail-fast arriba.
+            restore_input << " comment \"" << *entry.comment << "\"";
         }
 
         restore_input << "\n";
@@ -307,6 +311,14 @@ IPSetResult<void> IPSetWrapper::add_batch(
             IPSetErrorCode::INVALID_IP_FORMAT,
             "Some IPs have invalid format",
             failed_ips
+        });
+    }
+
+    if (!failed_comments.empty()) {
+        return IPSetResult<void>(IPSetError{
+            IPSetErrorCode::INVALID_COMMENT,
+            "Some comments rejected (CWE-93 ipset restore newline/quote injection)",
+            failed_comments
         });
     }
 
