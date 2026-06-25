@@ -85,6 +85,52 @@
 | **aRGus-seL4** | ⏳ No iniciada | Apéndice científico. Kernel seL4, libpcap. Branch independiente. |
 
 ---
+### DEBT-RANSOMWARE-ML-HEAD-INERT-001 — Cabeza ML del detector de ransomware no funcional en red
+**Severidad:** 🔴 P1 — pre-producción (NO pre-paper)
+**Estado:** ABIERTO — DAY 195 · pendiente de re-test instrumentado
+**Componente:** `ml-detector` (RandomForest embebido ransomware) + `forest_trees_inline.hpp`
+La cabeza ML del detector de ransomware es, sobre tráfico de red, no funcional por
+DEBT-RANSOMWARE-FEATURE-SEMANTICS-001: feature[1] "entropy" en producción = varianza
+de longitud de paquete / 1e5, mientras el entrenamiento usó entropía Shannon de fichero
+(espacio host, `files/processes_guaranteed.csv`). El importance 0.36 cae sobre el slot
+equivocado. El sistema detecta vía el path `fast` heurístico; en relays observados la
+nota `final` venía de `fast` por divergencia (`source=DETECTOR_SOURCE_DIVERGENCE`), con
+`ml` deprimido (~0.14). **Respaldo actual: memoria del operador, no captura** — elevar a
+dato con re-test instrumentado (LAB-RANSOMWARE-FIRETEST-SPEC).
+**Bloquea:** fiarse de cualquier plugin ensemble del ml-detector — la base es endeble,
+una mejora medida sobre ella no es fiable.
+**Decisión Alonso DAY 195:** terminar el circuito completo asumiendo la inferencia ML
+rota/incompleta; reentrenar los fundacionales DESPUÉS, contra ground truth de circuito
+(ransomware real EN RED, no más sintético host), no contra eval host.
+**Test de cierre:** detonación controlada (LAB-RANSOMWARE-FIRETEST-SPEC) → logs DUAL-SCORE
+del canal ransomware → %`source=DIVERGENCE` y distribución de `ml` medidos. Confirma o
+refuta la hipótesis de cabeza inerte con dato capturado.
+**Estimación:** 0.5 sesión (diagnóstico, post-circuito) + reentreno aparte.
+
+### DEBT-RANSOMWARE-MODEL-DESYNC-001 — Header compilado ≠ JSON del repo (DIRIMIDA DAY 195)
+**Severidad:** 🟡 P1 — pre-FEDER
+**Estado:** 🟢 DIRIMIDA por medición — DAY 195 · pendiente regenerar header
+**Componente:** `ml-detector/src/forest_trees_inline.hpp` + `complete_forest_100_trees.json`
+`forest_trees_inline.hpp` (header compilado) proviene del JSON sin normalizar de `830b0ec0`
+(raíz tree_0 = 0.9150086343, byte a byte). El JSON del repo fue reescrito en `5bbddd11`
+(normalización MinMaxScaler [0,1], raíz = 0.3815) sin regenerar el header.
+**DIRIMIDO DAY 195:** `5bbddd11` reentrenó (`model.fit(X)`→`model.fit(X_normalized)`), pero
+el reentreno fue estructuralmente equivalente a un reescalado — `MinMaxScaler` es afín
+monótona por feature, conserva todos los órdenes de partición; con `random_state=42` intacto
+reproduce el bosque exacto. Verificado: `feature[]` y `children_left[]` idénticos en los 100
+árboles entre `830b0ec0` y `5bbddd11`; solo cambian los valores de threshold. **Un único
+modelo, no dos.** Canónico = JSON normalizado de `5bbddd11`. `feature_importances` SON válidos
+para el modelo desplegado (invariantes bajo reescalado monótono); el veto de citar `model_info`
+en el paper se estrecha a *rendimiento* (por SEMANTICS-001), no a importancias.
+**Acción pendiente:** regenerar el header desde el JSON de `5bbddd11` con pipeline determinista
+y versionado; recuperar/reescribir y versionar `generate_cpp_forest.py` (vive solo dentro de
+`830b0ec0`) como parte del cierre. **Pre-requisito de seguridad (2º acto):** medir en qué escala
+llegan las features al nodo de ransomware en producción ANTES de regenerar — si el path no
+normaliza, regenerar a normalizado sin tocarlo rompería un binario hoy internamente consistente.
+**Test de cierre:** header regenerado byte-trazable desde JSON canónico + `generate_cpp_forest.py`
+versionado + escala de features de producción verificada coherente con el header regenerado.
+**Estimación:** 1 sesión (post-verificación de escala).
+
 ## 🆕 Entradas DAY 191 — H-2 NÚCLEO 2 CERRADA · H-2 COMPLETA (CWE-93 ipset comment injection)
 
 > Origen: rama `feature/day191-h2-nucleo2-comment`. Cierra el último foco de H-2 (auditoría de
@@ -3222,6 +3268,36 @@ Entregaremos datasets de cada fase para que la comunidad científica pueda verif
 que la mejora del modelo es consecuencia real de la señal añadida, no de overfitting
 ni de artefactos del proceso. La honestidad científica es no negociable.
 
+## 🔵 BACKLOG — Circuito completo (NO producción) · features restantes DAY 195+
+
+> **Encuadre (decisión Alonso DAY 195):** estas son las features que completan el CIRCUITO,
+> asumiendo explícitamente que NO es el pipeline de producción. Producción requiere además los
+> prerequisitos listados al final (ETCD HA, etc.). El circuito completo NO debe leerse como
+> "listo para producción". La inferencia ML de ransomware se asume rota/incompleta
+> (DEBT-RANSOMWARE-ML-HEAD-INERT-001) mientras se monta el circuito; el reentreno es posterior.
+> Objetivo del circuito: microscopio afinado (join por community_id, correlación Wazuh↔community_id)
+> que permita medir si una mejora del modelo es real antes de fiarse de plugins ensemble.
+
+| ID | Feature | Contrato/Dependencia | Estado |
+|----|---------|----------------------|--------|
+| BACKLOG-CIRCUIT-ADAPTERS-ZMQ-001 | Productores ZMQ en los adapters (por crear) bajo contrato ADAPTER-V1 | AdapterSpec v1 (DAY 169) | ⏳ |
+| BACKLOG-CIRCUIT-LZ-CONSUMERS-001 | Landing Zones del servidor: consumidores ZMQ que reciben los CSV de cada componente que cumple ADAPTER-V1 | ADAPTER-V1 | ⏳ |
+| BACKLOG-CIRCUIT-ARROW-MEDALLION-001 | Capa Arrow/C++ que transforma el CSV de cada LZ: CSV→AVRO (bronce) → PARQUET cohesionado (plata) → PARQUET unificado (oro) | Apache Iceberg gobierna las LZ (DAY 182) | ⏳ |
+| BACKLOG-CIRCUIT-KUZU-GOLD-001 | Conector Kuzu que toma el PARQUET unificado de ORO y crea/actualiza el grafo en cada update | DEBT-GRAPH-ENGINE-EXTRACTION-001 · graph-engine dueño del .kuzu | ⏳ |
+| BACKLOG-CIRCUIT-GRAPH-QUERY-CYPHER-001 | Dashboard de consulta al grafo en Cypher/DDL de Kuzu (MATCH/sentencias) — mínimo viable, sin dependencia externa | conector Kuzu sobre ORO | ⏳ |
+| BACKLOG-CIRCUIT-GRAPH-QUERY-NL-001 | Capa de lenguaje natural sobre el grafo, estilo rag-security, SOLO lado servidor admin (no público) | escalón sobre CYPHER-001; ADR de NL→plantilla (rechazo duro de ambigüedad, DAY 181) | ⏳ |
+
+> **Nota (separación de hitos):** CYPHER-001 es el mínimo viable y no depende de nada externo.
+> NL-001 es un escalón ambicioso y solo-admin — no debe quedar rehén del mínimo viable. Dos
+> entradas separadas a propósito. El NL→plantilla ya tiene rechazo duro de la ambigüedad decidido
+> por arbitraje (ADR-057 1ª vuelta, DAY 181): si la confianza no supera umbral, rechaza y pide
+> reformular, NO devuelve candidatos.
+
+**Prerequisitos de PRODUCCIÓN (NO incluidos en el circuito):**
+- DEBT-ETCD-HA-QUORUM-001 (etcd HA con quorum — P0 post-FEDER, OBLIGATORIO)
+- DEBT-RANSOMWARE-ML-HEAD-INERT-001 cerrada (reentreno contra ground truth de red)
+- Demás deudas pre-FEDER/pre-producción ya listadas en este BACKLOG.
+
 ---
 
 ## 🏛️ DAY 169 — Día de arquitectura
@@ -3739,15 +3815,23 @@ BACKLOG-EMECAS-VAULT-E2E-001:                   100% ✅  DAY 166 — cubierto p
 
 Un sistema con ACRL converge hacia cobertura de técnicas ATT&CK en tiempo polinomial. Un sistema estático no converge nunca.
 
+### LAB-RANSOMWARE-FIRETEST-SPEC — Diseño de laboratorio para validación de detección de ransomware en red
+**Estado:** Diseño cerrado · ejecución pendiente de hardware — DAY 195
+**Documento:** `docs/experiments/LAB-RANSOMWARE-FIRETEST-SPEC.md`
+**Componente:** laboratorio físico (víctimas x86 + sensor + tap) · cierra el paso de captura del ACRL
+Especificación de la prueba de fuego: detonar ransomware real en entorno aislado, capturar con el
+sniffer de aRGus, medir qué detecta el pipeline (fast path vs cabeza ML). Hipótesis H1 registrada
+con fecha (predicción Alonso: fast > ml). Separa dos experimentos ortogonales: E1 detección
+(víctimas x86) y E2 port ARM64 (sensor en RPi, ejecutable YA sobre tráfico benigno). Alimenta
+DEBT-RANSOMWARE-ML-HEAD-INERT-001 (diagnóstico) y el reentreno posterior.
+**Prereq:** BACKLOG-HARDWARE-FEDER-001 (víctimas x86 + switch con port mirroring + sensor).
+**Test de cierre:** detonación capturada → DUAL-SCORE medido → H1 confirmada o refutada.
+**Estimación:** semanas (contención seria + procedencia de muestras), post-circuito.
+
 ---
 
 *DAY 169 — 2026-05-29 · main @ 21642e87*
 *"Via Appia Quality — Un escudo que aprende de su propia sombra."*
-
-
-
-
-
 
 ## 📝 Notas del Consejo de Sabios — DAY 159 (8/8)
 

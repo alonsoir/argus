@@ -31,34 +31,37 @@
 
 ---
 
-✅ DAY 166: EMECAS++ 3 actos verdes y reproducibles. VaultProvider caché RCU confirmado. vault-fault-inject PASSED. Zero downtime demostrado. Branch `feature/day161-enterprise-crypto-integration` → mergeado a main. Tag `v1.0.0-day166`.
-**PRE-PRODUCTION: do not deploy in hospitals until ACRL (DEBT-PENTESTER-LOOP-001) is complete.**
+### Hitos DAY 195 🔍 — Forense del detector de ransomware + spec de laboratorio
+- **DEBT-RANSOMWARE-MODEL-DESYNC-001 DIRIMIDA por medición.** `5bbddd11` reentrenó pero de forma estructuralmente equivalente a un reescalado: `feature[]` y `children_left[]` idénticos en los 100 árboles entre `830b0ec0` y `5bbddd11`, solo cambian los thresholds (MinMaxScaler afín monótona, `random_state=42` intacto). **Un único modelo.** `feature_importances` válidos para el desplegado; el veto de `model_info` en el paper se estrecha a *rendimiento*, no a importancias. Acción pendiente: regenerar header desde el JSON canónico de `5bbddd11` (tras verificar la escala de features en producción).
+- **DEBT-RANSOMWARE-ML-HEAD-INERT-001 abierta (P1, pre-producción).** La cabeza ML de ransomware es no funcional en red por SEMANTICS-001 (feature[1] = varianza long. paquete/1e5 vs entropía Shannon de fichero). El sistema detecta vía `fast` path; `ml` deprimido (~0.14). Bloquea fiarse de plugins ensemble. Reentreno diferido a post-circuito, contra ground truth de red.
+- **LAB-RANSOMWARE-FIRETEST-SPEC creada** — `docs/experiments/LAB-RANSOMWARE-FIRETEST-SPEC.md`. Diseño de laboratorio para detonar ransomware real y medir detección. H1 registrada con fecha. E1 (detección, víctimas x86) y E2 (port ARM64, ejecutable ya) separados. Ejecución pendiente de hardware.
+- **Decisión Alonso DAY 195:** terminar el circuito completo (adapters/LZ/Arrow medallion/Kuzu/grafo) asumiendo la inferencia ML rota/incompleta. El reentreno es posterior, con microscopio afinado. "Es mejor saberlo que ignorarlo."
 
 ---
 
 ## Estado actual — DAY 191 (2026-06-21)
 
 <!-- DAY-STATUS -->
-| Campo | Valor                                                                                                                                 |
-|---|---------------------------------------------------------------------------------------------------------------------------------------|
-| DAY | 191                                                                                                                                   |
-| Tag | v1.0.0-day191                                                                                                                         |
-| Branch | main                                                                                                                                  |
-| EMECAS++ OSS | ✅ verde — test-all + test-e2e-synthetic-full + test-e2e-synthetic-firewall                                                            |
-| EMECAS++ Enterprise | ✅ VERDE — 3 actos + Jenkins gate (DAY 167)                                                                                            |
-| Pipeline | 6/6 RUNNING                                                                                                                           |
-| Frente seguridad — H-1 Cypher | ✅ mitigada (prepared statements ADR-057, path ejecutado Kuzu)                                                                         |
-| Frente seguridad — H-2 ipset (NÚCLEO 1+3) | ✅ DAY 189 (`0db706c8`) — set_name validado + shell eliminado, safe_exec, 0 focos de shell                                             |
+| Campo | Valor                                                                                                                                   |
+|---|-----------------------------------------------------------------------------------------------------------------------------------------|
+| DAY | 195                                                                                                                                     |
+| Tag | v1.0.0-day191                                                                                                                           |
+| Branch | main                                                                                                                                    |
+| EMECAS++ OSS | ✅ verde — test-all + test-e2e-synthetic-full + test-e2e-synthetic-firewall                                                              |
+| EMECAS++ Enterprise | ✅ VERDE — 3 actos + Jenkins gate (DAY 167)                                                                                              |
+| Pipeline | 6/6 RUNNING                                                                                                                             |
+| Frente seguridad — H-1 Cypher | ✅ mitigada (prepared statements ADR-057, path ejecutado Kuzu)                                                                           |
+| Frente seguridad — H-2 ipset (NÚCLEO 1+3) | ✅ DAY 189 (`0db706c8`) — set_name validado + shell eliminado, safe_exec, 0 focos de shell                                               |
 | Frente seguridad — H-2 comment (NÚCLEO 2) | ✅ DAY 191 CERRADO — `comment` rechaza `\n`/`\"`/`\` fail-fast (`is_valid_comment`, allowlist). CWE-93. **H-2 COMPLETA** (NÚCLEOS 1+2+3) |
-| CWE-78 autonomy.whitelist_cidrs (punto 1) | ✅ DAY 190 CERRADO Y PROBADO — `parse_autonomy` valida CIDR fail-fast, `is_valid_ip_cidr` extraído, 5 tests verdes                     |
-| Auditoría firewall | ✅ DAY 190 — único `system()` vivo en scope (autonomy_reactor) mitigado en frontera; `nosemgrep` INTERINO justificado pegado al return |
-| PR #103 | ✅ mergeado a main (`395ee014`) · commit DAY 190 `68ab3eb9` (10 ficheros, 246+/61−)                                                    |
-| Tests firewall | ✅ 79/79 sin root (73→79, +6 `CommentValidator.*`) · canario `IPSetWrapperTest.CommentInjectionRejected` 7/7 con sudo en guest |
-| Consejo de Sabios | 8/8 — Claude, Grok, ChatGPT, DeepSeek, Qwen, Gemini, Kimi, Mistral                                                                    |
-| Arquitectura | ✅ ADR-046 v4 · ADR-052 v3.2 · ADR-051 v2.2 · ADR-055 v1 · ADR-057 v2 · ⏳ ADR-050/053/054                                              |
-| Próximo hito (DAY 192) | H-1/H-2 cerradas (auditoría de seguridad del firewall completa) — siguiente frente por definir |
-| Deudas abiertas DAY 190 | DEBT-AUTONOMY-REACTOR-SAFEEXEC-002 (P2 post-FEDER) · DEBT-AUDIT-VBOXSF-IO-001 (P2)                                                    |
-| Gate UEx/INCIBE | Datasets de valor científico (no deadline duro)                                                                                       |
+| CWE-78 autonomy.whitelist_cidrs (punto 1) | ✅ DAY 190 CERRADO Y PROBADO — `parse_autonomy` valida CIDR fail-fast, `is_valid_ip_cidr` extraído, 5 tests verdes                       |
+| Auditoría firewall | ✅ DAY 190 — único `system()` vivo en scope (autonomy_reactor) mitigado en frontera; `nosemgrep` INTERINO justificado pegado al return   |
+| PR #103 | ✅ mergeado a main (`395ee014`) · commit DAY 190 `68ab3eb9` (10 ficheros, 246+/61−)                                                      |
+| Tests firewall | ✅ 79/79 sin root (73→79, +6 `CommentValidator.*`) · canario `IPSetWrapperTest.CommentInjectionRejected` 7/7 con sudo en guest           |
+| Consejo de Sabios | 8/8 — Claude, Grok, ChatGPT, DeepSeek, Qwen, Gemini, Kimi, Mistral                                                                      |
+| Arquitectura | ✅ ADR-046 v4 · ADR-052 v3.2 · ADR-051 v2.2 · ADR-055 v1 · ADR-057 v2 · ⏳ ADR-050/053/054                                                |
+| Próximo hito (DAY 192) | H-1/H-2 cerradas (auditoría de seguridad del firewall completa) — siguiente frente por definir                                          |
+| Deudas abiertas DAY 190 | DEBT-AUTONOMY-REACTOR-SAFEEXEC-002 (P2 post-FEDER) · DEBT-AUDIT-VBOXSF-IO-001 (P2)                                                      |
+| Gate UEx/INCIBE | Datasets de valor científico (no deadline duro)                                                                                         |
 <!-- /DAY-STATUS -->
 
 > **Nota DAY 187 — B4 cerrada: árbitro `build_row` BORRADO (Camino A).** `write_record` pasa
