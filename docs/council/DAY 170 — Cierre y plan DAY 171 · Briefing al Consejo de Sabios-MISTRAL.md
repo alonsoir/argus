@@ -134,7 +134,7 @@ Aquí tienes mi análisis estructurado sobre los hechos presentados y las respue
         - Eventos Wazuh con datos de red parciales (ej: solo IP destino).
 
 2. **Documentar el resultado**:
-    - Crear un informe en `docs/counsil/DAY 171 — E2E CommunityID.md` con:
+    - Crear un informe en `docs/council/DAY 171 — E2E CommunityID.md` con:
         - Configuraciones usadas (versiones de herramientas, seeds, etc.).
         - Resultados (éxitos/fallos).
         - Lecciones aprendidas.

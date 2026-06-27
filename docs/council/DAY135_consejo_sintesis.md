@@ -1,7 +1,7 @@
 Leyendo todos los documentos. Sintetizo:
 
 ```bash
-cat > docs/counsil/DAY135_consejo_sintesis.md << 'EOF'
+cat > docs/council/DAY135_consejo_sintesis.md << 'EOF'
 # Consejo de Sabios — Síntesis DAY 135
 *aRGus NDR · arXiv:2604.04952 · 29 Abril 2026*
 *Modelos presentes: Claude, ChatGPT, DeepSeek, Gemini, Kimi, Mistral, Qwen (7/8)*
