@@ -1,6 +1,6 @@
 Gracias por recordarme el ritual completo — lo tengo, y la convención de nombres está clara mirando el directorio: el patrón es un fichero raíz (p.ej. `DAY 169 — Cierre y plan DAY 170 · Briefing al Consejo de Sabios.md`) que es **el prompt** que lanzas a los 8, y luego van apareciendo los `-respuesta-{modelo}.md` y la `Síntesis`. Hoy escribimos el prompt de DAY 170.
 
-Te lo dejo en `docs/counsil/` siguiendo ese patrón exacto. Aquí está el documento — luego te doy el `create_file`/heredoc para escribirlo en disco:
+Te lo dejo en `docs/council/` siguiendo ese patrón exacto. Aquí está el documento — luego te doy el `create_file`/heredoc para escribirlo en disco:
 
 ---
 
@@ -18,7 +18,7 @@ Te lo dejo en `docs/counsil/` siguiendo ese patrón exacto. Aquí está el docum
 
 Resultado: los tres comparten **seed 0 explícito**. Diana E2E con respaldo real — Zeek 8.2.0 emite `1:IN7uqVpMWxpmuhQTowSQB2XEe0E=` idéntico al oráculo sobre el flujo Neris `147.32.84.165:1027 → 74.125.232.195:80`.
 
-**Higiene documental.** `docs/BACKLOG.md` estaba duplicado (5336 líneas, cuerpo entero re-pegado dentro de la nota Consejo DAY 149 por una operación manual en la sesión DAY 158, arrastrado 12 commits). De-duplicado a 2839 líneas, nota DAY 149 reparada, contenido único conservado (ADR-046 v3, HARDWARE-STORAGE-001), notas del Consejo no reinjertadas (viven aquí, en `docs/counsil/`). Diagnóstico y cierre en `DEBT-DOCS-BACKLOG-DEDUP-001`.
+**Higiene documental.** `docs/BACKLOG.md` estaba duplicado (5336 líneas, cuerpo entero re-pegado dentro de la nota Consejo DAY 149 por una operación manual en la sesión DAY 158, arrastrado 12 commits). De-duplicado a 2839 líneas, nota DAY 149 reparada, contenido único conservado (ADR-046 v3, HARDWARE-STORAGE-001), notas del Consejo no reinjertadas (viven aquí, en `docs/council/`). Diagnóstico y cierre en `DEBT-DOCS-BACKLOG-DEDUP-001`.
 
 **Deudas cerradas:** DEBT-DOCS-BACKLOG-DEDUP-001, DEBT-ZEEK-COMMUNITY-ID-PROVISION-001, DEBT-ARGUSPP-COMMUNITY-ID-001 (parte de red).
 

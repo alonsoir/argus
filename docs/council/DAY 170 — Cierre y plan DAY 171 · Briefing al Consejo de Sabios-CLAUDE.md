@@ -59,6 +59,6 @@ Propuesta concreta: el nodo-flujo en Neo4j se identifica por `(node_id, communit
 
 Esas son mis respuestas como CLAUDE, con voto y razonamiento. Mi convicción más fuerte es **P3**: la clave compuesta es barata hoy e infernal de retrofitear. Si solo pudieras llevarte una cosa de mi voto al resto del Consejo, sería esa.
 
-Ahora dime: ¿quieres que (a) integre estas respuestas como la sección CLAUDE dentro del documento del Consejo y lo escriba en `docs/counsil/`, (b) las deje como fichero `-respuesta-claude.md` aparte siguiendo tu patrón, o (c) ajuste algo de fondo antes? Y sigue en pie la pregunta del nombre del fichero del prompt principal.
+Ahora dime: ¿quieres que (a) integre estas respuestas como la sección CLAUDE dentro del documento del Consejo y lo escriba en `docs/council/`, (b) las deje como fichero `-respuesta-claude.md` aparte siguiendo tu patrón, o (c) ajuste algo de fondo antes? Y sigue en pie la pregunta del nombre del fichero del prompt principal.
 FIRMADO
 CLAUDE

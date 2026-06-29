@@ -15,7 +15,7 @@ Confirmo entonces las cuatro decisiones para la síntesis:
 
    *Una duda menor que resuelvo en la síntesis:* P1 y P3 podrían ir juntos (ambos tocan el modelo de grafo Neo4j) o separados. Los junto en ADR-051 porque comparten el esquema del grafo; si prefieres P1 en su propio ADR-052, dímelo. Por defecto: 050 (seed/health) + 051 (grafo: identidad + correlación host↔red).
 
-Voy a escribir la síntesis ahora. La dejo en `docs/counsil/` siguiendo tu patrón (`Síntesis - ...`). Te muestro el contenido aquí y te doy el heredoc para crearla en disco:
+Voy a escribir la síntesis ahora. La dejo en `docs/council/` siguiendo tu patrón (`Síntesis - ...`). Te muestro el contenido aquí y te doy el heredoc para crearla en disco:
 
 ---
 
@@ -78,7 +78,7 @@ community_id global colisiona en multi-nodo (misma 5-tupla en sedes distintas �
 
 Esa es la síntesis. Dos cosas antes de escribirla en disco:
 
-- **Nombres de fichero:** ¿`docs/counsil/Síntesis - Consejo de Sabios — DAY 170.md`? Sigue tu patrón (`Síntesis - CONSEJO DE SABIOS — DAY NNN.md`). Y mi respuesta individual ya está subida como `...-CLAUDE.md`, así que solo falta la síntesis.
+- **Nombres de fichero:** ¿`docs/council/Síntesis - Consejo de Sabios — DAY 170.md`? Sigue tu patrón (`Síntesis - CONSEJO DE SABIOS — DAY NNN.md`). Y mi respuesta individual ya está subida como `...-CLAUDE.md`, así que solo falta la síntesis.
 - **Los DEBT/ADR** los he nombrado provisionalmente. Cuando me pases el BACKLOG.md veré la numeración real de DEBTs existentes y ajusto IDs para no colisionar (lección del community_id: verificar antes de asignar).
 
-¿Escribo la síntesis en `docs/counsil/` con ese nombre, o ajustas algo del contenido primero? Y cuando digas, me pasas BACKLOG.md / README.md / prompt de continuidad y los actualizo con todo esto ya asimilado.
+¿Escribo la síntesis en `docs/council/` con ese nombre, o ajustas algo del contenido primero? Y cuando digas, me pasas BACKLOG.md / README.md / prompt de continuidad y los actualizo con todo esto ya asimilado.

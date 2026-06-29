@@ -103,9 +103,9 @@ Documentar la limitación conocida en un comentario: no detecta binarios fuera d
 
 ```bash
 # Guardar en el repo
-cp ~/Downloads/CONSEJO-DAY-132.md docs/counsil/CONSEJO-DAY-132.md
+cp ~/Downloads/CONSEJO-DAY-132.md docs/council/CONSEJO-DAY-132.md
 # Crear este fichero como:
-# docs/counsil/CONSEJO-DAY-132-respuesta-claude.md
+# docs/council/CONSEJO-DAY-132-respuesta-claude.md
 ```
 
 Descansa, Alonso. Hoy ha sido un buen día.

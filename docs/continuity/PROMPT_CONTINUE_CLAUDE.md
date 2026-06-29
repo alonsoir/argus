@@ -1,63 +1,47 @@
-# aRGus NDR — PROMPT DE CONTINUIDAD · DAY 196
+# PROMPT DE CONTINUIDAD — DAY 198 (continúa DAY 197)
 
-## ESTADO EMOCIONAL / CONTEXTO HUMANO
-DAY 195 cerró bien. Lo que entró como dos deudas "carta de defunción" salió
-como una reparación de header con el modelo intacto detrás. El método —tirar
-hacia atrás desde el binario— evitó escribir "dos modelos, reentreno" leyendo
-solo el script. Retomar en frío, sin prisa. Cuido a mis padres en paralelo;
-el hardware llega cuando llega y eso es el ritmo realista, no un retraso.
+## Invariantes
+- **medir, no votar** — verificar contra fichero, nunca contra memoria; trazar hacia atrás desde el binario.
+- **JSON is the law** · **bronce PRESERVA, gold DECIDE** · **Via Appia** (ledger inmutable durable y verificable; Kuzu = proyección reconstruible).
+- **EMECAS++** antes de cualquier merge · **PR obligatorio** (commit de doc no pasa el gate de build).
+- **Consejo de Sabios** (8 modelos) ratifica decisiones de arquitectura.
+- Un día, una batalla.
 
-## MÉTODO (invariante)
-"Medir, no votar." Tirar hacia atrás desde el binario. Toda afirmación contra
-fichero, nunca contra memoria. EMECAS++ antes de cualquier merge. PRs obligatorios.
+## Estado al cierre de DAY 197
+- **Plan ratificado por el Consejo (9/9 en forma del oro).** Documento consolidado: `PLAN — Circuito completo aguas abajo (DAY 196 → implementación).md` con dictamen DAY 197 + correcciones de coherencia incorporadas.
+- **Forma del oro CERRADA, unánime:** oro-como-ledger + join en Kuzu (write-time). El ledger es el ÚNICO oro; Kuzu y cualquier wide-table (incl. matriz de features ML, ADR-040) son **proyecciones co-iguales reconstruibles**. No hay caso para oro-como-join.
+- **Todas las preguntas abiertas del §10 cerradas** salvo 10.8 (parámetros de join adaptativo en el ledger — diferida con ticket, `DEBT-JOIN-CONFIDENCE-001`; hoy son deterministas en JSON → propiedad mantenida).
+- **Decisiones nuevas DAY 197:** (a) `flow_uid` es la PK del grafo, NO `community_id` (coherencia ADR-052); (b) `node_id`/`community_id`/`flow_start_window` deben ser columnas de primera clase del oro-ledger (hipótesis del proyecto: contribución por nodo); (c) Wazuh → contrato `host_domain_v1` separado, decisión sube antes del Eslabón 1; (d) timestamp se funde en la LZ, NO en el writer C++; (e) ZMQ handoff = PUSH/PULL, no PUB/SUB (at-least-once); (f) HMAC por-fila heredado al oro + firma del Parquet (replay coherente en el tiempo); (g) Andrés congelado con razón escrita (repo sin código).
+- **[MEDIDO DAY 197]** Conector PARQUET→Kuzu NO existe, ni prototipo → circuito verde cierra primero por **Camino 0** (`ifstream` bronce→Kuzu, ya existe). Tres caminos: Camino 0 (existe) / Flujo A (bronce→AVRO→Parquet oro, greenfield) / Flujo B (Parquet→Kuzu, greenfield). Criterio de cierre del medallón = **test de equivalencia Camino-0 ≡ Flujo-A+B**.
+- **[MEDIDO DAY 197]** `node_id` (col 3) y `community_id` (col 4) ya son columnas de primera clase en bronce. La dilución (si la hay) está en el converter Flujo A, no en el contrato bronce.
 
-## LO CERRADO AYER (DAY 195, por el dato)
-- DEBT-RANSOMWARE-MODEL-DESYNC-001 DIRIMIDA: 5bbddd11 reentrenó pero de forma
-  estructuralmente equivalente a un reescalado. feature[] y children_left[]
-  idénticos en los 100 árboles entre 830b0ec0 y 5bbddd11; solo cambian thresholds
-  (MinMaxScaler afín monótona, random_state=42 intacto). UN único modelo.
-  feature_importances VÁLIDOS para el desplegado. Veto de model_info en el paper
-  se estrecha a RENDIMIENTO, no a importancias.
-- DEBT-RANSOMWARE-ML-HEAD-INERT-001 abierta (P1, pre-producción): cabeza ML de
-  ransomware no funcional en red por SEMANTICS-001. Detecta vía fast path; ml ~0.14.
-- LAB-RANSOMWARE-FIRETEST-SPEC creada en docs/experiments/. Diseño cerrado,
-  ejecución pendiente de hardware. H1 registrada con fecha.
+## Decisión VIVA para el Consejo
+Ninguna abierta. 10.8 diferida con ticket. El plan está listo para cerrar como ADR.
 
-## PENDIENTE DE AYER ANTES DE ABRIR FEATURE
-1. Pegar las inserciones de BACKLOG (3) + README (estado DAY 195) que quedaron
-   redactadas. Revisar git diff completo. NO usar script Python — edición a mano,
-   el diff es la red de seguridad.
-2. git add de LAB-RANSOMWARE-FIRETEST-SPEC.md (dos capas: staged + modificado).
-3. Commit en day194/ransomware-provenance-desync, push, y decidir merge a main.
+## Acciones DAY 198 (en orden)
+1. **[verif P0 — §8.5]** ¿`node_id`/`community_id`/`flow_start_window` propagan al oro como columnas, o solo alimentan `flow_uid`? Decidir si `flow_start_window` se materializa explícito (recomendado) o se re-deriva de cols 5-6.
+```bash
+   grep -nE 'node_id|community_id|flow_start_window|flow_start_sec|flow_start_nano' \
+     ml-detector/include/correlation_writer.hpp
+```
+2. **[verif P0 — §8.6]** ¿`parse_and_verify` acepta `-1` en TODAS las numéricas (5-6, 9-10, 14-16) sin descartar fila? Si rechaza negativos como "ilegibles", el segundo centinela rompe el circuito en silencio.
+3. **[verif §8.2]** writer y reader resuelven al mismo path (grep config_loader/zmq_handler/main.cpp).
+4. Con las 3 verificaciones verdes → **cerrar el ADR del circuito** con todo lo decidido y pasarlo al Consejo para ratificación final.
+5. → **Eslabón 0:** config bronce a JSON (`bronze_root` + patrón naming, calcado de `csv_writer` `config_loader.cpp:455`) + watcher `inotify`/`IN_CLOSE_WRITE` + escritura atómica `.tmp`→rename + cierre por tiempo absoluto. Cierra `DEBT-CONFIG-BRONZE-HARDCODE-001` + `DEBT-CIRCUIT-BRONZE-ROTATION-FOLLOW-001` (ambas P0).
 
-## PRIMER ACTO DAY 196 (decisión de arranque del circuito)
-Abrir rama nueva para la PRIMERA feature del circuito completo. Dos candidatas,
-ambas avanzan sin hardware peligroso:
-- BACKLOG-CIRCUIT-ADAPTERS-ZMQ-001: productores ZMQ en los adapters bajo ADAPTER-V1.
-- E2 / port ARM64 (LAB-RANSOMWARE-FIRETEST-SPEC §9): compilar aRGus a ARM64,
-  correr el sniffer en una RPi sobre tráfico BENIGNO. Deja el sensor probado para
-  cuando llegue el laboratorio. Trabajo de circuito, cero malware.
+## Deudas abiertas (prioridad)
+- **P0:** `DEBT-CIRCUIT-BRONZE-ROTATION-FOLLOW-001`, `DEBT-CONFIG-BRONZE-HARDCODE-001`, `DEBT-GOLD-NODE-DIMENSION-001`, `DEBT-PARSE-VERIFY-SENTINEL-001`
+- **P1:** `DEBT-HOST-DOMAIN-CONTRACT-001` (pre-Eslabón 1), `DEBT-PARQUET-KUZU-CONNECTOR-001`, `DEBT-GOLD-INTEGRITY-HMAC-001`, `DEBT-ZMQ-DELIVERY-GUARANTEE-001`, `DEBT-CIRCUIT-FS-DROP-001`
+- **P2:** `DEBT-ADAPTERSPEC-ENVELOPE-001`, `DEBT-DOCS-MEDALLION-DUALITY-001`, `DEBT-JOIN-CONFIDENCE-001`
+- **P3:** higiene `backups/`/`.backup` → `git rm --cached` / `.gitignore`
 
-## ENCUADRE DEL CIRCUITO (decisión Alonso DAY 195)
-Terminar el circuito completo —adapters, LZ con consumidores ZMQ, capa Arrow/C++
-CSV→AVRO(bronce)→PARQUET(plata)→PARQUET unificado(oro), conector Kuzu sobre oro,
-dashboard de consulta al grafo— ASUMIENDO la inferencia ML rota/incompleta. NO es
-el pipeline de producción (producción requiere ETCD HA + reentreno + resto de
-deudas pre-FEDER). Objetivo: microscopio afinado (join community_id, correlación
-Wazuh↔community_id) para poder medir si una mejora del modelo es real antes de
-fiarse de plugins ensemble. El reentreno (ransomware real EN RED, no sintético
-host) es POSTERIOR al circuito.
+## Punteros
+- `PLAN — Circuito completo aguas abajo (DAY 196 → implementación).md` (consolidado DAY 197, §10 = decisiones cerradas)
+- `docs/engineering_decisions/AdapterSpec v1` (enmienda v1.1 pendiente: envelope inexistente + PUSH/PULL)
+- ADR-046 v4, ADR-051 (parity gate), **ADR-052 (flow_uid identidad multi-nodo)**, ADR-057 (Kuzu / bitemporalidad)
+- `ml-detector/include/correlation_writer.hpp` (contrato 19 cols; node_id=3, community_id=4)
+- `correlation-engine/src/main.cpp` (Camino 0: ifstream → parse_and_verify → flow_uid → Kuzu)
+- `scripts/parquet/` (RAG-127, capa DISTINTA — no tocar para el circuito)
 
-## NO HACER
-- No citar model_info como RENDIMIENTO de producción en el paper (importancias sí).
-- No fiarse de plugins ensemble del ml-detector hasta cerrar ML-HEAD-INERT-001.
-- No detonar nada sin la contención seria de LAB-RANSOMWARE-FIRETEST-SPEC §4.
-- No reentrenar los fundacionales antes de tener el microscopio (ground truth de
-  circuito), ni contra el eval host que ya sabemos que no transfiere.
-- No comprar Raspberry Pi como VÍCTIMA: el malware x86 no corre en ARM. La RPi es
-  SENSOR (E2). Víctimas = x86 pequeñas.
-
-## REPO
-/Users/aironman/CLionProjects/test-zeromq-docker (remote github.com/alonsoir/argus)
-Rama actual: day194/ransomware-provenance-desync
-Paper: arXiv:2604.04952, Draft v2 (12 correcciones, 22 jun).
+## Rama
+`day196/circuit-adapters-zmq`. El plan-doc es el commit de apertura (no pasa gate de build, va con la implementación del Eslabón 0 en el mismo PR). Confirmar que `day194/ransomware-provenance-desync` está cerrada antes de abrir.

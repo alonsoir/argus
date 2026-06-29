@@ -78,7 +78,7 @@ content = """# SÍNTESIS — CONSEJO DE SABIOS — DAY 161
 ## Nueva deuda abierta
 - DEBT-WIRE-CRYPTO-INTEGRATION-TEST-001: P2, post-Suricata
 """
-with open('docs/counsil/síntesis - CONSEJO DE SABIOS — DAY 161.md', 'w') as f:
+with open('docs/council/síntesis - CONSEJO DE SABIOS — DAY 161.md', 'w') as f:
     f.write(content)
 print("OK")
 PYEOF

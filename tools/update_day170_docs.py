@@ -200,7 +200,7 @@ README_MILESTONE_NEW = (
 PROMPT_CONTINUE_NEW = r"""DAY 171 — aRGus NDR (arXiv:2604.04952)
 
 Estado: rama feature/day170-community-id-protobuf @ af9cd812 (community_id cross-sensor + de-dup BACKLOG + provisión Zeek/Suricata). Tag estable v1.0.0-day166.
-DAY 170 cerrado: community_id sellado en aRGus(nativo)+Zeek+Suricata con seed 0 explícito; BACKLOG de-duplicado (5336->2839); ritual del Consejo completado (síntesis en docs/counsil/). Consenso 8/8 en P1/P2/P3.
+DAY 170 cerrado: community_id sellado en aRGus(nativo)+Zeek+Suricata con seed 0 explícito; BACKLOG de-duplicado (5336->2839); ritual del Consejo completado (síntesis en docs/council/). Consenso 8/8 en P1/P2/P3.
 
 CONTEXTO DE LOS ÚLTIMOS DÍAS:
 DAY 167: NTP/chrony (P0). correlation-engine scaffold (ADR-048 F2). Jenkins gate make emecas++.
@@ -209,7 +209,7 @@ DAY 169: Día de arquitectura. ADR-046 v4 + AdapterSpec v1 + separación de plan
 DAY 170: community_id cross-sensor (3 sensores, seed 0, byte a byte vs oráculo pycommunityid; diana 1:IN7uqVpMWxpmuhQTowSQB2XEe0E=). De-dup BACKLOG (DEBT-DOCS-BACKLOG-DEDUP-001). Consejo 8/8.
 
 ═══════════════════════════════════════════════════════════════════════════════
-CONSENSO DEL CONSEJO DAY 170 — base de DAY 171 (síntesis en docs/counsil/)
+CONSENSO DEL CONSEJO DAY 170 — base de DAY 171 (síntesis en docs/council/)
 ═══════════════════════════════════════════════════════════════════════════════
 P1 (Wazuh <-> red): (A)+(C). Doble arista en Neo4j. flujo<->flujo por community_id (determinista);
    host<->flujo por host_id/agent_id CANÓNICO (nunca IP cruda) + ventana temporal MÁS LAXA y
