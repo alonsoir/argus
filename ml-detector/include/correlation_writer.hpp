@@ -21,8 +21,11 @@
 //
 // REGLA DE ESCRITURA: si community_id == "" (ICMP/no-IP diferido), el HOOK no llama
 // a write_record (sin clave de join no sirve al grafo). El writer queda puro.
-// ESCRITURA: append no-atómico (igual patrón que CsvEventWriter). El lector aguas
-// abajo valida HMAC por fila y descarta la última línea si está incompleta.
+// ESCRITURA (DAY 203): segmentada + atomica. Cada segmento se escribe a
+// <basename>.csv.tmp y se cierra+renombra a <basename>.csv al rotar (por tiempo
+// absoluto desde apertura, config correlation_writer.rotation_seconds, o por
+// max_events_per_file). El lector aguas abajo (BronzeDirWatcher, IN_MOVED_TO)
+// SOLO ve el nombre final tras el rename -- nunca una linea a medias.
 #pragma once
 
 #include <string>
@@ -31,6 +34,7 @@
 #include <mutex>
 #include <atomic>
 #include <memory>
+#include <chrono>
 
 #include <spdlog/spdlog.h>
 #include <network_security.pb.h>
@@ -46,6 +50,8 @@ struct CorrelationWriterConfig {
     std::string base_dir;                 // p.ej. /vagrant/logs/correlation/argus
     std::string hmac_key_hex;             // 64-char hex (32 bytes), igual que CsvEventWriter
     size_t      max_events_per_file = 10000;
+    int         rotation_seconds    = 30;  // DAY 203 -- cierre por tiempo absoluto desde
+                                            // apertura (no desde ultima escritura).
 };
 
 class CorrelationWriter {
@@ -75,11 +81,18 @@ private:
     // build_row / compute_hmac / fmt_double / csv_string: RETIRADOS DAY187
     // (Camino A). Serialización movida a libcorrelation_v1 (serialize, NOTARIO P3).
 
-    void ensure_open();
-    void rotate_if_needed();   // mutex_ held by caller
-    void rotate_locked();      // mutex_ held by caller
+    // DAY 203 -- segmentacion + escritura atomica (DEBT-CIRCUIT-BRONZE-ROTATION-FOLLOW-001):
+    // cada segmento se abre como <basename>.csv.tmp en modo trunc (fichero nuevo,
+    // nunca append cross-segmento) y al rotar se cierra y se renombra atomicamente
+    // (mismo filesystem) a <basename>.csv. El reader SOLO ve el nombre final tras
+    // el rename -- nunca un fichero a medio escribir.
+    void ensure_open();              // mutex_ held by caller
+    void rotate_if_needed();         // mutex_ held by caller
+    void rotate_locked();            // mutex_ held by caller
+    void finalize_segment_locked();  // cierra + rename .tmp->final si hay segmento abierto
     std::string get_date_string() const;
-    std::string get_file_path(const std::string& date) const;
+    std::string get_time_string() const;   // HHMMSS, hora de apertura del segmento
+    std::string get_basename() const;      // <date>-<HHMMSS>, fijado al abrir el segmento
 
     CorrelationWriterConfig config_;
     std::shared_ptr<spdlog::logger> logger_;
@@ -87,8 +100,10 @@ private:
 
     mutable std::mutex mutex_;
     std::ofstream current_file_;
-    std::string current_date_;
-    std::string current_file_path_;
+    std::string current_basename_;
+    std::string current_tmp_path_;     // <base_dir>/<basename>.csv.tmp
+    std::string current_final_path_;   // <base_dir>/<basename>.csv
+    std::chrono::steady_clock::time_point segment_opened_at_;
 
     std::atomic<uint64_t> records_written_{0};
     std::atomic<uint64_t> records_skipped_{0};

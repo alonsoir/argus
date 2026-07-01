@@ -458,11 +458,13 @@ DetectorConfig ConfigLoader::load() {
     }
 
     // ========================================
-    // Correlation Writer (bronce correlation_v1) — DAY 201, DEBT-CONFIG-BRONZE-HARDCODE-001
+    // Correlation Writer (bronce correlation_v1) — DAY 201/203
+    // DEBT-CONFIG-BRONZE-HARDCODE-001 + DEBT-CIRCUIT-BRONZE-ROTATION-FOLLOW-001
     // ========================================
     {
         auto& corr = json_["correlation_writer"];
         config.correlation_writer.base_dir = get_required<std::string>(corr, "base_dir", "correlation_writer");
+        config.correlation_writer.rotation_seconds = get_required<int>(corr, "rotation_seconds", "correlation_writer");
     }
 
     // ========================================
