@@ -20,7 +20,10 @@
 #include "correlation_engine/logging_graph_sink.hpp"
 #include "correlation_engine/kuzu_graph_sink.hpp"
 #include "correlation_engine/config_loader.hpp"
+#include "correlation_engine/bronze_dir_watcher.hpp"
 #include <ctime>
+#include <filesystem>
+#include <algorithm>
 
 // spdlog — disponible en el sistema (instalado en all-dependencies)
 #include <spdlog/spdlog.h>
@@ -71,29 +74,6 @@ int main(int argc, char* argv[]) {
         const char* env = std::getenv("ARGUS_BRONZE_CSV");
         bronze_path = env ? env : "";
     }
-    // DAY 202: sin --bronze/env explicitos, derivar desde config JSON
-    // (DEBT-CONFIG-BRONZE-HARDCODE-001, mitad reader). --bronze/env conservan
-    // prioridad -- necesarios para tests que apuntan a fechas concretas.
-    if (bronze_path.empty()) {
-        try {
-            auto cfg = ac::load_correlation_engine_config(config_path);
-            std::time_t now = std::time(nullptr);
-            std::tm tm{};
-            localtime_r(&now, &tm);
-            char buf[256];
-            std::strftime(buf, sizeof(buf), cfg.bronze.file_pattern.c_str(), &tm);
-            bronze_path = cfg.bronze.root_dir + "/" + buf;
-            spdlog::info("[CONSUMER] bronce resuelto desde config JSON ({}): {}",
-                         config_path, bronze_path);
-        } catch (const std::exception& e) {
-            spdlog::warn("[CONSUMER] config JSON no disponible ({}): {}", config_path, e.what());
-        }
-    }
-    if (bronze_path.empty()) {
-        spdlog::critical("[CONSUMER] sin ruta de bronce "
-                         "(--bronze <path>, ARGUS_BRONZE_CSV, o --config <json>)");
-        return EXIT_FAILURE;
-    }
 
     const char* key_hex = std::getenv("ARGUS_BRONZE_HMAC_KEY_HEX");
     if (!key_hex || std::string(key_hex).size() != 64) {
@@ -124,41 +104,108 @@ int main(int argc, char* argv[]) {
     }
 
     uint64_t total = 0, discarded = 0;
-    std::ifstream in(bronze_path);
-    if (!in) {
-        spdlog::critical("[CONSUMER] no se puede abrir bronce: {}", bronze_path);
-        return EXIT_FAILURE;
-    }
-    spdlog::info("[CONSUMER] bronce={} follow={}", bronze_path, follow);
 
-    auto drain = [&]() {
+    // Segmento completo (bronce inmutable, DAY 203) -> se lee entero, sin
+    // offset. Compartido por el modo directorio (replay + callback del watcher).
+    auto process_segment = [&](const std::string& path) {
+        std::ifstream in(path);
+        if (!in) {
+            spdlog::warn("[CONSUMER] no se puede abrir segmento: {}", path);
+            return;
+        }
         std::string line;
+        uint64_t seg_total = 0, seg_discarded = 0;
         while (std::getline(in, line)) {
             if (line.empty()) continue;
             auto rec = ac::parse_and_verify(line, hmac_key);
-            if (!rec) { ++discarded; continue; }  // invariante: corrupta antes del grafo
+            if (!rec) { ++seg_discarded; continue; }
             const uint64_t window = ac::window_micros(rec->flow_start_sec, rec->flow_start_nano);
             const std::string fuid = ac::compute_flow_uid(rec->node_id, rec->community_id, window);
             sink->write(*rec, fuid);
-            ++total;
+            ++seg_total;
         }
+        total += seg_total;
+        discarded += seg_discarded;
+        spdlog::info("[CONSUMER] segmento {}: {} materializados, {} descartados",
+                     path, seg_total, seg_discarded);
     };
 
-    drain();
-    if (follow) {
-        spdlog::info("[CONSUMER] --follow: tail-poll cada 1s (Ctrl-C para salir)");
-        while (true) {
-            std::this_thread::sleep_for(std::chrono::seconds(1));
-            in.clear();   // limpia EOF para releer cola nueva (append no-atomico del writer)
-            drain();
+    if (!bronze_path.empty()) {
+        // Modo LEGACY: fichero explicito (--bronze/ARGUS_BRONZE_CSV), compatibilidad
+        // con tests/scripts existentes. Tail-poll clasico -- este path NO participa
+        // de la segmentacion DAY 203 (el llamador controla el fichero directamente).
+        std::ifstream in(bronze_path);
+        if (!in) {
+            spdlog::critical("[CONSUMER] no se puede abrir bronce: {}", bronze_path);
+            return EXIT_FAILURE;
+        }
+        spdlog::info("[CONSUMER] modo legacy (fichero explicito): bronce={} follow={}",
+                     bronze_path, follow);
+
+        auto drain = [&]() {
+            std::string line;
+            while (std::getline(in, line)) {
+                if (line.empty()) continue;
+                auto rec = ac::parse_and_verify(line, hmac_key);
+                if (!rec) { ++discarded; continue; }
+                const uint64_t window = ac::window_micros(rec->flow_start_sec, rec->flow_start_nano);
+                const std::string fuid = ac::compute_flow_uid(rec->node_id, rec->community_id, window);
+                sink->write(*rec, fuid);
+                ++total;
+            }
+        };
+
+        drain();
+        if (follow) {
+            spdlog::info("[CONSUMER] --follow: tail-poll cada 1s (Ctrl-C para salir)");
+            while (true) {
+                std::this_thread::sleep_for(std::chrono::seconds(1));
+                in.clear();   // limpia EOF para releer cola nueva (fichero explicito, sin rotacion)
+                drain();
+            }
+        }
+    } else {
+        // Modo DIRECTORIO (DAY 203, DEBT-CIRCUIT-BRONZE-ROTATION-FOLLOW-001):
+        // sin fichero explicito, vigila root_dir del config JSON. Los segmentos
+        // son inmutables desde que aparecen (writer: .tmp -> rename atomico) --
+        // se leen enteros, sin offset, sin riesgo de linea a medias.
+        std::string root_dir;
+        try {
+            auto cfg = ac::load_correlation_engine_config(config_path);
+            root_dir = cfg.bronze.root_dir;
+        } catch (const std::exception& e) {
+            spdlog::critical("[CONSUMER] sin ruta de bronce -- ni --bronze/ARGUS_BRONZE_CSV "
+                             "ni config JSON valido ({}): {}", config_path, e.what());
+            return EXIT_FAILURE;
+        }
+        spdlog::info("[CONSUMER] modo directorio: root_dir={} follow={}", root_dir, follow);
+
+        // Replay: segmentos ya cerrados presentes al arrancar, orden cronologico
+        // natural (nombre = fecha+hora de apertura -> std::sort basta).
+        std::vector<std::string> existing;
+        if (std::filesystem::is_directory(root_dir)) {
+            for (const auto& entry : std::filesystem::directory_iterator(root_dir)) {
+                if (entry.path().extension() == ".csv") {
+                    existing.push_back(entry.path().string());
+                }
+            }
+            std::sort(existing.begin(), existing.end());
+        }
+        for (const auto& path : existing) process_segment(path);
+
+        if (follow) {
+            spdlog::info("[CONSUMER] --follow: vigilando {} (inotify IN_MOVED_TO, Ctrl-C para salir)",
+                        root_dir);
+            ac::BronzeDirWatcher watcher(root_dir, process_segment);
+            watcher.run();  // bloqueante
         }
     }
 
     const auto fr = sink->flush();
-    spdlog::info("[CONSUMER] one-shot fin: {} materializados, {} descartados", total, discarded);
+    spdlog::info("[CONSUMER] fin: {} materializados, {} descartados", total, discarded);
     if (!fr) {
         // Fallo de durabilidad: filas aceptadas por write() pero NO committeadas.
-        // EXIT_FAILURE para que el harness E2E no lea 'ok' sobre datos perdidos (eje punto 3).
+        // EXIT_FAILURE para que el harness E2E no lea 'ok' sobre datos perdidos.
         spdlog::error("[CONSUMER] flush final FALLO: {} filas sin materializar (NO durable)",
                       fr.rows_pending);
         return EXIT_FAILURE;

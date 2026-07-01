@@ -419,7 +419,8 @@
     "max_events_per_file": 10000
   },
   "correlation_writer": {
-    "base_dir": "/vagrant/logs/correlation/argus"
+    "base_dir": "/vagrant/logs/correlation/argus",
+    "rotation_seconds": 30
   },
   "scoring": {
     "divergence_warn_threshold": 0.3,

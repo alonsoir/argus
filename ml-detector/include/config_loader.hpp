@@ -309,9 +309,11 @@ struct DetectorConfig {
         int max_events_per_file;
     } csv_writer;
 
-    // Correlation Writer (bronce correlation_v1) — DAY 201, DEBT-CONFIG-BRONZE-HARDCODE-001
+    // Correlation Writer (bronce correlation_v1) — DAY 201/203
+    // DEBT-CONFIG-BRONZE-HARDCODE-001 + DEBT-CIRCUIT-BRONZE-ROTATION-FOLLOW-001
     struct {
         std::string base_dir;
+        int rotation_seconds;
     } correlation_writer;
 
     // Scoring thresholds (dual-score architecture)

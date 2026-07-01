@@ -4381,6 +4381,26 @@ fallan en semanas/meses por agotamiento de ciclos de escritura NAND.
 **Test de cierre:** nodo con NVMe desplegado + pipeline corriendo 72h
   sin degradación de escritura medible.
 
+### DEBT-CORRELATION-ROUNDTRIP-ORPHANED-001 — test_correlation_roundtrip sin add_test
+**Severidad:** 🟡 P1 — laguna de cobertura preexistente, expuesta DAY 203
+**Estado:** ABIERTO — DAY 203
+**Componente:** `ml-detector/tests/integration/test_correlation_roundtrip.cpp` + `ml-detector/tests/CMakeLists.txt`
+`test_correlation_roundtrip.cpp` existe como fuente pero NO está registrado con
+`add_test` en ningún CMakeLists — ni `make test-all` ni `test-e2e-synthetic-full`
+lo ejecutan. Descubierto DAY 203 al verificar por qué EMECAS++ pasó verde tras
+el cambio de segmentación .tmp->rename del bronce (DEBT-CIRCUIT-BRONZE-ROTATION-
+FOLLOW-001): el verde era legítimo respecto al código nuevo, pero reveló que
+`parse_and_verify` contra el contrato `correlation_v1` real no tiene ningún
+test automatizado corriendo en CI desde que este fichero se creó. No preexistía
+como deuda documentada porque nadie lo había verificado hasta ahora.
+**Test de cierre:** `add_executable(test_correlation_roundtrip ...)` +
+`add_test(...)` en `ml-detector/tests/CMakeLists.txt`; verificar que corre
+dentro de `make test-all` o `test-components`; PASSED contra el formato de
+bronce segmentado (DAY 203).
+**Estimación:** 0.5-1 sesión.
+
+---
+
 ## 🆕 Entradas DAY 200 — Reconciliación BACKLOG.md ↔ deudas del circuito (ADR-058 §6)
 
 > Origen: TAREA 1 bloqueante pre-Eslabón 0. Medido DAY 199 (grep -c contra el fichero):

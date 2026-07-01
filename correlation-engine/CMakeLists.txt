@@ -42,7 +42,8 @@ add_library(correlation_engine STATIC
         src/correlation_reader.cpp
         src/logging_graph_sink.cpp
         src/kuzu_graph_sink.cpp
-        src/config_loader.cpp)
+        src/config_loader.cpp
+        src/bronze_dir_watcher.cpp)
 target_include_directories(correlation_engine PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 target_include_directories(correlation_engine PUBLIC ${LIBSODIUM_INCLUDE_DIRS})
 target_include_directories(correlation_engine PRIVATE ${KUZU_INC})  # solo el .cpp incluye kuzu.hpp

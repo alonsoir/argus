@@ -6,6 +6,7 @@
 #include "correlation_writer.hpp"
 
 #include <filesystem>
+#include <system_error>
 #include <sstream>
 #include <iomanip>
 #include <stdexcept>
@@ -54,12 +55,13 @@ CorrelationWriter::CorrelationWriter(const CorrelationWriterConfig& config,
     : config_(config), logger_(std::move(logger)) {
     hmac_key_ = hex_decode(config_.hmac_key_hex);
     fs::create_directories(config_.base_dir);
-    if (logger_) logger_->info("CorrelationWriter: base_dir={}", config_.base_dir);
+    if (logger_) logger_->info("CorrelationWriter: base_dir={}, rotation_seconds={}",
+                                config_.base_dir, config_.rotation_seconds);
 }
 
 CorrelationWriter::~CorrelationWriter() {
     std::lock_guard<std::mutex> lock(mutex_);
-    if (current_file_.is_open()) { current_file_.flush(); current_file_.close(); }
+    finalize_segment_locked();
 }
 
 // compute_hmac / build_row: RETIRADOS DAY187 (Camino A). Eran EL ÁRBITRO del
@@ -157,11 +159,14 @@ void CorrelationWriter::flush() {
 
 CorrelationWriter::Stats CorrelationWriter::get_stats() const noexcept {
     return Stats{ records_written_.load(), records_skipped_.load(),
-                 rows_failed_.load(), current_file_path_ };
+                 rows_failed_.load(), current_tmp_path_ };
 }
 
 // ----------------------------------------------------------------------------
-// File management — clon del patrón CsvEventWriter (rotación fecha + tamaño)
+// File management — DAY 203: segmentacion + escritura atomica .tmp->rename
+// (DEBT-CIRCUIT-BRONZE-ROTATION-FOLLOW-001). Cierre por TIEMPO ABSOLUTO desde
+// apertura del segmento (segment_opened_at_), no desde la ultima escritura --
+// un sensor mudo no deja un segmento abierto para siempre.
 // ----------------------------------------------------------------------------
 std::string CorrelationWriter::get_date_string() const {
     auto now    = std::chrono::system_clock::now();
@@ -173,43 +178,67 @@ std::string CorrelationWriter::get_date_string() const {
     return ss.str();
 }
 
-std::string CorrelationWriter::get_file_path(const std::string& date) const {
-    return config_.base_dir + "/" + date + ".csv";
+std::string CorrelationWriter::get_time_string() const {
+    auto now    = std::chrono::system_clock::now();
+    auto time_t = std::chrono::system_clock::to_time_t(now);
+    std::tm tm{};
+    localtime_r(&time_t, &tm);
+    std::ostringstream ss;
+    ss << std::put_time(&tm, "%H%M%S");
+    return ss.str();
+}
+
+std::string CorrelationWriter::get_basename() const {
+    return get_date_string() + "-" + get_time_string();
 }
 
 void CorrelationWriter::ensure_open() {
     // PRECONDITION: mutex_ held by caller
     if (current_file_.is_open()) return;
-    current_date_      = get_date_string();
-    current_file_path_ = get_file_path(current_date_);
-    current_file_.open(current_file_path_, std::ios::app);
+    current_basename_   = get_basename();
+    current_tmp_path_   = config_.base_dir + "/" + current_basename_ + ".csv.tmp";
+    current_final_path_ = config_.base_dir + "/" + current_basename_ + ".csv";
+    // Segmento NUEVO -> trunc (nunca append cross-segmento; el nombre ya es
+    // unico por hora de apertura -- no puede colisionar con uno anterior).
+    current_file_.open(current_tmp_path_, std::ios::out | std::ios::trunc);
     events_in_current_file_.store(0, std::memory_order_relaxed);
+    segment_opened_at_ = std::chrono::steady_clock::now();
     if (!current_file_.is_open() && logger_)
-        logger_->error("CorrelationWriter: failed to open file: {}", current_file_path_);
+        logger_->error("CorrelationWriter: failed to open segment: {}", current_tmp_path_);
 }
 
 void CorrelationWriter::rotate_if_needed() {
     // PRECONDITION: mutex_ held by caller
-    std::string new_date = get_date_string();
-    bool date_changed  = (!current_date_.empty() && new_date != current_date_);
+    if (!current_file_.is_open()) return;  // nada que rotar todavia
+    auto elapsed = std::chrono::duration_cast<std::chrono::seconds>(
+        std::chrono::steady_clock::now() - segment_opened_at_).count();
+    bool time_exceeded = (elapsed >= config_.rotation_seconds);
     bool size_exceeded = (events_in_current_file_.load() >= config_.max_events_per_file);
-    if (date_changed || size_exceeded) {
+    if (time_exceeded || size_exceeded) {
         rotate_locked();
-        current_date_ = new_date;
     }
 }
 
 void CorrelationWriter::rotate_locked() {
     // PRECONDITION: mutex_ held by caller
-    if (current_file_.is_open()) { current_file_.flush(); current_file_.close(); }
-    current_date_      = get_date_string();
-    current_file_path_ = get_file_path(current_date_);
-    current_file_.open(current_file_path_, std::ios::app);
-    events_in_current_file_.store(0, std::memory_order_relaxed);
-    if (current_file_.is_open()) {
-        if (logger_) logger_->info("CorrelationWriter: rotated to {}", current_file_path_);
+    finalize_segment_locked();
+    // El siguiente write_record() llama ensure_open(), que abre el segmento
+    // nuevo con nombre fijado a la hora actual.
+}
+
+void CorrelationWriter::finalize_segment_locked() {
+    // PRECONDITION: mutex_ held by caller
+    if (!current_file_.is_open()) return;
+    current_file_.flush();
+    current_file_.close();
+    std::error_code ec;
+    fs::rename(current_tmp_path_, current_final_path_, ec);
+    if (ec) {
+        if (logger_) logger_->error(
+            "CorrelationWriter: rename atomico fallo {} -> {}: {}",
+            current_tmp_path_, current_final_path_, ec.message());
     } else if (logger_) {
-        logger_->error("CorrelationWriter: failed to open rotated file: {}", current_file_path_);
+        logger_->info("CorrelationWriter: segmento cerrado {}", current_final_path_);
     }
 }
 

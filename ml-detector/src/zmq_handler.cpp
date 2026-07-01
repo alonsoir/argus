@@ -152,8 +152,9 @@ ZMQHandler::ZMQHandler(
     if (!hmac_key_hex_.empty()) {
         try {
             ml_defender::CorrelationWriterConfig corr_cfg;
-            corr_cfg.base_dir     = config_.correlation_writer.base_dir;
-            corr_cfg.hmac_key_hex = hmac_key_hex_;
+            corr_cfg.base_dir         = config_.correlation_writer.base_dir;
+            corr_cfg.rotation_seconds = config_.correlation_writer.rotation_seconds;
+            corr_cfg.hmac_key_hex     = hmac_key_hex_;
             correlation_writer_ = std::make_shared<ml_defender::CorrelationWriter>(corr_cfg, logger_);
             logger_->info("✅ CorrelationWriter initialized (bronce correlation_v1, base_dir={})",
                          corr_cfg.base_dir);
