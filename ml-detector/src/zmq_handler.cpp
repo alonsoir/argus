@@ -148,13 +148,15 @@ ZMQHandler::ZMQHandler(
     }
 
     // DAY 175: CorrelationWriter (zona bronce). Misma clave HMAC que csv → cero divergencia.
+    // DAY 201: base_dir desde JSON (DEBT-CONFIG-BRONZE-HARDCODE-001, mitad writer).
     if (!hmac_key_hex_.empty()) {
         try {
             ml_defender::CorrelationWriterConfig corr_cfg;
-            corr_cfg.base_dir     = "/vagrant/logs/correlation/argus";
+            corr_cfg.base_dir     = config_.correlation_writer.base_dir;
             corr_cfg.hmac_key_hex = hmac_key_hex_;
             correlation_writer_ = std::make_shared<ml_defender::CorrelationWriter>(corr_cfg, logger_);
-            logger_->info("✅ CorrelationWriter initialized (bronce correlation_v1)");
+            logger_->info("✅ CorrelationWriter initialized (bronce correlation_v1, base_dir={})",
+                         corr_cfg.base_dir);
         } catch (const std::exception& e) {
             logger_->error("❌ Failed to initialize CorrelationWriter: {}", e.what());
             correlation_writer_ = nullptr;

@@ -458,6 +458,14 @@ DetectorConfig ConfigLoader::load() {
     }
 
     // ========================================
+    // Correlation Writer (bronce correlation_v1) — DAY 201, DEBT-CONFIG-BRONZE-HARDCODE-001
+    // ========================================
+    {
+        auto& corr = json_["correlation_writer"];
+        config.correlation_writer.base_dir = get_required<std::string>(corr, "base_dir", "correlation_writer");
+    }
+
+    // ========================================
     // Scoring thresholds (Day 66)
     // ========================================
     {
