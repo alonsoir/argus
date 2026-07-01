@@ -19,6 +19,8 @@
 #include "correlation_engine/flow_uid.hpp"
 #include "correlation_engine/logging_graph_sink.hpp"
 #include "correlation_engine/kuzu_graph_sink.hpp"
+#include "correlation_engine/config_loader.hpp"
+#include <ctime>
 
 // spdlog — disponible en el sistema (instalado en all-dependencies)
 #include <spdlog/spdlog.h>
@@ -58,17 +60,38 @@ int main(int argc, char* argv[]) {
 
     bool follow = false;
     std::string bronze_path;
+    std::string config_path = "/etc/ml-defender/correlation-engine/correlation_engine.json";
     for (int i = 1; i < argc; ++i) {
         const std::string a = argv[i];
         if (a == "--follow") follow = true;
         else if (a == "--bronze" && i + 1 < argc) bronze_path = argv[++i];
+        else if (a == "--config" && i + 1 < argc) config_path = argv[++i];
     }
     if (bronze_path.empty()) {
         const char* env = std::getenv("ARGUS_BRONZE_CSV");
         bronze_path = env ? env : "";
     }
+    // DAY 202: sin --bronze/env explicitos, derivar desde config JSON
+    // (DEBT-CONFIG-BRONZE-HARDCODE-001, mitad reader). --bronze/env conservan
+    // prioridad -- necesarios para tests que apuntan a fechas concretas.
     if (bronze_path.empty()) {
-        spdlog::critical("[CONSUMER] sin ruta de bronce (--bronze <path> o ARGUS_BRONZE_CSV)");
+        try {
+            auto cfg = ac::load_correlation_engine_config(config_path);
+            std::time_t now = std::time(nullptr);
+            std::tm tm{};
+            localtime_r(&now, &tm);
+            char buf[256];
+            std::strftime(buf, sizeof(buf), cfg.bronze.file_pattern.c_str(), &tm);
+            bronze_path = cfg.bronze.root_dir + "/" + buf;
+            spdlog::info("[CONSUMER] bronce resuelto desde config JSON ({}): {}",
+                         config_path, bronze_path);
+        } catch (const std::exception& e) {
+            spdlog::warn("[CONSUMER] config JSON no disponible ({}): {}", config_path, e.what());
+        }
+    }
+    if (bronze_path.empty()) {
+        spdlog::critical("[CONSUMER] sin ruta de bronce "
+                         "(--bronze <path>, ARGUS_BRONZE_CSV, o --config <json>)");
         return EXIT_FAILURE;
     }
 

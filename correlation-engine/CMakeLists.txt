@@ -41,12 +41,14 @@ message(STATUS "libkuzu: ${KUZU_LIB}")
 add_library(correlation_engine STATIC
         src/correlation_reader.cpp
         src/logging_graph_sink.cpp
-        src/kuzu_graph_sink.cpp)
+        src/kuzu_graph_sink.cpp
+        src/config_loader.cpp)
 target_include_directories(correlation_engine PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 target_include_directories(correlation_engine PUBLIC ${LIBSODIUM_INCLUDE_DIRS})
 target_include_directories(correlation_engine PRIVATE ${KUZU_INC})  # solo el .cpp incluye kuzu.hpp
 target_link_libraries(correlation_engine PUBLIC
         ${LIBSODIUM_LIBRARIES} OpenSSL::Crypto ${KUZU_LIB})  # KUZU_LIB PUBLIC -> se propaga a bin+tests
+target_link_libraries(correlation_engine PRIVATE nlohmann_json::nlohmann_json)  # DAY 202: config_loader.cpp
 
 
 # ── binario del engine (DAY 179: consumidor F1 bronce -> grafo) ──

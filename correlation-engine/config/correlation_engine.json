@@ -1,0 +1,35 @@
+{
+  "_header": "aRGus NDR — correlation-engine — Config (DAY 202, esqueleto incremental)",
+  "_refactor_notes": {
+    "date": "2026-07-01",
+    "changes": [
+      "NEW: primer JSON de config del correlation-engine (antes: solo --bronze/env)",
+      "Estructura calcada de ml_detector_config.json — header/component/node_id/profiles/etcd",
+      "profiles y etcd: DECLARADOS, NO consumidos todavia. Se cablean incrementalmente",
+      "bronze.root_dir: unico bloque consumido por el engine en DAY 202"
+    ]
+  },
+  "component": {
+    "name": "correlation_engine",
+    "version": "0.1.0",
+    "mode": "consumer_bronze_to_graph"
+  },
+  "node_id": "correlation_engine_v1_001",
+  "cluster_name": "upgraded-happiness-cluster",
+  "profiles": {
+    "lab": {},
+    "cloud": {},
+    "bare_metal": {}
+  },
+  "profile": "lab",
+  "etcd": {
+    "_comment": "Servidor central. En el mundo real puede ser distinto del etcd de la intranet del hospital (componentes edge). Por comodidad, DAY 202 registra en el mismo etcd. No consumido todavia por el codigo.",
+    "enabled": false,
+    "endpoints": ["localhost:2379"],
+    "service_registration_path": "/services/correlation-engine"
+  },
+  "bronze": {
+    "root_dir": "/vagrant/logs/correlation/argus",
+    "file_pattern": "%Y-%m-%d.csv"
+  }
+}
