@@ -309,6 +309,11 @@ struct DetectorConfig {
         int max_events_per_file;
     } csv_writer;
 
+    // Correlation Writer (bronce correlation_v1) — DAY 201, DEBT-CONFIG-BRONZE-HARDCODE-001
+    struct {
+        std::string base_dir;
+    } correlation_writer;
+
     // Scoring thresholds (dual-score architecture)
     struct {
         float divergence_warn_threshold;   // score_divergence > X → DIVERGENCE source
