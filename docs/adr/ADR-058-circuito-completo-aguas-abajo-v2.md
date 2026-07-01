@@ -1,7 +1,11 @@
 # ADR-058 — Circuito completo aguas abajo (medallón: adapters → bronce → LZ → Kuzu → dashboard)
 
-- **Estado:** PROPUESTO (pendiente ratificación final del Consejo)
+- **Estado:** PROPUESTO (v2 — pendiente confirmación del Consejo de las correcciones medidas)
 - **Fecha:** DAY 199 (hoy)
+- **Revisión:** v2 (DAY 199) — §3.1 reescrita tras revisión adversarial del Consejo (8 modelos).
+  Las objeciones se midieron contra `fichero:línea`: tres bloqueantes propuestos cayeron contra
+  el binario (window/seq YA materializadas L101/110; `event_id`=bronce col 2; scores YA `DOUBLE`
+  en `schema.cypher`); el resto se incorporó. Detalle por edición en §9 (changelog).
 - **Rama:** `day196/circuit-adapters-zmq`
 - **Supersede / consolida:** `PLAN — Circuito completo aguas abajo (DAY 196 → implementación).md` (consolidado DAY 197, §10 = decisiones cerradas)
 - **Relacionado:** ADR-046 v4, ADR-051 (parity gate), ADR-052 (flow_uid identidad multi-nodo), ADR-057 (Kuzu / bitemporalidad)
@@ -14,7 +18,7 @@
 El circuito aguas abajo materializa el flujo completo desde los adaptadores hasta el
 dashboard: `adapters → bronce → Landing Zone (medallón) → grafo Kuzu → dashboard`.
 La forma del oro fue ratificada 9/9 por el Consejo en DAY 197. Este ADR la sella y
-añade la evidencia medida en el gate de DAY 198 (6 verificaciones contra bytes).
+añade la evidencia medida en el gate de DAY 198 (9 verificaciones contra bytes).
 
 El supuesto operativo de partida es que la inferencia ML está rota/incompleta
 (DEBT-RANSOMWARE-ML-HEAD-INERT-001): el circuito se cierra primero por el camino que
@@ -75,17 +79,65 @@ ahí, no sobre representaciones intermedias. **Medido DAY 198** contra
 `flow_uid` sería **demasiado estrecho** (dos grafos pueden coincidir en flujos y diferir
 en alerts, scores o aristas). El predicado completo:
 
+El predicado compara solo propiedades **deterministas-de-dato** (derivan del
+bronce; idénticas entre ejecuciones). Excluye explícitamente las propiedades
+**deterministas-de-ejecución** (derivan del reloj/orden del run; divergen entre
+corridas **por diseño, no por bug**). La partición está trazada a `fichero:línea`
+(ver «Partición de propiedades» más abajo).
+
 ```
 EQUIV(Camino0, FlujoA+B) :=
-   set(flow_uid)_C0                  == set(flow_uid)_AB         # NetworkFlow
+   set(flow_uid)_C0                  == set(flow_uid)_AB         # NetworkFlow (PK, V9)
  ∧ set(event_id)_C0                  == set(event_id)_AB         # Alert ∪ TelemetryEvent
+                                                                 #   (event_id = bronce col 2, ver nota)
  ∧ ∀ uid: props_identidad(uid)_C0    == props_identidad(uid)_AB  # node_id, community_id,
                                                                  #   flow_start_window, seq_in_window
- ∧ ∀ eid: props_veredicto(eid)_C0    == props_veredicto(eid)_AB  # cols 12-17; los 3 scores
+                                                                 #   (materializadas L101/110, ver nota)
+ ∧ ∀ eid: props_veredicto(eid)_C0    == props_veredicto(eid)_AB  # final_classification, threat_category,
+                                                                 #   3 scores double, authoritative_source
                                                                  #   double BIT-EXACTOS por defecto (ver nota)
  ∧ aristas {ALERT_ABOUT, TELEMETRY_ABOUT, CORRELATES_FLOW} coinciden (con method/confidence)
- ∧ ∀ fila: hmac_row preservado de bronce
+ # EXCLUIDAS (clase determinista-de-ejecución, NO van al predicado):
+ #   ingested_at      — wall-clock per-fila (kuzu_graph_sink.hpp:47)
+ #   temporal_anomaly — deriva de ingested_at (cypher_builder.hpp:86)
+ # hmac_row NO está en este predicado: no vive en la proyección Kuzu (0 hits en
+ # schema.cypher). Se verifica aparte como integridad bronce↔oro (ver nota HMAC).
 ```
+
+**Partición de propiedades (medido DAY 199 contra `cypher_builder.hpp`,
+`kuzu_graph_sink.hpp`, `correlation_reader.cpp`, `schema.cypher`):**
+
+| Clase | Propiedades | Traza | En predicado |
+|-------|-------------|-------|--------------|
+| **D — determinista-de-dato** | `flow_uid`, `event_id`, `node_id`, `community_id`, `flow_start_window`, `seq_in_window`, `final_classification`, `threat_category`, `fast_detector_score`, `ml_detector_score`, `overall_threat_score`, `authoritative_source`, `method`, `confidence` | `cypher_builder.hpp:101-103,110-112`; `event_id`=`correlation_reader.cpp:85` (col 2); aristas=`schema.cypher:71-73` | **SÍ** (`==`, bit-exacto en doubles) |
+| **E — determinista-de-ejecución** | `ingested_at`, `temporal_anomaly` | `kuzu_graph_sink.hpp:47` (`ingest_now_ns()` per-fila); `cypher_builder.hpp:86` (`window_to_epoch_nanos(window) > ingested_at_ns + margen`) | **NO** (divergen entre corridas por diseño) |
+
+Razón de la exclusión: la equivalencia de dos **caminos** debe definirse sobre lo que
+deriva del **dato**, no sobre cuándo corrió cada camino. `ingested_at` se sella con
+`CLOCK_REALTIME` a la entrada del sink (per-fila); dos ejecuciones producen relojes
+distintos. `temporal_anomaly` es un `bool` que **parece** determinista-de-dato (deriva
+de `window`) pero su fórmula toca `ingested_at` (`cypher_builder.hpp:86`), luego hereda
+el no-determinismo para flujos cuya window cae cerca del instante de ingestión. Incluir
+cualquiera de las dos en el predicado lo haría fallar entre Camino 0 y Flujo A+B **sin
+que exista bug alguno en el converter**. La verificación correcta de `temporal_anomaly`
+no es equivalencia-entre-caminos sino un **test unitario de la fórmula** (mismo `window`
++ mismo `ingested_at` fijo ⇒ mismo bool); se traza en
+`DEBT-CIRCUIT-TEMPORAL-ANOMALY-PARITY-001` (P2).
+
+**Nota — `event_id` y window/seq son datos del bronce, no generados aguas abajo
+(medido DAY 199):** objeción del Consejo (varios modelos): «`event_id` podría ser UUID
+v4 → los sets nunca coinciden» y «Camino 0 no escribe `flow_start_window`/`seq_in_window`
+→ el predicado falla por construcción». **Ambas caen contra el binario.**
+`event_id` se lee como **columna 2 del bronce** (`correlation_reader.cpp:85`:
+`r.event_id = f[2]`; struct `correlation_record.hpp:14` lo marca `// 2`): viaja como
+dato, igual que `flow_uid`; ambos caminos leen el mismo `f[2]` → mismo set por
+construcción. (Matiz: `ingest_clock.hpp:6` indica que el wall-clock compone el
+`event_id` en el **productor**, aguas arriba del bronce; irrelevante para la
+equivalencia, que empieza una vez el valor ya está escrito en bronce.)
+`flow_start_window` y `seq_in_window` **sí se materializan** como propiedades del nodo
+en Camino 0 (`cypher_builder.hpp:101,110`: `ON CREATE SET f.flow_start_window=...,
+f.seq_in_window=...`): no se computan-y-tiran, se computan en read-time **y** se
+escriben. El predicado `props_identidad ==` se sostiene porque ambos caminos las emiten.
 
 **Nota — igualdad de los scores: BIT-EXACTA por defecto (medido DAY 198):** los 3
 `double` (cols 14-16) se comparan **bit a bit**, no con tolerancia. Justificación medida,
@@ -109,11 +161,24 @@ pérdida real es texto, y ahí ya está cubierto.)
 > no ratificamos hoy una tolerancia para una pérdida no medida que el análisis de tipos
 > predice **inexistente**.
 
-> **Guarda NaN (independiente de ε, P2):** bajo IEEE 754 `NaN != NaN`. Si algún score
-> puede ser NaN (ML head inerte, score sin inicializar), el predicado `==` necesita regla
-> explícita — canonicalizar NaN o comparar patrón de bits (`memcmp` de los 8 bytes). Con
-> ε pasaba igual (`|NaN−NaN| < ε` también es falso), solo que quedaba oculto. Acción: el
-> converter Flujo A normaliza el patrón de NaN. No bloquea el cierre del predicado.
+> **Guarda de comparación: una sola regla canónica para los bordes IEEE 754
+> (medido DAY 199, P2).** Pasar de `≈ε` a `==` aflora dos bordes que con ε quedaban
+> ocultos (igual de rotos, pero invisibles). **No pueden tratarse con la misma
+> primitiva** — y este es el error que hay que evitar:
+> - **NaN:** `NaN != NaN`. Un `==` crudo falla aunque ambos lados sean NaN.
+> - **Cero con signo:** `-0.0` y `+0.0` son **bit-distintos** (`0x8000…0` vs `0x0`) pero
+>   numéricamente iguales. Un `==` crudo los iguala (oculta divergencia de bits); un
+>   `memcmp` crudo de 8 bytes los **separa** (falsa divergencia). Por eso `memcmp` solo
+>   —como se proponía— es incorrecto: rompe el caso `-0.0`.
+>
+> **Regla única:** comparar sobre el **patrón de bits canonicalizado**, donde
+> canonicalización = { todo NaN → un único patrón quiet `0x7ff8000000000000`;
+> `-0.0` → `+0.0` }. Sobre ese patrón, `==` bit a bit. Una sola regla coherente para
+> los tres casos (finitos, NaN, ceros). Ambos caminos deben canonicalizar **antes** de
+> comparar; el converter Flujo A aplica la misma canonicalización. (Apunte medido: la
+> serialización a AVRO/Parquet puede mutar el *payload*/signo del NaN —signaling→quiet—,
+> por eso la canonicalización a un patrón único es necesaria, no opcional.)
+> No bloquea el cierre del predicado.
 
 **Nota — robustez a colisión `flow_uid` (medido DAY 198):** el sink usa **MERGE** en
 ambos paths (`cypher_builder.hpp:100,154`), con **solo `ON CREATE SET`, sin
@@ -121,10 +186,21 @@ ambos paths (`cypher_builder.hpp:100,154`), con **solo `ON CREATE SET`, sin
 hashean al mismo `flow_uid` (colisión por `seq_in_window=0`,
 `DEBT-FLOWUID-SEQ-COLLISION-001`), el segundo hace MATCH puro y sus propiedades se
 **descartan de forma idéntica en ambos caminos**. Por tanto la **equivalencia se
-sostiene** ante colisión — Camino 0 y Flujo A+B producen el mismo grafo. La colisión es
-deuda de **fidelidad** (se pierde un flujo real, P2), NO de **equivalencia** (ambos
-caminos pierden el mismo). El predicado §3.1 es robusto a la colisión; el medallón **no
-queda bloqueado** por ella.
+sostiene** ante colisión — Camino 0 y Flujo A+B producen el mismo grafo, **bajo una
+precondición medida** (ver abajo). La colisión es deuda de **fidelidad** (se pierde un
+flujo real, P2), NO de **equivalencia** (ambos caminos pierden el mismo). El medallón
+**no queda bloqueado** por ella.
+
+> **Precondición de la robustez (objeción del Consejo, aceptada): orden de inserción
+> determinista.** El argumento «ambos descartan idénticamente» solo se sostiene si, ante
+> colisión `flow_uid`, **el mismo flujo gana el `ON CREATE SET` en ambos caminos** — y eso
+> depende del **orden de inserción**. Camino 0 es `ifstream` secuencial (orden = líneas
+> del bronce). Flujo B (Parquet→Kuzu, greenfield) podría insertar en paralelo/bulk, en cuyo
+> caso ganaría un flujo distinto y el predicado rompería **por carrera de arquitectura, no
+> por bug del converter**. **Decreto:** el Flujo B inserta en orden determinista por
+> `(flow_start_window, seq_in_window)` antes del sink Kuzu; el test de equivalencia asume y
+> verifica esta precondición. Sin orden determinista, el predicado mide la convergencia del
+> sink bajo un orden concreto, no la equivalencia de los caminos.
 Relacionado: `DEBT-NEO4J-FLOW-KEY-COMPOSITE-001` (PK compuesta `(flow_uid, seq)` aún no
 implementada — el schema usa PK simple). Sobre `DEBT-FLOWUID-CANONICAL-ENCODING-001`
 **[medido DAY 198, `flow_uid.hpp`]: resuelta de facto.** El encoding
@@ -140,6 +216,17 @@ predicado: `set(flow_uid)_C0 == set(flow_uid)_AB` **no puede fallar por encoding
 por colisión `seq` (neutralizada por MERGE para equivalencia) o por bug del converter
 (que es lo que el test debe cazar). Acción residual: el converter Flujo A **reusa**
 `encode_flow_input` (o, si es Python, los vectores golden congelados), no reimplementa.
+
+**Nota — HMAC: integridad bronce↔oro, NO cláusula del predicado (medido DAY 199):**
+objeción del Consejo (DeepSeek), **aceptada**. El predicado V1 incluía
+`∀ fila: hmac_row preservado`, pero `hmac` tiene **0 ocurrencias en `schema.cypher`**: el
+grafo Kuzu **no almacena HMAC**, ni por Camino 0 ni por Flujo A+B. Una cláusula sobre la
+proyección Kuzu que referencia un campo ausente de Kuzu es **inverificable** donde estaba.
+Corrección: `hmac_row` **sale del predicado de equivalencia** (§3.1) y se reubica como
+**control de integridad bronce↔oro-ledger** — se verifica que cada fila del oro conserva el
+HMAC heredado del bronce (§2 corolario 6), de forma independiente al test
+Camino-0 ≡ Flujo-A+B. La definición del mecanismo (clave, alcance por-fila vs por-artefacto)
+vive en `DEBT-GOLD-INTEGRITY-HMAC-001` (P0).
 
 ### 3.2 Cláusula de caducidad (atada a 10.8)
 
@@ -301,7 +388,7 @@ Cierra: `DEBT-CONFIG-BRONZE-HARDCODE-001` + `DEBT-CIRCUIT-BRONZE-ROTATION-FOLLOW
 **P2:**
 - `DEBT-PARSE-VERIFY-SENTINEL-001` (**degradada de P0** — medida V2; doc + vigilancia)
 - `DEBT-ADAPTERSPEC-ENVELOPE-001`
-- `DEBT-DOCS-MEDALLION-DUALITY-001` (firma del oro HMAC ≠ Ed25519 RAG — ver §2.6)
+- `DEBT-DOCS-MEDALLION-DUALITY-001` (firma del oro HMAC ≠ Ed25519 RAG — ver §2 corolario 6)
 - `DEBT-JOIN-CONFIDENCE-001` (gobierna la cláusula de caducidad §3.2)
 - `DEBT-FLOWUID-SEQ-COLLISION-001` (medida V7 — `seq_in_window=0`; fidelidad, no
   equivalencia; no bloquea el medallón)
@@ -310,6 +397,10 @@ Cierra: `DEBT-CONFIG-BRONZE-HARDCODE-001` + `DEBT-CIRCUIT-BRONZE-ROTATION-FOLLOW
 - `DEBT-FLOWUID-CANONICAL-ENCODING-001` (**resuelta de facto** — medida DAY 198;
   encoding inyectivo length-prefixed + BE + tag versión, paridad C++/Python congelada;
   acción residual: converter Flujo A reusa `encode_flow_input`, no reimplementa)
+- `DEBT-CIRCUIT-TEMPORAL-ANOMALY-PARITY-001` (**nueva DAY 199** — medida; `temporal_anomaly`
+  excluida del predicado §3.1 por derivar de `ingested_at` (`cypher_builder.hpp:86`). Su
+  verificación es un test unitario de la fórmula —mismo `window` + `ingested_at` fijo ⇒ mismo
+  bool—, no equivalencia-entre-caminos. El converter Flujo A debe portar la fórmula 1:1.)
 
 **P3:**
 - higiene `backups/`/`.backup` → `git rm --cached` / `.gitignore`
@@ -330,14 +421,62 @@ Cierra: `DEBT-CONFIG-BRONZE-HARDCODE-001` + `DEBT-CIRCUIT-BRONZE-ROTATION-FOLLOW
 
 ---
 
-## 8. Pendiente de ratificación
+## 8. Estado de ratificación
 
-Decisión VIVA para el Consejo (una, consciente): **ratificar la igualdad BIT-EXACTA por
-defecto en los 3 scores double (cols 14-16) del predicado §3.1**, con ε degradada a
-cláusula de escape condicionada a medición (se deriva de una cuantización concreta del
-Flujo-A real, o no se introduce). Con esto el predicado queda **uniforme**: `==` para
-todas las columnas, ε como única excepción documentada. El cambio respecto a la versión
-previa es deliberado: presentar una ε "ya cerrada" para una pérdida **no medible hasta
-que exista el Flujo A** sería votar, no medir. Se sube como punto consciente, no como
-hueco. 10.8 diferida con ticket (`DEBT-JOIN-CONFIDENCE-001`). Con esta ratificación, el
-plan cierra como ADR.
+**Bit-exacto por defecto: RATIFICADO** (ronda DAY 199, Consejo 8 modelos). La sub-decisión
+abierta en la v1 — `==` bit-exacto en los 3 scores double con ε degradada a cláusula de
+escape condicionada a medición — se sometió al Consejo y **no fue objetada de fondo** (voto
+explícito a favor; el resto refinó los bordes, no la decisión). Queda cerrada.
+
+**Lo que esta v2 lleva al Consejo NO es re-litigación, sino confirmación de las correcciones
+medidas.** La revisión adversarial de la v1 produjo objeciones de calidad. Cada una se
+**midió contra `fichero:línea`**, no se debatió:
+
+- **Cayeron contra el binario** (la medición refuta la objeción):
+  - «window/seq no las escribe Camino 0» → **falso**: `cypher_builder.hpp:101,110` las
+    materializa (`ON CREATE SET`).
+  - «`event_id` indefinido / posible UUID v4» → **falso**: es bronce col 2
+    (`correlation_reader.cpp:85`).
+  - «el schema podría declarar FLOAT en los scores» → **falso**: `schema.cypher:42-44,62-64`
+    son `DOUBLE`; refuerza bit-exacto.
+- **Incorporadas a §3.1** (la medición confirma la objeción):
+  - `hmac_row` sale del predicado → integridad bronce↔oro (0 hits de `hmac` en
+    `schema.cypher`). [DeepSeek]
+  - **Partición D/E**: `ingested_at` (`kuzu_graph_sink.hpp:47`) y `temporal_anomaly`
+    (`cypher_builder.hpp:86`) excluidas por deterministas-de-ejecución. [hallazgo de la
+    medición; ningún modelo lo vio, tampoco la v1]
+  - NaN + `-0.0`: una sola regla canónica (canonicalizar, no `memcmp` crudo ni `==` crudo).
+  - MERGE robusto a colisión **bajo precondición** de orden de inserción determinista.
+    [Gemini/Kimi/Qwen]
+- **Diferidas como deuda trazada** (fuera del alcance de este ADR, no gold-plating dentro):
+  oro-ledger como multiset bajo at-least-once; HMAC scope full-row vs columnas-grafo;
+  `inotify` + NFS/contenedor → fallback polling. Punteros en §6 y backlog.
+
+Petición concreta al Consejo: **confirmar** que las correcciones de §3.1 reflejan
+fielmente lo medido. No se reabre la forma del oro (ratificada DAY 197) ni bit-exacto
+(ratificado DAY 199). 10.8 diferida con ticket (`DEBT-JOIN-CONFIDENCE-001`). Con esta
+confirmación, el plan cierra como ADR.
+
+---
+
+## 9. Changelog v1 → v2 (DAY 199)
+
+Trazabilidad de cada cambio respecto a la v1 presentada al Consejo. El original v1 se
+conserva intacto; esta v2 es un fichero separado.
+
+| # | §  | Cambio | Origen | Veredicto medido |
+|---|----|--------|--------|------------------|
+| 1 | 1  | "6 verificaciones" → "9" | A3 (Claude) | fósil de versión previa |
+| 2 | 3.1| Predicado particionado D/E; `ingested_at`+`temporal_anomaly` EXCLUIDAS | medición DAY 199 | `kuzu_graph_sink.hpp:47`, `cypher_builder.hpp:86` |
+| 3 | 3.1| `hmac_row` fuera del predicado → integridad bronce↔oro | DeepSeek | 0 hits `hmac` en `schema.cypher` |
+| 4 | 3.1| Nota: `event_id`=bronce col 2; window/seq YA materializadas | GLM/Kimi (refutadas) | `correlation_reader.cpp:85`, `cypher_builder.hpp:101,110` |
+| 5 | 3.1| Guarda canónica única NaN + `-0.0` (no `memcmp` crudo) | Claude/Gemini/DeepSeek/Qwen | IEEE 754 |
+| 6 | 3.1| MERGE robusto **bajo** orden de inserción determinista | Gemini/Kimi/Qwen | `cypher_builder.hpp` MERGE/ON CREATE |
+| 7 | 6  | Nueva `DEBT-CIRCUIT-TEMPORAL-ANOMALY-PARITY-001` (P2) | hallazgo medición | `cypher_builder.hpp:86` |
+| 8 | 6  | Ref `§2.6` → `§2 corolario 6` | A4 (Claude) | higiene interna |
+| 9 | 8  | Cierre: "confirmar lo medido", no re-litigar; bit-exacto RATIFICADO | árbitro | — |
+
+> Nota de scope: objeciones de gold-plating del lote (backpressure/HWM, schema evolution,
+> SLA del test, key management, RBAC, retention, rollback, timezone, hash-grafo-completo)
+> se declinan en este ADR por violar "una batalla" / ya cubiertas por deuda existente.
+> No son defectos del circuito; son trabajo post-FEDER o de otra capa.
