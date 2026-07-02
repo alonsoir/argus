@@ -1294,7 +1294,7 @@ test-e2e-live:      pipeline completo con componentes reales, parsea logs
 # Ambos son gates duros: exit 1 si cualquier criterio falla.
 # ============================================================================
 .PHONY: test-e2e-synthetic test-e2e-synthetic-full test-e2e-synthetic-firewall test-e2e-live test-e2e test-enterprise-plugin test-e2e-vault test-dual-compilation vault-dev-start vault-dev-stop
-.PHONY: emecas emecas++ vault-fault-inject vault-dev-seed
+.PHONY: emecas emecas++ emecas+++ vault-fault-inject vault-dev-seed
 
 test-e2e-live:
 	@echo ""
@@ -3013,3 +3013,18 @@ test-firewall-e2e:
 	@vagrant ssh -c 'cd $(FIREWALL_BUILD_DIR) && \
 		sudo env LD_LIBRARY_PATH=/usr/local/lib \
 		ctest -L "e2e" --output-on-failure'
+# ══════════════════════════════════════════════════════════════════════════
+# EMECAS+++ — Gate E2E rio-abajo (DAY 204, ADR-058 §1)
+# Hoy: alias de emecas++. El test de circuito completo bronce->Kuzu
+# (test_bronze_to_kuzu_circuit, correlation-engine) ya vive en
+# correlation-engine-test -> test-components -> test-all, heredado por
+# emecas/emecas++ sin cambios. Cuando exista Eslabon 1 (Flujo A/B, Landing
+# Zone), este target gana sus propios Actos rio-abajo sin tocar emecas/emecas++.
+# ══════════════════════════════════════════════════════════════════════════
+emecas+++: emecas++
+	@echo ""
+	@echo "╔════════════════════════════════════════════════════════════╗"
+	@echo "║  ✅ EMECAS+++ PASSED — circuito bronce->Kuzu verificado    ║"
+	@echo "║  (test_bronze_to_kuzu_circuit, dentro de test-all)          ║"
+	@echo "║  Eslabon 1+ (Landing Zone) anadira Actos propios aqui       ║"
+	@echo "╚════════════════════════════════════════════════════════════╝"
