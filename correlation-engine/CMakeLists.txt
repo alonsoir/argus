@@ -43,7 +43,8 @@ add_library(correlation_engine STATIC
         src/logging_graph_sink.cpp
         src/kuzu_graph_sink.cpp
         src/config_loader.cpp
-        src/bronze_dir_watcher.cpp)
+        src/bronze_dir_watcher.cpp
+        src/segment_processor.cpp)
 target_include_directories(correlation_engine PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 target_include_directories(correlation_engine PUBLIC ${LIBSODIUM_INCLUDE_DIRS})
 target_include_directories(correlation_engine PRIVATE ${KUZU_INC})  # solo el .cpp incluye kuzu.hpp
@@ -108,3 +109,31 @@ find_package(Threads REQUIRED)
 add_executable(kuzu_concurrency_smoke experiments/kuzu_concurrency_smoke.cpp)
 target_include_directories(kuzu_concurrency_smoke PRIVATE ${KUZU_INC})
 target_link_libraries(kuzu_concurrency_smoke PRIVATE correlation_engine Threads::Threads)
+
+# ── DAY 204 — emecas+++: circuito completo bronce->Kuzu, un solo proceso, FS puro ──
+# ADR-058 §1: inyectar evento sintetico -> verificar HMAC en bronce -> verificar
+# MATCH en Kuzu. Cruza a ml-detector (CorrelationWriter real), mismo patron que
+# ml-detector/tests/test_correlation_roundtrip.cpp usa en sentido inverso.
+find_package(Protobuf REQUIRED)
+find_library(CORRELATION_V1_LIB NAMES correlation_v1 PATHS /usr/local/lib REQUIRED)
+
+add_executable(test_bronze_to_kuzu_circuit
+        tests/test_bronze_to_kuzu_circuit.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/../ml-detector/src/correlation_writer.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/../protobuf/network_security.pb.cc)
+target_include_directories(test_bronze_to_kuzu_circuit PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/../ml-detector/include
+        ${CMAKE_CURRENT_SOURCE_DIR}/../protobuf
+        ${KUZU_INC}
+        /usr/local/include)
+target_link_libraries(test_bronze_to_kuzu_circuit PRIVATE
+        correlation_engine
+        ${CORRELATION_V1_LIB}
+        ${Protobuf_LIBRARIES}
+        spdlog::spdlog
+        OpenSSL::SSL
+        OpenSSL::Crypto
+        GTest::gtest_main)
+target_compile_definitions(test_bronze_to_kuzu_circuit PRIVATE
+        SCHEMA_PATH="${CMAKE_CURRENT_SOURCE_DIR}/schema/schema.cypher")
+add_test(NAME test_bronze_to_kuzu_circuit COMMAND test_bronze_to_kuzu_circuit)
