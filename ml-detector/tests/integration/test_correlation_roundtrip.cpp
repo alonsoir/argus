@@ -92,7 +92,7 @@ TEST(CorrelationRoundTrip, WriterToReader) {
         ml_defender::CorrelationWriter writer(cfg, logger);
         ASSERT_TRUE(writer.write_record(event));
         writer.flush();
-        written_path = writer.get_stats().current_file;
+        written_path = writer.get_stats().current_final_path;
     }
     ASSERT_FALSE(written_path.empty());
     ASSERT_TRUE(fs::exists(written_path));
@@ -174,7 +174,7 @@ TEST(CorrelationRoundtrip, QuotedCommaFieldsSurviveRoundTrip) {
         ml_defender::CorrelationWriter writer(cfg, logger);
         ASSERT_TRUE(writer.write_record(event));
         writer.flush();
-        written_path = writer.get_stats().current_file;
+        written_path = writer.get_stats().current_final_path;
     }
     ASSERT_FALSE(written_path.empty());
     ASSERT_TRUE(fs::exists(written_path));
@@ -246,7 +246,7 @@ TEST(CorrelationRoundTrip, QuotedCommaFieldSurvivesRoundTrip) {
         ml_defender::CorrelationWriter writer(cfg, logger);
         ASSERT_TRUE(writer.write_record(event));
         writer.flush();
-        written_path = writer.get_stats().current_file;
+        written_path = writer.get_stats().current_final_path;
     }
     ASSERT_FALSE(written_path.empty());
     ASSERT_TRUE(fs::exists(written_path));
@@ -315,7 +315,7 @@ TEST(CorrelationRoundTrip, EscapedQuoteFieldSurvivesRoundTrip) {
         ml_defender::CorrelationWriter writer(cfg, logger);
         ASSERT_TRUE(writer.write_record(event));
         writer.flush();
-        written_path = writer.get_stats().current_file;
+        written_path = writer.get_stats().current_final_path;
     }
     ASSERT_FALSE(written_path.empty());
 

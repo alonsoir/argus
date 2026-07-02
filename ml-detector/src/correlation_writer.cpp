@@ -159,7 +159,7 @@ void CorrelationWriter::flush() {
 
 CorrelationWriter::Stats CorrelationWriter::get_stats() const noexcept {
     return Stats{ records_written_.load(), records_skipped_.load(),
-                 rows_failed_.load(), current_tmp_path_ };
+                 rows_failed_.load(), current_tmp_path_, current_final_path_ };
 }
 
 // ----------------------------------------------------------------------------
