@@ -73,7 +73,8 @@ public:
         uint64_t records_written;
         uint64_t records_skipped;   // community_id vacío
         uint64_t rows_failed;
-        std::string current_file;
+        std::string current_file;        // .tmp del segmento actualmente abierto (DAY 203)
+        std::string current_final_path;  // path final post-rename (DAY 204, DEBT-CORRELATION-ROUNDTRIP-ORPHANED-001)
     };
     Stats get_stats() const noexcept;
 
