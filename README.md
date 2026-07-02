@@ -31,6 +31,23 @@
 
 ---
 
+### Hitos DAY 201-204 🎉 — Eslabon 0 CERRADO (3/3) + emecas+++ (circuito bronce->Kuzu)
+- **Eslabon 0 completo.** DAY 201-202 cierran `DEBT-CONFIG-BRONZE-HARDCODE-001` (writer+reader
+  derivan `bronze_root`/`base_dir` de JSON). DAY 203 cierra `DEBT-CIRCUIT-BRONZE-ROTATION-FOLLOW-001`:
+  bronce segmentado con escritura atomica `.tmp`->rename + `BronzeDirWatcher` (inotify puro,
+  `IN_MOVED_TO`) en el reader — verificado en EMECAS++ real, cero fallos de rename bajo carga.
+- **`DEBT-CORRELATION-ROUNDTRIP-ORPHANED-001` CERRADA por medicion (DAY 204).** La causa raiz no
+  era la sospechada (add_test ausente) sino cache de CMake sin reconfigurar + `Stats::current_file`
+  devolviendo el `.tmp` en curso en vez del path final post-rename. Fix: campo nuevo
+  `Stats::current_final_path`. 4/4 PASSED contra el bronce segmentado real.
+- **`emecas+++` — circuito completo bronce->Kuzu (ADR-058 §1), DAY 204.** `process_segment`
+  extraida de `main.cpp` a funcion compartida (`segment_processor.{hpp,cpp}`) — mismo codigo en
+  produccion y en el test nuevo, cero reimplementacion. `test_bronze_to_kuzu_circuit.cpp`: circuito
+  completo en un proceso, FS puro — `CorrelationWriter` real -> bronce -> `process_segment` real ->
+  `KuzuGraphSink` real -> `MATCH` en Kuzu, mas el caso adverso (HMAC roto nunca llega al grafo).
+  Target `emecas+++` en el Makefile (alias de `emecas++` por ahora, hueco formado para Eslabon 1).
+  EMECAS++ completo ejecutado en `main` tras el merge — pipeline 6/6 RUNNING confirmado.
+
 ### Hitos DAY 195 🔍 — Forense del detector de ransomware + spec de laboratorio
 - **DEBT-RANSOMWARE-MODEL-DESYNC-001 DIRIMIDA por medición.** `5bbddd11` reentrenó pero de forma estructuralmente equivalente a un reescalado: `feature[]` y `children_left[]` idénticos en los 100 árboles entre `830b0ec0` y `5bbddd11`, solo cambian los thresholds (MinMaxScaler afín monótona, `random_state=42` intacto). **Un único modelo.** `feature_importances` válidos para el desplegado; el veto de `model_info` en el paper se estrecha a *rendimiento*, no a importancias. Acción pendiente: regenerar header desde el JSON canónico de `5bbddd11` (tras verificar la escala de features en producción).
 - **DEBT-RANSOMWARE-ML-HEAD-INERT-001 abierta (P1, pre-producción).** La cabeza ML de ransomware es no funcional en red por SEMANTICS-001 (feature[1] = varianza long. paquete/1e5 vs entropía Shannon de fichero). El sistema detecta vía `fast` path; `ml` deprimido (~0.14). Bloquea fiarse de plugins ensemble. Reentreno diferido a post-circuito, contra ground truth de red.
@@ -44,7 +61,7 @@
 <!-- DAY-STATUS -->
 | Campo | Valor                                                                                                                                   |
 |---|-----------------------------------------------------------------------------------------------------------------------------------------|
-| DAY | 195                                                                                                                                     |
+| DAY | 204                                                                                                                                     |
 | Tag | v1.0.0-day191                                                                                                                           |
 | Branch | main                                                                                                                                    |
 | EMECAS++ OSS | ✅ verde — test-all + test-e2e-synthetic-full + test-e2e-synthetic-firewall                                                              |
@@ -59,7 +76,7 @@
 | Tests firewall | ✅ 79/79 sin root (73→79, +6 `CommentValidator.*`) · canario `IPSetWrapperTest.CommentInjectionRejected` 7/7 con sudo en guest           |
 | Consejo de Sabios | 8/8 — Claude, Grok, ChatGPT, DeepSeek, Qwen, Gemini, Kimi, Mistral                                                                      |
 | Arquitectura | ✅ ADR-046 v4 · ADR-052 v3.2 · ADR-051 v2.2 · ADR-055 v1 · ADR-057 v2 · ⏳ ADR-050/053/054                                                |
-| Próximo hito (DAY 192) | H-1/H-2 cerradas (auditoría de seguridad del firewall completa) — siguiente frente por definir                                          |
+| Próximo hito (DAY 205) | Eslabón 1 (Landing Zone: bronce->AVRO->Parquet oro) — diseño de esquema pendiente antes de implementar                                    |
 | Deudas abiertas DAY 190 | DEBT-AUTONOMY-REACTOR-SAFEEXEC-002 (P2 post-FEDER) · DEBT-AUDIT-VBOXSF-IO-001 (P2)                                                      |
 | Gate UEx/INCIBE | Datasets de valor científico (no deadline duro)                                                                                         |
 <!-- /DAY-STATUS -->
