@@ -1,5 +1,5 @@
 # aRGus NDR — BACKLOG
-*Última actualización: DAY 191 — 2026-06-21*
+*Última actualización: DAY 204 — 2026-07-02*
 
 ---
 
@@ -3268,6 +3268,69 @@ Entregaremos datasets de cada fase para que la comunidad científica pueda verif
 que la mejora del modelo es consecuencia real de la señal añadida, no de overfitting
 ni de artefactos del proceso. La honestidad científica es no negociable.
 
+## 🆕 Entradas DAY 201-204 — Eslabon 0 CERRADO (3/3) + emecas+++ (circuito bronce->Kuzu)
+
+> Origen: sesiones DAY 201-204. Cierra `DEBT-CONFIG-BRONZE-HARDCODE-001` y
+> `DEBT-CIRCUIT-BRONZE-ROTATION-FOLLOW-001` (ambas P0, ADR-058 §4). Anade el gate
+> E2E rio-abajo que faltaba (nota informal DAY 203).
+
+### HITO — Eslabon 0 completo (3/3 sub-features)
+
+- **DAY 201** — `correlation_writer.base_dir` desde JSON (mitad WRITER de
+  `DEBT-CONFIG-BRONZE-HARDCODE-001`).
+- **DAY 202** — `correlation-engine` deriva `bronze_root` desde
+  `correlation_engine.json` nuevo (mitad READER de la misma deuda).
+- **DAY 203** — Bronce SEGMENTADO + escritura atomica `.tmp`->rename +
+  `BronzeDirWatcher` (inotify puro, `IN_MOVED_TO`) en el reader. Cierra
+  `DEBT-CIRCUIT-BRONZE-ROTATION-FOLLOW-001`. Verificado en EMECAS++ real:
+  segmentos rotando bajo carga sintetica (`rotation_seconds=30`, valor de
+  prototipo), cero fallos de rename atomico.
+- **Hallazgo DAY 203 (no bloqueante):** `test_correlation_roundtrip.cpp` existia
+  como fuente pero (aparentemente) nunca corria en `ctest` -> nota
+  `DEBT-CORRELATION-ROUNDTRIP-ORPHANED-001` (P1).
+
+### HITO DAY 204 — DEBT-CORRELATION-ROUNDTRIP-ORPHANED-001 cerrada por medicion
+
+- **Causa raiz real (no la que se sospechaba):** el `add_test` SI estaba en
+  `tests/CMakeLists.txt` — el problema era cache de CMake sin reconfigurar en el
+  build dir de la VM. Tras reconfigurar, el test compilo y corrio, pero fallo RED:
+  `Stats::current_file` devolvia el `.tmp` en curso, no el path final post-rename,
+  y el test leia ese valor stale tras el `rename` atomico del destructor.
+- **Fix:** campo nuevo `Stats::current_final_path` en `CorrelationWriter`
+  (`correlation_writer.hpp/.cpp`), sin cambiar la semantica de `current_file`
+  (sigue siendo el `.tmp` en curso, util para monitorizacion). Test actualizado
+  a leer el campo nuevo. **4/4 PASSED** contra el bronce segmentado real.
+
+### HITO DAY 204 — emecas+++: circuito completo bronce->Kuzu (ADR-058 §1)
+
+- **`process_segment` extraida** de `correlation-engine/src/main.cpp` (antes lambda
+  inline) a `correlation_engine/segment_processor.{hpp,cpp}`, anadida a la lib
+  STATIC `correlation_engine`. `main.cpp` pasa a llamarla via un wrapper fino
+  (`handle_segment`) que solo acumula contadores — mismo codigo ejercido por
+  produccion y por el test nuevo, cero reimplementacion.
+- **`test_bronze_to_kuzu_circuit.cpp`** (nuevo, `correlation-engine/tests/`):
+  proceso unico, filesystem puro (sin ZMQ — ese tramo es Eslabon 1+). Dos casos:
+  - `BronzeToKuzuCircuitHappyPath`: `CorrelationWriter` real -> segmento finalizado
+    -> `process_segment` real -> `KuzuGraphSink` real -> `MATCH` en Kuzu confirma
+    `NetworkFlow`+`Alert`+`ALERT_ABOUT`.
+  - `TamperedRowNeverReachesKuzu`: fila con HMAC roto (bit-flip post-cierre) ->
+    descartada antes del sink, grafo permanece vacio. Cierra ADR-058 §1 desde el
+    lado adverso.
+  - Cruza a `ml-detector` (CorrelationWriter + protobuf central de
+    `/vagrant/protobuf/`) igual que `ml-detector/tests/test_correlation_roundtrip.cpp`
+    cruza en sentido inverso — mismo patron ya establecido en el repo.
+- **Target `emecas+++` en el Makefile:** alias de `emecas++` por ahora — el test
+  de circuito completo ya corre dentro de `correlation-engine-test` ->
+  `test-components` -> `test-all`, heredado sin logica nueva. Deja el hueco
+  formado para cuando exista Eslabon 1 (Landing Zone): entonces `emecas+++` gana
+  sus propios Actos rio-abajo sin tocar `emecas`/`emecas++`.
+- **EMECAS++ completo ejecutado en `main`** tras el merge: destroy->up->bootstrap->
+  test-all->test-e2e-synthetic (Acto I/II/III enterprise) — TODO VERDE, pipeline
+  6/6 RUNNING confirmado post-gate (`vault: RUNNING [dev]` incluido).
+- **PRs:** `day204/close-roundtrip-orphaned` (2 commits: fix `current_final_path` +
+  circuito `emecas+++`) + `day204/emecas-plus-plus-target` (Makefile). Ambas ramas
+  fusionadas y borradas (local+remoto).
+
 ## 🔵 BACKLOG — Circuito completo (NO producción) · features restantes DAY 195+
 
 > **Encuadre (decisión Alonso DAY 195):** estas son las features que completan el CIRCUITO,
@@ -4383,7 +4446,16 @@ fallan en semanas/meses por agotamiento de ciclos de escritura NAND.
 
 ### DEBT-CORRELATION-ROUNDTRIP-ORPHANED-001 — test_correlation_roundtrip sin add_test
 **Severidad:** 🟡 P1 — laguna de cobertura preexistente, expuesta DAY 203
-**Estado:** ABIERTO — DAY 203
+**Estado:** ✅ CERRADA — DAY 204. Causa raiz corregida por medicion, no por
+suposicion: el `add_test` SI existia en `tests/CMakeLists.txt` (contra lo que
+registraba la nota DAY 203) — el build dir de la VM tenia cache de CMake sin
+reconfigurar desde que se anadio el bloque. Tras `rm CMakeCache.txt CMakeFiles &&
+cmake ..`, el target compilo y `ctest` lo listo, pero las 4 pruebas fallaron RED
+contra el bronce segmentado: `Stats::current_file` devolvia `current_tmp_path_`
+(el `.csv.tmp` en curso) en vez de `current_final_path_`, y el propio
+`finalize_segment_locked()` hacia desaparecer ese path al renombrarlo. Fix
+quirurgico: campo nuevo `Stats::current_final_path` (`correlation_writer.hpp/.cpp`),
+test actualizado a leerlo. 4/4 PASSED contra el bronce segmentado real.
 **Componente:** `ml-detector/tests/integration/test_correlation_roundtrip.cpp` + `ml-detector/tests/CMakeLists.txt`
 `test_correlation_roundtrip.cpp` existe como fuente pero NO está registrado con
 `add_test` en ningún CMakeLists — ni `make test-all` ni `test-e2e-synthetic-full`
@@ -4414,7 +4486,9 @@ bronce segmentado (DAY 203).
 
 ### DEBT-CIRCUIT-BRONZE-ROTATION-FOLLOW-001 — Rotación de bronce sin follow en el reader
 **Severidad:** 🔴 P0 — Eslabón 0
-**Estado:** ABIERTO — DAY 199 (medida V3, ADR-058 §4)
+**Estado:** ✅ CERRADA — DAY 203 (bronce segmentado `.tmp`->rename atomico +
+`BronzeDirWatcher` inotify `IN_MOVED_TO`, Eslabon 0 3/3). Verificado en EMECAS++ real:
+segmentos rotando bajo carga sintetica, cero fallos de rename atomico.
 **Componente:** `correlation-engine/src/main.cpp` + `ml-detector/src/correlation_writer.cpp`
 El writer rota el CSV de bronce por fecha (`correlation_writer.cpp:177`); el reader abre
 un handle fijo (`main.cpp:104`) y el modo `--follow` no sigue la rotación
@@ -4431,7 +4505,9 @@ nuevo sin reinicio → filas post-rotación se materializan en Kuzu sin pérdida
 
 ### DEBT-CONFIG-BRONZE-HARDCODE-001 — bronze_root hardcodeado en zmq_handler
 **Severidad:** 🔴 P0 — Eslabón 0
-**Estado:** ABIERTO — DAY 199 (medida V3, ADR-058 §4)
+**Estado:** ✅ CERRADA — DAY 201+202 (writer: `CorrelationWriter.base_dir` desde JSON;
+reader: `correlation-engine` deriva `bronze_root` desde `correlation_engine.json`
+nuevo). Ambas mitades de la misma deuda, Eslabon 0 1/3 y 2/3.
 **Componente:** `ml-detector/src/zmq_handler.cpp:154` (writer) + `correlation-engine` (reader)
 El `base_dir` del bronce está hardcodeado a `/vagrant/logs/correlation/argus` en el
 writer; el reader resuelve el path por `--bronze`/`ARGUS_BRONZE_CSV` (argv/env),
