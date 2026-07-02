@@ -21,6 +21,7 @@
 #include "correlation_engine/kuzu_graph_sink.hpp"
 #include "correlation_engine/config_loader.hpp"
 #include "correlation_engine/bronze_dir_watcher.hpp"
+#include "correlation_engine/segment_processor.hpp"
 #include <ctime>
 #include <filesystem>
 #include <algorithm>
@@ -105,29 +106,14 @@ int main(int argc, char* argv[]) {
 
     uint64_t total = 0, discarded = 0;
 
-    // Segmento completo (bronce inmutable, DAY 203) -> se lee entero, sin
-    // offset. Compartido por el modo directorio (replay + callback del watcher).
-    auto process_segment = [&](const std::string& path) {
-        std::ifstream in(path);
-        if (!in) {
-            spdlog::warn("[CONSUMER] no se puede abrir segmento: {}", path);
-            return;
-        }
-        std::string line;
-        uint64_t seg_total = 0, seg_discarded = 0;
-        while (std::getline(in, line)) {
-            if (line.empty()) continue;
-            auto rec = ac::parse_and_verify(line, hmac_key);
-            if (!rec) { ++seg_discarded; continue; }
-            const uint64_t window = ac::window_micros(rec->flow_start_sec, rec->flow_start_nano);
-            const std::string fuid = ac::compute_flow_uid(rec->node_id, rec->community_id, window);
-            sink->write(*rec, fuid);
-            ++seg_total;
-        }
-        total += seg_total;
-        discarded += seg_discarded;
-        spdlog::info("[CONSUMER] segmento {}: {} materializados, {} descartados",
-                     path, seg_total, seg_discarded);
+    // DAY 204: la logica de parseo/verificacion/sink vive en process_segment
+    // (correlation_engine, libreria compartida) -- mismo codigo que ejercen
+    // los tests de circuito completo (emecas+++). Este wrapper solo acumula
+    // los contadores locales de main().
+    auto handle_segment = [&](const std::string& path) {
+        auto r = ac::process_segment(path, hmac_key, *sink);
+        total += r.total;
+        discarded += r.discarded;
     };
 
     if (!bronze_path.empty()) {
@@ -191,12 +177,12 @@ int main(int argc, char* argv[]) {
             }
             std::sort(existing.begin(), existing.end());
         }
-        for (const auto& path : existing) process_segment(path);
+        for (const auto& path : existing) handle_segment(path);
 
         if (follow) {
             spdlog::info("[CONSUMER] --follow: vigilando {} (inotify IN_MOVED_TO, Ctrl-C para salir)",
                         root_dir);
-            ac::BronzeDirWatcher watcher(root_dir, process_segment);
+            ac::BronzeDirWatcher watcher(root_dir, handle_segment);
             watcher.run();  // bloqueante
         }
     }
