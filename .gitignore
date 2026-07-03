@@ -309,3 +309,4 @@ tools/harden_comment_h2_day191.py
 update_docs_day*.py
 tools/close_h2_backlog_day191.py
 tools/update_readme_day191.py
+vagrant-ssh-config

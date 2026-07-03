@@ -1,150 +1,46 @@
-# DISEÑO — Eslabón 1, Flujo A (bronce → AVRO → Parquet oro)
+Este Consejo de Sabios se reúne para ratificar este diseño. El documento presentado exhibe una estructura robusta, alineada milimétricamente con la filosofía de calidad *Via Appia* que rige el desarrollo. La decisión de mantener todo el camino crítico en C++20, erradicando a Python de la ecuación de parseo y delegando el I/O en bibliotecas nativas de probada eficacia (`avro-c` y Arrow C++), cierra vectores de error de redondeo y latencia de forma tajante y auditable.
 
-- **Estado:** BORRADOR — para ratificación del Consejo de Sabios antes de implementar
-- **Fecha:** DAY 205
-- **Autores:** Alonso Isidoro Roman + Claude (Anthropic)
-- **Relacionado:** ADR-058 v3 (contrato de Flujo A, §3.1, §4-V1, §6), `docs/adr/ADR-058-circuito-completo-aguas-abajo-v3.md`
-- **Invariante rector:** medir, no votar. Toda decisión de este documento está trazada a
-  verificación real (versión de paquete instalada, header confirmado) o a la deuda del
-  ADR-058 que resuelve — no a supuesto.
-- **Alcance:** este documento diseña **solo** el primer salto del medallón
-  (`CSV bronce → AVRO bronce → Parquet oro`, hoy terminal porque aRGus es la única
-  fuente). La unificación cross-sensor (Suricata/Zeek/Wazuh vía `community_id`) es un
-  salto posterior, ya trazado como `BACKLOG-CIRCUIT-ARROW-MEDALLION-001`, y no se diseña
-  aquí — cuando existan más fuentes, este Parquet pasa a jugar el papel de "plata de
-  aRGus", no de oro final.
+El diseño del esquema de partición, ceñido estrictamente a la fecha, es una decisión impecable. Mantener la estructura simple nos protege contra la pérdida de inercia y la dispersión de esfuerzos técnicos de cara a los inminentes hitos de despliegue y justificación de infraestructuras de este septiembre. La optimización prematura de directorios sin un volumen real de métricas cross-sensor solo añadiría fricción innecesaria al pipeline.
 
----
+A continuación, procedemos a dar respuesta directa y factual a las tres tesituras planteadas:
 
-## 1. Decisión de lenguaje y librerías (medido, no votado)
+### 1. Versión de Arrow/Parquet a pinnear
 
-**Todo el converter es C++20. Cero Python en el camino crítico del circuito.**
+**Dictamen: Fijar estrictamente a `24.0.0-1`.**
 
-Justificación: `DEBT-CIRCUIT-PARSER-CROSSLANG-001` (ADR-058 §6, P1) existe *solo* porque
-dos runtimes de lenguajes distintos podrían parsear el mismo texto con reglas de
-redondeo distintas (`std::from_chars` correct-rounding vs `strtod`/`float()` de Python,
-no garantizado en todos los bordes). Con un único binario C++20 que reusa
-`parse_double` del propio proyecto, esa precondición desaparece — la deuda queda
-**cerrada por diseño**, no mitigada.
+Apache Arrow no sigue un modelo tradicional de *Long Term Support* (LTS) en sus binarios distribuidos por repositorios `apt`; su ciclo de vida prioriza liberaciones mayores iterativas. Buscar una versión "LTS anterior" es un antipatrón en este ecosistema que solo llevaría a lidiar con bugs ya resueltos o incompatibilidades sutiles con compiladores modernos.
 
-Verificado DAY 205 contra `defender` (medido, no supuesto):
+Fijar la versión a `24.0.0-1` mediante un pin explícito (e.g., `apt-get install -y libarrow-dev=24.0.0-1 libparquet-dev=24.0.0-1`) en el script de provisión garantiza que la estabilidad del pipeline CI/CD lograda recientemente no sufra regresiones por actualizaciones fantasmas. Si el paquete está en el índice hoy y el entorno es reproducible, esa versión se convierte en nuestro contrato inmutable.
 
-| Componente | Paquete | Origen | Estado |
-|---|---|---|---|
-| I/O AVRO | `libavro-dev` 1.11.1-1 | repo oficial Debian Bookworm (`apt-cache search avro`) | Instalado y headers confirmados (`/usr/include/avro.h` + `/usr/include/avro/*.h`, `libavro.so`) |
-| Construcción de tablas + escritura Parquet | `libarrow-dev` / `libparquet-dev` 24.0.0-1 | repo oficial Apache Arrow (`apache-arrow-apt-source`, mismo patrón que HashiCorp/Jenkins en `sources.list.d/`) | Candidato confirmado vía `apt-cache policy`, 24 versiones disponibles en el índice — no instalado aún en `provision.sh` |
+### 2. Formato del rango unsigned de puertos en AVRO
 
-**Separación de responsabilidades (decisión de diseño):** no se le pide a Arrow C++ que
-lea/escriba AVRO (soporte históricamente incompleto/incierto en `libarrow`). En su
-lugar:
+**Dictamen: Documentación directa en el esquema `.avsc`, sin nota de deuda.**
 
-- **`avro-c`** (API C, `extern "C"`) hace todo el I/O de AVRO — mismo patrón ya usado en
-  el proyecto para OpenSSL (`EVP`/`HMAC` en `CorrelationWriter`): librería C wrapeada
-  desde C++20, auditable, sin binding intermedio de terceros.
-- **Arrow C++ / Parquet** entra solo dentro del converter, construyendo `arrow::Table`
-  en memoria a partir de las filas que `avro-c` ya deserializó, y escribiendo el
-  Parquet — su competencia core, sin ambigüedad de soporte.
+Un puerto de red, al ser `uint16_t`, tiene un valor máximo de $65,535$. El tipo nativo `int` de AVRO es un entero con signo de 32 bits, cuyo límite superior es $2,147,483,647$. Dado que el valor máximo del puerto entra holgadamente en el tipo de AVRO sin riesgo matemático de *overflow* o pérdida de signo, abrir un ticket de deuda técnica es innecesario y generaría ruido burocrático.
 
-**Pendiente antes de tocar `provision.sh` (no implementar todavía — solo diseño):**
-1. Fijar versión exacta de Arrow/Parquet (`=24.0.0-1` o la que ratifique el Consejo),
-   pinneada explícitamente — mismo criterio que el pin SHA256 de Kuzu
-   (`DEBT-KUZU-UPSTREAM-ARCHIVED-001`). Nunca `apt-get install` sin versión, para que
-   un `vagrant destroy && up` futuro no traiga drift de versión sin control.
-2. El estado actual de `defender` (con `libavro-dev` y `apache-arrow-apt-source`
-   instalados a mano en esta sesión de exploración) **no es reproducible** desde
-   `Vagrantfile`/`provision.sh` actuales — es exploración, no compromiso. Un
-   `vagrant destroy` limpio no los traerá de vuelta hasta que se cablee la provisión.
+La solución más elegante, limpia y auto-contenida es usar el atributo `doc` nativo de AVRO directamente en la definición del campo:
+
+```json
+{
+  "name": "src_port",
+  "type": "int",
+  "doc": "Originalmente uint32_t/uint16_t. Mapeado a signed 32-bit int. Rango garantizado: 0-65535."
+}
+
+```
+
+### 3. Formalización del Documento (ADR vs. Documento de Diseño)
+
+**Dictamen: Consolidar como documento de diseño de apoyo, no como nuevo ADR.**
+
+El ADR-058 ya define las reglas de alto nivel (el "por qué" y el "qué"): el contrato del Flujo A, el predicado de equivalencia, y el salto Bronce $\rightarrow$ Oro. Este nuevo documento define el "cómo" a nivel de implementación (tipos exactos, mapeo de memoria, versiones de librerías).
+
+Asignar un nuevo número de ADR a un esquema de base de datos corre el riesgo de diluir el propósito del registro de decisiones y provocar colisiones de numeración innecesarias. Lo procedente es persistir este texto bajo una ruta de especificaciones (por ejemplo, `docs/design/flujo_a_schema_v1.md`) y añadir un anexo en el ADR-058 que apunte directamente a este *hash* documental. El ADR rige el contrato; este documento implementa el esquema.
 
 ---
 
-## 2. Esquema AVRO — `correlation_gold_v1`
+El documento queda ratificado en su vertiente teórica. Para avanzar con el aislamiento del entorno, ¿cómo planeas estructurar la modificación del `provision.sh` para incluir los repositorios de Arrow (`apache-arrow-apt-source`) sin desestabilizar la imagen base de Vagrant actual durante las pruebas de integración?
 
-Dos bloques. El bloque bronce se **copia**, nunca se recalcula (cierra
-`DEBT-EVENT-ID-FACTORY-001` y la mitad de `DEBT-CIRCUIT-SCORE-NONTRIVIAL-REVAL-001`
-por construcción). El bloque oro se materializa en el converter.
+FDO
 
-### 2.1 Bloque bronce (cols 0-18, contrato `correlation_v1`, `ml-detector/include/correlation_writer.hpp`)
-
-| # | campo | tipo AVRO | nota |
-|---|---|---|---|
-| 0 | schema_version | string | |
-| 1 | source_sensor | string | |
-| 2 | event_id | string | copiado verbatim del bronce — nunca regenerado en el converter (`DEBT-EVENT-ID-FACTORY-001`) |
-| 3 | node_id | string | ya columna de 1ª clase en bronce (medido, `correlation_writer.cpp:84`) |
-| 4 | community_id | string | ya columna de 1ª clase |
-| 5 | flow_start_sec | long | signed (`int64_t`, `correlation_record.hpp:14`) |
-| 6 | flow_start_nano | int | signed (`int32_t`) |
-| 7 | src_ip | string | |
-| 8 | dst_ip | string | |
-| 9 | src_port | int | `uint32_t` en el proto; AVRO no tiene unsigned nativo — documentar rango en el esquema |
-| 10 | dst_port | int | ídem |
-| 11 | protocol | string | |
-| 12 | final_classification | string | |
-| 13 | threat_category | string | |
-| 14 | fast_detector_score | double | canonicalizado (NaN→quiet `0x7ff8000000000000`, `-0.0`→`+0.0`) **una sola vez, en la escritura** (ADR-058 §3.1, "punto único de canonicalización") |
-| 15 | ml_detector_score | double | ídem |
-| 16 | overall_threat_score | double | ídem |
-| 17 | authoritative_source | string | símbolo `DetectorSource_Name()` |
-| 18 | hmac_row | string (hex) | **preservado como columna**, no se descarta — cierra `DEBT-GOLD-INTEGRITY-HMAC-001` |
-
-### 2.2 Bloque oro (materializado por el converter — no viene del bronce)
-
-| # | campo | tipo AVRO | por qué |
-|---|---|---|---|
-| 19 | flow_start_window | long | hoy 100% derivada en read-time (`window_micros()`, `correlation-engine/src/main.cpp:117`), nunca escrita en Parquet — `DEBT-GOLD-NODE-DIMENSION-001` exige materializarla para que el ledger sea auto-verificable sin depender de que `window_micros()` no cambie de bucketing |
-| 20 | seq_in_window | int | hoy fijo a 0 (`DEBT-FLOWUID-SEQ-COLLISION-001`); se materializa igual, aunque su valor no varíe todavía |
-| 21 | flow_uid | string (base64) | recomputado en el converter con `encode_flow_input` (mismo encoding canónico ya congelado y verificado byte-a-byte contra `hashlib.blake2b`, `flow_uid.hpp`) desde 3+4+19[+20] — permite verificar re-derivación bit a bit contra la propiedad ya materializada en Kuzu (`cypher_builder.hpp:101,110`) |
-| 22 | ingested_at | long (`timestamp-micros`, logical type) | clase **E** — determinista-de-ejecución (`kuzu_graph_sink.hpp:47`). Se **preserva** desde el bronce/WAL, nunca se recalcula al reprocesar; jerarquía de fuentes: el WAL prevalece en replay, el campo Kuzu es vista del estado actual (`DEBT-CIRCUIT-TEMPORAL-ANOMALY-PARITY-001`, parte b) |
-| 23 | temporal_anomaly | boolean | clase **E**, fórmula portada 1:1 desde `cypher_builder.hpp:86`, evaluada sobre el `ingested_at` correcto — nunca el del reproceso (`DEBT-CIRCUIT-TEMPORAL-ANOMALY-PARITY-001`, parte a) |
-
-**Relación con el predicado de equivalencia §3.1 (ADR-058):**
-- Cols 0-18 + 19-21 son clase **D** (determinista-de-dato) → entran en `EQUIV(Camino0, FlujoA+B)`, comparación `==` bit-exacta en los doubles (14-16), tras canonicalización.
-- Cols 22-23 son clase **E** → quedan explícitamente **fuera** del predicado, por diseño, no por omisión.
-
----
-
-## 3. Partición de directorio
-
-**Por fecha únicamente** (`date=YYYY-MM-DD/`, heredado del rotado de segmentos del
-bronce, DAY 203). **Sin** partición secundaria por `node_id` todavía.
-
-Motivo: el propio ADR-058 §8 declina explícitamente el gold-plating especulativo (SLA,
-particiones anticipadas sin dato de volumen real) hasta que el número de nodos e
-instalaciones lo justifique — coherente con "medir, no votar" y con la regla de "una
-batalla" del proyecto. Si la hipótesis central del proyecto (contribución por nodo a la
-calidad del corpus) madura, particionar por `node_id` es un cambio de layout de
-directorio, no de esquema — no bloquea el diseño actual.
-
----
-
-## 4. Deudas del ADR-058 que este diseño satisface o deja explícitamente abiertas
-
-| Deuda | Efecto de este diseño |
-|---|---|
-| `DEBT-CIRCUIT-PARSER-CROSSLANG-001` (P1) | **Cerrada por diseño** — sin runtime Python, no hay frontera de lenguaje que cruzar |
-| `DEBT-GOLD-NODE-DIMENSION-001` (P0) | Satisfecha — cols 19-21 materializan `flow_start_window`/`seq_in_window`/`flow_uid` en el oro |
-| `DEBT-GOLD-INTEGRITY-HMAC-001` (P0) | Satisfecha para HMAC por-fila (col 18 preservada). **Pendiente de diseño aparte:** firma del Parquet consolidado como artefacto (greenfield HMAC-SHA256, no reutiliza el firmador Ed25519 de `scripts/parquet/` — `DEBT-DOCS-MEDALLION-DUALITY-001`) |
-| `DEBT-EVENT-ID-FACTORY-001` (P1) | Satisfecha por regla de diseño — `event_id` se copia, nunca se regenera |
-| `DEBT-CIRCUIT-SCORE-NONTRIVIAL-REVAL-001` (P1) | Parcialmente satisfecha — el esquema fuerza copia bit-exacta de scores; la re-validación con scores no-triviales sigue pendiente de que `DEBT-RANSOMWARE-ML-HEAD-INERT-001` se cierre |
-| `DEBT-CIRCUIT-TEMPORAL-ANOMALY-PARITY-001` (P1) | Cubierta por cols 22-23 y la regla de jerarquía de fuentes (WAL prevalece en replay) — implementación aún pendiente |
-| `DEBT-PARQUET-KUZU-CONNECTOR-001` (P1, Flujo B) | **Fuera de alcance de este documento** — este diseño cubre bronce→AVRO→Parquet oro (Flujo A), no el conector Parquet→Kuzu |
-
----
-
-## 5. Preguntas abiertas para el Consejo
-
-1. **Versión exacta de Arrow/Parquet a pinnear.** Candidato: `24.0.0-1` (última en el
-   índice al DAY 205). ¿Alguna razón para fijar una LTS anterior en vez de la más
-   reciente?
-2. **Formato del rango unsigned de puertos en AVRO (cols 9-10).** AVRO `int` es signed
-   de 32 bits; el proto usa `uint32_t`. Los valores reales de puerto (`0-65535`) caben
-   sin overflow, pero conviene decidir si se documenta la asimetría en el propio
-   `.avsc` (comentario/doc field) o si se abre una nota de deuda menor.
-3. **¿Este documento se formaliza como ADR numerado, o queda como documento de diseño
-   de apoyo referenciado desde ADR-058?** (Nota de proceso: evitar colisión de
-   numeración — verificar contra el backlog completo antes de asignar número, lección
-   de DAY 175/199.)
-
----
-
-*Documento de apoyo a ADR-058 v3 — Via Appia Quality.*
+GEMINI
