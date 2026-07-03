@@ -730,7 +730,47 @@ BASHRC_EOF
             else
               echo "✅ Kuzu ya instalado"
             fi
+            # ── libavro-c 1.11.1 (I/O AVRO, zona bronce del circuito) ─────────────
+                  # DEBT-CIRCUIT-PARSER-CROSSLANG-001 cerrada por diseño: I/O AVRO en API C
+                  # wrapeada desde C++20, mismo patrón que OpenSSL en CorrelationWriter.
+                  # Ver docs/design/eslabon-1-flujo-a-avro-parquet.md (ratificado Consejo DAY 205).
+                  if [ ! -f /usr/include/avro.h ]; then
+                    echo "📦 Instalando libavro-dev (I/O AVRO bronce, Eslabón 1)..."
+                    apt-get install -y --no-install-recommends libavro-dev
+                    echo "✅ avro-c $(dpkg -s libavro-dev | grep '^Version' | awk '{print $2}') instalado"
+                  else
+                    echo "✅ libavro-dev ya instalado"
+                  fi
 
+                  # ── Apache Arrow / Parquet 24.0.0-1 (zona oro, escritura Parquet) ─────
+                  # Versión pinneada explícita — regla de proceso ratificada Consejo DAY 205:
+                  # "se pinnea la primera versión que supera la batería de validación
+                  # reproducible; toda actualización posterior exige revalidación completa".
+                  # Smoke test verde (12/12) en defender DAY 205 contra esta versión exacta.
+                  ARROW_PIN="24.0.0-1"
+                  if [ ! -f /etc/apt/sources.list.d/apache-arrow.sources ] && \
+                     ! dpkg -l apache-arrow-apt-source >/dev/null 2>&1; then
+                    echo "📦 Añadiendo repo oficial Apache Arrow (Bookworm)..."
+                    wget -q https://apache.jfrog.io/artifactory/arrow/debian/apache-arrow-apt-source-latest-bookworm.deb \
+                      -O /tmp/arrow-apt.deb
+                    apt-get install -y /tmp/arrow-apt.deb
+                    rm -f /tmp/arrow-apt.deb
+                    apt-get update -qq
+                    echo "✅ Repo apache-arrow-apt-source añadido"
+                  else
+                    echo "✅ Repo apache-arrow-apt-source ya presente"
+                  fi
+
+                  INSTALLED_ARROW=$(dpkg -s libarrow-dev 2>/dev/null | grep '^Version' | awk '{print $2}' || echo "none")
+                  if [ "$INSTALLED_ARROW" != "$ARROW_PIN" ]; then
+                    echo "📦 Instalando libarrow-dev=${ARROW_PIN} libparquet-dev=${ARROW_PIN} (pinneado)..."
+                    apt-get install -y -V "libarrow-dev=${ARROW_PIN}" "libparquet-dev=${ARROW_PIN}"
+                    apt-mark hold libarrow-dev libparquet-dev
+                    echo "✅ Arrow/Parquet ${ARROW_PIN} instalado y bloqueado (apt-mark hold)"
+                  else
+                    echo "✅ libarrow-dev ${ARROW_PIN} ya instalado y pinneado"
+                    apt-mark hold libarrow-dev libparquet-dev >/dev/null 2>&1 || true
+                  fi
     DEPENDENCIES_EOF
 
     # ════════════════════════════════════════════════════════════════════════

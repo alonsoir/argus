@@ -3028,3 +3028,12 @@ emecas+++: emecas++
 	@echo "║  (test_bronze_to_kuzu_circuit, dentro de test-all)          ║"
 	@echo "║  Eslabon 1+ (Landing Zone) anadira Actos propios aqui       ║"
 	@echo "╚════════════════════════════════════════════════════════════╝"
+.PHONY:eslabon1-smoke-build eslabon1-smoke-test
+eslabon1-smoke-build:
+	g++ -std=c++20 -O2 -Werror -Wall -Wextra \
+	  -o docs/design/eslabon-1-flujo-a-avro-parquet/smoke/eslabon1_smoke \
+	  docs/design/eslabon-1-flujo-a-avro-parquet/smoke/eslabon1_smoke.cpp \
+	  $$(pkg-config --cflags --libs avro-c arrow parquet)
+
+eslabon1-smoke-test: eslabon1-smoke-build
+	docs/design/eslabon-1-flujo-a-avro-parquet/smoke/eslabon1_smoke
