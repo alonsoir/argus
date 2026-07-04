@@ -310,3 +310,4 @@ update_docs_day*.py
 tools/close_h2_backlog_day191.py
 tools/update_readme_day191.py
 vagrant-ssh-config
+docs/design/eslabon-1-flujo-a-avro-parquet/converter-prototype/bronze_to_gold_converter
