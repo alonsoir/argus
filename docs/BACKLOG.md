@@ -4827,3 +4827,97 @@ de `temporal_anomaly` en Camino 0 y Flujo A+B; test de replay → `ingested_at` 
 desde bronce, no reescrito con el tiempo de reproceso.
 **Estimación:** 1 sesión, con Eslabón 1/2 — depende de decisión de jerarquía de fuentes
 (WAL vs Kuzu, aún abierta bajo `DEBT-LABEL-WAL-001`).
+
+---
+### DEBT-SECRETS-MANAGER-PERSISTENCE-001 — SecretsManager in-memory, sin persistencia cifrada
+**Severidad:** 🟡 P1 — pre-producción, toca inmutabilidad/verificabilidad del ledger
+**Estado:** ABIERTO — DAY 205 (medido, no bug — hueco arquitectónico sin decidir)
+**Componente:** `etcd-server/src/secrets_manager.cpp` (`SecretsManager`)
+
+Medido DAY 205: `SecretsManager::generate_hmac_key()` genera con `openssl rand` puro
+y llama `store_key(key)` → `keys_storage_` (`std::map` en memoria, protegido por
+`storage_mutex_`). **Cero persistencia a disco.** Confirmado por ausencia:
+`sudo find / -iname "*hmac*"` en toda la VM no devuelve ningún fichero de secretos
+fuera de headers de librerías del sistema. Consecuencia verificada: las claves que
+firmaron los segmentos de bronce de la sesión anterior (`logs/correlation/argus/
+2026-07-02-*.csv`) murieron con el proceso `etcd-server` de aquella sesión — filas
+irrecuperables, sin relación con `grace_period_seconds`/`min_rotation_interval_seconds`
+de ADR-004 (esa lógica protege rotación *voluntaria*, no muerte de proceso).
+
+**No es una regresión de una decisión previa.** `DEBT-BRONZE-KEY-PROVISIONING-001`
+(DAY 175) pedía que la clave viniera de etcd vía `/secrets/<componente>` — y eso se
+cumple (`etcd_server.cpp:139`, `get_hmac_key()`). Lo que nunca se decidió es de qué
+backend persiste `SecretsManager` por debajo. `SecretsManager` es de DAY 54, anterior
+en ~100 días a la arquitectura `ICryptoProvider`/`VaultProvider` (DAY 150-166,
+ADR-045 composición) — quedó fuera de ese refactor, no lo incumple.
+
+**Decisión (Alonso, DAY 205):** las claves HMAC deben vivir en el backend cifrado de
+Vault, integradas con la arquitectura `ICryptoProvider`/`VaultProvider` ya existente
+— no un almacén paralelo nuevo. Coherente con el patrón "reusar, no reimplementar"
+que gobierna el resto del proyecto desde ADR-045.
+
+**Por qué no basta con "no persistir nunca" (descartado explícitamente):** un
+atacante con acceso suficiente para robar un fichero de `/etc/ml-defender/` casi
+siempre puede leer también la memoria del proceso vivo (`ptrace`, `/proc/<pid>/mem`,
+core dump forzado) — la memoria pura no protege contra ese atacante, solo contra uno
+más débil, al coste de que el propio sistema legítimo pierda la capacidad de
+verificar su propio pasado. Para un ledger "Via Appia" (inmutable, durable Y
+verificable), eso es peor: si algún día hace falta una investigación forense sobre
+bronce de semanas atrás y la clave murió con un reinicio, se pierde la cadena de
+custodia. Ver `DEBT-PROD-ANTI-PTRACE-HARDENING-001` para la mitigación complementaria
+del vector de memoria (defensa en profundidad, no sustituto de esta deuda).
+
+**Test de cierre:** `SecretsManager` persiste claves (activas y en grace period) en
+el backend Vault cifrado, vía una interfaz compuesta con el patrón `ICryptoProvider`
+existente (o una nueva `IHmacKeyStore` con el mismo espíritu que `IVaultTransport`/
+`ICacheManager` de ADR-045). Un `pkill etcd-server` + restart recupera las mismas
+claves activas y de grace period — filas de bronce firmadas antes del reinicio siguen
+siendo verificables después. Rotación (`rotate_hmac_key`) sobrevive a reinicio del
+proceso sin romper la ventana de gracia de ADR-004.
+**Estimación:** 2-3 sesiones (diseño de interfaz + integración con Vault plumbing existente).
+
+---
+
+### DEBT-PROD-ANTI-PTRACE-HARDENING-001 — Mitigación multi-capa contra lectura de memoria de proceso
+**Severidad:** 🟡 P1 — pre-producción, defensa en profundidad
+**Estado:** ABIERTO — DAY 205 (decisión Alonso: máxima vigilancia, relajar solo con justificación profesional documentada de un admin)
+**Componente:** Vagrantfile (hardened VM) + systemd units de los 6 componentes + perfiles AppArmor + Falco rules
+
+Hallazgo DAY 205 (discusión sobre `DEBT-SECRETS-MANAGER-PERSISTENCE-001`): la
+"seguridad" de que un secreto viva solo en memoria de proceso es ilusoria contra un
+atacante con `CAP_SYS_PTRACE`/root — puede leer `/proc/<pid>/mem` sin necesidad de
+`gdb`/`strace` instalados, con un `open()`+`pread()` de diez líneas compiladas a
+mano. Mitigación en 5 capas, ninguna suficiente por sí sola — capas del kernel hacia
+arriba, coherente con el patrón BSR ya establecido (AppArmor bloquea compiladores,
+DAY 132-133):
+
+1. **Blocklist de binarios LotL** (`gdb`, `strace`, `ltrace`) ausentes de la imagen
+   hardened — defensa barata, mismo patrón que el bloqueo de compiladores.
+2. **`CapabilityBoundingSet=~CAP_SYS_PTRACE`** en cada unit systemd del pipeline
+   (los 6 componentes de `provision.sh` — `etcd-server`, `sniffer`, `ml-detector`,
+   `firewall-acl-agent`, `rag-ingester`, `rag-security`).
+3. **AppArmor `deny ptrace`** explícito en cada perfil — AppArmor media `ptrace`
+   nativamente; ya hay perfiles `enforce` desde DAY 130+ para varios componentes.
+4. **Yama LSM**: `sysctl kernel.yama.ptrace_scope=2` (o `3`, sin excepción alguna)
+   system-wide — mismo patrón de tuning que `rp_filter`/`ip_forward` ya en el
+   Vagrantfile.
+5. **Falco vigilando** — regla custom sobre syscall `ptrace` o apertura de
+   `/proc/*/mem` contra PIDs del pipeline. Se suma bajo el paraguas ya existente de
+   `DEBT-PROD-FALCO-RULES-EXTENDED-001` (no ID nuevo para esta pieza — es una regla
+   más dentro de esa deuda ya abierta).
+
+**Nota de despliegue (Alonso, DAY 205):** postura inicial es máxima restricción en
+las 5 capas. Si un administrador de una instalación real necesita relajar alguna
+capa por una razón operativa legítima (p.ej. depuración forense autorizada), se
+documenta esa excepción explícitamente — no se afloja por defecto. Mismo espíritu
+que `DEBT-IRP-AUTOISO-FALSE-001`: proteger primero, negociar excepciones con
+justificación después, nunca al revés.
+
+**Test de cierre:** `gdb`/`strace`/`ltrace` ausentes de la imagen hardened (`dpkg -l`
+vacío). `systemd-analyze security <unit>` confirma `CAP_SYS_PTRACE` fuera del
+bounding set en los 6 units. Perfiles AppArmor con `deny ptrace` verificados
+`enforce`. `sysctl kernel.yama.ptrace_scope` = 2 o 3 persistido en `/etc/sysctl.conf`.
+Test RED: intento de `ptrace`/lectura de `/proc/*/mem` contra un PID del pipeline
+desde un proceso no autorizado → bloqueado por al menos una capa Y detectado por
+Falco.
+**Estimación:** 1-2 sesiones (config + perfiles + regla Falco + test RED de verificación).
