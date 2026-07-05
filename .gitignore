@@ -320,3 +320,6 @@ verify_day207_canonical.py
 close_action3_backlog.py
 integrate_converter_cmake.py
 update_converter_readme_banner.py
+integrate_flujo_b_e2e_test.py
+integrate_loader_cmake.py
+fix_flujo_b_e2e_test_order.py

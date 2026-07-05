@@ -136,6 +136,18 @@ target_link_libraries(bronze_to_gold_converter PRIVATE
         correlation_engine
         ${AVROC_LIBRARIES} ${ARROW_LIBRARIES} ${PARQUET_LIBRARIES})
 
+# ── DAY 208 — parquet_to_kuzu_loader: Flujo B (ADR-058 §6, Eslabón 2) ──
+# Ratificado por el Consejo 9/9 (DAY 207). Lee Parquet oro (Flujo A), escribe
+# a Kuzu reusando KuzuGraphSink sin cambios. Alcance v1: esquema mono-fuente
+# correlation_v1 (DEBT-PARQUET-GOLD-SCHEMA-MULTISENSOR-001 queda fuera).
+# NO usa avro-c (Flujo B no toca AVRO) -- solo Arrow/Parquet + correlation_engine.
+add_executable(parquet_to_kuzu_loader tools/parquet_to_kuzu_loader.cpp)
+target_include_directories(parquet_to_kuzu_loader PRIVATE
+        ${ARROW_INCLUDE_DIRS} ${PARQUET_INCLUDE_DIRS} ${KUZU_INC})
+target_link_libraries(parquet_to_kuzu_loader PRIVATE
+        correlation_engine
+        ${ARROW_LIBRARIES} ${PARQUET_LIBRARIES}
+        spdlog::spdlog)
 # ── DAY 204 — emecas+++: circuito completo bronce->Kuzu, un solo proceso, FS puro ──
 # ADR-058 §1: inyectar evento sintetico -> verificar HMAC en bronce -> verificar
 # MATCH en Kuzu. Cruza a ml-detector (CorrelationWriter real), mismo patron que
@@ -163,3 +175,30 @@ target_link_libraries(test_bronze_to_kuzu_circuit PRIVATE
 target_compile_definitions(test_bronze_to_kuzu_circuit PRIVATE
         SCHEMA_PATH="${CMAKE_CURRENT_SOURCE_DIR}/schema/schema.cypher")
 add_test(NAME test_bronze_to_kuzu_circuit COMMAND test_bronze_to_kuzu_circuit)
+
+# ── DAY 208 — test_flujo_b_end_to_end: verificación de Kuzu dentro de EMECAS+++ ──
+# Invoca los binarios REALES (bronze_to_gold_converter, parquet_to_kuzu_loader)
+# como subprocesos -- caja negra, sin refactorizar el converter. Petición de
+# Alonso: confirmar que Kuzu funciona bien como parte del gate de calidad.
+add_executable(test_flujo_b_end_to_end tests/test_flujo_b_end_to_end.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/../ml-detector/src/correlation_writer.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/../protobuf/network_security.pb.cc)
+target_include_directories(test_flujo_b_end_to_end PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/../ml-detector/include
+        ${CMAKE_CURRENT_SOURCE_DIR}/../protobuf
+        ${KUZU_INC}
+        /usr/local/include)
+target_link_libraries(test_flujo_b_end_to_end PRIVATE
+        correlation_engine
+        ${CORRELATION_V1_LIB}
+        ${Protobuf_LIBRARIES}
+        spdlog::spdlog
+        OpenSSL::SSL
+        OpenSSL::Crypto
+        GTest::gtest_main)
+target_compile_definitions(test_flujo_b_end_to_end PRIVATE
+        SCHEMA_PATH="${CMAKE_CURRENT_SOURCE_DIR}/schema/schema.cypher"
+        CONVERTER_BIN_PATH="$<TARGET_FILE:bronze_to_gold_converter>"
+        LOADER_BIN_PATH="$<TARGET_FILE:parquet_to_kuzu_loader>")
+add_dependencies(test_flujo_b_end_to_end bronze_to_gold_converter parquet_to_kuzu_loader)
+add_test(NAME test_flujo_b_end_to_end COMMAND test_flujo_b_end_to_end)
