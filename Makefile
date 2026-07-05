@@ -3032,7 +3032,7 @@ emecas+++: emecas++
 .PHONY:eslabon1-smoke-build eslabon1-smoke-test
 
 eslabon1-smoke-build:
-	@vagrant ssh defender -c "cd /vagrant && g++ -std=c++20 -O2 -Werror -Wall -Wextra \
+	@vagrant ssh defender -c "cd /vagrant && export PKG_CONFIG_PATH=/usr/lib/x86_64-linux-gnu/pkgconfig:\$$PKG_CONFIG_PATH && g++ -std=c++20 -O2 -Werror -Wall -Wextra \
 	  -o docs/design/eslabon-1-flujo-a-avro-parquet/smoke/eslabon1_smoke \
 	  docs/design/eslabon-1-flujo-a-avro-parquet/smoke/eslabon1_smoke.cpp \
 	  \$$(pkg-config --cflags --libs avro-c arrow parquet)"
