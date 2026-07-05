@@ -37,6 +37,19 @@ find_library(KUZU_LIB NAMES kuzu PATHS /usr/local/lib REQUIRED)
 find_path(KUZU_INC kuzu.hpp PATHS /usr/local/include REQUIRED)
 message(STATUS "libkuzu: ${KUZU_LIB}")
 
+# ── avro-c + Arrow/Parquet (DAY 207: bronze_to_gold_converter graduado a produccion) ──
+# Fallback defensivo: en shells no-interactivos (p.ej. `vagrant ssh -c`, o CI),
+# .bashrc puede no cargarse -- y si se carga, puede apuntar a una ruta erronea
+# (lib64 vs lib/x86_64-linux-gnu en Debian/Ubuntu). Lección DAY 207: no asumir,
+# anadir la ruta real como fallback sin pisar un PKG_CONFIG_PATH ya correcto.
+if(EXISTS "/usr/lib/x86_64-linux-gnu/pkgconfig")
+    set(ENV{PKG_CONFIG_PATH} "/usr/lib/x86_64-linux-gnu/pkgconfig:$ENV{PKG_CONFIG_PATH}")
+endif()
+pkg_check_modules(AVROC REQUIRED avro-c)
+pkg_check_modules(ARROW REQUIRED arrow)
+pkg_check_modules(PARQUET REQUIRED parquet)
+message(STATUS "avro-c: ${AVROC_VERSION} | arrow: ${ARROW_VERSION} | parquet: ${PARQUET_VERSION}")
+
 # ── librería del engine: flow_uid (header-only) + reader + sinks ──
 add_library(correlation_engine STATIC
         src/correlation_reader.cpp
@@ -109,6 +122,19 @@ find_package(Threads REQUIRED)
 add_executable(kuzu_concurrency_smoke experiments/kuzu_concurrency_smoke.cpp)
 target_include_directories(kuzu_concurrency_smoke PRIVATE ${KUZU_INC})
 target_link_libraries(kuzu_concurrency_smoke PRIVATE correlation_engine Threads::Threads)
+
+# ── DAY 207 — bronze_to_gold_converter: graduado de prototipo a produccion ──
+# Eslabon 1, Flujo A (ADR-058 §3, ratificado 9/9 DAY 205). Lee bronce real,
+# escribe AVRO (bronce, copia exacta) + Parquet oro (cols D, 0-21). Enlaza
+# contra correlation_engine (hereda libsodium+OpenSSL::Crypto PUBLIC) +
+# avro-c/Arrow/Parquet. NO es un test -- sin add_test, se ejecuta a mano
+# (mismo patron que kuzu_concurrency_smoke: medicion/herramienta, no test CI).
+add_executable(bronze_to_gold_converter tools/bronze_to_gold_converter.cpp)
+target_include_directories(bronze_to_gold_converter PRIVATE
+        ${AVROC_INCLUDE_DIRS} ${ARROW_INCLUDE_DIRS} ${PARQUET_INCLUDE_DIRS})
+target_link_libraries(bronze_to_gold_converter PRIVATE
+        correlation_engine
+        ${AVROC_LIBRARIES} ${ARROW_LIBRARIES} ${PARQUET_LIBRARIES})
 
 # ── DAY 204 — emecas+++: circuito completo bronce->Kuzu, un solo proceso, FS puro ──
 # ADR-058 §1: inyectar evento sintetico -> verificar HMAC en bronce -> verificar

@@ -5047,3 +5047,45 @@ mismo grafo bit a bit" entre Camino 0 y Flujo A+B, ahora con N fuentes en vez
 de una.
 **Estimación:** no evaluada todavía — depende del diseño de esquema, que aún
 no existe.
+
+
+### ACCION-3-DAY206 — Destino de bronze_to_gold_converter.cpp — RESUELTO
+**Estado:** ✅ CERRADA — DAY 207 (decisión explícita, pendiente desde acción 3 de DAY 206).
+
+**Decisión:** `bronze_to_gold_converter.cpp` **GRADÚA de prototipo a producción**.
+Deja de vivir en `docs/design/eslabon-1-flujo-a-avro-parquet/converter-prototype/`
+y pasa a `correlation-engine/tools/bronze_to_gold_converter.cpp` (movido con
+`git mv`, historial preservado).
+
+**Motivo:** consenso del Consejo de Sabios durante la ronda de ratificación de
+Flujo B (`parquet_to_kuzu_loader`, DAY 207) — GLM, DeepSeek, Kimi y Qwen
+coincidieron en que, si el converter se gradúa, su contraparte de Flujo B
+debería vivir en el mismo directorio por simetría y cohesión del pipeline
+Parquet→Kuzu. Con el converter ya graduado, `parquet_to_kuzu_loader` puede
+construirse desde el principio en `correlation-engine/tools/` sin ambigüedad
+de ubicación.
+
+**Integración realizada:**
+- `correlation-engine/CMakeLists.txt` — nuevo target `bronze_to_gold_converter`,
+  enlazado contra la librería estática `correlation_engine` (hereda
+  `libsodium`+`OpenSSL::Crypto` ya `PUBLIC` en ese target, sin repetir enlaces).
+  Nuevo bloque `pkg_check_modules` para `avro-c`/`arrow`/`parquet`, con fallback
+  defensivo de `PKG_CONFIG_PATH` (misma lección de `/usr/lib/x86_64-linux-gnu/
+  pkgconfig` vs `/usr/lib64/pkgconfig` descubierta hoy en `eslabon1-smoke-build`).
+  Sin `add_test` — es herramienta/medición ejecutada a mano, mismo patrón que
+  `kuzu_concurrency_smoke`, no parte del CI (`ctest`).
+- Compilado vía `cmake --build . --target bronze_to_gold_converter` (ya no vía
+  `g++` suelto de línea de comandos).
+
+**Verificación (medir, no votar):** ejecutado contra el mismo segmento bronce
+real (`logs/correlation/argus/2026-07-04-032653.csv`) usado en las
+verificaciones previas de DAY 206-207. Resultado: 24/24 filas convertidas, 0
+descartadas, `flow_uid` de fila 0 (`rqEhfygxYytNrd1g28YhDD+XZ/y63hETuTfzSUqc1dY=`)
+**bit-idéntico** al obtenido con el binario compilado a mano antes de la
+integración en CMake. Cero regresión por el cambio de sistema de build.
+
+**Documentación:** `docs/design/eslabon-1-flujo-a-avro-parquet/converter-prototype/`
+se mantiene como registro histórico del proceso de diseño y ratificación
+(README, evidence/, documento de diseño 9/9) — no se mueve, solo el `.cpp`.
+El `README.md` de esa carpeta se actualiza con una nota señalando la nueva
+ubicación del código.
