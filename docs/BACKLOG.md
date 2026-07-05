@@ -4921,3 +4921,171 @@ Test RED: intento de `ptrace`/lectura de `/proc/*/mem` contra un PID del pipelin
 desde un proceso no autorizado → bloqueado por al menos una capa Y detectado por
 Falco.
 **Estimación:** 1-2 sesiones (config + perfiles + regla Falco + test RED de verificación).
+
+
+### DEBT-CIRCUIT-CANONICALIZE-PARITY-001 — Canonicalización IEEE 754 divergía entre Camino 0 y Flujo A+B
+**Severidad:** 🟡 P1 — Eslabón 1 (equivalencia parcial §3.1)
+**Estado:** ✅ CERRADA — DAY 207 (abierta y cerrada el mismo día, con evidencia).
+
+Camino 0 (`segment_processor.cpp` → Kuzu) nunca canonicalizaba NaN/-0.0 en los
+3 scores; Flujo A+B (converter) sí lo hacía, pero solo localmente en su propio
+`.cpp`. Detectado durante el diseño del test de equivalencia parcial §3.1
+(DAY 207), antes de que ninguna fila real con NaN/-0.0 hubiera llegado a
+producción — corregido preventivamente.
+
+Corrige la fila 16a de la tabla de cambios v2→v3 de ADR-058 (decreto original:
+"punto único: converter" — DAY 199, antes de que el converter existiera como
+código real). Ver sección "Corrección post-v3 (DAY 207)" en
+`docs/adr/ADR-058-circuito-completo-aguas-abajo-v3.md` para el razonamiento
+completo.
+
+**Resolución:** punto único reubicado a `parse_and_verify`
+(`correlation-engine/src/correlation_reader.cpp`), vía nuevo header
+`correlation_engine/canonical_double.hpp`. El converter retira su copia local.
+
+**Evidencia:**
+- `test_correlation_reader.cpp`: 8/8 PASSED (incluye 2 tests nuevos NaN/-0.0,
+  verificación bit-exacta vía `std::bit_cast<uint64_t>`).
+- `make correlation-engine-test`: 7/7 PASSED (suite completa, sin regresión
+  en Camino 0).
+- Converter recompilado sin la copia local: 24/24 filas idénticas contra
+  `logs/correlation/argus/2026-07-04-032653.csv` (mismo dataset del DAY 206).
+
+
+### DEBT-KUZU-CONTINUITY-001 — Continuidad de KuzuDB como producto (riesgo de arquitectura, no bloqueante)
+**Severidad:** 🟡 P2 — riesgo de arquitectura documentado, NO acción inmediata
+**Estado:** ABIERTO — DAY 207 (decisión explícita: NO depreciar hoy)
+
+**Hallazgo (Kimi, ronda de Consejo sobre Flujo B; verificado independientemente
+por Claude vía búsqueda web, no aceptado sin comprobación):** KuzuDB fue
+**archivado el 10 de octubre de 2025**, el mismo día que se publicó la versión
+`0.11.3` — la misma que este proyecto tiene pineada (Vagrantfile, DAY 205). La
+razón salió a la luz en **febrero de 2026**: una declaración ante la Digital
+Markets Act de la UE reveló que **Apple adquirió Kùzu Inc. el 9 de octubre de
+2025**, un día antes del archivado. Upstream queda en modo solo-lectura — no
+habrá más fixes ni features de los autores originales. Existen forks
+comunitarios (`LadybugDB`, `bighorn` de Kineviz) sin respaldo corporativo ni
+continuidad garantizada.
+
+**Fuentes verificadas (no solo la palabra de un modelo del Consejo):**
+- https://github.com/kuzudb/kuzu (repo archivado, nota "working on something new")
+- https://pypi.org/project/kuzu/ (confirma archivado, sin nuevos releases)
+- The Register, "KuzuDB graph database abandoned, community mulls options" (14 oct 2025)
+- BigGo News, "KuzuDB, the Promising Embedded Graph Database, is Suddenly Archived" (13 oct 2025)
+- ArcadeDB blog, "Neo4j Alternatives in 2026" (13 mar 2026) — confirma adquisición Apple
+
+**Decisión de Alonso (DAY 207) — NO depreciar hoy:** el objetivo actual del
+proyecto es demostrar la hipótesis de que los datasets generados por el
+pipeline vía grafo son de calidad suficiente para inferir datasets
+comportamentales de calidad académica — no entregar una demo funcional del
+pipeline. Una demo funcional llega después de demostrar la hipótesis, con
+fondos FEDER ya asegurados para investigación posterior.
+
+**La evaluación de migración (a FalkorDB, ArcadeDB, fork comunitario
+LadybugDB, u otro engine C++) se difiere explícitamente a uno de estos dos
+disparadores, no antes:**
+1. La hipótesis inicial queda demostrada → estudio de alternativas post-FEDER
+   (septiembre 2026), con tiempo y fondos, sin la presión de un plazo de demo.
+2. Aparece un impedimento técnico real en Kuzu 0.11.3 que bloquee avanzar en
+   la demostración de la hipótesis (no un riesgo teórico de continuidad, sino
+   un bloqueo funcional concreto medido contra el pipeline real).
+
+**Por qué no evaluar ya, con tiempo de sobra (razón explícita, no evasión):**
+demasiadas opciones (FalkorDB, ArcadeDB, ArangoDB, Memgraph, forks propios),
+tiempo limitado hoy, y no se sabe todavía si la versión actual de Kuzu será
+insuficiente para el prototipo demostrador — evaluar migración antes de saber
+si hace falta sería trabajo especulativo, contrario a "medir, no votar".
+
+**Test de cierre (cuando se active, no antes):** evaluación comparativa de
+alternativas (licencia, madurez, soporte Cypher, rendimiento embebido C++)
+solo si se cumple el disparador 1 o 2 de arriba.
+**Estimación:** no aplica hoy — evaluación futura, alcance a definir cuando se active.
+
+
+### DEBT-PARQUET-GOLD-SCHEMA-MULTISENSOR-001 — Esquema Parquet gold para combinación configurable de señales (aRGus/Suricata/Zeek/Wazuh)
+**Severidad:** 🟡 P1 — bloqueante para Flujo B completo (no para la v1 mono-fuente)
+**Estado:** ABIERTO — DAY 207 (diseño pendiente, requiere su propia ronda de Consejo)
+
+**Contexto:** durante el diseño de Flujo B (`parquet_to_kuzu_loader`,
+`DEBT-PARQUET-KUZU-CONNECTOR-001`), Alonso señaló que el Parquet oro real de
+producción puede combinar señales de aRGus + Suricata + Zeek + Wazuh, con
+**activación configurable por señal** — necesario para el método científico:
+poder determinar si activar/desactivar una señal aumenta, disminuye o altera
+las combinaciones de detección resultantes. Esto es parte del objetivo de
+"medida de precisión" del proyecto, no un detalle secundario.
+
+**Por qué es una deuda separada, no parte de la propuesta ya ratificada:**
+la ronda de Consejo de DAY 207 sobre `parquet_to_kuzu_loader` ratificó el
+diseño **contra el esquema mono-fuente `correlation_v1`** (24 campos, todos
+`source_sensor="argus"`). Ningún miembro del Consejo evaluó el caso
+multi-sensor porque no estaba en el documento enviado — su ratificación NO
+cubre esta cuestión, y sería incorrecto asumir que sí.
+
+**Preguntas abiertas que esta deuda debe resolver (no responder aquí, dejar
+para su propia sesión de diseño + Consejo):**
+- ¿El esquema Parquet oro tiene columnas fijas comunes para todos los
+  sensores (con `source_sensor` como discriminador de fila), o cada sensor
+  aporta columnas propias además de las comunes (schema Arrow con nulls
+  donde una señal no aportó dato)?
+- ¿Cómo sabe `parquet_to_kuzu_loader` en tiempo de lectura qué combinación de
+  señales está activa en un Parquet dado — un schema Arrow único
+  superconjunto, o un schema por combinación?
+- ¿El grafo Kuzu necesita poder trazar qué combinación de señales produjo
+  cada `Alert`/`NetworkFlow` (más allá de `authoritative_source`, que hoy
+  refleja el detector ganador, no el conjunto de señales activas)?
+
+**Decisión de alcance (Alonso, DAY 207):** la v1 de `parquet_to_kuzu_loader`
+se construye contra el esquema mono-fuente ya ratificado (coherente con "un
+día, una batalla"). Esta deuda se resuelve en una sesión propia, con su
+propia ronda de Consejo, antes de que Flujo B se considere completo para el
+caso de producción real multi-sensor.
+
+**Test de cierre:** diseño de esquema multi-sensor documentado y ratificado
+por el Consejo; `parquet_to_kuzu_loader` extendido para manejar la(s)
+combinación(es) de señales activas sin perder la propiedad de "mismo input →
+mismo grafo bit a bit" entre Camino 0 y Flujo A+B, ahora con N fuentes en vez
+de una.
+**Estimación:** no evaluada todavía — depende del diseño de esquema, que aún
+no existe.
+
+
+### ACCION-3-DAY206 — Destino de bronze_to_gold_converter.cpp — RESUELTO
+**Estado:** ✅ CERRADA — DAY 207 (decisión explícita, pendiente desde acción 3 de DAY 206).
+
+**Decisión:** `bronze_to_gold_converter.cpp` **GRADÚA de prototipo a producción**.
+Deja de vivir en `docs/design/eslabon-1-flujo-a-avro-parquet/converter-prototype/`
+y pasa a `correlation-engine/tools/bronze_to_gold_converter.cpp` (movido con
+`git mv`, historial preservado).
+
+**Motivo:** consenso del Consejo de Sabios durante la ronda de ratificación de
+Flujo B (`parquet_to_kuzu_loader`, DAY 207) — GLM, DeepSeek, Kimi y Qwen
+coincidieron en que, si el converter se gradúa, su contraparte de Flujo B
+debería vivir en el mismo directorio por simetría y cohesión del pipeline
+Parquet→Kuzu. Con el converter ya graduado, `parquet_to_kuzu_loader` puede
+construirse desde el principio en `correlation-engine/tools/` sin ambigüedad
+de ubicación.
+
+**Integración realizada:**
+- `correlation-engine/CMakeLists.txt` — nuevo target `bronze_to_gold_converter`,
+  enlazado contra la librería estática `correlation_engine` (hereda
+  `libsodium`+`OpenSSL::Crypto` ya `PUBLIC` en ese target, sin repetir enlaces).
+  Nuevo bloque `pkg_check_modules` para `avro-c`/`arrow`/`parquet`, con fallback
+  defensivo de `PKG_CONFIG_PATH` (misma lección de `/usr/lib/x86_64-linux-gnu/
+  pkgconfig` vs `/usr/lib64/pkgconfig` descubierta hoy en `eslabon1-smoke-build`).
+  Sin `add_test` — es herramienta/medición ejecutada a mano, mismo patrón que
+  `kuzu_concurrency_smoke`, no parte del CI (`ctest`).
+- Compilado vía `cmake --build . --target bronze_to_gold_converter` (ya no vía
+  `g++` suelto de línea de comandos).
+
+**Verificación (medir, no votar):** ejecutado contra el mismo segmento bronce
+real (`logs/correlation/argus/2026-07-04-032653.csv`) usado en las
+verificaciones previas de DAY 206-207. Resultado: 24/24 filas convertidas, 0
+descartadas, `flow_uid` de fila 0 (`rqEhfygxYytNrd1g28YhDD+XZ/y63hETuTfzSUqc1dY=`)
+**bit-idéntico** al obtenido con el binario compilado a mano antes de la
+integración en CMake. Cero regresión por el cambio de sistema de build.
+
+**Documentación:** `docs/design/eslabon-1-flujo-a-avro-parquet/converter-prototype/`
+se mantiene como registro histórico del proceso de diseño y ratificación
+(README, evidence/, documento de diseño 9/9) — no se mueve, solo el `.cpp`.
+El `README.md` de esa carpeta se actualiza con una nota señalando la nueva
+ubicación del código.

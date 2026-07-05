@@ -1,3 +1,29 @@
+## ESTADO ACTUAL (DAY 207) — GRADUADO A PRODUCCIÓN
+
+**El código de `bronze_to_gold_converter.cpp` YA NO VIVE AQUÍ.** Se graduó de
+prototipo a producción el DAY 207 (decisión de Alonso, consenso del Consejo de
+Sabios durante la ratificación de Flujo B — ver
+`docs/council/PROPUESTA -- Flujo B, parquet_to_kuzu_loader (DAY 207).md`).
+
+**Ubicación actual del código:** `correlation-engine/tools/bronze_to_gold_converter.cpp`
+(movido con `git mv`, historial de commits preservado; integrado en
+`correlation-engine/CMakeLists.txt` como target de build oficial).
+
+**Este fichero (`README.md`) se conserva intacto como registro histórico** del
+proceso de diseño, el bloqueo real de HMAC encontrado DAY 205, y su
+resolución DAY 206 — según decisión explícita de Alonso de no reescribir la
+historia del diseño, solo mover el código ya verificado. Todo lo que sigue
+debajo de esta línea describe el estado **DAY 205, ya superado**; no refleja
+el estado actual del componente.
+
+**Estado real hoy (DAY 207):** compilado vía CMake, verificado 24/24 filas
+bit-idénticas contra el mismo segmento bronce real, tanto con el binario
+compilado a mano (DAY 206) como con el nuevo target de CMake (DAY 207). Ver
+`docs/BACKLOG.md` → "ACCION-3-DAY206 — Destino de bronze_to_gold_converter.cpp"
+para el cierre formal de esta decisión.
+
+---
+
 # converter-prototype/ — ESTADO: NO VERIFICADO
 
 `bronze_to_gold_converter.cpp` es un **borrador sin compilar ni ejecutar**, distinto

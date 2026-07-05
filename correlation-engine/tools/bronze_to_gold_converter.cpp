@@ -15,6 +15,16 @@
 //   - firma del Parquet consolidado como artefacto (DEBT-GOLD-INTEGRITY-HMAC-001,
 //     la parte de "firma del artefacto"; el HMAC POR FILA sí se preserva aquí)
 //
+// CANONICALIZACION IEEE754 (DAY 207): la definicion local de
+// canonicalize_double() y sus 3 llamadas SE RETIRARON de este
+// fichero. El punto unico ahora vive en parse_and_verify
+// (correlation_engine/canonical_double.hpp) -- corrige ADR-058 v3
+// fila 16a ("punto unico: converter"): el confluente REAL de
+// Camino 0 y Flujo A+B es parse_and_verify, no este converter.
+// Este fichero hereda records ya canonicalizados sin hacer nada
+// especial. Verificado: 24/24 filas identicas antes/despues del
+// cambio contra logs/correlation/argus/2026-07-04-032653.csv.
+//
 // USO: bronze_to_gold_converter <bronce.csv> <bronce_salida.avro> <oro_salida.parquet>
 //      Requiere env ARGUS_BRONZE_HMAC_KEY_HEX (64 hex chars, mismo patrón que el
 //      lado lector de DEBT-BRONZE-KEY-PROVISIONING-001).
@@ -45,17 +55,6 @@ using argus::correlation::CorrelationRecord;
 using argus::correlation::parse_and_verify;
 
 namespace {
-
-// --- Canonicalización IEEE 754 (ADR-058 §3.1) — idéntica a la del smoke test ---
-double canonicalize_double(double v) {
-    if (std::isnan(v)) {
-        return std::bit_cast<double>(std::uint64_t{0x7ff8000000000000ULL});
-    }
-    if (v == 0.0) {
-        return 0.0;  // fuerza +0.0, incluso si venía -0.0
-    }
-    return v;
-}
 
 // hex_decode: mismo patrón que CorrelationWriter (ml-detector), lado escritor.
 // 64 hex chars -> 32 bytes crudos. Aquí, lado lector del converter.
@@ -163,9 +162,6 @@ std::vector<GoldRow> read_bronze_segment(const std::string& path,
         GoldRow row;
         row.bronze = *parsed;
         row.hmac_row = *hmac;
-        row.bronze.fast_detector_score = canonicalize_double(row.bronze.fast_detector_score);
-        row.bronze.ml_detector_score = canonicalize_double(row.bronze.ml_detector_score);
-        row.bronze.overall_threat_score = canonicalize_double(row.bronze.overall_threat_score);
 
         // Bloque oro: flow_start_window materializado con el MISMO window_micros()
         // que alimenta el hash en Camino 0 (correlation-engine/src/main.cpp:117).
