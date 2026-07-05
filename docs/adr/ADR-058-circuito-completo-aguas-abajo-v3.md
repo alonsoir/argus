@@ -657,3 +657,57 @@ con nombre.** El V2 se conserva intacto; esta v3 es fichero separado.
 > aparezca al tratar las deudas se estudia entonces, con humildad, contra el binario de ese
 > momento. **Via Appia: cada piedra medida en su sitio; las que aún no existen, señalizadas
 > en el mapa, no inventadas en la calzada.**
+
+---
+
+## Corrección post-v3 (DAY 207)
+
+**Fecha:** 2026-07-05
+**Corrige:** fila 16a de la tabla de cambios v2→v3 — *"Canonicalización IEEE 754:
+punto único (converter, función compartida), test asume grafos canónicos"*
+(Qwen/ChatGPT/Gemini, DAY 199).
+
+**Hallazgo (DAY 207, durante diseño del test de equivalencia parcial §3.1):**
+en DAY 199 el converter (Flujo A) todavía no existía como código — nació DAY 205.
+El decreto "punto único: converter" no consideró que **Camino 0 nunca canonicaliza**
+antes de escribir a Kuzu (`segment_processor.cpp` → `cypher_builder.hpp::make_bindings`
+usan `r.fast_detector_score`/`ml_detector_score`/`overall_threat_score` tal cual
+los devuelve `parse_and_verify`, sin tocar). Si el converter es el único punto que
+canonicaliza, Camino 0 y Flujo A+B **divergen bit a bit** en cualquier fila con
+NaN o `-0.0` en los scores — mismo `flow_uid`, score distinto.
+
+**Corrección:** el punto único de canonicalización IEEE 754 se reubica de
+"el converter" a **`parse_and_verify`** (`correlation-engine/src/correlation_reader.cpp`),
+porque es el confluente real de ambos caminos — Camino 0 lo llama vía
+`segment_processor.cpp`, Flujo A+B lo llama directamente. Un solo sitio,
+heredado por los dos sin que cada consumidor tenga que acordarse de aplicarlo.
+
+**Implementación:**
+- Nuevo header `correlation-engine/include/correlation_engine/canonical_double.hpp`
+  (misma lógica ya existente y duplicada en el smoke test y el converter:
+  NaN → `0x7ff8000000000000` canónico, `-0.0` → `+0.0`).
+- `parse_and_verify` aplica `canonicalize_double` a los 3 scores tras el parseo,
+  **después** de la verificación HMAC (`ct_equal`) — cero impacto en la frontera
+  de confianza, solo en el valor final materializado.
+- El converter retira su definición local y sus 3 llamadas — hereda records
+  ya canónicos sin hacer nada especial.
+
+**Evidencia (medir, no votar):**
+- `correlation-engine/tests/test_correlation_reader.cpp` — 2 tests nuevos
+  (`CanonicalizesNaNScore`, `CanonicalizesNegativeZeroScore`), verifican bit
+  exacto vía `std::bit_cast<uint64_t>`. Suite completa: 8/8 PASSED.
+- `make correlation-engine-test` (ctest completo del correlation-engine,
+  incluye Camino 0): 7/7 PASSED — sin regresión.
+- Converter recompilado tras retirar la copia local, ejecutado contra el mismo
+  segmento bronce real del DAY 206 (`logs/correlation/argus/2026-07-04-032653.csv`):
+  24/24 filas convertidas, 0 descartadas — resultado idéntico al de antes del cambio.
+
+**Nota — alcance:** esto cierra la equivalencia de canonicalización entre Camino 0
+y Flujo A+B *hoy*. NO cierra el predicado §3.1 completo (que se mide sobre la
+proyección Kuzu, no sobre el Parquet intermedio) — eso sigue bloqueado en
+`DEBT-PARQUET-KUZU-CONNECTOR-001` (Flujo B, greenfield). Cuando Flujo B exista,
+debe copiar el Parquet ya-canónico a Kuzu; **no** hace falta canonicalizar de nuevo
+ahí, porque ambas fuentes (Camino 0 y Flujo A+B) ya comparten el mismo punto único.
+
+**Registrado en:** `docs/BACKLOG.md` → `DEBT-CIRCUIT-CANONICALIZE-PARITY-001`
+(abierta y cerrada el mismo día, con evidencia).

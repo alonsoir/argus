@@ -6,6 +6,9 @@
 #include <sstream>
 #include <string>
 #include <vector>
+#include <bit>
+#include <cmath>
+#include <cstdint>
 
 using namespace argus::correlation;
 
@@ -79,4 +82,26 @@ TEST(CorrelationReader, RejectsNonNumericField) {
     bad.replace(bad.find(",1027,"), 6, ",NOPE,");
     std::string line = bad + "," + hmac_hex(KEY, bad);
     EXPECT_FALSE(parse_and_verify(line, KEY).has_value());
+}
+
+TEST(CorrelationReader, CanonicalizesNaNScore) {
+    std::string bad = BODY;
+    // ml_detector_score (campo 15) = NaN no canónico (payload distinto de cero
+    // pero no el bit pattern 0x7ff8...).
+    bad.replace(bad.find(",0.870000,"), 10, ",nan,");
+    std::string line = bad + "," + hmac_hex(KEY, bad);
+    auto r = parse_and_verify(line, KEY);
+    ASSERT_TRUE(r.has_value());
+    EXPECT_TRUE(std::isnan(r->ml_detector_score));
+    EXPECT_EQ(std::bit_cast<uint64_t>(r->ml_detector_score), 0x7ff8000000000000ULL);
+}
+
+TEST(CorrelationReader, CanonicalizesNegativeZeroScore) {
+    std::string bad = BODY;
+    bad.replace(bad.find(",0.890000,"), 10, ",-0.0,");  // overall_threat_score (16)
+    std::string line = bad + "," + hmac_hex(KEY, bad);
+    auto r = parse_and_verify(line, KEY);
+    ASSERT_TRUE(r.has_value());
+    EXPECT_EQ(r->overall_threat_score, 0.0);
+    EXPECT_EQ(std::bit_cast<uint64_t>(r->overall_threat_score), 0x0ULL);  // +0.0, no -0.0
 }

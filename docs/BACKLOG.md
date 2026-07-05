@@ -4921,3 +4921,32 @@ Test RED: intento de `ptrace`/lectura de `/proc/*/mem` contra un PID del pipelin
 desde un proceso no autorizado → bloqueado por al menos una capa Y detectado por
 Falco.
 **Estimación:** 1-2 sesiones (config + perfiles + regla Falco + test RED de verificación).
+
+
+### DEBT-CIRCUIT-CANONICALIZE-PARITY-001 — Canonicalización IEEE 754 divergía entre Camino 0 y Flujo A+B
+**Severidad:** 🟡 P1 — Eslabón 1 (equivalencia parcial §3.1)
+**Estado:** ✅ CERRADA — DAY 207 (abierta y cerrada el mismo día, con evidencia).
+
+Camino 0 (`segment_processor.cpp` → Kuzu) nunca canonicalizaba NaN/-0.0 en los
+3 scores; Flujo A+B (converter) sí lo hacía, pero solo localmente en su propio
+`.cpp`. Detectado durante el diseño del test de equivalencia parcial §3.1
+(DAY 207), antes de que ninguna fila real con NaN/-0.0 hubiera llegado a
+producción — corregido preventivamente.
+
+Corrige la fila 16a de la tabla de cambios v2→v3 de ADR-058 (decreto original:
+"punto único: converter" — DAY 199, antes de que el converter existiera como
+código real). Ver sección "Corrección post-v3 (DAY 207)" en
+`docs/adr/ADR-058-circuito-completo-aguas-abajo-v3.md` para el razonamiento
+completo.
+
+**Resolución:** punto único reubicado a `parse_and_verify`
+(`correlation-engine/src/correlation_reader.cpp`), vía nuevo header
+`correlation_engine/canonical_double.hpp`. El converter retira su copia local.
+
+**Evidencia:**
+- `test_correlation_reader.cpp`: 8/8 PASSED (incluye 2 tests nuevos NaN/-0.0,
+  verificación bit-exacta vía `std::bit_cast<uint64_t>`).
+- `make correlation-engine-test`: 7/7 PASSED (suite completa, sin regresión
+  en Camino 0).
+- Converter recompilado sin la copia local: 24/24 filas idénticas contra
+  `logs/correlation/argus/2026-07-04-032653.csv` (mismo dataset del DAY 206).

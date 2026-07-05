@@ -1,4 +1,5 @@
 #include "correlation_engine/correlation_reader.hpp"
+#include "correlation_engine/canonical_double.hpp"
 #include <openssl/hmac.h>
 #include <openssl/evp.h>
 #include <iomanip>
@@ -97,6 +98,11 @@ std::optional<CorrelationRecord> parse_and_verify(const std::string& line,
     if (!parse_double(f[14], r.fast_detector_score))  return std::nullopt;
     if (!parse_double(f[15], r.ml_detector_score))    return std::nullopt;
     if (!parse_double(f[16], r.overall_threat_score)) return std::nullopt;
+    // DAY 207 — canonicalizar tras parseo, punto único compartido por
+    // Camino 0 (Kuzu) y Flujo A+B (Parquet): ambos parten de aquí.
+    r.fast_detector_score   = canonicalize_double(r.fast_detector_score);
+    r.ml_detector_score     = canonicalize_double(r.ml_detector_score);
+    r.overall_threat_score  = canonicalize_double(r.overall_threat_score);
     r.authoritative_source = f[17];
     return r;
 }
