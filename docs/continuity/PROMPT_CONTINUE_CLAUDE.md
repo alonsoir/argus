@@ -1,4 +1,4 @@
-# PROMPT DE CONTINUIDAD — DAY 208 (continúa DAY 205-207)
+# PROMPT DE CONTINUIDAD — DAY 209 (continúa DAY 205-208)
 # Instrucciones generales para Claude:
 
 1. Piensa antes de codificar
@@ -19,177 +19,195 @@
 ## Invariantes
 - **medir, no votar** — verificar contra fichero, nunca contra memoria; trazar hacia atrás desde el binario.
 - **JSON is the law** · **bronce PRESERVA, gold DECIDE** · **Via Appia** (ledger inmutable durable y verificable; Kuzu = proyección reconstruible).
-- **EMECAS++** antes de cualquier merge · **PR obligatorio** (main tiene branch protection — push directo rechazado, confirmado DAY 206 y de nuevo DAY 207).
+- **EMECAS++** antes de cualquier merge · **PR obligatorio** (main tiene branch protection).
 - **Consejo de Sabios** (9 modelos: Claude, ChatGPT, DeepSeek, Gemini, GLM, Grok, Kimi, Mistral, Qwen) ratifica decisiones de arquitectura.
-- Python3 heredoc (lectura→memoria→escritura) para editar ficheros en macOS · NUNCA `sed -i` · `vagrant ssh defender -c` para comandos del VM (defender = VM de desarrollo principal, lleva todo el peso; hay más VMs en el mismo Vagrantfile) · commits/push desde el HOST.
+- Python3 heredoc (lectura→memoria→escritura) para editar ficheros en macOS · NUNCA `sed -i` · `vagrant ssh defender -c` para comandos del VM · commits/push desde el HOST.
 - Un día, una batalla. Features pequeñas (días, no semanas), merge frecuente a main vía EMECAS++.
 - `.PHONY` en Makefile: lista separada por ESPACIOS, nunca comas (lección DAY 205).
-- Al comitear y hacer push a una rama de trabajo, verificar SIEMPRE con `git log --oneline -3 <rama>` y `git log --oneline -3 origin/<rama>` que el commit realmente llegó (lección DAY 206).
-- **Lección nueva DAY 207 — crear la rama de trabajo ANTES del primer commit, no después.** Un commit suelto se hizo directo sobre `main` local por trabajar sin rama abierta; el push lo rechazó branch protection (sin daño real: el commit se rescató con `git checkout -b <rama>` y `main` local se realineó con `git reset --hard origin/main`). Regla operativa: en cuanto haya trabajo suelto que comitear en una sesión, `git checkout -b day<N>/<slug>` es el PRIMER comando, no el último.
-- **Lección nueva DAY 207 — pkg-config en shells no-interactivos.** `vagrant ssh <vm> -c "..."` no carga `.bashrc` de forma fiable, y el `.bashrc` de `defender` además apunta a `/usr/lib64/pkgconfig` (convención RedHat), mientras los `.pc` reales de Debian/Ubuntu viven en `/usr/lib/x86_64-linux-gnu/pkgconfig`. Cualquier target de Makefile o CMakeLists que dependa de `pkg-config` en shell no-interactivo debe exportar `PKG_CONFIG_PATH` explícitamente (con el doble-escape `\$$` que Make exige para emitir un `$` literal al shell remoto) en vez de asumir que el entorno lo resuelve solo.
-- **Lección nueva DAY 207 — no asumir que un target de `test-all` cubre lo que parece cubrir.** Antes de lanzar `emecas+++` (20-30 min, `vagrant destroy` incluido), se verificó a mano la cadena de dependencias del Makefile (`emecas+++`→`emecas++`→`emecas`→`test-all`→`test-components`→`correlation-engine-test`) para confirmar que el gate realmente ejercitaba los cambios de la sesión, y se descubrió que `test-parquet` (otra dependencia de `test-all`) es un pipeline legacy no relacionado (`schema_ml_detector`/`schema_firewall`, mayo), no algo que tocara el trabajo de Eslabón 1.
+- Al comitear y hacer push, verificar SIEMPRE con `git log --oneline -3 <rama>` y `git log --oneline -3 origin/<rama>` (lección DAY 206).
+- Crear la rama de trabajo ANTES del primer commit, no después (lección DAY 207, aplicada correctamente DAY 208).
+- pkg-config en shells no-interactivos: `vagrant ssh <vm> -c "..."` no carga `.bashrc` de forma fiable; exportar `PKG_CONFIG_PATH` explícitamente con doble-escape `\$$` en Makefile/CMake (lección DAY 207).
+- No asumir que un target de `test-all` cubre lo que parece cubrir — verificar la cadena de dependencias del Makefile antes de lanzar `emecas+++` (lección DAY 207).
+- **Lección nueva DAY 208 — orden de declaración en CMakeLists importa, CMake no avisa de variables vacías.** Un bloque `target_link_libraries(... ${Protobuf_LIBRARIES} ...)` insertado ANTES del `find_package(Protobuf REQUIRED)` correspondiente (que vivía más abajo en el fichero, en otra sección) enlazó silenciosamente contra una variable vacía — símbolos de protobuf indefinidos en el link, sin ningún aviso de CMake sobre la causa real. Regla operativa: cualquier bloque nuevo que use `${VARIABLE}` de un `find_package`/`find_library` debe insertarse DESPUÉS de esa declaración en el fichero, nunca asumir que "está en el mismo CMakeLists" es suficiente.
+- **Lección nueva DAY 208 — los scripts scratch `.py` se cuelan en `git add` si no se meten en `.gitignore` INMEDIATAMENTE tras crearlos**, no al final de la sesión. Pasó dos veces (DAY 207 y DAY 208): un `git add` amplio capturó scripts de un solo uso junto con el código real, obligando a `git restore --staged` para desenredar. Regla operativa: en cuanto Claude cree un script Python de un solo uso para editar ficheros, añadirlo al `.gitignore` en el mismo momento, antes de cualquier `git add`.
+- **Lección nueva DAY 208 — capturar decisiones estratégicas en BACKLOG en el momento, no "para después".** Hoy hubo una conversación larga y sustanciosa sobre arquitectura de flota multi-instalación, servicio GeoIP propio, gobernanza de datos entre instalaciones, y una línea de investigación concreta con MITRE ATT&CK/Atomic Red Team para el ransomware_detector inerte. **Nada de esto se llegó a escribir en BACKLOG.md como entrada formal** — quedó solo en la conversación. Acción 1 de DAY 209: capturarlo antes de que se diluya.
 
-## Estado al cierre de DAY 207 — Canonicalización unificada, Flujo B ratificado, converter graduado, EMECAS+++ verde, mergeado a main
+## Estado al cierre de DAY 208 — Flujo B completo, verificado en limpio, EMECAS+++ verde (1h36m)
 
 ### Resumen de lo cerrado hoy
 
-1. **Brecha real encontrada y cerrada: canonicalización IEEE754 divergía entre Camino 0 y Flujo A+B.**
-   Durante el diseño del test de equivalencia parcial (predicado §3.1, ADR-058),
-   se detectó que `parse_and_verify` (consumido tanto por Camino 0 vía
-   `segment_processor.cpp` como por el converter de Flujo A) nunca canonicalizaba
-   NaN/-0.0 en los 3 scores — solo el converter lo hacía, y solo localmente en su
-   propio `.cpp` (duplicado además en el smoke test). Si una fila de bronce trae
-   NaN/-0.0, Kuzu (Camino 0) y el Parquet (Flujo A+B) habrían divergido bit a bit
-   en el score, con el mismo `flow_uid`.
-   **Corrección:** nuevo header `correlation-engine/include/correlation_engine/
-   canonical_double.hpp`, aplicado dentro de `parse_and_verify`
-   (`correlation-engine/src/correlation_reader.cpp`) tras la verificación HMAC —
-   punto único real, porque `parse_and_verify` es el confluente de ambos caminos,
-   no "el converter" como decía la fila 16a de ADR-058 v3 (corregida con una
-   sección "Corrección post-v3 DAY 207" en el propio ADR).
-   **Verificado:** 2 tests nuevos en `test_correlation_reader.cpp`
-   (`CanonicalizesNaNScore`, `CanonicalizesNegativeZeroScore`, bit-exacto vía
-   `std::bit_cast`) — 8/8 PASSED. Suite completa del correlation-engine — 7/7
-   PASSED, sin regresión en Camino 0. El converter retiró su copia local;
-   recompilado, 24/24 filas idénticas al resultado previo.
-   Deuda registrada y cerrada el mismo día: `DEBT-CIRCUIT-CANONICALIZE-PARITY-001`.
+1. **`parquet_to_kuzu_loader.cpp` escrito e integrado en producción.**
+   `correlation-engine/tools/parquet_to_kuzu_loader.cpp`, según el diseño
+   ratificado por el Consejo el DAY 207 (ver
+   `docs/council/PROPUESTA -- Flujo B, parquet_to_kuzu_loader (DAY 207).md`):
+   - Bucle multi-chunk completo desde el primer commit (nunca `chunk(0)` a
+     ciegas), con `WARNING` vía `spdlog` si `num_chunks() > 1` — decisión de
+     Alonso, desviación deliberada de la mayoría del Consejo.
+   - Manejo de error explícito si el Parquet gold no existe
+     (`fs::exists` antes de tocar Arrow) — verificado en la práctica cuando
+     `/tmp` desapareció tras un `vagrant destroy` a mitad de sesión.
+   - `flow_uid` (col 21) leído directo, nunca recomputado. Cols 18-20
+     documentadas explícitamente como no usadas, con el motivo de cada una.
+   - Integrado en `correlation-engine/CMakeLists.txt` (target nuevo, sin
+     `avro-c` — Flujo B no toca AVRO).
 
-2. **Diseño de Flujo B (`parquet_to_kuzu_loader`) ratificado por el Consejo (9/9).**
-   Propuesta en `docs/council/PROPUESTA -- Flujo B, parquet_to_kuzu_loader (DAY 207).md`,
-   con resolución final anexada al mismo fichero. Decisiones:
-   - **(a)** Lector-puro-reusa-sink — unánime. No amplía `IGraphSink`/`KuzuGraphSink`.
-   - **(b)** Chunking — **desviación deliberada de la mayoría del Consejo**
-     (que proponía assert-y-diferir): Alonso decidió **bucle multi-chunk completo
-     desde el primer commit**, con `WARNING` (no excepción/fail-fast) si
-     `num_chunks() > 1` — procesa todo correctamente siempre, solo avisa cuando
-     el supuesto de "ficheros pequeños" deja de cumplirse, sin cortar ejecución.
-   - **(c)** `ingested_at`/`seq_in_window` — unánime, sin tratamiento especial,
-     ya excluidos del predicado §3.1 por ADR-058 v3.
-   - **(d)** Ubicación — resuelta hoy mismo por la decisión de la acción 3
-     (ver punto 3 abajo): `correlation-engine/tools/`, junto al converter.
-   Hallazgos del Consejo incorporados al diseño (pendientes de codificar):
-   manejo de error explícito si el Parquet gold no existe (GLM); nota de punto
-   único de verdad, el loader no conoce Cypher/Kuzu (ChatGPT).
-   **`parquet_to_kuzu_loader.cpp` NO existe todavía como código** — solo el
-   diseño ratificado. Es la acción 1 de DAY 208.
+2. **`test_flujo_b_end_to_end.cpp` — verificación real, no solo diseñada.**
+   En vez de refactorizar el converter (bloqueo que se dejó pendiente ayer),
+   se optó por invocar los binarios REALES (`bronze_to_gold_converter`,
+   `parquet_to_kuzu_loader`) como subprocesos — caja negra, más fiel a cómo
+   los usaría un operador. El test:
+   - Escribe bronce real con `CorrelationWriter` real (2 filas sintéticas,
+     1 MALICIOUS + 1 BENIGN, community_id distintos).
+   - Ejecuta converter + loader reales vía `std::system()`.
+   - Verifica el grafo Kuzu resultante: `NetworkFlow=2`, `Alert=1`,
+     `TelemetryEvent=1` (hueco detectado al diseñar el test — la verificación
+     manual de ayer no comprobó `TelemetryEvent`, que `cypher_builder.hpp`
+     genera SIEMPRE para filas no-MALICIOUS), y las dos aristas.
+   - **Calcula el `flow_uid` esperado de forma independiente** dentro del
+     propio test (llamando a `compute_flow_uid`/`window_micros` directamente)
+     y confirma que Kuzu tiene exactamente esos nodos — cierra el hueco de
+     "lo comparé a ojo" de la verificación manual previa.
+   - Kuzu de test aislado y desechable (path temporal, borrado al final) —
+     nunca compartido con nada persistente.
+   Bug encontrado y corregido durante la integración: el bloque de
+   `target_link_libraries` quedó insertado ANTES de `find_package(Protobuf
+   REQUIRED)`/`find_library(CORRELATION_V1_LIB...)` (que viven en la sección
+   de `test_bronze_to_kuzu_circuit`, más abajo en el fichero) — símbolos de
+   protobuf indefinidos en el link, sin aviso de CMake sobre la causa real
+   (ver lección nueva arriba). Corregido moviendo el bloque al final del
+   fichero, después de esas declaraciones.
 
-3. **Acción 3 (pendiente desde DAY 206) resuelta: converter GRADUADO a producción.**
-   `bronze_to_gold_converter.cpp` movido con `git mv` de
-   `docs/design/eslabon-1-flujo-a-avro-parquet/converter-prototype/` a
-   `correlation-engine/tools/bronze_to_gold_converter.cpp` (historial preservado).
-   Integrado en `correlation-engine/CMakeLists.txt` como target de build oficial
-   (nuevo bloque `pkg_check_modules` para avro-c/arrow/parquet, con el fallback
-   defensivo de `PKG_CONFIG_PATH` de la lección de arriba). Sin `add_test` —
-   herramienta/medición ejecutada a mano, mismo patrón que `kuzu_concurrency_smoke`.
-   Verificado: compilado vía `cmake --build . --target bronze_to_gold_converter`,
-   24/24 filas bit-idénticas al binario compilado a mano antes de la integración.
-   El `README.md` de la carpeta de diseño original se conserva íntegro (decisión
-   explícita de Alonso: no reescribir el historial), con un banner nuevo al
-   principio señalando el estado actual y la nueva ubicación del código.
-   Cierre formal registrado en BACKLOG.md como "ACCION-3-DAY206... — RESUELTO".
+3. **Verificación manual previa a los tests automatizados — primera prueba
+   empírica real de Flujo B.** Antes de escribir el test, se verificó a mano
+   contra el Parquet gold real (24 filas, todas BENIGN): `NetworkFlow: 24`,
+   `Alert: 0`/`Alert->Flow: 0` confirmados correctos contra el CSV bronce
+   original (`awk` confirmó 24/24 filas BENIGN). El primer `flow_uid`
+   coincidió bit a bit con el que el converter había impreso como "fila 0"
+   en dos ejecuciones distintas del día — la primera evidencia empírica
+   (no solo diseñada) de que Flujo A y Flujo B comparten el mismo
+   identificador.
 
-4. **Deudas nuevas registradas — ambas con fundamento real, no especulativo:**
-   - `DEBT-KUZU-CONTINUITY-001` (P2) — KuzuDB fue **archivado el 10 de octubre de
-     2025** (mismo día del release final `0.11.3`, la versión pineada del
-     proyecto); causa revelada en filing EU DMA de febrero 2026: **Apple adquirió
-     Kùzu Inc. el 9 de octubre de 2025**. Verificado por Claude vía búsqueda web
-     independiente, no aceptado solo por la palabra de un modelo del Consejo
-     (Kimi lo señaló primero). **Decisión de Alonso: NO depreciar hoy.** El
-     objetivo actual es demostrar la hipótesis de que los datasets generados por
-     el pipeline vía grafo son de calidad suficiente para inferir datasets
-     comportamentales académicos — no entregar una demo. Evaluación de migración
-     diferida a: (i) hipótesis demostrada → estudio post-FEDER con fondos ya
-     asegurados, o (ii) impedimento técnico real en Kuzu 0.11.3 que bloquee la
-     demostración. No antes.
-   - `DEBT-PARQUET-GOLD-SCHEMA-MULTISENSOR-001` (P1, bloqueante para Flujo B
-     *completo*, no para la v1) — el Parquet gold de producción real puede
-     combinar aRGus + Suricata + Zeek + Wazuh con activación configurable por
-     señal (necesario para el método científico: aislar el efecto de cada
-     señal). **La ratificación del Consejo de hoy sobre Flujo B cubre solo el
-     esquema mono-fuente `correlation_v1`** — el caso multi-sensor no estaba en
-     el documento enviado, así que no fue evaluado por nadie. Requiere su propia
-     sesión de diseño + su propia ronda de Consejo antes de que Flujo B se
-     considere completo para producción real. La v1 se construye contra el
-     esquema mono-fuente ya ratificado.
+4. **8/8 en `ctest` del correlation-engine.** Confirmado tanto en build
+   incremental como en reconstrucción completa desde cero (`emecas+++` con
+   `vagrant destroy -f && vagrant up`, 1h36m de reloj, 20% CPU medio — la
+   mayoría del tiempo es I/O de red/descargas, no cómputo). EMECAS+++ PASSED.
 
-5. **EMECAS+++ verde — reconstrucción completa desde `vagrant destroy -f && vagrant up`.**
-   Confirma que el `CMakeLists.txt` actualizado (converter graduado) y la
-   canonicalización sobreviven un provisioning limpio, no solo la VM con
-   dependencias puestas a mano. `correlation-engine-test` (dentro de
-   `test-components`, dentro de `test-all`) ejercitó los tests nuevos de
-   canonicalización sin fallos.
+5. **`test_parquet_to_kuzu_loader.cpp` (esqueleto de ayer, con `GTEST_SKIP()`)
+   queda REDUNDANTE** — `test_flujo_b_end_to_end.cpp` cubre el mismo terreno
+   por la vía de caja negra (subprocesos), sin el bloqueo de refactorización
+   que el esqueleto original esperaba resolver. **Sigue en el repo, sin
+   registrar en CMakeLists (inerte). Se elimina en DAY 209 — ver acción 2.**
 
-6. **Mergeado a `main`** — rama `day207/canonicalize-parity-single-source`
-   (4 commits: PKG_CONFIG_PATH defensivo, canonicalización, resolución Flujo B,
-   converter graduado), vía PR, EMECAS+++ verde como evidencia adjunta.
+6. **Mergeado a `main`** — rama `day208/flujo-b-parquet-to-kuzu-loader`
+   (parquet_to_kuzu_loader.cpp, test_flujo_b_end_to_end.cpp, fix de orden en
+   CMakeLists), vía PR, EMECAS+++ verde como evidencia adjunta.
+
+### Conversación extensa sin cerrar en código — capturar en DAY 209 (ver acción 1)
+
+Sesión larga de reflexión estratégica sobre el rumbo del proyecto, disparada
+por el mockup de Three.js/dashboard. Resumen para no perderlo:
+
+- **Arquitectura de flota**: mismo software, dos perfiles de config (mismo
+  patrón que `ml_detector_config.json` ya usa con `lab/cloud/bare_metal`) —
+  un perfil "central" (recibe grafos de N instalaciones, capacidad de
+  promocionar datasets/plugins a la flota) y un perfil "campo" (un nodo,
+  su propia instalación). **Bloqueado por la fase de anonimización, que
+  todavía no existe** — es la primera tarea de post-FEDER, según Alonso.
+- **Servicio GeoIP propio**: componente C++ asíncrono y ligero, formato MMDB
+  (memory-mapped, actualización asíncrona por diseño del propio formato,
+  sin inventar nada), + detección de proxy/Tor (base de datos distinta,
+  con coste de licencia a decidir según si "enterprise" significa alta
+  disponibilidad, cobertura/precisión comercial, o ambas). Pregunta sin
+  resolver: ¿se geolocaliza en el borde (antes de anonimizar, IP nunca sale
+  cruda) o en el servidor central? Recomendación no vinculante: en el borde.
+- **Línea de investigación concreta — MITRE ATT&CK / Atomic Red Team**: en
+  vez de necesitar malware real o laboratorio de contención (que Alonso no
+  tiene ni tendrá pronto), emular técnicas documentadas de un ransomware
+  real y nombrado (ej. perfil de técnicas de LockBit, ya cartografiado por
+  terceros) con Atomic Red Team (Red Canary, activo, +1700 tests) sobre una
+  VM ya existente del Vagrantfile. Esto ataca directamente
+  `DEBT-RANSOMWARE-ML-HEAD-INERT-001`/`DEBT-CIRCUIT-SCORE-NONTRIVIAL-REVAL-001`
+  (ya documentados, el detector de ransomware no tiene señal real de
+  entrenamiento de tráfico de red). Metodología estándar de industria,
+  publicable, sin ambigüedad legal/ética — el tipo de resultado, aunque sea
+  una mejora porcentual pequeña y honesta, que Alonso cree que haría que
+  Andrés (contacto institucional UEx/INCIBE, sin respuesta reciente sobre
+  el tema de datasets) apoyara abiertamente la solicitud de fondos.
+- **Mockup de dashboard (Three.js)**: explorado visualmente en el chat
+  (no en el repo) — grafo 3D limitado a subgrafos acotados (el grafo
+  completo en vivo se vuelve ilegible pasado unos cientos de nodos), panel
+  de geolocalización esquemático, whitelist de consultas Cypher con nombre
+  (mismo patrón que `cypher_builder.hpp` ya usa para escritura, aplicado a
+  lectura) + modo Cypher libre como vía de escape.
+- **Continuidad de KuzuDB (DEBT-KUZU-CONTINUITY-001)**: información nueva
+  encontrada — existen forks activos post-archivado (`Vela-Engineering/kuzu`,
+  preserva 100% del API/Cypher original + añade multi-writer; `LadybugDB`,
+  reposicionado "graph lakehouse"; `Kineviz/bighorn`; `predictable-labs/
+  ryugraph`). No cambia la decisión de Alonso (no depreciar hoy), pero reduce
+  el riesgo percibido de "abandono total sin alternativa". Pendiente:
+  anexar esta info a la entrada de BACKLOG ya existente.
+- **Descartado explícitamente**: motor de grafos propio sobre Boost Graph
+  Library. BGL es librería de algoritmos en memoria, NO una base de datos
+  (confirmado por búsqueda — clasificación académica explícita, papers que
+  "extienden BGL-like libraries with persistent storage" como su aportación
+  propia). Construirlo sería construir una base de datos entera desde cero;
+  dado que no se puede perder Cypher (Alonso lo confirmó explícitamente),
+  ningún fork existente lo pierde, así que no hay razón real para intentarlo.
 
 ## Rama
 
-Todo el trabajo de DAY 207 ya vive en `main`. `day207/canonicalize-parity-single-source`
-puede borrarse (ya mergeada). No hay rama de trabajo abierta pendiente al cierre
-de DAY 207 — **recordar la lección de arriba: crear la rama ANTES del primer
-commit de DAY 208, no después.**
+Todo el trabajo de DAY 208 ya vive en `main` tras el merge de este PR.
+`day208/flujo-b-parquet-to-kuzu-loader` puede borrarse (ya mergeada).
+No hay rama de trabajo abierta pendiente al cierre de DAY 208 — recordar:
+rama ANTES del primer commit de DAY 209, no después.
 
-## Acciones DAY 208 (en orden)
+## Acciones DAY 209 (en orden)
 
-1. **Escribir `parquet_to_kuzu_loader.cpp`** siguiendo el diseño ratificado
-   (sección "Estado al cierre" punto 2, y el documento completo en
-   `docs/council/PROPUESTA -- Flujo B, parquet_to_kuzu_loader (DAY 207).md`):
-   - Lector puro, reusa `KuzuGraphSink`/`IGraphSink` sin ampliarlos.
-   - Bucle multi-chunk completo desde el primer commit + `WARNING` (no excepción)
-     si `num_chunks() > 1`.
-   - Manejo de error explícito si el Parquet gold no existe
-     (`"gold Parquet not found: <path>"`, no crash genérico de Arrow).
-   - Mapeo cols 0-17 → `CorrelationRecord`; `flow_uid` (col 21) leído directo,
-     sin recomputar; cols 18-20 (`hmac_row`, `flow_start_window`,
-     `seq_in_window`) explícitamente no usadas como fuente (documentar por qué
-     en el propio código, no dejarlo implícito otra vez).
-   - Ubicación: `correlation-engine/tools/parquet_to_kuzu_loader.cpp`, junto al
-     converter ya graduado. Integrar en `correlation-engine/CMakeLists.txt`
-     (mismo patrón que se usó hoy para el converter).
-   - Alcance: esquema mono-fuente `correlation_v1` únicamente — el caso
-     multi-sensor es `DEBT-PARQUET-GOLD-SCHEMA-MULTISENSOR-001`, sesión aparte.
-2. **Escribir el test de integración de Flujo B**, mismo patrón que
-   `test_bronze_to_kuzu_circuit.cpp`: escribir Parquet con el converter real →
-   leer con el loader real → `MATCH` en Kuzu confirma nodos/aristas. Kuzu de
-   test aislado y desechable, nunca compartido con nada de producción (Camino 0
-   nunca fue candidato a producción — solo valida tecnología para Camino 1,
-   que llegará por ZMQ, no por FS).
-3. **Con Flujo B funcionando, ejecutar por fin el test de equivalencia completo
-   Camino-0 ≡ Flujo-A+B** (predicado §3.1, ADR-058) — el criterio de cierre real
-   del medallón, no la versión parcial de DAY 207. Comparar las dos proyecciones
-   Kuzu (una por camino) sobre el mismo segmento bronce sintético.
-4. **Pendiente sin resolver, traído de sesiones anteriores, evaluar margen:**
-   - `DEBT-SECRETS-MANAGER-PERSISTENCE-001` (P1, 2-3 sesiones) — persistencia de
-     claves HMAC en Vault. No forma parte estricta de Eslabón 1/2, pero motivada
-     directamente por ellos.
-   - `DEBT-PARQUET-GOLD-SCHEMA-MULTISENSOR-001` — si hay margen y ganas de
-     abrir el diseño (requiere su propia ronda de Consejo, no improvisar).
+1. **Capturar en BACKLOG.md la conversación estratégica de hoy** (ver sección
+   de arriba) — al menos tres entradas separadas:
+   - Visión de arquitectura de flota (central/campo), explícitamente marcada
+     como post-FEDER, bloqueada por anonimización.
+   - Servicio GeoIP propio (MMDB + detección proxy/Tor), con la pregunta
+     abierta de dónde se resuelve (borde vs central) sin decidir todavía.
+   - Línea de investigación MITRE ATT&CK/Atomic Red Team — la más
+     accionable de las tres, candidata a convertirse en trabajo real antes
+     de post-FEDER si Alonso decide priorizarla.
+   - Actualizar `DEBT-KUZU-CONTINUITY-001` con la info de los forks activos
+     (Vela-Engineering, LadybugDB, bighorn, ryugraph).
+2. **Eliminar `correlation-engine/tests/test_parquet_to_kuzu_loader.cpp`**
+   (esqueleto de DAY 207 con `GTEST_SKIP()`, redundante desde que
+   `test_flujo_b_end_to_end.cpp` cubre el mismo terreno por caja negra).
+   `git rm`, no borrado manual — mantener el historial de por qué existió.
+3. **El test de equivalencia REAL Camino-0 ≡ Flujo-A+B** (predicado §3.1,
+   ADR-058) sigue sin escribirse — hoy solo se verificó Flujo A+B en
+   solitario. La técnica de subprocesos de hoy probablemente sirve para el
+   lado Flujo A+B; el lado Camino 0 ya es directamente enlazable
+   (`process_segment` + `KuzuGraphSink`, sin subprocesos, como
+   `test_bronze_to_kuzu_circuit.cpp` ya demuestra). Diseñar como dos Kuzu de
+   test aislados, comparar conteos + `flow_uid` + scores + igualdad de
+   conjuntos de aristas, excluyendo `ingested_at`/`temporal_anomaly` (ya
+   excluidos por ADR-058 v3).
+4. **Pendiente de sesiones anteriores, evaluar margen:**
+   - `DEBT-SECRETS-MANAGER-PERSISTENCE-001` (P1, 2-3 sesiones) — Vault.
+   - `DEBT-PARQUET-GOLD-SCHEMA-MULTISENSOR-001` — diseño multi-sensor,
+     requiere su propia ronda de Consejo.
 
 ## Punteros
 
-- `correlation-engine/tools/bronze_to_gold_converter.cpp` — graduado DAY 207,
-  código de producción, compilado vía CMake. `parquet_to_kuzu_loader.cpp` va
-  al lado, mismo directorio, cuando se escriba.
-- `correlation-engine/include/correlation_engine/canonical_double.hpp` — punto
-  único de canonicalización IEEE754, consumido por `correlation_reader.cpp`.
-- `correlation-engine/CMakeLists.txt` — nuevo bloque `pkg_check_modules` para
-  avro-c/arrow/parquet (con fallback `PKG_CONFIG_PATH`) y target
-  `bronze_to_gold_converter`, justo antes del bloque `emecas+++`
-  (`test_bronze_to_kuzu_circuit`). Añadir el target del loader en el mismo sitio.
+- `correlation-engine/tools/parquet_to_kuzu_loader.cpp` — Flujo B completo,
+  producción, junto a `bronze_to_gold_converter.cpp` en el mismo directorio.
+- `correlation-engine/tests/test_flujo_b_end_to_end.cpp` — test real,
+  subprocesos de los binarios reales, 8/8 en ctest, verificado en limpio.
+- `correlation-engine/tests/test_parquet_to_kuzu_loader.cpp` — ESQUELETO
+  REDUNDANTE, eliminar DAY 209 (acción 2).
+- `correlation-engine/CMakeLists.txt` — orden importa (lección DAY 208);
+  cualquier bloque nuevo que use variables de `find_package`/`find_library`
+  va DESPUÉS de esas declaraciones, no antes.
 - `docs/council/PROPUESTA -- Flujo B, parquet_to_kuzu_loader (DAY 207).md` —
-  diseño completo + las 9 respuestas del Consejo + resolución final de Alonso.
-  Fuente de verdad para escribir el código de Flujo B.
-- `docs/adr/ADR-058-circuito-completo-aguas-abajo-v3.md` — sección "Corrección
-  post-v3 (DAY 207)" al final, documenta la reubicación del punto único de
-  canonicalización.
-- `docs/BACKLOG.md` — 4 entradas nuevas DAY 207: `DEBT-CIRCUIT-CANONICALIZE-
-  PARITY-001` (cerrada), `DEBT-KUZU-CONTINUITY-001` (abierta, diferida),
-  `DEBT-PARQUET-GOLD-SCHEMA-MULTISENSOR-001` (abierta, bloqueante para Flujo B
-  completo), y el cierre de "ACCION-3-DAY206... — RESUELTO".
-- `docs/design/eslabon-1-flujo-a-avro-parquet/converter-prototype/README.md` —
-  conservado como historial, con banner de estado actual al principio.
-- `.gitignore` — scripts scratch de sesión (Python heredoc usados para editar
-  documentación) se añaden aquí, no se comitean al repo.
+  diseño ratificado + resolución final, fuente de verdad ya implementada.
+- `docs/BACKLOG.md` — pendiente de las 3-4 entradas nuevas de la acción 1
+  de hoy (conversación estratégica sin capturar).
+- `.gitignore` — todos los scripts Python scratch de sesión van aquí,
+  AL MOMENTO de crearlos, no al final (lección DAY 208, ya pasó dos veces).
 
 *Via Appia Quality — Un escudo que aprende de su propia sombra.*
