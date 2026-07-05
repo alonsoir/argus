@@ -311,3 +311,9 @@ tools/close_h2_backlog_day191.py
 tools/update_readme_day191.py
 vagrant-ssh-config
 docs/design/eslabon-1-flujo-a-avro-parquet/converter-prototype/bronze_to_gold_converter
+
+# Scripts scratch de sesión (DAY 207) — no forman parte del repo
+create_council_flujo_b_proposal.py
+finalize_flujo_b_decisions.py
+update_day207_docs.py
+verify_day207_canonical.py
