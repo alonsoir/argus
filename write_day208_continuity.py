@@ -1,4 +1,16 @@
-# PROMPT DE CONTINUIDAD — DAY 208 (continúa DAY 205-207)
+#!/usr/bin/env python3
+"""
+write_day208_continuity.py
+Sobrescribe docs/continuity/PROMPT_CONTINUE_CLAUDE.md con el cierre de DAY 207
+y el plan de DAY 208, siguiendo el mismo patrón de las ediciones anteriores
+(sobrescritura completa, no append -- así se ha hecho DAY 205->206->207).
+Ejecutar desde la raíz del repo.
+"""
+from pathlib import Path
+
+path = Path("docs/continuity/PROMPT_CONTINUE_CLAUDE.md")
+
+content = '''# PROMPT DE CONTINUIDAD — DAY 208 (continúa DAY 205-207)
 # Instrucciones generales para Claude:
 
 1. Piensa antes de codificar
@@ -26,7 +38,7 @@
 - `.PHONY` en Makefile: lista separada por ESPACIOS, nunca comas (lección DAY 205).
 - Al comitear y hacer push a una rama de trabajo, verificar SIEMPRE con `git log --oneline -3 <rama>` y `git log --oneline -3 origin/<rama>` que el commit realmente llegó (lección DAY 206).
 - **Lección nueva DAY 207 — crear la rama de trabajo ANTES del primer commit, no después.** Un commit suelto se hizo directo sobre `main` local por trabajar sin rama abierta; el push lo rechazó branch protection (sin daño real: el commit se rescató con `git checkout -b <rama>` y `main` local se realineó con `git reset --hard origin/main`). Regla operativa: en cuanto haya trabajo suelto que comitear en una sesión, `git checkout -b day<N>/<slug>` es el PRIMER comando, no el último.
-- **Lección nueva DAY 207 — pkg-config en shells no-interactivos.** `vagrant ssh <vm> -c "..."` no carga `.bashrc` de forma fiable, y el `.bashrc` de `defender` además apunta a `/usr/lib64/pkgconfig` (convención RedHat), mientras los `.pc` reales de Debian/Ubuntu viven en `/usr/lib/x86_64-linux-gnu/pkgconfig`. Cualquier target de Makefile o CMakeLists que dependa de `pkg-config` en shell no-interactivo debe exportar `PKG_CONFIG_PATH` explícitamente (con el doble-escape `\$$` que Make exige para emitir un `$` literal al shell remoto) en vez de asumir que el entorno lo resuelve solo.
+- **Lección nueva DAY 207 — pkg-config en shells no-interactivos.** `vagrant ssh <vm> -c "..."` no carga `.bashrc` de forma fiable, y el `.bashrc` de `defender` además apunta a `/usr/lib64/pkgconfig` (convención RedHat), mientras los `.pc` reales de Debian/Ubuntu viven en `/usr/lib/x86_64-linux-gnu/pkgconfig`. Cualquier target de Makefile o CMakeLists que dependa de `pkg-config` en shell no-interactivo debe exportar `PKG_CONFIG_PATH` explícitamente (con el doble-escape `\\$$` que Make exige para emitir un `$` literal al shell remoto) en vez de asumir que el entorno lo resuelve solo.
 - **Lección nueva DAY 207 — no asumir que un target de `test-all` cubre lo que parece cubrir.** Antes de lanzar `emecas+++` (20-30 min, `vagrant destroy` incluido), se verificó a mano la cadena de dependencias del Makefile (`emecas+++`→`emecas++`→`emecas`→`test-all`→`test-components`→`correlation-engine-test`) para confirmar que el gate realmente ejercitaba los cambios de la sesión, y se descubrió que `test-parquet` (otra dependencia de `test-all`) es un pipeline legacy no relacionado (`schema_ml_detector`/`schema_firewall`, mayo), no algo que tocara el trabajo de Eslabón 1.
 
 ## Estado al cierre de DAY 207 — Canonicalización unificada, Flujo B ratificado, converter graduado, EMECAS+++ verde, mergeado a main
@@ -193,3 +205,7 @@ commit de DAY 208, no después.**
   documentación) se añaden aquí, no se comitean al repo.
 
 *Via Appia Quality — Un escudo que aprende de su propia sombra.*
+'''
+
+path.write_text(content)
+print(f"[OK] {path} sobrescrito con el cierre de DAY 207 / plan DAY 208")
