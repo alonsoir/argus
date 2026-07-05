@@ -317,3 +317,6 @@ create_council_flujo_b_proposal.py
 finalize_flujo_b_decisions.py
 update_day207_docs.py
 verify_day207_canonical.py
+close_action3_backlog.py
+integrate_converter_cmake.py
+update_converter_readme_banner.py
