@@ -85,6 +85,76 @@
 | **aRGus-seL4** | ⏳ No iniciada | Apéndice científico. Kernel seL4, libpcap. Branch independiente. |
 
 ---
+## VISION-FLEET-ARCHITECTURE-001 — Arquitectura de flota multi-instalación
+**Estado:** POST-FEDER · BLOQUEADA
+**Bloqueada por:** fase de anonimización (aún no existe; primera tarea post-FEDER)
+**Origen:** conversación estratégica DAY 208 (disparada por mockup Three.js)
+
+Mismo binario, dos perfiles de configuración — mismo patrón que
+`ml_detector_config.json` ya usa con `lab/cloud/bare_metal`:
+- **Perfil "central":** recibe grafos de N instalaciones; capacidad de
+  promocionar datasets/plugins a la flota.
+- **Perfil "campo":** un nodo, su propia instalación.
+
+Sin la fase de anonimización no se puede mover grafo entre instalaciones,
+así que esto NO arranca hasta post-FEDER. Registrar ahora para no perder la
+visión, no para actuar.
+
+## BACKLOG-GEOIP-SERVICE-001 — Servicio GeoIP propio
+**Estado:** DISEÑO PRELIMINAR · sin decidir
+**Origen:** conversación estratégica DAY 208
+
+Componente C++ asíncrono y ligero:
+- Formato **MMDB** (memory-mapped; actualización asíncrona por diseño del
+  propio formato — no se inventa nada).
+- **Detección de proxy/Tor:** base de datos distinta. Coste de licencia
+  a decidir según qué signifique "enterprise" aquí: alta disponibilidad,
+  cobertura/precisión comercial, o ambas.
+
+**Pregunta abierta (sin decidir):** ¿se geolocaliza en el **borde**
+(antes de anonimizar, la IP nunca sale cruda) o en el **servidor central**?
+_Recomendación no vinculante: en el borde_ — encaja con el flujo de
+anonimización de VISION-FLEET-ARCHITECTURE-001.
+
+## RESEARCH-MITRE-ATTACK-RANSOMWARE-001 — Emulación adversaria vía Atomic Red Team
+**Estado:** CANDIDATA A TRABAJO REAL PRE-POST-FEDER (si se prioriza)
+**Ataca:** DEBT-RANSOMWARE-ML-HEAD-INERT-001,
+DEBT-CIRCUIT-SCORE-NONTRIVIAL-REVAL-001
+**Origen:** conversación estratégica DAY 208 — la más accionable de las tres
+
+En vez de necesitar malware real o laboratorio de contención (que no hay ni
+habrá pronto), **emular técnicas documentadas** de un ransomware real y
+nombrado (p. ej. perfil de técnicas de LockBit, ya cartografiado por
+terceros) con **Atomic Red Team** (Red Canary, activo, +1700 tests) sobre
+una VM ya existente del Vagrantfile.
+
+- Metodología estándar de industria, **publicable**, sin ambigüedad
+  legal/ética.
+- Genera la señal de tráfico de red que hoy le falta al detector de
+  ransomware (cabeza ML inerte).
+- Aunque el resultado sea una mejora porcentual pequeña y honesta, es el
+  tipo de evidencia que podría inclinar a Andrés (UEx/INCIBE) a apoyar
+  abiertamente la solicitud de fondos.
+
+## DEBT-KUZU-CONTINUITY-001 — [ACTUALIZACIÓN DAY 208]
+**Sin cambio de decisión:** NO depreciar Kuzu hoy.
+
+Info nueva (forks activos post-archivado, hallados en sesión DAY 208 —
+re-verificar viabilidad antes de actuar sobre esta deuda):
+- **Vela-Engineering/kuzu** — preserva 100% del API/Cypher original +
+  añade multi-writer.
+- **LadybugDB** — reposicionado como "graph lakehouse".
+- **Kineviz/bighorn**.
+- **predictable-labs/ryugraph**.
+
+Efecto: reduce el riesgo percibido de "abandono total sin alternativa".
+NO cambia la decisión; solo baja el riesgo.
+
+**Descartado explícitamente:** motor de grafos propio sobre Boost Graph
+Library. BGL es librería de algoritmos en memoria, NO una base de datos;
+construirlo sería una BD entera desde cero, y como no se puede perder Cypher
+(y ningún fork lo pierde), no hay razón para intentarlo.
+
 ### DEBT-RANSOMWARE-ML-HEAD-INERT-001 — Cabeza ML del detector de ransomware no funcional en red
 **Severidad:** 🔴 P1 — pre-producción (NO pre-paper)
 **Estado:** ABIERTO — DAY 195 · pendiente de re-test instrumentado
