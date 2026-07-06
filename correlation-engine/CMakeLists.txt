@@ -202,3 +202,31 @@ target_compile_definitions(test_flujo_b_end_to_end PRIVATE
         LOADER_BIN_PATH="$<TARGET_FILE:parquet_to_kuzu_loader>")
 add_dependencies(test_flujo_b_end_to_end bronze_to_gold_converter parquet_to_kuzu_loader)
 add_test(NAME test_flujo_b_end_to_end COMMAND test_flujo_b_end_to_end)
+
+# ── DAY 209 — test_flujo_a_b_equivalence: predicado ADR-058 §3.1 ──────────────
+# Equivalencia Camino-0 ≡ Flujo-A+B sobre el MISMO bronce. Camino 0 enlaza
+# directo (process_segment + KuzuGraphSink, ya en correlation_engine); Flujo A+B
+# invoca converter+loader como subprocesos (misma técnica que test_flujo_b).
+# Misma receta de link que test_flujo_b_end_to_end -- no añade libs nuevas.
+add_executable(test_flujo_a_b_equivalence tests/test_flujo_a_b_equivalence.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/../ml-detector/src/correlation_writer.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/../protobuf/network_security.pb.cc)
+target_include_directories(test_flujo_a_b_equivalence PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/../ml-detector/include
+        ${CMAKE_CURRENT_SOURCE_DIR}/../protobuf
+        ${KUZU_INC}
+        /usr/local/include)
+target_link_libraries(test_flujo_a_b_equivalence PRIVATE
+        correlation_engine
+        ${CORRELATION_V1_LIB}
+        ${Protobuf_LIBRARIES}
+        spdlog::spdlog
+        OpenSSL::SSL
+        OpenSSL::Crypto
+        GTest::gtest_main)
+target_compile_definitions(test_flujo_a_b_equivalence PRIVATE
+        SCHEMA_PATH="${CMAKE_CURRENT_SOURCE_DIR}/schema/schema.cypher"
+        CONVERTER_BIN_PATH="$<TARGET_FILE:bronze_to_gold_converter>"
+        LOADER_BIN_PATH="$<TARGET_FILE:parquet_to_kuzu_loader>")
+add_dependencies(test_flujo_a_b_equivalence bronze_to_gold_converter parquet_to_kuzu_loader)
+add_test(NAME test_flujo_a_b_equivalence COMMAND test_flujo_a_b_equivalence)
