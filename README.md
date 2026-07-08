@@ -61,9 +61,9 @@
 <!-- DAY-STATUS -->
 | Campo | Valor                                                                                                                                   |
 |---|-----------------------------------------------------------------------------------------------------------------------------------------|
-| DAY | 204                                                                                                                                     |
+| DAY | 211                                                                                                                                     |
 | Tag | v1.0.0-day191                                                                                                                           |
-| Branch | main                                                                                                                                    |
+| Branch | docs/day211-verdict-debts                                                                                                                |
 | EMECAS++ OSS | ✅ verde — test-all + test-e2e-synthetic-full + test-e2e-synthetic-firewall                                                              |
 | EMECAS++ Enterprise | ✅ VERDE — 3 actos + Jenkins gate (DAY 167)                                                                                              |
 | Pipeline | 6/6 RUNNING                                                                                                                             |
@@ -76,7 +76,7 @@
 | Tests firewall | ✅ 79/79 sin root (73→79, +6 `CommentValidator.*`) · canario `IPSetWrapperTest.CommentInjectionRejected` 7/7 con sudo en guest           |
 | Consejo de Sabios | 8/8 — Claude, Grok, ChatGPT, DeepSeek, Qwen, Gemini, Kimi, Mistral                                                                      |
 | Arquitectura | ✅ ADR-046 v4 · ADR-052 v3.2 · ADR-051 v2.2 · ADR-055 v1 · ADR-057 v2 · ⏳ ADR-050/053/054                                                |
-| Próximo hito (DAY 205) | Eslabón 1 (Landing Zone: bronce->AVRO->Parquet oro) — diseño de esquema pendiente antes de implementar                                    |
+| Próximo hito (DAY 212+) | Rama `fix/verdict-multihead-honest` — reconectar 4 cabezas al veredicto (noisy-OR, fiabilidad medida); DEBT-VERDICT-MONOCAPA-001 |
 | Deudas abiertas DAY 190 | DEBT-AUTONOMY-REACTOR-SAFEEXEC-002 (P2 post-FEDER) · DEBT-AUDIT-VBOXSF-IO-001 (P2)                                                      |
 | Gate UEx/INCIBE | Datasets de valor científico (no deadline duro)                                                                                         |
 <!-- /DAY-STATUS -->
