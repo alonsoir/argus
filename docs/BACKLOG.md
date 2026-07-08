@@ -1,5 +1,5 @@
 # aRGus NDR — BACKLOG
-*Última actualización: DAY 204 — 2026-07-02*
+*Última actualización: DAY 211 — 2026-07-08*
 
 ---
 
@@ -75,6 +75,69 @@
 - **REGLA PERMANENTE (DAY 165 — Consejo 8/8):** El protocolo EMECAS++ tiene tres actos obligatorios: (I) arranque nominal con Vault, (II) rotación controlada con live epoch bajo tráfico, (III) Vault falla en un componente con zero downtime. Los tres actos deben ser verdes y reproducibles antes de cualquier merge enterprise a main.
 - **REGLA PERMANENTE (DAY 165 — Founder):** VaultProvider retry/cache es prerequisito arquitectónico del Acto III. Inspeccionar estado antes de planificar DAY 166.
 - **REGLA PERMANENTE (DAY 163 — Consejo 8/8):** Todo target de CMake dentro de un bloque condicional (`ARGUS_VAULT_ENABLED`, `ARGUS_ENTERPRISE`, etc.) debe ir envuelto en `if(NOT TARGET <nombre>)` como guard obligatorio. Los bloques condicionales NO deben crear targets nuevos — solo añadir comportamiento (compile definitions, link libraries) a targets ya definidos fuera del bloque. Si el guard dispara, es señal de bug arquitectónico, no de diseño válido. Ver DEBT-CMAKE-GRAPH-INVARIANTS-001.
+
+## 🆕 Entradas DAY 209-211 — Diagnóstico del veredicto (monocapa) + RAG attack_family
+
+> Origen: sesión de auditoría DAY 209→211 sobre el cableado del veredicto en
+> `zmq_handler.cpp::process_event`. Sin código ni merge — diagnóstico completo por greps
+> sucesivos + microbench de coste (Fase 1). "Medir, no votar": trazado hacia atrás desde el
+> binario, greps de la función ENTERA antes de afirmar ausencia.
+
+### DEBT-VERDICT-MONOCAPA-001 — El veredicto es monocapa, no tricapa (dos defectos apilados)
+**Severidad:** 🔴 P1 — pre-FEDER (afecta arquitectura del veredicto Y narrativa del paper)
+**Estado:** ABIERTO — DAY 209 · diagnóstico COMPLETO DAY 211 · rama `fix/verdict-multihead-honest` planificada
+**Componente:** `ml-detector/src/zmq_handler.cpp::process_event`
+El veredicto ejecuta una arquitectura **monocapa** que contradice el diagrama tricapa del paper
+(arXiv:2604.04952). La vieja sobrescritura (bug DAY 11-12) ya NO existe: `fast_score` se lee (352)
+y se preserva; `ml_score = confianza L1` (408); `final_score = max(fast, ml)` (410);
+`set_overall_threat_score` (411). El propio código lo documenta como *"Dual-Score Architecture"* —
+2 scores, no 3. Las 4 cabezas especializadas (DDoS 558, ransomware 626, traffic 697, interno 756)
+predicen y rellenan `ml_analysis` pero NINGUNA vuelve a tocar `overall_threat_score`.
+**Dos defectos apilados (medidos DAY 211):**
+- **Defecto A (secuencia):** el veredicto se sella en 411, ANTES de que corran las 4 cabezas
+  (558-802). Las especializadas son observadores que escriben un informe que el veredicto ya no lee.
+- **Defecto B (GATE — CAUSA RAÍZ):** línea 552 `if (label_l1 == 1 && confidence_l1 >= level1_attack)`.
+  Las 4 especializadas SOLO corren si L1 dijo ATTACK. **L1 es portero, no compañero de ensemble.**
+  Un flujo que el interno vería como exfiltración/lateral pero que L1 (genérico, CICIDS2017) marca
+  BENIGN, sale BENIGN y el interno NUNCA se ejecuta. Además cascada 749: el interno solo corre si
+  traffic dice "interno" — doble anidamiento (gate L1 → cascada traffic → interno).
+- **Consecuencia:** mover el veredicto (arregla A) NO arregla B. B condiciona A → decidir B primero.
+**Auditoría de extractores (completa DAY 209-211):** interno 8/10 (`[5]` lateral y `[7]` exfil REALES;
+`[1]`,`[2]` constantes — mejor candidato, verificado con los ojos), ddos 6/10, traffic 4/10
+(`[6]`,`[7]`,`[8]` constantes — auditado DAY 211, era "?"), ransomware 1/10 (roto por diseño).
+Traffic (4/10) gatea al interno (8/10): el portero del portero también está tuerto.
+**Coste de des-gatear el interno (Fase 1, medido DAY 211):** `extract_level3_internal_features`
+p50 ~85-117 ns, p99 ~420-440 ns, p999 ~514-523 ns sobre hardware x86 de producción (VM defender,
+`-O3 -march=native -flto`, 3 perfiles sintéticos del injector). Contra el presupuesto de 10 ms
+recepción→firewall es <0.005% — **el coste NO es razón para gatear el interno**. `predict` es pura
+(<100μs, DI por shared_ptr); `nf` preexiste en el evento (566/634/705) → des-gatear es "subir la
+llamada", no "desenredar estado".
+**Decisión de alcance (DAY 211):** rama `fix/verdict-multihead-honest` reconecta el CABLEADO
+pre-FEDER con honestidad de pesos (Opción 1): mover veredicto tras 802; sacar interno+traffic del
+gate de L1; sustituir `max` por **noisy-OR** `P = 1 − ∏(1 − pᵢ)`, `pᵢ = fiabilidad_i · score_crudo_i`.
+Ransomware/ddos entran con peso ≈0 (fiabilidad medida) — honesto, no envenenan. Su reentrenamiento
+(features rotas → ground truth de red) se difiere a post-FEDER: reconectarlos = cambiar 1 peso de
+config de ≈0 a su valor medido, una línea por cabeza (NO reabre arquitectura, NO es un segundo DEBT).
+**Corrección del paper (Camino A):** narrativa tricapa→monocapa + limitación como HUECO DE COBERTURA
+("aún no tenemos estas 2 cabezas funcionales"), NUNCA como divergencia predicha con Suricata/Zeek.
+**Test de cierre:** las 4 cabezas reconectadas al veredicto vía noisy-OR; tests unitarios del
+combinador (a: una cabeza dispara; b: dos corroboran; c: cabeza fiabilidad-0 NO envenena); interno
+desacoplado del gate L1 corre en todos los flujos; paper corregido a monocapa + hueco de cobertura.
+**Estimación:** rama multi-fase (pulso interno → reconexión cableado → integración/stress → pcap e2e
+→ números al paper). Reentreno ransomware/ddos NO incluido (post-FEDER).
+
+### DEBT-RAG-ATTACKFAMILY-HARDCODED-001 — attack_family del RAG log hardcodeado a "RANSOMWARE"
+**Severidad:** 🟢 P2 — crítico si el RAG entra en el circuito de reentrenamiento
+**Estado:** ABIERTO — DAY 211
+**Componente:** `ml-detector/src/zmq_handler.cpp:505`
+Línea 505: `ml_context.attack_family = "RANSOMWARE"; // TODO: Get from detector`. Todo lo que entra
+al RAG log sale etiquetado "RANSOMWARE" sea lo que sea. Inocuo hoy (el RAG no cierra circuito de
+reentrenamiento), veneno si algún día lo hace: envenenaría el ground truth con una etiqueta constante.
+NO confundir con `threat_category` (campo distinto que sí viaja con valor real al bronce/firewall —
+ver flanco abierto: ¿algún consumidor río abajo actúa sobre `threat_category`?).
+**Test de cierre:** `attack_family` se puebla desde la cabeza que decidió (o desde el detector real),
+no un literal; test que verifica que un flujo no-ransomware NO sale etiquetado "RANSOMWARE" en el RAG log.
+**Estimación:** 0.5 sesión.
 
 ## 🏗️ Tres variantes del pipeline
 
