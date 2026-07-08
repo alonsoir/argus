@@ -319,6 +319,57 @@ void ZMQHandler::run() {
     logger_->info("📥 ZMQ Handler loop stopped");
 }
 
+// DAY 212 — cabeza interna como observador puro (DEBT-VERDICT-MONOCAPA-001).
+// Extrae, infiere, registra en el informe y contabiliza el hueco de cobertura
+// (interno detecta amenaza donde L1 marcó benigno). NO sella el veredicto:
+// devuelve la Prediction y process_event decide (hoy con el if de sellado
+// heredado; commit 2 lo reemplaza por noisy-OR). Delega mapeo y evaluación a
+// las funciones puras de internal_head_logic.hpp (ancladas por test).
+std::optional<ml_defender::InternalDetector::Prediction>
+ZMQHandler::run_internal_head(const protobuf::NetworkFeatures& nf,
+                              int64_t label_l1,
+                              protobuf::TricapaMLAnalysis* ml_analysis) noexcept {
+    if (!internal_detector_) {
+        return std::nullopt;
+    }
+
+    try {
+        const std::vector<float> feats =
+            extractor_->extract_level3_internal_features(nf);
+        const auto features = ml_defender::build_internal_features(feats);
+        const auto pred = internal_detector_->predict(features);
+
+        logger_->debug("🤖 Internal: class={} prob={:.4f} ({})",
+                       pred.class_id, pred.probability, pred.confidence_level());
+
+        auto* internal_pred = ml_analysis->add_level3_specialized_predictions();
+        internal_pred->set_model_name("internal_detector_embedded_cpp20");
+        internal_pred->set_model_version("1.0.0");
+        internal_pred->set_prediction_class(
+            pred.class_id == 0 ? "BENIGN" : "SUSPICIOUS");
+        internal_pred->set_confidence_score(pred.suspicious_prob);
+
+        const auto eval = ml_defender::evaluate_internal(
+            pred, config_.ml.thresholds.level3_internal, label_l1);
+        if (eval.is_discrepancy) {
+            std::lock_guard<std::mutex> lock(stats_mutex_);
+            stats_.internal_l1_discrepancies++;
+            logger_->warn("🔍 Cobertura L3: interno detecta amenaza "
+                          "(lateral={:.3f}, exfil={:.3f}, prob={:.2f}%) en flujo "
+                          "que L1 marcó BENIGN — hueco medido",
+                          feats[5], feats[7], pred.suspicious_prob * 100);
+        }
+
+        return pred;
+
+    } catch (const std::exception& e) {
+        logger_->error("❌ Internal head falló: {}", e.what());
+        std::lock_guard<std::mutex> lock(stats_mutex_);
+        stats_.inference_errors++;
+        return std::nullopt;
+    }
+}
+
 void ZMQHandler::process_event(const std::string& message) {
     auto start_time = std::chrono::steady_clock::now();
 
@@ -748,64 +799,23 @@ void ZMQHandler::process_event(const std::string& message) {
                         if (traffic_result.is_internal(config_.ml.thresholds.level3_web) &&
                             internal_detector_ && config_.ml.level3.internal.enabled) {
 
-                            try {
-                                logger_->debug("🔍 Running Level 3 Internal analysis...");
+                            // DAY 212 — cabeza interna: observador que devuelve Prediction (nullopt si
+                            // no pudo opinar). La lógica vive en run_internal_head + internal_head_logic
+                            // (funciones puras ancladas por test_internal_head_logic). Comportamiento
+                            // idéntico al bloque anterior; commit 1b moverá esta llamada fuera del gate.
+                            auto internal_pred = run_internal_head(nf, label_l1, ml_analysis);
 
-                                std::vector<float> internal_features_vec;
-                                try {
-                                    internal_features_vec = extractor_->extract_level3_internal_features(nf);
-                                    if (internal_features_vec.size() != 10) {
-                                        throw std::runtime_error("Invalid Internal feature count");
-                                    }
-                                } catch (const std::exception& e) {
-                                    logger_->error("❌ Internal feature extraction failed: {}", e.what());
-                                    std::lock_guard<std::mutex> lock(stats_mutex_);
-                                    stats_.feature_extraction_errors++;
-                                    throw;
-                                }
-
-                                ml_defender::InternalDetector::Features internal_features{
-                                    .internal_connection_rate  = internal_features_vec[0],
-                                    .service_port_consistency  = internal_features_vec[1],
-                                    .protocol_regularity       = internal_features_vec[2],
-                                    .packet_size_consistency   = internal_features_vec[3],
-                                    .connection_duration_std   = internal_features_vec[4],
-                                    .lateral_movement_score    = internal_features_vec[5],
-                                    .service_discovery_patterns = internal_features_vec[6],
-                                    .data_exfiltration_indicators = internal_features_vec[7],
-                                    .temporal_anomaly_score    = internal_features_vec[8],
-                                    .access_pattern_entropy    = internal_features_vec[9]
-                                };
-
-                                auto internal_result = internal_detector_->predict(internal_features);
-                                logger_->debug("🤖 Internal: class={} ({}), conf={:.4f}",
-                                              internal_result.class_id,
-                                              (internal_result.class_id == 0 ? "BENIGN" : "SUSPICIOUS"),
-                                              internal_result.probability);
-
-                                auto* level3_internal_pred = ml_analysis->add_level3_specialized_predictions();
-                                level3_internal_pred->set_model_name("internal_detector_embedded_cpp20");
-                                level3_internal_pred->set_model_version("1.0.0");
-                                level3_internal_pred->set_prediction_class(
-                                    internal_result.class_id == 0 ? "BENIGN" : "SUSPICIOUS"
-                                );
-                                level3_internal_pred->set_confidence_score(internal_result.suspicious_prob);
-
-                                if (internal_result.is_suspicious(config_.ml.thresholds.level3_internal)) {
-                                    event.set_threat_category("SUSPICIOUS_INTERNAL");
-                                    ml_analysis->set_final_threat_classification("SUSPICIOUS_INTERNAL");
-                                    logger_->warn("🔴 SUSPICIOUS INTERNAL ACTIVITY: event={}, "
-                                                 "lateral_movement={:.3f}, exfiltration={:.3f}, conf={:.2f}%",
-                                                 event.event_id(),
-                                                 internal_features_vec[5],
-                                                 internal_features_vec[7],
-                                                 internal_result.suspicious_prob * 100);
-                                }
-
-                            } catch (const std::exception& e) {
-                                logger_->error("❌ Level 3 Internal processing failed: {}", e.what());
-                                std::lock_guard<std::mutex> lock(stats_mutex_);
-                                stats_.inference_errors++;
+                            // Sellado del veredicto: decisión del ORQUESTADOR, no de la cabeza.
+                            // Idéntico al original (mismo umbral level3_internal, mismos campos).
+                            // COMMIT 2 reemplazará este if por el combinador noisy-OR que consume
+                            // internal_pred junto a las demás cabezas.
+                            if (internal_pred &&
+                                internal_pred->is_suspicious(config_.ml.thresholds.level3_internal)) {
+                                event.set_threat_category("SUSPICIOUS_INTERNAL");
+                                ml_analysis->set_final_threat_classification("SUSPICIOUS_INTERNAL");
+                                logger_->warn("🔴 SUSPICIOUS INTERNAL ACTIVITY: event={}, conf={:.2f}%",
+                                              event.event_id(),
+                                              internal_pred->suspicious_prob * 100);
                             }
                         }
                     }

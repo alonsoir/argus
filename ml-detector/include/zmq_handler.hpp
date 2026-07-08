@@ -6,6 +6,7 @@
 #include <atomic>
 #include <thread>
 #include <mutex>
+#include <optional>
 #include <chrono>
 #include <spdlog/spdlog.h>
 
@@ -17,6 +18,7 @@
 #include "ml_defender/ddos_detector.hpp"
 #include "ml_defender/traffic_detector.hpp"
 #include "ml_defender/internal_detector.hpp"
+#include "ml_defender/internal_head_logic.hpp"
 
 #include "network_security.pb.h"
 
@@ -46,6 +48,7 @@ public:
         uint64_t deserialization_errors = 0;
         uint64_t feature_extraction_errors = 0;
         uint64_t inference_errors = 0;
+        uint64_t internal_l1_discrepancies = 0;  // DAY 212: interno detecta amenaza en flujo L1=BENIGN (mide hueco de cobertura DEBT-VERDICT-MONOCAPA-001)
         double avg_processing_time_ms = 0.0;
     };
 
@@ -79,6 +82,13 @@ public:
 private:
     void run();
     void process_event(const std::string& message);
+
+    // DAY 212 — cabeza interna como observador (DEBT-VERDICT-MONOCAPA-001).
+    // Devuelve la Prediction (nullopt si no pudo opinar); no sella el veredicto.
+    std::optional<ml_defender::InternalDetector::Prediction>
+    run_internal_head(const protobuf::NetworkFeatures& nf,
+                      int64_t label_l1,
+                      protobuf::TricapaMLAnalysis* ml_analysis) noexcept;
     void send_enriched_event(const protobuf::NetworkSecurityEvent& event);
 
     // 🎯 DAY 14: RAG Logger methods
