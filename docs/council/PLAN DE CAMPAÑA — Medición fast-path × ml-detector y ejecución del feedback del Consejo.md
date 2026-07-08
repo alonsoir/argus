@@ -366,3 +366,349 @@ un clasificador nuevo, pero:
 
 *Via Appia Quality — medir quién clasifica, no solo cómo de bien. Un escudo que audita
 sus propias mediciones.*
+
+# DAY 210 — Auditoría del cableado del veredicto (cierre diagnóstico de `DEBT-VERDICT-MONOCAPA-001`)
+
+> Anexar esta sección al PLAN DE CAMPAÑA local. Fichero auditado:
+> `ml-detector/src/zmq_handler.cpp`. Números de línea del estado del repo a DAY 210
+> (`/Users/aironman/CLionProjects/test-zeromq-docker/`).
+
+---
+
+## Resumen en una frase
+
+El veredicto de producción es **`max(fast_path, L1)`**. Las cuatro cabezas
+especializadas (DDoS, ransomware, traffic, interno) **se ejecutan y rellenan
+`ml_analysis`, pero su salida NO entra en `overall_threat_score`**. No es
+"monocapa" ni "cabezas muertas": es **bicapa en el veredicto, tetracapa en la
+telemetría**.
+
+---
+
+## Correcciones a hipótesis previas (dejar constancia, para no repetir el error)
+
+1. **La sobrescritura de DAY 11–12 YA NO EXISTE.** En algún punto se arregló.
+   `zmq_handler.cpp:352` lee `fast_detector_score()`, `:410` hace
+   `std::max(fast_score, ml_score)`, `:411` `set_overall_threat_score(final_score)`.
+   El fast-path se preserva; no se pisa. La vieja hipótesis "el ML sobrescribe el
+   score" está obsoleta.
+
+2. **Las cuatro cabezas SÍ se invocan** (corrige una hipótesis intermedia de esta
+   misma sesión, que las daba por no ejecutadas). Ejecución confirmada:
+  - DDoS — línea 558 (`ddos_detector_->predict`, 596)
+  - Ransomware — línea 626 (`ransomware_detector_->predict`, 665)
+  - Traffic — línea 697 (`traffic_detector_->predict`, 733)
+  - Interno — línea 756 (`internal_detector_->predict`, 780)
+    Todas predicen y hacen `add_level2/3_specialized_predictions()` sobre `ml_analysis`.
+
+---
+
+## Los DOS defectos apilados de `DEBT-VERDICT-MONOCAPA-001`
+
+### Defecto A — Secuencia (el veredicto se sella demasiado pronto)
+- Línea 408: `double ml_score = label_l1 == 1 ? confidence_l1 : (1.0 - confidence_l1);`
+  → **`ml_score` ES L1 y solo L1.** Comentario del código: *"Dual-Score Architecture"*
+  (el propio autor documentó que aquí hay dos scores, no tres).
+- Línea 410: `final_score = std::max(fast_score, ml_score);`
+- Línea 411: `set_overall_threat_score(final_score);` → **veredicto sellado aquí.**
+- Las cabezas 2/3/4 corren en 558–802, **150 líneas después**, y solo escriben en
+  `ml_analysis`. Ninguna vuelve a tocar `overall_threat_score`.
+- **Efecto:** las tres cabezas especializadas son *observadores que escriben un
+  informe que nadie lee para decidir* (el "observador silencioso" del Consejo DAY 81,
+  ahora fosilizado y en contradicción con el paper).
+
+### Defecto B — Gate (causa raíz; es H4 hecho código)
+- Línea 552: `if (label_l1 == 1 && confidence_l1 >= config_.ml.thresholds.level1_attack) {`
+  → **las cuatro especializadas solo corren si L1 dijo ATTACK.** L1 es un *gate*, no
+  un compañero de ensemble.
+- **Falso negativo estructural:** un flujo que el interno vería clarísimo como
+  exfiltración/lateral, pero que L1 (genérico, CICIDS2017) marca BENIGN, **sale BENIGN
+  y el interno nunca llega a ejecutarse.** La cabeza fiable (H5/H7) está subordinada a
+  la cabeza que menos sabe de las fases de red del ransomware.
+
+### Consecuencia crítica para el plan
+**Mover el punto de veredicto (arregla A) NO arregla B.** Si las cabezas fiables
+siguen bajo `if L1==ATTACK`, la mejor fórmula de combinación no ve los flujos que L1
+se traga. **B condiciona A** y hay que decidirlo primero.
+
+---
+
+## Detalle de arquitectura que valida la tesis (cascada existente)
+
+- Línea 749: `if (traffic_result.is_internal(...) && internal_detector_ && ...)`
+  → el **interno solo corre si traffic dice que el flujo es interno**. Está anidado
+  dentro de traffic (697 → 748 → 756).
+- Flujo real: **L1 general → traffic decide dominio → interno mira dentro.** Es *casi*
+  la tricapa que promete el paper, salvo que la salida de la cascada nunca sube al `max`.
+  La estructura jerárquica existe en ejecución; **falta el cable de vuelta al veredicto.**
+
+---
+
+## DEBT nuevo detectado hoy
+
+### `DEBT-RAG-ATTACKFAMILY-HARDCODED-001` (P2 — anotar antes de que contamine)
+- Línea 505: `ml_context.attack_family = "RANSOMWARE";  // TODO: Get from detector`
+- **Todo lo que se registra en el RAG sale etiquetado "RANSOMWARE"**, sea lo que sea.
+- Riesgo: si el RAG entra en el circuito de reentrenamiento o se usa como fuente de
+  verdad para inspeccionar clasificaciones, la etiqueta es basura constante.
+- Fix: sacar `attack_family` del detector que realmente disparó (una vez B esté resuelto,
+  la cabeza ganadora ya se conoce).
+
+---
+
+## Activo aprovechable (no partimos de cero)
+
+- Bloque 414–424: la lógica de `authoritative_source`
+  (`DIVERGENCE` / `CONSENSUS` / `FAST_PRIORITY` / `ML_PRIORITY`) **ya razona sobre
+  fast vs ml** y escribe `decision_metadata` de trazabilidad. Es el germen de la lógica
+  de combinación: pensada para dos fuentes, extensible a cinco. La parte de provenance
+  (`add_verdicts`, `discrepancy_score`) también existe ya.
+
+---
+
+## Orden de trabajo corregido (reemplaza el mapa "cuatro tareas de cablear")
+
+Las invocaciones YA existen con features, umbrales de config y predicción. Las
+probabilidades ya están calculadas y colgando en variables vivas dentro de la función:
+`ddos_result.ddos_prob`, `ransomware_result.ransomware_prob`, `internal_result.suspicious_prob`,
+`traffic_result`. **Reconectar = recogerlas y meterlas en la combinación, no reescribir
+la extracción.**
+
+1. **Decidir el gate (Defecto B) ANTES que la fórmula (Defecto A).**
+   Pregunta que lo decide, medible: correr **interno + traffic incondicionalmente**
+   (en todos los flujos, no solo los que L1 marca ATTACK), ¿cabe en el presupuesto de
+   **<10 ms** recepción→clasificación→firewall?
+  - Esto convierte 5.2b en una medición doble: *(i)* ¿el interno separa clases sobre
+    tráfico etiquetado? *(ii)* ¿cuánto cuesta dejarlo suelto de L1?
+
+2. **Mover el punto de veredicto** de la línea 410 a *después* de 802, cuando las
+   cabezas ya han hablado. Reordenamiento de flujo, no lógica nueva.
+
+3. **Sustituir `max(fast, ml_score)` por combinación NO-SUPRESORA** sobre las cinco
+   señales. Operador acordado: **noisy-OR**
+   `P = 1 − ∏(1 − pᵢ)`, con `pᵢ_efectivo = fiabilidad_i · score_crudo_i`.
+  - Monótono (nadie suprime a nadie), corroboración incorporada (ransomware + interno
+    se refuerzan), siempre ≥ que el `max` (fast-path domina cuando dispara).
+  - **Pesos = fiabilidad MEDIDA, no votada** ("medir no votar"): salen de 5.2b y del
+    F1 por cabeza, no de intuición.
+  - Fiabilidades provisionales conocidas: interno y traffic ALTAS (H5/H7); ransomware
+    y ddos ≈0 hasta medir/reconstruir (features rotas). Una cabeza con fiabilidad ≈0
+    aporta `pᵢ≈0` y **no puede envenenar** aunque siga capturando telemetría.
+
+---
+
+## Punto de entrada para la próxima sesión
+
+**5.2b (pulso del interno) sigue siendo el paso que decide más con menos** — ahora
+decide DOS cosas: si el interno clasifica bien Y si puede correr desacoplado de L1.
+Sin resolver el gate (B), reordenar la fórmula (A) es cosmético.
+
+---
+
+## Impacto en el paper (arXiv:2604.04952)
+
+El paper afirma tricapa + recogida de todas las señales. La realidad es
+**fast-path ⊕ L1** en el veredicto. Este bloque (líneas 408–411 vs 552) es la prueba
+literal que justifica `DEBT-VERDICT-MONOCAPA-001` → corregir arXiv. No es simplificar
+la redacción: dos de los tres niveles no influyen en el score final.
+
+# DAY 210 — Auditoría del cableado del veredicto (cierre diagnóstico de `DEBT-VERDICT-MONOCAPA-001`)
+
+> Anexar esta sección al PLAN DE CAMPAÑA local. Fichero auditado:
+> `ml-detector/src/zmq_handler.cpp`. Números de línea del estado del repo a DAY 210
+> (`/Users/aironman/CLionProjects/test-zeromq-docker/`).
+
+---
+
+## Resumen en una frase
+
+El veredicto de producción es **`max(fast_path, L1)`**. Las cuatro cabezas
+especializadas (DDoS, ransomware, traffic, interno) **se ejecutan y rellenan
+`ml_analysis`, pero su salida NO entra en `overall_threat_score`**. No es
+"monocapa" ni "cabezas muertas": es **bicapa en el veredicto, tetracapa en la
+telemetría**.
+
+---
+
+## Correcciones a hipótesis previas (dejar constancia, para no repetir el error)
+
+1. **La sobrescritura de DAY 11–12 YA NO EXISTE.** En algún punto se arregló.
+   `zmq_handler.cpp:352` lee `fast_detector_score()`, `:410` hace
+   `std::max(fast_score, ml_score)`, `:411` `set_overall_threat_score(final_score)`.
+   El fast-path se preserva; no se pisa. La vieja hipótesis "el ML sobrescribe el
+   score" está obsoleta.
+
+2. **Las cuatro cabezas SÍ se invocan** (corrige una hipótesis intermedia de esta
+   misma sesión, que las daba por no ejecutadas). Ejecución confirmada:
+  - DDoS — línea 558 (`ddos_detector_->predict`, 596)
+  - Ransomware — línea 626 (`ransomware_detector_->predict`, 665)
+  - Traffic — línea 697 (`traffic_detector_->predict`, 733)
+  - Interno — línea 756 (`internal_detector_->predict`, 780)
+    Todas predicen y hacen `add_level2/3_specialized_predictions()` sobre `ml_analysis`.
+
+---
+
+## Los DOS defectos apilados de `DEBT-VERDICT-MONOCAPA-001`
+
+### Defecto A — Secuencia (el veredicto se sella demasiado pronto)
+- Línea 408: `double ml_score = label_l1 == 1 ? confidence_l1 : (1.0 - confidence_l1);`
+  → **`ml_score` ES L1 y solo L1.** Comentario del código: *"Dual-Score Architecture"*
+  (el propio autor documentó que aquí hay dos scores, no tres).
+- Línea 410: `final_score = std::max(fast_score, ml_score);`
+- Línea 411: `set_overall_threat_score(final_score);` → **veredicto sellado aquí.**
+- Las cabezas 2/3/4 corren en 558–802, **150 líneas después**, y solo escriben en
+  `ml_analysis`. Ninguna vuelve a tocar `overall_threat_score`.
+- **Efecto:** las tres cabezas especializadas son *observadores que escriben un
+  informe que nadie lee para decidir* (el "observador silencioso" del Consejo DAY 81,
+  ahora fosilizado y en contradicción con el paper).
+
+### Defecto B — Gate (causa raíz; es H4 hecho código)
+- Línea 552: `if (label_l1 == 1 && confidence_l1 >= config_.ml.thresholds.level1_attack) {`
+  → **las cuatro especializadas solo corren si L1 dijo ATTACK.** L1 es un *gate*, no
+  un compañero de ensemble.
+- **Falso negativo estructural:** un flujo que el interno vería clarísimo como
+  exfiltración/lateral, pero que L1 (genérico, CICIDS2017) marca BENIGN, **sale BENIGN
+  y el interno nunca llega a ejecutarse.** La cabeza fiable (H5/H7) está subordinada a
+  la cabeza que menos sabe de las fases de red del ransomware.
+
+### Consecuencia crítica para el plan
+**Mover el punto de veredicto (arregla A) NO arregla B.** Si las cabezas fiables
+siguen bajo `if L1==ATTACK`, la mejor fórmula de combinación no ve los flujos que L1
+se traga. **B condiciona A** y hay que decidirlo primero.
+
+---
+
+## Detalle de arquitectura que valida la tesis (cascada existente)
+
+- Línea 749: `if (traffic_result.is_internal(...) && internal_detector_ && ...)`
+  → el **interno solo corre si traffic dice que el flujo es interno**. Está anidado
+  dentro de traffic (697 → 748 → 756).
+- Flujo real: **L1 general → traffic decide dominio → interno mira dentro.** Es *casi*
+  la tricapa que promete el paper, salvo que la salida de la cascada nunca sube al `max`.
+  La estructura jerárquica existe en ejecución; **falta el cable de vuelta al veredicto.**
+
+---
+
+## DEBT nuevo detectado hoy
+
+### `DEBT-RAG-ATTACKFAMILY-HARDCODED-001` (P2 — anotar antes de que contamine)
+- Línea 505: `ml_context.attack_family = "RANSOMWARE";  // TODO: Get from detector`
+- **Todo lo que se registra en el RAG sale etiquetado "RANSOMWARE"**, sea lo que sea.
+- Riesgo: si el RAG entra en el circuito de reentrenamiento o se usa como fuente de
+  verdad para inspeccionar clasificaciones, la etiqueta es basura constante.
+- Fix: sacar `attack_family` del detector que realmente disparó (una vez B esté resuelto,
+  la cabeza ganadora ya se conoce).
+
+---
+
+## Activo aprovechable (no partimos de cero)
+
+- Bloque 414–424: la lógica de `authoritative_source`
+  (`DIVERGENCE` / `CONSENSUS` / `FAST_PRIORITY` / `ML_PRIORITY`) **ya razona sobre
+  fast vs ml** y escribe `decision_metadata` de trazabilidad. Es el germen de la lógica
+  de combinación: pensada para dos fuentes, extensible a cinco. La parte de provenance
+  (`add_verdicts`, `discrepancy_score`) también existe ya.
+
+---
+
+## Orden de trabajo corregido (reemplaza el mapa "cuatro tareas de cablear")
+
+Las invocaciones YA existen con features, umbrales de config y predicción. Las
+probabilidades ya están calculadas y colgando en variables vivas dentro de la función:
+`ddos_result.ddos_prob`, `ransomware_result.ransomware_prob`, `internal_result.suspicious_prob`,
+`traffic_result`. **Reconectar = recogerlas y meterlas en la combinación, no reescribir
+la extracción.**
+
+1. **Decidir el gate (Defecto B) ANTES que la fórmula (Defecto A).**
+   Pregunta que lo decide, medible: correr **interno + traffic incondicionalmente**
+   (en todos los flujos, no solo los que L1 marca ATTACK), ¿cabe en el presupuesto de
+   **<10 ms** recepción→clasificación→firewall?
+  - Esto convierte 5.2b en una medición doble: *(i)* ¿el interno separa clases sobre
+    tráfico etiquetado? *(ii)* ¿cuánto cuesta dejarlo suelto de L1?
+
+2. **Mover el punto de veredicto** de la línea 410 a *después* de 802, cuando las
+   cabezas ya han hablado. Reordenamiento de flujo, no lógica nueva.
+
+3. **Sustituir `max(fast, ml_score)` por combinación NO-SUPRESORA** sobre las cinco
+   señales. Operador acordado: **noisy-OR**
+   `P = 1 − ∏(1 − pᵢ)`, con `pᵢ_efectivo = fiabilidad_i · score_crudo_i`.
+  - Monótono (nadie suprime a nadie), corroboración incorporada (ransomware + interno
+    se refuerzan), siempre ≥ que el `max` (fast-path domina cuando dispara).
+  - **Pesos = fiabilidad MEDIDA, no votada** ("medir no votar"): salen de 5.2b y del
+    F1 por cabeza, no de intuición.
+  - Fiabilidades provisionales conocidas: interno y traffic ALTAS (H5/H7); ransomware
+    y ddos ≈0 hasta medir/reconstruir (features rotas). Una cabeza con fiabilidad ≈0
+    aporta `pᵢ≈0` y **no puede envenenar** aunque siga capturando telemetría.
+
+---
+
+## Punto de entrada para la próxima sesión
+
+**5.2b (pulso del interno) sigue siendo el paso que decide más con menos** — ahora
+decide DOS cosas: si el interno clasifica bien Y si puede correr desacoplado de L1.
+Sin resolver el gate (B), reordenar la fórmula (A) es cosmético.
+
+---
+
+## Impacto en el paper (arXiv:2604.04952)
+
+El paper afirma tricapa + recogida de todas las señales. La realidad es
+**fast-path ⊕ L1** en el veredicto. Este bloque (líneas 408–411 vs 552) es la prueba
+literal que justifica `DEBT-VERDICT-MONOCAPA-001` → corregir arXiv. No es simplificar
+la redacción: dos de los tres niveles no influyen en el score final.
+
+---
+
+## Decisión de alcance de la rama `fix/verdict-multihead-honest` (DAY 210 → 211)
+
+**Opción elegida: reconectar las CUATRO cabezas al veredicto, con ransomware y ddos
+entrando con peso ≈0 (fiabilidad medida), y su arreglo real DIFERIDO a post-FEDER.**
+
+Razón: "honesto" ≠ "las cuatro fiables". Un clasificador es honesto cuando el veredicto
+usa cada señal según su fiabilidad medida y el paper describe exactamente eso — lo que
+incluye una cabeza con fiabilidad ≈0 entrando con peso ≈0. Meter "las cuatro fiables"
+como precondición de la rama sería recomprometerse con el Camino B (reentrenar
+ransomware/ddos contra ground truth de red), que NO cabe antes del go/no-go del 1-ago.
+La opción honesta y entregable es: **usar las cuatro, pesarlas por lo que valen medido,
+y decir en el paper que dos aún no valen mucho.**
+
+**La puerta queda abierta por construcción.** Reconectar ransomware/ddos ya arreglados
+post-FEDER = cambiar un peso de ≈0 a su valor medido. Una línea de config por cabeza. No
+reabre la arquitectura, no toca el cableado del veredicto, no es un segundo
+`DEBT-VERDICT`. El hueco donde entrarán las cabezas buenas queda construido y esperando.
+Esta opción es precisamente la que MÁS abierta deja la puerta.
+
+---
+
+## Formulación honesta de la limitación para el paper (hueco de cobertura, NO divergencia predicha)
+
+⚠️ **Corrección de un salto lógico a evitar en el paper.** Con ransomware y ddos pesando
+≈0, esas dos cabezas **no entran en el veredicto**. Por tanto **no pueden *causar*
+divergencia con Suricata/Zeek** — el veredicto de aRGus ni las mira (es noisy-OR de
+fast-path, L1, interno y traffic).
+
+Lo que producen las cabezas rotas **no es divergencia, es un hueco de cobertura**: aRGus
+no tiene hoy un clasificador dedicado funcional para esas dos clases; su detección de
+ransomware/ddos descansa en las OTRAS señales (heurístico del fast-path para ransomware,
+que sí funciona; fases de red — lateral, exfil — que ve el interno).
+
+**Por qué importa (sesgo de confirmación, tipo Q1):** escribir "veremos divergencias con
+Suricata/Zeek *porque* nuestras dos cabezas son malas" es **pre-explicar** una divergencia
+aún no medida con la causa que se tiene a mano. La divergencia entre los tres es
+multicausal — Suricata dio F1=0.000 y Zeek F1=0.042 en Neris por razones de **paradigma**
+(firma vs comportamiento), no por las cabezas de aRGus. Atribuir una divergencia observada
+a la debilidad conocida, sin aislarla flujo a flujo, es agarrar la explicación cómoda en
+vez de medir.
+
+**Formulación que sí aguanta un Consejo adversario:**
+- Declarar el **hueco de cobertura** como limitación: dos cabezas dedicadas no contribuyen
+  al veredicto (peso ≈0 por fiabilidad medida); la detección de esas clases recae en
+  fast-path + señales de fase de red; arreglo diferido a post-FEDER.
+- Tratar cualquier divergencia con Suricata/Zeek como **hallazgo a reportar e investigar**,
+  no como algo a explicar de antemano. Si al medir la divergencia se concentra en flujos
+  ransomware/ddos, *entonces* hay evidencia para atribuirla — y es un resultado, no una
+  excusa escrita antes de mirar.
+
+**Regla de oro:** la limitación es una frase sobre **aRGus** ("aún no tenemos estas dos
+cabezas"), NO una predicción sobre **la comparativa** ("por eso divergiremos"). La primera
+es honestidad; la segunda es adivinar el resultado antes del experimento.
