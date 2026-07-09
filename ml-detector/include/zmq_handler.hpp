@@ -19,6 +19,7 @@
 #include "ml_defender/traffic_detector.hpp"
 #include "ml_defender/internal_detector.hpp"
 #include "ml_defender/internal_head_logic.hpp"
+#include "ml_defender/traffic_head_logic.hpp"
 
 #include "network_security.pb.h"
 
@@ -82,6 +83,14 @@ public:
 private:
     void run();
     void process_event(const std::string& message);
+
+    // DAY 213 — 1b-extract: cabeza de traffic como observador puro.
+    // Extrae, mapea (build_traffic_features), infiere y registra el
+    // level3_traffic_pred en el informe. Devuelve la Prediction (nullopt si no
+    // pudo opinar). Comportamiento idéntico al bloque inline anterior; NO decide.
+    std::optional<ml_defender::TrafficDetector::Prediction>
+    run_traffic_head(const protobuf::NetworkFeatures& nf,
+                     protobuf::TricapaMLAnalysis* ml_analysis) noexcept;
 
     // DAY 212 — cabeza interna como observador (DEBT-VERDICT-MONOCAPA-001).
     // Devuelve la Prediction (nullopt si no pudo opinar); no sella el veredicto.

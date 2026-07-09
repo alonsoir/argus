@@ -130,7 +130,7 @@ ZMQHandler::ZMQHandler(
             csv_cfg.max_events_per_file = static_cast<size_t>(config_.csv_writer.max_events_per_file);
             csv_cfg.min_score_threshold = config_.csv_writer.min_score_threshold;
 
-			csv_writer_ = std::make_shared<ml_defender::CsvEventWriter>(csv_cfg, logger_);
+                        csv_writer_ = std::make_shared<ml_defender::CsvEventWriter>(csv_cfg, logger_);
 
             logger_->info("✅ CsvEventWriter initialized (standalone)");
             logger_->info("   Output: {}/YYYY-MM-DD.csv", csv_dir);
@@ -173,10 +173,10 @@ ZMQHandler::ZMQHandler(
             logger_
             // DEPRECATED DAY 98 — crypto_manager eliminado
         );
-		logger_->info("✅ RAG Logger initialized successfully (encrypted artifacts enabled)");
-		if (csv_writer_) {
-    		rag_logger_->set_csv_writer(csv_writer_);
-		}
+                logger_->info("✅ RAG Logger initialized successfully (encrypted artifacts enabled)");
+                if (csv_writer_) {
+                rag_logger_->set_csv_writer(csv_writer_);
+                }
         // Si RAG Logger está disponible, comparte el csv_writer con él
         // Nota: RAG Logger no toma ownership — csv_writer_ sigue siendo el owner
         // Se pasa una referencia lógica; RAG Logger escribe a través de él
@@ -317,6 +317,61 @@ void ZMQHandler::run() {
     }
 
     logger_->info("📥 ZMQ Handler loop stopped");
+}
+
+// DAY 213 — 1b-extract: cabeza de traffic como observador puro.
+// Extrae, mapea (build_traffic_features), infiere y registra el level3_traffic_pred
+// en el informe. Devuelve la Prediction (nullopt si no pudo opinar). NO sella el
+// veredicto: process_event lee el optional y decide (hoy con la puerta is_internal
+// heredada). Comportamiento IDÉNTICO al bloque inline anterior, incluido el doble
+// contador de error (feature_extraction_errors en extracción + inference_errors en
+// el catch externo vía re-throw). Delega el mapeo a build_traffic_features (puro,
+// anclado por test_traffic_head_logic).
+std::optional<ml_defender::TrafficDetector::Prediction>
+ZMQHandler::run_traffic_head(const protobuf::NetworkFeatures& nf,
+                             protobuf::TricapaMLAnalysis* ml_analysis) noexcept {
+    if (!traffic_detector_) {
+        return std::nullopt;
+    }
+
+    try {
+        std::vector<float> traffic_features_vec;
+        try {
+            traffic_features_vec = extractor_->extract_level3_traffic_features(nf);
+            if (traffic_features_vec.size() != 10) {
+                throw std::runtime_error("Invalid Traffic feature count");
+            }
+        } catch (const std::exception& e) {
+            logger_->error("❌ Traffic feature extraction failed: {}", e.what());
+            std::lock_guard<std::mutex> lock(stats_mutex_);
+            stats_.feature_extraction_errors++;
+            throw;   // re-throw → lo captura el catch externo (inference_errors++)
+        }
+
+        const auto traffic_features =
+            ml_defender::build_traffic_features(traffic_features_vec);
+        const auto traffic_result = traffic_detector_->predict(traffic_features);
+
+        logger_->debug("🤖 Traffic: class={} ({}), conf={:.4f}",
+                       traffic_result.class_id,
+                       (traffic_result.class_id == 0 ? "INTERNET" : "INTERNAL"),
+                       traffic_result.probability);
+
+        auto* level3_traffic_pred = ml_analysis->add_level3_specialized_predictions();
+        level3_traffic_pred->set_model_name("traffic_detector_embedded_cpp20");
+        level3_traffic_pred->set_model_version("1.0.0");
+        level3_traffic_pred->set_prediction_class(
+            traffic_result.class_id == 0 ? "INTERNET" : "INTERNAL");
+        level3_traffic_pred->set_confidence_score(traffic_result.probability);
+
+        return traffic_result;
+
+    } catch (const std::exception& e) {
+        logger_->error("❌ Level 3 Traffic processing failed: {}", e.what());
+        std::lock_guard<std::mutex> lock(stats_mutex_);
+        stats_.inference_errors++;
+        return std::nullopt;
+    }
 }
 
 // DAY 212 — cabeza interna como observador puro (DEBT-VERDICT-MONOCAPA-001).
@@ -745,84 +800,49 @@ void ZMQHandler::process_event(const std::string& message) {
             }
 
             // Level 3: Traffic Classification
+            // DAY 213 — 1b-extract: la clasificación de traffic vive ahora en
+            // run_traffic_head (observador puro que registra level3_traffic_pred y
+            // devuelve la Prediction). Guard estricto traffic_detector_ && web.enabled
+            // idéntico al original: si el detector no existe, el bloque entero se salta
+            // (cero cambio observable, ni log). La llamada sigue DENTRO del gate L1
+            // (1b-hoist la sacará). El sellado del veredicto (is_internal → interno)
+            // permanece intacto en el orquestador.
             if (traffic_detector_ && config_.ml.level3.web.enabled) {
-                try {
-                    logger_->debug("🔍 Running Level 3 Traffic classification...");
+                logger_->debug("🔍 Running Level 3 Traffic classification...");
 
-                    if (!event.has_network_features()) {
-                        logger_->error("❌ Event {} missing network_features, skipping Traffic",
-                                      event.event_id());
-                    } else {
-                        const auto& nf = event.network_features();
+                if (!event.has_network_features()) {
+                    logger_->error("❌ Event {} missing network_features, skipping Traffic",
+                                  event.event_id());
+                } else {
+                    const auto& nf = event.network_features();
 
-                        std::vector<float> traffic_features_vec;
-                        try {
-                            traffic_features_vec = extractor_->extract_level3_traffic_features(nf);
-                            if (traffic_features_vec.size() != 10) {
-                                throw std::runtime_error("Invalid Traffic feature count");
-                            }
-                        } catch (const std::exception& e) {
-                            logger_->error("❌ Traffic feature extraction failed: {}", e.what());
-                            std::lock_guard<std::mutex> lock(stats_mutex_);
-                            stats_.feature_extraction_errors++;
-                            throw;
-                        }
+                    auto traffic_result = run_traffic_head(nf, ml_analysis);
 
-                        ml_defender::TrafficDetector::Features traffic_features{
-                            .packet_rate           = traffic_features_vec[0],
-                            .connection_rate       = traffic_features_vec[1],
-                            .tcp_udp_ratio         = traffic_features_vec[2],
-                            .avg_packet_size       = traffic_features_vec[3],
-                            .port_entropy          = traffic_features_vec[4],
-                            .flow_duration_std     = traffic_features_vec[5],
-                            .src_ip_entropy        = traffic_features_vec[6],
-                            .dst_ip_concentration  = traffic_features_vec[7],
-                            .protocol_variety      = traffic_features_vec[8],
-                            .temporal_consistency  = traffic_features_vec[9]
-                        };
+                    // Level 3: Internal — misma puerta que antes (is_internal + flags).
+                    // 1a intacto: run_internal_head + sellado del orquestador.
+                    if (traffic_result &&
+                        traffic_result->is_internal(config_.ml.thresholds.level3_web) &&
+                        internal_detector_ && config_.ml.level3.internal.enabled) {
 
-                        auto traffic_result = traffic_detector_->predict(traffic_features);
-                        logger_->debug("🤖 Traffic: class={} ({}), conf={:.4f}",
-                                      traffic_result.class_id,
-                                      (traffic_result.class_id == 0 ? "INTERNET" : "INTERNAL"),
-                                      traffic_result.probability);
+                        // DAY 212 — cabeza interna: observador que devuelve Prediction (nullopt si
+                        // no pudo opinar). La lógica vive en run_internal_head + internal_head_logic
+                        // (funciones puras ancladas por test_internal_head_logic). Comportamiento
+                        // idéntico al bloque anterior; commit 1b-hoist moverá esta llamada fuera del gate.
+                        auto internal_pred = run_internal_head(nf, label_l1, ml_analysis);
 
-                        auto* level3_traffic_pred = ml_analysis->add_level3_specialized_predictions();
-                        level3_traffic_pred->set_model_name("traffic_detector_embedded_cpp20");
-                        level3_traffic_pred->set_model_version("1.0.0");
-                        level3_traffic_pred->set_prediction_class(
-                            traffic_result.class_id == 0 ? "INTERNET" : "INTERNAL"
-                        );
-                        level3_traffic_pred->set_confidence_score(traffic_result.probability);
-
-                        // Level 3: Internal
-                        if (traffic_result.is_internal(config_.ml.thresholds.level3_web) &&
-                            internal_detector_ && config_.ml.level3.internal.enabled) {
-
-                            // DAY 212 — cabeza interna: observador que devuelve Prediction (nullopt si
-                            // no pudo opinar). La lógica vive en run_internal_head + internal_head_logic
-                            // (funciones puras ancladas por test_internal_head_logic). Comportamiento
-                            // idéntico al bloque anterior; commit 1b moverá esta llamada fuera del gate.
-                            auto internal_pred = run_internal_head(nf, label_l1, ml_analysis);
-
-                            // Sellado del veredicto: decisión del ORQUESTADOR, no de la cabeza.
-                            // Idéntico al original (mismo umbral level3_internal, mismos campos).
-                            // COMMIT 2 reemplazará este if por el combinador noisy-OR que consume
-                            // internal_pred junto a las demás cabezas.
-                            if (internal_pred &&
-                                internal_pred->is_suspicious(config_.ml.thresholds.level3_internal)) {
-                                event.set_threat_category("SUSPICIOUS_INTERNAL");
-                                ml_analysis->set_final_threat_classification("SUSPICIOUS_INTERNAL");
-                                logger_->warn("🔴 SUSPICIOUS INTERNAL ACTIVITY: event={}, conf={:.2f}%",
-                                              event.event_id(),
-                                              internal_pred->suspicious_prob * 100);
-                            }
+                        // Sellado del veredicto: decisión del ORQUESTADOR, no de la cabeza.
+                        // Idéntico al original (mismo umbral level3_internal, mismos campos).
+                        // COMMIT 2 reemplazará este if por el combinador noisy-OR que consume
+                        // internal_pred junto a las demás cabezas.
+                        if (internal_pred &&
+                            internal_pred->is_suspicious(config_.ml.thresholds.level3_internal)) {
+                            event.set_threat_category("SUSPICIOUS_INTERNAL");
+                            ml_analysis->set_final_threat_classification("SUSPICIOUS_INTERNAL");
+                            logger_->warn("🔴 SUSPICIOUS INTERNAL ACTIVITY: event={}, conf={:.2f}%",
+                                          event.event_id(),
+                                          internal_pred->suspicious_prob * 100);
                         }
                     }
-                } catch (const std::exception& e) {
-                    logger_->error("❌ Level 3 Traffic processing failed: {}", e.what());
-                    std::lock_guard<std::mutex> lock(stats_mutex_);
-                    stats_.inference_errors++;
                 }
             }
 

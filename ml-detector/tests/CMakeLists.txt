@@ -277,32 +277,44 @@ if(GTest_FOUND AND
     ml_link_nlohmann(test_etcd_client_hmac)
 endif()
 
-# test_correlation_v1_oracle — RETIRADO DAY187 (Camino A). Era el árbitro del
-# refactor byte-idéntico (DAY185 B3): comparaba serialize(to_row) vs bytes del
-# build_row PRE-refactor. Cumplida su misión, build_row borrado, su sucesor es el
-# fuzz diferencial de DAY187 (fuzz-correlation-equiv, 240k casos). El golden sigue
-# cubierto por capture_golden + test_correlation_roundtrip (write↔read real).
+# ── test_traffic_head_logic — DAY 213 1b-extract: lógica pura cabeza traffic ──
+# No GTest (main() propio + macro CHECK). Enlaza traffic_detector.cpp.
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/unit/test_traffic_head_logic.cpp")
+    add_executable(test_traffic_head_logic
+            unit/test_traffic_head_logic.cpp
+            ../src/traffic_detector.cpp
+    )
+    target_include_directories(test_traffic_head_logic PRIVATE
+            ${CMAKE_CURRENT_SOURCE_DIR}/../include
+            ${CMAKE_BINARY_DIR}/proto
+    )
+    target_link_libraries(test_traffic_head_logic PRIVATE
+            Threads::Threads
+    )
+    target_compile_options(test_traffic_head_logic PRIVATE -UNDEBUG)
+    add_test(NAME test_traffic_head_logic COMMAND test_traffic_head_logic)
+    message(STATUS "✅ test_traffic_head_logic registered (DAY 213 1b-extract)")
+endif()
 
-# ============================================================================
-# SUMMARY
-# ============================================================================
-message(STATUS "")
-message(STATUS "─── Test suite ──────────────────────────────")
-message(STATUS "  Unit:")
-message(STATUS "    test_classifier             (stub)")
-message(STATUS "    test_feature_extractor       (stub)")
-message(STATUS "    test_model_loader            (stub)")
-message(STATUS "    test_ransomware_detector_unit")
-message(STATUS "    test_detectors               (standalone, no ctest)")
-message(STATUS "  Integration:")
-message(STATUS "    test_ransomware_detector_integration")
-message(STATUS "    test_pipeline                (stub)")
-message(STATUS "  Day 64 — CSV pipeline:")
-message(STATUS "    test_csv_event_writer")
-message(STATUS "    test_csv_feature_extraction")
-message(STATUS "    test_etcd_client_hmac")
-message(STATUS "─────────────────────────────────────────────")
-message(STATUS "")
+# ── test_internal_head_logic — DAY 212 1a: lógica pura cabeza interna ──
+# (registrado DAY 213: el test existía desde 1a pero no estaba en ctest)
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/unit/test_internal_head_logic.cpp")
+    add_executable(test_internal_head_logic
+            unit/test_internal_head_logic.cpp
+            ../src/internal_detector.cpp
+    )
+    target_include_directories(test_internal_head_logic PRIVATE
+            ${CMAKE_CURRENT_SOURCE_DIR}/../include
+            ${CMAKE_BINARY_DIR}/proto
+    )
+    target_link_libraries(test_internal_head_logic PRIVATE
+            Threads::Threads
+    )
+    target_compile_options(test_internal_head_logic PRIVATE -UNDEBUG)
+    add_test(NAME test_internal_head_logic COMMAND test_internal_head_logic)
+    message(STATUS "✅ test_internal_head_logic registered (DAY 212 1a, wired DAY 213)")
+endif()
+
 
 # [DAY182] -UNDEBUG: assert() vivo en production (regla DAY 144)
 # Reactiva assert() bajo -DNDEBUG en estos test standalone.
@@ -334,3 +346,36 @@ if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/integration/capture_golden.cpp")
     ml_link_spdlog(capture_golden)
     message(STATUS "✅ capture_golden registered (DAY 185 B2, standalone)")
 endif()
+
+
+# test_correlation_v1_oracle — RETIRADO DAY187 (Camino A). Era el árbitro del
+# refactor byte-idéntico (DAY185 B3): comparaba serialize(to_row) vs bytes del
+# build_row PRE-refactor. Cumplida su misión, build_row borrado, su sucesor es el
+# fuzz diferencial de DAY187 (fuzz-correlation-equiv, 240k casos). El golden sigue
+# cubierto por capture_golden + test_correlation_roundtrip (write↔read real).
+
+# ============================================================================
+# SUMMARY
+# ============================================================================
+message(STATUS "")
+message(STATUS "─── Test suite ──────────────────────────────")
+message(STATUS "  Unit:")
+message(STATUS "    test_classifier             (stub)")
+message(STATUS "    test_feature_extractor       (stub)")
+message(STATUS "    test_model_loader            (stub)")
+message(STATUS "    test_ransomware_detector_unit")
+message(STATUS "    test_detectors               (standalone, no ctest)")
+message(STATUS "  Integration:")
+message(STATUS "    test_ransomware_detector_integration")
+message(STATUS "    test_pipeline                (stub)")
+message(STATUS "  Day 64 — CSV pipeline:")
+message(STATUS "    test_csv_event_writer")
+message(STATUS "    test_csv_feature_extraction")
+message(STATUS "    test_etcd_client_hmac")
+message(STATUS "  Day 185 — correlation_v1 golden:")
+message(STATUS "    integration/capture_golden")
+message(STATUS "  Day 212–213 — verdict multihead (1a/1b):")
+message(STATUS "    test_internal_head_logic")
+message(STATUS "    test_traffic_head_logic")
+message(STATUS "─────────────────────────────────────────────")
+message(STATUS "")
