@@ -1,4 +1,4 @@
-# PROMPT DE CONTINUIDAD — DAY 213 → 214
+# PROMPT DE CONTINUIDAD — DAY 214 → 215
 ## Rama `fix/verdict-multihead-honest` · Fase 2 del veredicto multicabeza
 
 > Memoria de sesión. Claude no recuerda entre ventanas. Fuente de verdad del PLAN
@@ -6,209 +6,227 @@
 
 ---
 
-## ⚠️ AL ABRIR — ESTADO DE CIERRE DAY 213
+## ⚠️ AL ABRIR — ESTADO DE CIERRE DAY 214
 
-**1b-extract COMMITEADO y CERTIFICADO.** Nada pendiente de anoche.
-- Commit `05f1c263` en rama `fix/verdict-multihead-honest` (NO merge a main).
-- `make test-all`: 13/13 verde.
-- `make emecas+++`: PASSED (circuito bronce->Kuzu verificado, test_bronze_to_kuzu_circuit).
-- El watch-point del adapter bronce->gold quedó DESPEJADO para el extract: la
-  sección interna nueva en flujos internos-benignos NO rompió el circuito.
+**1b-hoist COMMITEADO, PUSHEADO y CERTIFICADO.** Nada pendiente de ayer.
+- Commit `12ae89f7` en rama `fix/verdict-multihead-honest` (NO merge a main).
+- Pusheado a `origin/fix/verdict-multihead-honest` (`1dee11ad..12ae89f7`).
+- `make test-all`: **14/14 verde** (13 previos + test_verdict_decision_logic #14).
+- `make emecas+++`: **PASSED** (~1:13:10; circuito bronce->Kuzu verificado,
+  test_bronze_to_kuzu_circuit). Scan de secretos: limpio.
 
-**PRIMERA ACCIÓN HOY: arrancar 1b-hoist.** Decisión (a) ya tomada (abajo). No hay
-que re-auditar 1b-extract. Sanity opcional antes de empezar:
+**WATCH-POINT adapter bronce->gold: MUERTO, MEDIDO DOS VECES.** Ya no es riesgo.
+- Primero con `file:line` (mañana DAY 214): CSV forma fija (127 cols, secciones
+  rellenas con ceros — csv_event_writer.cpp:395-463) + contrato correlation_v1
+  (19 cols, NINGUNA es predicción-por-cabeza — correlation_v1.hpp:64-82) +
+  veredicto congelado ⟹ el hoist NO cruza a bronce/gold. La info nueva del hoist
+  (level3_traffic_pred, internal_pred) muere en el corte protobuf->Row (to_row,
+  "la struct es la frontera donde el protobuf muere"), no hay columna destino.
+- Luego empíricamente: EMECAS+++ verde en circuito. El adapter NO se tocó.
+- El golden es RED DE SEGURIDAD, no riesgo: si algún día salta rojo en circuito
+  tras tocar el veredicto, es un veredicto que se movió = BUG REAL, no falso
+  positivo del adapter.
+
+**PRIMERA ACCIÓN HOY: arrancar commit 2 (noisy-OR).** Pero NO cortar a ciegas —
+hay 2 preguntas de diseño que resolver ANTES (abajo, "ENTENDER PRIMERO"). Sanity
+opcional:
 ```
-git -C ml-detector log --oneline -2     # confirmar 05f1c263 (1b-extract) presente
-git -C ml-detector status --short        # árbol limpio salvo lo que empieces a tocar
+git -C ml-detector log --oneline -3     # confirmar 12ae89f7 (1b-hoist) en HEAD
+git -C ml-detector status --short        # árbol limpio salvo el prompt de continuidad
 ```
 
 ---
 
-## DÓNDE ESTAMOS: commit 1b-extract HECHO (05f1c263) — test-all 13/13 + EMECAS+++ verdes
+## DÓNDE ESTAMOS: Fase 2 con 1a + 1b-extract + 1b-hoist acumulados
 
-**Rama:** `fix/verdict-multihead-honest`. **NO mergeada a main.** Acumula
-1a + 1b-extract; faltan 1b-hoist + commit 2 antes del merge. `docs/BACKLOG.md` y
-`README.md` se actualizan AL MERGE, no antes (decisión Alonso DAY 212).
+**Rama:** `fix/verdict-multihead-honest`. **NO mergeada a main.** Acumula:
+- `1a` — extract cabeza interna a run_internal_head + internal_head_logic.
+- `05f1c263` (1b-extract) — extract cabeza traffic a run_traffic_head.
+- `12ae89f7` (1b-hoist) — cabezas IZADAS fuera del gate L1 + decide_l3_verdict.
 
-**Los 5 ficheros de 1b-extract (staged anoche, verificados en índice):**
-- `ml-detector/include/ml_defender/traffic_head_logic.hpp` (nuevo)
-- `ml-detector/tests/unit/test_traffic_head_logic.cpp` (nuevo)
-- `ml-detector/tests/CMakeLists.txt` (registra los 2 tests en ctest)
-- `ml-detector/include/zmq_handler.hpp` (include + declaración run_traffic_head)
-- `ml-detector/src/zmq_handler.cpp` (método run_traffic_head + call_site)
+Falta **commit 2 (noisy-OR)** antes del merge. `docs/BACKLOG.md` y `README.md` se
+actualizan AL MERGE, no antes (decisión Alonso DAY 212).
 
-**Mensaje del commit 05f1c263 (ya aplicado):**
+### Qué dejó 1b-hoist (12ae89f7) — estructura, para entender el punto de partida de commit 2
+Los **5 ficheros**:
+- `ml-detector/include/ml_defender/verdict_decision_logic.hpp` (nuevo) — la fn pura.
+- `ml-detector/tests/unit/test_verdict_decision_logic.cpp` (nuevo) — 14 checks.
+- `ml-detector/tests/CMakeLists.txt` — registra test_verdict_decision_logic (#14).
+- `ml-detector/include/zmq_handler.hpp` — include de verdict_decision_logic.hpp.
+- `ml-detector/src/zmq_handler.cpp` — izado + sellado vía decide_l3_verdict.
+
+**El corte en process_event (zmq_handler.cpp):**
+1. **ARRIBA del gate L1** (~línea 655): run_traffic_head + run_internal_head IZADOS.
+   Corren en TODOS los flujos. Guard is_internal conservado (opción a): el interno
+   sólo corre en flujos internos, NO externos. Las Prediction se guardan en
+   `std::optional traffic_result` e `internal_pred` a scope de gate.
+   ```
+   std::optional<TrafficDetector::Prediction>  traffic_result;
+   std::optional<InternalDetector::Prediction> internal_pred;
+   if (traffic_detector_ && web.enabled && event.has_network_features()) {
+       const auto& nf = event.network_features();
+       traffic_result = run_traffic_head(nf, ml_analysis);
+       if (traffic_result && traffic_result->is_internal(level3_web) &&
+           internal_detector_ && internal.enabled) {
+           internal_pred = run_internal_head(nf, label_l1, ml_analysis);
+       }
+   }
+   ```
+2. **DENTRO del gate L1-attack** (~línea 813): SÓLO el sellado, vía la fn pura.
+   ```
+   const auto l3_decision = decide_l3_verdict({
+       .l1_gate_open           = true,   // dentro del gate por construcción
+       .traffic_is_internal    = traffic_result && traffic_result->is_internal(level3_web),
+       .internal_ran           = internal_pred.has_value(),
+       .internal_is_suspicious = internal_pred && internal_pred->is_suspicious(level3_internal),
+   });
+   if (l3_decision.seal_suspicious_internal) {
+       event.set_threat_category("SUSPICIOUS_INTERNAL"); ...
+   }
+   ```
+
+### La función que commit 2 MODIFICA (verdict_decision_logic.hpp)
 ```
-refactor(ml-detector): extraer cabeza traffic a run_traffic_head + test (1b-extract)
+struct L3VerdictInputs {          // hoy: SÓLO booleanos
+    bool l1_gate_open;
+    bool traffic_is_internal;
+    bool internal_ran;
+    bool internal_is_suspicious;
+};
+struct L3VerdictDecision { bool seal_suspicious_internal = false; ... };
 
-- traffic_head_logic.hpp: build_traffic_features (mapeo puro de 10 índices,
-  espejo de internal_head_logic), lanza invalid_argument si size!=10.
-- run_traffic_head: observador puro, registra level3_traffic_pred y devuelve
-  Prediction. Comportamiento byte-idéntico al bloque inline, incluido el doble
-  contador de error (feature_extraction + inference vía re-throw).
-- Llamada en el MISMO sitio dentro del gate L1 (guard estricto conservado).
-  El hoist fuera del gate es 1b-hoist, commit aparte.
-- test_traffic_head_logic: 29 asserts (mapeo, tamaño, is_internal/is_internet).
-- tests/CMakeLists.txt: registra test_traffic_head_logic Y test_internal_head_logic
-  en ctest (el de 1a existía pero nunca corría en test-all — cabo cerrado hoy).
-- test-all 13/13 verde: neutralidad del extract certificada. NO merge a main.
-```
-
-### Verificación de 1b-extract (hecha DAY 213)
-- `ctest -R head`: test_traffic_head_logic 29/29 + test_internal_head_logic 25/25
-- `make test-all`: 13/13 ALL TESTS COMPLETE (11 preexistentes + 2 nuevos)
-- Neutralidad: los 11 tests previos siguen verdes idénticos.
-
-### Qué hace 1b-extract (estructura, no comportamiento) — espejo del patrón de 1a
-1. **traffic_head_logic.hpp** — `build_traffic_features(vector<float>) ->
-   TrafficDetector::Features`. Mapeo puro de los 10 índices (0=packet_rate ...
-   9=temporal_consistency). Lanza `invalid_argument` si size != 10.
-2. **test_traffic_head_logic.cpp** — 29 asserts. NO usa GTest: main() propio +
-   macro CHECK (return 1 al fallo). Enlaza traffic_detector.cpp.
-3. **run_traffic_head(nf, ml_analysis) -> optional<TrafficDetector::Prediction>**
-   (~línea 331, ANTES de run_internal_head). Extrae → build_traffic_features →
-   predict → registra level3_traffic_pred → devuelve Prediction. NO decide.
-   **Preserva el DOBLE contador de error**: feature_extraction_errors (re-throw)
-    + inference_errors (catch externo). NO unificado con run_internal_head (que
-      sólo cuenta inference_errors) — distintos en main, el extract los respeta.
-4. **Call site** (dentro del gate L1): la llamada sustituye al bloque inline EN EL
-   MISMO SITIO. Guard estricto `if (traffic_detector_ && web.enabled)` conservado.
-   Sellado interno (is_internal → run_internal_head → SUSPICIOUS_INTERNAL) INTACTO.
-5. **tests/CMakeLists.txt** — registró en ctest AMBOS head tests. HALLAZGO DAY 213:
-   el test de 1a existía pero NUNCA estaba en ctest — el "25/25" de DAY 212 fue el
-   g++ suelto, no test-all. Ahora ambos corren vía test-components → ctest.
-
-### Detalles técnicos que ahorran tiempo
-- Retorno confirmado contra header real: `TrafficDetector::Prediction`
-  {class_id, probability, internet_prob, internal_prob} + is_internal/is_internet.
-- Test aislado (Mac) contra traffic_detector.cpp REAL:
-  `cd ml-detector && g++ -std=c++20 -O2 -I include -I include/ml_defender \
-   tests/unit/test_traffic_head_logic.cpp src/traffic_detector.cpp -o /tmp/test_thl && /tmp/test_thl`
-- ctest en VM: $ML_DETECTOR_BUILD_DIR NO existe en shell remota. Ruta literal:
-  `vagrant ssh -c "cd /vagrant/ml-detector/build-debug && ctest -N"` (PROFILE=debug).
-  `ctest -N` lista sin ejecutar — prueba anti-|| del test-components (que traga
-  fallos de registro con `|| echo "No ml-detector tests configured"`).
-- Los 13 tests: 11 preexistentes + test_traffic_head_logic (#12) + test_internal_head_logic (#13).
-- Build: `make ml-detector` (reconfigura cmake + compila). Máquina: VM `defender` (x86), repo /vagrant.
-
----
-
-## PRÓXIMO: commit 1b-hoist — sacar las cabezas del gate L1
-
-**Objetivo:** mover `run_traffic_head` + `run_internal_head` FUERA del gate L1,
-para que corran en TODOS los flujos. Pago real de la Fase 2: el interno empieza a
-ver los flujos BENIGN-para-L1 y `internal_l1_discrepancies` mide el hueco de verdad.
-
-### Decisión ya tomada (DAY 213): OPCIÓN (a)
-Saca del gate L1 pero MANTIENE el guard `is_internal` sobre run_internal_head. El
-interno corre en flujos internos que L1 marcó benigno — NO en externos. Contador
-interpretable. Lo externo (y "L1 misclasifica interno como externo") es OTRA
-instrumentación, a su propio backlog, NO se mezcla en internal_l1_discrepancies.
-
-### Estructura del corte (post-1b-extract)
-```
-auto traffic_result = run_traffic_head(nf, ml_analysis);   // FUERA del gate, corre siempre
-bool is_internal = traffic_result &&
-                   traffic_result->is_internal(config_.ml.thresholds.level3_web);
-std::optional<InternalDetector::Prediction> internal_pred;
-if (is_internal) {                                          // (a): guard INTERNAL conservado
-    internal_pred = run_internal_head(nf, label_l1, ml_analysis);
-}
-if (label_l1 == 1 && confidence_l1 >= level1_attack) {      // gate L1 INTACTO
-    ... ddos, ransomware ...
-    if (is_internal) {
-        if (internal_pred && internal_pred->is_suspicious(...)) {  // SELLADO se queda
-            event.set_threat_category("SUSPICIOUS_INTERNAL"); ...
-        }
-    }
-} else {
-    event.set_threat_category("NORMAL");                   // benigno; las llamadas YA corrieron arriba
+constexpr L3VerdictDecision decide_l3_verdict(const L3VerdictInputs& in) noexcept {
+    d.seal_suspicious_internal =
+        in.l1_gate_open && in.internal_ran && in.internal_is_suspicious;  // ← commit 2 reemplaza ESTO
+    return d;
 }
 ```
-Interno L1-attack: byte-idéntico a extract. Interno L1-benigno: llamadas disparan
-arriba (contador sube), veredicto cae al else NORMAL. CONSERVADOR: correr izado,
-decidir congelado. El veredicto lo escucha commit 2.
-
-### Anclas para 1b-hoist (re-anclar con grep — números desplazados por el extract)
-```
-grep -n 'run_traffic_head(nf, ml_analysis)' src/zmq_handler.cpp
-grep -n 'level1_attack' src/zmq_handler.cpp
-grep -n 'set_threat_category("NORMAL")' src/zmq_handler.cpp
-```
-
-### Asimetría anotada (NO bloquea 1b-hoist, alinear en commit 2)
-run_internal_head recibe label_l1 pero NO confidence_l1. El contador mide
-"L1-benigno" = label_l1 != 1. Pero el else NORMAL se alcanza si label_l1 != 1 O
-confidence_l1 < level1_attack. En el borde (L1 attack, confianza baja → NORMAL) el
-contador lo ve como no-discrepancia. Para el paper (Camino A): o se anota como
-definición consciente ("hueco = discrepancia de CLASE, no de confianza") o se pasa
-confidence_l1 a run_internal_head en commit 2. NO meter la firma nueva en 1b-hoist.
-
-### Tests de contorno OBLIGATORIOS en 1b-hoist (los 4)
-1. Interno lateral/exfil, L1 BENIGN → internal_l1_discrepancies SUBE.
-2. Ese mismo flujo → veredicto sigue NORMAL, final_threat_classification ≠
-   SUSPICIOUS_INTERNAL. **FRONTERA conservador/agresivo — sin ella un sellado
-   accidental pasa en verde.**
-3. Interno L1-attack → sella SUSPICIOUS_INTERNAL, idéntico a extract (hot path intacto).
-4. EXTERNO con features lateral/exfil → run_internal_head NO se llama, contador NO
-   sube. **Blinda (a): si quitan el guard, se pone rojo.**
-
-### WATCH-POINT EMECAS+++ para 1b-hoist (leer ANTES de los 79 min)
-Al des-gatear, run_traffic_head corre en TODOS los flujos → el informe
-TricapaMLAnalysis gana sección de traffic en flujos EXTERNOS y L1-BENIGN que hoy no
-la tienen. Pega contra el adapter bronce→gold (DAY 199-208). Rojo probable en la
-etapa de CIRCUITO, no en el detector. Corrección correcta: TOLERAR la sección en el
-adapter (commit 2 con noisy-OR producirá informes aún más ricos), NO gatear el
-registro dentro de run_traffic_head (hack + DEBT).
-NOTA: este mismo watch-point aplica en menor grado a 1b-extract — con el extract
-sólo los flujos internos-benignos ganan sección interna nueva; con el hoist se
-extiende a externos. Si el EMECAS+++ de anoche (extract) salió rojo en circuito,
-el hoist lo agravaría — resolver el adapter ANTES del hoist.
+- Es PURA, constexpr-evaluable, anclada por test_verdict_decision_logic (14 checks).
+- NO re-implementa umbrales: recibe is_internal/is_suspicious YA evaluados por las
+  Prediction (fuente de verdad única). Diseño deliberado.
+- **AVISO HONESTO (corrección de lo dicho DAY 214):** se dijo "commit 2 reemplaza
+  sólo el CUERPO sin tocar process_event". Eso es OPTIMISTA. El noisy-OR necesita
+  SCORES CRUDOS, no booleanos → el struct L3VerdictInputs casi seguro CRECE para
+  llevar floats (score_i + fiabilidad_i por cabeza). Y si el struct crece, el sitio
+  de construcción en process_event TAMBIÉN cambia. No es body-swap limpio. Ver
+  "ENTENDER PRIMERO" abajo.
 
 ---
 
-## DESPUÉS: commit 2 — noisy-OR (el que mata el monocapa)
-Reemplazar el `if` de sellado por combinador: `P = 1 − ∏(1 − pᵢ)`,
-`pᵢ = fiabilidad_i · score_crudo_i`.
-- ransomware/ddos entran con fiabilidad ≈0 (features rotas auditadas): honesto, no
-  envenenan. Reconectar post-FEDER = cambiar 1 peso de config.
-- Tests OBLIGATORIOS: (a) una cabeza dispara; (b) dos corroboran; (c) cabeza
-  fiabilidad-0 NO envenena.
-- Aquí se alinea la asimetría label_l1/confidence_l1 (pasar confidence_l1 a las cabezas).
-- Paper (Camino A): tricapa→monocapa como HUECO DE COBERTURA, nunca como
+## PRÓXIMO: commit 2 — noisy-OR (el que mata el monocapa)
+
+**Objetivo:** reemplazar el `&&` de sellado por combinador probabilístico:
+`P = 1 − ∏(1 − pᵢ)`, con `pᵢ = fiabilidad_i · score_crudo_i`.
+- ransomware/ddos entran con **fiabilidad ≈0** (features rotas, auditadas
+  DEBT-RANSOMWARE-ML-HEAD-INERT-001): honesto, NO envenenan (1 − 0·score = 1, no
+  cambian el producto). Reconectar post-FEDER = cambiar 1 peso de config.
+- Paper (Camino A): tricapa→monocapa como **HUECO DE COBERTURA**, nunca como
   divergencia predicha con Suricata/Zeek.
+
+### ⚠️ ENTENDER PRIMERO — 2 preguntas de diseño ANTES de cortar (medir, no votar)
+El método de ayer (entender → extraer/ajustar puro + test → sólo entonces mover)
+funcionó dos días seguidos. Aplicarlo aquí. NO cortar hasta responder estas 2 con
+`file:line`, no de memoria:
+
+**PREGUNTA 1 — ¿de dónde salen los 4 scores crudos en el punto de sellado?**
+El noisy-OR combina las 4 cabezas (ddos, ransomware, traffic, internal). Pero:
+- traffic (`traffic_result->probability`) e internal (`internal_pred->suspicious_prob`)
+  están IZADOS → visibles a scope de gate. OK.
+- **ddos y ransomware NO fueron izados.** `ddos_result` y `ransomware_result` son
+  locales DENTRO de sus try/catch, dentro del gate. ¿Son visibles en el punto de
+  sellado (~línea 813)? CASI SEGURO NO — scope limitado a su bloque.
+  → grep/leer el scope real antes de decidir. Si no son visibles, commit 2 debe
+  CAPTURARLOS a optionals de scope-gate (como se hizo con traffic/internal),
+  o el combinador corre DENTRO del bloque donde los 4 existen.
+- NOTA: con fiabilidad≈0 para ddos/ransomware, su score da igual (no mueven P).
+  Así que una opción CONSERVADORA es: noisy-OR sólo con traffic+internal reales,
+  ddos/ransomware entran con fiabilidad 0 literal (ni hace falta su score crudo).
+  Eso EVITA tener que izar ddos/ransomware hoy. DECISIÓN DE ALONSO.
+
+**PREGUNTA 2 — ¿el struct L3VerdictInputs crece o se hace uno nuevo?**
+noisy-OR necesita floats (score + fiabilidad por cabeza). Opciones:
+- (a) Extender L3VerdictInputs con los floats. El sitio de construcción en
+  process_event pasa a construir con floats → se toca process_event (poco, pero
+  se toca). Honesto: NO es "sólo el cuerpo".
+- (b) Struct nuevo `L3NoisyOrInputs` + fn nueva `combine_noisy_or`, y
+  decide_l3_verdict queda como está (o se retira). Más limpio conceptualmente,
+  pero 2 fns donde había 1.
+- Sea cual sea: el umbral level3_internal HOY vive encima del `is_suspicious`. Con
+  noisy-OR, revisar si el umbral duro ENCIMA del combinador distorsiona (housekeeping
+  ya anotado). El combinador produce una P ∈ [0,1]; el sellado será `P >= umbral`.
+
+### Asimetría label_l1 / confidence_l1 — ALINEAR AQUÍ (estaba diferida a commit 2)
+run_internal_head recibe label_l1 pero NO confidence_l1. El contador
+internal_l1_discrepancies mide "L1-benigno" = label_l1 != 1. Pero el else NORMAL se
+alcanza si label_l1 != 1 O confidence_l1 < level1_attack. En el borde (L1 attack,
+confianza baja → NORMAL) el contador lo ve como no-discrepancia.
+- Commit 2 es el sitio para: o anotar como definición consciente ("hueco =
+  discrepancia de CLASE, no de confianza") para el paper (Camino A), o pasar
+  confidence_l1 a las cabezas. DECISIÓN DE ALONSO.
+
+### Tests OBLIGATORIOS en commit 2 (patrón: función pura + test, como DAY 212-214)
+Extender/crear el test de la fn pura del combinador. Los 3 del prompt original:
+1. **Una cabeza dispara** → P supera umbral → sella.
+2. **Dos cabezas corroboran** → P mayor que cualquiera sola (noisy-OR sube).
+3. **Cabeza fiabilidad-0 NO envenena** → meter una cabeza con fiabilidad 0 y score
+   alto NO cambia P. **ESTE ES EL CRÍTICO** — es lo que hace honesto meter
+   ddos/ransomware rotos sin que contaminen. Sin él, un peso mal puesto pasa en verde.
+   Además, mantener los 4 contornos de 1b-hoist que sigan aplicando (hot path
+   byte-idéntico donde el veredicto no deba cambiar).
+
+### Verificación de cierre (igual que DAY 214)
+- `g++ suelto` aislado del test de la fn pura (rápido, Mac).
+- Registrar en ctest si es fichero nuevo (`ctest -N` confirma REGISTRO, no existencia).
+- `make ml-detector` → `make test-all` (objetivo 15/15 si hay test nuevo) →
+  `make emecas+++`. EMECAS debe seguir verde en circuito: el combinador cambia el
+  VEREDICTO, no lo que llega a bronce (correlation_v1 sigue sin columna de scores
+  crudos). Si el golden salta, es veredicto movido = mirar qué flujo cambió.
 
 ---
 
 ## HOUSEKEEPING PENDIENTE (al merge o cuando apetezca)
-- SUMMARY de tests/CMakeLists.txt: verificado DAY 213, rótulos correctos
-  (CSV pipeline / correlation_v1 golden / verdict multihead cada uno el suyo).
+- Umbral level3_internal: con noisy-OR entrando, revisar si el umbral duro encima
+  del combinador distorsiona (ver PREGUNTA 2).
 - `git rm` del proto_aligned con su DEBT (`git ls-files | grep proto_aligned`).
-- Anexar DAY 212-213 al PLAN DE CAMPAÑA (fuente de verdad — Alonso, no regenerar).
-- Al MERGE: docs/BACKLOG.md (marcar 1a/1b-extract en DEBT-VERDICT-MONOCAPA-001)
-    + README.md DAY-STATUS.
+- Anexar DAY 214 al PLAN DE CAMPAÑA (fuente de verdad — Alonso, no regenerar).
+- Al MERGE: docs/BACKLOG.md (marcar 1a/1b-extract/1b-hoist en
+  DEBT-VERDICT-MONOCAPA-001) + README.md DAY-STATUS.
 - Los 19 duplicados históricos de BACKLOG.md → DEBT-DOCS-BACKLOG-DEDUP-002.
-- Umbral level3_internal: cuando entre noisy-OR, revisar si el umbral duro encima
-  del combinador distorsiona.
 - "Tricapa" en protobuf::TricapaMLAnalysis sobrevive aunque el veredicto sea
   monocapa. Renombrar = terremoto post-FEDER. NO tocar.
+- Si commit 2 iza ddos/ransomware: NO mezclar ese izado con el noisy-OR en un solo
+  commit. Izado (con red, comportamiento idéntico) primero, combinador después.
 
 ---
-## MÉTODO (confirmado DAY 213 — funcionó otra vez)
-- ENTENDER primero, EXTRAER a función pura + test, y SÓLO ENTONCES mover. El
-  extract es cambio con red (comportamiento idéntico verificable); el hoist es
-  cambio real. Separarlos hace que los defectos salgan en terreno seguro. DAY 213:
-  el doble contador, el guard estricto, y los tests fuera de CI salieron TODOS
-  durante el extract, ninguno a mitad de cirugía. Más legible, más entendible,
-  mejor ingeniería.
+## MÉTODO (confirmado DAY 214 — funcionó tres días seguidos)
+- ENTENDER primero, EXTRAER/AJUSTAR a función pura + test, y SÓLO ENTONCES mover.
+  DAY 214: el watch-point que parecía riesgo estructural resultó MUERTO al medirlo
+  con `file:line`; sin medir, se habría "tolerado en el adapter" una sección que
+  nunca cruza la frontera protobuf->Row. Ausencia de evidencia (grep 'AdapterV1'
+  vacío) NO es evidencia de ausencia — se persiguió el nombre real
+  (CorrelationWriter / correlation_v1) hasta el header-contrato. El timing ("se
+  escribe post-firewall") sugería la respuesta pero NO la probaba; sólo el header
+  la cerró.
+- La función pura paga dos veces: decide_l3_verdict hizo el hoist verificable sin
+  montar medio sistema, y hace commit 2 un cambio localizado en vez de cirugía en
+  process_event otra vez.
 - Medir, no votar: grep de la función entera, balance de llaves antes de cortar,
   ver el bloque completo antes de tocar. Números de línea se DESPLAZAN — re-anclar
-  con grep de texto.
-- El test que no corre es PEOR que el que falla (el que falla se ve). Verificar con
-  `ctest -N` que el test está REGISTRADO, no sólo que el fichero existe. El
+  con grep de texto. Re-anclar SIEMPRE tras cada edición aplicada (el índice y las
+  líneas bailan).
+- El test que no corre es PEOR que el que falla. `ctest -N` confirma REGISTRO. El
   `|| echo "No tests configured"` de test-components traga fallos de registro.
+- NO hacer `make` entre ediciones encadenadas que dejan estado transitorio
+  (variables izadas arriba + locales abajo con mismo nombre = shadow, no compila
+  bajo -Werror). Aplicar el juego completo de ediciones y ENTONCES compilar.
 - Reescribir limpio > operar lo malo. Cambios pequeños y verificables > cirugía grande.
-- macOS BSD (no GNU). $ML_DETECTOR_BUILD_DIR no existe en shell remota — ruta literal.
-- Editar tras `git add` desincroniza el índice — re-add + `git status --short`
-  (columna derecha vacía) antes de commitear. Mordió 2 veces DAY 213.
+- macOS BSD (no GNU). $ML_DETECTOR_BUILD_DIR no existe en shell remota — ruta
+  literal `/vagrant/ml-detector/build-debug`. ctest en VM vía `vagrant ssh -c`.
+- Editar tras `git add` desincroniza el índice (AM en status) — re-add + verificar
+  columna derecha vacía en `git status --short` antes de commitear.
+- Commits limpios: código y docs de continuidad en commits SEPARADOS. El prompt de
+  continuidad va en su propio `docs(continuity)` commit, nunca mezclado con el
+  refactor.
+- macOS heredoc entrecomillado (`<<'EOF'`) para mensajes de commit multilínea con
+  símbolos (→ ∧ ⟹) — evita expansión del shell. Nunca `sed -i` sin `-e ''`.
 - FEDER go/no-go ~August 1, 2026; deadline September 22, 2026.
