@@ -315,6 +315,23 @@ if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/unit/test_internal_head_logic.cpp")
     message(STATUS "✅ test_internal_head_logic registered (DAY 212 1a, wired DAY 213)")
 endif()
 
+# ── test_verdict_decision_logic — DAY 214 1b-hoist: lógica pura de orquestación ──
+# del veredicto L3 (decide_l3_verdict). No GTest (main() propio + macro CHECK).
+# HEADER-ONLY: NO enlaza ningún detector (la función pura sólo usa <string_view> y
+# booleanos). Sin proto, sin Threads — a diferencia de sus hermanos head_logic, que
+# construyen Features reales. Un único source: el .cpp del test.
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/unit/test_verdict_decision_logic.cpp")
+    add_executable(test_verdict_decision_logic
+            unit/test_verdict_decision_logic.cpp
+    )
+    target_include_directories(test_verdict_decision_logic PRIVATE
+            ${CMAKE_CURRENT_SOURCE_DIR}/../include
+    )
+    target_compile_options(test_verdict_decision_logic PRIVATE -UNDEBUG)
+    add_test(NAME test_verdict_decision_logic COMMAND test_verdict_decision_logic)
+    message(STATUS "✅ test_verdict_decision_logic registered (DAY 214 1b-hoist)")
+endif()
+
 
 # [DAY182] -UNDEBUG: assert() vivo en production (regla DAY 144)
 # Reactiva assert() bajo -DNDEBUG en estos test standalone.
@@ -374,8 +391,9 @@ message(STATUS "    test_csv_feature_extraction")
 message(STATUS "    test_etcd_client_hmac")
 message(STATUS "  Day 185 — correlation_v1 golden:")
 message(STATUS "    integration/capture_golden")
-message(STATUS "  Day 212–213 — verdict multihead (1a/1b):")
+message(STATUS "  Day 212–214 — verdict multihead (1a/1b):")
 message(STATUS "    test_internal_head_logic")
 message(STATUS "    test_traffic_head_logic")
+message(STATUS "    test_verdict_decision_logic  (1b-hoist, header-only)")
 message(STATUS "─────────────────────────────────────────────")
 message(STATUS "")

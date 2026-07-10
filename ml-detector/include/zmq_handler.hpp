@@ -20,6 +20,7 @@
 #include "ml_defender/internal_detector.hpp"
 #include "ml_defender/internal_head_logic.hpp"
 #include "ml_defender/traffic_head_logic.hpp"
+#include "ml_defender/verdict_decision_logic.hpp"
 
 #include "network_security.pb.h"
 

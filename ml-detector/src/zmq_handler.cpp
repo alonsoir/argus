@@ -652,6 +652,24 @@ void ZMQHandler::process_event(const std::string& message) {
         }
 
         // Level 2 & 3: Specialized detectors (si Level 1 detectó ATTACK)
+        // DAY 214 — 1b-hoist: cabezas L3 FUERA del gate L1 (DEBT-VERDICT-MONOCAPA-001).
+        // Corren en TODOS los flujos → el interno ve los BENIGN-para-L1 y
+        // internal_l1_discrepancies mide el hueco real (evaluate_internal, en run_internal_head).
+        // OPCIÓN (a): guard is_internal conservado — interno sólo en flujos internos.
+        // El SELLADO del veredicto queda congelado dentro del gate (decide_l3_verdict, abajo).
+        std::optional<ml_defender::TrafficDetector::Prediction>  traffic_result;
+        std::optional<ml_defender::InternalDetector::Prediction> internal_pred;
+        if (traffic_detector_ && config_.ml.level3.web.enabled &&
+            event.has_network_features()) {
+            const auto& nf = event.network_features();
+            traffic_result = run_traffic_head(nf, ml_analysis);
+            if (traffic_result &&
+                traffic_result->is_internal(config_.ml.thresholds.level3_web) &&
+                internal_detector_ && config_.ml.level3.internal.enabled) {
+                internal_pred = run_internal_head(nf, label_l1, ml_analysis);
+            }
+        }
+
         if (label_l1 == 1 && confidence_l1 >= config_.ml.thresholds.level1_attack) {
             event.set_threat_category("ATTACK");
 
@@ -799,51 +817,28 @@ void ZMQHandler::process_event(const std::string& message) {
                 }
             }
 
-            // Level 3: Traffic Classification
-            // DAY 213 — 1b-extract: la clasificación de traffic vive ahora en
-            // run_traffic_head (observador puro que registra level3_traffic_pred y
-            // devuelve la Prediction). Guard estricto traffic_detector_ && web.enabled
-            // idéntico al original: si el detector no existe, el bloque entero se salta
-            // (cero cambio observable, ni log). La llamada sigue DENTRO del gate L1
-            // (1b-hoist la sacará). El sellado del veredicto (is_internal → interno)
-            // permanece intacto en el orquestador.
-            if (traffic_detector_ && config_.ml.level3.web.enabled) {
-                logger_->debug("🔍 Running Level 3 Traffic classification...");
-
-                if (!event.has_network_features()) {
-                    logger_->error("❌ Event {} missing network_features, skipping Traffic",
-                                  event.event_id());
-                } else {
-                    const auto& nf = event.network_features();
-
-                    auto traffic_result = run_traffic_head(nf, ml_analysis);
-
-                    // Level 3: Internal — misma puerta que antes (is_internal + flags).
-                    // 1a intacto: run_internal_head + sellado del orquestador.
-                    if (traffic_result &&
-                        traffic_result->is_internal(config_.ml.thresholds.level3_web) &&
-                        internal_detector_ && config_.ml.level3.internal.enabled) {
-
-                        // DAY 212 — cabeza interna: observador que devuelve Prediction (nullopt si
-                        // no pudo opinar). La lógica vive en run_internal_head + internal_head_logic
-                        // (funciones puras ancladas por test_internal_head_logic). Comportamiento
-                        // idéntico al bloque anterior; commit 1b-hoist moverá esta llamada fuera del gate.
-                        auto internal_pred = run_internal_head(nf, label_l1, ml_analysis);
-
-                        // Sellado del veredicto: decisión del ORQUESTADOR, no de la cabeza.
-                        // Idéntico al original (mismo umbral level3_internal, mismos campos).
-                        // COMMIT 2 reemplazará este if por el combinador noisy-OR que consume
-                        // internal_pred junto a las demás cabezas.
-                        if (internal_pred &&
-                            internal_pred->is_suspicious(config_.ml.thresholds.level3_internal)) {
-                            event.set_threat_category("SUSPICIOUS_INTERNAL");
-                            ml_analysis->set_final_threat_classification("SUSPICIOUS_INTERNAL");
-                            logger_->warn("🔴 SUSPICIOUS INTERNAL ACTIVITY: event={}, conf={:.2f}%",
-                                          event.event_id(),
-                                          internal_pred->suspicious_prob * 100);
-                        }
-                    }
-                }
+            // Level 3: SELLADO del veredicto interno.
+            // DAY 214 — 1b-hoist: run_traffic_head y run_internal_head YA corrieron
+            // ARRIBA (fuera del gate, en TODOS los flujos). Aquí queda SÓLO el sellado,
+            // que sigue congelado dentro del gate L1-attack. La decisión se delega a
+            // decide_l3_verdict (pura, test_verdict_decision_logic): sella
+            // SUSPICIOUS_INTERNAL ⟺ gate abierto ∧ interno corrió ∧ interno sospechoso.
+            // COMMIT 2 reemplazará el CUERPO de decide_l3_verdict por el noisy-OR, sin
+            // volver a tocar process_event.
+            const auto l3_decision = ml_defender::decide_l3_verdict({
+                .l1_gate_open           = true,  // DENTRO del gate L1-attack por construcción
+                .traffic_is_internal    = traffic_result &&
+                                          traffic_result->is_internal(config_.ml.thresholds.level3_web),
+                .internal_ran           = internal_pred.has_value(),
+                .internal_is_suspicious = internal_pred &&
+                                          internal_pred->is_suspicious(config_.ml.thresholds.level3_internal),
+            });
+            if (l3_decision.seal_suspicious_internal) {
+                event.set_threat_category(std::string(ml_defender::SUSPICIOUS_INTERNAL_LABEL));
+                ml_analysis->set_final_threat_classification(
+                    std::string(ml_defender::SUSPICIOUS_INTERNAL_LABEL));
+                logger_->warn("🔴 SUSPICIOUS INTERNAL ACTIVITY: event={}, conf={:.2f}%",
+                              event.event_id(), internal_pred->suspicious_prob * 100);
             }
 
         } else {
