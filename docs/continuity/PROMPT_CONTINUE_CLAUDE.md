@@ -1,232 +1,267 @@
-# PROMPT DE CONTINUIDAD — DAY 214 → 215
-## Rama `fix/verdict-multihead-honest` · Fase 2 del veredicto multicabeza
+# PROMPT DE CONTINUIDAD — DAY 215 → 216
+## Rama `fix/verdict-multihead-honest` · commit 2 (noisy-OR) EN STASH
 
 > Memoria de sesión. Claude no recuerda entre ventanas. Fuente de verdad del PLAN
 > sigue siendo el PLAN, no este fichero — aquí sólo el estado operativo de la rama.
 
 ---
 
-## ⚠️ AL ABRIR — ESTADO DE CIERRE DAY 214
+## ⚠️ AL ABRIR — LO PRIMERO
 
-**1b-hoist COMMITEADO, PUSHEADO y CERTIFICADO.** Nada pendiente de ayer.
-- Commit `12ae89f7` en rama `fix/verdict-multihead-honest` (NO merge a main).
-- Pusheado a `origin/fix/verdict-multihead-honest` (`1dee11ad..12ae89f7`).
-- `make test-all`: **14/14 verde** (13 previos + test_verdict_decision_logic #14).
-- `make emecas+++`: **PASSED** (~1:13:10; circuito bronce->Kuzu verificado,
-  test_bronze_to_kuzu_circuit). Scan de secretos: limpio.
+**DAY 215 NO cerró commit 2. Cerró algo más grande: un P0 que llevaba ~200 días vivo.**
 
-**WATCH-POINT adapter bronce->gold: MUERTO, MEDIDO DOS VECES.** Ya no es riesgo.
-- Primero con `file:line` (mañana DAY 214): CSV forma fija (127 cols, secciones
-  rellenas con ceros — csv_event_writer.cpp:395-463) + contrato correlation_v1
-  (19 cols, NINGUNA es predicción-por-cabeza — correlation_v1.hpp:64-82) +
-  veredicto congelado ⟹ el hoist NO cruza a bronce/gold. La info nueva del hoist
-  (level3_traffic_pred, internal_pred) muere en el corte protobuf->Row (to_row,
-  "la struct es la frontera donde el protobuf muere"), no hay columna destino.
-- Luego empíricamente: EMECAS+++ verde en circuito. El adapter NO se tocó.
-- El golden es RED DE SEGURIDAD, no riesgo: si algún día salta rojo en circuito
-  tras tocar el veredicto, es un veredicto que se movió = BUG REAL, no falso
-  positivo del adapter.
-
-**PRIMERA ACCIÓN HOY: arrancar commit 2 (noisy-OR).** Pero NO cortar a ciegas —
-hay 2 preguntas de diseño que resolver ANTES (abajo, "ENTENDER PRIMERO"). Sanity
-opcional:
+Rama LIMPIA y VERDE en `8e03a264` (pusheado). Sanity antes de tocar nada:
 ```
-git -C ml-detector log --oneline -3     # confirmar 12ae89f7 (1b-hoist) en HEAD
-git -C ml-detector status --short        # árbol limpio salvo el prompt de continuidad
+git -C ml-detector log --oneline -3        # 8e03a264 (config P0) sobre 12ae89f7 (1b-hoist)
+git -C ml-detector status --short          # árbol limpio
+git -C ml-detector stash list              # DEBE aparecer stash@{0}: commit2-noisy-or WIP
+make test-all                              # 15/15
 ```
+
+**🔴 EL STASH ES EL PUNTO DE RETOMADA. NO LO PIERDAS.**
+`stash@{0}: On master: commit2-noisy-or WIP` contiene DOS ficheros ya escritos y
+validados con `g++ -std=c++20 -Wall -Wextra -Werror` (todos los checks verdes):
+- `ml-detector/include/ml_defender/verdict_decision_logic.hpp` — con `HeadSignal`,
+  `combine_noisy_or`, `L3VerdictInputs` reescrito (P + umbral en vez de bool), y
+  `SUSPICIOUS_INTERNAL_LABEL` + `[[nodiscard]]` conservados.
+- `ml-detector/tests/unit/test_verdict_decision_logic.cpp` — contornos de 1b-hoist
+  REEXPRESADOS + checks del combinador (incluido el CRÍTICO: fiabilidad-0 no envenena).
+
+**PRIMER COMANDO DEL DÍA:**
+```
+git -C ml-detector stash pop
+make ml-detector          # ROMPERÁ en zmq_handler.cpp:828 — ES LO ESPERADO
+```
+Ese error ES el punto de retomada: `process_event` todavía construye
+`L3VerdictInputs` con el campo `internal_is_suspicious`, que ya no existe.
 
 ---
 
-## DÓNDE ESTAMOS: Fase 2 con 1a + 1b-extract + 1b-hoist acumulados
+## 🔥 EL HALLAZGO DE DAY 215 — DEBT-CONFIG-L3-THRESHOLDS-UNPARSED-001 (P0, CERRADO)
 
-**Rama:** `fix/verdict-multihead-honest`. **NO mergeada a main.** Acumula:
-- `1a` — extract cabeza interna a run_internal_head + internal_head_logic.
-- `05f1c263` (1b-extract) — extract cabeza traffic a run_traffic_head.
-- `12ae89f7` (1b-hoist) — cabezas IZADAS fuera del gate L1 + decide_l3_verdict.
+**`config_loader.cpp` parseaba 4 de los 6 umbrales.** `level3_web` y `level3_internal`
+estaban en el struct y en el JSON, pero NUNCA se leían del disco. Con
+`DetectorConfig config;` (default-init, floats sin NSDMI) quedaban INDETERMINADOS.
 
-Falta **commit 2 (noisy-OR)** antes del merge. `docs/BACKLOG.md` y `README.md` se
-actualizan AL MERGE, no antes (decisión Alonso DAY 212).
-
-### Qué dejó 1b-hoist (12ae89f7) — estructura, para entender el punto de partida de commit 2
-Los **5 ficheros**:
-- `ml-detector/include/ml_defender/verdict_decision_logic.hpp` (nuevo) — la fn pura.
-- `ml-detector/tests/unit/test_verdict_decision_logic.cpp` (nuevo) — 14 checks.
-- `ml-detector/tests/CMakeLists.txt` — registra test_verdict_decision_logic (#14).
-- `ml-detector/include/zmq_handler.hpp` — include de verdict_decision_logic.hpp.
-- `ml-detector/src/zmq_handler.cpp` — izado + sellado vía decide_l3_verdict.
-
-**El corte en process_event (zmq_handler.cpp):**
-1. **ARRIBA del gate L1** (~línea 655): run_traffic_head + run_internal_head IZADOS.
-   Corren en TODOS los flujos. Guard is_internal conservado (opción a): el interno
-   sólo corre en flujos internos, NO externos. Las Prediction se guardan en
-   `std::optional traffic_result` e `internal_pred` a scope de gate.
-   ```
-   std::optional<TrafficDetector::Prediction>  traffic_result;
-   std::optional<InternalDetector::Prediction> internal_pred;
-   if (traffic_detector_ && web.enabled && event.has_network_features()) {
-       const auto& nf = event.network_features();
-       traffic_result = run_traffic_head(nf, ml_analysis);
-       if (traffic_result && traffic_result->is_internal(level3_web) &&
-           internal_detector_ && internal.enabled) {
-           internal_pred = run_internal_head(nf, label_l1, ml_analysis);
-       }
-   }
-   ```
-2. **DENTRO del gate L1-attack** (~línea 813): SÓLO el sellado, vía la fn pura.
-   ```
-   const auto l3_decision = decide_l3_verdict({
-       .l1_gate_open           = true,   // dentro del gate por construcción
-       .traffic_is_internal    = traffic_result && traffic_result->is_internal(level3_web),
-       .internal_ran           = internal_pred.has_value(),
-       .internal_is_suspicious = internal_pred && internal_pred->is_suspicious(level3_internal),
-   });
-   if (l3_decision.seal_suspicious_internal) {
-       event.set_threat_category("SUSPICIOUS_INTERNAL"); ...
-   }
-   ```
-
-### La función que commit 2 MODIFICA (verdict_decision_logic.hpp)
+**MEDIDO EN EJECUCIÓN REAL:**
 ```
-struct L3VerdictInputs {          // hoy: SÓLO booleanos
-    bool l1_gate_open;
-    bool traffic_is_internal;
-    bool internal_ran;
-    bool internal_is_suspicious;
-};
-struct L3VerdictDecision { bool seal_suspicious_internal = false; ... };
-
-constexpr L3VerdictDecision decide_l3_verdict(const L3VerdictInputs& in) noexcept {
-    d.seal_suspicious_internal =
-        in.l1_gate_open && in.internal_ran && in.internal_is_suspicious;  // ← commit 2 reemplaza ESTO
-    return d;
-}
+level3_web      = 0
+level3_internal = 1.09486e+27
 ```
-- Es PURA, constexpr-evaluable, anclada por test_verdict_decision_logic (14 checks).
-- NO re-implementa umbrales: recibe is_internal/is_suspicious YA evaluados por las
-  Prediction (fuente de verdad única). Diseño deliberado.
-- **AVISO HONESTO (corrección de lo dicho DAY 214):** se dijo "commit 2 reemplaza
-  sólo el CUERPO sin tocar process_event". Eso es OPTIMISTA. El noisy-OR necesita
-  SCORES CRUDOS, no booleanos → el struct L3VerdictInputs casi seguro CRECE para
-  llevar floats (score_i + fiabilidad_i por cabeza). Y si el struct crece, el sitio
-  de construcción en process_event TAMBIÉN cambia. No es body-swap limpio. Ver
-  "ENTENDER PRIMERO" abajo.
+
+Consecuencias, durante ~200 días:
+- `is_internal(0.0f)` → SIEMPRE true. Guard de traffic abierto: TODO flujo era "interno".
+- `is_suspicious(1.09e27)` → NUNCA true. Ninguna probabilidad ∈ [0,1] lo supera.
+- **`SUSPICIOUS_INTERNAL` no se selló JAMÁS en la historia del proyecto.**
+- Basura de pila ⟹ **no reproducible** entre ejecuciones. El detector no era determinista.
+
+Sobrevivió a 13 tests y a EMECAS+++ porque **ningún test verificaba que el config
+llegara del disco al struct**. Esa era la pieza que faltaba desde el principio.
+
+**Fix (commit `8e03a264`):** los 2 `get_required` + `DetectorConfig config{}` +
+`print_config` + **test #15 `test_config_thresholds`** (test de PROPIEDAD, no espejo:
+toda clave del JSON debe llegar al struct y coincidir; umbral fuera de [0,1] = rojo).
+RED→GREEN verificado: JSON sin la clave → `exit=134`; JSON con 0.42 → PASSED.
 
 ---
 
-## PRÓXIMO: commit 2 — noisy-OR (el que mata el monocapa)
+## 🩸 TRES DEUDAS NUEVAS ABIERTAS POR ESTE HALLAZGO
 
-**Objetivo:** reemplazar el `&&` de sellado por combinador probabilístico:
-`P = 1 − ∏(1 − pᵢ)`, con `pᵢ = fiabilidad_i · score_crudo_i`.
-- ransomware/ddos entran con **fiabilidad ≈0** (features rotas, auditadas
-  DEBT-RANSOMWARE-ML-HEAD-INERT-001): honesto, NO envenenan (1 − 0·score = 1, no
-  cambian el producto). Reconectar post-FEDER = cambiar 1 peso de config.
-- Paper (Camino A): tricapa→monocapa como **HUECO DE COBERTURA**, nunca como
-  divergencia predicha con Suricata/Zeek.
+**1. DEBT-VERDICT-WEIGHTS-CALIBRATION-001 — la auditoría de señal NO VALE.**
+Traffic 4/10 e Internal 8/10 se midieron con `level3_web=0` (guard abierto) y
+`level3_internal=1.09e27` (umbral inalcanzable). Esos números miden cabezas rotas,
+no la calidad de los modelos. **Los pesos de fiabilidad del noisy-OR NO pueden
+derivarse de ellos.** Arrancar con pesos PROVISIONALES documentados como tales y
+recalibrar cuando las cabezas hayan corrido con umbrales reales.
 
-### ⚠️ ENTENDER PRIMERO — 2 preguntas de diseño ANTES de cortar (medir, no votar)
-El método de ayer (entender → extraer/ajustar puro + test → sólo entonces mover)
-funcionó dos días seguidos. Aplicarlo aquí. NO cortar hasta responder estas 2 con
-`file:line`, no de memoria:
+**2. EMECAS+++ es VERDE NO INFORMATIVO para el veredicto.**
+Tras el fix: EMECAS verde y `correlation_v1_golden.tsv` SIN MOVERSE. No es
+confirmación. El bronce (`correlation_writer_->write_record`) se escribe **ANTES**
+del gate L1, luego el veredicto L3 nunca cruza a `correlation_v1`. Medido tres veces
+independientes: (a) contrato de 19 columnas, (b) orden de `process_event`,
+(c) columna 14 `threat_category` = `RAW_CAPTURE` 4/4 (valor que pone el sniffer).
+⟹ **Si tocas el veredicto, el golden NO te va a avisar. La única red es el unit test.**
+Reordenar la escritura del bronce = COMMIT PROPIO (el golden se moverá, legítimamente).
 
-**PREGUNTA 1 — ¿de dónde salen los 4 scores crudos en el punto de sellado?**
-El noisy-OR combina las 4 cabezas (ddos, ransomware, traffic, internal). Pero:
-- traffic (`traffic_result->probability`) e internal (`internal_pred->suspicious_prob`)
-  están IZADOS → visibles a scope de gate. OK.
-- **ddos y ransomware NO fueron izados.** `ddos_result` y `ransomware_result` son
-  locales DENTRO de sus try/catch, dentro del gate. ¿Son visibles en el punto de
-  sellado (~línea 813)? CASI SEGURO NO — scope limitado a su bloque.
-  → grep/leer el scope real antes de decidir. Si no son visibles, commit 2 debe
-  CAPTURARLOS a optionals de scope-gate (como se hizo con traffic/internal),
-  o el combinador corre DENTRO del bloque donde los 4 existen.
-- NOTA: con fiabilidad≈0 para ddos/ransomware, su score da igual (no mueven P).
-  Así que una opción CONSERVADORA es: noisy-OR sólo con traffic+internal reales,
-  ddos/ransomware entran con fiabilidad 0 literal (ni hace falta su score crudo).
-  Eso EVITA tener que izar ddos/ransomware hoy. DECISIÓN DE ALONSO.
-
-**PREGUNTA 2 — ¿el struct L3VerdictInputs crece o se hace uno nuevo?**
-noisy-OR necesita floats (score + fiabilidad por cabeza). Opciones:
-- (a) Extender L3VerdictInputs con los floats. El sitio de construcción en
-  process_event pasa a construir con floats → se toca process_event (poco, pero
-  se toca). Honesto: NO es "sólo el cuerpo".
-- (b) Struct nuevo `L3NoisyOrInputs` + fn nueva `combine_noisy_or`, y
-  decide_l3_verdict queda como está (o se retira). Más limpio conceptualmente,
-  pero 2 fns donde había 1.
-- Sea cual sea: el umbral level3_internal HOY vive encima del `is_suspicious`. Con
-  noisy-OR, revisar si el umbral duro ENCIMA del combinador distorsiona (housekeeping
-  ya anotado). El combinador produce una P ∈ [0,1]; el sellado será `P >= umbral`.
-
-### Asimetría label_l1 / confidence_l1 — ALINEAR AQUÍ (estaba diferida a commit 2)
-run_internal_head recibe label_l1 pero NO confidence_l1. El contador
-internal_l1_discrepancies mide "L1-benigno" = label_l1 != 1. Pero el else NORMAL se
-alcanza si label_l1 != 1 O confidence_l1 < level1_attack. En el borde (L1 attack,
-confianza baja → NORMAL) el contador lo ve como no-discrepancia.
-- Commit 2 es el sitio para: o anotar como definición consciente ("hueco =
-  discrepancia de CLASE, no de confianza") para el paper (Camino A), o pasar
-  confidence_l1 a las cabezas. DECISIÓN DE ALONSO.
-
-### Tests OBLIGATORIOS en commit 2 (patrón: función pura + test, como DAY 212-214)
-Extender/crear el test de la fn pura del combinador. Los 3 del prompt original:
-1. **Una cabeza dispara** → P supera umbral → sella.
-2. **Dos cabezas corroboran** → P mayor que cualquiera sola (noisy-OR sube).
-3. **Cabeza fiabilidad-0 NO envenena** → meter una cabeza con fiabilidad 0 y score
-   alto NO cambia P. **ESTE ES EL CRÍTICO** — es lo que hace honesto meter
-   ddos/ransomware rotos sin que contaminen. Sin él, un peso mal puesto pasa en verde.
-   Además, mantener los 4 contornos de 1b-hoist que sigan aplicando (hot path
-   byte-idéntico donde el veredicto no deba cambiar).
-
-### Verificación de cierre (igual que DAY 214)
-- `g++ suelto` aislado del test de la fn pura (rápido, Mac).
-- Registrar en ctest si es fichero nuevo (`ctest -N` confirma REGISTRO, no existencia).
-- `make ml-detector` → `make test-all` (objetivo 15/15 si hay test nuevo) →
-  `make emecas+++`. EMECAS debe seguir verde en circuito: el combinador cambia el
-  VEREDICTO, no lo que llega a bronce (correlation_v1 sigue sin columna de scores
-  crudos). Si el golden salta, es veredicto movido = mirar qué flujo cambió.
+**3. `SUSPICIOUS_INTERNAL` = 0 sellados TRAS el fix. SIN EXPLICAR.**
+Puede ser correcto (el set sintético quizá no tiene tráfico interno sospechoso) o
+puede seguir roto. **No lo sabemos.** Falta un contador que lo haga observable.
 
 ---
 
-## HOUSEKEEPING PENDIENTE (al merge o cuando apetezca)
-- Umbral level3_internal: con noisy-OR entrando, revisar si el umbral duro encima
-  del combinador distorsiona (ver PREGUNTA 2).
-- `git rm` del proto_aligned con su DEBT (`git ls-files | grep proto_aligned`).
-- Anexar DAY 214 al PLAN DE CAMPAÑA (fuente de verdad — Alonso, no regenerar).
-- Al MERGE: docs/BACKLOG.md (marcar 1a/1b-extract/1b-hoist en
-  DEBT-VERDICT-MONOCAPA-001) + README.md DAY-STATUS.
-- Los 19 duplicados históricos de BACKLOG.md → DEBT-DOCS-BACKLOG-DEDUP-002.
-- "Tricapa" en protobuf::TricapaMLAnalysis sobrevive aunque el veredicto sea
-  monocapa. Renombrar = terremoto post-FEDER. NO tocar.
-- Si commit 2 iza ddos/ransomware: NO mezclar ese izado con el noisy-OR en un solo
-  commit. Izado (con red, comportamiento idéntico) primero, combinador después.
+## PRÓXIMO: commit 2 — noisy-OR. Lo que queda, en orden
+
+### PASO 1 — `reliability` + `l3_combined_seal` al config
+Los pesos NO son umbrales: sección **hermana** de `thresholds` (criterio Alonso:
+*"cada umbral leído para su trabajo específico"*).
+```json
+"thresholds": { ..., "l3_combined_seal": 0.65 },
+"reliability": { "traffic": ?, "internal": ?, "ddos": 0.0, "ransomware": 0.0 }
+```
+- `ddos`/`ransomware` a **0.0**: features rotas (DEBT-RANSOMWARE-ML-HEAD-INERT-001).
+  Entran HONESTAS y no envenenan: `1 − 0·score = 1` = factor neutro. Reconectarlas
+  post-FEDER = cambiar UN peso, sin tocar código.
+- `traffic`/`internal`: **DECISIÓN PENDIENTE** (ver deuda 1 — los 4/10 y 8/10 no valen).
+- `l3_combined_seal` con **nombre propio**: reutilizar `level3_internal` como umbral
+  del combinador es incorrecto — ese umbral ya se aplica ARRIBA, dentro de
+  `run_internal_head` (`zmq_handler.cpp:408`), sobre la señal de UNA cabeza. Aplicarlo
+  otra vez sobre una P combinada es el MISMO número haciendo DOS trabajos en escalas
+  distintas.
+- **⚠️ El struct `thresholds` NO tiene inicializadores por defecto.** Añadir campos sin
+  añadir el `get_required` = el bug de hoy otra vez. **AHORA hay red:** el test #15
+  detecta la clave huérfana. Extiéndelo con las claves nuevas.
+
+### PASO 2 — el corte en `process_event:828`
+```cpp
+const bool traffic_internal = traffic_result &&
+    traffic_result->is_internal(config_.ml.thresholds.level3_web);
+
+const std::array<ml_defender::HeadSignal, 2> heads{{
+    {w_traffic,  traffic_result ? traffic_result->probability    : 0.0f},
+    {w_internal, internal_pred  ? internal_pred->suspicious_prob : 0.0f},
+}};
+const float p = ml_defender::combine_noisy_or(heads);
+
+const auto l3_decision = ml_defender::decide_l3_verdict({
+    .l1_gate_open         = true,
+    .traffic_is_internal  = traffic_internal,
+    .internal_ran         = internal_pred.has_value(),
+    .combined_probability = p,
+    .seal_threshold       = config_.ml.thresholds.l3_combined_seal,
+});
+```
+- **VERIFICAR los nombres reales** de los campos de `Prediction` (`probability`,
+  `suspicious_prob`) — no están confirmados con `file:line`.
+- **ddos/ransomware NO se izan hoy.** `ddos_result` (:720) y `ransomware_result` (:789)
+  viven dentro de su `try`/`else` dentro del gate: NO son visibles en :828. Con
+  fiabilidad 0 su score da igual. Cuando se reconecten: **izado primero (con red,
+  comportamiento idéntico), combinador después. NUNCA en el mismo commit.**
+
+### INVARIANTE DE DISEÑO (ya en el header, no romper)
+**La P gobierna la FUERZA de la evidencia, NUNCA la ETIQUETA.** `traffic_is_internal`
+sigue siendo condición NECESARIA para sellar `SUSPICIOUS_INTERNAL`: un flujo externo
+con P alta NO puede auto-etiquetarse como interno. Hay un check dedicado a esto.
+
+### ALCANCE — lo que NO entra en commit 2
+- **L1 sigue siendo GATE, no cabeza.** Meter `p_L1` en el producto mientras L1 cierra
+  la puerta = **L1 vota dos veces** (portero y votante), infla P sistemáticamente.
+- **PERO** (posición Alonso, DAY 215, y es sólida): el gate es una **optimización
+  prematura**. Sólo se justifica si L1 es excepcional, y eso **se gana con datos**.
+  Argumento demoledor descubierto hoy: **1b-hoist ya sacó traffic e internal fuera del
+  gate.** Lo único que queda DETRÁS del gate es ddos/ransomware — las cabezas rotas
+  cuyo score se descarta. **El gate ya no ahorra nada. Es un vestigio.**
+  ⟹ Retirar el gate + unificar todas las cabezas a escalar = **ADR + Consejo**, no commit.
+- **`confidence_l1`:** decisión CONGELADA — el hueco es discrepancia de **CLASE**
+  (`label_l1 != 1`), no de confianza. Anotado en el header. Para el paper (Camino A).
+- **`correlation_v2`** (telemetría por cabeza al grafo): ver abajo.
 
 ---
-## MÉTODO (confirmado DAY 214 — funcionó tres días seguidos)
-- ENTENDER primero, EXTRAER/AJUSTAR a función pura + test, y SÓLO ENTONCES mover.
-  DAY 214: el watch-point que parecía riesgo estructural resultó MUERTO al medirlo
-  con `file:line`; sin medir, se habría "tolerado en el adapter" una sección que
-  nunca cruza la frontera protobuf->Row. Ausencia de evidencia (grep 'AdapterV1'
-  vacío) NO es evidencia de ausencia — se persiguió el nombre real
-  (CorrelationWriter / correlation_v1) hasta el header-contrato. El timing ("se
-  escribe post-firewall") sugería la respuesta pero NO la probaba; sólo el header
-  la cerró.
-- La función pura paga dos veces: decide_l3_verdict hizo el hoist verificable sin
-  montar medio sistema, y hace commit 2 un cambio localizado en vez de cirugía en
-  process_event otra vez.
-- Medir, no votar: grep de la función entera, balance de llaves antes de cortar,
-  ver el bloque completo antes de tocar. Números de línea se DESPLAZAN — re-anclar
-  con grep de texto. Re-anclar SIEMPRE tras cada edición aplicada (el índice y las
-  líneas bailan).
-- El test que no corre es PEOR que el que falla. `ctest -N` confirma REGISTRO. El
-  `|| echo "No tests configured"` de test-components traga fallos de registro.
-- NO hacer `make` entre ediciones encadenadas que dejan estado transitorio
-  (variables izadas arriba + locales abajo con mismo nombre = shadow, no compila
-  bajo -Werror). Aplicar el juego completo de ediciones y ENTONCES compilar.
-- Reescribir limpio > operar lo malo. Cambios pequeños y verificables > cirugía grande.
-- macOS BSD (no GNU). $ML_DETECTOR_BUILD_DIR no existe en shell remota — ruta
-  literal `/vagrant/ml-detector/build-debug`. ctest en VM vía `vagrant ssh -c`.
-- Editar tras `git add` desincroniza el índice (AM en status) — re-add + verificar
-  columna derecha vacía en `git status --short` antes de commitear.
-- Commits limpios: código y docs de continuidad en commits SEPARADOS. El prompt de
-  continuidad va en su propio `docs(continuity)` commit, nunca mezclado con el
-  refactor.
-- macOS heredoc entrecomillado (`<<'EOF'`) para mensajes de commit multilínea con
-  símbolos (→ ∧ ⟹) — evita expansión del shell. Nunca `sed -i` sin `-e ''`.
-- FEDER go/no-go ~August 1, 2026; deadline September 22, 2026.
+
+## 🎯 VISIÓN ALONSO (DAY 215) — TRANSPARENCIA ABSOLUTA. Post-commit-2.
+
+Toda la telemetría conjunta debe llegar al grafo: score + etiqueta de CADA cabeza
+(incluido fast-path), no sólo el veredicto. *"Mejor saber para poder reconstruir."*
+El admin del hospital no se fía: **recalcula**.
+
+**El invariante que esto regala (más fuerte que un golden — no compara, REDERIVA):**
+> Dada la telemetría del grafo, recalcular `combine_noisy_or` debe reproducir la P
+> almacenada, bit a bit. Si no cuadra: falta una señal, o el peso escrito no es el
+> que se usó, o alguien tocó el combinador sin tocar el bronce.
+
+Es también **reproducibilidad del paper**: *"nuestros datos permiten rederivar cada
+decisión del detector"* es una afirmación científica falsable. Hospital y revisor de
+Cornell quieren lo mismo. No hay tensión entre rigor y decencia — es el mismo eje.
+
+**⚠️ SIN VERSIONADO DE PESOS, EL INVARIANTE ES FALSO.** Los pesos viven en config y
+los admins pueden cambiarlos. El día que `ransomware.reliability` pase de 0.0 a 0.6
+(el plan post-FEDER), **todas las filas históricas se recalcularían mal**. Decisión
+Alonso: **viaja `config_version` / `model_set_id` en la fila**, y los pesos se resuelven
+por versión desde un **registro INMUTABLE**.
+⚠️ etcd es el registro **VIVO** (mutable, con rotación de epochs). Puede distribuir el
+config y sellar el `config_version`, pero **el archivo inmutable histórico es OTRA COSA**
+(se parece al golden set versionado de ADR-040). **NO fundir ambos en el ADR.**
+
+**LA VENTANA NO EXISTE — hay que decirlo.** `MLContext` tiene
+`window_start = now-30s`, `window_end = now`, **`events_in_window = 1` hardcoded**.
+La noisy-OR de hoy combina **las cabezas de UN evento**, no eventos entre sí. El
+recálculo POR EVENTO es viable y es un test real. El recálculo POR VENTANA requiere
+definir qué es una ventana y cómo se agregan eventos (¿noisy-OR? ¿max? ¿decay?).
+**No existe. ADR aparte, post-FEDER.** Si se intenta meter en v2, v2 no llega a agosto.
+
+**Coste real de `correlation_v2`:** contrato nuevo (19 columnas planas hoy) + migración
+de `bronze_to_gold_converter` + golden regenerado + vocabulario unificado de etiquetas.
+Es la pieza que puede comerse el margen antes del **1 de agosto**.
+
+---
+
+## 📄 PAPER — decisión DAY 215
+
+**El hallazgo del config SE CUENTA.** Decisión Alonso: *"es mejor ser honesto que no
+serlo; el paper cuenta cómo estamos construyendo esto tratando de ser buenos científicos"*.
+- No es "llevamos un año con un bug". Es: **dos defectos independientes producían el
+  mismo síntoma** (veredicto sellado antes de tiempo POR ARQUITECTURA + umbral L3
+  indeterminado POR CONFIG), y se encontraron **midiendo, no votando**.
+- Contar sólo la causa arquitectónica y callar la del config sería dar **una causa de
+  dos**, con el commit `8e03a264` público en el repo. La omisión dolería más.
+- Encaja con §6 (gate RED→GREEN, libFuzzer 2.4M runs): es el caso de estudio de por qué
+  el testing convencional no basta — un umbral silencioso que sobrevive 200 días de verde.
+
+---
+
+## HOUSEKEEPING PENDIENTE
+- `print_config` imprime los umbrales L3 **dentro de `if (verbose)`**, y el arranque real
+  usa `verbose=false` ⟹ **siguen sin verse**. La defensa real es el TEST, no el print.
+  Sacarlos fuera del `if` = commit propio (decisión de UX de arranque).
+- `config_loader.hpp.backup` (Nov 2025): **NO trackeado**. Basura local, `rm` a secas.
+- `git rm` del `proto_aligned` con su DEBT (`git ls-files | grep proto_aligned`).
+- Anexar DAY 215 al PLAN DE CAMPAÑA (fuente de verdad — Alonso, no regenerar).
+- Al MERGE: `docs/BACKLOG.md` (1a/1b-extract/1b-hoist/config-P0 en
+  DEBT-VERDICT-MONOCAPA-001) + `README.md` DAY-STATUS.
+- Los 19 duplicados de BACKLOG.md → DEBT-DOCS-BACKLOG-DEDUP-002.
+- `protobuf::TricapaMLAnalysis` mantiene "Tricapa" aunque el veredicto sea monocapa.
+  Renombrar = terremoto post-FEDER. NO tocar.
+- **Falsable, sin medir:** ¿`OnnxModel::predict` (`onnx_model.hpp:16`,
+  `std::pair<int64_t,float>`) devuelve la probabilidad de la clase GANADORA o siempre la
+  de clase 1? Si es lo segundo, `label=ATTACK && confidence<0.5` es posible y es un bug.
+  Está en el `.cpp`, no en la firma. No bloquea.
+
+---
+## MÉTODO (DAY 215 — cuatro días seguidos, y hoy pagó a lo grande)
+- **ENTENDER primero, medir con `file:line`, y SÓLO ENTONCES mover.** DAY 215: el noisy-OR
+  no se cerró porque al ir a leer el umbral de sellado, el rastro del parseo NO EXISTÍA.
+  Construirlo encima habría dado una P que parece correcta, con tests verdes, sobre
+  cabezas que nunca supieron dónde estaba su frontera. **Mismo patrón que el ransomware
+  inerte: el pipeline funcionando, produciendo números, sin significado.**
+- **El verde hay que interrogarlo, no celebrarlo.** EMECAS+++ pasó verde tras cambiar el
+  comportamiento de dos cabezas. Ese verde NO significaba "no rompiste nada": significaba
+  "el golden no mira donde tocaste". Preguntar SIEMPRE: *¿qué mediría este verde si el
+  cambio fuera malo?*
+- **El test que nunca ha estado ROJO es una hipótesis, no una red.** Test #15 se validó
+  rompiendo el JSON a propósito (`exit=134`) y cambiando el valor a 0.42 (PASSED, sigue
+  al fichero y no a un literal). RED→GREEN o no vale.
+- **Test de PROPIEDAD > test de ESPEJO.** `level3_web == 0.6f` se rompe al cambiar el
+  valor y no caza nada. *"Toda clave del JSON llega al struct"* caza la clase entera.
+- **La función pura paga tres veces:** `decide_l3_verdict` hizo el hoist verificable,
+  hace commit 2 localizado, y `combine_noisy_or` se validó con `g++` suelto en el Mac
+  sin montar medio sistema.
+- **Ausencia de evidencia ≠ evidencia de ausencia.** `grep level3_internal` en `src/`
+  devolvía USOS, no asignaciones. Ahí estaba el bug, a la vista, durante 200 días.
+- **CUANDO EL CONSEJO DA CÓDIGO, EXIGIRLE EL `file:line` DE LO QUE DICE HABER LEÍDO.**
+  DAY 215, Claude cometió dos errores: (a) afirmó haber compilado un test que no había
+  ejecutado; (b) reescribió `verdict_decision_logic.hpp` **sin haberlo leído nunca**,
+  destruyendo `SUSPICIOUS_INTERNAL_LABEL` y `[[nodiscard]]`. **Los cazó el compilador,
+  no Claude.** El Consejo alucina con confianza: verificar SIEMPRE.
+- **zsh, no bash.** `ml-detector/*.cpp` sin matches ⟹ **aborta el comando ENTERO** (el
+  `grep` nunca corrió y pareció "no hay resultados"). macOS es **BSD**: `cat -A` no existe
+  (usar `cat -e`). Nunca `sed -i` sin `-e ''`; Python3 heredoc para editar.
+- **`#` NO es comentario para git.** `git status --short   # comentario` → el comentario
+  entra como argumento y el output miente.
+- **`ctest -N` confirma REGISTRO, no EXISTENCIA** ("Could not find executable" es normal
+  antes de compilar). Y **CMake hay que reconfigurar** (`cmake .`) para que un test nuevo
+  aparezca. El `|| echo "No tests configured"` de test-components traga fallos de alta.
+- NO hacer `make` entre ediciones encadenadas con estado transitorio. Aplicar el juego
+  completo y ENTONCES compilar.
+- Editar tras `git add` desincroniza el índice (AM) — re-add + columna derecha vacía.
+- Commits limpios: código y docs de continuidad en commits SEPARADOS.
+- heredoc entrecomillado (`<<'EOF'`) para mensajes de commit con símbolos (→ ∧ ⟹).
+- FEDER go/no-go ~1 agosto 2026; deadline 22 septiembre 2026.
