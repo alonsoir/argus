@@ -64,7 +64,7 @@ DetectorConfig ConfigLoader::load() {
         );
     }
     
-    DetectorConfig config;
+    DetectorConfig config{};  // value-init: sin esto, un campo no parseado queda INDETERMINADO (DEBT-CONFIG-L3-...-001)
     
     // ========================================
     // Component
@@ -230,6 +230,8 @@ DetectorConfig ConfigLoader::load() {
         config.ml.thresholds.level2_ddos = get_required<float>(thresh, "level2_ddos", "ml.thresholds");
         config.ml.thresholds.level2_ransomware = get_required<float>(thresh, "level2_ransomware", "ml.thresholds");
         config.ml.thresholds.level3_anomaly = get_required<float>(thresh, "level3_anomaly", "ml.thresholds");
+        config.ml.thresholds.level3_web = get_required<float>(thresh, "level3_web", "ml.thresholds");
+        config.ml.thresholds.level3_internal = get_required<float>(thresh, "level3_internal", "ml.thresholds");
         
         // Level 1
         auto& l1 = ml["level1"];
@@ -538,7 +540,9 @@ void ConfigLoader::print_config(const DetectorConfig& config, bool verbose) {
         std::cout << "  Level 1 Attack: " << std::fixed << std::setprecision(2) << config.ml.thresholds.level1_attack << "\n";
         std::cout << "  Level 2 DDoS: " << config.ml.thresholds.level2_ddos << "\n";
         std::cout << "  Level 2 Ransomware: " << config.ml.thresholds.level2_ransomware << "\n";
-        std::cout << "  Level 3 Anomaly: " << config.ml.thresholds.level3_anomaly << "\n\n";
+        std::cout << "  Level 3 Anomaly: " << config.ml.thresholds.level3_anomaly << "\n";
+        std::cout << "  Level 3 Web: " << config.ml.thresholds.level3_web << "\n";
+        std::cout << "  Level 3 Internal: " << config.ml.thresholds.level3_internal << "\n\n";
         
         std::cout << "Performance:\n";
         std::cout << "  Zero Copy: " << (config.performance.enable_zero_copy ? "✅" : "❌") << "\n";

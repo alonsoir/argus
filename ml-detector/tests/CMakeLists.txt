@@ -331,7 +331,28 @@ if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/unit/test_verdict_decision_logic.cpp")
     add_test(NAME test_verdict_decision_logic COMMAND test_verdict_decision_logic)
     message(STATUS "✅ test_verdict_decision_logic registered (DAY 214 1b-hoist)")
 endif()
-
+# ── test_config_thresholds — DAY 215: DEBT-CONFIG-L3-THRESHOLDS-UNPARSED-001 (P0) ──
+# level3_web / level3_internal estaban en struct y JSON pero NO en el parseo.
+# Medido en producción: level3_web=0, level3_internal=1.09486e+27 (INDETERMINADO).
+# Test de PROPIEDAD, no espejo: toda clave de ml.thresholds debe llegar al struct
+# Y coincidir con el fichero. Añadir un umbral al JSON sin get_required = ROJO.
+# A diferencia del #14, este SÍ enlaza config_loader.cpp (no es header-only).
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/unit/test_config_thresholds.cpp")
+    add_executable(test_config_thresholds
+            unit/test_config_thresholds.cpp
+            ../src/config_loader.cpp
+    )
+    target_include_directories(test_config_thresholds PRIVATE
+            ${CMAKE_CURRENT_SOURCE_DIR}/../include
+    )
+    target_link_libraries(test_config_thresholds PRIVATE nlohmann_json::nlohmann_json)
+    target_compile_options(test_config_thresholds PRIVATE -UNDEBUG)
+    # El test abre el JSON por ruta: se le pasa EXPLÍCITA, sin depender del cwd.
+    add_test(NAME test_config_thresholds
+            COMMAND test_config_thresholds
+            ${CMAKE_CURRENT_SOURCE_DIR}/../config/ml_detector_config.json)
+    message(STATUS "✅ test_config_thresholds registered (DAY 215, DEBT-CONFIG-L3-...-001)")
+endif()
 
 # [DAY182] -UNDEBUG: assert() vivo en production (regla DAY 144)
 # Reactiva assert() bajo -DNDEBUG en estos test standalone.
@@ -395,5 +416,6 @@ message(STATUS "  Day 212–214 — verdict multihead (1a/1b):")
 message(STATUS "    test_internal_head_logic")
 message(STATUS "    test_traffic_head_logic")
 message(STATUS "    test_verdict_decision_logic  (1b-hoist, header-only)")
+message(STATUS "    test_config_thresholds       (DAY 215, config parsing)")
 message(STATUS "─────────────────────────────────────────────")
 message(STATUS "")
