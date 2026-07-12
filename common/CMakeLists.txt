@@ -176,8 +176,15 @@ option(BUILD_TESTS "Build tests" ON)
 if(BUILD_TESTS)
     enable_testing()
 
-    # Test vault_client existente (sin cambios)
-    add_executable(test_crypto_deriver tests/test_crypto_deriver.cpp crypto_deriver.cpp)
+# ── DAY 217 — DEBT-FEATURE-EXTRACTOR-L1-BROKEN-001 ────────────────────────────
+# Ancla el orden de las 23 features de L1 al contrato que el ONNX espera.
+add_executable(test_l1_feature_contract tests/test_l1_feature_contract.cpp)
+target_compile_definitions(test_l1_feature_contract PRIVATE
+    ARGUS_L1_CONTRACT_JSON="${CMAKE_CURRENT_SOURCE_DIR}/../sniffer/config/features/rf_23_features.json"
+)
+add_test(NAME test_l1_feature_contract COMMAND test_l1_feature_contract)
+# Test vault_client existente (sin cambios)
+add_executable(test_crypto_deriver tests/test_crypto_deriver.cpp crypto_deriver.cpp)
 target_include_directories(test_crypto_deriver PRIVATE ${CMAKE_CURRENT_SOURCE_DIR} ${SODIUM_INCLUDE_DIRS})
 target_link_libraries(test_crypto_deriver PRIVATE sodium)
 add_test(NAME test_crypto_deriver COMMAND test_crypto_deriver)

@@ -3039,3 +3039,18 @@ eslabon1-smoke-build:
 
 eslabon1-smoke-test: eslabon1-smoke-build
 	@vagrant ssh defender -c "cd /vagrant && docs/design/eslabon-1-flujo-a-avro-parquet/smoke/eslabon1_smoke"
+
+.PHONY: common-build common-test
+# ── common/ — targets propios (DAY 217) ──────────────────────────────────
+# common/ no tenía target propio: se compilaba como efecto secundario de
+# test-dual-compilation / test-e2e-vault / vault-client-test. Anotado como
+# DEBT-MAKEFILE-COMMON-NO-TARGET-001.
+common-build:
+	@echo "🔨 Building common/ [community]"
+	@vagrant ssh -c "mkdir -p /vagrant/common/build && cd /vagrant/common/build && \
+		cmake -DARGUS_VAULT_ENABLED=OFF .. > /dev/null && make -j$$(nproc) 2>&1 | tail -3"
+	@echo "✅ common/ built"
+
+common-test: common-build
+	@echo "🧪 Tests de common/"
+	@vagrant ssh -c "cd /vagrant/common/build && ctest --output-on-failure"
