@@ -366,13 +366,6 @@ un clasificador nuevo, pero:
 
 *Via Appia Quality — medir quién clasifica, no solo cómo de bien. Un escudo que audita
 sus propias mediciones.*
-
-# DAY 210 — Auditoría del cableado del veredicto (cierre diagnóstico de `DEBT-VERDICT-MONOCAPA-001`)
-
-> Anexar esta sección al PLAN DE CAMPAÑA local. Fichero auditado:
-> `ml-detector/src/zmq_handler.cpp`. Números de línea del estado del repo a DAY 210
-> (`/Users/aironman/CLionProjects/test-zeromq-docker/`).
-
 ---
 
 ## Resumen en una frase
@@ -679,7 +672,244 @@ reabre la arquitectura, no toca el cableado del veredicto, no es un segundo
 Esta opción es precisamente la que MÁS abierta deja la puerta.
 
 ---
+# DAY 216 — LA MEDICIÓN QUE FALSIFICA H5 Y H7
 
+> Anexar al PLAN DE CAMPAÑA. **Este anexo no añade hallazgos al plan: retira dos de sus
+> pilares.** Evidencia completa en `docs/debt/DEBT-FEATURE-EXTRACTOR-L1-BROKEN-001.md`.
+
+---
+
+## Resumen en una frase
+
+**El extractor de features del ml-detector está roto, y las tres cabezas que el plan daba
+por fiables no clasifican nada.** El modelo L1 es perfecto sobre CIC-IDS2017 (200/200 DDoS,
+0/200 FP, verificado hoy contra el ONNX de producción); el pipeline en ejecución detecta
+**0 de 100 ataques sintéticos**. La brecha está en `ml-detector/src/feature_extractor.cpp`:
+**6 de las 23 features de L1 son incorrectas** (duplicadas, o constantes a `0.0f`).
+
+---
+
+## 1. H5 QUEDA FALSIFICADA
+
+> *H5 — "Traffic (externo) e Internal: **FIABLES**. Datasets generados por Alonso… Ground
+> truth propio y controlado. Corolario: un futuro ensemble debe construirse sobre señales
+> fiables (L1 + traffic + internal)."*
+
+**Medido en ejecución, 200 eventos (100 ruido uniforme + 100 ataque DDoS sintético):**
+
+| cabeza | ruido | ataque | veredicto |
+|---|---|---|---|
+| **L1** | class1=0, conf∈[0.74,0.88] | class1=0, conf∈[0.83,0.86] | 🔴 **CONSTANTE.** No reacciona. Y la conf está *más concentrada* en ataque que en ruido. |
+| **internal** | class1=**69**, susp∈[0.72,0.85] | class1=**0**, susp∈[0.097,0.14] | 🔴 **INVERTIDA.** Dispara en ruido, calla en ataque. |
+| **traffic** | 100/100, `internal_prob` ∈ {0.955, 0.96, 0.97} | 100/100, ∈ {0.96, 0.965} | 🔴 **CONSTANTE.** σ≈0.005 en 200 eventos de poblaciones opuestas. |
+
+**Las tres señales que H5 llamaba fiables no llevan señal.** El ensemble que el plan
+propone construir sobre "L1 + traffic + internal" se construiría sobre nada.
+
+⚠️ **La procedencia del dataset no garantiza la fiabilidad del clasificador en ejecución.**
+H5 razonaba sobre el origen de los *datos de entrenamiento*; el fallo está en el *puente*
+entre el paquete y el modelo. Un dataset impecable no salva un extractor roto. Esta es la
+lección epistémica de DAY 216, y es exactamente el error que H6 advirtió que no cometiéramos
+(ver §3).
+
+---
+
+## 2. H7 QUEDA FALSIFICADA — el extractor "8/10 honesto" no era el que corre
+
+> *H7 — "el interno es el más sano de todos… `[5]` lateral_movement_score y
+> `[7]` data_exfiltration son REALES. ⭐ CLAVE."*
+
+**Hay DOS extractores distintos y la auditoría de DAY 209 miró el que no corre:**
+
+- `sniffer/src/userspace/feature_extractor.cpp` → 83 features CIC-IDS2017.
+- **`ml-detector/src/feature_extractor.cpp` → reconstruye las features desde el PROTOBUF.
+  ES EL QUE CORRE EN PRODUCCIÓN. ES EL ROTO.**
+
+Y en el que corre, la cabeza interna tiene **más constantes de las que H7 contó**:
+
+```cpp
+:383  features[6] = normalize(1.0f, 0.0f, 10.0f);          // → 0.1 SIEMPRE
+:386  features[7] = 1.0f - normalize(1.0f, 0.0f, 10.0f);   // → 0.9 SIEMPRE
+```
+
+⚠️ **`features[7]` es `data_exfiltration_indicators` — la feature que H7 marcó con ⭐ como
+"REAL, ratio bytes salientes/entrantes, CLAVE para ransomware-por-red". En el extractor que
+corre es la constante `0.9`.** Y `zmq_handler.cpp:415` la loguea como
+`"exfil={:.3f}"` en el mensaje de "hueco de cobertura L3". **El indicador de exfiltración
+del que dependía la estrategia entera no mide nada.**
+
+⟹ **El "cambio estratégico" de H7** (*"el camino más corto a ransomware-por-red es arreglar
+las 2 constantes del interno + reconectarlo"*) **queda sin base.** No son 2 constantes: la
+cabeza está ciega.
+
+---
+
+## 3. H6 QUEDA VINDICADA — y era la advertencia correcta
+
+> *H6 — "mezcla TRES fallos: (1) el modelo, (2) el adaptador de features, (3) el cableado.
+> Puede que el modelo esté bien y solo el adaptador/cableado estén rotos. **No afirmar
+> 'fracaso de modelado' hasta medir el pulso.**"*
+
+**Es exactamente eso, y ahora está probado:**
+- **(1) El modelo: SANO.** L1 da 200/200 sobre DDoS real de CIC-IDS2017, 0 FP, sin escalar.
+  Su `f1_score=0.9968` declarado es cierto.
+- **(2) El adaptador: ROTO.** 6/23 features incorrectas. Causa raíz.
+- **(3) El cableado: era el frente de DAY 209–215** (monocapa, gate, hoist, noisy-OR). Correcto
+  como diagnóstico, pero **irrelevante mientras (2) esté roto.**
+
+H6 fue la única hipótesis del plan que sobrevivió intacta. **La disciplina de separar los
+tres fallos antes de autoinculparse es lo que ha permitido llegar aquí.**
+
+---
+
+## 4. FASE 0.3 (ablación del F1) — PRE-RESPONDIDA, y hay que decirlo
+
+> *0.3 — "¿el F1 histórico mide el fast-path o el ml-detector?"*
+> *Interpretación: si F1(a) ≈ F1(c) y F1(b) ≪ ambos → el fast-path hace el trabajo.*
+
+**Con L1 ciego en el pipeline, la configuración (b) — ml-detector solo — no puede detectar
+nada.** No hace falta correr la ablación para saber que `F1(b) ≈ 0`.
+
+⟹ **H0 apunta a CONFIRMADA:** el fast-path hacía el trabajo. El `max(fast_score, ml_score)`
+de `zmq_handler.cpp:410` se resolvía **siempre** por `fast_score`, porque `ml_score` es
+`1 − confidence_l1` con `label_l1 = 0` **siempre** — un valor casi constante (~0.15).
+
+⚠️ **NO dar esto por cerrado sin correr 0.3.** El razonamiento es sólido pero es inferencia,
+no medición. **Correr la ablación DESPUÉS de arreglar el extractor** es lo que la convierte
+en el resultado que el paper necesita: el F1 del ml-detector reparado, aislado, contra el
+del fast-path.
+
+⚠️ **Y la reducción de FPR "~15.500×" (DAY 83, citada en H2 y 5.4) hay que re-verificar de
+dónde salió.** Si L1 en pipeline está ciego, ¿qué redujo esos FP? Puede que la medición
+fuera del modelo aislado (correcta) y no del pipeline. **Es una claim del paper. Medirla.**
+
+---
+
+## 5. IMPACTO EN EL PAPER — el hallazgo se cuenta (coherente con H2 y DAY 215)
+
+El paper reporta **F1=0.9985 / Recall=1.000** para aRGus NDR. Esos números salen de evaluar
+**el modelo** contra el dataset, y **son ciertos** — los hemos reproducido hoy (200/200).
+**Pero el pipeline en ejecución no los reproduce.** Es la brecha entre *"el modelo detecta"*
+y *"el sistema detecta"*, y hay que declararla.
+
+**Es el TERCER caso del mismo patrón**, y eso lo convierte en el argumento central de §6:
+
+1. `entropy` del ransomware = varianza de longitud ÷ 100.000 (DEBT-RANSOMWARE-ML-HEAD-INERT-001).
+2. `level3_web`/`level3_internal` nunca parseados del JSON (DAY 215, `8e03a264`).
+3. **6/23 features de L1 duplicadas o constantes (DAY 216).**
+
+**Tres instancias ⟹ no es mala suerte, es una CLASE de defecto**: *el pipeline funcionando,
+produciendo números, sin significado*. Ninguna la cazó el testing convencional (13 tests
+verdes, EMECAS+++ verde, libFuzzer 2.4M runs). Todas se cazaron **midiendo el verde en vez
+de celebrarlo**. Ése es el resultado metodológico del paper, y ahora tiene tres casos con
+`file:line`.
+
+**Decisión Alonso (DAY 215, ratificada hoy):** se cuenta. *"Es mejor ser honesto que no
+serlo; el paper cuenta cómo estamos construyendo esto tratando de ser buenos científicos."*
+Un revisor que descubra la brecha por su cuenta hunde el trabajo; el autor que la mide, la
+localiza, la publica y la arregla **demuestra lo que el paper afirma sobre método.**
+
+---
+
+## 6. REORDENACIÓN DEL PLAN — el extractor es P0 ABSOLUTO
+
+**Decisión Alonso DAY 216:** *"No tiene sentido trabajar aguas abajo si aguas arriba tenemos
+estos problemas. No pienso entregar nada que no esté bien fundamentado."*
+
+### Lo que SE PARA
+
+| trabajo | estado | razón |
+|---|---|---|
+| **Commit 2 — noisy-OR** | 🟡 **APARCADO** (stash intacto, header+tests `-Werror` verdes) | Combinar señales de cabezas sin señal = andamiaje sin edificio. |
+| **`correlation_v2` / grafo** | 🟡 APARCADO | Fontanería para un grifo sin agua. |
+| **DEBT-VERDICT-WEIGHTS-CALIBRATION-001** | 🔴 **INDECIDIBLE** | Con las 3 cabezas ciegas, `reliability` = 0.0 para las tres. Un noisy-OR de todo ceros es `P=0`. **No falta el instrumento: no hay nada que calibrar.** |
+| **MITRE (Fase 4)** | 🟡 APARCADO, no cancelado | Imprescindible para fundamentar `reliability` por técnica. Pero **con las cabezas ciegas, MITRE tampoco mediría nada.** Va DESPUÉS del extractor. |
+
+### Lo que SE HACE
+
+**P0 — Reparar `ml-detector/src/feature_extractor.cpp`.**
+
+1. **Auditar el protobuf**: ¿existen `Init_Win_bytes_forward`, `Subflow Fwd Bytes`,
+   `act_data_pkt_fwd`? El comentario de `:142` (*"TODO: Añadir campo al protobuf si es
+   crítico"*) dice que alguien ya lo sabía.
+    - **Si NO existen** → subir al **sniffer**, que sí produce las 83 features de CIC-IDS2017.
+      **El dato puede existir y estar perdiéndose en el camino al protobuf.**
+2. **Reparar las 6 features de L1**, una a una, contra `rf_23_features.json`.
+3. **Test de PROPIEDAD, no de espejo** (lección DAY 215):
+   > *"N filas de CIC-IDS2017 → protobuf → extractor → ONNX reproducen la etiqueta del CSV."*
+   **RED→GREEN obligatorio**: romper una feature a propósito debe ponerlo ROJO.
+   Este test es la red que **nunca existió** — y es exactamente la que habría cazado esto.
+4. **Repetir con `traffic` e `internal`.** Sus contratos NO EXISTEN:
+   `internal_4_features.json` no está; los 5 `*_metadata.json` de
+   `ml-detector/models/metadata/` están **a 0 bytes**; `ml-detector/config/feature_mapping.json`
+   está **a 0 bytes**. **Toda la capa de metadatos son placeholders vacíos del 27-may.**
+5. **Sólo entonces**: ablación 0.3, calibración de pesos, retomar commit 2, seguir aguas abajo.
+
+### Lo que SOBREVIVE del trabajo de DAY 209–215
+
+**Nada se tira.** El diagnóstico del cableado (monocapa, gate, hoist, `decide_l3_verdict`
+puro, noisy-OR) **es correcto y sigue siendo necesario**. Simplemente estaba resolviendo el
+problema #3 de H6 mientras el #2 seguía roto. Cuando las cabezas vean, el cableado ya está.
+
+---
+
+## 7. DEUDAS NUEVAS
+
+- **`DEBT-FEATURE-EXTRACTOR-L1-BROKEN-001`** (P0) — el hallazgo. Documento completo con
+  evidencia reproducible y el script de CIC-IDS2017 íntegro.
+- **`DEBT-STATS-E2E-COUNTERS-001`** (menor) — `check_e2e_pipeline.py` reporta
+  `ml-detector: received 0 → 0` mientras los contadores internos cuentan 100 eventos
+  procesados. Los contadores del snapshot mienten.
+- **`rf_23_features.json` se contradice a sí mismo**: `usage_notes.normalization` dice que NO
+  hace falta escalar; `validation.scaler_required` dice `true` y apunta a un
+  `level1/scaler.json` **que no existe**. Su `_source` confiesa: *"Reconstructed from … and
+  feature_extractor.cpp"* — **se documentó leyendo el código que debía validar. Circular.**
+  (La prueba de §1 del DEBT resuelve la contradicción: **NO hace falta escalar.**)
+
+---
+
+## 8. CORRECCIÓN AL RELATO DE DAY 215 — antes de que llegue al paper
+
+El prompt de DAY 215 afirma: *"`is_internal(0.0f)` → SIEMPRE true. Guard de traffic abierto:
+TODO flujo era interno."*
+
+**Es FALSO.** `traffic_detector.hpp:57`:
+```cpp
+bool is_internal(float threshold) const noexcept {
+    return class_id == 1 && probability >= threshold;   // ← el && de CLASE siguió aplicándose
+}
+```
+Con `threshold = 0`, la condición colapsa a `class_id == 1`. **Lo que se perdió no fue el
+guard: fue el SUELO DE CONFIANZA.** Y como `probability` es la de la clase ganadora
+(`traffic_detector.cpp:33-39`), en binario `class_id==1 ⟹ probability ≥ 0.5` — así que el
+umbral real de 0.6 sólo mordía en `[0.5, 0.6)`. **Impacto estrecho, no total.**
+
+La otra mitad del P0 **se sostiene entera**: `is_suspicious(1.09e27)` nunca fue true ⟹
+`SUSPICIOUS_INTERNAL` jamás se selló. Eso sigue en pie, y es lo grave.
+
+**Corregir ANTES de escribirlo.** Un revisor abre `traffic_detector.hpp:57` y ve el
+`class_id == 1`. Sobrevender un hallazgo en un paper cuyo argumento **es** la honestidad
+metodológica sería el peor sitio posible para exagerar.
+
+---
+
+## MÉTODO — lo que funcionó (DAY 216)
+
+- **El contador que SEPARA hipótesis vale más que el que cuenta.** `dbg_l1_class1` vs
+  `dbg_l1_gate_open`: sin los dos, *"el gate no se abre"* y *"L1 no detecta"* son
+  indistinguibles — y son diagnósticos **opuestos**.
+- **La tabla de lectura se escribe ANTES de ver el número.** Elimina el margen para
+  interpretar a conveniencia. Se escribió, y el resultado **no fue ninguna de las hipótesis**.
+- **Verificar el `.cpp`, no el comentario.** Tres veces esta sesión hubo que bajar al `.cpp`
+  para confirmar lo que un comentario o un JSON afirmaban. Una de las tres, mentían.
+- **Ir al artefacto que no puede mentir.** Metadata vacía, contrato circular, comentarios
+  ambiguos ⟹ se leyó **el grafo del ONNX** y **el CSV de entrenamiento**. Fin de la discusión.
+- **El verde hay que interrogarlo. Y el rojo también.** El gate L1 filtró 69 falsos positivos
+  del interno. Eso es evidencia **EN CONTRA** de la posición de Alonso de DAY 215 (*"el gate
+  es un vestigio"*) — y se anota igual. **No queremos tener razón: queremos medir.**
+- **Corregir el relato cuando el dato lo contradice** (§8). Dos veces hoy: el `is_internal`
+  del prompt de DAY 215, y la propia hipótesis del scaler (descartada por la prueba, no por
+  argumento).
 ## Formulación honesta de la limitación para el paper (hueco de cobertura, NO divergencia predicha)
 
 ⚠️ **Corrección de un salto lógico a evitar en el paper.** Con ransomware y ddos pesando

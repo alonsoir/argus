@@ -1,0 +1,124 @@
+diff --git a/ml-detector/include/zmq_handler.hpp b/ml-detector/include/zmq_handler.hpp
+index da51c28e..8110fa96 100755
+--- a/ml-detector/include/zmq_handler.hpp
++++ b/ml-detector/include/zmq_handler.hpp
+@@ -51,6 +51,16 @@ public:
+         uint64_t feature_extraction_errors = 0;
+         uint64_t inference_errors = 0;
+         uint64_t internal_l1_discrepancies = 0;  // DAY 212: interno detecta amenaza en flujo L1=BENIGN (mide hueco de cobertura DEBT-VERDICT-MONOCAPA-001)
++        // ── DAY 216 · instrumentación DESECHABLE (deuda 3). NO COMMIT. ──
++        uint64_t dbg_traffic_ran      = 0;  // run_traffic_head devolvió Prediction
++        uint64_t dbg_traffic_class1   = 0;  // class_id==1 (forma "interna"), SIN umbral
++        uint64_t dbg_traffic_internal = 0;  // is_internal(level3_web) == true
++        uint64_t dbg_internal_ran     = 0;  // run_internal_head llegó a predict()
++        uint64_t dbg_internal_class1  = 0;  // class_id==1 (suspicious), SIN umbral
++        uint64_t dbg_internal_sealed  = 0;  // is_suspicious(level3_internal) == true
++        uint64_t dbg_l1_gate_open     = 0;  // label_l1==1 && conf>=level1_attack
++        uint64_t dbg_l1_ran    = 0;  // inferencia L1 ejecutada
++        uint64_t dbg_l1_class1 = 0;  // label_l1 == 1 (ATTACK), SIN umbral
+         double avg_processing_time_ms = 0.0;
+     };
+ 
+diff --git a/ml-detector/src/zmq_handler.cpp b/ml-detector/src/zmq_handler.cpp
+index ceaca399..c139acca 100755
+--- a/ml-detector/src/zmq_handler.cpp
++++ b/ml-detector/src/zmq_handler.cpp
+@@ -298,11 +298,33 @@ void ZMQHandler::run() {
+             auto now = std::chrono::steady_clock::now();
+             if (now - last_stats_report_ >= stats_interval) {
+                 auto stats = get_stats();
+-                logger_->info("📊 Stats: received={}, processed={}, sent={}, attacks={}, "
+-                             "errors=(deser:{}, feat:{}, inf:{})",
+-                             stats.events_received, stats.events_processed, stats.events_sent,
+-                             stats.attacks_detected, stats.deserialization_errors,
+-                             stats.feature_extraction_errors, stats.inference_errors);
++                fprintf(stderr, "\n== DBG DEUDA-3 (DAY 216) =========================\n");
++                fprintf(stderr, "  umbrales: level1_attack=%.2f level3_web=%.2f level3_internal=%.2f\n",
++                        static_cast<double>(config_.ml.thresholds.level1_attack),
++                        static_cast<double>(config_.ml.thresholds.level3_web),
++                        static_cast<double>(config_.ml.thresholds.level3_internal));
++                fprintf(stderr,
++                    "  l1_ran           = %llu\n"
++                    "  l1_class1        = %llu   (label==1 ATTACK, sin umbral)\n"
++                    "  l1_gate_open     = %llu   (class1 && conf>=level1_attack)\n"
++                    "  traffic_ran      = %llu\n"
++                    "  traffic_class1   = %llu\n"
++                    "  traffic_internal = %llu   (GUARD)\n"
++                    "  internal_ran     = %llu\n"
++                    "  internal_class1  = %llu\n"
++                    "  internal_sealed  = %llu\n"
++                    "  inference_errors = %llu\n"
++                    "==================================================\n",
++                    static_cast<unsigned long long>(stats.dbg_l1_ran),
++                    static_cast<unsigned long long>(stats.dbg_l1_class1),
++                    static_cast<unsigned long long>(stats.dbg_l1_gate_open),
++                    static_cast<unsigned long long>(stats.dbg_traffic_ran),
++                    static_cast<unsigned long long>(stats.dbg_traffic_class1),
++                    static_cast<unsigned long long>(stats.dbg_traffic_internal),
++                    static_cast<unsigned long long>(stats.dbg_internal_ran),
++                    static_cast<unsigned long long>(stats.dbg_internal_class1),
++                    static_cast<unsigned long long>(stats.dbg_internal_sealed),
++                    static_cast<unsigned long long>(stats.inference_errors));
+                 last_stats_report_ = now;
+             }
+ 
+@@ -393,7 +415,15 @@ ZMQHandler::run_internal_head(const protobuf::NetworkFeatures& nf,
+             extractor_->extract_level3_internal_features(nf);
+         const auto features = ml_defender::build_internal_features(feats);
+         const auto pred = internal_detector_->predict(features);
+-
++        {
++            std::lock_guard<std::mutex> lock(stats_mutex_);
++            stats_.dbg_internal_ran++;
++            if (pred.class_id == 1) stats_.dbg_internal_class1++;
++            if (pred.is_suspicious(config_.ml.thresholds.level3_internal))
++                stats_.dbg_internal_sealed++;
++        }
++        fprintf(stderr, "[DBG-INTERNAL] class=%d prob=%.4f susp_prob=%.4f\n",
++                pred.class_id, pred.probability, pred.suspicious_prob);
+         logger_->debug("🤖 Internal: class={} prob={:.4f} ({})",
+                        pred.class_id, pred.probability, pred.confidence_level());
+ 
+@@ -486,7 +516,14 @@ void ZMQHandler::process_event(const std::string& message) {
+             auto [pred_label, pred_confidence] = level1_model_->predict(features_l1);
+             label_l1      = pred_label;
+             confidence_l1 = pred_confidence;
+-
++            {
++                std::lock_guard<std::mutex> lock(stats_mutex_);
++                stats_.dbg_l1_ran++;
++                if (label_l1 == 1) stats_.dbg_l1_class1++;
++            }
++            fprintf(stderr, "[DBG-L1] label=%lld conf=%.4f\n",
++                    static_cast<long long>(label_l1),
++                    static_cast<double>(confidence_l1));
+             logger_->debug("🤖 Level 1: label={} ({}), confidence={:.4f}",
+                           label_l1, (label_l1 == 0 ? "BENIGN" : "ATTACK"), confidence_l1);
+ 
+@@ -663,6 +700,18 @@ void ZMQHandler::process_event(const std::string& message) {
+             event.has_network_features()) {
+             const auto& nf = event.network_features();
+             traffic_result = run_traffic_head(nf, ml_analysis);
++            if (traffic_result) {
++                {
++                    std::lock_guard<std::mutex> lock(stats_mutex_);
++                    stats_.dbg_traffic_ran++;
++                    if (traffic_result->class_id == 1) stats_.dbg_traffic_class1++;
++                    if (traffic_result->is_internal(config_.ml.thresholds.level3_web))
++                        stats_.dbg_traffic_internal++;
++                }
++                fprintf(stderr, "[DBG-TRAFFIC] class=%d prob=%.4f internal_prob=%.4f\n",
++                        traffic_result->class_id, traffic_result->probability,
++                        traffic_result->internal_prob);
++            }
+             if (traffic_result &&
+                 traffic_result->is_internal(config_.ml.thresholds.level3_web) &&
+                 internal_detector_ && config_.ml.level3.internal.enabled) {
+@@ -676,6 +725,7 @@ void ZMQHandler::process_event(const std::string& message) {
+             {
+                 std::lock_guard<std::mutex> lock(stats_mutex_);
+                 stats_.attacks_detected++;
++                stats_.dbg_l1_gate_open++;
+             }
+ 
+             // Level 2: DDoS
