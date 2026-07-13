@@ -1,4 +1,4 @@
-# PROMPT DE CONTINUIDAD — DAY 217 → 218
+# PROMPT DE CONTINUIDAD — DAY 218 → 219
 ## Rama `fix/verdict-multihead-honest`
 
 > Memoria de sesión. Claude no recuerda entre ventanas. La fuente de verdad del PLAN
@@ -6,268 +6,262 @@
 
 ---
 
-## 🚨 HALLAZGO DE LA TARDE DE DAY 217 — EL PAPER TIENE UNA CLAIM IMPOSIBLE
+## 📕 LEE ESTO PRIMERO — EL DOCUMENTO DEL DÍA
 
-**NO ES UNA DEUDA DE CÓDIGO. ES UNA CLAIM CENTRAL DEL ABSTRACT.**
-**NO TOCAR EL LATEX HASTA HABERLO DIGERIDO EN FRÍO.**
+👉 **`docs/debt/DAY218_FINDINGS.md`** (commit `ebd3cac9`) — **SIETE DEUDAS NUEVAS,
+todas con `file:line`, todas PRE-FEDER.**
 
-### La claim (arXiv:2604.04952 — abstract, §4.3, §8.3, §8.6, conclusión)
-
-> *"The Fast Detector alone produces a FPR of 6.61% on purely benign traffic (bigFlows);
-> **the ML layer cuts flagged benign flows from 2,517 to 5 (~500×)**."*
-
-### La aritmética que la prohíbe — `ml-detector/src/zmq_handler.cpp`
-
-```cpp
-:550   double ml_score    = label_l1 == 1 ? confidence_l1 : (1.0 - confidence_l1);
-:553   double final_score = std::max(fast_score, ml_score);
-:625   DROP  ⟺  final_score >= config_.scoring.malicious_threshold
-```
-
-**`std::max` es MONÓTONO CRECIENTE. `max(a,b) ≥ a`, SIEMPRE.**
-**Ningún valor de `ml_score` puede reducir un bloqueo. Ni con el modelo perfecto.
-Ni con las 23 features arregladas.**
-
-⟹ **La supresión de FP atribuida al ML es IMPOSIBLE bajo la Ecuación 1 del propio paper.**
-No es un error de medición: **el mecanismo descrito no puede producir el efecto descrito.**
-Un revisor con un lápiz lo ve en treinta segundos.
-
-### Y encima, con el extractor roto (DAY 216), el ML es literalmente constante
-
-Medido: `label_l1 = 0` en **200/200 eventos** (100 ruido + 100 ataque DDoS),
-`confidence_l1 ≈ 0.85`. Por tanto:
-
-```
-ml_score    ≈ 1 − 0.85 = 0.15        ← CONSTANTE
-final_score = max(fast_score, 0.15)
-DROP        ⟺ max(fast_score, 0.15) ≥ 0.65   ⟺   fast_score ≥ 0.65
-```
-
-**El ML no ha influido NUNCA en una sola decisión de bloqueo.** Ni una.
-Y el extractor está roto **desde `5ada889a` — el PRIMER commit del ml-detector.**
-No se rompió: nació así. **Todas las mediciones del ML en el pipeline, en toda la
-historia del proyecto, se hicieron con el extractor roto.**
-
-### El número 2.517 NO TIENE PROCEDENCIA
-
-`grep -rn "2517|2,517"` en `*.py *.sh *.csv *.log` → **VACÍO**. Sólo aparece en prosa
-(drafts del paper, `main.tex`).
-
-Lo que SÍ dice `docs/experiments/F1_replay_log.csv`, fila **DAY82-002** (bigFlows, el
-corpus de la claim):
-```
-Fast Detector: 31.065 alertas     ← NO 2.517
-ML: 2x attacks_detected (conf>=0.65), 7x label=1
-FP: FP_UNKNOWN
-notes: "IPs 172.16.133.x no en binetflow Neris — ground truth desconocido"
-```
-**El propio log dice `ground truth desconocido`.** No se pueden contar falsos positivos
-sobre un corpus sin ground truth.
-
-Y la fila **DAY82-001** (smallFlows): `F1 = 0.3818`, con la nota *"ML correcto
-(attacks=0)"*. **Se anotó `attacks=0` como CORRECTO porque el tráfico era benigno.**
-Ahora sabemos que el ML dice `attacks=0` **también sobre ataques**. En DAY 82,
-`attacks=0` era indistinguible de una cabeza ciega, y nadie tenía cómo saberlo.
-
-### El diagnóstico: ERROR DE CATEGORÍA, no de aritmética
-
-El paper compara **alertas del Fast Detector** (`[FAST ALERT]`, umbral de *log*) contra
-**bloqueos del pipeline** (umbral de *producción*, 0.65). **Dos métricas distintas,
-presentadas como un antes/después causal.**
-
-Los *"0 bloqueos en bigFlows"* de Config C son **reales** — pero porque `fast_score < 0.65`
-en esos flujos, **no porque el ML filtrara nada.**
-
-Y el paper YA lo admite en §8.6: *"Only Config C was fully validated end-to-end;
-Config A and B are partial."* **Config A y Config C nunca se compararon flujo a flujo.**
-
-### 🟢 LO QUE SÍ SE SOSTIENE — protegerlo
-
-**F1 = 0.9985 / Recall = 1.0000 sobre CTU-13 Neris es del FAST DETECTOR**, y el paper
-**ya lo declara honestamente** en la nota metodológica de §8.1:
-*"`calculate_f1_neris.py` mide alertas del Fast Detector (`[FAST ALERT]` en sniffer.log)"*.
-**Ese resultado está medido, tiene script, tiene log, y es reproducible.
-El Fast Detector FUNCIONA.** No lo tocamos.
-
-### 🔑 Y EL NOISY-OR TAMPOCO ES LA SOLUCIÓN A ESTO (importante)
-
-Alonso, DAY 217: *"la función max es la que queremos sustituir por el noisy-OR"*.
-Correcto — **pero el noisy-OR TAMPOCO REDUCE.**
-
-`P = 1 − ∏(1 − rᵢ·sᵢ)` ⟹ **`P ≥ rᵢ·sᵢ` para cada término.** También monótono creciente.
-**Agregar evidencia nunca la resta.**
-
-⟹ Si lo que se quiere es que el ML **SUPRIMA** falsos positivos del fast, hace falta un
-operador que pueda **BAJAR** el score: AND probabilístico, o veto explícito. **El paper
-ya lo apunta en §11.4: "Alternative AND-based consensus policies are planned (ADR-007)."**
-
-**ADR-007 es la respuesta a la claim del paper. El noisy-OR es la respuesta a OTRA
-pregunta** (agregar N cabezas de sospecha en L3). **Dos operadores, dos problemas. No
-confundirlos.**
-
-### Qué hacer con esto (DAY 218, en frío)
-
-1. **Localizar el experimento del 2.517.** Si no existe → el número sale del paper.
-2. **Reescribir la claim** para decir lo que se midió de verdad: el Fast Detector produce
-   FPR=6,61% en bigFlows; el ML, en su estado actual, **no lo corrige** — y ahora sabemos
-   por qué (extractor roto + operador `max` que no puede reducir).
-3. **La sección de DAY 216 encaja aquí**, no como apéndice: **como la EXPLICACIÓN de por
-   qué la claim del ML era incorrecta.** El paper pasa de *"tenemos un ensemble que
-   suprime FP"* a *"creíamos tenerlo; medimos; no lo teníamos; aquí está la causa raíz
-   con `file:line`, y aquí está la reparación"*. Más difícil de escribir. **Mucho más fuerte.**
-4. **Los datos crudos están en el chat de DAY 217.** Recuperables.
-
----
-
-## ⚠️ EL RESTO — LEE ESTO PRIMERO
+**Van a `docs/BACKLOG.md` en rojo** — mañana o pasado, tras el merge a `main`.
+(Recordatorio: `BACKLOG.md` y `README.md` NO se tocan hasta el merge.)
 
 👉 **`docs/debt/DEBT-FEATURE-EXTRACTOR-L1-BROKEN-001.md`** — el hallazgo de DAY 216.
-👉 **Anexo DAY 216 del PLAN DE CAMPAÑA** — falsifica H5 y H7, vindica H6.
-
-**En una frase:** el modelo L1 es perfecto sobre CIC-IDS2017 (200/200 DDoS, 0/200 FP,
-verificado contra el ONNX de producción). El pipeline no detecta NADA (0/100 ataques
-sintéticos). Causa raíz PROBADA: `ml-detector/src/feature_extractor.cpp` entrega
-**5 de 23 features incorrectas**.
-
-### 🔴 CORRECCIÓN PENDIENTE AL DEBT (hacer YA)
-El documento dice **6 features rotas**. **Son 5.** Error de Claude:
-- `[9]` y `[18]` son **CORRECTAS**, no rotas.
-- **`[12]`** (`total_backward_bytes` → id 13 `Subflow Bwd Bytes`) — **ROTA**, faltaba.
-
-**Las 5 definitivas: `[1]`, `[8]`, `[12]`, `[14]`, `[15]`.** Coinciden EXACTAMENTE con las
-5 que el protobuf no transporta como escalar. No fue descuido: fue un apaño ante un
-contrato incompleto.
+👉 **Anexo DAY 216 del PLAN DE CAMPAÑA.**
+👉 El hallazgo del paper (DAY 217): **la claim del `max()` es aritméticamente imposible.**
+`max(a,b) ≥ a` SIEMPRE. El ML no puede suprimir FP. Y el noisy-OR TAMPOCO
+(monótono creciente). Hace falta **ADR-007** (AND/veto). **NO tocar el LaTeX aún.**
 
 ---
 
-## ✅ HALLAZGO DE DAY 217 — el dato EXISTE, el cable está suelto
+## 🎯 QUÉ PASÓ EN DAY 218
 
-```protobuf
-repeated double general_attack_features = 102;  // 23 features para RF general
-```
+**El objetivo era el PASO 2. No se llegó.** En su lugar se auditaron los
+**INSTRUMENTOS DE MEDIDA** del proyecto.
 
-**El campo lleva ahí desde diciembre y NUNCA se ha rellenado.** Nadie hace
-`add_general_attack_features(...)`. `feature_logger.cpp` sólo LEE. Y
-**`ml-detector/src/contract_validator.cpp.backup:78` YA AVISABA**:
-*"Missing: general_attack_features (array empty)"* — **el validador que lo habría cazado
-está en un `.backup`.**
+**Y eso respondió la pregunta de los 200 días:**
+*¿cómo sobrevivió el extractor roto a 13 tests verdes, EMECAS+++ y libFuzzer 2.4M runs?*
 
-El sniffer **SÍ calcula** 4 de las 5 huérfanas y **las tira**:
-`SUBFLOW_FWD_BYTES` (59), `SUBFLOW_BWD_BYTES` (61), `SUBFLOW_FWD_PACKETS` (58),
-`INIT_FWD_WIN_BYTES` (68). Sólo falta `act_data_pkt_fwd`.
+> **Porque NADIE ESTABA MIDIENDO AHÍ.**
+> El `FeatureExtractor` (83 features) **nunca tuvo test**. Cinco tests del sniffer se
+> compilaban y **nunca se ejecutaban**. El gate de `test-components` **no puede ponerse
+> en rojo** (`|| echo` traga el exit code). Y de los 11 tests que sí corrían, **OCHO
+> prueban la Variante B — que no computa features de flujo en absoluto.**
 
-⟹ **NO hay que tocar el `.proto`.** Reparación de días, no semanas.
+**El termómetro estaba bien calibrado y apuntando al componente equivocado.**
 
 ---
 
-## 📦 ESTADO DEL ÁRBOL
+## 📦 COMMITS DE DAY 218
 
 ```
-Rama: fix/verdict-multihead-honest
-Commits de hoy:
-  a032b38d  docs DAY 216
-  9b58fd6e  paso 1/5 — contrato L1  (⚠️ el test se commiteó VACÍO)
-  1855e901  (deuda flaky)
-  5b494d90  fix: test_l1_feature_contract iba vacío en 9b58fd6e  ← EL BUENO
+5d9bd43e  fix(common): DEBT-TEST-AUTONOMY-PUBLISHER-FLAKY-001 — handshake real PUB/SUB
+92ce8a09  test(sniffer): DEBT-SNIFFER-TESTS-NOT-REGISTERED-001 — registrar 5 huérfanos
+ebd3cac9  docs(DAY 218): DAY218_FINDINGS.md — 7 deudas, todas pre-FEDER
+<nuevo>   test(sniffer): PASO 2 RED — act_data_pkt_fwd + primera suite del FeatureExtractor
+<nuevo>   chore(common): include-what-you-use — cstring para std::strlen
+<este>    docs(DAY 218): prompt de continuidad
+```
 
-MODIFICADO SIN COMMITEAR — instrumentación DAY 216 (9 contadores):
-  ml-detector/include/zmq_handler.hpp
-  ml-detector/src/zmq_handler.cpp
-  ⟹ SALVADO EN: docs/day216_instrumentation.patch (verificado con `git apply --check` ✅)
-  NO commitear (decisión Alonso: parche a fichero, no a rama).
-  ⚠️ OJO con `git commit -a`: se los llevaría.
+**⚠️ SIGUE SIN COMMITEAR, A PROPÓSITO:**
+```
+ M ml-detector/include/zmq_handler.hpp    ← instrumentación DAY 216 (9 contadores)
+ M ml-detector/src/zmq_handler.cpp        ← salvada en docs/day216_instrumentation.patch
+```
+**NUNCA `git add -u` NI `git commit -a`. Se los llevaría.**
+Decisión de Alonso: parche a fichero, no a rama. `git apply --check` ✅ verificado.
 
-STASH — NO LO PIERDAS:
-  stash@{0}: On master: commit2-noisy-or WIP   ← header + tests, VÁLIDOS
-  stash@{1}: WIP on day204/emecas-plus-plus-target
-  stash@{2}: WIP on main
+**STASH — NO LO PIERDAS:**
+```
+stash@{0}: On master: commit2-noisy-or WIP   ← header + tests, VÁLIDOS
+stash@{1}: WIP on day204/emecas-plus-plus-target
+stash@{2}: WIP on main
 ```
 
 ---
 
-## ▶️ PASO 2 de 5 — `ACT_DATA_PKT_FWD` en el sniffer
+## 🔴 EL RED QUE HAY QUE RESOLVER MAÑANA — EMPIEZA AQUÍ
 
 ```zsh
-git log --oneline -3 && git status --short
-make common-test            # debe dar 14/14
+vagrant ssh -c 'cd /vagrant/sniffer/build-debug && ctest -R test_feature_extractor --output-on-failure'
 ```
 
-**Definición CICFlowMeter:** paquetes forward con ≥ 1 byte de payload TCP.
+**6/8 PASS. 2 FAIL. El rojo es CORRECTO y es un ACTIVO. No lo borres.**
 
-**VERIFICADO** (`sniffer/include/flow_manager.hpp:80,83`): `fwd_lengths[i]` y
-`fwd_header_lengths[i]` se rellenan en el MISMO bloque, MISMO paquete ⟹ **alineados
-índice a índice.** Implementación EXACTA, no aproximada. Sin tocar eBPF, sin inventar
-umbrales.
+```
+[  OK  ]  5/5 FeatureExtractorUnitTest        ← la sección A (unidad) pasa
+[  OK  ]  PureAcksGiveZero_KillsTheEthernetTrap
+[FAILED]  PayloadLenReachesFeatureFromSimpleEvent
+            features[ACT_DATA_PKT_FWD] == 0, esperado 2
+[FAILED]  AlignmentHolds_PayloadVectorTracksFwdLengths
+            fwd_lengths.size() == 10   ← ¡metimos 3!
+            fwd_payload_lengths.size() == 0
+```
+
+### HALLAZGO 1 — **HAY DOS RUTAS DE POBLACIÓN DE `FlowStatistics`**
+
+El `push_back(pkt.payload_len)` se añadió a `FlowStatistics::add_packet()`
+(`sniffer/include/flow_manager.hpp`, bloque `if (is_fwd)`).
+**Pero `fwd_payload_lengths` sale con `size()==0` mientras `fwd_lengths` tiene datos.**
+
+⟹ **`ShardedFlowManager` NO llama a `FlowStatistics::add_packet()`.** Tiene su propia
+implementación que rellena `fwd_lengths` por su cuenta.
+
+**PRIMER COMANDO DE MAÑANA:**
+```zsh
+grep -n 'fwd_lengths\|add_packet\|payload' sniffer/src/flow/sharded_flow_manager.cpp
+```
+
+**Decisión arquitectónica pendiente (NO parchear a ciegas):**
+- (a) `ShardedFlowManager::add_packet` delega en `FlowStatistics::add_packet` — **unificar.**
+- (b) Duplicar el `push_back` en la ruta shardeada — **rápido, y garantiza que
+  volverán a divergir.** Es como nació el bug de las 5 features.
+
+**Recomendación: (a).** La duplicación de la lógica de población ES la causa raíz de
+esta clase de defecto. Pero **mirar el código antes de decidir.**
+
+### HALLAZGO 2 — el singleton acumula estado entre tests
+
+`fwd_lengths.size() == 10` habiendo metido 3 paquetes. **3 + 4 + 3 = 10.**
+`ShardedFlowManager::instance()` es un singleton; `initialize()` en el `SetUp` **no
+limpia los flujos**. Los tres tests de contrato comparten estado.
+
+**Arreglo:** o un `clear()`/`reset()` en el `SetUp`, o una `FlowKey` distinta por test.
+La primera es correcta; la segunda esconde el problema.
+
+### 🩸 Y EL CASO 16 DEL PATRÓN — LO PRODUJIMOS HOY
+
+> **`PureAcksGiveZero_KillsTheEthernetTrap` PASÓ EN FALSO.**
+> Dio 0 **porque el vector está vacío**, no porque contara ceros.
+> **Un verde falso en el test escrito precisamente para cazar verdes falsos.**
+
+**Cuando se arregle el HALLAZGO 1, ese test volverá a ser significativo.**
+Hasta entonces, su verde NO VALE. Anotado.
+
+---
+
+## ✅ LO QUE SÍ SE CERRÓ HOY
+
+### `DEBT-TEST-AUTONOMY-PUBLISHER-FLAKY-001` — MITIGADO (`5d9bd43e`)
+Causa raíz probada: `connect()` antes de `bind()` + `sleep(300ms)` contra
+`reconnect_ivl=100ms` (`autonomy_publisher.cpp:20`). **T3 fallaba porque era el único
+caso cuyo mensaje viene de una transición idempotente: sin reintento posible.**
+Arreglo: handshake real (`sync_pub_sub`), no `sleep`.
+**No reproducido en 40 iteraciones secuenciales EN LA VM.** P(suerte) ≈ 13%.
+**NO se declara CERRADO** hasta sobrevivir **3 EMECAS completos**.
+
+### `DEBT-SNIFFER-TESTS-NOT-REGISTERED-001` — REGISTRADO (`92ce8a09`)
+5 `add_executable()` sin `add_test()`. **`ctest -N`: 11 → 16 → 17** (con el nuevo).
+Al registrarlos apareció un rojo de meses: ver abajo.
+
+### El camino de datos NO ha perdido flujos en 200 días ✅
+`sniffer PUSH connect` → `ml-detector PULL bind`. **PUSH/PULL no descarta como PUB/SUB.**
+Era la pregunta cara. La respuesta es buena.
+
+### El slow joiner NO sesgó los conteos del paper ✅
+`set_final_decision()` (`zmq_handler.cpp:624`) → `csv_writer_->write_event()` (`:685`)
+→ **y SÓLO DESPUÉS** `output_socket_->send()` (`:996`). El veredicto se persiste
+**aguas arriba del socket**.
+**SALVEDAD:** esto prueba que *existía* un registro fiable. **NO prueba que los números
+del paper salgan de ahí.** El **`2.517` SIGUE SIN PROCEDENCIA.** Arqueología pendiente.
+
+---
+
+## 🩸 DEUDAS NUEVAS — TODAS EN `docs/debt/DAY218_FINDINGS.md`
+
+| Deuda | P | Qué es |
+|---|---|---|
+| `PAYLOAD-ANALYZER-PATTERNS-INERT-001` | **P1** | 4/4 tests de detección de patrones devuelven `false`. **SEGUNDA causa independiente de la ceguera del ransomware.** |
+| `VARIANT-B-FEATURE-PATH-001` | **P1** | **La Variante B (libpcap) NO computa features de flujo.** `main_libpcap.cpp:110`: *"NetworkSecurityEvent mínimo"*. Amenaza el delta A vs C del paper. |
+| `VERDICT-DECIDED-UPSTREAM-001` | **P1** | `zmq_handler.cpp:623` — el detector ya decidió. **POR ESO ADR-007 lleva desde DAY 83 sin implementarse: NO TENÍA DÓNDE VIVIR.** Prerrequisito de ADR-007. |
+| `GATE-COMPONENTS-SWALLOWED-EXIT-001` | **P1** | `Makefile:1197,1200,1203,1205` — `\|\| echo` traga el exit code de **los 4 componentes**. **BLOQUEADO** hasta cerrar el rojo del PayloadAnalyzer. |
+| `AUTONOMY-SUBSCRIBER-SLOW-JOINER-001` | P2 | Canal de **estado** tratado como **eventos**. Misma anatomía que T3. |
+| `DDOS-FEATURES-CONSTANT-001` | P2 | 2/10 features del DDoS son constantes. **Valida `reliability=0.0` de DAY 216.** |
+| `SOURCE-TREE-BACKUP-FILES-001` | P2 | 19 `.backup` en un solo dir, 8 dirs de build. **El árbol miente al `grep`.** |
+| `PAYLOAD-LEN-SEMANTICS-001` | P3 | `payload_len` son BYTES COPIADOS (máx 512), no la longitud real. |
+
+---
+
+## 🔧 CORRECCIONES AL PROMPT ANTERIOR (DAY 217)
+
+1. **`payload_len` YA EXISTE en `SimpleEvent`** (`main.h:32`) **y el kernel LO RELLENA**
+   (`sniffer.bpf.c:337-338`), para TODO el tráfico, sin filtro de protocolo.
+   ⟹ **NO hay que tocar eBPF, ni la struct, ni el `.proto`.**
+2. **`ransomware_feature_processor.cpp:102` MIENTE:** *"SimpleEvent NO tiene payload"*
+   — **es FALSO.** ⟹ El `entropy = varianza ÷ 100.000` se construyó como apaño ante
+   una carencia **que no existía**.
+3. El `83` de `ddos_features` es el **número de features** (`= 100` es el campo).
+   La dependencia posicional con el enum **SÍ existe**.
+
+---
+
+## ⚠️ LA TRAMPA QUE CASI ENTRA EN EL CÓDIGO
 
 ```cpp
-// sniffer/src/userspace/feature_extractor.cpp
-double FeatureExtractor::extract_act_data_pkt_fwd(const FlowStatistics& flow) const {
-    const std::size_t n = std::min(flow.fwd_lengths.size(),
-                                   flow.fwd_header_lengths.size());
-    std::size_t count = 0;
-    for (std::size_t i = 0; i < n; ++i) {
-        if (flow.fwd_lengths[i] > flow.fwd_header_lengths[i]) ++count;
-    }
-    return static_cast<double>(count);
-}
+if (flow.fwd_lengths[i] > flow.fwd_header_lengths[i]) ++count;   // ❌ MAL
 ```
+`packet_len` **INCLUYE Ethernet** (`sniffer.bpf.c:239`, XDP: `data_end - data`).
+`total_header` **NO** (`flow_manager.hpp:99`: `ip_header_len + l4_header_len`).
 
-⚠️ **`ACT_DATA_PKT_FWD` va al FINAL del enum** (índice **83**), NUNCA en medio: el enum es
-posicional y `ddos_features` (83) depende de él. **`FEATURE_COUNT`: 83 → 84.**
+ACK puro: `54 > 40` ⟹ **contaría TODOS los paquetes forward, siempre.** Un `SPKTS`
+con nombre de feature de CICFlowMeter.
 
-Test unitario: flujo con 3 paquetes fwd (2 con payload, 1 puro ACK) → debe dar 2.
-**RED→GREEN o no vale.**
+**La solución correcta NO RECONSTRUYE: usa `payload_len`.**
 
 ---
 
-## 🗺️ EL MAPA — 23 features L1 → enum del sniffer (VERIFICADO índice a índice)
+## 🩸 TRAMPAS NUEVAS DE DAY 218 (no repetirlas)
 
-Vive en `common/include/argus/l1_feature_contract.hpp` (commit `5b494d90`).
-
-```
- L1  contrato                       FeatureIndex del sniffer
- --  ---------------------------    ------------------------------
-  0  Packet Length Std              PACKET_LEN_STD          (15)
-  1  Subflow Fwd Bytes              SUBFLOW_FWD_BYTES       (59)  ✅ existe
-  2  Fwd Packet Length Max          FWD_LEN_MAX             (33)
-  3  Avg Fwd Segment Size           AVG_FWD_SEGMENT_SIZE    (79)
-  4  ACK Flag Count                 ACK_FLAG_COUNT          (21)
-  5  Packet Length Variance         PACKET_LEN_VAR          (16)
-  6  PSH Flag Count                 PSH_FLAG_COUNT          (20)
-  7  Bwd Packet Length Max          BWD_LEN_MAX             (36)
-  8  act_data_pkt_fwd               🔴 PASO 2 — implementar (índice 83)
-  9  Total Length of Fwd Packets    FWD_LEN_TOT             (35)  ← NO SBYTES
- 10  Fwd Packet Length Std          FWD_LEN_STD             (57)
- 11  Fwd Packets/s                  SRATE                   (25)
- 12  Subflow Bwd Bytes              SUBFLOW_BWD_BYTES       (61)  ✅ existe
- 13  Destination Port               🟡 de la 5-tupla, no del enum
- 14  Init_Win_bytes_forward         INIT_FWD_WIN_BYTES      (68)  ✅ existe
- 15  Subflow Fwd Packets            SUBFLOW_FWD_PACKETS     (58)  ✅ existe
- 16  Fwd IAT Min                    FWD_IAT_MIN             (46)
- 17  Packet Length Mean             PACKET_LEN_MEAN         (14)
- 18  Total Length of Bwd Packets    BWD_LEN_TOT             (39)  ← NO DBYTES
- 19  Bwd Packet Length Mean         DMEAN                   (7)
- 20  Bwd Packet Length Min          BWD_LEN_MIN             (37)
- 21  Flow Duration                  DURATION                (0)
- 22  Flow Packets/s                 FLOW_PKTS_PER_SEC       (75)
-```
-
-**AMBIGÜEDADES RESUELTAS (DAY 217), no reabrir:**
-- **idx 9 → `FWD_LEN_TOT`, no `SBYTES`.** `extract_fwd_len_tot()` =
-  `calculate_sum(flow.fwd_lengths)` (`feature_extractor.cpp:221`), y
-  `fwd_lengths[i] = pkt.packet_len` (`flow_manager.hpp:80`) = paquete completo. Es la
-  semántica de CIC-IDS2017.
-- **idx 18 → `BWD_LEN_TOT`, no `DBYTES`.** Idem (`:233`).
+- **`ctest` desde el HOST macOS falla SIEMPRE** — `CTestTestfile.cmake` apunta a
+  `/vagrant/...`. Correr **dentro de la VM**: `vagrant ssh -c 'cd /vagrant/... && ctest'`.
+  Un bucle mal puesto dio **40 fallos falsos**.
+- **`SNIFFER_BUILD_DIR = /vagrant/sniffer/build-$(PROFILE)` = `build-debug`.**
+  **NO `sniffer/build/`** — es un directorio huérfano. Mirar el equivocado casi produce
+  un **P0 falso**.
+- **`SimpleEvent` es `__attribute__((packed))`**: `std::swap(pkt.src_ip, pkt.dst_ip)`
+  NO compila (*"cannot bind packed field"*). Copiar por valor.
+- **Una coma que falta en un enum produce 200 líneas de error**, ninguna de las cuales
+  menciona la coma. **LEER EL PRIMER ERROR, NO EL ÚLTIMO.**
+- **`grep -rn '\.bind('` NO ve `->bind()`.** Los `unique_ptr` llaman con flecha.
+- **`grep ... 2>/dev/null` se traga *"No such file or directory"***. Un grep sobre un
+  directorio inexistente devuelve una salida **limpia y engañosa**.
 
 ---
 
-## 📋 PLAN DE REPARACIÓN — 5 pasos
+## 📐 EL PATRÓN — YA SON DIECISÉIS. Y TIENE NOMBRE.
+
+> **Un artefacto que afirma haber verificado algo, sin haberlo verificado.**
+
+1. `entropy` ransomware = varianza ÷ 100.000
+2. `level3_web`/`level3_internal` nunca parseados (DAY 215)
+3. 5/23 features de L1 rotas (DAY 216)
+4. `test_l1_feature_contract.cpp` commiteado VACÍO (DAY 217)
+5. El `max()` que no puede suprimir FP — claim del abstract (DAY 217)
+6. `test_autonomy_publisher`: `sleep` en vez de handshake (DAY 218)
+7. `contract_validator.cpp` en `.backup` — el testigo amordazado
+8. 5 `add_executable` sin `add_test`
+9. `Makefile:1197` — `|| echo` traga el exit code
+10. `PayloadAnalyzer`: 4/4 tests de patrones devuelven `false`
+11. Variante B: 8 tests sobre el camino que no calcula features
+12. 2/10 features del DDoS son constantes
+13. `set_final_decision()` — ADR-007 sin sitio donde vivir
+14. Comentario que afirma que un campo no existe, y existe
+15. **Seis greps ciegos, cada uno con salida limpia** (Claude, DAY 218)
+16. **`PureAcksGiveZero` pasó EN FALSO** — verde por vector vacío, en el test escrito
+    para cazar verdes falsos (DAY 218)
+
+**NO ES UN PATRÓN DE BUGS. ES UN PATRÓN DE FALSA EVIDENCIA.**
+Y por eso ninguno lo cazó el testing convencional: **el testing convencional TAMBIÉN es
+un artefacto que afirma haber verificado.**
+
+> **El método (Alonso, DAY 218):** *"Estamos arreglando los componentes de medición
+> científicos del proyecto. Uno a uno y con paciencia. Con método. Encontramos lo roto,
+> establecemos hipótesis de por qué está roto, se escribe el test, al principio sale
+> rojo, se arregla, debe salir verde. Uno a uno."*
+>
+> **El RED obligatorio es la ÚNICA forma de demostrar que el instrumento está conectado.**
+> **Un test que nunca has visto fallar no es un test: es una hipótesis sobre un test.**
+
+---
+
+## 📋 PLAN DE REPARACIÓN — 5 PASOS (estado)
 
 1. ✅ **HECHO (`5b494d90`)** — contrato L1 + test de propiedad + targets `common-*`.
-2. 🔜 **`ACT_DATA_PKT_FWD` en el sniffer.**
-3. **El sniffer RELLENA `general_attack_features`** recorriendo el mapa.
+2. 🔴 **EN CURSO — RED capturado.** `ACT_DATA_PKT_FWD` en el enum (índice 83,
+   `FEATURE_COUNT` 83→84) ✅. Extractor ✅. Test ✅. **FALTA: la ruta de población
+   del `ShardedFlowManager`.**
+3. **El sniffer RELLENA `general_attack_features` (campo 102)** recorriendo el mapa
+   de 23 features.
 4. **El ml-detector LEE el campo 102.** `extract_level1_features` → **borrar la
-   reconstrucción entera**. Ya no reconstruye: lee.
+   reconstrucción entera.** Ya no reconstruye: lee.
 5. **El injector RELLENA el campo 102** (`tools/synthetic_sniffer_injector.cpp`).
    ⚠️ **SIN ESTO SEGUIREMOS MIDIENDO UN PIPELINE CIEGO Y CREYENDO QUE LO ARREGLAMOS.**
 
@@ -279,37 +273,43 @@ Vive en `common/include/argus/l1_feature_contract.hpp` (commit `5b494d90`).
 
 ---
 
-## 🩸 DEUDAS
+## 🗺️ EL MAPA — 23 features L1 → enum del sniffer (VERIFICADO)
 
-### `DEBT-TEST-AUTONOMY-PUBLISHER-FLAKY-001` — ⚠️ TASA MEDIDA: 1/20 (~5%)
-`common/tests/test_autonomy_publisher.cpp:86` (`recv_two`, 3er caso).
-**20 iteraciones de `ctest` secuencial → `.................X..`** — **REPRODUCIDO.**
-`ctest -j8`: 14/14 (paralelo NO lo empeora ⟹ no es carga, es timing absoluto).
-Aislado (`-R`): 3/3.
-El socket `/tmp/test-autonomy-publisher.sock` **PERSISTE entre runs** y el test no lo limpia.
-Sospecha: slow joiner ZMQ (PUB `bind()` → SUB `connect()` sin sincronización).
-Regla del proyecto: `bind()` antes de `connect()`.
+Vive en `common/include/argus/l1_feature_contract.hpp` (`5b494d90`).
 
-> **Con `common/` en el gate, EMECAS fallaría ~1 de cada 20 runs.** Vivo desde el 27-may.
-> Sobrevivió porque `common/` **no tenía target propio** y su `ctest` estaba escondido
-> dentro de `test-alert-client`. **La deuda del Makefile y la del flaky se protegían
-> mutuamente.**
+```
+ L1  contrato                       FeatureIndex del sniffer
+  0  Packet Length Std              PACKET_LEN_STD          (15)
+  1  Subflow Fwd Bytes              SUBFLOW_FWD_BYTES       (59)  ✅
+  2  Fwd Packet Length Max          FWD_LEN_MAX             (33)
+  3  Avg Fwd Segment Size           AVG_FWD_SEGMENT_SIZE    (79)
+  4  ACK Flag Count                 ACK_FLAG_COUNT          (21)
+  5  Packet Length Variance         PACKET_LEN_VAR          (16)
+  6  PSH Flag Count                 PSH_FLAG_COUNT          (20)
+  7  Bwd Packet Length Max          BWD_LEN_MAX             (36)
+  8  act_data_pkt_fwd               ACT_DATA_PKT_FWD        (83)  ← DAY 218 ✅
+  9  Total Length of Fwd Packets    FWD_LEN_TOT             (35)  ← NO SBYTES
+ 10  Fwd Packet Length Std          FWD_LEN_STD             (57)
+ 11  Fwd Packets/s                  SRATE                   (25)
+ 12  Subflow Bwd Bytes              SUBFLOW_BWD_BYTES       (61)  ✅
+ 13  Destination Port               🟡 de la 5-tupla, no del enum
+ 14  Init_Win_bytes_forward         INIT_FWD_WIN_BYTES      (68)  ✅
+ 15  Subflow Fwd Packets            SUBFLOW_FWD_PACKETS     (58)  ✅
+ 16  Fwd IAT Min                    FWD_IAT_MIN             (46)
+ 17  Packet Length Mean             PACKET_LEN_MEAN         (14)
+ 18  Total Length of Bwd Packets    BWD_LEN_TOT             (39)  ← NO DBYTES
+ 19  Bwd Packet Length Mean         DMEAN                   (7)
+ 20  Bwd Packet Length Min          BWD_LEN_MIN             (37)
+ 21  Flow Duration                  DURATION                (0)
+ 22  Flow Packets/s                 FLOW_PKTS_PER_SEC       (75)
+```
 
-> ACTUALIZACION
-> test_autonomy_publisher.cpp:86 (recv_two, 3er caso).
-> Tasa medida: 1/20 (~5%) en ctest secuencial. ctest -j8: 14/14. Aislado (-R): 3/3.
-> El socket /tmp/test-autonomy-publisher.sock persiste entre runs y el test no lo limpia.
-> Sospecha: slow joiner ZMQ (PUB bind() → SUB connect() sin sincronización).
-> Con common/ en el gate, EMECAS fallaría ~1 de cada 20 runs.
->
-> 
-### `DEBT-MAKEFILE-COMMON-NO-TARGET-001` (mitigado, no cerrado)
-`common/` se compilaba como efecto secundario de `test-dual-compilation`,
-`test-e2e-vault` y `vault-client-test`; su `ctest` vivía en `test-alert-client` (`:1175`).
-Mitigado con `common-build`/`common-test`. **Sigue sin estar en el gate por derecho propio.**
+**Las 5 features rotas: `[1]`, `[8]`, `[12]`, `[14]`, `[15]`** — coinciden EXACTAMENTE
+con las 5 que el protobuf no transporta como escalar. **No fue descuido: fue un apaño
+ante un contrato incompleto.**
 
-### `DEBT-STATS-E2E-COUNTERS-001` (menor)
-`check_e2e_pipeline.py` reporta `received 0 → 0` con 100 eventos procesados de verdad.
+**AMBIGÜEDADES RESUELTAS (DAY 217), no reabrir:** idx 9 → `FWD_LEN_TOT` (no `SBYTES`);
+idx 18 → `BWD_LEN_TOT` (no `DBYTES`).
 
 ---
 
@@ -336,71 +336,61 @@ vagrant ssh -c 'tmux kill-session -t ml-detector'   # MÁTALO al acabar
                    ruido          ataque
 l1_class1      =      0               0     ← L1 NUNCA dice ATTACK
 traffic_class1 =    100             100     ← constante, prob 0.96 ± 0.005
-internal_class1=     69               0     ← INVERTIDA: dispara en ruido, calla en ataque
+internal_class1=     69               0     ← INVERTIDA
 ```
 **Tras el paso 5, `l1_class1` DEBE subir con `--attack`.** Criterio de éxito, escrito
 ANTES de medir.
 
 ---
 
-## 🩸 TRAMPAS QUE COSTARON TIEMPO (no repetirlas)
-
-- **`git add` y LUEGO editar** ⟹ se commitea la versión vieja. Pasó con
-  `test_l1_feature_contract.cpp`: **`9b58fd6e` commiteó el fichero VACÍO** (blob
-  `e69de29b` = fichero vacío en git). El commit afirmaba tener una red y no la tenía.
-  ⟹ **REGLA NUEVA: tras commitear un fichero nuevo, `git show HEAD:<fichero> | wc -l`.**
-- **`grep --include='*.json'` SIN comillas simples** ⟹ zsh aborta el comando ENTERO.
-- **`#` NO es comentario para git.** `git stash pop  # nota` → *"Too many revisions"*.
-- **`fprintf` en el `while` sin `last_stats_report_ = now`** ⟹ **128 MB de log.**
-- **`-Werror=format=`**: un `fprintf` por clase de formato. No mezclar `%llu` y `%.2f`.
-- **El detector NO es systemd**: vive en tmux (Makefile `:661-662`). `journalctl` sale
-  vacío SIN error. stderr → `/vagrant/logs/lab/ml-detector.log`.
-- **Binario en `build-debug/`, no en `build/`.**
-- **`Error 124` = `timeout(1)`** (`test-e2e-synthetic-full:1340`).
-- **CMake hay que reconfigurar** para ver un test nuevo. Ante la duda: `rm -rf common/build`.
-- **`ctest` NO muestra stdout de los tests que pasan.** "Passed" = `exit=0`, nada más.
-  Para ver que el test hace lo que dice: `ctest -R <nombre> -V`.
-- **Localizar por CONTENIDO, no por número de línea.** Los parches desplazan todo.
-
----
-
 ## 🎯 DECISIONES QUE SOBREVIVEN
 
-- **Commit 2 (noisy-OR) APARCADO**, no cancelado. **Y ojo: el noisy-OR NO suprime FP**
-  (es monótono creciente, como el `max`). Resuelve OTRO problema: agregar N cabezas de
-  sospecha en L3. **La supresión de FP necesita ADR-007 (AND/veto).**
-- **Traffic = GUARD, no término del producto** (opción (a), Alonso DAY 216).
-- **`ddos`/`ransomware` a `reliability = 0.0`.** Factor neutro. Reconectar = un peso.
+- **Commit 2 (noisy-OR) APARCADO**, no cancelado. **El noisy-OR NO suprime FP**
+  (monótono creciente, como el `max`). Resuelve OTRO problema: agregar N cabezas en L3.
+  **La supresión de FP necesita ADR-007 (AND/veto)** — y ADR-007 necesita antes
+  `DEBT-VERDICT-DECIDED-UPSTREAM-001`.
+- **Traffic = GUARD, no término del producto** (opción (a), DAY 216).
+- **`ddos`/`ransomware` a `reliability = 0.0`.** ✅ **VALIDADO HOY** — `ddos` tiene
+  2/10 features constantes; `ransomware` está ciego por DOS causas.
 - **`l3_combined_seal` con clave propia** en config.
 - **La P gobierna la FUERZA de la evidencia, NUNCA la ETIQUETA.**
 - **MITRE es imprescindible y va DESPUÉS del extractor.**
 - **DEBT-VERDICT-WEIGHTS-CALIBRATION-001 sigue INDECIDIBLE** hasta que las cabezas vean.
+- **Un commit, un cambio, una razón.**
+- **Tras commitear un fichero nuevo: `git show HEAD:<fichero> | wc -l`.**
+  **Verificar el artefacto, no la intención.**
 
 ---
 
-## 📐 EL PATRÓN — cinco casos, y va al §6 del paper
+## ▶️ DAY 219 — POR DÓNDE EMPEZAR
 
-*El pipeline funcionando, produciendo números, sin significado.*
+```zsh
+git log --oneline -5 && git status --short
+# ⚠️ zmq_handler.hpp/.cpp DEBEN seguir modificados-sin-stagear. NO los commitees.
 
-1. `entropy` del ransomware = varianza de longitud ÷ 100.000 (DEBT-RANSOMWARE-ML-HEAD-INERT-001).
-2. `level3_web`/`level3_internal` nunca parseados del JSON (DAY 215, `8e03a264`).
-3. 5/23 features de L1 duplicadas o constantes (DAY 216).
-4. **`test_l1_feature_contract.cpp` commiteado VACÍO** (DAY 217) — un commit que afirmaba
-   tener una red y no la tenía. **Lo produjimos NOSOTROS, con toda la atención puesta,
-   sabiendo lo que cazábamos.**
-5. **El `max()` que no puede suprimir FP** (DAY 217) — una claim del abstract que la
-   aritmética del propio paper prohíbe.
+# 1. El RED de ayer, para verlo con tus ojos
+vagrant ssh -c 'cd /vagrant/sniffer/build-debug && ctest -R test_feature_extractor --output-on-failure'
 
-**Cinco instancias ⟹ no es mala suerte, es una CLASE de defecto.** Ninguna la cazó el
-testing convencional (13 tests verdes, EMECAS+++ verde, libFuzzer 2.4M runs). Todas se
-cazaron **midiendo el verde en vez de celebrarlo**.
+# 2. EL COMANDO QUE DESBLOQUEA EL PASO 2
+grep -n 'fwd_lengths\|add_packet\|payload' sniffer/src/flow/sharded_flow_manager.cpp
+```
 
-**Y el caso 4 es el más elocuente:** no basta con ser cuidadoso. Hace falta **verificar el
-artefacto, no la intención.**
+**Decidir: ¿`ShardedFlowManager` delega en `FlowStatistics::add_packet` (unificar), o se
+duplica el `push_back` (rápido, y garantiza que volverán a divergir)?**
+
+**Recomendación: unificar.** La duplicación de la lógica de población **ES la causa raíz
+de esta clase de defecto.** Pero mirar el código antes de decidir.
+
+Luego: aislar el singleton entre tests, verde, commit. **Y entonces PASOS 3, 4 y 5.**
 
 ---
 
 ## FEDER
-Go/no-go **~1 agosto 2026**. Deadline **22 septiembre 2026**.
-*"No pienso entregar nada que no esté bien fundamentado. El pipeline tiene que
-funcionar bien."* — Alonso, DAY 216.
+
+Go/no-go **~1 agosto 2026** — **19 días.** Deadline **22 septiembre 2026**.
+
+> *"No pienso entregar nada que no esté bien fundamentado. El pipeline tiene que
+> funcionar bien."* — Alonso, DAY 216.
+
+**Las 7 deudas de `DAY218_FINDINGS.md` son PRE-FEDER.** Ninguna es cosmética. Todas
+afectan a la capacidad del proyecto de **medir lo que dice que mide.**
