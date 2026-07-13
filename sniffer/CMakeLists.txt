@@ -1002,3 +1002,23 @@ target_link_libraries(test_community_id_log
 )
 add_test(NAME test_community_id_log COMMAND test_community_id_log)
 message(STATUS "🧪 Unit Test: test_community_id_log configured (DAY 171 - cid emission log)")
+
+# ============================================================================
+# DAY 218 — DEBT-SNIFFER-TESTS-NOT-REGISTERED-001
+# ----------------------------------------------------------------------------
+# Cinco tests tenian add_executable() pero NO add_test(): se compilaban y
+# NUNCA se ejecutaban. ctest -N mostraba 11 de 21 ficheros de test.
+# Entre los no registrados: test_ring_consumer_protobuf y
+# test_proto3_embedded_serialization — los dos unicos que cubren el camino
+# SimpleEvent -> features -> protobuf, justo el que DAY 216 encontro roto.
+#
+# Se registran TODOS, incluso si salen en rojo. Un rojo documentado es un
+# activo; un rojo escondido es la deuda.
+# ============================================================================
+add_test(NAME test_payload_analyzer             COMMAND test_payload_analyzer)
+add_test(NAME test_sharded_flow_full_contract   COMMAND test_sharded_flow_full_contract)
+add_test(NAME test_ring_consumer_protobuf       COMMAND test_ring_consumer_protobuf)
+add_test(NAME test_proto3_embedded_serialization COMMAND test_proto3_embedded_serialization)
+add_test(NAME test_sharded_flow_multithread     COMMAND test_sharded_flow_multithread)
+
+message(STATUS "🧪 DAY 218: 5 tests huerfanos registrados en ctest (11 -> 16)")
