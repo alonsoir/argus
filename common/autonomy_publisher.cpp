@@ -3,8 +3,10 @@
 // ============================================================================
 #include "autonomy_publisher.h"
 #include <chrono>
+// #include <cstring> incluir en el siguiente commit!
 #include <iostream>
 #include <sstream>
+
 
 namespace ml_defender::common {
 
