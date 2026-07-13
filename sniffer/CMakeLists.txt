@@ -1022,3 +1022,27 @@ add_test(NAME test_proto3_embedded_serialization COMMAND test_proto3_embedded_se
 add_test(NAME test_sharded_flow_multithread     COMMAND test_sharded_flow_multithread)
 
 message(STATUS "🧪 DAY 218: 5 tests huerfanos registrados en ctest (11 -> 16)")
+
+# ============================================================================
+# DAY 218 — LA PRIMERA SUITE DEL FeatureExtractor
+# El componente de 83 features NUNCA tuvo test. Nace aqui.
+# ============================================================================
+add_executable(test_feature_extractor
+        tests/test_feature_extractor.cpp
+        src/flow/sharded_flow_manager.cpp
+        src/userspace/flow_manager.cpp
+        src/userspace/feature_extractor.cpp
+        src/userspace/time_window_manager.cpp
+        src/userspace/time_window_aggregator.cpp
+        src/userspace/dns_analyzer.cpp
+        src/userspace/ip_whitelist.cpp
+        src/userspace/flow_tracker.cpp
+)
+target_include_directories(test_feature_extractor PRIVATE
+        ${CMAKE_SOURCE_DIR}/include
+)
+target_link_libraries(test_feature_extractor PRIVATE
+        gtest gtest_main Threads::Threads
+)
+add_test(NAME test_feature_extractor COMMAND test_feature_extractor)
+message(STATUS "🧪 DAY 218: test_feature_extractor configured (la primera suite del extractor)")

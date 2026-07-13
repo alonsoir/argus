@@ -10,7 +10,7 @@ namespace sniffer {
 class FeatureExtractor {
 public:
     // Phase 4: 78 -> 83 features (100% COMPLETE!)
-    static constexpr size_t FEATURE_COUNT = 83;
+    static constexpr size_t FEATURE_COUNT = 84; // DAY 218: 83 -> 84
 
     // Feature indices for the array
     enum FeatureIndex {
@@ -112,8 +112,11 @@ public:
         AVG_FWD_SEGMENT_SIZE,            // 79
         AVG_BWD_SEGMENT_SIZE,            // 80
         FWD_AVG_PACKETS_BULK,            // 81
-        BWD_AVG_PACKETS_BULK             // 82
-    };
+        BWD_AVG_PACKETS_BULK,            // 82
+        // === DAY 218: act_data_pkt_fwd (L1 [8]) ===
+        // El enum es posicional.
+        ACT_DATA_PKT_FWD = 83
+        };
 
     FeatureExtractor() = default;
 
@@ -122,6 +125,9 @@ public:
 
     // Get feature name by index
     static const char* get_feature_name(size_t index);
+    // === DAY 218
+    double extract_act_data_pkt_fwd(const FlowStatistics& flow) const;
+
 
 private:
     // === ORIGINAL EXTRACTORS ===

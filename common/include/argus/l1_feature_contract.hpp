@@ -89,7 +89,7 @@ enum Index : std::size_t {
 
 // =====================================================================
 // MAPA AL ENUM DEL SNIFFER (sniffer/include/feature_extractor.hpp)
-// Verificado índice a índice contra el enum de 83, DAY 216.
+// Verificado índice a índice contra el enum de 84, DAY 218.
 //
 //   L1 idx  contrato                      FeatureIndex del sniffer
 //   ------  ----------------------------  ---------------------------------

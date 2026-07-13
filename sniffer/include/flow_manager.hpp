@@ -29,6 +29,7 @@ struct FlowStatistics {
 
     // ============ PACKET LENGTHS ============
     std::vector<uint32_t> fwd_lengths;  // For smean calculation
+    std::vector<uint16_t> fwd_payload_lengths;  // DAY 218 — act_data_pkt_fwd (L1 [8])
     std::vector<uint32_t> bwd_lengths;  // For dmean calculation
     std::vector<uint32_t> all_lengths;  // For packet_len_mean/std/var
 
@@ -94,6 +95,7 @@ struct FlowStatistics {
             spkts++;
             sbytes += pkt.packet_len;
             fwd_lengths.push_back(pkt.packet_len);
+            fwd_payload_lengths.push_back(pkt.payload_len);   // DAY 218
 
             uint16_t total_header = pkt.ip_header_len + pkt.l4_header_len;
             fwd_header_lengths.push_back(total_header);

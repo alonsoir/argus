@@ -106,6 +106,8 @@ FeatureExtractor::extract_features(const FlowStatistics& flow) const {
     features[AVG_BWD_SEGMENT_SIZE] = extract_avg_bwd_segment_size(flow);
     features[FWD_AVG_PACKETS_BULK] = extract_fwd_avg_packets_bulk(flow);
     features[BWD_AVG_PACKETS_BULK] = extract_bwd_avg_packets_bulk(flow);
+    // === DAY 218
+    features[ACT_DATA_PKT_FWD] = extract_act_data_pkt_fwd(flow);
 
     return features;
 }
@@ -667,4 +669,16 @@ const char* FeatureExtractor::get_feature_name(size_t index) {
     return names[index];
 }
 
+double FeatureExtractor::extract_act_data_pkt_fwd(const FlowStatistics& flow) const {
+    // CICFlowMeter: paquetes forward con >= 1 byte de payload.
+    // payload_len lo calcula el kernel con los offsets reales
+    // (sniffer.bpf.c:320-338). NO reconstruir desde packet_len:
+    // packet_len INCLUYE Ethernet y total_header NO. Ver test
+    // PureAcksGiveZero_KillsTheEthernetTrap.
+    std::size_t count = 0;
+    for (const uint16_t plen : flow.fwd_payload_lengths) {
+        if (plen > 0) ++count;
+    }
+    return static_cast<double>(count);
+}
 } // namespace sniffer
