@@ -1046,3 +1046,23 @@ target_link_libraries(test_feature_extractor PRIVATE
 )
 add_test(NAME test_feature_extractor COMMAND test_feature_extractor)
 message(STATUS "🧪 DAY 218: test_feature_extractor configured (la primera suite del extractor)")
+
+add_executable(test_flow_stats_clone_contract
+        tests/test_flow_stats_clone_contract.cpp
+        src/flow/sharded_flow_manager.cpp
+        src/userspace/flow_manager.cpp
+        src/userspace/feature_extractor.cpp
+        src/userspace/time_window_manager.cpp
+        src/userspace/time_window_aggregator.cpp
+        src/userspace/dns_analyzer.cpp
+        src/userspace/ip_whitelist.cpp
+        src/userspace/flow_tracker.cpp
+)
+target_include_directories(test_flow_stats_clone_contract PRIVATE
+        ${CMAKE_SOURCE_DIR}/include
+)
+target_link_libraries(test_flow_stats_clone_contract PRIVATE
+        gtest gtest_main Threads::Threads
+)
+add_test(NAME test_flow_stats_clone_contract COMMAND test_flow_stats_clone_contract)
+message(STATUS "🧪 DAY 219: test_flow_stats_clone_contract configured (DEBT-FLOWSTATS-COPY-AMPUTATED-001)")
