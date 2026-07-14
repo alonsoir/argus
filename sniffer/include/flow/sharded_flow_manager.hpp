@@ -50,6 +50,14 @@ public:
         }
     }
     
+    // DAY 219 — HALLAZGO 2 (DAY 218): el singleton NO podia vaciarse.
+    // initialize() usa std::call_once => la 2a llamada es un NO-OP MUDO:
+    // ni reconstruye shards, ni limpia flujos, ni aplica la Config nueva
+    // (la del PRIMER initialize() gana, en silencio).
+    // Resultado: los tests de un mismo binario COMPARTEN flujos. 3+4+3=10.
+    // Un FlowManager que no puede volver a un estado conocido no es medible.
+    void clear();
+
     size_t cleanup_expired_flows(uint64_t current_ns);
     void print_stats() const;
 

@@ -325,63 +325,51 @@ double FeatureExtractor::extract_fwd_len_std(const FlowStatistics& flow) const {
 // ============================================================================
 
 double FeatureExtractor::extract_subflow_fwd_packets(const FlowStatistics& flow) const {
-    if (!flow.time_windows) return 0.0;
-    return flow.time_windows->get_subflow_fwd_packets_mean();
+    return flow.time_windows.get_subflow_fwd_packets_mean();
 }
 
 double FeatureExtractor::extract_subflow_fwd_bytes(const FlowStatistics& flow) const {
-    if (!flow.time_windows) return 0.0;
-    return flow.time_windows->get_subflow_fwd_bytes_mean();
+    return flow.time_windows.get_subflow_fwd_bytes_mean();
 }
 
 double FeatureExtractor::extract_subflow_bwd_packets(const FlowStatistics& flow) const {
-    if (!flow.time_windows) return 0.0;
-    return flow.time_windows->get_subflow_bwd_packets_mean();
+    return flow.time_windows.get_subflow_bwd_packets_mean();
 }
 
 double FeatureExtractor::extract_subflow_bwd_bytes(const FlowStatistics& flow) const {
-    if (!flow.time_windows) return 0.0;
-    return flow.time_windows->get_subflow_bwd_bytes_mean();
+    return flow.time_windows.get_subflow_bwd_bytes_mean();
 }
 
 double FeatureExtractor::extract_fwd_bulk_rate_avg(const FlowStatistics& flow) const {
-    if (!flow.time_windows) return 0.0;
-    return flow.time_windows->get_fwd_bulk_rate_avg();
+    return flow.time_windows.get_fwd_bulk_rate_avg();
 }
 
 double FeatureExtractor::extract_fwd_bulk_size_avg(const FlowStatistics& flow) const {
-    if (!flow.time_windows) return 0.0;
-    return flow.time_windows->get_fwd_bulk_size_avg();
+    return flow.time_windows.get_fwd_bulk_size_avg();
 }
 
 double FeatureExtractor::extract_fwd_bulk_duration_avg(const FlowStatistics& flow) const {
-    if (!flow.time_windows) return 0.0;
-    return flow.time_windows->get_fwd_bulk_duration_avg();
+    return flow.time_windows.get_fwd_bulk_duration_avg();
 }
 
 double FeatureExtractor::extract_bwd_bulk_rate_avg(const FlowStatistics& flow) const {
-    if (!flow.time_windows) return 0.0;
-    return flow.time_windows->get_bwd_bulk_rate_avg();
+    return flow.time_windows.get_bwd_bulk_rate_avg();
 }
 
 double FeatureExtractor::extract_bwd_bulk_size_avg(const FlowStatistics& flow) const {
-    if (!flow.time_windows) return 0.0;
-    return flow.time_windows->get_bwd_bulk_size_avg();
+    return flow.time_windows.get_bwd_bulk_size_avg();
 }
 
 double FeatureExtractor::extract_bwd_bulk_duration_avg(const FlowStatistics& flow) const {
-    if (!flow.time_windows) return 0.0;
-    return flow.time_windows->get_bwd_bulk_duration_avg();
+    return flow.time_windows.get_bwd_bulk_duration_avg();
 }
 
 double FeatureExtractor::extract_init_fwd_win_bytes(const FlowStatistics& flow) const {
-    if (!flow.time_windows) return 0.0;
-    return static_cast<double>(flow.time_windows->get_init_fwd_win_bytes());
+    return static_cast<double>(flow.time_windows.get_init_fwd_win_bytes());
 }
 
 double FeatureExtractor::extract_init_bwd_win_bytes(const FlowStatistics& flow) const {
-    if (!flow.time_windows) return 0.0;
-    return static_cast<double>(flow.time_windows->get_init_bwd_win_bytes());
+    return static_cast<double>(flow.time_windows.get_init_bwd_win_bytes());
 }
 
 double FeatureExtractor::extract_bwd_len_std(const FlowStatistics& flow) const {
@@ -447,13 +435,11 @@ double FeatureExtractor::extract_avg_bwd_segment_size(const FlowStatistics& flow
 }
 
 double FeatureExtractor::extract_fwd_avg_packets_bulk(const FlowStatistics& flow) const {
-    if (!flow.time_windows) return 0.0;
-    return flow.time_windows->get_fwd_bulk_packets_avg();
+    return flow.time_windows.get_fwd_bulk_packets_avg();
 }
 
 double FeatureExtractor::extract_bwd_avg_packets_bulk(const FlowStatistics& flow) const {
-    if (!flow.time_windows) return 0.0;
-    return flow.time_windows->get_bwd_bulk_packets_avg();
+    return flow.time_windows.get_bwd_bulk_packets_avg();
 }
 
 // ============================================================================

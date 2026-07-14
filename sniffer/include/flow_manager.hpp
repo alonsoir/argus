@@ -59,18 +59,22 @@ struct FlowStatistics {
     std::vector<uint16_t> bwd_header_lengths;
 
     // ============ FASE 3: TIME WINDOW MANAGER ============
-    std::unique_ptr<TimeWindowManager> time_windows;
+    // DAY 219 — DEBT-FLOWSTATS-COPY-AMPUTATED-001: POR VALOR.
+    // El unique_ptr era la UNICA razon por la que FlowStatistics no era
+    // copiable, y por tanto la causa de la lista a mano de 26 campos en
+    // get_flow_stats_copy(). TimeWindowManager es copiable por defecto.
+    TimeWindowManager time_windows;
 
     // ============ METHODS ============
 
-    // Constructor
-    FlowStatistics() {
-        time_windows = std::make_unique<TimeWindowManager>();
-    }
+    FlowStatistics() = default;
 
-    // Move constructor
-    FlowStatistics(FlowStatistics&& other) noexcept = default;
-    FlowStatistics& operator=(FlowStatistics&& other) noexcept = default;
+    // ⚠️ Declarar el MOVE suprime el COPY implicito. Por eso FlowStatistics
+    // no era copiable NI AUN quitando el unique_ptr. Los cuatro, EXPLICITOS.
+    FlowStatistics(const FlowStatistics&)            = default;
+    FlowStatistics& operator=(const FlowStatistics&) = default;
+    FlowStatistics(FlowStatistics&&) noexcept            = default;
+    FlowStatistics& operator=(FlowStatistics&&) noexcept = default;
 
     // Determines if packet is forward direction
     bool is_forward(const SimpleEvent& pkt, const FlowKey& flow_key) const {
@@ -126,8 +130,8 @@ struct FlowStatistics {
         packet_timestamps.push_back(pkt.timestamp);
 
         // ⭐ FASE 3: Update time windows
-        if (time_windows) {
-            time_windows->add_packet(pkt.timestamp, pkt.packet_len, is_fwd);
+        {
+            time_windows.add_packet(pkt.timestamp, pkt.packet_len, is_fwd);
         }
 
         // TCP flags totals

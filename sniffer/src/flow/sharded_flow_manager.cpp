@@ -1,6 +1,14 @@
 // Day 44 - FIX #3: Thread-safe API implementation
 
-#include "flow/sharded_flow_manager_fix3.hpp"
+// DAY 219: incluia sharded_flow_manager_fix3.hpp — un header IDENTICO al
+// canonico (diff vacio), pero DISTINTO fichero. TODO el resto del proyecto
+// (ring_consumer.hpp/.cpp, los 6 tests) incluye sharded_flow_manager.hpp.
+// Dos #pragma once, dos ficheros, UNA clase => violacion de la ODR latente.
+// Sobrevivio 175 dias porque eran byte a byte iguales. El dia que divergen
+// (hoy, con clear()) el compilador lo caza. Si hubiera divergido en un CAMPO,
+// no habria error: habria corrupcion de memoria silenciosa.
+// DEBT-SOURCE-TREE-BACKUP-FILES-001 — el arbol miente al grep. P1.
+#include "flow/sharded_flow_manager.hpp"
 #include <iostream>
 #include <chrono>
 
@@ -31,6 +39,17 @@ void ShardedFlowManager::initialize(const Config& config) {
         std::cout << "  Flow timeout: " << config_.flow_timeout_ns / 1'000'000'000 << " seconds" << std::endl;
         std::cout << "  Total capacity: " << config_.shard_count * config_.max_flows_per_shard << " flows" << std::endl;
     });
+}
+
+void ShardedFlowManager::clear() {
+    if (!initialized_.load(std::memory_order_acquire)) {
+        return;
+    }
+    for (auto& shard_ptr : shards_) {
+        std::unique_lock lock(*shard_ptr->mutex);
+        shard_ptr->flows->clear();
+        shard_ptr->lru_queue->clear();
+    }
 }
 
 size_t ShardedFlowManager::get_shard_id(const FlowKey& key) const {
@@ -105,46 +124,10 @@ std::optional<FlowStatistics> ShardedFlowManager::get_flow_stats_copy(const Flow
 
     auto it = shard.flows->find(key);
     if (it != shard.flows->end()) {
-        // Create copy manually (FlowStatistics has unique_ptr members)
-        FlowStatistics copy;
-        
-        // Copy primitive fields
-        copy.flow_start_ns = it->second.stats.flow_start_ns;
-        copy.flow_last_seen_ns = it->second.stats.flow_last_seen_ns;
-        copy.spkts = it->second.stats.spkts;
-        copy.dpkts = it->second.stats.dpkts;
-        copy.sbytes = it->second.stats.sbytes;
-        copy.dbytes = it->second.stats.dbytes;
-        
-        // Copy vectors
-        copy.fwd_lengths = it->second.stats.fwd_lengths;
-        copy.bwd_lengths = it->second.stats.bwd_lengths;
-        copy.all_lengths = it->second.stats.all_lengths;
-        copy.packet_timestamps = it->second.stats.packet_timestamps;
-        copy.fwd_timestamps = it->second.stats.fwd_timestamps;
-        copy.bwd_timestamps = it->second.stats.bwd_timestamps;
-        
-        // Copy TCP flags
-        copy.fin_count = it->second.stats.fin_count;
-        copy.syn_count = it->second.stats.syn_count;
-        copy.rst_count = it->second.stats.rst_count;
-        copy.psh_count = it->second.stats.psh_count;
-        copy.ack_count = it->second.stats.ack_count;
-        copy.urg_count = it->second.stats.urg_count;
-        copy.ece_count = it->second.stats.ece_count;
-        copy.cwr_count = it->second.stats.cwr_count;
-        copy.fwd_psh_flags = it->second.stats.fwd_psh_flags;
-        copy.bwd_psh_flags = it->second.stats.bwd_psh_flags;
-        copy.fwd_urg_flags = it->second.stats.fwd_urg_flags;
-        copy.bwd_urg_flags = it->second.stats.bwd_urg_flags;
-        
-        // Copy header lengths
-        copy.fwd_header_lengths = it->second.stats.fwd_header_lengths;
-        copy.bwd_header_lengths = it->second.stats.bwd_header_lengths;
-        
-        // time_windows will be created by FlowStatistics() constructor
-        
-        return std::make_optional(std::move(copy));
+        // DAY 219 — DEBT-FLOWSTATS-COPY-AMPUTATED-001
+        // La lista a mano de 26 campos MURIO AQUI. Copiaba 26 de 28.
+        // Ahora copia el compilador: los 28, y los que vengan manana.
+        return std::make_optional(it->second.stats);
     }
     return std::nullopt;
 }

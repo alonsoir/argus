@@ -181,6 +181,10 @@ protected:
             .flow_timeout_ns     = 120'000'000'000ULL
         };
         ShardedFlowManager::instance().initialize(config);
+        // DAY 219 — HALLAZGO 2: initialize() es std::call_once. La 2a
+        // llamada NO limpia nada. Sin este clear(), los 3 tests de esta
+        // suite comparten FlowKey y flujo: 3+4+3 = 10 paquetes.
+        ShardedFlowManager::instance().clear();
     }
 
     FeatureExtractor extractor;

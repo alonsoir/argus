@@ -105,6 +105,7 @@ protected:
             .flow_timeout_ns     = 120'000'000'000ULL
         };
         ShardedFlowManager::instance().initialize(config);
+        ShardedFlowManager::instance().clear();   // DAY 219 — HALLAZGO 2
         // ⚠️ HALLAZGO 2 (DAY 218): initialize() NO limpia flujos. El singleton
         // acumula entre tests del MISMO binario. Este fichero tiene UN test.
         // Al anadir el segundo: hace falta clear()/reset() aqui.
@@ -143,18 +144,22 @@ TEST_F(FlowStatsCloneContract, CopyPreservesEveryField) {
            "=> L1[8] act_data_pkt_fwd = 0 SIEMPRE, en produccion.";
 
     // ── CAMPO 28 — time_windows ─────────────────────────────────────────────
-    // Esto es lo que ya hace test_sharded_flow_full_contract.cpp:219.
-    // PASA. Y NO PRUEBA NADA. El ctor crea un manager vacio.
-    ASSERT_NE(copy.time_windows, nullptr)
-        << "el puntero existe (lo crea el ctor) — esto NUNCA falla";
-
-    // La pregunta correcta es por el CONTENIDO:
-    EXPECT_GT(copy.time_windows->get_subflow_fwd_bytes_mean(), 0.0)
+    // DAY 219: aqui vivia
+    //     ASSERT_NE(copy.time_windows, nullptr);
+    // que es lo que hace test_sharded_flow_full_contract.cpp:219, y que PASABA
+    // siempre: el ctor hacia make_unique, el puntero nunca era nulo, y el objeto
+    // al que apuntaba estaba VACIO. Un verde que certificaba el campo perdido.
+    //
+    // Tras quitar el unique_ptr, esa linea YA NO COMPILA. El verde falso no esta
+    // arreglado: es INEXPRESABLE. El sistema de tipos lo prohibe.
+    //
+    // La unica pregunta legitima es por el CONTENIDO:
+    EXPECT_GT(copy.time_windows.get_subflow_fwd_bytes_mean(), 0.0)
         << "TimeWindowManager llega VACIO => L1[1] Subflow Fwd Bytes = 0";
-    EXPECT_GT(copy.time_windows->get_subflow_fwd_packets_mean(), 0.0)
+    EXPECT_GT(copy.time_windows.get_subflow_fwd_packets_mean(), 0.0)
         << "=> L1[15] Subflow Fwd Packets = 0";
-    EXPECT_GT(copy.time_windows->get_subflow_bwd_bytes_mean(), 0.0)
+    EXPECT_GT(copy.time_windows.get_subflow_bwd_bytes_mean(), 0.0)
         << "=> L1[12] Subflow Bwd Bytes = 0";
-    EXPECT_GT(copy.time_windows->get_init_fwd_win_bytes(), 0u)
+    EXPECT_GT(copy.time_windows.get_init_fwd_win_bytes(), 0u)
         << "init_fwd_bytes_ perdido => L1[14] Init_Win_bytes_forward = 0";
 }

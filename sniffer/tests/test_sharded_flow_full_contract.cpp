@@ -215,8 +215,13 @@ TEST_F(ShardedFlowFullContractTest, TimeWindowManagerWorks) {
     ASSERT_TRUE(stats_opt.has_value());
     const auto& stats = stats_opt.value();
 
-    // Validar que TimeWindowManager está inicializado
-    ASSERT_NE(stats.time_windows, nullptr) << "TimeWindowManager debe estar inicializado";
+    // DAY 219: aqui vivia ASSERT_NE(stats.time_windows, nullptr).
+    // PASABA SIEMPRE (el ctor hacia make_unique) sobre un objeto VACIO:
+    // get_flow_stats_copy() nunca copiaba time_windows. Certificaba como
+    // "inicializado" el campo que se acababa de perder.
+    // Tras quitar el unique_ptr YA NO COMPILA. Se pregunta por el CONTENIDO:
+    EXPECT_GT(stats.time_windows.get_subflow_fwd_packets_mean(), 0.0)
+        << "TimeWindowManager VACIO: 20 paquetes entraron y no ve ninguno";
 
     // Verificar que procesó paquetes
     EXPECT_GT(stats.get_total_packets(), 0) << "Time windows debe haber procesado paquetes";
@@ -284,7 +289,15 @@ TEST_F(ShardedFlowFullContractTest, NoFieldsLeftAtDefaultValues) {
     if (!stats.packet_timestamps.empty()) populated_fields++;
     if (!stats.fwd_timestamps.empty()) populated_fields++;
     if (!stats.fwd_header_lengths.empty()) populated_fields++;
-    if (stats.time_windows != nullptr) populated_fields++;
+    // DAY 219: era 'if (stats.time_windows != nullptr)' — SIEMPRE cierto.
+    // Contaba como POBLADO el campo que get_flow_stats_copy() perdia.
+    if (stats.time_windows.get_subflow_fwd_packets_mean() > 0.0) populated_fields++;
+    // ⚠️ DEBT-FULL-CONTRACT-POPULATION-THEATRE-001 (P1, pendiente):
+    //    total_fields += 7 pero solo se comprueban 6 vectores.
+    //    fwd_payload_lengths no se comprueba en absoluto.
+    //    dpkts, dbytes y 5 flags se cuentan como poblados SIN MIRARLOS.
+    //    Un test 'NoFieldsLeftAtDefaultValues' que declara poblados los
+    //    campos que estan en su valor por defecto. Rediseno, no parche.
 
     // TCP Flags (al menos algunos deben estar > 0)
     total_fields += 8;
