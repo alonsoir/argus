@@ -1,0 +1,50 @@
+{
+  "generated_by": "tools/eval/neris_ground_truth.py",
+  "binetflow": {
+    "path": "datasets/ctu13/capture20110810.binetflow",
+    "md5": "2896a104e25fc5f24ec14c41373f68d4"
+  },
+  "window": {
+    "start": "2011/08/10 09:01:40.475792",
+    "end": "2011/08/10 13:49:29.289628",
+    "source": "capinfos first/last packet time del pcap (md5 172c6b4eb9be9a14fb5703a83f747a6c)"
+  },
+  "criteria": "Label startswith 'flow=From-Botnet' AND StartTime en ventana AND proto in {tcp,udp}; unidad = community_id unico (dedupe declarado; el cid no lleva tiempo)",
+  "community_id": {
+    "impl": "communityid (PyPI, Corelight \u2014 referencia)",
+    "seed": 0,
+    "parity": "C++<->Zeek probada DAY 171/172; Zeek usa la implementacion de referencia"
+  },
+  "counts": {
+    "binetflow_rows_total": 2824636,
+    "from_botnet_all": 40961,
+    "from_botnet_in_pcap_window": 28441,
+    "from_botnet_window_tcp_udp": 28439,
+    "from_botnet_window_tcp_only": 6676,
+    "unique_directed_5tuples": 8935,
+    "unique_community_ids_tcp_udp": 8935,
+    "unique_community_ids_tcp_only": 6624,
+    "rows_unparsable_skipped": 0
+  },
+  "label_breakdown_top": {
+    "flow=From-Botnet-V42-UDP-DNS": 26140,
+    "flow=From-Botnet-V42-TCP-Attempt-SPAM": 8105,
+    "flow=From-Botnet-V42-UDP-Attempt-DNS": 3057,
+    "flow=From-Botnet-V42-TCP-Attempt": 1881,
+    "flow=From-Botnet-V42-TCP-Established-HTTP-Ad-63": 352,
+    "flow=From-Botnet-V42-TCP-Not-Encrypted-SMTP-Private-Proxy-1": 320,
+    "flow=From-Botnet-V42-TCP-CC16-HTTP-Not-Encrypted": 221,
+    "flow=From-Botnet-V42-TCP-WEB-Established": 93,
+    "flow=From-Botnet-V42-TCP-Established-SPAM": 62,
+    "flow=From-Botnet-V42-TCP-CC53-HTTP-Not-Encrypted": 53,
+    "flow=From-Botnet-V42-TCP-WEB-Established-SSL": 50,
+    "flow=From-Botnet-V42-TCP-Established": 43,
+    "flow=From-Botnet-V42-TCP-Established-HTTP-Ad-1": 38,
+    "flow=From-Botnet-V42-TCP-CC1-HTTP-Not-Encrypted": 37,
+    "flow=From-Botnet-V42-TCP-Established-HTTP-Ad-20": 32
+  },
+  "gt646_archaeology": {
+    "constant_location": "experiments/suricata-comparative/parse_results.py:14",
+    "criteria_matching_646": "NINGUNO \u2014 646 no reconstruible bajo estos criterios (DEBT-NERIS-GT646-UNPROVENANCED-001 sigue abierta)"
+  }
+}
