@@ -1,0 +1,79 @@
+{
+  "eval": "level1_model_csv",
+  "scope": "SANITY CHECK del modelo aislado sobre datos reales, mayormente IN-SAMPLE (split 80/20 sobre 8 d\u00edas, DAY220_FINDINGS). NO es holdout. NO es el pipeline.",
+  "generated_by": "tools/eval/eval_level1_model_csv.py",
+  "date_utc": "2026-07-16T06:35:20.584940+00:00",
+  "git_commit": "048d0e093c26bf00945e187f1fcfc74b11fa09eb",
+  "model": {
+    "path": "ml-detector/models/production/level1/level1_attack_detector.onnx",
+    "md5": "90fddb9408e95e309ea77a408e79c21f"
+  },
+  "metadata_oracle": {
+    "path": "ml-detector/models/production/level1/level1_attack_detector_metadata.json",
+    "md5": "d0fd0300cbe8373b1cf36f6e02e62cd4"
+  },
+  "threshold": {
+    "value": 0.65,
+    "config_path_in_json": "ml.thresholds.level1_attack",
+    "source_file": "ml-detector/config/ml_detector_config.json",
+    "config_md5": "cf71fe2bc059b226872b3d84d3557e7d"
+  },
+  "eval_csv": {
+    "path": "ml-training/datasets/CIC-IDS-2017/MachineLearningCVE/Wednesday-workingHours.pcap_ISCX.csv",
+    "md5": "bf0dd7e9d991987df4e13ea58a1b409c",
+    "rows_evaluated": 692703,
+    "rows_nonfinite_before_imputation": 1297,
+    "smoke_limit": 0
+  },
+  "imputation": {
+    "policy": "inf->NaN->median(8-day concat)->fillna(0)",
+    "rationale": "universo del entrenador inferido por aritm\u00e9tica exacta (566149 = 0.2*2830743); medianas del notebook 02 (universo de 4 d\u00edas) descartadas por no corresponder. DAY220_FINDINGS.",
+    "universe_rows": 2830743,
+    "universe_csvs_md5": {
+      "ml-training/datasets/CIC-IDS-2017/MachineLearningCVE/Monday-WorkingHours.pcap_ISCX.csv": "12ca72e319041856f6410e9a14d40581",
+      "ml-training/datasets/CIC-IDS-2017/MachineLearningCVE/Tuesday-WorkingHours.pcap_ISCX.csv": "df16dccfd59a4ee126690fd6b71ee0a4",
+      "ml-training/datasets/CIC-IDS-2017/MachineLearningCVE/Wednesday-workingHours.pcap_ISCX.csv": "bf0dd7e9d991987df4e13ea58a1b409c",
+      "ml-training/datasets/CIC-IDS-2017/MachineLearningCVE/Thursday-WorkingHours-Morning-WebAttacks.pcap_ISCX.csv": "13e1c70d2b380bf5d90f82e60e7befb1",
+      "ml-training/datasets/CIC-IDS-2017/MachineLearningCVE/Thursday-WorkingHours-Afternoon-Infilteration.pcap_ISCX.csv": "29ab45bfe378d983552a801d0a90cac8",
+      "ml-training/datasets/CIC-IDS-2017/MachineLearningCVE/Friday-WorkingHours-Morning.pcap_ISCX.csv": "134224ec64782709ae1078379f72c4fa",
+      "ml-training/datasets/CIC-IDS-2017/MachineLearningCVE/Friday-WorkingHours-Afternoon-PortScan.pcap_ISCX.csv": "4892380364f9c7ef297d3094d19f26bf",
+      "ml-training/datasets/CIC-IDS-2017/MachineLearningCVE/Friday-WorkingHours-Afternoon-DDos.pcap_ISCX.csv": "b2b2764e4c8a4c390506de7ee81c32ee"
+    },
+    "medians": {
+      "Packet Length Std": 25.98076211,
+      "Subflow Fwd Bytes": 62.0,
+      "Fwd Packet Length Max": 37.0,
+      "Avg Fwd Segment Size": 34.0,
+      "ACK Flag Count": 0.0,
+      "Packet Length Variance": 675.0,
+      "PSH Flag Count": 0.0,
+      "Bwd Packet Length Max": 79.0,
+      "act_data_pkt_fwd": 1.0,
+      "Total Length of Fwd Packets": 62.0,
+      "Fwd Packet Length Std": 0.0,
+      "Fwd Packets/s": 61.3252384019,
+      "Subflow Bwd Bytes": 123.0,
+      "Destination Port": 80.0,
+      "Init_Win_bytes_forward": 251.0,
+      "Subflow Fwd Packets": 2.0,
+      "Fwd IAT Min": 3.0,
+      "Packet Length Mean": 57.2,
+      "Total Length of Bwd Packets": 123.0,
+      "Bwd Packet Length Mean": 72.0,
+      "Bwd Packet Length Min": 0.0,
+      "Flow Duration": 31316.0,
+      "Flow Packets/s": 109.4759992228
+    }
+  },
+  "onnx_proba_output_shape": "tensor(2,)",
+  "confusion": {
+    "tp": 252355,
+    "fn": 317,
+    "fp": 112,
+    "tn": 439919
+  },
+  "recall": 0.9987454090678825,
+  "precision": 0.9995563776651998,
+  "fpr": 0.00025452752192459165,
+  "accuracy": 0.9993806869610785
+}

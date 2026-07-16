@@ -3054,3 +3054,35 @@ common-build:
 common-test: common-build
 	@echo "🧪 Tests de common/"
 	@vagrant ssh -c "cd /vagrant/common/build && ctest --output-on-failure"
+
+.PHONY: eval-level1-model-csv eval-level1-model-csv-smoke
+# DEBT-L1-NO-REPRODUCIBLE-HOLDOUT-001 — Vía B (modelo aislado sobre CSV).
+# Corre en macOS host (.venv con onnxruntime+pandas+numpy). NO es la vía A.
+CICIDS_DIR := ml-training/datasets/CIC-IDS-2017/MachineLearningCVE
+CICIDS_ALL := $(CICIDS_DIR)/Monday-WorkingHours.pcap_ISCX.csv \
+              $(CICIDS_DIR)/Tuesday-WorkingHours.pcap_ISCX.csv \
+              $(CICIDS_DIR)/Wednesday-workingHours.pcap_ISCX.csv \
+              $(CICIDS_DIR)/Thursday-WorkingHours-Morning-WebAttacks.pcap_ISCX.csv \
+              $(CICIDS_DIR)/Thursday-WorkingHours-Afternoon-Infilteration.pcap_ISCX.csv \
+              $(CICIDS_DIR)/Friday-WorkingHours-Morning.pcap_ISCX.csv \
+              $(CICIDS_DIR)/Friday-WorkingHours-Afternoon-PortScan.pcap_ISCX.csv \
+              $(CICIDS_DIR)/Friday-WorkingHours-Afternoon-DDos.pcap_ISCX.csv
+
+eval-level1-model-csv:
+	@python3 tools/eval/eval_level1_model_csv.py \
+	  --model ml-detector/models/production/level1/level1_attack_detector.onnx \
+	  --metadata ml-detector/models/production/level1/level1_attack_detector_metadata.json \
+	  --config ml-detector/config/ml_detector_config.json \
+	  --csv $(CICIDS_DIR)/Wednesday-workingHours.pcap_ISCX.csv \
+	  --train-universe-csvs $(CICIDS_ALL) \
+	  --out ml-detector/models/production/level1/eval_level1_model_csv_report.json
+
+eval-level1-model-csv-smoke:
+	@python3 tools/eval/eval_level1_model_csv.py \
+	  --model ml-detector/models/production/level1/level1_attack_detector.onnx \
+	  --metadata ml-detector/models/production/level1/level1_attack_detector_metadata.json \
+	  --config ml-detector/config/ml_detector_config.json \
+	  --csv $(CICIDS_DIR)/Wednesday-workingHours.pcap_ISCX.csv \
+	  --train-universe-csvs $(CICIDS_ALL) \
+	  --limit 1000 \
+	  --out /tmp/eval_level1_smoke.json
