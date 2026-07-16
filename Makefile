@@ -3086,3 +3086,55 @@ eval-level1-model-csv-smoke:
 	  --train-universe-csvs $(CICIDS_ALL) \
 	  --limit 1000 \
 	  --out /tmp/eval_level1_smoke.json
+
+# ════════════════════════════════════════════════════════════════════════════
+# eval-level1-neris — Vía A (DAY 220 §6): generalización cross-dataset de L1
+# por el pipeline VIVO sobre CTU-13 Neris. SOLO RECALL (pcap filtrado al host
+# infectado — sin universo benigno). DEBT-L1-NO-REPRODUCIBLE-HOLDOUT-001.
+# Fases: gt (host) → replay (VM, ~4,8h timing ORIGINAL) → report (host).
+# ════════════════════════════════════════════════════════════════════════════
+NERIS_PCAP      := datasets/ctu13/botnet-capture-20110810-neris.pcap
+NERIS_PCAP_MD5  := 172c6b4eb9be9a14fb5703a83f747a6c
+NERIS_BINETFLOW := datasets/ctu13/capture20110810.binetflow
+NERIS_BF_MD5    := 2896a104e25fc5f24ec14c41373f68d4
+NERIS_WIN_START := 2011/08/10 09:01:40.475792
+NERIS_WIN_END   := 2011/08/10 13:49:29.289628
+NERIS_GT_CIDS   := tools/eval/out/neris_gt_cids.txt
+NERIS_GT_META   := tools/eval/out/neris_gt_meta.json
+NERIS_BRONZE_GLOB ?= logs/correlation/argus/*.csv # AJUSTAR a correlation_writer.base_dir real
+
+.PHONY: eval-level1-neris-preflight eval-level1-neris-gt eval-level1-neris-replay eval-level1-neris-report
+
+eval-level1-neris-preflight:
+	@echo "── md5 gates ──"
+	@test "$$(md5 -q $(NERIS_PCAP))" = "$(NERIS_PCAP_MD5)" || \
+	  (echo "❌ pcap md5 mismatch — NO es el Neris canónico" && exit 1)
+	@test "$$(md5 -q $(NERIS_BINETFLOW))" = "$(NERIS_BF_MD5)" || \
+	  (echo "❌ binetflow md5 mismatch" && exit 1)
+	@echo "✅ artefactos verificados"
+	@$(MAKE) pipeline-status
+
+eval-level1-neris-gt:
+	@python3 tools/eval/neris_ground_truth.py \
+	  --binetflow $(NERIS_BINETFLOW) \
+	  --window-start "$(NERIS_WIN_START)" --window-end "$(NERIS_WIN_END)" \
+	  --out-cids $(NERIS_GT_CIDS) --out-meta $(NERIS_GT_META)
+
+eval-level1-neris-replay: eval-level1-neris-preflight
+	@echo "── Archivando bronce previo para run aislable ──"
+	@vagrant ssh -c "mkdir -p /vagrant/logs/correlation/argus/archive-pre-neris && \
+	  mv /vagrant/logs/correlation/argus/*.csv /vagrant/logs/correlation/argus/archive-pre-neris/ 2>/dev/null || true"
+	@echo "── Replay Neris a TIMING ORIGINAL (~4,8h) — sesión tmux ──"
+	@vagrant ssh client -c "tmux new-session -d -s neris-replay \
+	  'sudo tcpreplay -i eth1 --stats=60 /vagrant/$(NERIS_PCAP) \
+	   > /vagrant/logs/lab/tcpreplay-neris-eval.log 2>&1; \
+	   echo exit=\$$? >> /vagrant/logs/lab/tcpreplay-neris-eval.log'"
+	@echo "✅ Lanzado. Report tras ~5h: make eval-level1-neris-report"
+
+eval-level1-neris-report:
+	@python3 tools/eval/eval_level1_neris.py \
+	  --bronze-glob "$(NERIS_BRONZE_GLOB)" \
+	  --gt-cids $(NERIS_GT_CIDS) --gt-meta $(NERIS_GT_META) \
+	  --config ml-detector/config/ml_detector_config.json \
+	  --replay-note "tcpreplay timing original, PROFILE=$(PROFILE), commit $$(git rev-parse --short HEAD)" \
+	  --out tools/eval/out/eval_level1_neris_report.json
