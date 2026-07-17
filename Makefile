@@ -3101,7 +3101,8 @@ NERIS_WIN_START := 2011/08/10 09:01:40.475792
 NERIS_WIN_END   := 2011/08/10 13:49:29.289628
 NERIS_GT_CIDS   := tools/eval/out/neris_gt_cids.txt
 NERIS_GT_META   := tools/eval/out/neris_gt_meta.json
-NERIS_BRONZE_GLOB ?= logs/correlation/argus/*.csv # AJUSTAR a correlation_writer.base_dir real
+# NERIS_BRONZE_GLOB: correlation_writer.base_dir del config (verificado DAY 220)
+NERIS_BRONZE_GLOB ?= logs/correlation/argus/*.csv
 
 .PHONY: eval-level1-neris-preflight eval-level1-neris-gt eval-level1-neris-replay eval-level1-neris-report
 

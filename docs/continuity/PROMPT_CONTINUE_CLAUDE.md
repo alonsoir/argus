@@ -1,139 +1,128 @@
-# PROMPT DE CONTINUIDAD — DAY 220
+# PROMPT DE CONTINUIDAD — DAY 221 (17-jul-2026)
 
-> Rama: `fix/verdict-multihead-honest`. Escrito al cierre de DAY 219 (15-jul-2026).
-> Fuente: sólo lo verificado en la sesión de DAY 219. Lo no probado se marca.
-> Referencia completa: `docs/debt/DAY219_FINDINGS.md` (536 líneas).
+Rama: `fix/verdict-multihead-honest`. HEAD al cierre: `3f9be4bf` (+ apendice
+y report pendientes de commit si no se hicieron a las 03:00).
+FEDER: go/no-go ~1 agosto. Calidad no negociable sobre deadline.
 
----
+## EL RESULTADO DE LA NOCHE (via A ejecutada — COMPLETA)
 
-## LO PRIMERO AL ABRIR
+El replay Neris corrio entero y limpio: 323.152/323.154 pkts (Failed: 2,
+despreciable), 17.298s a timing original. Bronce del run: 765 segmentos,
+519.397 eventos, 286.420 con IPs CTU.
 
-Verificar nombre del findings de ayer: se guardó y puede haber quedado como
-`DAY291` (transposición de 219). Comprobar:
-```
-ls docs/debt/DAY219*.md docs/debt/DAY291*.md
-```
-Si está traspuesto, renombrar a `DAY219_FINDINGS.md`. Es desorden SOURCE-TREE.
+| metrica | valor |
+|---|---|
+| GT (cids botnet unicos, derivado y commiteado) | 8.935 |
+| coverage | **0.886** (7.916 cubiertos; 1.019 perdidos rio-arriba) |
+| **recall** | **0.0** (detected: 0 de 8.935) |
+| recall_over_covered | 0.0 |
+| max(ml_score) de TODO el run | 0.626477 (threshold: 0.65) |
+| scores unicos | 11.261 (top-12 formas ~76% de eventos) |
+| eventos >=0.6 / >=0.5 / >=0.4 | 47 / 756 / 62.763 (de 519.397) |
 
----
+Report: `tools/eval/out/eval_level1_neris_report.json`.
 
-## LA ÚNICA ACCIÓN QUE DECIDE EL GO/NO-GO (P0)
+## EL HALLAZGO — DEBT-L1-PARTIAL-FLOW-SCORING-001 (P0)
 
-**`make eval-level1-holdout`** — `DEBT-L1-NO-REPRODUCIBLE-HOLDOUT-001`.
+**El pipeline puntua POR EVENTO con features de flujo PARCIAL; el modelo se
+entreno con agregados de flujo COMPLETO** (CICFlowMeter sobre flujos
+terminados). Resultado: distribucion de scores desplazada con techo empirico
+0.626 < 0.65 → recall 0.0 pese a coverage 0.886.
 
-Correr el modelo VIVO `level1_attack_detector.onnx` sobre un pcap que NO vio en
-entrenamiento (Wednesday sirve, md5 `bf0dd7e9d991987df4e13ea58a1b409c`),
-alimentándolo por el PIPELINE VIVO (`extract_level1_features` del ml-detector,
-NO un script Python paralelo), y reportar el recall.
+Tenaza probatoria (cada eslabon exonerado por medida, no por opinion):
+- **El modelo NO es el problema**: via B (mismas 23 features, flujo completo)
+  → recall 0.9987. Commiteada en `73fac317`.
+- **La captura NO es el problema**: coverage 0.886.
+- **El threshold NO es el fix**: techo 0.626; bajar a 0.5 rescataria <=756
+  eventos de 519K → recall seguiria ~0 y abriria FPs. Puerta clavada con
+  numero — NO reabrir sin evidencia nueva.
+- **Hay señal comprimida**: 12% de eventos en la banda 0.4-0.626. El modelo
+  parcial esta desalineado, no ciego — relevante para elegir fix.
 
-Por qué es lo único que importa de L1: su métrica actual (accuracy 0.9987,
-recall 0.9992 en `level1_attack_detector_metadata.json`) es IN-SAMPLE. El único
-holdout out-of-sample del directorio (`wednesday_eval_report.json`, recall
-**2,4%**) es casi con certeza la AUTOPSIA DEL XGBOOST descartado (threshold
-0.821 = el del XGBoost; el ONNX vivo usa 0.65), NO del ONNX. Y su generador NO
-existe en el repo → no es reproducible.
+## LA CONVERSACION DE DAY 221 (la importante — con cafe, no improvisar)
 
-Resultado esperado:
-- recall bueno → L1 sano, número honesto para el paper, FEDER con la cabeza alta.
-- recall malo → problema real, pero conocido con 2 semanas de margen.
+Que significa "puntuar un flujo" en un NDR de tiempo real. Opciones sobre la
+mesa (probablemente combinables; candidata a ronda del Consejo 8/8):
+1. **Puntuar al cierre/timeout del flujo** (features completas, deteccion
+   tardia — ¿aceptable para botnet C&C? ¿inaceptable para ransomware?).
+2. **Re-puntuar por ventanas/hitos** (N paquetes, T segundos): deteccion
+   progresiva, features "tan completas como sea posible hasta ahora".
+3. **Reentrenar con features parciales** (truncar flujos de CICIDS a
+   prefijos): el modelo aprende la pista en la que jugara → conecta con
+   ADR-040 y con DEBT-L1-TRAINER-MISSING-001 (el entrenador hay que
+   reconstruirlo IGUAL — matar dos deudas de un ADR).
+   Implicacion para el paper: la comparativa Suricata/Zeek/aRGus y cualquier
+   claim de deteccion del pipeline vivo quedan condicionados por esta deuda.
+   El paper honesto cuenta la tenaza (0.9987 modelo / 0.0 desplegado / por que)
+   — es MEJOR paper que el que habia.
 
-Es el `make test-arxiv-paper` aplicado a la métrica que más importa.
+## COMMITS PENDIENTES DE LA MADRUGADA (verificar con git log/status)
 
----
+1. Apendice al DAY220_FINDINGS.md: §13-18 (fichero DAY220_FINDINGS_APPENDIX
+   preparado) + §19 (resultado via A — bloque redactado en el chat de las
+   03:0x, con la tabla de arriba y las dos trampas nuevas).
+2. `tools/eval/out/eval_level1_neris_report.json`.
+3. Fix del Makefile: el comentario inline de NERIS_BRONZE_GLOB inyectaba
+   espacios y rompia el glob (comentario a linea aparte).
+4. El placeholder `<hash>` de §8 del findings → `73fac317`.
+5. La discrepancia 21/22 del DAY219 (§3 vs §6) sigue pendiente de corregir.
 
-## ESTADO PROBADO DE L1 (no re-investigar, está verificado)
+## ESTADO DEL ENTORNO
 
-- El consumidor de L1 es `extract_level1_features` en el **ml-detector**
-  (`ml-detector/src/feature_extractor.cpp`), VIVO en `zmq_handler.cpp:498→516→722`.
-  NO es el `FeatureExtractor` del sniffer (ese nació muerto, ver abajo).
-- Produce 23 features, **verificadas 23/23** en orden y semántica contra el
-  oráculo `level1_attack_detector_metadata.json`.
-- Features [1]/[9] y [12]/[18] leen el mismo campo A PROPÓSITO (redundancia
-  legítima de CICIDS). NO son bug. La sospecha DAY 217 de "5 rotas" era 2.
-- 2 features degradadas reales → `DEBT-L1-FEATURES-PLACEHOLDER-001` (P2, post-FEDER):
-    - [8] `act_data_pkt_fwd`: aproximada con `total_forward_packets()` (incluye ACKs).
-    - [14] `Init_Win_bytes_forward`: hardcode `0.0f`.
-    - Ningún campo existe en `protobuf/network_security.proto`. Cerrarlas cruza
-      sniffer+proto+detector (kernel-space). Post-FEDER.
-- Escalado: `DEBT-CONFIG-SCALING-LIES-001` (P1) **MITIGADO (A)**. El config
-  mentía (`requires_scaling: true` + `scaler.json` vacío + ningún código escala).
-  Corregido a `false`/`""`. El modelo se entrenó SIN escalar; servir crudo es
-  CORRECTO. NO implementar escalado.
-- Threshold vivo: `level1_attack: 0.65` (`ml_detector_config.json:148`), propio
-  del ONNX. XGBoost (0.821) desconectado. Sin cruce de modelos.
+- Replay TERMINADO → la VM client puede apagarse (`vagrant halt client`).
+- MTU 9000 y modo dual: sin nada que revertir (dual es el estado commiteado;
+  la MTU se pierde sola en el proximo reboot — irrelevante ya).
+- Bronce del run en `/vagrant/logs/correlation/argus/*.csv`; todo lo previo
+  en `archive-pre-neris/`. Decidir si archivar el run tambien (es el dato
+  primario del report — NO borrar; candidato a comprimir y guardar).
+- Sin commitear a proposito: zmq_handler.{hpp,cpp} (instrumentacion DAY216,
+  patch en docs/), commit-message.txt, tools/temporal.md.
+- STASH intacto: `stash@{0}: commit2-noisy-or WIP`.
 
----
+## TRAMPAS NUEVAS DE LA SESION (ya en el apendice; reglas desde hoy)
 
-## SNIFFER — CERRADO Y CONFIRMADO AYER
+- `nohup &` bajo `vagrant ssh -c` muere con la sesion → `sudo sh -c 'setsid
+  nohup CMD > log 2>&1 < /dev/null &'`.
+- Frames CTU >1500 bytes: MTU 9000 en ambos extremos; NUNCA --mtu-trunc
+  (altera features de longitud).
+- Comentario inline en asignacion Make → espacios finales en el valor.
+- **awk en la VM con locale es_ES compara numeros como TEXTO** ("0,5"):
+  aritmetica en VM SIEMPRE con `LC_ALL=C` y `$1+0`. (Los conteos por umbral
+  de las 02:5x fueron basura hasta corregirlo; max y uniq -c verificados
+  como no afectados.)
+- `| head -N` puede amputar la linea decisiva (caso 25); grep sin eje
+  temporal en logs acumulativos mezcla eras (caso 26) → MARCA + awk.
 
-- `DEBT-FLOWSTATS-COPY-AMPUTATED-001` (P0) **CERRADA** RED `6166982f` → GREEN
-  `fc292bc8`. `ctest 17/18`. `get_flow_stats_copy`: 40 líneas a mano → 1 (copia
-  el compilador). La clase de defecto ya no es EXPRESABLE. `time_windows`:
-  `unique_ptr` → por valor.
-- `DEBT-FEATURE-EXTRACTOR-DEAD-CODE-001` (P0, CONFIRMADA): el `FeatureExtractor`
-  del sniffer (84 features) NACIÓ MUERTO — nunca se llamó en producción en
-  ningún commit, pero SE COMPILA Y ENVÍA (`CMakeLists.txt:281`, `SNIFFER_SOURCES`).
-  Se puede BORRAR, no revivir. Fósil: `.fase1/.fase2` (10-oct-2025).
+## PATRON DE FALSA EVIDENCIA: 26 casos
 
----
+22-24: arqueologia (commit "1.67M" sin contar; md5 bf0dd7e9 mal atribuido a
+un pcap; notebooks-esqueleto como procedencia fantasma). 25-26: de Claude
+(head truncado → diagnostico falso de mono-interfaz; grep sin tiempo →
+falsa regresion). La sospecha de regresion eth2 quedo DESCARTADA: el modo
+`dual` funciono siempre (events CSVs de abril-junio lo prueban);
+`gateway-only` no consume eth2 → DEBT-SNIFFER-GATEWAY-ONLY-NO-CONSUMER-001
+(P3).
 
-## DEUDAS NUEVAS DE DAY 219 (registradas, no cerradas)
+## HITOS DE DAY 220 (no re-litigar)
 
-| Deuda | P | Acción |
-|---|---|---|
-| `L1-NO-REPRODUCIBLE-HOLDOUT-001` | P0 | `make eval-level1-holdout` (arriba) |
-| `CONFIG-SCALING-LIES-001` | P1 | MITIGADA (A). Verificar que el config quedó bien. |
-| `L1-FEATURES-PLACEHOLDER-001` | P2 | [8],[14]. Post-FEDER, extender proto. |
-| `MODEL-DIR-XGBOOST-FOSSIL-001` | P2 | Mover/prefijar `xgboost_*` fuera de `production/`. |
+- "Wednesday es holdout" REFUTADO: split 80/20 sobre los 8 dias juntos
+  (aritmetica exacta 566149 = 0.2*2830743 + notebook 02, seed 42).
+- Via B: recall 0.9987 / FPR 0.00025 (scope: sanity in-sample). El fosil del
+  2,4% DEMOSTRADO como autopsia del XGBoost (misma base de 252.672 ataques).
+- Procedencia: 02 probado (f53c676a); entrenador/conversor NUNCA versionados
+  (03/06 = esqueletos de 216 bytes; sesion Jupyter 15-oct-2025 09:50-10:06)
+  → DEBT-L1-TRAINER-MISSING-001 (P2).
+- GT646 de Table 11 NO reconstruible bajo 8 criterios →
+  DEBT-NERIS-GT646-UNPROVENANCED-001 (P1). El GT nuevo (8.935) es el
+  denominador con procedencia.
+- Deudas nuevas del dia: PARTIAL-FLOW-SCORING (P0), NERIS-GT646 (P1),
+  L1-TRAINER-MISSING (P2), BRONZE-IP-BYTEORDER (P2, confirmada en vivo:
+  165.84.32.147), MAKEFILE-MLDETECTOR-START-PROFILE (P2),
+  SNIFFER-GATEWAY-ONLY-NO-CONSUMER (P3), extension XGBOOST-FOSSIL al
+  Makefile (deploy/sign solo tocan XGBoost).
+- El 2.517 sigue SIN PROCEDENCIA. level2/level3 siguen SIN AUDITAR.
 
-`SOURCE-TREE-BACKUP-FILES-001` subió P2→P1 (se compilaba contra 2 declaraciones
-de la misma clase). Las 7 deudas de DAY 218 siguen abiertas.
-
----
-
-## ALCANCE — LO QUE NO SE AUDITÓ
-
-Ayer SÓLO se auditó **level1**. **level2 (DDoS, ransomware) y level3 (internal,
-web) NO fueron auditados.** El silencio NO es veredicto. NO extrapolar "L1 tiene
-X" a "todos los modelos rotos" — eso sería votar, no medir.
-
-Auditar level2/3 es trabajo pendiente candidato a DAY 220+ SI el eval de L1 sale
-bien. Si el eval de L1 sale mal, L1 tiene prioridad absoluta.
-
----
-
-## REGLAS PERMANENTES (no violar)
-
-- `git add` EXPLÍCITO del fichero. NUNCA `git add -u` NI `git commit -a` en esta
-  rama (arrastraría `zmq_handler` instrumentado de DAY 216).
-- Sin commitear a propósito: `ml-detector/src/zmq_handler.cpp` (instrumentación,
-  salvada en `docs/day216_instrumentation.patch`), `commit-message.txt`.
-- STASH a NO perder: `stash@{0}: commit2-noisy-or WIP` (header + tests válidos).
-- Verificar la RUTA antes de concluir sobre el contenido: en zsh un glob sin
-  match ABORTA el comando (`no matches found`) y parece "no existe el campo"
-  cuando es "no existe el dir". El proto está en `protobuf/`, NO `common/proto/`.
-- Un grep vacío puede significar "no medí", no "medí cero". Distinguir.
-- Métrica in-sample ≠ rendimiento. El número honesto es el holdout.
-- El patrón de falsa evidencia va por **21** casos (DAY 218 cerró en 15, NO 16 —
-  el "1–16" del prompt anterior era error heredado). No re-arrancar en 17.
-- Makefile = única fuente de verdad. EMECAS antes de merge. Builds vía `make`
-  desde host macOS. Vagrant siempre con `-c`. macOS: nunca `sed -i` sin `-e ''`.
-
----
-
-## DECISIONES QUE SOBREVIVEN
-
-- Commit 2 (noisy-OR) APARCADO, no cancelado. NO suprime FP (monótono, como max).
-- Claim del `max()` aritméticamente imposible (`max(a,b)≥a`). NO tocar el LaTeX aún.
-- `ddos`/`ransomware` a `reliability = 0.0`.
-- El `2.517` sigue SIN PROCEDENCIA (DAY 217). "Revalidado" ≠ procedencia probada.
-- MITRE va DESPUÉS del extractor. Un commit, un cambio, una razón.
-- Calidad innegociable sobre la fecha.
-
----
-
-## FEDER
-
-Go/no-go ~1 agosto 2026. Deadline 22 septiembre. La pregunta abierta de L1
-(eval holdout) es la que toca la claim del paper. Todo lo demás de L1 es deuda
-acotada o cerrado. Un escudo, nunca una espada.
+Reglas permanentes: medir no votar; un commit/un cambio/una razon; git add
+explicito (NUNCA -u/-a); verificar la ruta antes de concluir del contenido;
+la premisa heredada tambien es un artefacto a verificar; EMECAS antes de
+cualquier merge.

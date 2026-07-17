@@ -377,3 +377,171 @@ inferencia sana y demostrada (vía B), fósil explicado y demostrado,
 procedencia mapeada con sus agujeros nombrados, y UNA incógnita abierta con
 plan concreto: generalización cross-dataset (vía A, Neris, DAY 221).
 Un escudo, nunca una espada.
+
+---
+
+# APÉNDICE DAY 220 (tarde) — VÍA A DISPARADA + la saga de la red
+
+> Añadir al final de DAY220_FINDINGS.md. Escrito con el replay EN VUELO.
+
+## 13. ESTADO AL CIERRE: REPLAY NERIS EN VUELO
+
+- **Disparado**: 17:16:33 UTC-VM (19:16 local), PID 5436 en la VM client.
+- **Comando**: `setsid nohup tcpreplay -i eth1 --stats=60` sobre el pcap Neris
+  (md5 `172c6b4e…`), **timing original** (~4h47m de reloj).
+- **Fin estimado tcpreplay**: ~22:04 UTC-VM (~00:04 local) + drenaje de flujos.
+- **Log**: `/vagrant/logs/lab/tcpreplay-neris-eval.log` (client).
+- **Bronce**: `/vagrant/logs/correlation/argus/*.csv` — SOLO segmentos del run
+  (todo lo anterior archivado en `archive-pre-neris/`).
+- **Contexto del run** (para el report): commit `3f9be4bf` + instrumentación
+  DAY216 sin commitear en zmq_handler; PROFILE=debug (-O0); sniffer modo
+  `dual` (estado commiteado del config); MTU 9000 en client-eth1 y
+  defender-eth2 (NO persistente); VBox promisc allow-all en NIC2/NIC3 del
+  gateway-lab; tcpreplay sin flags de velocidad.
+- Cosecha (DAY 221): `tail` del log de tcpreplay (stats finales + exit) →
+  `make eval-level1-neris-report`.
+
+⚠️ **REGLAS DE VUELO**: NO `pipeline-stop`, NO reiniciar VMs (la MTU 9000 se
+pierde en reboot), Mac sin dormir las VMs hasta ~00:15.
+
+## 14. LA CADENA, VERIFICADA ESLABÓN A ESLABÓN (smoke verde 19:1x)
+
+client eth1 (192.168.100.50) → defender eth2 (192.168.100.1, MTU 9000,
+promisc) → XDP prog id 18 → userspace (modo dual, runtime ifindex=4
+confirmado post-marca: 1.355 líneas) → ml-detector → bronce con IPs CTU
+(`165.84.32.147` = 147.32.84.165 byteordeado — DEBT-BRONZE-IP-BYTEORDER-001
+comportándose según lo documentado). El cid del bronce es base64 estándar:
+casará con el GT de `communityid` (Corelight) sin normalización.
+
+## 15. HALLAZGOS DE LA SAGA (cronológico, con sus deudas)
+
+1. **`nohup ... &` bajo `vagrant ssh -c` muere con la sesión.** El primer
+   disparo (14:57) nunca arrancó: ni proceso ni log. La forma que sobrevive:
+   `sudo sh -c 'setsid nohup CMD > log 2>&1 < /dev/null &'`. (Trampa nueva.)
+2. **errno 90 "Message too long": 245/5000 paquetes NO enviados** en el primer
+   smoke. El pcap CTU trae frames >1500 (TSO de la captura de 2011) y la MTU
+   por defecto los rechaza. Fix honesto: MTU 9000 en ambos extremos (NUNCA
+   `--mtu-trunc`: truncar altera las features de longitud, 4+ de las 23).
+   Post-fix: 5000/5000. ⚠️ El cambio de MTU NO persiste reinicios.
+3. **El modo `gateway-only` del sniffer NO consume eth2.** Con ese modo, XDP
+   se attachea pero el userspace no drena su ring (post-marca: ifindex=4 = 0,
+   ifindex=3 > 0). → **`DEBT-SNIFFER-GATEWAY-ONLY-NO-CONSUMER-001` (P3)**:
+   nadie lo usa en producción; documentar semántica real de cada modo.
+4. **El modo `dual` (commiteado) FUNCIONA y funcionó siempre.** Los events
+   CSVs históricos (2026-04-16, 05-08, 06-06) contienen IPs CTU: la ruta
+   eth2→detector operó en replays pasados. NO hay regresión — la sospecha
+   de "agujero de 7 meses" era falsa, inducida por los casos 25-26 (abajo)
+   y por mi cambio de config a gateway-only (revertido, `git checkout`).
+5. **La VM client quedó creada** (192.168.100.50, tcpreplay OK, tmux NO —
+   su NAT no resuelve DNS; menor, para otro día).
+
+## 16. EL PATRÓN — YA SON VEINTISÉIS (los dos nuevos son de Claude)
+
+25. **El `| head -N` que amputó la evidencia.** El grep del log del sniffer
+    con `head -15` cortó la salida UNA línea antes de "Configured eth2". Se
+    concluyó "attachment mono-interfaz" desde una salida truncada por el
+    propio filtro → se mató un replay posiblemente sano y se cambió un config
+    que funcionaba. Un filtro de conveniencia es parte del instrumento.
+26. **El grep sin eje temporal sobre un log de 100 MB.** Las 150.259 líneas
+    de `ifindex=4` eran HISTÓRICAS (de cuando eth2 funcionaba); el grep las
+    mezcló con el proceso actual. Sin marca temporal (`MARCA-*` + awk), un
+    log acumulativo responde por todas sus eras a la vez. Coste conjunto de
+    25+26: ~40 min y un pkill innecesario. Diagnóstico correcto solo llegó
+    con marcas + conteo discriminado + tcpdump (verdad del kernel).
+
+## 17. DEUDAS — MOVIMIENTOS DE LA TARDE
+
+| Deuda | P | Movimiento |
+|---|---|---|
+| `SNIFFER-GATEWAY-ONLY-NO-CONSUMER-001` | **P3 NUEVA** | §15.3. La sospecha previa de regresión P1 queda DESCARTADA (§15.4). |
+| `BRONZE-IP-BYTEORDER-001` | P2 | Confirmada en vivo con tráfico CTU (§14). |
+| `NERIS-GT646-UNPROVENANCED-001` | P1 | Sin movimiento nuevo; la arqueología negativa (8 criterios, ninguno da 646) quedó commiteada en `neris_gt_meta.json`. |
+
+## 18. INTERPRETACIÓN PACTADA DEL REPORT (antes de ver el número)
+
+Tres métricas separadas, ninguna se promedia con las otras:
+- **coverage** (GT∩bronce / GT): pérdidas río-arriba (sniffer, formación de
+  flujo, SKIPs). NO culpa del modelo.
+- **recall** (detectados / GT): EL número del paper. Alcance declarado:
+  "generalización cross-dataset a botnet Neris, pipeline vivo".
+- **recall_over_covered**: el modelo aislado de las pérdidas del sniffer.
+
+Si recall_over_covered alto y coverage bajo → problema de captura, no de ML.
+Si coverage alto y recall bajo → el modelo no generaliza a Neris: resultado
+VÁLIDO y publicable con su alcance (y motiva ADR-040). Si ambos altos →
+celebración contenida y a por el FPR cross-dataset otro día. El
+`unique_cids_total` del bronce será > GT por el chatter de eth1 (modo dual):
+esperado, el join por cid lo filtra.
+
+### DEBT-L1-PARTIAL-FLOW-SCORING-001 (P0): 
+el pipeline puntúa por evento con features de flujo parcial; 
+el modelo se entrenó con agregados de flujo completo. Resultado: distribución de scores desplazada con techo empírico 
+0.626477 < threshold 0.65 → recall 0.0 con coverage 0.886. 
+Probado por tenaza: vía B (mismas 23 features, flujo completo → 0.9987) exonera al modelo; 
+coverage exonera la captura; el techo exonera al threshold como fix. 11.261 scores únicos en 286K+ eventos, 
+top-12 = ~76% (formas de vector repetidas de eventos tempranos). 
+
+Fix: decisión de arquitectura (puntuar al cierre/timeout de flujo, re-puntuar por ventanas, y/o reentrenar con 
+features parciales — ADR-040), DAY 221+.
+
+(.venv) aironman@MacBook-Pro-de-Alonso test-zeromq-docker % echo "# Máximo real y cardinalidad del alfabeto:"
+vagrant ssh -c "cut -d',' -f16 /vagrant/logs/correlation/argus/*.csv | sort -rn | head -3"
+vagrant ssh -c "cut -d',' -f16 /vagrant/logs/correlation/argus/*.csv | sort -u | wc -l"
+# Máximo real y cardinalidad del alfabeto:
+0.626477
+0.626477
+0.626477
+11261
+
+(.venv) aironman@MacBook-Pro-de-Alonso test-zeromq-docker % vagrant ssh -c "awk -F',' '{print \$16}' /vagrant/logs/correlation/argus/*.csv | sort | uniq -c | sort -rn | head -12"
+
+95001 0.041933
+42151 0.114223
+34122 0.167361
+19529 0.043737
+18262 0.063634
+14512 0.072682
+13878 0.028583
+13413 0.113439
+12300 0.054561
+9999 0.063610
+7927 0.038878
+7176 0.417816
+
+(.venv) aironman@MacBook-Pro-de-Alonso test-zeromq-docker % vagrant ssh -c "cut -d',' -f16 /vagrant/logs/correlation/argus/*.csv | LC_ALL=C awk '{if(\$1+0>=0.6)a++; if(\$1+0>=0.5)b++; if(\$1+0>=0.4)c++; n++} END{print \"total:\", n; print \">=0.6:\", a+0; print \">=0.5:\", b+0; print \">=0.4:\", c+0}'"
+total: 519397
+>=0.6: 47
+>=0.5: 756
+>=0.4: 62763
+> 
+>
+## 19. VÍA A — RESULTADO (madrugada 17-jul, run completo)
+
+Replay: 323.152/323.154 pkts (Failed: 2, despreciable), 17.298s, timing
+original. Bronce del run: 765 segmentos, 519.397 eventos, 286.420 con IPs CTU.
+
+| métrica | valor |
+|---|---|
+| GT (cids botnet únicos) | 8.935 |
+| coverage | 0.886 (7.916 cubiertos; 1.019 perdidos río-arriba) |
+| **recall** | **0.0** (detected: 0) |
+| recall_over_covered | 0.0 |
+| max(ml_score) del run | 0.626477 (a 0.0235 del threshold 0.65) |
+| scores únicos | 11.261 (top-12 formas ≈ 76% de eventos) |
+| eventos ≥0.6 / ≥0.5 / ≥0.4 | 47 / 756 / 62.763 (de 519.397) |
+
+→ **DEBT-L1-PARTIAL-FLOW-SCORING-001 (P0)**: el pipeline puntúa POR EVENTO
+con features de flujo PARCIAL; el modelo se entrenó con agregados de flujo
+COMPLETO. Tenaza probatoria: vía B (mismas 23 features, flujo completo →
+recall 0.9987) exonera al modelo; coverage 0.886 exonera la captura; techo
+0.626 + banda 0.4-0.626 con 12% de eventos exonera al threshold como fix
+(a 0.5 rescataría ≤756 eventos de 519K: recall seguiría ~0). El fix es de
+arquitectura: puntuar al cierre/timeout de flujo, re-puntuar por ventanas,
+y/o reentrenar con features parciales (→ ADR-040). Decisión: DAY 221+,
+candidata a ronda del Consejo.
+
+Trampas nuevas: (a) comentario inline en asignación de Make inyecta espacios
+finales en el valor (rompió el glob del report; comentarios en línea aparte);
+(b) awk en la VM con locale es_ES compara "0,5" como TEXTO — aritmética en
+VM SIEMPRE con LC_ALL=C y $1+0 (los conteos por umbral de las 02:5x eran
+basura; máximo y uniq -c no afectados — verificado).
