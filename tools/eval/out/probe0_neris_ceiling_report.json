@@ -1,0 +1,53 @@
+{
+  "probe": "Probe 0 \u2014 techo de separabilidad Neris (in-sample a Neris)",
+  "VERDICT": "MEDIDO (interpretar recall/f1 abajo)",
+  "features_csv": "tools/eval/out/cicflowmeter/neris.pcap_Flow.csv",
+  "seed": 42,
+  "test_size": 0.3,
+  "model": "RandomForest n_estimators=100 class_weight=balanced",
+  "balance": {
+    "flows_total": 22249,
+    "flows_used": 22108,
+    "skipped_no_tuple": 141,
+    "bad_features": 0,
+    "positives_botnet": 15312,
+    "negatives_other": 6796,
+    "minority_class": 6796
+  },
+  "test_recall_botnet": 0.8104048759251197,
+  "test_precision_botnet": 0.7778938570831592,
+  "test_f1_botnet": 0.793816631130064,
+  "test_roc_auc": 0.7463427038658224,
+  "test_confusion_matrix": [
+    [
+      976,
+      1063
+    ],
+    [
+      871,
+      3723
+    ]
+  ],
+  "feature_importance_top5": [
+    {
+      "f": " Flow Duration",
+      "imp": 0.18032045466177818
+    },
+    {
+      "f": "Fwd Packets/s",
+      "imp": 0.1792062009740582
+    },
+    {
+      "f": " Flow Packets/s",
+      "imp": 0.17904793553848178
+    },
+    {
+      "f": " Fwd IAT Min",
+      "imp": 0.0903767112232448
+    },
+    {
+      "f": " Bwd Packet Length Min",
+      "imp": 0.04445663423514672
+    }
+  ]
+}

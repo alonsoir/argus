@@ -1,0 +1,24 @@
+{
+  "paso": "Paso 2 \u2014 L1 offline flujo completo (DAY 221)",
+  "features_csv": "tools/eval/out/cicflowmeter/neris.pcap_Flow.csv",
+  "onnx": "ml-detector/models/production/level1/level1_attack_detector.onnx",
+  "threshold": 0.65,
+  "gt_cids_total": 8935,
+  "rows_total": 22249,
+  "rows_scored": 22108,
+  "rows_skipped_no_tuple": 141,
+  "rows_missing_features": 0,
+  "gt_cids_covered": 8935,
+  "coverage": 1.0,
+  "detected": 1,
+  "recall": 0.0001119194180190263,
+  "recall_over_covered": 0.0001119194180190263,
+  "score_distribution": {
+    "max": 0.6504120826721191,
+    "ge_0.65": 1,
+    "ge_0.6": 2,
+    "ge_0.5": 9,
+    "ge_0.4": 123,
+    "unique_scores": 2708
+  }
+}

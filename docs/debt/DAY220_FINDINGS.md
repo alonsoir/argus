@@ -594,3 +594,61 @@ evidencia de "replays históricos abril–junio". Realidad: 2026-04-16 → 1 lí
 replay real (31.503). `grep -l` es un head disfrazado. Conteo canónico: 26 (§16)
 → **27**. Erratum §15.4: lo probado es "dual funciona HOY + un replay real el
 8-may", no "funcionó siempre".
+
+## §21 — Paso 2: el modelo NO generaliza a Neris ni con flujo completo (P0)
+
+**Qué se midió (DAY 221):** scoring OFFLINE del L1 ONNX sobre las 22.250
+features de flujo COMPLETO que CICFlowMeter extrae del mismo pcap Neris, contra
+los mismos 8.935 community_ids del GT y el mismo threshold 0.65 que Vía A. La
+única variable que cambia frente a Vía A es flujo-parcial → flujo-completo.
+
+**Resultado:**
+| métrica | Vía A (parcial) | Paso 2 (completo) |
+|---|---|---|
+| recall | 0.0 | 0.0001 (1/8.935) |
+| coverage | 0.886 | **1.0** |
+| max(ml_score) | 0.6265 | 0.6504 |
+| eventos/flujos ≥0.5 | 756 / 519.397 | 9 / 22.108 |
+
+**La tenaza, completa (tres celdas):**
+- Wednesday + completo (Vía B) → 0.9987
+- Neris + completo (Paso 2)   → 0.0001
+- Neris + parcial  (Vía A)    → 0.0
+
+**Conclusión [PROBADO, con un asterisco acotado]:** la hipótesis "el 0.0 de Vía
+A es SOLO el scoring por flujo parcial" queda REFUTADA. Con flujo completo,
+coverage 1.0 (ya no hay excusa de captura), mismo pcap y mismos cids, el modelo
+sigue en el suelo y el techo apenas se movió (+0.024). Darle features completas
+no rescata la detección. El fallo no es (solo) el CUÁNDO puntuar: **el modelo no
+separa Neris, se le den las features como se le den.**
+
+**Consecuencia para la arquitectura de L1:** la opción barata (puntuar al
+cierre/timeout sin reentrenar) queda descartada como fix suficiente. Reentrenar
+pasa de opcional a necesario. Conecta con L1-TRAINER-MISSING-001 (reconstruir el
+entrenador) y ADR-040.
+
+**Asterisco de procedencia:** las features salen de CICFlowMeter `98a5ebad`
+(v4), NO de la v3 con que se generó CICIDS2017; 4 features están renombradas
+(mapeo explícito en el harness, dict V4_TO_MODEL). Un renombrado con cálculo
+sutilmente distinto degradaría el recall, no lo aniquilaría manteniendo el techo
+clavado en 0.65 — por eso el asterisco no explica el resultado, pero queda
+abierto hasta el camino 3 (comparar features v4 vs Wednesday CSV original).
+
+**Desambiguación en curso:** test de máscara de `Dst Port` (deriva de puertos
+C&C Neris-2011 vs CICIDS2017). 
+
+Resultado: **Desambiguación (test de máscara Dst Port):** neutralizar ` Destination Port`
+a 0 y re-scorear → detected 1→4, max 0.6504→0.6980 (cruza 0.65 por primera
+vez), ≥0.5 pasa de 9 a 534, ≥0.4 de 123 a 1444. Interpretación [PROBADO]:
+`Dst Port` SUPRIME activamente la señal de Neris (deriva de puertos C&C 2011 vs
+CICIDS2017). PERO el recall sigue en 0.0004 — liberar el puerto destapa señal
+latente que sigue siendo demasiado débil para discriminar. Fallo de DOS capas:
+dependencia de puerto supresora + señal subyacente insuficiente. Reentrenar sin
+`Dst Port` es necesario pero probablemente no suficiente. El asterisco v4 queda
+casi descartado: el modelo responde coherente y monotónicamente a la
+manipulación de una feature bien mapeada.
+
+**Procedencia:** CICFlowMeter 98a5ebad + jnetpcap 1.4.r1425 + flow-timeout
+defaults (120s/5s) sobre pcap md5 172c6b4e; harness tools/eval/eval_level1_offline.py
+(dict V4_TO_MODEL); GT tools/eval/out/neris_gt_cids.txt (8.935 cids).
+Nueva deuda: DEBT-L1-MODEL-NO-GENERALIZA-NERIS-001 (P0).
