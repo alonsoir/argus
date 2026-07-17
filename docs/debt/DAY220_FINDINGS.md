@@ -554,3 +554,43 @@ y la capa de decisión, con su max() monocapa y threshold 0.7, convirtió esa co
 y 0 detecciones L1. 
 Ningún componente de detección del sistema desplegado funciona hoy contra tráfico real — y cada uno falla por una causa 
 distinta, medida y nombrada.
+
+## §20 — La paradoja Neris, resuelta
+## §20 — La paradoja Neris, resuelta
+
+**Planteamiento:** ¿por qué Neris daba recall 1.0 en primavera y 0.0 en el
+replay completo de esta madrugada? §19 explica por qué falla HOY; esto explica
+por qué "funcionaba" ANTES.
+
+**Evidencia primaria:** events CSV del 2026-05-08 — 31.503 eventos CTU de un
+replay real de mayo. Datos de un run, no una reconstrucción.
+
+1. **L1 nunca detectó Neris por el pipeline — ni en mayo ni hoy.** [PROBADO]
+   El ml_score de mayo al tráfico CTU fue **0.041933**, idéntico al valor más
+   frecuente del run de anoche (95.001 eventos — línea 498). L1 es ciego al
+   flujo parcial desde siempre; no hubo regresión en L1, solo su ceguera
+   constante (DEBT-L1-PARTIAL-FLOW-SCORING-001, §18/§19).
+
+2. **El recall de primavera lo fabricaba el FAST path.** [PROBADO]
+   Muestra de mayo: 147.32.84.165→C&C, RANSOMWARE_FAST_DETECTION, fast=0.75,
+   DROP. Un detector "ransomware" sintético acertando sobre un botnet de 2011:
+   correcto por accidente. El recall 1.0 histórico nunca fue L1 clasificando.
+
+3. **El fast path se invirtió entre el 8-may y hoy.** [HIPÓTESIS — test pendiente]
+   Es la cara temporal de DEBT-FAST-PATH-INVERTED-DISCRIMINATION-001 (§19):
+   ventana acotada post-8-may. Sospechoso principal `fc292bc8` (fix DAY 219,
+   get_flow_stats_copy 26→28 campos): si los detectores embebidos se asentaron
+   sobre FlowStats amputadas, repararles la entrada les cambió la distribución.
+   Alternativo: `de87a1b5` (hardening de parsers).
+
+**Test que decide (barato):** ¿qué campos de FlowStatistics consume el detector
+ransomware embebido? ¿alguna feature depende de los 2 campos resucitados por
+`fc292bc8`? Sí → mecanismo hallado. Complemento: `git log` de sniffer/ y
+ml-detector/ entre 08-may y hoy.
+
+**Caso 27 del patrón (nuevo — Claude):** `grep -rl` sin `-c` usado como
+evidencia de "replays históricos abril–junio". Realidad: 2026-04-16 → 1 línea
+(evento sintético con IPs vacías); 2026-06-06 → 1 línea; solo 2026-05-08 fue
+replay real (31.503). `grep -l` es un head disfrazado. Conteo canónico: 26 (§16)
+→ **27**. Erratum §15.4: lo probado es "dual funciona HOY + un replay real el
+8-may", no "funcionó siempre".
