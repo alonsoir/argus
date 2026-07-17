@@ -545,3 +545,12 @@ finales en el valor (rompió el glob del report; comentarios en línea aparte);
 (b) awk en la VM con locale es_ES compara "0,5" como TEXTO — aritmética en
 VM SIEMPRE con LC_ALL=C y $1+0 (los conteos por umbral de las 02:5x eran
 basura; máximo y uniq -c no afectados — verificado).
+
+En la primera medición end-to-end honesta del sistema: el camino ML puntúa el botnet real con techo 0.626 
+(desajuste flujo-parcial, DEBT-L1-PARTIAL-FLOW-SCORING-001); el camino fast puntúa 0.0 al botnet y 0.75 al tráfico 
+benigno del lab (discriminación invertida, herencia directa del entrenamiento sintético 
+y sus deudas conocidas → DEBT-FAST-PATH-INVERTED-DISCRIMINATION-001, P0/P1); 
+y la capa de decisión, con su max() monocapa y threshold 0.7, convirtió esa combinación en ~224K falsos positivos 
+y 0 detecciones L1. 
+Ningún componente de detección del sistema desplegado funciona hoy contra tráfico real — y cada uno falla por una causa 
+distinta, medida y nombrada.
