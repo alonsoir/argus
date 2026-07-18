@@ -1,4 +1,4 @@
-# PROMPT DE CONTINUIDAD — DAY 230 (continúa DAY 229)
+# PROMPT DE CONTINUIDAD — DAY 223 (continúa DAY 222)
 
 ## Instrucciones generales para Claude
 1. Piensa antes de codificar. Expón suposiciones. Pregunta cuando no estés seguro. Nunca adivines.
@@ -8,419 +8,169 @@
 
 ## Invariantes
 - **medir, no votar** — verificar contra fichero, nunca contra memoria.
-- **Lección DAY 211 (lecturas parciales):** no concluir "X no existe" desde un `sed -n`, un
-  `head` o un grep de filtro estrecho. Fichero entero antes de afirmar ausencia.
-  *(DAY 229 la cobró DOS veces: el código eBPF sí existía —en `src/kernel/`, no en `src/ebpf/`—
-  y los tests "sin `add_test`" sí se ejecutaban, desde el Makefile.)*
-- **Lección DAY 223 (el grep que costó una noche):** `grep -rn` desde la raíz arrastra `build/`,
-  `.git/`, `.venv/`, `vendor/`. Usar `git grep` o acotar con `-- ruta/`. Y **nunca encadenar dos
-  comandos de salida grande**.
-- **Lección DAY 223 (BACKLOG):** ninguna deuda vive en fichero propio. Todas son secciones `###`
-  dentro de `docs/BACKLOG.md`.
-- **Lección DAY 224 (el número que nadie midió):** antes de propagar una cifra al paper, medirla.
-- **Lección DAY 224 (constructos que no distinguen "hizo" de "no hizo"):** `sed -i` devuelve 0
-  aunque no sustituya nada. Igual el `||` del Makefile.
-- **Lección DAY 225 (la config que el proceso no ha leído):** el sujeto de la verificación es el
-  proceso, no el fichero.
-- **Lección DAY 225 (nombres que mienten):** leer el cuerpo, no el nombre.
-- **Lección DAY 226 (verde en la capa equivocada):** un verde en una capa intermedia no dice nada
-  de la salida. Medir el fichero que se produce.
-- **Lección DAY 226 (dos caminos que discrepan):** si el mismo fichero implementa la misma
-  conversión dos veces, una de las dos está mal por definición.
-- **Lección DAY 227 (la puerta que era un comentario):** un aviso escrito no es una barrera de
-  código.
-- **Lección DAY 227 (el artefacto que se evaporó):** lo que importa va a `/vagrant`, nunca a
-  `/tmp` de una VM.
-- **Lección DAY 228 (dos decisiones que nunca se vieron la cara):** antes de escribir el criterio
-  de éxito, medir el discriminador del que depende.
-- **Lección DAY 228 (el idioma ya estaba en casa):** antes de escribir contra una librería, buscar
-  quién en el repo ya la usa.
-- **🆕 Lección DAY 229 (el criterio que no puede fallar):** la definición de HECHO de
-  `DEBT-SNIFFER-IP-BYTE-ORDER-001` era "recomputar el `community_id` desde las IPs de la propia
-  fila". Pasaba VERDE con el bug presente, porque hash y cadena beben de la misma fuente
-  corrupta. **Antes de aceptar un criterio, comprobar que puede ponerse rojo.**
-- **🆕 Lección DAY 229 (un sensor único no puede auditarse a sí mismo):** con una sola fuente,
-  toda verificación interna sale coherente porque todo está igual de mal. Hizo falta un
-  observador externo (Suricata, fórmula Corelight) para que la discrepancia existiera. Es el
-  argumento empírico más fuerte del proyecto a favor del multi-sensor.
-- **🆕 Lección DAY 229 (la alarma con la explicación puesta de antemano):** `crosscheck-run`
-  trata el `exit 2` del verificador de paridad como "anomalías esperadas por cobertura asimétrica
-  aRGus". La puerta existía y disparaba; su señal venía preetiquetada como ruido. **HIPÓTESIS SIN
-  MEDIR** — confirmar o descartar en DAY 230.
-- **🆕 Lección DAY 229 (el bug que solo se ve en las IPs que reconoces):** invertir cuatro octetos
-  produce otra IP sintácticamente válida. `165.84.32.147` no llama la atención de nadie; por eso
-  sobrevivió cinco meses sobre el CTU-13. Solo chirriaba en `192.168.` y `255`.
+- **Lección DAY 211 (lecturas parciales):** NO concluir "X no existe" desde un `sed -n`,
+  un `head -30` o un `grep` con filtro estrecho. Se pisó DOS veces en DAY 222 (un
+  `head -30` comido por Avro; un `find` mal leído que "demostró" que no había VM de
+  Wazuh — sí la hay). Grep completo antes de afirmar ausencia.
+- **Lección DAY 222 (parches idempotentes):** un parche Python cuyo `assert count == 1`
+  se ancla en el PUNTO DE INSERCIÓN y no en el RESULTADO duplica la línea al relanzarlo,
+  sin quejarse. Anclar contra el texto que se va a insertar.
 - **JSON is the law** · **bronce PRESERVA, gold DECIDE** · **Via Appia** (ledger inmutable;
   Kuzu = proyección reconstruible por MERGE).
 - **EMECAS+++** antes de cualquier merge · **PR obligatorio** (main tiene branch protection).
-- macOS/zsh: comillas en globs, NUNCA `sed -i`, Python3 heredoc para editar. Commits/push desde
-  el HOST. `git add` explícito por fichero, nunca `-u` ni `-a`.
-- Parches idempotentes: **anclar el guard en el RESULTADO, no en el punto de inserción**
-  (validado en vivo DAY 229: el `YA ESTABA — no se toca` evitó una duplicación).
+- **Consejo de Sabios** ratifica decisiones de arquitectura.
+- macOS/zsh: comillas en globs, NUNCA `sed -i`, Python3 heredoc para editar.
+  Commits/push desde el HOST. `git add` explícito por fichero, nunca `-u` ni `-a`.
 - Rama ANTES del primer `git add`. Scripts scratch → `.gitignore` al crearlos.
-- **Guardar SIEMPRE en la rama remota al cerrar sesión.**
+- **Guardar SIEMPRE en la rama remota al cerrar sesión.** Los FS locales fallan.
 - Un día, una batalla.
 
 ---
 
-## Contexto estratégico (vigente desde DAY 223)
-
-Ya NO se presenta nada ante Andrés ni ante FEDER. **Objetivo:** cerrar el pipeline lo mejor
-posible y escribir el paper de la forma más honesta y científica posible. Fin de proyecto:
-31-ago / primera semana de septiembre, repositorio en modo lectura.
+## Contexto estratégico (decisión DAY 221, vigente)
+aRGus se **DESACTIVA como clasificador**. Techo medido 0.65–0.70 (PROBE 0: recall 0.81,
+AUC 0.746 in-sample) — inaceptable para hospital. Se completa el pipeline aguas abajo
+para que funcione el **grafo Suricata/Zeek/Wazuh unido por `community_id`** con ground
+truth externo. El paper se reescribe super-honesto. Fin de proyecto: 31-ago / primera
+semana de septiembre, repositorio en modo lectura.
 
 ### Plan de cierre en 6 pasos
-1. ~~Terminar el pipeline aguas abajo; provocar que los datos lleguen al grafo.~~ ✅ **HECHO
-   DAY 228 para Suricata** (falta Zeek y Wazuh).
+1. Terminar el pipeline aguas abajo; provocar que los datos lleguen al grafo.  ← EN CURSO
 2. Script MITRE para provocar datos → grafo.
-3. ~~Verificar que el grafo se consulta vía Kuzu.~~ ✅ **HECHO DAY 228** (`kuzu_query`).
+3. Verificar que el grafo se consulta vía Kuzu.
 4. Paper con las lecciones aprendidas.
 5. README.md de verdad.
 6. Repositorio en modo lectura.
 
----
-
-## Estado — DOS ramas vivas
-
-| rama | estado |
-|---|---|
-| `fix/sniffer-ip-byte-order` | **actual**, pusheada, base main `fb08e8f6`. El arreglo del byte order |
-| `feat/suricata-to-graph` | pusheada, **sin mergear a main**. Todo el trabajo del adapter + grafo |
-
-**Orden acordado:** esta rama a main primero (es pequeña y aislada), luego rebasar
-`feat/suricata-to-graph` sobre el main ya arreglado, para que el adapter herede el sniffer bueno.
-
-VMs: `defender` **running**, `suricata` **running**, `client` / `zeek` / `wazuh` **not created**.
-
-⚠️ **EMECAS+++ destruye la VM `suricata`** (`vagrant destroy -f` ignora `autostart:false`, medido
-DAY 226) y con ella su toolchain instalado a mano. Sería la tercera vez. Pagar antes
-`DEBT-VM-SENSOR-NO-TOOLCHAIN-001` (bloque `ADAPTER_TOOLCHAIN` en el Vagrantfile raíz) lo convierte
-en no destructivo, y además sirve para `zeek` y `wazuh`.
-
-⚠️ **El bronce de ESTA rama cae en `/vagrant/logs/correlation/argus`** (ruta por sensor,
-`correlation_engine.json:32` + `ml_detector_config.json:422`). El bronce PLANO con prefijo
-`argus-` de DAY 222 vive solo en `feat/suricata-to-graph`. No buscar el CSV en el sitio de la otra
-rama.
+**Pendiente personal:** escrito para el Consejo (informe + agradecimiento); Alonso informa a Andrés.
 
 ---
 
-## Lo conseguido en DAY 229 — `DEBT-SNIFFER-IP-BYTE-ORDER-001` arreglado por la raíz
+## Estado al cierre de DAY 222 — rama `feat/suricata-to-graph` (desde main fb08e8f6)
 
-### Causa raíz, medida en el kernel (no inferida)
+### DECISIÓN DE ARQUITECTURA (firme)
+**SIN switches en ningún JSON. Diseño dirigido por datos:** si los ficheros del contrato
+`correlation_v1` de cualquier componente llegan al bronce, el grafo los usa para
+actualizarse. El arranque de cada componente sigue fuera del engine (Makefile + Vagrant).
+*Descartada* la idea previa de un JSON-interruptor que levantase procesos: mezclaba plano
+de control y plano de datos.
 
-`sniffer/src/kernel/sniffer.bpf.c:232`:
+**Separación estricta de feeds (ratificada):** el ml-detector controla EN EXCLUSIVA el feed
+de aRGus y su config no menciona ningún otro sensor. El feed de Suricata tendrá su PROPIO
+JSON, con su `base_dir` al mismo buzón y su propia constante `source_sensor="suricata"`.
+Nunca se toca la config interna de Suricata. Igual para Zeek y Wazuh.
 
-```c
-event->src_ip = (ip[12] << 24) | (ip[13] << 16) | (ip[14] << 8) | ip[15];
-```
+### CIRCUITO MEDIDO (no recordado — corrige varios recuerdos falsos)
+sensor → CSV bronce (correlation_v1, 19 cols, HMAC por fila)
+→ [inotify IN_MOVED_TO — NO ZeroMQ]
+→ bronze_to_gold_converter (Flujo A, DAY 205; CLI 3 args;
+requiere env ARGUS_BRONZE_HMAC_KEY_HEX)
+├─ bronce AVRO (cols 0-18, copia exacta — bronce PRESERVA)
+└─ oro Parquet (cols 0-21: + flow_start_window, seq_in_window, flow_uid)
+→ parquet_to_kuzu_loader (Flujo B, Eslabón 2, DAY 208)
+→ KuzuGraphSink → MERGE (upsert) en Kuzu
+- **AVRO sí existe.** **NO hay plano "silver"**: son dos, bronce y oro.
+- **El upsert está en el GRAFO, no en el Parquet.** Oro = ledger append-only. Invariante intacto.
+- **Semántica ideal para multi-sensor:** dos sensores con el mismo `flow_uid` convergen al
+  MISMO nodo `NetworkFlow`, con un `Alert` cada uno colgando por `ALERT_ABOUT`. La
+  correlación multi-sensor YA está diseñada; no hay que inventarla.
 
-Ensambla la IP a mano como **entero en orden de HOST** — correcto y deliberado, e independiente
-del endianness de la máquina. `ring_consumer.cpp:844` se lo pasaba a `inet_ntop` **sin deshacer la
-conversión**, y en x86 los bytes en memoria quedan al revés:
+### TRABAJO HECHO HOY (3 commits, todo pusheado)
+1. **`source_sensor` en el grafo.** Era el eslabón perdido: la col 1 viajaba íntegra por
+   writer → lib → reader → Parquet → loader y **se caía al escribir el nodo**. Añadida a
+   `Alert` y `TelemetryEvent` (NO a `NetworkFlow`: identidad pura, el flujo es compartido).
+   RED→GREEN sobre `test_graph_sink_loop`. Suite correlation-engine **9/9 verde**.
+   Ficheros: `schema.cypher`, `cypher_builder.hpp`, `kuzu_graph_sink.cpp` (14→15 params),
+   `logging_graph_sink.hpp` (comentario fósil `:RAISED` retirado), `test_graph_sink_loop.cpp`.
+2. **Prefijo de sensor + buzón plano.** `get_basename()` deriva el prefijo de
+   `CORRELATION_SOURCE_SENSOR` (punto único con la col 1) → `argus-%Y-%m-%d-%H%M%S.csv`.
+   `base_dir`/`root_dir` → `/vagrant/logs/correlation` (plano) en los DOS únicos JSON que
+   cablean la ruta. **Motivo medido:** `BronzeDirWatcher` usa un solo `inotify_add_watch` y
+   **NO es recursivo** → con subdirectorio por sensor, el engine no vería a Suricata.
+   `make ml-detector` limpio con `-Werror`; `test_correlation_roundtrip` PASA.
+3. Este prompt de continuidad.
 
-| paso | valor |
-|---|---|
-| cable `ip[12..15]` | `C0 A8 38 01` |
-| `event->src_ip` | `0xC0A83801` |
-| memoria (little-endian) | `01 38 A8 C0` |
-| `inet_ntop` | **`1.56.168.192`** |
+### HALLAZGO GORDO — el gate de tests del ml-detector NO MIDE (arreglar DAY 223)
+Dos defectos apilados:
+- **(a) `DEBT-MAKEFILE-TEST-GATE-MASKED-001` (P1).** En `test-components`, cada componente
+  termina en `|| echo "⚠️ No X tests configured"`. Ese `||` se traga el fallo: no distingue
+  "no hay tests" de "los tests fallan". Afecta a **sniffer, ml-detector, rag-ingester,
+  etcd-server, rag-security y firewall**. Solo `correlation-engine-test` escala de verdad
+  (va como dependencia, sin `||`).
+- **(b) `DEBT-MLDETECTOR-TESTS-NOT-BUILT-001` (P1).** De los **11** tests registrados con
+  `add_test` en el ml-detector, **10 están en `Not Run`**: el ejecutable no existe en
+  `build/tests`. No fallan — nunca se construyen. Son: `test_classifier`,
+  `test_feature_extractor`, `test_rag_logger_artifact_save`, `test_model_loader`,
+  `test_zmq_memory_overflow`, `RansomwareDetectorUnit`, `test_pipeline`,
+  `test_csv_event_writer`, `test_csv_feature_extraction`, `test_etcd_client_hmac`.
+  El único que sí corre es `test_correlation_roundtrip`.
 
-Cuadra exactamente con el CSV medido en DAY 226. El falsador (que el kernel asignara
-`iph->saddr` en crudo) quedó descartado.
+**Consecuencia:** `test-all` —y por tanto EMECAS+++— lleva un tiempo indeterminado dando
+verde con **un solo test de ml-detector corriendo de verdad**. Misma familia que
+`DEBT-VERDICT-MONOCAPA-001`: un gate que parece medir y no mide.
+**Para el paper:** cualquier afirmación tipo "la suite pasa" sobre el ml-detector necesita asterisco.
 
-**Contrato del evento eBPF, ahora explícito:** todos los campos son NÚMEROS en orden de host.
-Userspace solo debe convertir donde use una API orientada a BYTES. `ring_consumer.cpp:844` era la
-ÚNICA violación → el arreglo es seguro, ningún otro campo la necesitaba.
-
-### Tres sitios de conversión, no dos
-
-| sitio | forma | veredicto |
-|---|---|---|
-| `ring_consumer.cpp:844` | `s_addr = event.src_ip` | 🔴 mal |
-| `ring_consumer.cpp:1235` | `s_addr = htonl(event.src_ip)` | 🟢 bien |
-| `main_libpcap.cpp:115` | puntero a `iph->ip_src` | 🟢 bien |
-
-Consecuencia cerrada por el propio arreglo: la Variante A (eBPF) y la Variante B (libpcap)
-producían `community_id` **incompatibles entre sí**. Ya no. Y explica por qué el bug sobrevivió:
-quien probara por libpcap veía `community_id` correctos.
-
-### Lo que se hizo
-
-- `sniffer/include/ip_format.hpp` (nuevo) — `ip_host_to_buffer(uint32_t, char*, size_t)`, punto
-  ÚNICO de conversión, **sin asignar memoria** (el camino principal usa buffers preasignados
-  reutilizados; devolver `std::string` habría metido una asignación por paquete).
-- `sniffer/tests/test_ip_format.cpp` (nuevo) — oráculo EXTERNO (aritmética de la RFC). **Sin
-  `assert()`**: el perfil `production` lleva `-DNDEBUG` y habría vaciado el test. Devuelve
-  código != 0 explícito.
-- Los cuatro `inet_ntop` de `ring_consumer.cpp` pasan por la función. El camino de alerta pierde
-  su `htonl` externo. **La duplicación que causó el fallo desaparece.**
-- Bloque en `sniffer/CMakeLists.txt` con `add_test`.
-
-### Medido
-
-- **RED:** `test_ip_format` falla **3 de 6** e imprime `0xC0A83801 esperado 192.168.56.1 obtenido
-  1.56.168.192` — el bug de producción reproducido en **0,02 s**, sin VM de Suricata, sin pcap y
-  sin kernel.
-- **GREEN:** 6/6 con `htonl` dentro de la función.
-- Línea base ANTES de tocar los llamantes: `ctest` 12/12. Después: 12/12 + `test_ring_consumer_protobuf` 4/4.
-- `make sniffer -j4` limpio con `-Werror` (confirma que `src_addr`/`dst_addr` no se usaban en
-  ningún otro sitio).
-- Diff total: 4 ficheros, 94 inserciones, 10 borrados.
-- 🟢 **En remoto:** `fix/sniffer-ip-byte-order` pusheada, tracking configurado.
-
-### ⚠️ Lo que NO está demostrado
-
-| afirmación | estado |
-|---|---|
-| la conversión IP es correcta | 🟢 `test_ip_format` |
-| no hemos roto nada | 🟢 12/12 + 4/4 |
-| **el bronce sale con IPs reales** | ⚪️ **SIN VERIFICAR** |
-| aRGus y Suricata convergen al mismo `NetworkFlow` | ⚪️ sin verificar |
-
-`test_ring_consumer_protobuf` pasa, pero ejercita la extracción de **features** (40 ML + 102
-base): no imprime ni asserta `source_ip`. Es no-regresión, **no** verificación. Y `ctest` no
-cubre `ring_consumer` en absoluto.
-
-### El hallazgo que puede ser la mejor página del paper (HIPÓTESIS, sin medir)
-
-`crosscheck-run` (Makefile ~2932):
-
-```
-if [ $$rc -eq 2 ]; then echo "   [i] exit 2 = hay anomalias (esperado por cobertura asimetrica aRGus)..."
-```
-
-El verificador de paridad `tools/community_id_crosscheck.py` **existía desde DAY 171/172**,
-comparaba aRGus contra Zeek y Suricata — el oráculo externo exacto que hacía falta — y su código
-de salida 2 estaba preetiquetado como ruido esperado. **Si las anomalías eran el byte order, la
-puerta disparó durante cinco meses y nadie la miró.** Confirmar o descartar leyendo
-`anomalies.tsv` y el script.
+**Aviso antes de arreglarlo:** al construir esos 10, lo más probable es que salgan rojos
+de verdad (deudas de ML ya conocidas y dadas por irrecuperables). NO dejar que eso bloquee
+la rama de Suricata. Decidir explícitamente qué se arregla y qué se marca como known-red.
 
 ---
 
-## Plan DAY 230 — opciones
+## Plan DAY 223
+1. **Pieza 4: deudas al `docs/BACKLOG.md`.**
+   - `DEBT-MAKEFILE-TEST-GATE-MASKED-001` (P1, nueva)
+   - `DEBT-MLDETECTOR-TESTS-NOT-BUILT-001` (P1, nueva)
+   - Deuda del **grafo** multi-sensor: `DEBT-PARQUET-GOLD-SCHEMA-MULTISENSOR-001` cubre el
+     Parquet ORO, **no** el grafo. Registrar el hueco (parcialmente cerrado hoy con `source_sensor`).
+   - `file_pattern` de `correlation_engine.json` es **campo muerto** y ahora miente más
+     (declara `%Y-%m-%d.csv`, el writer produce `argus-%Y-%m-%d-%H%M%S.csv`). Corregir o borrar.
+2. **Arreglar el gate de tests** (los dos defectos), con la cautela de arriba.
+3. **EMECAS+++** completo → PR de `feat/suricata-to-graph`.
+4. **Después, la puerta de diseño de Suricata:** `parquet_to_kuzu_loader` declara alcance v1
+   mono-fuente y advierte explícitamente que NO se generalice sin pasar antes por
+   `DEBT-PARQUET-GOLD-SCHEMA-MULTISENSOR-001` **+ su propia ronda de Consejo**. Eso es
+   trabajo de escritura, no de código, y va antes del adapter.
 
-**Recomendación de Claude: la 1 antes que la 2.** Leer es más barato que ejecutar, y lo que diga
-`anomalies.tsv` puede cambiar qué tiene que demostrar el E2E.
+### Cuestiones abiertas para el diseño del adapter de Suricata
+- **HMAC (col 18).** Cada productor necesita firmar. ¿Firma cada adapter (distribución de
+  clave a N productores) o firma un colector único al aterrizar (una sola clave, pero el
+  bronce deja de ser "lo que emanó el sensor")? Afecta a la cadena de custodia.
+  Toca `DEBT-SECRETS-MANAGER-PERSISTENCE-001` (P1, claves solo en memoria).
+- **`event_id` es PK de `Alert`.** El de Suricata NO puede colisionar con el de aRGus o un
+  `MERGE` machacaría el evento del otro sensor.
+- **`CREATE NODE TABLE IF NOT EXISTS` NO migra catálogos Kuzu existentes.** Una BD
+  persistida de antes del cambio de hoy necesita recrearse. Tests y EMECAS+++ no lo
+  detectan (parten de base fresca / VM destruida).
 
-**Opción 1 — Confirmar o descartar la hipótesis del `exit 2`.** Puro trabajo de lectura, sin VMs
-ni builds: `tools/community_id_crosscheck.py` (¿qué compara, contra qué oráculo, qué cuenta como
-anomalía?) y el `anomalies.tsv` que haya en el repo o en `logs/lab/`. Alto valor para el paper,
-coste casi nulo. Si se confirma, hay que escribir la sección.
-
-**Opción 2 — E2E barato del bronce (cierra la deuda de verdad).** No necesita `zeek` ni
-`suricata`: replayar el Neris con `test-replay-neris` y comprobar que el bronce de
-`/vagrant/logs/correlation/argus` trae `147.32.84.x` donde antes traía `165.84.32.147`. Las IPs
-del pcap son verdad de campo externa y conocida.
-⚠️ `pipeline-start` arrastra `test-provision-1`, que es un CI gate de OCHO checks (claves, firmas
-de plugins, configs de producción). No es una operación de diez minutos.
-⚠️ Verificar que el proceso que corre es el binario recién compilado (lección DAY 225): el sujeto
-es el proceso, no el fichero.
-
-**Opción 3 — Registrar el lote de deudas de DAY 229 en `docs/BACKLOG.md`** (lista abajo). Trabajo
-de escritura, cierra la sesión limpia.
-
-**Opción 4 — EMECAS+++ y PR de `fix/sniffer-ip-byte-order`.** Decisión de orden, no técnica:
-o se paga antes `DEBT-VM-SENSOR-NO-TOOLCHAIN-001`, o se asume reinstalar el toolchain de
-`suricata` a mano por tercera vez.
-
-**Opción 5 — Volver a `feat/suricata-to-graph`** y llevarla a main (arrastrado desde DAY 223).
-
----
-
-## Aparcado (no olvidar)
-
-### Nuevo de DAY 229 — registrar en `docs/BACKLOG.md`
-- **`DEBT-EVENT-STRUCT-DUPLICADA-001`** (nueva): la struct del evento del ring buffer está
-  declarada DOS veces — `sniffer.bpf.c:87` (`__u32 src_ip`) y `sniffer/include/main.h:22`
-  (`uint32_t src_ip`, incluida vía `ring_consumer.hpp:5`). Ninguno de los 18 includes de
-  `ring_consumer.cpp` es cabecera compartida con el kernel. El ring buffer transporta bytes
-  crudos: un desajuste de orden de campos o padding **no daría error de compilación**, daría
-  corrupción silenciosa. Es el patrón eBPF habitual, pero sin gate. **PENDIENTE:** comparar las
-  dos structs campo a campo (`sniffer.bpf.c` ~75-110 vs `main.h` ~10-45).
-- **No existe target `sniffer-test`** en el Makefile, mientras `correlation-engine-test` sí
-  existe y escala fallos. El sniffer tiene 12 tests en ctest y ningún target propio. Va con la
-  Opción 4 de automatización de DAY 228.
-- **`Makefile:1197`** confirmado: el `||` de `DEBT-MAKEFILE-TEST-GATE-MASKED-001` sigue ahí. La
-  invocación SIN máscara de la 2150 pertenece a `tsan-quick` (perfil TSAN, otro build dir): no es
-  un gate honesto escondido.
-- **`test_payload_analyzer` y `test_proto3_embedded_serialization`**: sin `add_test` y sin
-  invocación conocida en el Makefile. (Los otros tres que parecían huérfanos —
-  `test_sharded_flow_full_contract`, `test_ring_consumer_protobuf`,
-  `test_sharded_flow_multithread` — sí se ejecutan, desde `Makefile:2275-2277`.)
-- **`commit-message.txt` está trackeado** y bloquea `git checkout` con cualquier borrador a
-  medias. `git rm --cached` + línea en `.gitignore`. Va con las dos líneas corruptas del
-  `.gitignore` de DAY 227.
-- **Dos ficheros de respaldo trackeados**: `sniffer/src/kernel/sniffer.bpf.c.backup` y
-  `sniffer/src/userspace/ml_defender_features.cpp.bak.day79`. Familia "dos caminos que discrepan";
-  sin medir si difieren del fuente vivo.
-- **`build-prod` y `build-production`** conviven como dos directorios de perfil. Sin medir.
-- **Para el paper:** el bronce histórico de aRGus (`logs/correlation/argus-*.csv` anteriores a
-  hoy) lleva IPs invertidas y `community_id` calculados sobre ellas. No es comparable con nada
-  producido después del arreglo. Declararlo como procedencia.
-
-### Arrastrado de DAY 228
-- **`DEBT-GRAPH-ALERT-ROUTING-MONOSENSOR-001`**: `is_alert(r) { return r.final_classification ==
-  "MALICIOUS"; }` (`cypher_builder.hpp:40`) — ningún sensor externo puede producir un `Alert`.
-  Decisión DAY 228: Opción A (aceptar `TelemetryEvent`), **afinar con datos de MITRE**.
-- **`DEBT-NODE-ID-VERSION-LABEL-001`**: `node_id = cpp_sniffer_v33_day12` es una etiqueta de
-  VERSIÓN del sniffer; el adapter de Suricata la hardcodea para converger. D2 se cumple por
-  imitación, no por diseño.
-- `kuzu_query` no está en el Makefile · el loader no captura la excepción al abrir Kuzu · el
-  loader accede a las columnas por índice posicional sin validar el esquema.
-- El escáner de secretos del pre-commit avisa `Warning: Unrecognized key in config: paths_ignore`
-  — una clave que la herramienta ignora en silencio. Familia DAY 224.
-- **Opción 5 de DAY 228 (el premio del 98,7%)**: primer paso barato y sin escribir mapeo — medir
-  cuántos eventos de cada tipo llevan `community_id` (requisito duro de `validate()`).
-  `tools/eval/eve_field_coverage.py` puede que ya lo conteste.
-
-### Arrastrado de DAY 227 y anteriores
-- Discrepancia etcd-vs-env de la clave HMAC · medir si `SecretsManager` persiste la clave ·
-  `git ls-files | grep -i -e '\.onnx$' -e '\.npz$'`.
-- **`DEBT-VM-SENSOR-NO-TOOLCHAIN-001`** — bloque `ADAPTER_TOOLCHAIN` en el Vagrantfile raíz.
-- **Telemetría (D4)**: el adapter descarta 104.392 eventos de dns/http/tls/… (98,7% del volumen).
-- **Decisión no ratificada**: preimagen del `event_id` (D3) con separador `\x1f` vs length-prefix
-  canónico de `flow_uid.hpp`.
-- Sección de rangos de timestamp en `tools/eval/eve_field_coverage.py` · retoques de la puerta de
-  diseño (16,7% es propiedad de la captura; FTP fija el puerto; smallFlows es de 2011-01-25) ·
-  `evidencia/README.md` con procedencia · el provisioning de Suricata no reinicia el servicio tras
-  tocar el YAML.
-- Rama `fix/test-gate-masked` · nota recíproca en `DEBT-PARQUET-GOLD-SCHEMA-MULTISENSOR-001`
-  (BACKLOG:5138) · **Pieza `flow_uid` → rama aparte** (`fix/flow-uid-time-free` desde main).
-- Guard D-D diferido: cuando se active, `"suricata"` debe ser símbolo `DetectorSource` legal.
-
----
-
-## Punteros
-- `sniffer/include/ip_format.hpp` — 🆕 punto único de conversión IP → texto
-- `sniffer/tests/test_ip_format.cpp` — 🆕 el oráculo externo
-- `sniffer/src/kernel/sniffer.bpf.c:232` — donde se ensambla la IP (orden de host)
-- `sniffer/src/userspace/ring_consumer.cpp:843` y `:1231` — los dos llamantes, ya unificados
-- `sniffer/include/main.h:22` — la SEGUNDA declaración de la struct del evento
-- `tools/community_id_crosscheck.py` — el verificador de paridad (hipótesis del `exit 2`)
-- `suricata-adapter/src/to_row.cpp` — el mapeo del adapter
-- `correlation-engine/tools/{bronze_to_gold_converter,parquet_to_kuzu_loader,kuzu_query}.cpp`
-- `correlation-engine/include/correlation_engine/cypher_builder.hpp` — `is_alert` (línea 40)
-- `correlation-engine/tests/test_flujo_b_end_to_end.cpp` — el molde
-- `libs/correlation-v1/{include,src}` — contrato, `validate` es notario único
-- `ml-detector/src/correlation_writer.cpp:73-100` — el ORÁCULO (`to_correlation_v1_row`)
+## Punteros (medidos DAY 222 — re-verificar al abrir)
+- `correlation-engine/schema/schema.cypher` — NetworkFlow (identidad pura) / Alert /
+  TelemetryEvent (ambos con veredicto + `source_sensor`) / CORRELATES_FLOW / ALERT_ABOUT /
+  TELEMETRY_ABOUT. `flow_uid = hash(node_id ‖ community_id ‖ flow_start_window)`.
+- `correlation-engine/include/correlation_engine/cypher_builder.hpp` — `make_bindings()` es
+  la FUENTE ÚNICA de derivados; 2 plantillas parametrizadas + `build_cypher` (solo logging).
+- `correlation-engine/src/kuzu_graph_sink.cpp` — `exec_row`, 15 params.
+- `correlation-engine/src/bronze_dir_watcher.cpp` — inotify NO recursivo, `IN_MOVED_TO`.
+- `ml-detector/src/correlation_writer.cpp` — `get_basename()` (~192), `ensure_open()` (~199).
+- `ml-detector/include/correlation_writer.hpp:46` — `CORRELATION_SOURCE_SENSOR = "argus"`.
+- Vagrantfile raíz: **cinco VMs** — defender (running), client, suricata, zeek, wazuh
+  (las cuatro *not created*). La topología multi-sensor ya está declarada.
+- Logs ya capturados: `logs/experiment/suricata-*/eve.json`, `logs/experiment/zeek/*`.
+- `tools/community_id_crosscheck.py` — paridad `community_id` validada E2E contra Suricata+Zeek.
+- Paper arXiv:2604.04952 — reescritura honesta pendiente.
 
 ## Comandos útiles
-```
-# Build incremental de un target del sniffer (PROFILE ?= debug → build-debug)
-vagrant ssh -c "cd /vagrant/sniffer/build-debug && cmake .. > /dev/null && make <target> -j4"
-
-# Suite del sniffer SIN pasar por el target enmascarado del Makefile
-vagrant ssh -c "cd /vagrant/sniffer/build-debug && ctest --output-on-failure"
-
-# El test que ejercita ring_consumer NO está en ctest — se lanza a mano
-vagrant ssh -c "cd /vagrant/sniffer/build-debug && ./test_ring_consumer_protobuf"
-
-git grep -n '<patrón>' -- <ruta>/         # NUNCA grep -rn desde la raíz
-vagrant ssh suricata -c "<comando>"       # la máquina va ANTES del -c
-vagrant ssh -c "<comando>"                # a secas va a defender
-
-# Grafo de DAY 228 (rama feat/suricata-to-graph)
-vagrant ssh -c "cd /vagrant && ./correlation-engine/build/kuzu_query logs/day228-kuzu/suricata.kuzu 'MATCH (f:NetworkFlow) RETURN count(*)'"
-```
-
+make correlation-engine-build                 # rm -rf build: reconstruye entero
+vagrant ssh -c 'cd /vagrant/correlation-engine/build && 
+make -j4 <target> && ctest -R <target> --output-on-failure'
+make ml-detector                              # incremental
+vagrant ssh -c 'cd /vagrant/ml-detector/build && ctest --output-on-failure'
 ## Ritmo
+DAY 222: 07:30–10:00, dos horas y media de trabajo limpio y sin baches. La sesión empezó
+con un prompt de continuidad obsoleto (DAY 211 congelado en main) y acabó con tres piezas
+medidas, commiteadas y pusheadas, más dos deudas nuevas encontradas por el método de
+siempre: mirar el binario en vez del banner. El hallazgo del gate enmascarado no es un
+revés — es la vigilancia funcionando otra vez, a seis semanas del cierre. Ritmo real
+marcado por el cuidado familiar y las ventanas de crédito.
 
-DAY 229 fue una sesión de lectura con veinte líneas de código al final. El arreglo era una
-palabra; lo que costó fue **saber que era la palabra correcta** y **construir un criterio que
-pudiera ponerse rojo**. El criterio que llevaba escrito en la deuda desde DAY 227 no podía.
-
-Marcador de predicciones DAY 229: **10 acertadas, 1 refutada** (dije "fallan 4 de 6" y fallan 3:
-solo tres de los seis casos son no-capicúa), **1 sospecha refutada** (el filtro de puertos de los
-mapas eBPF estaba bien; ni un `htons` fuera de sitio).
-
-Lo que de verdad se llevó el día: el bug lo cazó **la comparación**, no la inspección. Un sensor
-único es autoconsistente por construcción — su hash y sus IPs beben de la misma fuente corrupta,
-así que ninguna verificación interna puede delatarlo. Hizo falta integrar Suricata para que la
-discrepancia existiera. Eso, que hace tres días parecía fontanería de integración, es la
-evidencia empírica de la tesis del paper.
-
-*Via Appia Quality — antes de aceptar un criterio, comprobar que puede ponerse rojo.*
-
-## 🆕 Radio de explosión del byte order sobre la clasificación (medido DAY 229, tras cerrar)
-
-Pregunta de Alonso: *¿este bug afectaba a la calidad del `ml_score`?* Todo lo de abajo es
-**medición, no arreglo**. No se tocó una línea.
-
-### 🟢 L1 exonerado, ahora contra fuente
-
-`ml-detector/src/feature_extractor.cpp:169-174` — las cadenas `nf.source_ip()` /
-`nf.destination_ip()` aparecen **dentro de `if (logger_->level() <= spdlog::level::debug)`**, en
-un `logger_->debug("Flow: {}:{} -> {}:{}")`. Puro logging. Las 23 features (`features[0..22]`)
-son todas estadísticas numéricas de flujo.
-
-**Ninguna IP entra en el vector de L1.** Se suma al argumento de DAY 221 (el Paso 2 puntuó con
-features de CICFlowMeter, extractor independiente, y dio recall 0,0001): el fallo de L1 no tiene
-nada que ver con el orden de bytes.
-
-Y hay un argumento estructural que conviene escribir en el paper: **invertir cuatro octetos es una
-biyección** aplicada igual a origen y destino, así que la agregación de flujos agrupa exactamente
-los mismos paquetes. Duración, conteos, IAT, tamaños, flags y tasas son idénticos con y sin bug.
-Lo que la inversión destruye no es la identidad, es la **semántica** de la IP.
-
-### 🔴 `source_ip_dispersion` no se calcula — por eso el bug no la tocó
-
-| sitio | qué dice |
-|---|---|
-| `sniffer/src/userspace/ml_defender_features.cpp:64` | `extract_ddos_source_ip_dispersion(const FlowStatistics& /*flow*/)` — **parámetro comentado, sin usar** |
-| `sniffer/src/userspace/ring_consumer.cpp:35` | `ddos->set_source_ip_dispersion(MISSING_FEATURE_SENTINEL)` |
-| `ml-detector/src/main.cpp:297` | `.source_ip_dispersion = 0.5f` |
-| `ml-detector/include/ml_defender/ddos_trees_inline.hpp:859` | nodo `{2, 0.0000000000f, 2, 5, {0.9988056731f, 0.0011943269f}}` → `source_ip_dispersion <= 0.0000?` |
-
-Es decir: **una feature constante alimentando un corte del árbol de la cabeza DDoS**. Familia de
-`DEBT-RANSOMWARE-ML-HEAD-INERT-001`. La hipótesis del prefijo (que la inversión disparara la
-dispersión) queda **descartada por una razón peor que la que se buscaba**: no hay nada que
-disparar.
-
-**Pista cronológica:** el respaldo trackeado `ml_defender_features.cpp.bak.day79:64` declara la
-misma función con el parámetro **nombrado** (`const FlowStatistics& flow`). En algún momento sí se
-calculaba y dejó de hacerse. Aquí el `.bak` es evidencia, no basura.
-
-### 🔴🔴 El fast path tiene lógica interno/externo, y el arreglo de DAY 229 NO la toca
-
-`sniffer/src/userspace/fast_detector.cpp:40-42`:
-
-```cpp
-if (is_external_ip(evt.dst_ip)) {
-    if (is_new_external_ip(evt.dst_ip)) {
-        recent_external_ips_.insert(evt.dst_ip);
-```
-
-Usa el campo **numérico** `evt.dst_ip` del `SimpleEvent`, no la cadena. Por tanto `ip_format.hpp`
-no le afecta: **si está mal, sigue mal después del arreglo de hoy.**
-
-La pregunta abierta es **qué orden de bytes asume `is_external_ip`**. El kernel entrega orden de
-host (`sniffer.bpf.c:232`). Si la función compara asumiendo orden de red —mirando el octeto bajo,
-o contra constantes pasadas por `htonl`— estaría clasificando interno como externo desde siempre.
-
-Es candidato serio a explicar la **inversión del fast path post-8-mayo** (0,0 al botnet, 0,75 al
-chatter benigno) y quizá parte de los ~224.000 falsos positivos sobre chatter benigno de DAY 221.
-No es veredicto: es hipótesis con una medición barata que la resuelve.
-
-### 🟡 Segundo sitio con rangos privados
-
-`sniffer/src/userspace/time_window_aggregator.cpp:396-406` tiene comentarios `10.0.0.0/8`,
-`172.16.0.0/12`, `192.168.0.0/16`. Pendiente leer qué hace con ellos y con qué orden de bytes.
-
-### Descartados
-
-- `zmq_handler.cpp:748` — `traffic_result.is_internal(config_.ml.thresholds.level3_web)` es un
-  método sobre el resultado de clasificación con un umbral, no lógica de rango de IP.
-- **Geolocalización: no está implementada** (confirmado por Alonso). Los campos
-  `source_ip_geo` / `destination_ip_geo` de `rag_logger.cpp:299-311` son estructura sin uso. No
-  hubo daño. Queda como mina: si se implementa antes de arreglar el byte order, daría países
-  sistemáticamente erróneos.
-
-### Mediciones pendientes, en orden
-
-1. Cuerpo de `extract_ddos_source_ip_dispersion` (`ml_defender_features.cpp:64-75`) y valor de
-   `MISSING_FEATURE_SENTINEL`.
-2. **Cuerpo de `is_external_ip` / `is_new_external_ip`** — el orden de bytes que asumen. *Es el
-   único de la lista que podría seguir roto hoy.*
-3. `time_window_aggregator.cpp:390-415` — qué hace con los tres rangos privados.
-4. Diff entre `ml_defender_features.cpp` y su `.bak.day79`, para fechar cuándo dejó de calcularse
-   la dispersión.
+*Via Appia Quality — medir quién habla, no solo qué dice. Un grafo que sabe de qué sensor
+viene cada señal.*
