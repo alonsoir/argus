@@ -47,7 +47,7 @@ static constexpr const char* CORRELATION_SOURCE_SENSOR  = "argus";
 static constexpr size_t CORRELATION_TOTAL_COLS = 19;
 
 struct CorrelationWriterConfig {
-    std::string base_dir;                 // p.ej. /vagrant/logs/correlation/argus
+    std::string base_dir;                 // p.ej. /vagrant/logs/correlation (PLANO, multi-sensor)
     std::string hmac_key_hex;             // 64-char hex (32 bytes), igual que CsvEventWriter
     size_t      max_events_per_file = 10000;
     int         rotation_seconds    = 30;  // DAY 203 -- cierre por tiempo absoluto desde

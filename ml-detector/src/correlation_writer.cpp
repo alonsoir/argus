@@ -189,7 +189,10 @@ std::string CorrelationWriter::get_time_string() const {
 }
 
 std::string CorrelationWriter::get_basename() const {
-    return get_date_string() + "-" + get_time_string();
+    // Prefijo de sensor: mismo origen que la col 1 del contrato -> punto unico.
+    // Necesario para el bronce PLANO multi-sensor (DAY 222): un solo directorio,
+    // un solo inotify watch (no es recursivo), sin colision entre productores.
+    return std::string(CORRELATION_SOURCE_SENSOR) + "-" + get_date_string() + "-" + get_time_string();
 }
 
 void CorrelationWriter::ensure_open() {
