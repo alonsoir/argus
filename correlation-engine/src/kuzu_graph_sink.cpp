@@ -43,7 +43,7 @@ std::vector<std::string> split_statements(const std::string& path) {
 }
 
 // Binder de PRODUCCION: ejecuta UNA fila via prepared statement parametrizado.
-// 14 params distintos (ingested_at se referencia en f Y e pero se bindea UNA vez).
+// 15 params distintos (ingested_at se referencia en f Y e pero se bindea UNA vez).
 // Los std::string temporales viven hasta que execute() retorna (misma full-expression):
 // el requisito "14 vivos a la vez" se cumple por construccion. Esto es el path que cierra
 // H-1 ESTRUCTURALMENTE: cero interpolacion de datos de red.
@@ -53,6 +53,7 @@ bool exec_row(Connection& conn, PreparedStatement* prep,
         std::pair{std::string("flow_uid"),             std::string(b.flow_uid)},
         std::pair{std::string("node_id"),              std::string(b.node_id)},
         std::pair{std::string("community_id"),         std::string(b.community_id)},
+        std::pair{std::string("source_sensor"),        std::string(b.source_sensor)},
         std::pair{std::string("flow_start_window"),    b.flow_start_window},   // uint64_t
         std::pair{std::string("seq_in_window"),        b.seq_in_window},       // uint32_t
         std::pair{std::string("ingested_at"),          b.ingested_at},         // uint64_t
