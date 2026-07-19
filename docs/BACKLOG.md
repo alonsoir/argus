@@ -1575,8 +1575,8 @@ El TSV de cross-check de aRGus estampa timestamp SINTÉTICO porque `community_id
 - `WAZUH_MANAGER_PASSWORD` eliminado del Vagrantfile (fix de seguridad).
 
 ### DEBT-ARGUSPP-COMMUNITY-ID-001 — community_id en Suricata + Zeek (PARCIAL)
-- **Status:** 🟡 60% DAY 168 — configuración hecha, falta aRGus
-- community-id habilitado en Suricata (`community-id: yes`) y Zeek (`community-id-v1`).
+- **Status:** ✅ CERRADA (marcado DAY 224) — el 60% de DAY 168 quedó obsoleto: la parte de aRGus se cerró vía `DEBT-ARGUSPP-COMMUNITY-ID-ARGUS-001` (nativo, 8/8 contra oráculo pycommunityid v1.5.0, protobuf campo 18). El README ya lo daba por cerrado; esta entrada no se había actualizado.
+- community-id habilitado en Suricata (`community-id: yes` + `community-id-seed: 0`) y Zeek (`@load policy/protocols/conn/community-id-logging` — NO `community-id-v1`, corregido DAY 170; ver Vagrantfile raíz:1247).
 - **PENDIENTE (P0, DAY 169+):** campo `community_id` en el contrato protobuf y
   cálculo en el sniffer de aRGus. El ID NO viene por defecto en aRGus — Suricata,
   Zeek y Wazuh lo traen de fábrica, aRGus no.
@@ -5333,10 +5333,12 @@ no es "mismos bytes" entre productores) y `DEBT-SECRETS-MANAGER-PERSISTENCE-001`
 memoria). Firmar por adapter distribuye la clave a N productores; firmar en un colector único
 rompe que el bronce sea "lo que emanó el sensor". Afecta a la cadena de custodia.
 
-**⚠️ Discrepancia sin dirimir:** `DEBT-PARQUET-GOLD-SCHEMA-MULTISENSOR-001` describe
-`correlation_v1` como **24 campos**; lo medido en DAY 222 es **19 columnas** en el CSV bronce
-(0-18) y **22** en el oro (0-21). Puede ser protobuf vs CSV, o un número fósil. **No propagar
-ninguno de los dos hasta medirlo.**
+**✅ Discrepancia DIRIMIDA (DAY 224):** el 24 NO era errata. El documento de diseño
+`docs/design/eslabon-1-flujo-a-avro-parquet/eslabon-1-flujo-a-avro-parquet.md` tiene la tabla
+nominal completa: 0-18 bronce + 19 `flow_start_window` + 20 `seq_in_window` + 21 `flow_uid` +
+**22 `ingested_at`** + **23 `temporal_anomaly`** (ambas clase E). Diseñadas 24, implementadas
+22. **Faltan las cols 22 y 23** — ya cubiertas por `DEBT-CIRCUIT-TEMPORAL-ANOMALY-PARITY-001`,
+que el propio documento marca como "implementación aún pendiente". No hace falta deuda nueva.
 
 **Semántica objetivo (ya diseñada, no hay que inventarla):** dos sensores con el mismo `flow_uid`
 convergen al MISMO nodo `NetworkFlow`, con un `Alert` cada uno colgando por `ALERT_ABOUT`.
@@ -5345,3 +5347,42 @@ convergen al MISMO nodo `NetworkFlow`, con un `Alert` cada uno colgando por `ALE
 sobre el mismo `flow_uid`; el grafo conserva **DOS** `Alert` distintos, cada uno con su
 `source_sensor`, colgando de **UN** solo `NetworkFlow`. El test debe fallar en RED antes del fix
 de `event_id`.
+
+
+---
+
+## 🆕 Entradas DAY 224 — Inventario de Suricata + provisioning que no verifica
+
+### DEBT-PROVISION-SED-SILENT-NOOP-001 — `sed -i` en provisioning no distingue "funcionó" de "no hizo nada"
+**Severidad:** 🟡 P2 — provisioning silenciosamente incompleto
+**Estado:** ABIERTO — DAY 224 (sospecha fuerte, NO confirmada contra la VM)
+**Componente:** `experiments/suricata-comparative/Vagrantfile:60-62` (y auditar el resto)
+El provisioning hace `sed -i 's/community-id: false/community-id: yes/' ... || sed -i '/eve-log:/a ...'`.
+**`sed -i` devuelve 0 aunque no sustituya nada**, así que el `||` de respaldo NUNCA se ejecuta.
+Si el patrón no casa (indentación distinta, clave comentada), la opción se queda apagada y nada
+se queja. Misma familia que `DEBT-MAKEFILE-TEST-GATE-MASKED-001`.
+**Evidencia (medida):** los logs de `logs/experiment/suricata-*/eve.json` (10-11 mayo, salidos de
+ese banquillo) **no contienen `community_id` ni una sola vez** en las 211.136 líneas, ni al nivel
+superior ni anidado. El Vagrantfile **raíz** sí hace `echo` de verificación (líneas 1180, 1267);
+el del banquillo no. No confirmado contra el YAML de la VM — no se levantó, no aportaba al cierre.
+**Test de cierre:** todo `sed` de provisioning que active una opción va seguido de una
+verificación que falle ruidosamente si la opción no quedó puesta.
+
+### Inventario medido de Suricata eve.json (DAY 224) — insumo para la puerta de diseño
+Barrido **completo** de `logs/experiment/suricata-offline/eve.json`, 211.136 líneas:
+`dns` 169.140 · `flow` 34.692 · `http` 2.810 · **`alert` 2.762** · `fileinfo` 1.120 · `smtp` 228 ·
+`anomaly` 168 · `tls` 104 · `smb` 72 · `snmp` 32 · `stats` 6 · `sip` 2.
+**Solo el 1,3% de los eventos son alertas.** El 98,7% es telemetría → un adapter que solo mapee
+alertas tira casi todo. El adapter debe **enrutar por `event_type`** a dos tipos de nodo:
+`Alert` y `TelemetryEvent`. No es un mapeo 1-a-1.
+Claves presentes en el 100% de los eventos: `timestamp`, `flow_id`, `event_type`, `src_ip`,
+`src_port`, `dest_ip`, `dest_port`, `proto`.
+**Estos logs NO sirven como fuente del adapter** (sin `community_id`): valen para inventariar.
+La fuente real es la VM `suricata` del Vagrantfile raíz, con provisión verificada.
+**Cobertura de los 19 campos del bronce desde Suricata:** los ponemos nosotros (`schema_version`,
+`source_sensor`, `node_id`, `authoritative_source`, `hmac_row`) · copia directa (`src_ip`,
+`dest_ip`, `src_port`, `dest_port`, `proto`) · config (`community_id`) · **`flow_start_sec/nano`
+NO es el `timestamp` del evento** — hay que sacarlo de `flow.start`, o el `flow_uid` diverge y
+los sensores no convergen al mismo `NetworkFlow` · **sin contrapartida** (`final_classification`,
+`threat_category`, `fast_detector_score`, `ml_detector_score`, `overall_threat_score`) ·
+`event_id` a acuñar sin colisión (`DEBT-GRAPH-SCHEMA-MULTISENSOR-001`).
