@@ -29,7 +29,6 @@
     "service_registration_path": "/services/correlation-engine"
   },
   "bronze": {
-    "root_dir": "/vagrant/logs/correlation",
-    "file_pattern": "%Y-%m-%d.csv"
+    "root_dir": "/vagrant/logs/correlation"
   }
 }

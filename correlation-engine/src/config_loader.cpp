@@ -42,7 +42,6 @@ CorrelationEngineConfig load_correlation_engine_config(const std::string& config
         throw std::runtime_error("config invalida: falta bronze.root_dir en " + config_path);
     }
     cfg.bronze.root_dir = j["bronze"]["root_dir"].get<std::string>();
-    cfg.bronze.file_pattern = j["bronze"].value("file_pattern", std::string("%Y-%m-%d.csv"));
 
     // profiles / etcd: NO parseados todavia — ver _refactor_notes en el JSON.
 

@@ -5257,3 +5257,91 @@ se mantiene como registro histórico del proceso de diseño y ratificación
 (README, evidence/, documento de diseño 9/9) — no se mueve, solo el `.cpp`.
 El `README.md` de esa carpeta se actualiza con una nota señalando la nueva
 ubicación del código.
+
+
+---
+
+## 🆕 Entradas DAY 223 — Gate de tests que no medía + esquema del grafo multi-sensor
+
+### DEBT-MAKEFILE-TEST-GATE-MASKED-001 — El `||` de `test-components` se traga los fallos
+**Severidad:** 🔴 P1 — integridad del gate de tests (afecta a qué podemos afirmar en el paper)
+**Estado:** ABIERTO — DAY 223 · descubierta DAY 222
+**Componente:** `Makefile` (raíz), target `test-components`
+Cada componente termina en `|| echo "⚠️ No X tests configured"`. Ese `||` no distingue
+**"no hay tests configurados"** de **"los tests fallan"**: en ambos casos el target sale 0.
+**Afecta a:** sniffer, ml-detector, rag-ingester, etcd-server, rag-security, firewall.
+Solo `correlation-engine-test` escala de verdad, porque entra como dependencia y sin `||`.
+**Consecuencia:** `test-all` — y por tanto **EMECAS+++** — lleva un tiempo indeterminado dando
+verde sin que ese verde signifique lo que parece. Misma familia que `DEBT-VERDICT-MONOCAPA-001`
+y `DEBT-CE-TESTS-UNGATED-001`: un gate que aparenta medir y no mide.
+**Para el paper:** toda afirmación del tipo "la suite pasa" sobre los componentes afectados
+necesita asterisco hasta que esto se cierre.
+**Test de cierre:** introducir un test que falle a propósito en un componente afectado y
+comprobar que `make test-components` devuelve código ≠ 0. La ausencia de tests debe ser una
+condición **declarada explícitamente** por componente, no el efecto colateral de un `||`.
+
+### DEBT-MLDETECTOR-TESTS-NOT-BUILT-001 — 10 de 11 tests del ml-detector nunca se construyen
+**Severidad:** 🔴 P1 — integridad del gate de tests
+**Estado:** ABIERTO — DAY 223 · descubierta DAY 222
+**Componente:** `ml-detector/CMakeLists.txt` / `ml-detector/build/tests`
+De los **11** tests registrados con `add_test`, **10 aparecen en `Not Run`**: el ejecutable no
+existe en `build/tests`. No fallan — **nunca se construyen**. Son: `test_classifier`,
+`test_feature_extractor`, `test_rag_logger_artifact_save`, `test_model_loader`,
+`test_zmq_memory_overflow`, `RansomwareDetectorUnit`, `test_pipeline`, `test_csv_event_writer`,
+`test_csv_feature_extraction`, `test_etcd_client_hmac`. El único que corre de verdad es
+`test_correlation_roundtrip`.
+**Apilada sobre `DEBT-MAKEFILE-TEST-GATE-MASKED-001`:** el `||` impide que la ausencia se note.
+Dos defectos independientes que se tapan mutuamente.
+**Aviso de alcance (DAY 222):** al construir esos 10 lo más probable es que salgan **rojos de
+verdad** — deudas de ML ya conocidas y dadas por irrecuperables en esta línea de investigación.
+Eso NO debe bloquear otras ramas. Al abordarla hay que decidir **explícitamente** qué se arregla
+y qué se marca **known-red** con su propio ID.
+**Test de cierre:** los 10 ejecutables se construyen y `ctest` los ejecuta; cada uno queda en
+verde o registrado como known-red con ID propio. Ninguno vuelve a `Not Run` en silencio.
+
+### DEBT-GRAPH-SCHEMA-MULTISENSOR-001 — Esquema del grafo Kuzu ante múltiples sensores
+**Severidad:** 🔴 P1 — integridad del grafo (pérdida silenciosa de eventos con un 2º sensor)
+**Estado:** PARCIALMENTE CERRADO — abierta DAY 223 · avance medido DAY 222
+**Componente:** `correlation-engine/schema/schema.cypher`,
+`include/correlation_engine/cypher_builder.hpp`, `src/kuzu_graph_sink.cpp`
+**Hermana de `DEBT-PARQUET-GOLD-SCHEMA-MULTISENSOR-001` — NO la sustituye.** Aquella cubre el
+esquema columnar del Parquet ORO; ésta cubre **identidad y semántica de `MERGE`** en el grafo.
+Esta entrada **reclama** la tercera pregunta abierta de aquella ("¿el grafo necesita trazar qué
+combinación de señales produjo cada `Alert`/`NetworkFlow`?"), que es cuestión de grafo y quedó
+allí por no existir esta entrada en DAY 207. *Pendiente:* añadir la línea recíproca en la
+entrada del Parquet (diff aparte).
+
+**Cerrado DAY 222:** `source_sensor` (col 1) viajaba íntegra writer → lib → reader → Parquet →
+loader y **se caía al escribir el nodo**. Añadida a `Alert` y `TelemetryEvent`. **NO** a
+`NetworkFlow`: identidad pura, el flujo es compartido entre sensores por diseño. RED→GREEN sobre
+`test_graph_sink_loop`; `exec_row` 14→15 params; suite correlation-engine 9/9.
+
+**🔴 BLOQUEANTE ABIERTO — colisión de `event_id`.** `event_id` es PK de `Alert`. El `event_id`
+de Suricata no puede colisionar con el de aRGus: un `MERGE` machacaría el evento del otro sensor
+**sin error y sin traza**. No es un hueco de diseño, es **pérdida de datos silenciosa** en cuanto
+el adapter escriba la primera fila. Requiere decisión de esquema (namespacing `sensor:uid` vs
+hash compuesto) ANTES de cualquier adapter. Si esa decisión resulta tener vida propia, se
+promociona a `DEBT-GRAPH-EVENTID-COLLISION-001`. Relacionada: `DEBT-EVENT-ID-FACTORY-001`.
+
+**Abierto — migración de catálogo.** `CREATE NODE TABLE IF NOT EXISTS` **NO migra catálogos Kuzu
+existentes**. Una BD persistida de antes de DAY 222 no tiene `source_sensor` y necesita
+recrearse. Tests y EMECAS+++ **NO lo detectan**: parten de base fresca / VM destruida. Riesgo
+exclusivo de instalaciones con estado.
+
+**Abierto — firma del bronce multi-productor.** Ver `DEBT-BRONZE-HMAC-KEY-POLICY-001` (la col 18
+no es "mismos bytes" entre productores) y `DEBT-SECRETS-MANAGER-PERSISTENCE-001` (claves solo en
+memoria). Firmar por adapter distribuye la clave a N productores; firmar en un colector único
+rompe que el bronce sea "lo que emanó el sensor". Afecta a la cadena de custodia.
+
+**⚠️ Discrepancia sin dirimir:** `DEBT-PARQUET-GOLD-SCHEMA-MULTISENSOR-001` describe
+`correlation_v1` como **24 campos**; lo medido en DAY 222 es **19 columnas** en el CSV bronce
+(0-18) y **22** en el oro (0-21). Puede ser protobuf vs CSV, o un número fósil. **No propagar
+ninguno de los dos hasta medirlo.**
+
+**Semántica objetivo (ya diseñada, no hay que inventarla):** dos sensores con el mismo `flow_uid`
+convergen al MISMO nodo `NetworkFlow`, con un `Alert` cada uno colgando por `ALERT_ABOUT`.
+
+**Test de cierre:** dos sensores distintos con `event_id` de generación independiente escriben
+sobre el mismo `flow_uid`; el grafo conserva **DOS** `Alert` distintos, cada uno con su
+`source_sensor`, colgando de **UN** solo `NetworkFlow`. El test debe fallar en RED antes del fix
+de `event_id`.

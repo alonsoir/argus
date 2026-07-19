@@ -17,7 +17,6 @@ struct CorrelationEngineConfig {
 
     struct {
         std::string root_dir;      // p.ej. /vagrant/logs/correlation (PLANO, multi-sensor)
-        std::string file_pattern;  // strftime, p.ej. "%Y-%m-%d.csv"
     } bronze;
 };
 
