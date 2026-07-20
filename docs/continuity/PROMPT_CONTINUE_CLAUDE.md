@@ -1,4 +1,4 @@
-# PROMPT DE CONTINUIDAD — DAY 225 (continúa DAY 223-224)
+# PROMPT DE CONTINUIDAD — DAY 226 (continúa DAY 225)
 
 ## Instrucciones generales para Claude
 1. Piensa antes de codificar. Expón suposiciones. Pregunta cuando no estés seguro. Nunca adivines.
@@ -8,54 +8,45 @@
 
 ## Invariantes
 - **medir, no votar** — verificar contra fichero, nunca contra memoria.
-- **Lección DAY 211 (lecturas parciales):** NO concluir "X no existe" desde un `sed -n`,
-  un `head` o un grep con filtro estrecho. Aplica también a los barridos de Claude: leer las
-  primeras 2000 líneas de un fichero de 87 MB es un `head` disfrazado. Fichero entero antes
-  de afirmar ausencia.
-- **Lección DAY 223 (el grep que costó una noche):** `grep -rn <patrón> .` desde la raíz
-  arrastra `build/`, `.git/`, `.venv/`, `vendor/` y **tarda horas**. **Usar `git grep`** o
-  acotar con `-- ruta/`. Y **nunca encadenar dos comandos de salida grande**: el segundo se
-  come la salida del primero.
-- **Lección DAY 223 (convención del BACKLOG):** ninguna deuda vive en fichero propio. Todas
-  son secciones `###` dentro de `docs/BACKLOG.md` (>5400 líneas). Que no exista `DEBT-XXX.md`
-  NO significa que la deuda no exista.
-- **Lección DAY 224 (el número que nadie midió):** el "24 campos" del BACKLOG llevaba desde
-  DAY 207 sin que nadie lo comparase con el código. Era CIERTO — del diseño — y la
-  implementación salió con 22. Un número copiado de un revisor a una entrada y de ahí a la
-  verdad. Antes de propagar una cifra al paper, medirla.
+- **Lección DAY 211 (lecturas parciales):** no concluir "X no existe" desde un `sed -n`, un
+  `head` o un grep de filtro estrecho. Fichero entero antes de afirmar ausencia.
+- **Lección DAY 223 (el grep que costó una noche):** `grep -rn` desde la raíz arrastra `build/`,
+  `.git/`, `.venv/`, `vendor/`. Usar `git grep` o acotar con `-- ruta/`. Y **nunca encadenar dos
+  comandos de salida grande**: el segundo se come la salida del primero.
+- **Lección DAY 223 (BACKLOG):** ninguna deuda vive en fichero propio. Todas son secciones `###`
+  dentro de `docs/BACKLOG.md`.
+- **Lección DAY 224 (el número que nadie midió):** el "24 campos" llevaba 17 días mintiendo.
+  Antes de propagar una cifra al paper, medirla.
 - **Lección DAY 224 (constructos que no distinguen "hizo" de "no hizo"):** `sed -i` devuelve 0
-  aunque no sustituya nada → un `sed ... || fallback` tiene el fallback muerto. Igual que el
-  `||` del Makefile. Toda activación de opción lleva verificación ruidosa detrás.
-- **Lección DAY 222 (parches idempotentes):** anclar el `assert` contra el texto que se va a
-  insertar, NO contra el punto de inserción.
+  aunque no sustituya nada → el fallback del `||` está muerto. Igual el `||` del Makefile.
+- **🆕 Lección DAY 225 (la config que el proceso no ha leído):** verificar el FICHERO no basta.
+  Suricata tenía `community-id: yes` en el YAML y emitía 0 `community_id` porque el servicio
+  arrancó 45 s ANTES de que el provisioning escribiera la config. Comparar **mtime de la config
+  contra la hora de arranque del proceso**. El sujeto de la verificación es el proceso, no el fichero.
+- **🆕 Lección DAY 225 (nombres que mienten):** `flow_start_window` no ventanea, `emecas+++` es un
+  alias de `emecas++`, y un "campo vacío" resultó no poder estar vacío (es `double`). Leer el
+  cuerpo, no el nombre.
 - **JSON is the law** · **bronce PRESERVA, gold DECIDE** · **Via Appia** (ledger inmutable;
   Kuzu = proyección reconstruible por MERGE).
 - **EMECAS+++** antes de cualquier merge · **PR obligatorio** (main tiene branch protection).
 - macOS/zsh: comillas en globs, NUNCA `sed -i`, Python3 heredoc para editar.
   Commits/push desde el HOST. `git add` explícito por fichero, nunca `-u` ni `-a`.
 - Rama ANTES del primer `git add`. Scripts scratch → `.gitignore` al crearlos.
-- **Guardar SIEMPRE en la rama remota al cerrar sesión.** Los FS locales fallan.
+- **Guardar SIEMPRE en la rama remota al cerrar sesión.**
 - Un día, una batalla.
 
 ---
 
 ## Contexto estratégico (vigente desde DAY 223)
 
-**Ya NO se presenta nada ante Andrés ni ante FEDER.** El propósito original era entregar un
-pipeline capaz de producir datasets de calidad, ser analizador fiable y generar árboles ensemble
-que reconocieran ataques nuevos. Eso exige modelos muy superiores a los que hay, y por esta línea
-de investigación no somos capaces de producirlos (techo medido 0.65–0.70; PROBE 0: recall 0.81,
-AUC 0.746 in-sample).
-
-**Objetivo actual:** cerrar el pipeline lo mejor posible — añadiendo al grafo las señales del
-resto de componentes — y escribir el paper de la forma más honesta y científica posible,
-mostrando los datos, para que en el futuro alguien pueda retomar la investigación y producir
-modelos ensemble fiables (>90% sobre ataques reales, por comportamiento).
-
-Fin de proyecto: 31-ago / primera semana de septiembre, repositorio en modo lectura.
+Ya NO se presenta nada ante Andrés ni ante FEDER. **Objetivo:** cerrar el pipeline lo mejor
+posible — que las señales del resto de componentes lleguen al grafo — y escribir el paper de la
+forma más honesta y científica posible, mostrando los datos, para que en el futuro alguien pueda
+retomar la investigación. Fin de proyecto: 31-ago / primera semana de septiembre, repositorio en
+modo lectura.
 
 ### Plan de cierre en 6 pasos
-1. Terminar el pipeline aguas abajo; provocar que los datos lleguen al grafo.  ← EN CURSO
+1. Terminar el pipeline aguas abajo; provocar que los datos lleguen al grafo. ← EN CURSO
 2. Script MITRE para provocar datos → grafo.
 3. Verificar que el grafo se consulta vía Kuzu.
 4. Paper con las lecciones aprendidas.
@@ -64,101 +55,128 @@ Fin de proyecto: 31-ago / primera semana de septiembre, repositorio en modo lect
 
 ---
 
-## Estado — rama `feat/suricata-to-graph` (desde main fb08e8f6)
+## Estado — rama `feat/suricata-to-graph` (HEAD 253a80fe, pusheada)
 
-### Arquitectura (firme, DAY 222)
-**SIN switches en ningún JSON. Dirigido por datos:** si los ficheros del contrato
-`correlation_v1` de cualquier componente llegan al bronce, el grafo los usa. El arranque de cada
-componente vive fuera del engine (Makefile + Vagrant).
-**Separación estricta de feeds:** el ml-detector controla EN EXCLUSIVA el feed de aRGus. Suricata
-tendrá su PROPIO JSON, con `base_dir` al mismo buzón plano y `source_sensor="suricata"`. Nunca se
-toca la config interna de Suricata. Igual Zeek y Wazuh.
+DAY 225 pasó `make emecas+++` en verde y commiteó la puerta de diseño + evidencia + script.
+**El adapter de Suricata todavía no tiene ni una línea escrita.** Todo lo de ayer fue medición y
+decisión, que era lo que faltaba.
 
-### Circuito medido
-sensor → CSV bronce (19 cols, HMAC por fila) → [inotify `IN_MOVED_TO`, watcher NO recursivo]
-→ `bronze_to_gold_converter` (env `ARGUS_BRONZE_HMAC_KEY_HEX`) → bronce AVRO (copia exacta) +
-oro Parquet (22 cols) → `parquet_to_kuzu_loader` → `KuzuGraphSink` → MERGE.
-El upsert está en el GRAFO, no en el Parquet. Oro = ledger append-only.
-
-### Hecho en DAY 223-224
-- `file_pattern` **borrado** (campo muerto: se parseaba, nadie lo leía). 9/9 verde sobre árbol
-  limpio con `make correlation-engine-clean && make correlation-engine-test`.
-- 3 deudas nuevas en `BACKLOG.md` (sección DAY 223): `DEBT-MAKEFILE-TEST-GATE-MASKED-001`,
-  `DEBT-MLDETECTOR-TESTS-NOT-BUILT-001`, `DEBT-GRAPH-SCHEMA-MULTISENSOR-001`.
-- Sección DAY 224: `DEBT-PROVISION-SED-SILENT-NOOP-001` + inventario de Suricata.
-- Corregidas dos líneas obsoletas de `DEBT-ARGUSPP-COMMUNITY-ID-001` (estado y policy de Zeek).
+**AVISO:** el EMECAS+++ destruyó la VM `suricata` (`vagrant destroy -f` ignora `autostart:false`;
+`vagrant up` pelado solo levanta `defender`). Los logs están a salvo en `logs/day225-*` del host.
+Al recrearla: `vagrant up suricata` **y después `systemctl restart suricata`** — el provisioning
+escribe el YAML tras arrancar el servicio y sin reinicio vuelves a tener 0 `community_id`.
 
 ---
 
-## Lo medido en DAY 224 (no repetir)
+## Lo medido en DAY 225 (no repetir)
 
-**Contrato: 24 diseñadas, 22 implementadas.** El diseño del Eslabón 1 define hasta la col 23:
-0-18 bronce + 19 `flow_start_window` + 20 `seq_in_window` + 21 `flow_uid` + **22 `ingested_at`**
-+ **23 `temporal_anomaly`**. El converter escribe 22. Las dos que faltan son clase E (las deriva
-el converter, no el sensor) y están cubiertas por `DEBT-CIRCUIT-TEMPORAL-ANOMALY-PARITY-001`.
+**Suricata emite `community_id`.** Diana E2E `1:IN7uqVpMWxpmuhQTowSQB2XEe0E=` presente 2 veces en
+el replay del Neris → seed 0 validado contra el `community_id` nativo de aRGus.
 
-**Suricata, barrido completo (211.136 eventos):** `alert` 2.762 (1,3%), el resto telemetría
-(`dns` 169.140, `flow` 34.692, `http` 2.810…). `community_id` **no aparece ni una vez** en esos
-logs — son del banquillo `experiments/`, con el `sed` sin verificar. La configuración correcta SÍ
-existe en el **Vagrantfile raíz** (Suricata 1169-1180: `community-id: yes` + `seed: 0` con echo
-de verificación; Zeek 1245-1267).
+**Cobertura por tipo de evento** (replay Neris, 107.264 eventos, 0 líneas ilegibles):
+`alert` 2.872 con `community_id` en 2.870 **y `flow.start` en 2.870** → el adapter de Alert es un
+**traductor línea a línea, sin estado**. La telemetría (dns 84.570, http, fileinfo, anomaly, smtp,
+tls, smb, snmp, sip) trae `community_id` y `flow_id` pero **`flow.start` = 0 en los nueve tipos**.
+`stats` (2) no trae nada. Las 2 alertas sin identidad son gid 1 sid 2200076 "SURICATA ICMPv4
+invalid checksum" — decoder sobre paquetes sin flujo.
 
-**Cobertura de los 19 campos desde Suricata:** nuestros (`schema_version`, `source_sensor`,
-`node_id`, `authoritative_source`, `hmac_row`) · directos (`src_ip`, `dest_ip`, `src_port`,
-`dest_port`, `proto`) · config (`community_id`) · **`flow_start` de `flow.start`, NO del
-`timestamp` del evento** · **sin contrapartida** los 5 de veredicto · `event_id` a acuñar.
+**La identidad de flujo actual NO puede converger.** `window_micros()` no ventanea: es
+`seconds*1e6 + nanos/1e3`, sin bucketing. Convergir exigiría exactitud de **microsegundo**, y ni
+con relojes perfectos: "inicio de flujo" es decisión semántica de cada motor. Además la fórmula
+tiene **4 entradas** (incluye `seq_in_window`), no 3 como dicen ADR-058 y BACKLOG; `seq` es 0 en
+los tres llamantes de producción.
+
+**Coste medido de quitar el tiempo:** colapso TCP 619/12.305 (5%), UDP 2.281/5.039 (45%),
+ICMP 0/2, total 2.900/17.346 (16,7%). Los repetidos son NetBIOS 137/138 (`sport=dport`), FTP con
+puerto de origen fijo (2048/2049→21) y DNS. Separación de **minutos**, misma hora → **ninguna
+ventana puede a la vez separarlos y hacer converger dos sensores**. Opciones A y C descartadas
+POR DATOS. Y el colapso **depende de la captura**: smallFlows da 1,2%.
+
+**Contrato:** `validate()` solo exige (1) `community_id` no vacío y (2) sin `\n`/`\r` en 11
+campos de texto. Los campos de veredicto vacíos PASAN. `schema_version` = `"1"`,
+`source_sensor` = `"argus"` (constantes), `node_id` = `event.originating_node_id()` ← viene de
+`config_.node_id` del sniffer (`ring_consumer.cpp:860`) → **es configuración, D2 es implementable**.
+`to_correlation_v1_row` devuelve `skip()` si `community_id` vacío: el adapter debe imitar esa forma.
 
 ---
 
-## Plan DAY 225
-1. **`vagrant up suricata`** (VM del Vagrantfile raíz, hoy *not created*). Verificar en la VM
-   que `community-id: yes` y `community-id-seed: 0` quedaron puestos de verdad en
-   `/etc/suricata/suricata.yaml` — no fiarse del provisioning, mirar el YAML.
-2. **Generar tráfico y capturar** un `eve.json` con `community_id`. Diana E2E conocida:
-   `1:IN7uqVpMWxpmuhQTowSQB2XEe0E=` sobre flujo Neris `147.32.84.165:1027 → 74.125.232.195:80`.
-3. **Medir sobre esa captura**, no sobre la vieja: presencia de `community_id`, y si `flow.start`
-   aparece en los eventos de tipo `alert` o solo en los de tipo `flow` (decide si el adapter
-   necesita correlacionar dos eventos para componer una fila del contrato).
-4. **Escribir la puerta de diseño** (documento, no código): tabla campo × sensor, decisión sobre
-   los 5 campos de veredicto sin contrapartida, y decisión de `event_id`.
-5. Pendientes que NO bloquean: EMECAS+++ y PR de esta rama · rama aparte `fix/test-gate-masked` ·
-   nota recíproca en `DEBT-PARQUET-GOLD-SCHEMA-MULTISENSOR-001` (5138) apuntando a la del grafo.
+## Decisiones ratificadas (documento commiteado)
 
-### Bloqueantes antes de escribir una línea del adapter
-- **`event_id` es PK de `Alert`.** El de Suricata no puede colisionar con el de aRGus: un `MERGE`
-  machacaría el evento del otro sensor **sin error y sin traza**.
-- **`flow_start` divergente rompe el `flow_uid`** y con él la convergencia al mismo `NetworkFlow`.
-- **Los 5 campos de veredicto no tienen contrapartida.** Rellenarlos con centinelas contamina el
-  grafo con un veredicto que Suricata nunca emitió. Decisión de diseño, no de código.
-- `CREATE NODE TABLE IF NOT EXISTS` **NO migra catálogos Kuzu existentes**.
-- HMAC multi-productor → `DEBT-BRONZE-HMAC-KEY-POLICY-001` + `DEBT-SECRETS-MANAGER-PERSISTENCE-001`.
+`docs/design/multisensor-graph-identity/puerta-diseno-multisensor.md`
 
-## Punteros (re-verificar al abrir)
-- `docs/design/eslabon-1-flujo-a-avro-parquet/eslabon-1-flujo-a-avro-parquet.md` — tabla nominal
-  de las 24 columnas. **Léelo entero al abrir DAY 225**: es también la plantilla de cómo se lleva
-  un CSV al grafo, y por tanto el modelo para el resto de sensores.
-- `correlation-engine/tools/bronze_to_gold_converter.cpp:323-344` — los 22 `arrow::field`.
-- `correlation-engine/schema/schema.cypher` — NetworkFlow (identidad pura) / Alert /
-  TelemetryEvent (con `source_sensor`). `flow_uid = hash(node_id ‖ community_id ‖ flow_start_window)`.
-- `correlation-engine/src/kuzu_graph_sink.cpp` — `exec_row`, 15 params.
-- `tools/community_id_crosscheck.py` — lee `/var/log/suricata/eve.json` y
-  `/vagrant/logs/lab/zeek/conn.log` (rutas de VM, NO `logs/experiment/`).
-- Vagrantfile raíz: cinco VMs — defender (running), client, suricata, zeek, wazuh (*not created*).
-- `DEBT-HOST-DOMAIN-CONTRACT-001` (BACKLOG:4714) — Wazuh es dominio host, contrato propio
-  `host_domain_v1`, separado de `correlation_v1`. El contrato NUNCA fue universal para los cuatro.
-- Paper arXiv:2604.04952 — reescritura honesta pendiente.
+- **D1** `flow_uid = hash(node_id ‖ community_id)`, tag `argus-flowuid-v2`. `flow_start` pasa a
+  propiedad (`ON CREATE SET` ya existe). El nodo es la **conversación**, no la instancia.
+- **D2** `node_id` = punto de observación, no host. `source_sensor` distingue al sensor.
+  Si dos sensores escuchan interfaces distintas, **es correcto que generen grafos distintos**.
+- **D3** `event_id` = `"suricata:" + base64(BLAKE2b-256(timestamp ‖ flow_id ‖ signature_id ‖
+  community_id))`. Determinista. NO usar `pcap_cnt`.
+- **D4** Telemetría sin `flow_start`; cuelga de la conversación por `community_id`.
+- **D5** Descarte con contador ruidoso, implementado como `skip()` igual que el oráculo.
+- **D6 (REESCRITA DAY 225):** los scores son `double` → "vacío" no existe. **Opción A**: quedan a
+  `0.0` como ausencia documentada, el consumidor filtra por `source_sensor`. (C: NaN, descartada
+  por riesgo de round-trip en CSV/Parquet/Kuzu). Los de texto SÍ se mapean:
+  `final_classification` ← `alert.signature`, `threat_category` ← `alert.category`.
+  **`alert.severity` se pierde**, documentado: rederivable desde la `signature`.
+- `flow.start` viene ISO-8601 con offset (`2011-08-10T09:04:32.432327+0000`, micros):
+  `flow_start_nano` = micros × 1000, respetando el offset **del evento**, no el de la VM.
+
+---
+
+## Plan DAY 226
+
+1. **`head -1 logs/correlation/argus-2026-07-20-094233.csv`** — el pipeline de aRGus estuvo
+   escribiendo bronce ayer (11:26-11:43). La **col 3** de esa línea es el `node_id` real que el
+   adapter debe replicar. Y la línea entera es el formato exacto a imitar (entrecomillado,
+   serialización de los `double`, HMAC col 18).
+2. **Escribir el adapter**: `eve.json → CorrelationV1Row`, espejo de `to_correlation_v1_row`.
+   C++ reutilizando `libs/correlation-v1` (serialize/HMAC/validate compartidos — nunca
+   reimplementar el contrato). Modo **lote**, no `tail -f`. Escritura `.tmp`→rename, basename
+   `suricata-%Y-%m-%d-%H%M%S.csv` desde su propia constante `CORRELATION_SOURCE_SENSOR`.
+   JSON propio con `base_dir` al buzón plano `/vagrant/logs/correlation`.
+3. **Criterio de éxito del día: UNA fila de Suricata en el bronce que pase `validate()`.**
+   Ni Parquet, ni Kuzu, ni grafo.
+4. Fuente de datos sin VM: `logs/day225-suricata-neris/eve.json` (55 MB, 2.872 alertas).
+
+## Aparcado (no olvidar)
+- Sección de rangos de timestamp en `tools/eval/eve_field_coverage.py`, para que
+  `eve-coverage-stale-config.txt` demuestre por sí solo la transición 05:12 → 05:24.
+- Retocar el documento: (a) el 16,7% es propiedad de la captura, no del diseño (rango 1,2–16,7%);
+  (b) §1.6 dice "puerto efímero" y hay clientes FTP que FIJAN el puerto; (c) smallFlows es de
+  2011-01-25, no de 2015; (d) **O3 miente**: dice "colector único firma" pero el adapter firmará
+  con `ARGUS_BRONZE_HMAC_KEY_HEX` vía `serialize()`; (e) D5 queda reforzada por el contrato
+  (`validate` rechaza `community_id` vacío, así que `stats` y decoder no podrían emitirse).
+- `evidencia/README.md` con procedencia (pcap, Suricata 7.0.10, 52.003 firmas, comando `-r`).
+- Deuda nueva: el provisioning de Suricata no reinicia el servicio tras tocar el YAML.
+- PR de `feat/suricata-to-graph` · rama `fix/test-gate-masked` · nota recíproca en
+  `DEBT-PARQUET-GOLD-SCHEMA-MULTISENSOR-001` (BACKLOG:5138).
+- **Pieza `flow_uid` → rama aparte** (`fix/flow-uid-time-free` desde main): toca identidad del
+  sistema entero. Vectores congelados a regenerar; BD Kuzu persistida queda obsoleta.
+- P3 sin medir: ¿el `ON MATCH SET` machaca `flow_start`? (`cypher_builder.hpp:103,112`).
+- Guard D-D diferido: cuando se active, `"suricata"` debe ser símbolo `DetectorSource` legal.
+- Makefile multicomponente: **después** de que exista un segundo productor, no antes.
+
+## Punteros
+- `docs/design/multisensor-graph-identity/puerta-diseno-multisensor.md` + `evidencia/`
+- `libs/correlation-v1/{include,src}` — contrato, `validate` es notario único
+- `ml-detector/src/correlation_writer.cpp:73-100` — el ORÁCULO (`to_correlation_v1_row`)
+- `correlation-engine/include/correlation_engine/flow_uid.hpp` — identidad, tag de versión
+- `tools/eval/eve_field_coverage.py` — reproduce todas las cifras del documento
+- `DEBT-HOST-DOMAIN-CONTRACT-001` — Wazuh es dominio host (`host_domain_v1`), **no converge por
+  `flow_uid`**. El paper no puede decir "grafo unificado de los cuatro" sin matiz.
 
 ## Comandos útiles
-make correlation-engine-test        # HOST. Depende de -build: rm -rf build + cmake + ctest
-make ml-detector                    # incremental
-git grep -n '<patrón>' -- <ruta>/   # NUNCA grep -rn desde la raíz
-vagrant up suricata                 # VM del Vagrantfile raíz
+```
+make correlation-engine-test              # HOST, rm -rf build + cmake + ctest
+python3 tools/eval/eve_field_coverage.py <eve.json>
+git grep -n '<patrón>' -- <ruta>/         # NUNCA grep -rn desde la raíz
+vagrant up suricata && vagrant ssh suricata -c "sudo systemctl restart suricata"
+```
 
 ## Ritmo
-DAY 224 no produjo casi código y fue de los días más productivos: dirimió un número que llevaba
-17 días mintiendo en el BACKLOG, encontró dos campos diseñados y nunca implementados, descubrió
-que los logs de Suricata que dábamos por buenos no tienen la clave de unión, y localizó un `sed`
-que no puede fallar. Todo por preguntar "¿seguro que los campos de aRGus son los de Suricata?"
-— la pregunta la hizo Alonso, no la máquina.
+DAY 225 fue de medición pura y desmontó tres afirmaciones que llevaban meses circulando sin
+comprobarse: que Suricata no emitía `community_id` (sí lo emite, el proceso no había releído la
+config), que el `flow_uid` hacía converger dos sensores (no puede: exige microsegundo exacto), y
+que la fórmula tenía tres entradas (tiene cuatro). Ninguna se descubrió leyendo documentación:
+las tres salieron de abrir el fichero.
 
 *Via Appia Quality — medir quién habla, no solo qué dice. Y medir el número antes de escribirlo.*
