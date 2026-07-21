@@ -3039,3 +3039,33 @@ eslabon1-smoke-build:
 
 eslabon1-smoke-test: eslabon1-smoke-build
 	@vagrant ssh defender -c "cd /vagrant && docs/design/eslabon-1-flujo-a-avro-parquet/smoke/eslabon1_smoke"
+
+# ════════════════════════════════════════════════════════════════════════════
+# suricata-adapter — eve.json -> bronce correlation_v1 (DAY 226)
+# Vive en la VM `suricata`, junto a su fuente de datos. OJO: el resto de targets
+# usan `vagrant ssh -c` a secas, que va a la VM primaria (defender). Este NO.
+# El build dir lleva sufijo porque /vagrant es carpeta COMPARTIDA entre VMs:
+# un `build/` pelado lo pisarían defender y suricata entre sí.
+# ════════════════════════════════════════════════════════════════════════════
+.PHONY: suricata-adapter-build suricata-adapter-test suricata-adapter-clean
+
+SURICATA_ADAPTER_BUILD_DIR := /vagrant/suricata-adapter/build-suricata
+
+suricata-adapter-build:
+	@echo "╔════════════════════════════════════════════════════════════╗"
+	@echo "║  🔨 Building suricata-adapter [VM: suricata]              ║"
+	@echo "╚════════════════════════════════════════════════════════════╝"
+	@vagrant ssh suricata -c 'cd /vagrant/suricata-adapter && \
+		export PKG_CONFIG_PATH=/usr/lib/x86_64-linux-gnu/pkgconfig:$$PKG_CONFIG_PATH && \
+		rm -rf build-suricata && mkdir -p build-suricata && cd build-suricata && \
+		cmake -DCMAKE_BUILD_TYPE=Debug .. && \
+		make -j4'
+	@echo "✅ suricata-adapter built"
+
+suricata-adapter-test: suricata-adapter-build
+	@echo "── suricata-adapter: test_to_row ──"
+	@vagrant ssh suricata -c "cd $(SURICATA_ADAPTER_BUILD_DIR) && ctest --output-on-failure"
+
+suricata-adapter-clean:
+	@vagrant ssh suricata -c "rm -rf $(SURICATA_ADAPTER_BUILD_DIR)"
+	@echo "✅ suricata-adapter cleaned"

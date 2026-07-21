@@ -5386,3 +5386,103 @@ NO es el `timestamp` del evento** — hay que sacarlo de `flow.start`, o el `flo
 los sensores no convergen al mismo `NetworkFlow` · **sin contrapartida** (`final_classification`,
 `threat_category`, `fast_detector_score`, `ml_detector_score`, `overall_threat_score`) ·
 `event_id` a acuñar sin colisión (`DEBT-GRAPH-SCHEMA-MULTISENSOR-001`).
+
+### DEBT-SNIFFER-IP-BYTE-ORDER-001 — Las IPs del camino principal del sniffer se
+### serializan en orden de host, corrompiendo también el community_id
+
+**Estado:** 🔴 ABIERTA · **Detectada:** DAY 226 · **Severidad:** ALTA (rompe la
+convergencia multi-sensor, que es el objetivo del paso 1 del plan de cierre)
+
+**[MEDIDO] Síntoma.** Primera fila de `logs/correlation/argus-2026-07-20-094233.csv`:
+
+    1,argus,10304186234549_254,cpp_sniffer_v33_day12,1:wKZAv8xH3F8xTZu9FJk9DGKDsGE=,
+    10304,186234549,1.56.168.192,255.56.168.192,57621,57621,UDP,...
+
+`1.56.168.192` es `192.168.56.1` con los bytes invertidos, y `255.56.168.192` es
+`192.168.56.255` (broadcast host-only de VirtualBox). UDP 57621→57621 es
+descubrimiento LAN de Spotify, coherente con un `.1 → .255`.
+
+**[MEDIDO] El community_id hereda la corrupción.** Recalculado con el estándar
+Corelight v1 (seed 0, proto 17):
+- desde las IPs invertidas → `1:wKZAv8xH3F8xTZu9FJk9DGKDsGE=` ← **coincide con el CSV**
+- desde las IPs correctas  → `1:hF8qbh3/+MvwfDC6onu0ugDlH/8=`
+
+Luego el `community_id` que aRGus escribe en el bronce **no puede coincidir jamás**
+con el que emiten Suricata y Zeek para el mismo flujo. La clave de join
+multi-sensor está rota en origen.
+
+**[MEDIDO] Causa raíz — una línea, y su arreglo ya existe 390 líneas más abajo.**
+
+| Fichero:línea | Código | Veredicto |
+|---|---|---|
+| `sniffer/src/userspace/ring_consumer.cpp:844-845` | `struct in_addr src_addr = {.s_addr = event.src_ip};` | ❌ sin `htonl` — **camino principal, el que alimenta el bronce** |
+| `sniffer/src/userspace/ring_consumer.cpp:1235-1236` | `src_addr.s_addr = htonl(event.src_ip);` | ✅ correcto — camino de alerta |
+
+Ambos usan `inet_ntop` después; la única diferencia es la conversión. Como el CSV
+sale invertido y procede del camino sin `htonl`, `event.src_ip` llega desde eBPF en
+orden de **host**.
+
+`compute_community_id()` NO es culpable: recibe las IPs como `std::string` ya
+formateado (`community_id.cpp:31-37`) y pasó 8/8 contra el oráculo `pycommunityid`
+en DAY 170. El hash y la cadena del CSV beben de la misma fuente equivocada, así
+que **un solo arreglo repara las dos cosas**.
+
+**Arreglo propuesto (no aplicado):**
+
+    struct in_addr src_addr = {.s_addr = htonl(event.src_ip)};
+    struct in_addr dst_addr = {.s_addr = htonl(event.dst_ip)};
+
+**[PENDIENTE] Antes de aplicarlo, medir dos cosas:**
+1. El sentido de `event.src_ip` en el programa eBPF (¿hay `bpf_ntohl` al rellenar
+   el evento?). Toda la deducción cuelga de esto.
+2. Si `sniffer/src/userspace/main_libpcap.cpp` (variante B) tiene el mismo defecto:
+   el tramo leído en DAY 226 no llega a donde se fija `nf->source_ip()`. Los
+   puertos sí se convierten bien con `ntohs`. Si las dos variantes discrepan,
+   producen `community_id` distintos sobre el mismo tráfico.
+
+**[MEDIDO] Por qué se ocultó 56 días — el eslabón que faltaba.** La diana
+`1:IN7uqVpMWxpmuhQTowSQB2XEe0E=` se validó contra los tests unitarios de
+`compute_community_id` y contra el `eve.json` de Suricata, pero **nunca contra un
+CSV de bronce producido por el pipeline de aRGus**. Los tests pasan strings ya
+correctos, así que el 8/8 era verde y el pipeline estaba roto a la vez.
+
+**Definición de HECHO (no cerrar sin esto):** un test de regresión que lea una fila
+real del bronce escrita por el pipeline y compare su `community_id` contra el
+oráculo `pycommunityid` recalculado desde las IPs de esa misma fila. Sin ese test,
+la deuda vuelve.
+
+**Familia.** Misma que `DEBT-MAKEFILE-TEST-GATE-MASKED-001` (constructo que no
+distingue "hizo" de "no hizo") y `DEBT-PROVISION-SED-SILENT-NOOP-001`: verificación
+que mira el sitio equivocado.
+
+**Referencias cruzadas.** `DEBT-ARGUSPP-COMMUNITY-ID-ARGUS-001` (cerrada en su
+alcance — la función es correcta; el llamante no) ·
+`DEBT-GRAPH-SCHEMA-MULTISENSOR-001` · `docs/design/multisensor-graph-identity/
+puerta-diseno-multisensor.md` (D1, D2)
+Añade también una línea recíproca en DEBT-ARGUSPP-COMMUNITY-ID-ARGUS-001 diciendo que su cierre cubre la función pero 
+no el llamante, y que el camino a producción está bloqueado por esta deuda. 
+Si no, esa entrada sigue leyéndose como "community_id resuelto".
+
+Dos cosas de propina que van al paper, no al BACKLOG: aRGus no aporta ni una fila de ICMP (compute_community_id devuelve
+nullopt para no-TCP/UDP y validate() rechaza el vacío, así que se descartan todas) mientras Suricata sí, y el event_id 
+de aRGus usa un reloj monotónico de uptime, luego no es reproducible entre arranques. 
+Ninguna de las dos es un bug; las dos matizan afirmaciones que el paper podría hacer de más.
+
+### DEBT-VM-SENSOR-NO-TOOLCHAIN-001 — Las VMs de sensor no pueden compilar
+### sus propios adapters
+
+**Estado:** 🟡 ABIERTA · **Detectada:** DAY 226
+
+**[MEDIDO]** En la VM `suricata`, `which cmake g++ pkg-config` no encuentra
+ninguno de los tres; faltan `/usr/include/nlohmann/json.hpp` y
+`/usr/include/openssl/hmac.h`. La VM se provisiona solo para ejecutar Suricata.
+
+**Consecuencia.** `suricata-adapter/` no se puede construir donde vive su fuente
+de datos. Aplicable por igual a `zeek` y `wazuh` cuando se creen.
+
+**Arreglo.** Bloque `ADAPTER_TOOLCHAIN` compartido en el Vagrantfile raíz, con
+verificacion por invocacion. Hoy se aplico a mano en la VM `suricata`: hasta que
+esté en el Vagrantfile, un `vagrant destroy` lo pierde.
+
+**Familia.** `DEBT-PROVISION-SED-SILENT-NOOP-001` y la deuda del restart de
+Suricata: provisioning que no verifica el resultado real.
