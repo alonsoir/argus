@@ -1,4 +1,4 @@
-# PROMPT DE CONTINUIDAD — DAY 227 (continúa DAY 226)
+# PROMPT DE CONTINUIDAD — DAY 228 (continúa DAY 227)
 
 ## Instrucciones generales para Claude
 1. Piensa antes de codificar. Expón suposiciones. Pregunta cuando no estés seguro. Nunca adivines.
@@ -9,36 +9,38 @@
 ## Invariantes
 - **medir, no votar** — verificar contra fichero, nunca contra memoria.
 - **Lección DAY 211 (lecturas parciales):** no concluir "X no existe" desde un `sed -n`, un
-  `head` o un grep de filtro estrecho. Fichero entero antes de afirmar ausencia. *(Reforzada
-  DAY 226: `git grep 'src_ip' -- sniffer/src/ebpf/` salió vacío y NO prueba nada — la ruta
-  probablemente no es esa.)*
+  `head` o un grep de filtro estrecho. Fichero entero antes de afirmar ausencia.
 - **Lección DAY 223 (el grep que costó una noche):** `grep -rn` desde la raíz arrastra `build/`,
   `.git/`, `.venv/`, `vendor/`. Usar `git grep` o acotar con `-- ruta/`. Y **nunca encadenar dos
   comandos de salida grande**: el segundo se come la salida del primero.
 - **Lección DAY 223 (BACKLOG):** ninguna deuda vive en fichero propio. Todas son secciones `###`
   dentro de `docs/BACKLOG.md`.
-- **Lección DAY 224 (el número que nadie midió):** el "24 campos" llevaba 17 días mintiendo.
-  Antes de propagar una cifra al paper, medirla.
+- **Lección DAY 224 (el número que nadie midió):** antes de propagar una cifra al paper, medirla.
 - **Lección DAY 224 (constructos que no distinguen "hizo" de "no hizo"):** `sed -i` devuelve 0
-  aunque no sustituya nada → el fallback del `||` está muerto. Igual el `||` del Makefile.
-- **Lección DAY 225 (la config que el proceso no ha leído):** verificar el FICHERO no basta.
-  Comparar **mtime de la config contra la hora de arranque del proceso**. El sujeto de la
-  verificación es el proceso, no el fichero.
-- **Lección DAY 225 (nombres que mienten):** `flow_start_window` no ventanea, `emecas+++` es un
-  alias de `emecas++`, y un "campo vacío" resultó no poder estar vacío (es `double`). Leer el
-  cuerpo, no el nombre.
-- **🆕 Lección DAY 226 (verde en la capa equivocada):** el `community_id` de aRGus pasó 8/8
-  contra el oráculo `pycommunityid` en DAY 170 y **el pipeline llevaba 56 días escribiendo
-  `community_id` corruptos**. El test validaba la función; nadie validó el ARTEFACTO FINAL. Un
-  verde en una capa intermedia no dice nada de la salida. Medir el fichero que se produce.
-- **🆕 Lección DAY 226 (dos caminos que discrepan):** `ring_consumer.cpp:844` y `:1235` hacen lo
-  mismo de dos formas distintas (uno con `htonl`, otro sin). Cuando el mismo fichero implementa
-  la misma conversión dos veces, **una de las dos está mal por definición**. Buscar duplicados
-  antes que bugs.
-- **🆕 Lección DAY 226 (el nivel superior no es el flujo):** en `eve.json` el par src/dest de
-  nivel superior es el del PAQUETE; el objeto `flow` lleva el del ORIGINADOR, y en el 99,4% de
-  las alertas están invertidos entre sí. Leer la estructura anidada, no el primer campo con el
-  nombre correcto.
+  aunque no sustituya nada. Igual el `||` del Makefile.
+- **Lección DAY 225 (la config que el proceso no ha leído):** comparar mtime de la config contra
+  la hora de arranque del proceso. El sujeto de la verificación es el proceso, no el fichero.
+- **Lección DAY 225 (nombres que mienten):** leer el cuerpo, no el nombre.
+- **Lección DAY 226 (verde en la capa equivocada):** un verde en una capa intermedia no dice nada
+  de la salida. Medir el fichero que se produce.
+- **Lección DAY 226 (dos caminos que discrepan):** si el mismo fichero implementa la misma
+  conversión dos veces, una de las dos está mal por definición.
+- **Lección DAY 226 (el nivel superior no es el flujo):** leer la estructura anidada, no el primer
+  campo con el nombre correcto.
+- **🆕 Lección DAY 227 (la puerta que era un comentario):** el "alcance v1 mono-fuente" del
+  `parquet_to_kuzu_loader` resultó ser **un comentario** (línea 17) más tres `using
+  argus::correlation::` que son el NAMESPACE del proyecto. Cero comprobaciones en la lógica. Un
+  aviso escrito no es una barrera de código. Antes de tratar una advertencia como un muro,
+  medirla.
+- **🆕 Lección DAY 227 (el artefacto que se evaporó):** las 2.870 filas de DAY 226 vivían en
+  `/tmp` de la VM `suricata` y ya no existen. **Lo que importa va a `/vagrant`**, nunca a `/tmp`
+  de una VM.
+- **🆕 Lección DAY 227 (dos fuentes de verdad para un secreto):** el escritor lee la clave HMAC
+  de etcd, el lector la lee del env. Nada las obliga a coincidir, y los dos tests del circuito
+  firman *y* verifican con su propia constante, así que el problema es invisible al gate.
+- **🆕 Lección DAY 227 (Claude también cae):** Claude afirmó que aRGus firma "con un campo de su
+  JSON" infiriéndolo del nombre `config_.hmac_key_hex`. El grep vacío sobre `ml-detector/config/`
+  lo refutó. La lección de los nombres que mienten aplica también al asistente.
 - **JSON is the law** · **bronce PRESERVA, gold DECIDE** · **Via Appia** (ledger inmutable;
   Kuzu = proyección reconstruible por MERGE).
 - **EMECAS+++** antes de cualquier merge · **PR obligatorio** (main tiene branch protection).
@@ -54,9 +56,8 @@
 
 Ya NO se presenta nada ante Andrés ni ante FEDER. **Objetivo:** cerrar el pipeline lo mejor
 posible — que las señales del resto de componentes lleguen al grafo — y escribir el paper de la
-forma más honesta y científica posible, mostrando los datos, para que en el futuro alguien pueda
-retomar la investigación. Fin de proyecto: 31-ago / primera semana de septiembre, repositorio en
-modo lectura.
+forma más honesta y científica posible. Fin de proyecto: 31-ago / primera semana de septiembre,
+repositorio en modo lectura.
 
 ### Plan de cierre en 6 pasos
 1. Terminar el pipeline aguas abajo; provocar que los datos lleguen al grafo. ← EN CURSO
@@ -70,137 +71,124 @@ modo lectura.
 
 ## Estado — rama `feat/suricata-to-graph`
 
-**El `suricata-adapter` existe, compila y produce filas válidas.** DAY 226 lo escribió entero,
-lo construyó dentro de la VM `suricata` y lo ejecutó sobre el `eve.json` del Neris.
+**El camino de Suricata llega hasta el Parquet oro.** Falta el último tramo: Parquet → Kuzu.
 
-VMs (medido DAY 226): `defender` **running**, `suricata` **running**, `client` / `zeek` /
-`wazuh` **not created**.
+VMs: `defender` **running**, `suricata` **running**, `client` / `zeek` / `wazuh` **not created**.
 
-⚠️ El toolchain de la VM `suricata` (`build-essential cmake pkg-config libsodium-dev
-nlohmann-json3-dev libssl-dev`) se instaló **a mano**. No está en el `Vagrantfile`: un
-`vagrant destroy` lo pierde. → `DEBT-VM-SENSOR-NO-TOOLCHAIN-001`.
+⚠️ El toolchain de la VM `suricata` sigue instalado a mano, no en el `Vagrantfile`
+(`DEBT-VM-SENSOR-NO-TOOLCHAIN-001`). Un `vagrant destroy` lo pierde.
 
 ---
 
-## Lo conseguido en DAY 226
+## Lo conseguido en DAY 227
 
-### El adapter, verde extremo a extremo
+**Día de medición pura: NO se cambió ni una línea de código del repo.** Todo lo producido vive
+bajo `logs/day227-adapter-out/`, que está ignorado.
 
-`make suricata-adapter-test` → 2/2 verdes (`correlation_v1_tests` 3,74 s + `suricata_adapter_to_row`
-0,02 s). El build suelto arrastra `libs/correlation-v1` por la guarda del CMakeLists, así que el
-contrato entero queda validado también dentro de la VM `suricata`.
+### El criterio del día, cumplido
 
-Ejecución sobre `logs/day225-suricata-neris/eve.json` (55.442.376 B), contadores **exactamente**
-los predichos contra la tabla de DAY 225:
+`bronze_to_gold_converter` sobre el CSV del adapter:
 
 ```
-leidas=107264  escritas=2870  descartadas=104394  err_to_row=0  err_serialize=0
+líneas totales:  2870
+filas válidas:   2870
+filas descartadas: 0
 ```
 
-`err_serialize=0` significa que **las 2.870 filas pasaron `validate()`**. El criterio del día
-era una. Salida: 997.065 B, ~347 B/fila.
+Salidas: `suricata.avro` (947.333 B) y `suricata.parquet` (483.985 B), desde un CSV de 997.065 B.
 
-Primera fila producida (19 columnas verificadas; `event_id` 44 chars base64 = 32 B de BLAKE2b;
-HMAC 64 hex de SHA256):
+**El circuito bronce→oro aceptó un segundo sensor con CERO cambios de código.** Es la decisión de
+arquitectura de DAY 222 (sin switches, diseño dirigido por datos) validada empíricamente y no por
+argumento. Es una de las pocas afirmaciones del proyecto que se sostiene al medirla.
 
-```
-1,suricata,suricata:P7D/AmXaM0z8rN89xkIsMVu7AFD7qOgp9kflk+gFoWM=,cpp_sniffer_v33_day12,
-1:MuSlbWV2Dy5Z168c5sxOWncbYyQ=,1312967196,78254000,147.32.84.165,94.63.149.152,1040,80,TCP,
-SURICATA TCPv4 invalid checksum,Generic Protocol Command Decode,0.000000,0.000000,0.000000,
-suricata,21def7767b42d30731bab0d9e92a577d2b45923aa4b8ca008be34bc8468d3bc3
-```
+### Determinismo confirmado hasta la firma
 
-La col 7 es `147.32.84.165` (orientación del objeto `flow`) y no `94.63.149.152` (la del
-paquete). Sin comillas, coherente con las **cero comas** medidas en las firmas del Neris.
+La reejecución del adapter dio los contadores exactos de DAY 226
+(`leidas=107264 escritas=2870 descartadas=104394 err_to_row=0 err_serialize=0`) y la primera fila
+salió **byte a byte idéntica, HMAC incluido**. La clave de juguete de DAY 226 era
+`0123456789abcdef` repetido 4 veces.
 
-### El bug gordo: DEBT-SNIFFER-IP-BYTE-ORDER-001
+### El hallazgo: dos fuentes de verdad para la clave HMAC
 
-La primera fila del bronce de aRGus (`logs/correlation/argus-2026-07-20-094233.csv`) trae las
-IPs con los bytes invertidos: `1.56.168.192` es `192.168.56.1`, y `255.56.168.192` es
-`192.168.56.255`. Y el `community_id` de esa fila **coincide con el calculado desde los bytes
-invertidos** (verificado con el estándar Corelight, seed 0, UDP; con las IPs correctas sale
-`1:hF8qbh3/+MvwfDC6onu0ugDlH/8=`).
+| Quién | Dónde busca la clave |
+|---|---|
+| Escritor de aRGus (`correlation_writer.cpp:56` ← `zmq_handler.cpp:157` ← `main.cpp:438-442`) | `etcd_client->get_hmac_key()` |
+| Lector / converter (`correlation-engine/src/main.cpp:79`, `bronze_to_gold_converter.cpp:368`) | env `ARGUS_BRONZE_HMAC_KEY_HEX` |
 
-Causa raíz localizada, y el arreglo ya existe 390 líneas más abajo en el mismo fichero:
+Nada en el código obliga a que coincidan. `git grep -i -e 'key' -e 'secret' -- ml-detector/config/`
+confirma que la clave **no está en ningún JSON**: solo en etcd, en runtime.
 
-| Fichero:línea | Código | Veredicto |
-|---|---|---|
-| `ring_consumer.cpp:844-845` | `struct in_addr src_addr = {.s_addr = event.src_ip};` | ❌ sin `htonl` — **camino que alimenta el bronce** |
-| `ring_consumer.cpp:1235-1236` | `src_addr.s_addr = htonl(event.src_ip);` | ✅ correcto — camino de alerta |
+Y hay dos lectores con exigencias distintas:
 
-`compute_community_id()` es inocente: recibe las IPs como `std::string` ya formateado, así que el
-hash y la cadena del CSV beben de la misma fuente. **Un solo arreglo repara las dos.**
+- **`bronze_to_gold_converter`**: batch, UN fichero por invocación, una clave por env → cada
+  sensor puede usar la suya. Por eso el criterio de hoy no dependía de la clave de aRGus.
+- **Consumidor del engine** (watcher inotify sobre el buzón PLANO): UNA sola clave para TODOS los
+  ficheros del directorio → aquí todos los productores tienen que firmar igual.
 
-**Consecuencia viva:** las filas de Suricata y las de aRGus **no convergen** hasta arreglarlo.
-El adapter es correcto; su contraparte no.
+**Consecuencia estructural:** bronce plano (DAY 222) + consumidor de clave única + aRGus firmando
+desde etcd = incompatibilidad sin resolver. Salidas posibles: aRGus pasa a leer del env; o el
+consumidor recibe un mapa clave-por-sensor; o etcd es fuente única para todos.
 
-### Otros hallazgos de DAY 226 (no volver a medir)
+Agravante: si `SecretsManager` solo guarda la clave en memoria
+(`DEBT-SECRETS-MANAGER-PERSISTENCE-001`), la clave que firmó
+`logs/correlation/argus-2026-07-20-094233.csv` podría ser irrecuperable → **el bronce real de
+aRGus sería inverificable para siempre**. Un ledger que no se puede verificar no es un ledger.
+SOSPECHA, no veredicto: falta medir si etcd-server persiste o siembra determinista.
 
-- `csv_string()` (correlation_v1.cpp:33-40) **sí** entrecomilla y escapa (coma, comilla, `\n`;
-  duplica comillas internas). `fmt_double` hace `imbue(classic())` + `setprecision(6)`. El
-  adapter lo hereda gratis por usar `serialize()`. **No hay nada que arreglar en Suricata**:
-  `eve.json` es JSON y ya entrecomilla de forma nativa.
-- **Cero firmas con coma** en el eve.json del Neris.
-- `node_id` real de aRGus = `cpp_sniffer_v33_day12` → es una **etiqueta de versión del sniffer**,
-  ni host ni punto de observación. D2 no está implementada de facto, y un bump de versión
-  cambiaría todos los `flow_uid`.
-- `event_id` de aRGus (`ring_consumer.cpp:854`) = `timestamp + "_" + (src_ip ^ dst_ip)`, con
-  `timestamp` de **reloj monotónico de uptime** (~10.304 s). No es reproducible entre arranques,
-  y confirma que `flow_start_sec` de aRGus **no es hora de pared**.
-- `compute_community_id` devuelve `nullopt` para no-TCP/UDP → **aRGus no aporta ni una fila de
-  ICMP al bronce**, mientras Suricata sí. Asimetría de cobertura entre sensores, para el paper.
-- El comentario de `serialize()` ya dice de dónde saca la clave cada productor: *"ARGUS_BRONZE_
-  HMAC_KEY_HEX en test, etcd-server en el adapter"*. **Resuelve el conflicto O3** de la puerta de
-  diseño: no hay colector único que firme; firma el adapter.
-- El target de `libs/correlation-v1` se llama `correlation_v1` y es **SHARED**.
-- El repo localiza libsodium con `pkg_check_modules(LIBSODIUM REQUIRED libsodium)`
-  (`correlation-engine/CMakeLists.txt:10`).
-- Patrón del Makefile: **todos** los componentes se construyen dentro de una VM con
-  `vagrant ssh -c`; a secas va a `defender`. Solo `eslabon1-smoke-build` nombra la VM.
+### Otros hallazgos (no volver a medir)
+
+- El converter **no tiene descubrimiento de ficheros**: `<bronce.csv> <bronce_salida.avro>
+  <oro_salida.parquet>`, tres rutas explícitas. La sospecha del basename `suricata-*.csv` se cayó
+  por inexistencia del sujeto.
+- El converter **sí verifica** el HMAC por fila (`parse_and_verify`, línea 148) y preserva la
+  col 18 con `extract_hmac_field`.
+- El converter **no tiene target en el Makefile**; se construye desde
+  `correlation-engine/CMakeLists.txt:132` y se invoca a mano. Binario ya presente en `defender`:
+  `/vagrant/correlation-engine/build/bronze_to_gold_converter`.
+- `.gitignore` tiene **dos líneas corruptas** con la misma firma (comentario pegado a un patrón):
+  `logs/# ONNX models (generate on-the-fly)` y `contrib/claude/pca_pipeline/*.npz# Build artifacts`.
+  La primera sobrevive por casualidad (la `logs/` de debajo hace el trabajo); la segunda deja los
+  `.npz` de esa ruta **sin ignorar**. Medir el artefacto, no el fichero:
+  `git ls-files | grep -i -e '\.onnx$' -e '\.npz$'`.
+- Rot de documentación: `bronze_to_gold_converter.cpp:26` cita
+  `logs/correlation/argus/2026-07-04-032653.csv` — subdirectorio por sensor, el mundo anterior a
+  la decisión de bronce plano de DAY 222.
+- `suricata-adapter/config/suricata_adapter.json` tiene `input_path` **relativo**: el adapter hay
+  que lanzarlo desde `/vagrant` o no resuelve.
+
+### El muro del loader, medido
+
+`git grep -i -e 'argus' -e 'source_sensor' -- correlation-engine/tools/parquet_to_kuzu_loader.cpp`:
+
+- línea 17 → **comentario** de alcance mono-fuente
+- líneas 68-70 → `using argus::correlation::...`, el **namespace** del proyecto
+- líneas 176, 201 → lee `source_sensor` de la columna 1 y lo asigna al record: **dato, no
+  constante**
+
+Cero comprobaciones que rechacen un sensor distinto de `argus`. **La puerta es una decisión, no
+una refactorización.** Lo que el grep NO cubre: `KuzuGraphSink`, donde vive la persistencia.
 
 ---
 
-## El estándar de adapters (fijado DAY 226)
+## Plan DAY 228 — propuesta
 
-Cada adapter es un **componente de primer nivel** `<sensor>-adapter/`, hermano de `sniffer/` y
-`ml-detector/`. Generador: `tools/scaffold_adapter.py --sensor <nombre>` (idempotente, `--force`,
-`--dry-run`, `--root`). Solo `suricata` tiene mapeo escrito; otros sensores reciben un `to_row.cpp`
-stub que devuelve `Error` a propósito.
+**Una batalla: que las filas de Suricata lleguen al grafo Kuzu.** Es el cierre del paso 1 del plan
+de cierre.
 
-```
-<sensor>-adapter/
-├── CMakeLists.txt · README.md · .gitignore
-├── config/<sensor>_adapter.json
-├── include/<sensor>_adapter/{to_row,batch_writer,config}.hpp
-├── src/{to_row,batch_writer,config,main}.cpp
-└── tests/{CMakeLists.txt,test_to_row.cpp}
-```
+1. **Leer la invocación del loader** (`sed -n '1,40p'
+   correlation-engine/tools/parquet_to_kuzu_loader.cpp`) — CLI y argumentos.
+2. **BD Kuzu FRESCA**, no la persistida. Doble motivo: estas filas llevan clave de juguete, y
+   `CREATE NODE TABLE IF NOT EXISTS` **no migra catálogos existentes**, así que cualquier BD
+   anterior a los cambios de esquema de DAY 222 hay que recrearla igualmente.
+3. **Cargar SOLO Suricata.** Sus `NetworkFlow` no van a converger con los de aRGus mientras
+   `DEBT-SNIFFER-IP-BYTE-ORDER-001` siga abierta — serían nodos separados, y eso es honesto: es
+   exactamente el "grafo de un feed" que el propio diseño declara como configuración legítima.
+4. **Criterio de éxito del día:** una consulta Cypher que devuelva un `Alert` con
+   `source_sensor = "suricata"` colgando de su `NetworkFlow`. Ni MITRE, ni convergencia.
 
-Corte en tres capas heredado de `correlation_v1.hpp`:
-`[nativo→Row]` `to_row.cpp` del adapter (**puro**: sin fichero, sin reloj, sin red) ·
-`[Row→bytes]` `serialize()` de la librería (**notario único, nunca reimplementar**) ·
-`[bytes→disco]` `BatchWriter` propio (lote, un fichero por ejecución, `.tmp`→`rename`).
-
-**Alonso quiere que el adapter de aRGus, hoy incrustado en `ml-detector`
-(`to_correlation_v1_row`), salga de ahí en una refactorización y cumpla este mismo estándar.**
-
----
-
-## Plan DAY 227 — propuesta
-
-**Una batalla: que las filas de Suricata lleguen al Parquet oro.** Es el paso 1 del plan de
-cierre y no depende de arreglar el bug de orden de bytes (Suricata solo ya puede recorrer el
-circuito; la convergencia con aRGus es otra cosa).
-
-1. **Clave HMAC real.** Medir de dónde la saca aRGus hoy (`ARGUS_BRONZE_HMAC_KEY_HEX` en el
-   entorno de la VM `defender`, o etcd-server). Sin la misma clave, el lector de aguas abajo
-   rechazará las filas de Suricata. La pasada de DAY 226 usó una clave de juguete.
-2. **Escribir al buzón real** `/vagrant/logs/correlation` en vez de a `/tmp/adapter-out`.
-   Cuidado: ahí escribe aRGus; no contaminar hasta tener la clave buena.
-3. **Pasar el `bronze_to_gold_converter`** sobre el buzón y medir si acepta filas con
-   `source_sensor=suricata`. Sospechas a verificar, no a asumir: ¿asume `argus` en algún sitio?
-   ¿el basename `suricata-*.csv` casa con su patrón de descubrimiento de ficheros?
-4. **Criterio de éxito del día:** una fila de Suricata en el Parquet oro. Ni Kuzu, ni grafo.
+Verificación gratis por el camino: el converter imprimió
+`flow_uid recomputado (fila 0): eCjFUYOr5nsLGWZykRvJBkwFO+wMicFym9oGylrznAk=`, con la nota de
+compararlo bit a bit contra la propiedad `flow_uid` materializada en Kuzu.
 
 **Alternativa si prefieres otra batalla:** arreglar `DEBT-SNIFFER-IP-BYTE-ORDER-001` (una palabra
 en `ring_consumer.cpp:844-845`) + su test de regresión. Desbloquea la convergencia, que es la
@@ -208,81 +196,102 @@ afirmación central del paper, pero exige rebuild de `defender` y pasar EMECAS.
 
 ---
 
+## Automatización pedida por Alonso (DAY 227, para después del grafo)
+
+1. Poder **activar/desactivar el feed** de cada sensor a voluntad.
+2. **Makefile**: compilación completa del correlation-engine y targets del converter/loader.
+3. **Tests e2e para Suricata**, equivalentes a los que ya existen para aRGus
+   (`test_flujo_a_b_equivalence`, `test_flujo_b_end_to_end`).
+4. Actualizar `make pipeline-start`, `pipeline-status` y demás tareas para que incluyan Suricata,
+   el servidor aguas abajo y la ingesta de Kuzu.
+
+⚠️ **Dos matices sobre el punto 1, antes de diseñarlo:**
+
+- Un **interruptor por config contradice la decisión ratificada de DAY 222** ("sin switches en
+  ningún JSON; diseño dirigido por datos: si los ficheros del contrato llegan al bronce, el grafo
+  los usa"), que es justamente la decisión que DAY 227 validó empíricamente. Para Suricata el
+  interruptor **ya existe y es gratis**: el adapter es de lote, se ejecuta o no se ejecuta. El
+  caso difícil es aRGus, que exige levantar todo el stack — y esa es la razón de fondo del futuro
+  `argus-adapter`.
+- "Que Kuzu los procese **según lleguen**" implica pasar por el consumidor con inotify sobre el
+  buzón plano, y ahí es donde **muerde la clave única**. Automatizar la ingesta obliga a resolver
+  antes las dos fuentes de verdad de la clave HMAC.
+
+---
+
 ## Aparcado (no olvidar)
 
+### Nuevo de DAY 227
+- Registrar en `docs/BACKLOG.md`: la discrepancia etcd-vs-env de la clave (nota en
+  `DEBT-BRONZE-KEY-PROVISIONING-001` y en `DEBT-BRONZE-HMAC-KEY-POLICY-001`), el `.gitignore`
+  corrupto, y el rot de `bronze_to_gold_converter.cpp:26`.
+- Medir si `SecretsManager` persiste la clave o la pierde con el proceso.
+- `git ls-files | grep -i -e '\.onnx$' -e '\.npz$'` — ¿hay blobs de modelo trackeados?
+
 ### De DAY 226
-- **`DEBT-SNIFFER-IP-BYTE-ORDER-001`** — escrita en el BACKLOG. Dos `[PENDIENTE]` antes de
-  aplicar el arreglo: (a) confirmar el sentido de `event.src_ip` en el lado eBPF —el grep en
-  `sniffer/src/ebpf/` salió vacío, hay que localizar la struct del evento con
-  `git ls-files -- 'sniffer/*' | grep -i -e bpf -e kern`—; (b) si `main_libpcap.cpp` tiene el
-  mismo defecto (el tramo 120-150 no llega a donde se fija `nf->source_ip()`).
+- **`DEBT-SNIFFER-IP-BYTE-ORDER-001`** — dos `[PENDIENTE]`: (a) confirmar el sentido de
+  `event.src_ip` en el lado eBPF (`git ls-files -- 'sniffer/*' | grep -i -e bpf -e kern`, porque
+  el grep en `sniffer/src/ebpf/` salió vacío); (b) si `main_libpcap.cpp` tiene el mismo defecto.
   **Definición de HECHO:** test de regresión que lea una fila real del bronce y compare su
   `community_id` contra el oráculo `pycommunityid` recalculado desde las IPs de esa misma fila.
 - **`DEBT-VM-SENSOR-NO-TOOLCHAIN-001`** — bloque `ADAPTER_TOOLCHAIN` en el `Vagrantfile` raíz,
   reutilizable en `zeek` y `wazuh`, con verificación **por invocación** (`cmake --version`,
   `pkg-config --modversion libsodium`), no por "el paquete figura instalado".
-- Nota recíproca en `DEBT-ARGUSPP-COMMUNITY-ID-ARGUS-001`: su cierre cubre la función, **no el
-  llamante**; el camino a producción está bloqueado por la deuda del orden de bytes.
-- **Telemetría (D4)**: hoy el adapter descarta los 104.392 eventos de dns/http/tls/… El 98,7% del
+- **Telemetría (D4)**: el adapter descarta los 104.392 eventos de dns/http/tls/… — el 98,7% del
   volumen de Suricata no llega al grafo todavía.
 - **Decisión no ratificada**: la preimagen del `event_id` (D3) usa separador `\x1f`, mientras
-  `flow_uid.hpp` usa length-prefix canónico. Unificar o documentar la diferencia.
-- Para el paper: aRGus no aporta ICMP; el `event_id` de aRGus usa reloj monotónico; las primeras
-  filas del adapter son ruido de checksum (artefacto de la captura), no ataques.
+  `flow_uid.hpp` usa length-prefix canónico. Unificar o documentar.
+- Para el paper: aRGus no aporta ICMP; su `event_id` usa reloj monotónico; las primeras filas del
+  adapter son ruido de checksum, no ataques.
 
 ### Arrastrado de DAY 225
-- Sección de rangos de timestamp en `tools/eval/eve_field_coverage.py`, para que
-  `eve-coverage-stale-config.txt` demuestre por sí solo la transición 05:12 → 05:24.
-- Retocar la puerta de diseño: (a) el 16,7% es propiedad de la captura, no del diseño (rango
-  1,2–16,7%); (b) §1.6 dice "puerto efímero" y hay clientes FTP que FIJAN el puerto; (c)
-  smallFlows es de 2011-01-25, no de 2015; (d) **O3 ya está resuelta** — el comentario de
-  `serialize()` dice que firma el adapter; (e) D5 reforzada por el contrato.
+- Sección de rangos de timestamp en `tools/eval/eve_field_coverage.py`.
+- Retocar la puerta de diseño: (a) el 16,7% es propiedad de la captura (rango 1,2–16,7%);
+  (b) §1.6 y los clientes FTP que FIJAN el puerto; (c) smallFlows es de 2011-01-25;
+  (d) **O3 ya está resuelta** — firma el adapter; (e) D5 reforzada por el contrato.
 - `evidencia/README.md` con procedencia (pcap, Suricata 7.0.10, 52.003 firmas, comando `-r`).
 - Deuda: el provisioning de Suricata no reinicia el servicio tras tocar el YAML.
 - PR de `feat/suricata-to-graph` · rama `fix/test-gate-masked` · nota recíproca en
   `DEBT-PARQUET-GOLD-SCHEMA-MULTISENSOR-001` (BACKLOG:5138).
-- **Pieza `flow_uid` → rama aparte** (`fix/flow-uid-time-free` desde main): toca identidad del
-  sistema entero. Vectores congelados a regenerar; BD Kuzu persistida queda obsoleta.
+- **Pieza `flow_uid` → rama aparte** (`fix/flow-uid-time-free` desde main).
 - P3 sin medir: ¿el `ON MATCH SET` machaca `flow_start`? (`cypher_builder.hpp:103,112`).
 - Guard D-D diferido: cuando se active, `"suricata"` debe ser símbolo `DetectorSource` legal.
-- Makefile multicomponente: ya hay un segundo productor, así que **ya toca**.
 
 ---
 
 ## Punteros
-- `suricata-adapter/` — el componente. `src/to_row.cpp` es el mapeo; el resto es andamiaje.
-- `tools/scaffold_adapter.py` — generador del estándar de adapters.
-- `docs/design/multisensor-graph-identity/puerta-diseno-multisensor.md` + `evidencia/`
+- `suricata-adapter/` — el componente. `src/to_row.cpp` es el mapeo.
+- `correlation-engine/tools/bronze_to_gold_converter.cpp` — bronce → Avro + Parquet oro
+- `correlation-engine/tools/parquet_to_kuzu_loader.cpp` — Parquet → Kuzu (la batalla de hoy)
+- `correlation-engine/src/kuzu_graph_sink.cpp` + `include/.../cypher_builder.hpp` — la persistencia
 - `libs/correlation-v1/{include,src}` — contrato, `validate` es notario único
 - `ml-detector/src/correlation_writer.cpp:73-100` — el ORÁCULO (`to_correlation_v1_row`)
 - `sniffer/src/userspace/ring_consumer.cpp:844` (bug) y `:1235` (arreglo)
-- `correlation-engine/include/correlation_engine/flow_uid.hpp` — identidad, tag de versión
-- `tools/eval/eve_field_coverage.py` — reproduce las cifras de la puerta de diseño
-- `DEBT-HOST-DOMAIN-CONTRACT-001` — Wazuh es dominio host (`host_domain_v1`), **no converge por
-  `flow_uid`**. El paper no puede decir "grafo unificado de los cuatro" sin matiz.
+- `logs/day227-adapter-out/` — CSV, Avro y Parquet de Suricata (clave de juguete, ignorado por git)
 
 ## Comandos útiles
 ```
 make suricata-adapter-test                # build + ctest en la VM suricata
 make correlation-engine-test              # HOST -> VM defender
-python3 tools/scaffold_adapter.py --sensor <nombre> [--force|--dry-run]
-python3 tools/eval/eve_field_coverage.py <eve.json>
 git grep -n '<patrón>' -- <ruta>/         # NUNCA grep -rn desde la raíz
 vagrant ssh suricata -c "<comando>"       # `vagrant ssh -c` a secas va a defender
+
+# Regenerar el bronce de Suricata (clave de juguete, directorio scratch)
+vagrant ssh suricata -c "cd /vagrant && export ARGUS_BRONZE_HMAC_KEY_HEX=0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef && ./suricata-adapter/build-suricata/suricata_adapter logs/day227-adapter-out/suricata_adapter.json"
+
+# Bronce -> Avro + Parquet oro
+vagrant ssh -c "cd /vagrant && export ARGUS_BRONZE_HMAC_KEY_HEX=0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef && ./correlation-engine/build/bronze_to_gold_converter <bronce.csv> <salida.avro> <salida.parquet>"
 ```
 
 ## Ritmo
 
-DAY 226 cumplió su criterio (una fila) por un factor de 2.870, pero lo importante fueron los dos
-hallazgos que no estaban en el plan. El bug de orden de bytes llevaba **56 días** escribiendo
-`community_id` corruptos con un test unitario en verde encima. Y la orientación de las columnas
-7-10 habría envenenado el 99,4% de las filas si el adapter hubiera copiado el campo con el nombre
-correcto en vez del sitio correcto. Ninguno de los dos salió de leer documentación: el primero
-salió de mirar una línea del CSV que el pipeline había escrito de verdad, y el segundo de mirar
-la línea de `eve.json` que íbamos a parsear.
+DAY 227 no cambió una línea de código y fue de los días más productivos: el criterio se cumplió
+por 2.870, se confirmó determinismo byte a byte, y las dos cosas que de verdad importan salieron
+de mirar dónde estaba la clave y de leer entero un grep que parecía un muro.
 
-Tres de las predicciones de Claude quedaron refutadas por la medida ese día (el `node_id`, el
-formateo manual de las IPs, y que el componente no compilaría a la primera). Es la señal de que
-el ciclo funciona: predecir en voz alta y dejar que el fichero conteste.
+El marcador de predicciones fue 5 acertadas y 2 refutadas. Las dos refutaciones fueron de Claude
+—la clave "en el JSON" (inferida de un nombre, no del cuerpo) y el descubrimiento de ficheros del
+converter (que no existe)— y las dos ahorraron trabajo real: el plan escrito del día tenía dos
+pasos que no hacían falta.
 
-*Via Appia Quality — un verde en la capa de abajo no dice nada de lo que sale por arriba.*
+*Via Appia Quality — un aviso escrito no es una barrera de código.*
