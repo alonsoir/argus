@@ -160,11 +160,48 @@ loader. Compiló limpio a la primera. **Es la herramienta que pedía el paso 3 d
   (~108 filas/s)**. Cifra medida, para cuando se hable de "procesar según lleguen".
 - Kuzu quiere el **directorio padre** existente y crea él la BD (`mkdir -p` antes de invocar).
 
+### 🟢 D2 CUMPLIDA — el byte order es el ÚNICO bloqueo pendiente para la convergencia
+
+```
+MATCH (f:NetworkFlow) RETURN DISTINCT f.node_id
+→ cpp_sniffer_v33_day12   (1 fila)
+```
+
+Valor único, y es **el mismo `node_id` que escribe aRGus**. El adapter de Suricata sí imitó el
+valor real. Importa porque `flow_uid = hash(node_id ‖ community_id ‖ flow_start_window)` —
+`node_id` es ingrediente de la clave, así que un `node_id` distinto habría roto la convergencia
+por un segundo motivo, independiente del byte order, e invisible hasta que los dos motores
+escribieran juntos.
+
+**Consecuencia: nada se interpone ya entre los dos sensores y el mismo nodo `NetworkFlow` salvo
+`DEBT-SNIFFER-IP-BYTE-ORDER-001`.**
+
+⚠️ **Grieta a registrar:** `cpp_sniffer_v33_day12` es una **etiqueta de versión** del sniffer de
+aRGus (medido DAY 226), ni host ni punto de observación. La convergencia multi-sensor se sostiene
+hoy sobre que el adapter de Suricata **hardcodea la cadena de versión de otro componente**. Un
+bump de versión del sniffer cambiaría todos los `flow_uid` y rompería la convergencia **en
+silencio**, salvo que se actualicen todos los adapters a la vez. **D2 se cumple por imitación, no
+por diseño.** Material honesto de paper.
+
 ### Estado del repo
 
 Commit de DAY 228 sobre `feat/suricata-to-graph`: `correlation-engine/tools/kuzu_query.cpp`
-(nuevo) + bloque en `correlation-engine/CMakeLists.txt`.
+(nuevo) + bloque en `correlation-engine/CMakeLists.txt` + este prompt.
 `make correlation-engine-test` (reconstrucción entera + ctest): **9/9 Passed, 2,67 s**.
+
+🟢 **En remoto:** `09518d0c → f2c513ce → ce2c4805` (dos push).
+
+### Aclaración del modelo del grafo (surgió al cerrar DAY 228)
+
+Las ramas de cada sensor **no se unen por `community_id`**. Se unen por `flow_uid`, y
+`flow_uid = hash(node_id ‖ community_id ‖ flow_start_window)` — el `community_id` es uno de los
+tres ingredientes, no la clave. Los tres tienen que coincidir entre sensores para converger.
+
+Y lo que hoy hay **no es un upsert**: las plantillas solo tienen `ON CREATE SET`. La semántica
+real es *insertar si no está, ignorar si está*. Cuando los dos motores escriban sobre el mismo
+`NetworkFlow`, el primero que llegue fija `node_id`, `community_id`, `flow_start_window` e
+`ingested_at`, y el segundo **no aporta nada al nodo de flujo**; solo cuelga su propio evento.
+Coherente con "NetworkFlow identidad pura", pero conviene saberlo antes de que sorprenda.
 
 ---
 
@@ -199,10 +236,31 @@ converter/loader/`kuzu_query`, tests e2e de Suricata equivalentes a los de aRGus
 `pipeline-start`/`pipeline-status`. ⚠️ El punto "que Kuzu los procese según lleguen" **obliga a
 resolver antes las dos fuentes de verdad de la clave HMAC** (etcd vs env).
 
+**Opción 5 — Medir el premio del 98,7% (objetivo declarado por Alonso al cerrar DAY 228).**
+Quiere ampliar el adapter para traer al grafo todo lo que trae Suricata y dejar de descartar los
+104.394 eventos de dns/http/tls/flow/stats. **El obstáculo no es el adapter: es el contrato.**
+`correlation_v1` tiene 19 columnas y **ninguna donde meter la carga útil** de un evento dns, http
+o tls — el dominio consultado, el `Host`, el SNI. Para las alertas se resolvió en DAY 225 mapeando
+`signature` → `final_classification`, y funcionó porque una firma *es* un veredicto; un dominio
+DNS no lo es. Bajo el contrato de hoy esos eventos entrarían como **identidad sin información**.
+
+Lo que **sí** aportarían es **topología**: hoy el grafo solo conoce los 775 flujos que dispararon
+alerta; los eventos `flow` revelarían todos los flujos que existieron, con protocolo y extremos.
+No es carga útil, pero es el contexto sobre el que se detecta daño (reencuadre de Matzinger,
+*future work* del paper).
+
+**Primer paso, barato y sin escribir mapeo:** medir cuántos eventos de cada tipo llevan
+`community_id` — requisito duro, porque `validate()` rechaza los que no lo tienen. Eso convierte
+"el 98,7%" en un número real de filas aprovechables y decide sola la conversación de si hay que
+tocar el contrato o basta con los eventos `flow`. `tools/eval/eve_field_coverage.py` puede que ya
+lo conteste sin una línea nueva. **Medir el premio antes de construir para él.**
+
 **Recomendación de Claude:** la 3 antes que la 1. El arreglo del byte order es de una palabra,
 desbloquea la afirmación central del paper, y hoy hemos comprobado que el circuito entero funciona
 — es el mejor momento para tocar aguas arriba, con todo lo de abajo verde y medido. Zeek es una
-batalla larga que además arrastra la deuda del toolchain.
+batalla larga que además arrastra la deuda del toolchain. **Y con la D2 confirmada, la Opción 3 se
+refuerza: el byte order es literalmente lo único que queda entre los dos sensores y el mismo
+nodo.** Si se cierra rápido, la Opción 5 son media hora limpia y cabe en la misma sesión.
 
 ---
 
@@ -221,6 +279,11 @@ batalla larga que además arrastra la deuda del toolchain.
 - **El loader accede a las columnas por índice posicional** con `static_pointer_cast` al tipo
   Arrow esperado, **sin validar el esquema**. Un desajuste de orden o tipo no daría error: sería
   comportamiento indefinido. Inofensivo hoy (mismo productor), trampa latente en multi-sensor.
+- **`DEBT-NODE-ID-VERSION-LABEL-001`** (nueva): `node_id` es ingrediente de `flow_uid`, y su valor
+  real es `cpp_sniffer_v33_day12` — una **etiqueta de versión** del sniffer de aRGus. El adapter de
+  Suricata la hardcodea para converger. Un bump de versión del sniffer cambiaría todos los
+  `flow_uid` y rompería la convergencia **en silencio** salvo que se actualicen todos los adapters
+  a la vez. D2 se cumple por imitación, no por diseño. Toca a los cinco productores.
 
 ### Arrastrado de DAY 227
 - Registrar: discrepancia etcd-vs-env de la clave HMAC (nota en `DEBT-BRONZE-KEY-PROVISIONING-001`
