@@ -14,6 +14,7 @@
 #include <iostream>
 #include <cstring>
 #include <arpa/inet.h>
+#include "ip_format.hpp"
 #include <google/protobuf/timestamp.pb.h>
 #include <chrono>
 #include <iomanip>
@@ -842,14 +843,13 @@ void RingBufferConsumer::populate_protobuf_event(const SimpleEvent& event,
     // ============================================================================
 
     // Use pre-allocated buffers for IP conversion
-    struct in_addr src_addr = {.s_addr = event.src_ip};
-    struct in_addr dst_addr = {.s_addr = event.dst_ip};
+    // DAY 229: conversion unificada en ip_format.hpp (DEBT-SNIFFER-IP-BYTE-ORDER-001)
 
     char* src_buffer = ip_buffers_src_[buffer_index % ip_buffers_src_.size()].data();
     char* dst_buffer = ip_buffers_dst_[buffer_index % ip_buffers_dst_.size()].data();
 
-    inet_ntop(AF_INET, &src_addr, src_buffer, 16);
-    inet_ntop(AF_INET, &dst_addr, dst_buffer, 16);
+    argus::sniffer::ip_host_to_buffer(event.src_ip, src_buffer, 16);
+    argus::sniffer::ip_host_to_buffer(event.dst_ip, dst_buffer, 16);
 
     // Generate event ID
     std::string event_id = std::to_string(event.timestamp) + "_" +
@@ -1231,11 +1231,9 @@ void RingBufferConsumer::send_fast_alert(const SimpleEvent& event) {
 
         char src_ip_str[INET_ADDRSTRLEN];
         char dst_ip_str[INET_ADDRSTRLEN];
-        struct in_addr src_addr, dst_addr;
-        src_addr.s_addr = htonl(event.src_ip);
-        dst_addr.s_addr = htonl(event.dst_ip);
-        inet_ntop(AF_INET, &src_addr, src_ip_str, INET_ADDRSTRLEN);
-        inet_ntop(AF_INET, &dst_addr, dst_ip_str, INET_ADDRSTRLEN);
+        // DAY 229: misma conversion que el camino principal (antes duplicada)
+        argus::sniffer::ip_host_to_buffer(event.src_ip, src_ip_str, INET_ADDRSTRLEN);
+        argus::sniffer::ip_host_to_buffer(event.dst_ip, dst_ip_str, INET_ADDRSTRLEN);
 
         net_features->set_source_ip(src_ip_str);
         net_features->set_destination_ip(dst_ip_str);
