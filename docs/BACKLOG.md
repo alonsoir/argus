@@ -1575,8 +1575,8 @@ El TSV de cross-check de aRGus estampa timestamp SINTÉTICO porque `community_id
 - `WAZUH_MANAGER_PASSWORD` eliminado del Vagrantfile (fix de seguridad).
 
 ### DEBT-ARGUSPP-COMMUNITY-ID-001 — community_id en Suricata + Zeek (PARCIAL)
-- **Status:** 🟡 60% DAY 168 — configuración hecha, falta aRGus
-- community-id habilitado en Suricata (`community-id: yes`) y Zeek (`community-id-v1`).
+- **Status:** ✅ CERRADA (marcado DAY 224) — el 60% de DAY 168 quedó obsoleto: la parte de aRGus se cerró vía `DEBT-ARGUSPP-COMMUNITY-ID-ARGUS-001` (nativo, 8/8 contra oráculo pycommunityid v1.5.0, protobuf campo 18). El README ya lo daba por cerrado; esta entrada no se había actualizado.
+- community-id habilitado en Suricata (`community-id: yes` + `community-id-seed: 0`) y Zeek (`@load policy/protocols/conn/community-id-logging` — NO `community-id-v1`, corregido DAY 170; ver Vagrantfile raíz:1247).
 - **PENDIENTE (P0, DAY 169+):** campo `community_id` en el contrato protobuf y
   cálculo en el sniffer de aRGus. El ID NO viene por defecto en aRGus — Suricata,
   Zeek y Wazuh lo traen de fábrica, aRGus no.
@@ -5257,3 +5257,232 @@ se mantiene como registro histórico del proceso de diseño y ratificación
 (README, evidence/, documento de diseño 9/9) — no se mueve, solo el `.cpp`.
 El `README.md` de esa carpeta se actualiza con una nota señalando la nueva
 ubicación del código.
+
+
+---
+
+## 🆕 Entradas DAY 223 — Gate de tests que no medía + esquema del grafo multi-sensor
+
+### DEBT-MAKEFILE-TEST-GATE-MASKED-001 — El `||` de `test-components` se traga los fallos
+**Severidad:** 🔴 P1 — integridad del gate de tests (afecta a qué podemos afirmar en el paper)
+**Estado:** ABIERTO — DAY 223 · descubierta DAY 222
+**Componente:** `Makefile` (raíz), target `test-components`
+Cada componente termina en `|| echo "⚠️ No X tests configured"`. Ese `||` no distingue
+**"no hay tests configurados"** de **"los tests fallan"**: en ambos casos el target sale 0.
+**Afecta a:** sniffer, ml-detector, rag-ingester, etcd-server, rag-security, firewall.
+Solo `correlation-engine-test` escala de verdad, porque entra como dependencia y sin `||`.
+**Consecuencia:** `test-all` — y por tanto **EMECAS+++** — lleva un tiempo indeterminado dando
+verde sin que ese verde signifique lo que parece. Misma familia que `DEBT-VERDICT-MONOCAPA-001`
+y `DEBT-CE-TESTS-UNGATED-001`: un gate que aparenta medir y no mide.
+**Para el paper:** toda afirmación del tipo "la suite pasa" sobre los componentes afectados
+necesita asterisco hasta que esto se cierre.
+**Test de cierre:** introducir un test que falle a propósito en un componente afectado y
+comprobar que `make test-components` devuelve código ≠ 0. La ausencia de tests debe ser una
+condición **declarada explícitamente** por componente, no el efecto colateral de un `||`.
+
+### DEBT-MLDETECTOR-TESTS-NOT-BUILT-001 — 10 de 11 tests del ml-detector nunca se construyen
+**Severidad:** 🔴 P1 — integridad del gate de tests
+**Estado:** ABIERTO — DAY 223 · descubierta DAY 222
+**Componente:** `ml-detector/CMakeLists.txt` / `ml-detector/build/tests`
+De los **11** tests registrados con `add_test`, **10 aparecen en `Not Run`**: el ejecutable no
+existe en `build/tests`. No fallan — **nunca se construyen**. Son: `test_classifier`,
+`test_feature_extractor`, `test_rag_logger_artifact_save`, `test_model_loader`,
+`test_zmq_memory_overflow`, `RansomwareDetectorUnit`, `test_pipeline`, `test_csv_event_writer`,
+`test_csv_feature_extraction`, `test_etcd_client_hmac`. El único que corre de verdad es
+`test_correlation_roundtrip`.
+**Apilada sobre `DEBT-MAKEFILE-TEST-GATE-MASKED-001`:** el `||` impide que la ausencia se note.
+Dos defectos independientes que se tapan mutuamente.
+**Aviso de alcance (DAY 222):** al construir esos 10 lo más probable es que salgan **rojos de
+verdad** — deudas de ML ya conocidas y dadas por irrecuperables en esta línea de investigación.
+Eso NO debe bloquear otras ramas. Al abordarla hay que decidir **explícitamente** qué se arregla
+y qué se marca **known-red** con su propio ID.
+**Test de cierre:** los 10 ejecutables se construyen y `ctest` los ejecuta; cada uno queda en
+verde o registrado como known-red con ID propio. Ninguno vuelve a `Not Run` en silencio.
+
+### DEBT-GRAPH-SCHEMA-MULTISENSOR-001 — Esquema del grafo Kuzu ante múltiples sensores
+**Severidad:** 🔴 P1 — integridad del grafo (pérdida silenciosa de eventos con un 2º sensor)
+**Estado:** PARCIALMENTE CERRADO — abierta DAY 223 · avance medido DAY 222
+**Componente:** `correlation-engine/schema/schema.cypher`,
+`include/correlation_engine/cypher_builder.hpp`, `src/kuzu_graph_sink.cpp`
+**Hermana de `DEBT-PARQUET-GOLD-SCHEMA-MULTISENSOR-001` — NO la sustituye.** Aquella cubre el
+esquema columnar del Parquet ORO; ésta cubre **identidad y semántica de `MERGE`** en el grafo.
+Esta entrada **reclama** la tercera pregunta abierta de aquella ("¿el grafo necesita trazar qué
+combinación de señales produjo cada `Alert`/`NetworkFlow`?"), que es cuestión de grafo y quedó
+allí por no existir esta entrada en DAY 207. *Pendiente:* añadir la línea recíproca en la
+entrada del Parquet (diff aparte).
+
+**Cerrado DAY 222:** `source_sensor` (col 1) viajaba íntegra writer → lib → reader → Parquet →
+loader y **se caía al escribir el nodo**. Añadida a `Alert` y `TelemetryEvent`. **NO** a
+`NetworkFlow`: identidad pura, el flujo es compartido entre sensores por diseño. RED→GREEN sobre
+`test_graph_sink_loop`; `exec_row` 14→15 params; suite correlation-engine 9/9.
+
+**🔴 BLOQUEANTE ABIERTO — colisión de `event_id`.** `event_id` es PK de `Alert`. El `event_id`
+de Suricata no puede colisionar con el de aRGus: un `MERGE` machacaría el evento del otro sensor
+**sin error y sin traza**. No es un hueco de diseño, es **pérdida de datos silenciosa** en cuanto
+el adapter escriba la primera fila. Requiere decisión de esquema (namespacing `sensor:uid` vs
+hash compuesto) ANTES de cualquier adapter. Si esa decisión resulta tener vida propia, se
+promociona a `DEBT-GRAPH-EVENTID-COLLISION-001`. Relacionada: `DEBT-EVENT-ID-FACTORY-001`.
+
+**Abierto — migración de catálogo.** `CREATE NODE TABLE IF NOT EXISTS` **NO migra catálogos Kuzu
+existentes**. Una BD persistida de antes de DAY 222 no tiene `source_sensor` y necesita
+recrearse. Tests y EMECAS+++ **NO lo detectan**: parten de base fresca / VM destruida. Riesgo
+exclusivo de instalaciones con estado.
+
+**Abierto — firma del bronce multi-productor.** Ver `DEBT-BRONZE-HMAC-KEY-POLICY-001` (la col 18
+no es "mismos bytes" entre productores) y `DEBT-SECRETS-MANAGER-PERSISTENCE-001` (claves solo en
+memoria). Firmar por adapter distribuye la clave a N productores; firmar en un colector único
+rompe que el bronce sea "lo que emanó el sensor". Afecta a la cadena de custodia.
+
+**✅ Discrepancia DIRIMIDA (DAY 224):** el 24 NO era errata. El documento de diseño
+`docs/design/eslabon-1-flujo-a-avro-parquet/eslabon-1-flujo-a-avro-parquet.md` tiene la tabla
+nominal completa: 0-18 bronce + 19 `flow_start_window` + 20 `seq_in_window` + 21 `flow_uid` +
+**22 `ingested_at`** + **23 `temporal_anomaly`** (ambas clase E). Diseñadas 24, implementadas
+22. **Faltan las cols 22 y 23** — ya cubiertas por `DEBT-CIRCUIT-TEMPORAL-ANOMALY-PARITY-001`,
+que el propio documento marca como "implementación aún pendiente". No hace falta deuda nueva.
+
+**Semántica objetivo (ya diseñada, no hay que inventarla):** dos sensores con el mismo `flow_uid`
+convergen al MISMO nodo `NetworkFlow`, con un `Alert` cada uno colgando por `ALERT_ABOUT`.
+
+**Test de cierre:** dos sensores distintos con `event_id` de generación independiente escriben
+sobre el mismo `flow_uid`; el grafo conserva **DOS** `Alert` distintos, cada uno con su
+`source_sensor`, colgando de **UN** solo `NetworkFlow`. El test debe fallar en RED antes del fix
+de `event_id`.
+
+
+---
+
+## 🆕 Entradas DAY 224 — Inventario de Suricata + provisioning que no verifica
+
+### DEBT-PROVISION-SED-SILENT-NOOP-001 — `sed -i` en provisioning no distingue "funcionó" de "no hizo nada"
+**Severidad:** 🟡 P2 — provisioning silenciosamente incompleto
+**Estado:** ABIERTO — DAY 224 (sospecha fuerte, NO confirmada contra la VM)
+**Componente:** `experiments/suricata-comparative/Vagrantfile:60-62` (y auditar el resto)
+El provisioning hace `sed -i 's/community-id: false/community-id: yes/' ... || sed -i '/eve-log:/a ...'`.
+**`sed -i` devuelve 0 aunque no sustituya nada**, así que el `||` de respaldo NUNCA se ejecuta.
+Si el patrón no casa (indentación distinta, clave comentada), la opción se queda apagada y nada
+se queja. Misma familia que `DEBT-MAKEFILE-TEST-GATE-MASKED-001`.
+**Evidencia (medida):** los logs de `logs/experiment/suricata-*/eve.json` (10-11 mayo, salidos de
+ese banquillo) **no contienen `community_id` ni una sola vez** en las 211.136 líneas, ni al nivel
+superior ni anidado. El Vagrantfile **raíz** sí hace `echo` de verificación (líneas 1180, 1267);
+el del banquillo no. No confirmado contra el YAML de la VM — no se levantó, no aportaba al cierre.
+**Test de cierre:** todo `sed` de provisioning que active una opción va seguido de una
+verificación que falle ruidosamente si la opción no quedó puesta.
+
+### Inventario medido de Suricata eve.json (DAY 224) — insumo para la puerta de diseño
+Barrido **completo** de `logs/experiment/suricata-offline/eve.json`, 211.136 líneas:
+`dns` 169.140 · `flow` 34.692 · `http` 2.810 · **`alert` 2.762** · `fileinfo` 1.120 · `smtp` 228 ·
+`anomaly` 168 · `tls` 104 · `smb` 72 · `snmp` 32 · `stats` 6 · `sip` 2.
+**Solo el 1,3% de los eventos son alertas.** El 98,7% es telemetría → un adapter que solo mapee
+alertas tira casi todo. El adapter debe **enrutar por `event_type`** a dos tipos de nodo:
+`Alert` y `TelemetryEvent`. No es un mapeo 1-a-1.
+Claves presentes en el 100% de los eventos: `timestamp`, `flow_id`, `event_type`, `src_ip`,
+`src_port`, `dest_ip`, `dest_port`, `proto`.
+**Estos logs NO sirven como fuente del adapter** (sin `community_id`): valen para inventariar.
+La fuente real es la VM `suricata` del Vagrantfile raíz, con provisión verificada.
+**Cobertura de los 19 campos del bronce desde Suricata:** los ponemos nosotros (`schema_version`,
+`source_sensor`, `node_id`, `authoritative_source`, `hmac_row`) · copia directa (`src_ip`,
+`dest_ip`, `src_port`, `dest_port`, `proto`) · config (`community_id`) · **`flow_start_sec/nano`
+NO es el `timestamp` del evento** — hay que sacarlo de `flow.start`, o el `flow_uid` diverge y
+los sensores no convergen al mismo `NetworkFlow` · **sin contrapartida** (`final_classification`,
+`threat_category`, `fast_detector_score`, `ml_detector_score`, `overall_threat_score`) ·
+`event_id` a acuñar sin colisión (`DEBT-GRAPH-SCHEMA-MULTISENSOR-001`).
+
+### DEBT-SNIFFER-IP-BYTE-ORDER-001 — Las IPs del camino principal del sniffer se
+### serializan en orden de host, corrompiendo también el community_id
+
+**Estado:** 🔴 ABIERTA · **Detectada:** DAY 226 · **Severidad:** ALTA (rompe la
+convergencia multi-sensor, que es el objetivo del paso 1 del plan de cierre)
+
+**[MEDIDO] Síntoma.** Primera fila de `logs/correlation/argus-2026-07-20-094233.csv`:
+
+    1,argus,10304186234549_254,cpp_sniffer_v33_day12,1:wKZAv8xH3F8xTZu9FJk9DGKDsGE=,
+    10304,186234549,1.56.168.192,255.56.168.192,57621,57621,UDP,...
+
+`1.56.168.192` es `192.168.56.1` con los bytes invertidos, y `255.56.168.192` es
+`192.168.56.255` (broadcast host-only de VirtualBox). UDP 57621→57621 es
+descubrimiento LAN de Spotify, coherente con un `.1 → .255`.
+
+**[MEDIDO] El community_id hereda la corrupción.** Recalculado con el estándar
+Corelight v1 (seed 0, proto 17):
+- desde las IPs invertidas → `1:wKZAv8xH3F8xTZu9FJk9DGKDsGE=` ← **coincide con el CSV**
+- desde las IPs correctas  → `1:hF8qbh3/+MvwfDC6onu0ugDlH/8=`
+
+Luego el `community_id` que aRGus escribe en el bronce **no puede coincidir jamás**
+con el que emiten Suricata y Zeek para el mismo flujo. La clave de join
+multi-sensor está rota en origen.
+
+**[MEDIDO] Causa raíz — una línea, y su arreglo ya existe 390 líneas más abajo.**
+
+| Fichero:línea | Código | Veredicto |
+|---|---|---|
+| `sniffer/src/userspace/ring_consumer.cpp:844-845` | `struct in_addr src_addr = {.s_addr = event.src_ip};` | ❌ sin `htonl` — **camino principal, el que alimenta el bronce** |
+| `sniffer/src/userspace/ring_consumer.cpp:1235-1236` | `src_addr.s_addr = htonl(event.src_ip);` | ✅ correcto — camino de alerta |
+
+Ambos usan `inet_ntop` después; la única diferencia es la conversión. Como el CSV
+sale invertido y procede del camino sin `htonl`, `event.src_ip` llega desde eBPF en
+orden de **host**.
+
+`compute_community_id()` NO es culpable: recibe las IPs como `std::string` ya
+formateado (`community_id.cpp:31-37`) y pasó 8/8 contra el oráculo `pycommunityid`
+en DAY 170. El hash y la cadena del CSV beben de la misma fuente equivocada, así
+que **un solo arreglo repara las dos cosas**.
+
+**Arreglo propuesto (no aplicado):**
+
+    struct in_addr src_addr = {.s_addr = htonl(event.src_ip)};
+    struct in_addr dst_addr = {.s_addr = htonl(event.dst_ip)};
+
+**[PENDIENTE] Antes de aplicarlo, medir dos cosas:**
+1. El sentido de `event.src_ip` en el programa eBPF (¿hay `bpf_ntohl` al rellenar
+   el evento?). Toda la deducción cuelga de esto.
+2. Si `sniffer/src/userspace/main_libpcap.cpp` (variante B) tiene el mismo defecto:
+   el tramo leído en DAY 226 no llega a donde se fija `nf->source_ip()`. Los
+   puertos sí se convierten bien con `ntohs`. Si las dos variantes discrepan,
+   producen `community_id` distintos sobre el mismo tráfico.
+
+**[MEDIDO] Por qué se ocultó 56 días — el eslabón que faltaba.** La diana
+`1:IN7uqVpMWxpmuhQTowSQB2XEe0E=` se validó contra los tests unitarios de
+`compute_community_id` y contra el `eve.json` de Suricata, pero **nunca contra un
+CSV de bronce producido por el pipeline de aRGus**. Los tests pasan strings ya
+correctos, así que el 8/8 era verde y el pipeline estaba roto a la vez.
+
+**Definición de HECHO (no cerrar sin esto):** un test de regresión que lea una fila
+real del bronce escrita por el pipeline y compare su `community_id` contra el
+oráculo `pycommunityid` recalculado desde las IPs de esa misma fila. Sin ese test,
+la deuda vuelve.
+
+**Familia.** Misma que `DEBT-MAKEFILE-TEST-GATE-MASKED-001` (constructo que no
+distingue "hizo" de "no hizo") y `DEBT-PROVISION-SED-SILENT-NOOP-001`: verificación
+que mira el sitio equivocado.
+
+**Referencias cruzadas.** `DEBT-ARGUSPP-COMMUNITY-ID-ARGUS-001` (cerrada en su
+alcance — la función es correcta; el llamante no) ·
+`DEBT-GRAPH-SCHEMA-MULTISENSOR-001` · `docs/design/multisensor-graph-identity/
+puerta-diseno-multisensor.md` (D1, D2)
+Añade también una línea recíproca en DEBT-ARGUSPP-COMMUNITY-ID-ARGUS-001 diciendo que su cierre cubre la función pero 
+no el llamante, y que el camino a producción está bloqueado por esta deuda. 
+Si no, esa entrada sigue leyéndose como "community_id resuelto".
+
+Dos cosas de propina que van al paper, no al BACKLOG: aRGus no aporta ni una fila de ICMP (compute_community_id devuelve
+nullopt para no-TCP/UDP y validate() rechaza el vacío, así que se descartan todas) mientras Suricata sí, y el event_id 
+de aRGus usa un reloj monotónico de uptime, luego no es reproducible entre arranques. 
+Ninguna de las dos es un bug; las dos matizan afirmaciones que el paper podría hacer de más.
+
+### DEBT-VM-SENSOR-NO-TOOLCHAIN-001 — Las VMs de sensor no pueden compilar
+### sus propios adapters
+
+**Estado:** 🟡 ABIERTA · **Detectada:** DAY 226
+
+**[MEDIDO]** En la VM `suricata`, `which cmake g++ pkg-config` no encuentra
+ninguno de los tres; faltan `/usr/include/nlohmann/json.hpp` y
+`/usr/include/openssl/hmac.h`. La VM se provisiona solo para ejecutar Suricata.
+
+**Consecuencia.** `suricata-adapter/` no se puede construir donde vive su fuente
+de datos. Aplicable por igual a `zeek` y `wazuh` cuando se creen.
+
+**Arreglo.** Bloque `ADAPTER_TOOLCHAIN` compartido en el Vagrantfile raíz, con
+verificacion por invocacion. Hoy se aplico a mano en la VM `suricata`: hasta que
+esté en el Vagrantfile, un `vagrant destroy` lo pierde.
+
+**Familia.** `DEBT-PROVISION-SED-SILENT-NOOP-001` y la deuda del restart de
+Suricata: provisioning que no verifica el resultado real.

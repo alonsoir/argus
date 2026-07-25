@@ -10,7 +10,7 @@
 
 namespace argus::correlation {
 
-// Emite por cada write el Cypher completo (MERGE :NetworkFlow -[:RAISED]-> :Alert)
+// Emite por cada write el Cypher completo (MERGE :NetworkFlow <-[:ALERT_ABOUT]- :Alert)
 // y, en flush(), un contador agregado. NO toca disco de grafo: solo log.
 class LoggingGraphSink final : public IGraphSink {
 public:

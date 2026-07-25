@@ -51,6 +51,7 @@ struct CypherBindings {
     std::string_view flow_uid;
     std::string_view node_id;
     std::string_view community_id;
+    std::string_view source_sensor;
     std::string_view event_id;
     std::string_view final_classification;
     std::string_view threat_category;
@@ -75,6 +76,7 @@ inline CypherBindings make_bindings(const CorrelationRecord& r, std::string_view
         /* flow_uid             */ flow_uid,
         /* node_id              */ r.node_id,
         /* community_id         */ r.community_id,
+        /* source_sensor        */ r.source_sensor,
         /* event_id             */ r.event_id,
         /* final_classification */ r.final_classification,
         /* threat_category      */ r.threat_category,
@@ -100,7 +102,7 @@ inline constexpr std::string_view kAlertCypherTemplate = R"CYPHER(
 MERGE (f:NetworkFlow {flow_uid:$flow_uid})
 ON CREATE SET f.node_id=$node_id, f.community_id=$community_id, f.flow_start_window=$flow_start_window, f.seq_in_window=$seq_in_window, f.ingested_at=$ingested_at, f.temporal_anomaly=$temporal_anomaly
 MERGE (e:Alert {event_id:$event_id})
-ON CREATE SET e.node_id=$node_id, e.flow_uid=$flow_uid, e.community_id=$community_id, e.final_classification=$final_classification, e.threat_category=$threat_category, e.fast_detector_score=$fast_detector_score, e.ml_detector_score=$ml_detector_score, e.overall_threat_score=$overall_threat_score, e.authoritative_source=$authoritative_source, e.ingested_at=$ingested_at
+ON CREATE SET e.node_id=$node_id, e.flow_uid=$flow_uid, e.community_id=$community_id, e.source_sensor=$source_sensor, e.final_classification=$final_classification, e.threat_category=$threat_category, e.fast_detector_score=$fast_detector_score, e.ml_detector_score=$ml_detector_score, e.overall_threat_score=$overall_threat_score, e.authoritative_source=$authoritative_source, e.ingested_at=$ingested_at
 MERGE (e)-[rel:ALERT_ABOUT]->(f)
 ON CREATE SET rel.method='direct', rel.confidence=1.0
 )CYPHER";
@@ -109,7 +111,7 @@ inline constexpr std::string_view kTelemetryCypherTemplate = R"CYPHER(
 MERGE (f:NetworkFlow {flow_uid:$flow_uid})
 ON CREATE SET f.node_id=$node_id, f.community_id=$community_id, f.flow_start_window=$flow_start_window, f.seq_in_window=$seq_in_window, f.ingested_at=$ingested_at, f.temporal_anomaly=$temporal_anomaly
 MERGE (e:TelemetryEvent {event_id:$event_id})
-ON CREATE SET e.node_id=$node_id, e.flow_uid=$flow_uid, e.community_id=$community_id, e.final_classification=$final_classification, e.threat_category=$threat_category, e.fast_detector_score=$fast_detector_score, e.ml_detector_score=$ml_detector_score, e.overall_threat_score=$overall_threat_score, e.authoritative_source=$authoritative_source, e.ingested_at=$ingested_at
+ON CREATE SET e.node_id=$node_id, e.flow_uid=$flow_uid, e.community_id=$community_id, e.source_sensor=$source_sensor, e.final_classification=$final_classification, e.threat_category=$threat_category, e.fast_detector_score=$fast_detector_score, e.ml_detector_score=$ml_detector_score, e.overall_threat_score=$overall_threat_score, e.authoritative_source=$authoritative_source, e.ingested_at=$ingested_at
 MERGE (e)-[rel:TELEMETRY_ABOUT]->(f)
 ON CREATE SET rel.method='direct', rel.confidence=1.0
 )CYPHER";
@@ -166,6 +168,7 @@ inline std::string build_cypher(const CorrelationRecord& r, std::string_view flo
       << "e.node_id='" << esc(b.node_id) << "', "
       << "e.flow_uid='" << fuid << "', "
       << "e.community_id='" << esc(b.community_id) << "', "
+      << "e.source_sensor='" << esc(b.source_sensor) << "', "
       << "e.final_classification='" << esc(b.final_classification) << "', "
       << "e.threat_category='" << esc(b.threat_category) << "', "
       << "e.fast_detector_score=" << b.fast_detector_score << ", "

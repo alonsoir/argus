@@ -230,3 +230,9 @@ target_compile_definitions(test_flujo_a_b_equivalence PRIVATE
         LOADER_BIN_PATH="$<TARGET_FILE:parquet_to_kuzu_loader>")
 add_dependencies(test_flujo_a_b_equivalence bronze_to_gold_converter parquet_to_kuzu_loader)
 add_test(NAME test_flujo_a_b_equivalence COMMAND test_flujo_a_b_equivalence)
+# ── DAY 228 — kuzu_query: consulta ad-hoc contra una BD Kuzu por ruta ──
+# Herramienta/verificacion, NO test CI (mismo patron que kuzu_concurrency_smoke).
+# correlation_engine ya propaga KUZU_LIB (PUBLIC).
+add_executable(kuzu_query tools/kuzu_query.cpp)
+target_include_directories(kuzu_query PRIVATE ${KUZU_INC})
+target_link_libraries(kuzu_query PRIVATE correlation_engine)

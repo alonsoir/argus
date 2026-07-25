@@ -1,21 +1,41 @@
-docs(day178): ratifica ADR-055 con enmiendas de fidelidad + mapeo aRGus en AdapterSpec
+fix(sniffer): DAY 219 GREEN — DEBT-FLOWSTATS-COPY-AMPUTATED-001 (P0)
 
-ADR-055 — confirmación de fidelidad del Consejo (8/8 en lo sustantivo):
-- Estado BORRADOR → RATIFICADA con enmiendas (DAY 178).
-- §3.3: aclaración de ChatGPT (consenso en instrumentación, NO en mecanismo;
-  mantener dontwait es arbitraje exclusivo de Alonso) + objeción formal de Kimi
-  a la anulación de Q1, aceptada bajo protesta con condición satisfecha.
-- §8: DEBT-INJECTOR-DELIVERY-METRIC-001 elevada P2→P1 (objeción de Kimi avalada
-  por Mistral): sin el instrumento, el modo deterministic no es determinista.
-- §5 Q4: nota conservadora (Kimi sostiene voto de Claude 'no' desde origen → 8/8;
-  no verificable contra acta; decisión idéntica, se mantiene 7/8).
+CAUSA RAIZ: un unique_ptr que nunca fue necesario.
 
-AdapterSpec v1 — §10.1 nueva: mapeo normativo aRGus → SecurityEvent (F1):
-- Resuelve Pregunta Abierta #1: 'message SecurityEvent' NO existe en el .proto.
-  El adapter de aRGus NO crea mensaje nuevo (YAGNI) — mapea desde bronce.
-- raw_payload = fila CSV bronce (cols 0-17 + HMAC), opción (a).
-- severity derivado de cols 12/16, no recalculado (ya lo decide el ml-detector).
-- Declara explícitamente lo omitido en F1 (83 features, GeoEnrichment, provenance)
-  y la deuda de native_event_id no-determinista en tier golden.
+TimeWindowManager es copiable desde el dia uno (deque<WindowStats POD> + PODs
++ vector<double>: ni mutex, ni punteros). El unique_ptr de FlowStatistics::
+time_windows era la UNICA razon por la que FlowStatistics no era copiable
+=> alguien escribio a mano una lista de 26 asignaciones en get_flow_stats_copy()
+=> la lista envejecio => 2 campos se perdian: fwd_payload_lengths y time_windows.
 
-BACKLOG + README (DAY-STATUS, Hitos DAY 177): reflejan ratificación + P1.
+Y la ruta de PRODUCCION come de esa copia (ring_consumer.cpp:809 -> :817).
+
+LAS 5 FEATURES ROTAS DE L1 SON EXACTAMENTE LAS 5 QUE DEPENDEN DE ESOS 2 CAMPOS:
+  L1[1]  Subflow Fwd Bytes      -> time_windows
+  L1[8]  act_data_pkt_fwd       -> fwd_payload_lengths
+  L1[12] Subflow Bwd Bytes      -> time_windows
+  L1[14] Init_Win_bytes_forward -> time_windows
+  L1[15] Subflow Fwd Packets    -> time_windows
+No es correlacion. Es la causa. El hardcodeo de DAY 216 era el SINTOMA:
+alguien vio ceros y los cemento sin rastrear de donde venian.
+
+CAMBIOS
+  - time_windows: unique_ptr -> POR VALOR. Los 4 ctors/assign, explicitos
+    (declarar el move suprime el copy implicito).
+  - get_flow_stats_copy(): 40 lineas -> 1. Copia el compilador: los 28 campos,
+    y los que vengan manana. La clase de defecto deja de ser POSIBLE.
+  - feature_extractor: 14 guardas if(!flow.time_windows) eliminados. Protegian
+    de un nullptr IMPOSIBLE (el ctor hacia make_unique) mientras el objeto
+    llegaba VACIO. Caso 19.
+  - ShardedFlowManager::clear(): initialize() es std::call_once => la 2a llamada
+    es un NO-OP MUDO. Los 3 tests del extractor compartian flujo: 3+4+3=10.
+  - sharded_flow_manager.cpp incluia sharded_flow_manager_fix3.hpp — header
+    IDENTICO pero DISTINTO FICHERO. Todo el resto del proyecto incluye el
+    canonico. Dos #pragma once, una clase: ODR latente, viva 175 dias porque
+    eran byte a byte iguales. Include canonizado.
+  - full_contract:219/287 — ASSERT_NE(time_windows, nullptr) ya NO COMPILA.
+    El verde falso es INEXPRESABLE. Sustituido por preguntas sobre el CONTENIDO.
+
+RED (6166982f) -> GREEN. ctest: 17/18.
+El 18 es test_payload_analyzer (DEBT-PAYLOAD-ANALYZER-PATTERNS-INERT-001,
+preexistente, DAY 218). No tocado.

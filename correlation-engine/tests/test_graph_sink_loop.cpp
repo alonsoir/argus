@@ -151,6 +151,7 @@ TEST(GraphSinkLoop, LoggingSinkFormsCypher) {
     EXPECT_NE(cypher.find("MERGE (f:NetworkFlow"), std::string::npos);
     EXPECT_NE(cypher.find("e:Alert"), std::string::npos);
     EXPECT_NE(cypher.find(":ALERT_ABOUT"), std::string::npos);
+    EXPECT_NE(cypher.find("e.source_sensor='argus'"), std::string::npos) << cypher;
     EXPECT_NE(cypher.find("final_classification='MALICIOUS'"), std::string::npos);
     EXPECT_NE(cypher.find(fuid), std::string::npos);           // flow_uid presente
     EXPECT_NE(cypher.find("ev-cypher"), std::string::npos);    // event_id presente

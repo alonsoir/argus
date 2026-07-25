@@ -1,0 +1,49 @@
+==============================================================================
+eve_field_coverage — logs/day225-suricata-smallflows/eve.json
+==============================================================================
+lineas ilegibles : 0
+eventos totales  : 1984
+diana 1:IN7uqVpMWxpmuhQTowSQB2XEe0E=: 0 ocurrencias
+
+[1] Cobertura de campos por event_type
+event_type       total   community_id   flow.start   flow_id
+flow               641            641          641       641
+http               577            577            0       577
+fileinfo           501            501            0       501
+alert               72             72           72        72
+dns                 68             68            0        68
+tls                 57             57            0        57
+anomaly             50             50            0        50
+snmp                16             16            0        16
+dhcp                 1              1            0         1
+stats                1              0            0         0
+
+[2] Alertas sin community_id, por firma
+    (ninguna)
+
+[3] Colapso de community_id por protocolo (solo eventos `flow`)
+proto      eventos   distintos   colapso        %
+TCP            487         485         2     0.4%
+UDP            153         147         6     3.9%
+ICMP             1           1         0     0.0%
+TOTAL          641         633         8     1.2%
+
+[4] Top 5 community_id reutilizados (separacion temporal)
+       3x  1:3O12rzx4M+K4kYX08vSUdN3p2TQ=  proto=UDP sport=137 dport=137
+            2011-01-25T18:54:00.639586+0000
+            2011-01-25T18:56:08.946241+0000
+            2011-01-25T18:56:43.081292+0000
+       2x  1:DfGXKJUOMY1nVKXrfpsa3KRYWBs=  proto=UDP sport=2531 dport=7001
+            2011-01-25T18:54:18.930415+0000
+            2011-01-25T18:56:08.930415+0000
+       2x  1:QkIgN7TrgAaMek+fYbCecSXUZc8=  proto=TCP sport=57011 dport=80
+            2011-01-25T18:52:22.484409+0000
+            2011-01-25T18:56:24.236472+0000
+       2x  1:S88A0K48R/ptUq6JaFCsRld41Y8=  proto=UDP sport=138 dport=138
+            2011-01-25T18:55:11.696925+0000
+            2011-01-25T18:57:01.696925+0000
+       2x  1:aRVJ4wV3qBwT/3ze/Eo0oNQmo04=  proto=UDP sport=48575 dport=1900
+            2011-01-25T18:54:19.160746+0000
+            2011-01-25T18:56:09.160746+0000
+
+==============================================================================
