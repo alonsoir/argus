@@ -5390,7 +5390,7 @@ los sensores no convergen al mismo `NetworkFlow` · **sin contrapartida** (`fina
 ### DEBT-SNIFFER-IP-BYTE-ORDER-001 — Las IPs del camino principal del sniffer se
 ### serializan en orden de host, corrompiendo también el community_id
 
-**Estado:** 🔴 ABIERTA · **Detectada:** DAY 226 · **Severidad:** ALTA (rompe la
+**Estado:** 🟢 ARREGLADA EN CÓDIGO (test_ip_format 6/6 + EMECAS+++) · E2E CON DATOS REALES PENDIENTE (paso 2 MITRE) · DAY 230
 convergencia multi-sensor, que es el objetivo del paso 1 del plan de cierre)
 
 **[MEDIDO] Síntoma.** Primera fila de `logs/correlation/argus-2026-07-20-094233.csv`:
