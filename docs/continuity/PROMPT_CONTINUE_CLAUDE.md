@@ -340,3 +340,87 @@ discrepancia existiera. Eso, que hace tres días parecía fontanería de integra
 evidencia empírica de la tesis del paper.
 
 *Via Appia Quality — antes de aceptar un criterio, comprobar que puede ponerse rojo.*
+
+## 🆕 Radio de explosión del byte order sobre la clasificación (medido DAY 229, tras cerrar)
+
+Pregunta de Alonso: *¿este bug afectaba a la calidad del `ml_score`?* Todo lo de abajo es
+**medición, no arreglo**. No se tocó una línea.
+
+### 🟢 L1 exonerado, ahora contra fuente
+
+`ml-detector/src/feature_extractor.cpp:169-174` — las cadenas `nf.source_ip()` /
+`nf.destination_ip()` aparecen **dentro de `if (logger_->level() <= spdlog::level::debug)`**, en
+un `logger_->debug("Flow: {}:{} -> {}:{}")`. Puro logging. Las 23 features (`features[0..22]`)
+son todas estadísticas numéricas de flujo.
+
+**Ninguna IP entra en el vector de L1.** Se suma al argumento de DAY 221 (el Paso 2 puntuó con
+features de CICFlowMeter, extractor independiente, y dio recall 0,0001): el fallo de L1 no tiene
+nada que ver con el orden de bytes.
+
+Y hay un argumento estructural que conviene escribir en el paper: **invertir cuatro octetos es una
+biyección** aplicada igual a origen y destino, así que la agregación de flujos agrupa exactamente
+los mismos paquetes. Duración, conteos, IAT, tamaños, flags y tasas son idénticos con y sin bug.
+Lo que la inversión destruye no es la identidad, es la **semántica** de la IP.
+
+### 🔴 `source_ip_dispersion` no se calcula — por eso el bug no la tocó
+
+| sitio | qué dice |
+|---|---|
+| `sniffer/src/userspace/ml_defender_features.cpp:64` | `extract_ddos_source_ip_dispersion(const FlowStatistics& /*flow*/)` — **parámetro comentado, sin usar** |
+| `sniffer/src/userspace/ring_consumer.cpp:35` | `ddos->set_source_ip_dispersion(MISSING_FEATURE_SENTINEL)` |
+| `ml-detector/src/main.cpp:297` | `.source_ip_dispersion = 0.5f` |
+| `ml-detector/include/ml_defender/ddos_trees_inline.hpp:859` | nodo `{2, 0.0000000000f, 2, 5, {0.9988056731f, 0.0011943269f}}` → `source_ip_dispersion <= 0.0000?` |
+
+Es decir: **una feature constante alimentando un corte del árbol de la cabeza DDoS**. Familia de
+`DEBT-RANSOMWARE-ML-HEAD-INERT-001`. La hipótesis del prefijo (que la inversión disparara la
+dispersión) queda **descartada por una razón peor que la que se buscaba**: no hay nada que
+disparar.
+
+**Pista cronológica:** el respaldo trackeado `ml_defender_features.cpp.bak.day79:64` declara la
+misma función con el parámetro **nombrado** (`const FlowStatistics& flow`). En algún momento sí se
+calculaba y dejó de hacerse. Aquí el `.bak` es evidencia, no basura.
+
+### 🔴🔴 El fast path tiene lógica interno/externo, y el arreglo de DAY 229 NO la toca
+
+`sniffer/src/userspace/fast_detector.cpp:40-42`:
+
+```cpp
+if (is_external_ip(evt.dst_ip)) {
+    if (is_new_external_ip(evt.dst_ip)) {
+        recent_external_ips_.insert(evt.dst_ip);
+```
+
+Usa el campo **numérico** `evt.dst_ip` del `SimpleEvent`, no la cadena. Por tanto `ip_format.hpp`
+no le afecta: **si está mal, sigue mal después del arreglo de hoy.**
+
+La pregunta abierta es **qué orden de bytes asume `is_external_ip`**. El kernel entrega orden de
+host (`sniffer.bpf.c:232`). Si la función compara asumiendo orden de red —mirando el octeto bajo,
+o contra constantes pasadas por `htonl`— estaría clasificando interno como externo desde siempre.
+
+Es candidato serio a explicar la **inversión del fast path post-8-mayo** (0,0 al botnet, 0,75 al
+chatter benigno) y quizá parte de los ~224.000 falsos positivos sobre chatter benigno de DAY 221.
+No es veredicto: es hipótesis con una medición barata que la resuelve.
+
+### 🟡 Segundo sitio con rangos privados
+
+`sniffer/src/userspace/time_window_aggregator.cpp:396-406` tiene comentarios `10.0.0.0/8`,
+`172.16.0.0/12`, `192.168.0.0/16`. Pendiente leer qué hace con ellos y con qué orden de bytes.
+
+### Descartados
+
+- `zmq_handler.cpp:748` — `traffic_result.is_internal(config_.ml.thresholds.level3_web)` es un
+  método sobre el resultado de clasificación con un umbral, no lógica de rango de IP.
+- **Geolocalización: no está implementada** (confirmado por Alonso). Los campos
+  `source_ip_geo` / `destination_ip_geo` de `rag_logger.cpp:299-311` son estructura sin uso. No
+  hubo daño. Queda como mina: si se implementa antes de arreglar el byte order, daría países
+  sistemáticamente erróneos.
+
+### Mediciones pendientes, en orden
+
+1. Cuerpo de `extract_ddos_source_ip_dispersion` (`ml_defender_features.cpp:64-75`) y valor de
+   `MISSING_FEATURE_SENTINEL`.
+2. **Cuerpo de `is_external_ip` / `is_new_external_ip`** — el orden de bytes que asumen. *Es el
+   único de la lista que podría seguir roto hoy.*
+3. `time_window_aggregator.cpp:390-415` — qué hace con los tres rangos privados.
+4. Diff entre `ml_defender_features.cpp` y su `.bak.day79`, para fechar cuándo dejó de calcularse
+   la dispersión.
