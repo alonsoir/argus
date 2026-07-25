@@ -1002,3 +1002,12 @@ target_link_libraries(test_community_id_log
 )
 add_test(NAME test_community_id_log COMMAND test_community_id_log)
 message(STATUS "🧪 Unit Test: test_community_id_log configured (DAY 171 - cid emission log)")
+
+add_executable(test_ip_format
+        tests/test_ip_format.cpp
+)
+target_include_directories(test_ip_format PRIVATE
+        ${CMAKE_SOURCE_DIR}/include
+)
+add_test(NAME test_ip_format COMMAND test_ip_format)
+message(STATUS "🧪 Unit Test: test_ip_format configured (DAY 229 - DEBT-SNIFFER-IP-BYTE-ORDER-001)")

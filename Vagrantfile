@@ -46,6 +46,33 @@
 #
 # ══════════════════════════════════════════════════════════════════════════════
 
+# ══════════════════════════════════════════════════════════════════════════════
+# ADAPTER_TOOLCHAIN — toolchain C++ para compilar los <sensor>-adapter DENTRO
+# de cada VM de sensor. DEBT-VM-SENSOR-NO-TOOLCHAIN-001.
+# Paquetes = los instalados a mano en `suricata` DAY 226 (make suricata-adapter-test 2/2).
+# Verifica POR INVOCACIÓN, no por `test -f` (lección DAY 224/225: comprobar el
+# resultado, no la presencia del fichero). set -e → un fallo tumba el vagrant up.
+# ══════════════════════════════════════════════════════════════════════════════
+ADAPTER_TOOLCHAIN = <<-'ADAPTER_TOOLCHAIN_SHELL'
+  set -e
+  export DEBIAN_FRONTEND=noninteractive
+  echo "🔧 ADAPTER_TOOLCHAIN — instalando toolchain C++ de adapters..."
+
+  apt-get update -qq
+  apt-get install -y build-essential cmake pkg-config \
+    libsodium-dev nlohmann-json3-dev libssl-dev
+
+  echo "── verificando toolchain (por invocación, no test -f) ──"
+  cmake --version | head -1
+  g++ --version   | head -1
+  pkg-config --modversion libsodium
+  echo '#include <nlohmann/json.hpp>' | g++ -x c++ -std=c++20 -fsyntax-only - \
+    && echo "✅ nlohmann/json.hpp compila"
+  echo '#include <openssl/hmac.h>'    | g++ -x c++ -fsyntax-only - \
+    && echo "✅ openssl/hmac.h compila"
+  echo "✅ ADAPTER_TOOLCHAIN verificado"
+ADAPTER_TOOLCHAIN_SHELL
+
 Vagrant.configure("2") do |config|
 
   # ════════════════════════════════════════════════════════════════════════════
@@ -1180,6 +1207,9 @@ BASHRC_EOF
       echo "community-id: $(grep 'community-id' /etc/suricata/suricata.yaml | head -1)"
       ip link show eth1 | grep -i promisc || echo "⚠️  eth1 promisc no activo aun"
     SHELL
+
+    suricata.vm.provision "shell", name: "adapter-toolchain", inline: ADAPTER_TOOLCHAIN
+
   end  # End suricata VM
 
   # ════════════════════════════════════════════════════════════════════════════
@@ -1267,6 +1297,9 @@ BASHRC_EOF
       echo "community-id: $(grep -h community-id "$SITE_LOCAL" 2>/dev/null || echo NO-CONFIGURADO)"
       ip link show eth1 | grep -i promisc || echo "⚠️  eth1 promisc no activo aun"
     SHELL
+
+    zeek.vm.provision "shell", name: "adapter-toolchain", inline: ADAPTER_TOOLCHAIN
+
   end  # End zeek VM
 
   # ════════════════════════════════════════════════════════════════════════════
@@ -1325,6 +1358,9 @@ BASHRC_EOF
       echo "=== Wazuh manager ready ==="
       /var/ossec/bin/wazuh-control status | head -5 || true
     SHELL
+
+    wazuh.vm.provision "shell", name: "adapter-toolchain", inline: ADAPTER_TOOLCHAIN
+
   end  # End wazuh VM
 
 end  # End Vagrant configuration

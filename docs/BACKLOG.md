@@ -83,6 +83,41 @@
 > sucesivos + microbench de coste (Fase 1). "Medir, no votar": trazado hacia atrás desde el
 > binario, greps de la función ENTERA antes de afirmar ausencia.
 
+### DEBT-SENSOR-VMS-IN-ROOT-VAGRANTFILE-001 — Las tres VMs de sensor viven en el Vagrantfile raíz
+
+**Estado:** 🟡 ABIERTA · **Detectada:** DAY 230 · **Prioridad:** futuro (NO cierre)
+
+**[MEDIDO]** `suricata` (Vagrantfile:1139), `zeek` y `wazuh` están definidas enteras
+en el Vagrantfile raíz, con su provisioning, en la red interna compartida
+`ml_defender_gateway_lan` (192.168.100.x) junto a `defender`.
+
+**Por qué NO se separan ahora.** El crosscheck de paridad de community_id
+(tools/community_id_crosscheck.py, evidencia de paper confirmada DAY 230) exige que
+los tres sensores vean el MISMO tráfico replayado, lo que hoy garantiza esa red
+interna compartida. Sacar cada VM a su Vagrantfile rompe la red compartida salvo
+montar conectividad entre entornos Vagrant (no trivial). A días del cierre, el
+riesgo sobre la evidencia supera el beneficio.
+
+**Arreglo (futuro).** Separar por responsabilidad única cuando alguien retome el
+mantenimiento, resolviendo primero la topología de red del crosscheck.
+
+### DEBT-SURICATA-VM-DUPLICADA-001 — Dos VMs `suricata` con provisioning independiente
+
+**Estado:** 🟡 ABIERTA · **Detectada:** DAY 230 · **Familia:** dos caminos que discrepan
+
+**[MEDIDO]** Dos definiciones de VM `suricata`:
+- Vagrantfile:1139 (raíz, autostart:false) — pipeline: toolchain ADAPTER_TOOLCHAIN,
+  suricata-adapter, eve.json del Neris.
+- experiments/suricata-comparative/Vagrantfile:13 (primary) — banco de comparativa,
+  topología propia, apuntada por `make up-suricata`.
+
+**Riesgo.** Provisionings independientes. Si la de experiments/ compila algo del
+adapter o del community_id, tiene su propio toolchain (o le falta), ajeno al bloque
+ADAPTER_TOOLCHAIN del raíz. Un cambio en uno no se propaga al otro.
+
+**Pendiente medir.** Si experiments/suricata-comparative/ necesita el mismo toolchain
+y lo tiene: `grep -n -iE 'cmake|toolchain|nlohmann' experiments/suricata-comparative/Vagrantfile`.
+
 ### DEBT-VERDICT-MONOCAPA-001 — El veredicto es monocapa, no tricapa (dos defectos apilados)
 **Severidad:** 🔴 P1 — pre-FEDER (afecta arquitectura del veredicto Y narrativa del paper)
 **Estado:** ABIERTO — DAY 209 · diagnóstico COMPLETO DAY 211 · rama `fix/verdict-multihead-honest` planificada
