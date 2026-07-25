@@ -1259,7 +1259,7 @@ emecas:
 	@echo "║  🏛️  EMECAS — OSS gate (destroy → up → bootstrap → test)  ║"
 	@echo "╚════════════════════════════════════════════════════════════╝"
 	vagrant destroy -f
-	vagrant up
+	vagrant up defender client suricata
 	$(MAKE) bootstrap
 	$(MAKE) test-all
 	$(MAKE) test-e2e-synthetic
