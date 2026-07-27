@@ -1,113 +1,66 @@
-# PROMPT DE CONTINUIDAD — aRGus NDR — DAY 231
+# PROMPT DE CONTINUIDAD — aRGus NDR — DAY 234
 
-## Punto de entrada (léeme primero)
+## Punto de entrada (mide, no asumas)
+    git log --oneline -6 main
+    vagrant status          # el stack se paró al cerrar DAY 233 (make pipeline-stop)
+Tras DAY 233: día de MEDICIÓN, sin código nuevo. Commits solo docs
+(este prompt + BACKLOG). Artefactos del día bajo /vagrant/logs/ (ignorado):
+oros argus-A.parquet / suricata-A.parquet y la BD logs/day233-kuzu/mitre.kuzu.
 
-Al arrancar, **mide el estado, no lo asumas**:
-
-```
-git log --oneline -5 main
-git branch
-vagrant status
-```
-
-Estado esperado tras DAY 230: `fix/sniffer-ip-byte-order` (PR #127) y
-`feat/suricata-to-graph` (PR #128) **mergeadas a main**; una sola rama, el
-repo entrando en su tramo de cierre. Las ramas `feat/suricata-to-graph` y
-`feat-prerebase-backup` deberían estar borradas. Si `git log` no muestra los
-dos merges en main, esa es la primera tarea antes que ninguna otra.
-
-## El ⚪️ que ordena el día
-
-**DEBT-SNIFFER-IP-BYTE-ORDER-001 está ARREGLADA EN CÓDIGO
-(test_ip_format 6/6 + EMECAS+++ verde), pero el E2E CON DATOS REALES sigue
-PENDIENTE.** Nadie ha visto todavía un bronce nuevo con IPs `147.32.84.x`
-reales, ni la convergencia aRGus↔Suricata en el mismo `NetworkFlow`. EMECAS
-verde **no** cierra esto: su `test_bronze_to_kuzu_circuit` firma con clave
-constante y datos de fixture — es ciego al byte order. El cierre real llega
-provocando tráfico real al grafo (paso 2 del plan de cierre, script MITRE).
-**No marcar la deuda "cerrada" hasta medir eso.**
+## El estado que ordena el día
+**Paso 2 del cierre CERRADO (DAY 233).** MITRE → grafo por los dos sensores,
+con dato FRESCO (no el Neris de 2011):
+- nmap -sS NO disparó ET Open (52.058 reglas cargadas → cobertura ciega a un
+  SYN scan; PÁGINA DE PAPER). hydra descartado (ssh de defender key-only).
+  **nmap -A SÍ disparó** (ET SCAN Nmap User-Agent en 8080/Jenkins).
+- aRGus capturó (2a: 2.625 filas oro) + Suricata alertó (48 alert → oro).
+- Los dos oros a una Kuzu fresca (loader ×2, NO verifica HMAC → conviven la
+  clave real de aRGus y la de juguete de Suricata) → poblador CORRELATES_FLOW.
+- MEDIDO: **44 community_id corroborados cross-sensor**, **253 aristas** de
+  observación, invariante (cids distintos en extremos) = **0**, ambos sensores
+  TelemetryEvent (Reading A).
+- Números honestos para el paper: 44 flujos corroborados (titular); 253 =
+  pares de observación, NO 44... digo NO "253 flujos".
 
 ## Invariantes (no negociar)
+- Medir, no votar. HECHO ≠ SOSPECHADO; cada afirmación a salida de comando.
+- Join SIEMPRE por community_id, nunca por flow_uid.
+- Un día, una batalla. Via Appia (un criterio que no puede ponerse rojo no mide).
+- No `grep -rn` desde raíz (usa `git grep`). No encadenar salidas grandes.
+  `git add` explícito por fichero. A horas malas, parar.
 
-- **Medir, no votar.** Cada afirmación se traza a salida de comando. HECHO ≠
-  SOSPECHADO. Verde en un test sintético no es verde en el sistema.
-- **Un día, una batalla.** Elegir una y cerrarla; no abrir tres frentes.
-- **Via Appia.** Construir para durar; un criterio que no puede ponerse rojo
-  no mide nada.
-- No `grep -rn` desde la raíz (arrastra build/.git/.venv — un grep así corrió
-  toda una noche sin acabar); usar `git grep`. No encadenar comandos de salida
-  grande en el mismo bloque del terminal.
+## Candidatos de batalla DAY 234 (decide Alonso)
+- **A — Reproducibilidad (recomendado).** El resultado de DAY 233 se construyó
+  A MANO; el criterio de cierre exige que TODO dato sea generable por tareas del
+  Makefile. Convertir el recorrido de hoy (up → pipeline-start → clave del REST →
+  nmap -A → adapters → converters → loader ×2 → poblador → consultas) en un target
+  reproducible. Sin esto, el titular del paper no es "reproducible", es anecdótico.
+- **B — Paso 4: el paper.** Empezar a redactar con los números de hoy + el
+  hallazgo ET Open (52k reglas ciegas a -sS, sí a -A). Verificar citas
+  (Sommer & Paxson, Arp et al.) ANTES de usarlas.
+- **C — D4 / alcance.** Traer el 98,7% de Suricata (dns/http/tls) al grafo, o
+  el zeek-adapter, o imagen vulnerable (paso B, cadenas de ataque reales).
 
-## Qué se cerró en DAY 230
+## Deudas afloradas DAY 233 (registrar en docs/BACKLOG.md)
+- **DEBT-EVENT-ID-COLLISION-001** (NUEVA): argus 2.625 filas bronce → 1.522
+  TelemetryEvent. El event_id = timestamp_(src^dst) colisiona bajo carga de scan
+  (mismo segundo + mismo XOR). No toca la correlación (va por community_id), sí
+  la cardinalidad de eventos. Data-quality.
+- **window sin bucket** (ADR-052 §3.1.4 nunca implementado): window a microsegundo
+  → cada sensor registra una conversación como varios NetworkFlow → 37/44 cids
+  dan 253 aristas. Es la causa de la "inflación" de aristas. Ligada a
+  DEBT-FLOWSTART-CLOCK-DOMAIN-001 y a node_id por-sensor (§3.1.2), aún pendientes
+  de registrar reencuadradas desde DAY 232.
 
-1. **Hallazgo de paper, medido.** El crosscheck de paridad de `community_id`
-   disparó `exit 2` durante ~5 meses etiquetado como "cobertura asimétrica
-   esperada" (ruido). Medido en `logs/lab/cid-xcheck-anomalies.tsv` (42.838
-   líneas, mtime 2-jun, ~14k anomalías): las filas de aRGus llevaban IPs
-   invertidas (`165.84.32.147` = host Neris del CTU-13 swapeado) mientras
-   Suricata+Zeek acordaban las correctas (`147.32.84.165`). Dos puertas
-   cerradas: el bug llegó al oráculo (`community_id_log.cpp` comparte la
-   corrupción de IP) y el 3-way corrió de verdad. CAVEAT: el anomalies.tsv es
-   PRE-fix → prueba que el bug era real, NO verifica el arreglo. Es página de
-   paper.
-2. **DEBT-VM-SENSOR-NO-TOOLCHAIN-001 pagada y probada desde cero.** Bloque
-   `ADAPTER_TOOLCHAIN` en el Vagrantfile raíz (suricata/zeek/wazuh),
-   verificación por invocación (`g++ -fsyntax-only` sobre `#include`, no
-   `test -f`). Probado en EMECAS: `Setting up build-essential` en la VM
-   `suricata` recreada de cero.
-3. **emecas:1262** `vagrant up` → `vagrant up defender client suricata` (antes
-   levantaba solo `defender` por el `autostart:false` de los sensores, así que
-   el gate nunca ejercitaba la VM de sensor ni el toolchain).
-4. **#127** fix→main. **#128** feat rebasada sobre main (byte order heredado,
-   `ip_host_to_buffer` verificado en las 4 llamadas de `ring_consumer.cpp`) +
-   EMECAS+++ verde → main.
+## Notas de fontanería DAY 233 (medidas, no re-medir)
+- Clave HMAC del bronce de aRGus: la LEE el etcd-server, no Vault.
+  `curl -s http://localhost:2379/secrets/ml-detector` (campo `key`, 64 hex) con el
+  stack arriba. NO `etcdctl` (sirve HTTP plano en :2379, no KV). Efímera: no parar
+  el pipeline entre firmar bronce y convertir.
+- suricata-adapter: binario en `build-suricata/suricata_adapter` (guion bajo);
+  CLI posicional `<config.json>`, sin --help; alert-only (D4). Firma con
+  ARGUS_BRONZE_HMAC_KEY_HEX (juguete 0123456789abcdef×4 vale para Suricata).
+- Poblador y consultas cross-sensor: en [[mitre-ataque]] de la memoria.
 
-## Deudas abiertas relevantes
-
-- **DEBT-SNIFFER-IP-BYTE-ORDER-001** — ARREGLADA EN CÓDIGO, E2E CON DATOS
-  REALES PENDIENTE (paso 2 MITRE). *El ⚪️ del día.*
-- **DEBT-SENSOR-VMS-IN-ROOT-VAGRANTFILE-001** (DAY 230) — las 3 VMs de sensor
-  viven en el Vagrantfile raíz; separarlas exige resolver la red interna
-  compartida (`ml_defender_gateway_lan`) que el crosscheck necesita. Futuro,
-  NO cierre.
-- **DEBT-SURICATA-VM-DUPLICADA-001** (DAY 230) — dos VMs `suricata` (raíz vs
-  `experiments/suricata-comparative/`) con provisioning independiente. Medir
-  si la de experiments/ necesita el mismo toolchain y lo tiene.
-- **DEBT-BRONZE-KEY-PROVISIONING-001** — dos fuentes de verdad para la clave
-  HMAC: aRGus firma con clave de etcd (runtime), el consumidor del
-  correlation-engine lee de env. Con bronce plano + consumidor de clave única,
-  hay que unificar. Sin resolver.
-- **Telemetría D4** — los ~104k eventos dns/http/tls de Suricata (98,7% del
-  volumen) siguen descartados; no llegan al grafo. Alonso ratificó DAY 230 que
-  "que toda la información de Suricata acabe en el grafo" es la misión.
-
-## Batalla candidata para DAY 231
-
-**Recomendación: paso 2 del plan de cierre — script MITRE → tráfico real →
-grafo.** Cierra tres cosas de una: (a) el ⚪️ del byte order (bronce con IPs
-reales + convergencia aRGus↔Suricata en el mismo `NetworkFlow`); (b) es el
-siguiente paso natural del cierre; (c) hace observable el movimiento lateral
-(Wazuh, arista Host↔Flow inferencial) que un replay de pcap no produce.
-
-Primer paso barato: localizar el mecanismo de generación de tráfico real
-—¿existe ya?— con `git grep -il mitre`, `ls experiments/`, y mirar el
-`client-setup` (clona atomic-red-team).
-
-Alternativas, si se prefiere otro frente:
-
-- **Telemetría D4 al grafo** (la misión "toda la info"). Muro a medir ANTES de
-  mapear: `validate()` exige `community_id` como requisito duro de
-  correlation_v1 y los dns/http/tls pueden no llevarlo → decidir Opción A
-  (aceptar `TelemetryEvent` sin cid) o sintetizar. Medida barata:
-  `tools/eval/eve_field_coverage.py` (cobertura de community_id por tipo de
-  evento).
-- **is_external_ip / is_new_external_ip** (`fast_detector.cpp`). ¿El fast path
-  sigue clasificando interno como externo? Usa `evt.dst_ip` numérico, el fix
-  de ayer no lo tocó. Lectura barata, correctness viva; si está roto, abre otra
-  batalla.
-
-## Recordatorio de tono de trabajo
-
-Alonso pilota; mide contra fichero y pégalo, no votes de memoria. Fichero
-completo, no `sed -n`. `git add` explícito por fichero (nunca `-A`/`-u`: se
-cuela scratch). A las horas malas, parar antes que forzar un merge o un rebase.
+## Recordatorio de tono
+Alonso pilota; mide contra fichero y pega salida. `make pipeline-stop` al cerrar.
