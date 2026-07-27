@@ -5486,3 +5486,75 @@ esté en el Vagrantfile, un `vagrant destroy` lo pierde.
 
 **Familia.** `DEBT-PROVISION-SED-SILENT-NOOP-001` y la deuda del restart de
 Suricata: provisioning que no verifica el resultado real.
+
+## DEBT-EVENT-ID-COLLISION-001 — el event_id de aRGus colisiona bajo carga
+- **Severidad:** P2 (data-quality; NO afecta a la correlación, que va por community_id)
+- **Medido (DAY 233):** 2.625 filas de bronce de aRGus (ventana nmap -A) →
+  solo 1.522 nodos TelemetryEvent en Kuzu. El MERGE del evento es por event_id
+  y funde los que colisionan.
+- **Causa:** event_id = to_string(timestamp) + "_" + to_string(src_ip ^ dst_ip)
+  (ring_consumer.cpp:854-855). Bajo un scan, muchos flujos comparten el mismo
+  segundo de timestamp Y el mismo XOR de IPs (mismo par src/dst, distinto puerto)
+  → mismo event_id.
+- **Impacto:** subcontaje de observaciones por sensor; puede fundir dos alertas
+  distintas del mismo par en un nodo. No corrompe el join (community_id es la clave).
+- **Arreglo candidato:** incluir el puerto (o un discriminador de flujo) en el
+  event_id. El event_id de Suricata (base64(BLAKE2b) determinista) NO colisiona así;
+  converger hacia ese estilo.
+
+## DEBT-FLOWUID-WINDOW-BUCKET-001 — window sin bucketizar infla nodos y aristas
+- **Severidad:** P2 (cardinalidad; la correlación es válida pero sobre-representada)
+- **Medido (DAY 233):** 44 community_id corroborados cross-sensor → 253 aristas
+  CORRELATES_FLOW. El factor ~6× es porque cada sensor materializa una misma
+  conversación como varios NetworkFlow.
+- **Causa:** flow_uid = hash(node_id ‖ community_id ‖ flow_start_window ‖ seq),
+  con window_micros = sec*1e6 + nanos/1e3 — precisión de MICROSEGUNDO, sin el
+  floor(flow_start_epoch/N) que manda ADR-052 §3.1.4 (default 60s) + seq_in_window
+  (hoy siempre 0, DEBT-FLOWUID-SEQ-COLLISION-001).
+- **Impacto:** una conversación única = N nodos; el self-join los empareja todos.
+  El recuento "por community_id" (44) es el honesto; el "por arista" (253) está inflado.
+- **Arreglo candidato:** bucketing de §3.1.4 + seq_in_window transportado. LIGADO a
+  DEBT-FLOWSTART-CLOCK-DOMAIN-001 y a node_id por-sensor (§3.1.2): arreglar el reloj
+  sin dar node_id propio a cada sensor fundiría los nodos cross-sensor. Orden:
+  node_id-distinto y bucket JUNTOS, nunca el reloj solo.
+
+## DEBT-DOWNSTREAM-TO-GRAPH-NOT-AUTOMATED-001 — el camino telemetría→grafo es 100% manual
+- **Severidad:** P1 (bloquea el criterio de cierre: "todos los datos generables por Makefile")
+- **Medido (DAY 233):** el recorrido completo del dato adversarial al grafo se
+  ejecutó a mano, comando a comando: disparo MITRE (nmap -A desde client) →
+  suricata-adapter (eve.json→bronce) → bronze_to_gold_converter ×2 (aRGus y
+  Suricata, CSV→avro→parquet) → parquet_to_kuzu_loader ×2 (misma BD) →
+  poblador CORRELATES_FLOW (kuzu_query) → consultas de verificación.
+- **Contraste:** el pipeline de RUNTIME (sniffer→ml-detector→firewall) SÍ está
+  automatizado en pipeline-start; el downstream offline NO tiene ninguna tarea.
+- **Impacto:** el resultado central del paper (44 flujos corroborados cross-sensor)
+  hoy NO es reproducible por un tercero desde el repo — es anecdótico hasta que
+  exista el target.
+- **Arreglo (trabajo de DAY 234):** dos tareas y solo dos deben bastar —
+  `pipeline-start` (levanta TODO, incluso exporta la clave del bronce al entorno)
+  y `mitre-start` (dispara el ataque y arrastra adapters→converters→loaders→
+  poblador→consultas). Registrar como criterio: cero comandos manuales entre
+  "stack arriba" y "aristas cross-sensor en el grafo".
+- **Nota:** el disparo MITRE se dejó manual A PROPÓSITO en DAY 233 porque el
+  objetivo era AVERIGUAR qué técnica hace reaccionar a cada sensor (medido:
+  nmap -A sí, nmap -sS no, hydra no llega a atacar por ssh key-only). Esa
+  incógnita ya está resuelta → mitre-start puede fijar nmap -A como disparo canónico.
+
+## DEBT-HMAC-KEY-INSECURE-TRANSPORT-001 — la clave de cifrado se sirve por GET HTTP en claro
+- **Severidad:** P1 de seguridad (JAMÁS debe llegar a producción)
+- **Medido (DAY 233):** el converter offline necesita ARGUS_BRONZE_HMAC_KEY_HEX y
+  hay que sacarla a mano con `curl -s http://localhost:2379/secrets/ml-detector`
+  → la clave HMAC de 64 hex viaja en TEXTO PLANO por un GET sin TLS ni auth. El
+  ml-detector la obtiene por el mismo mecanismo (get_hmac_key → http::get al REST
+  del etcd-server), no por Vault directo.
+- **Agujero:** clave de cifrado expuesta en claro sobre la red, sin TLS, sin
+  autenticación, accesible por cualquiera que alcance :2379. Tolerable SOLO en
+  fase de construcción del laboratorio.
+- **Doble fuente de verdad (DEBT-BRONZE-KEY-PROVISIONING-001, relacionada):** el
+  firmante (ml-detector) está integrado con el almacén; el converter offline lee
+  del entorno y NADIE lo cableó al almacén → por eso la extracción manual.
+- **Arreglo (declarado explícitamente como NO-NUESTRO):** los componentes Y el
+  converter deben ir DIRECTOS a Vault usando sus capacidades nativas (auth por
+  token/AppRole, TLS, leases, secretos dinámicos), eliminando el REST plano
+  intermedio. Es una de las PRIMERAS cosas a afrontar por quien mantenga el
+  pipeline, junto con la creación de los modelos del ml-detector y el fast-path.
