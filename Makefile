@@ -3069,3 +3069,7 @@ suricata-adapter-test: suricata-adapter-build
 suricata-adapter-clean:
 	@vagrant ssh suricata -c "rm -rf $(SURICATA_ADAPTER_BUILD_DIR)"
 	@echo "✅ suricata-adapter cleaned"
+
+.PHONY: mitre-start
+mitre-start: ## MITRE -> grafo (requiere pipeline-start arriba). Ver DEBT-HMAC-KEY-INSECURE-TRANSPORT-001.
+	@bash scripts/mitre_start.sh
