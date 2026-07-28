@@ -3073,3 +3073,28 @@ suricata-adapter-clean:
 .PHONY: mitre-start
 mitre-start: ## MITRE -> grafo (requiere pipeline-start arriba). Ver DEBT-HMAC-KEY-INSECURE-TRANSPORT-001.
 	@bash scripts/mitre_start.sh
+
+# zeek-adapter — conn.log -> bronce correlation_v1 (DAY 235)
+# Vive en la VM `zeek`, junto a su fuente de datos. OJO: el resto de targets
+# usan `vagrant ssh -c` a secas, que va a la VM primaria (defender). Este NO.
+# El build dir lleva sufijo porque /vagrant es carpeta COMPARTIDA entre VMs:
+# un `build/` pelado lo pisarían defender y zeek entre sí.
+# ════════════════════════════════════════════════════════════════════════════
+.PHONY: zeek-adapter-build zeek-adapter-test zeek-adapter-clean
+ZEEK_ADAPTER_BUILD_DIR := /vagrant/zeek-adapter/build-zeek
+zeek-adapter-build:
+	@echo "╔════════════════════════════════════════════════════════════╗"
+	@echo "║  🔨 Building zeek-adapter [VM: zeek]                      ║"
+	@echo "╚════════════════════════════════════════════════════════════╝"
+	@vagrant ssh zeek -c 'cd /vagrant/zeek-adapter && \
+		export PKG_CONFIG_PATH=/usr/lib/x86_64-linux-gnu/pkgconfig:$$PKG_CONFIG_PATH && \
+		rm -rf build-zeek && mkdir -p build-zeek && cd build-zeek && \
+		cmake -DCMAKE_BUILD_TYPE=Debug .. && \
+		make -j4'
+	@echo "✅ zeek-adapter built"
+zeek-adapter-test: zeek-adapter-build
+	@echo "── zeek-adapter: test_to_row ──"
+	@vagrant ssh zeek -c "cd $(ZEEK_ADAPTER_BUILD_DIR) && ctest --output-on-failure"
+zeek-adapter-clean:
+	@vagrant ssh zeek -c "rm -rf $(ZEEK_ADAPTER_BUILD_DIR)"
+	@echo "✅ zeek-adapter cleaned"

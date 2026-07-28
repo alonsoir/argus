@@ -1,0 +1,4 @@
+# /vagrant es carpeta COMPARTIDA entre VMs, asi que cada una construye en su
+# propio directorio con sufijo (build-suricata, build-defender...). El patron
+# tiene que cubrirlos todos, no solo `build/`.
+build*/
