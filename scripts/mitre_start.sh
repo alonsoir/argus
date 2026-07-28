@@ -5,7 +5,7 @@
 # Se ejecuta en el HOST; trabaja en los guests via vagrant ssh. A. Roman + Claude.
 set -uo pipefail
 # NOT A SECRET — clave de juguete de test, DAY 227. La clave real se saca en runtime por curl.
-TOY_KEY="0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"# gitleaks:allow # pragma: allowlist secret
+TOY_KEY="0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef" # gitleaks:allow # pragma: allowlist secret
 CE="/vagrant/correlation-engine/build"; SCHEMA="/vagrant/correlation-engine/schema/schema.cypher"
 LAB="/vagrant/logs/lab"; ADAPTER="/vagrant/suricata-adapter/build-suricata/suricata_adapter"
 STAMP="$(date -u +%Y%m%d-%H%M%S)"; KUZU="/vagrant/logs/day234-kuzu/mitre-$STAMP.kuzu"
