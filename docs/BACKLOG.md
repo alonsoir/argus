@@ -5558,3 +5558,26 @@ Suricata: provisioning que no verifica el resultado real.
   token/AppRole, TLS, leases, secretos dinámicos), eliminando el REST plano
   intermedio. Es una de las PRIMERAS cosas a afrontar por quien mantenga el
   pipeline, junto con la creación de los modelos del ml-detector y el fast-path.
+
+## 🆕 Entradas DAY 234 — mitre-start reproducible: hallazgos de la primera corrida E2E
+
+### DEBT-MITRE-SURICATA-EVE-NOT-WINDOWED-001 — el adapter de Suricata en mitre-start lee el eve.json entero, no la ventana del ataque
+**Severidad:** 🟢 P3 — polución de censo en stack caliente; NO corrompe el titular; neutralizada por el baseline destroy→up
+**Estado:** ABIERTO — DAY 234 (medido: 2 corridas dejaron 113 alertas donde un ataque da ~48–65)
+**Componente:** `scripts/mitre_start.sh` (paso del suricata-adapter) + `suricata-adapter` (lee la entrada completa)
+
+La mitad aRGus se recorta por `mtime>T0` (solo el ataque de este run), pero el adapter de Suricata relee el `eve.json` acumulado → en stack caliente arrastra las alertas de runs anteriores (la corrida que murió en la línea 48 dejó su `nmap -A` en el eve.json sin consumir). Medido DAY 234: suricata=113 eventos en el grafo vs ~48 de un solo ataque; la tasa de corroboración baja (14/103) por denominador contaminado, aunque el titular (14 flujos, DISTINCT community_id cross-sensor) es correcto. Bajo `destroy -f && up` el eve.json nace vacío y desaparece. Fix opcional de hardening: windowear la lectura del adapter a T0, simétrico con argus. Decidir al promover mitre-start a tarea EMECAS+++.
+
+### DEBT-EVENT-ID-COLLISION-001 — el event_id de aRGus colisiona bajo carga de scan y puede tragarse una corroboración del grafo
+**Severidad:** 🟡 P2 — data-quality; en el peor caso reduce el titular cross-sensor sin avisar
+**Estado:** ABIERTO — DAY 234 (medido DAY 233 y 234)
+**Componente:** `ml-detector` (acuñación del event_id del bronce de aRGus) → PK de `TelemetryEvent`
+
+El esquema `timestamp_(src^dst)` colisiona bajo scan: muchas filas del mismo segundo con el mismo XOR de IPs comparten event_id. Medido: DAY 233 argus 2625 bronce → 1522 TelemetryEvent; DAY 234 2414 → 1326. No afecta la CORRELACIÓN (va por community_id), pero el MERGE por PK conserva una sola fila; si dos colisionantes traen community_id distintos, **puede borrar del grafo un cid que sí está en el bronce**. Relación honesta: `titular_grafo ≤ intersección_grep`, nunca al revés. DAY 234 salió `14 == 14` (ninguna perdida en este run), no garantizado. Cuando el gate auto-verify de mitre-start vea `grafo < grep`, NO es bug de consulta: es esta colisión → WARN + log (dato de paper), no abort.
+
+### DEBT-DATASETS-FETCH-NOT-AUTOMATED-001 — la reproducibilidad de los targets de eval exige descarga manual de datasets
+**Severidad:** 🟡 P2 — rompe "reproducibilidad = propiedad del repo" para la ruta de eval ML del paper
+**Estado:** ABIERTO — DAY 234
+**Componente:** (sin target) — futuro `make fetch-datasets`
+
+El baseline reproducible es `destroy -f && up` desde cero. `mitre-start` NO necesita datasets (genera su tráfico con `nmap -A` en vivo), pero los targets que respaldan los números de ML del paper (transferencia CICIDS2017→Neris 0.0001, PROBE 0, comparación de 3 paradigmas) consumen CTU-13 Neris y CICIDS2017, hoy en `/vagrant/datasets/` a mano. Para que "reproducible = un comando" cubra la ruta de eval hace falta `fetch-datasets` (descarga desde las URLs canónicas de Stratosphere IPS / UNB + verificación de checksum). Separado de mitre-start; solo la ruta de eval depende de él.
