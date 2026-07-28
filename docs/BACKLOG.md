@@ -5581,3 +5581,39 @@ El esquema `timestamp_(src^dst)` colisiona bajo scan: muchas filas del mismo seg
 **Componente:** (sin target) — futuro `make fetch-datasets`
 
 El baseline reproducible es `destroy -f && up` desde cero. `mitre-start` NO necesita datasets (genera su tráfico con `nmap -A` en vivo), pero los targets que respaldan los números de ML del paper (transferencia CICIDS2017→Neris 0.0001, PROBE 0, comparación de 3 paradigmas) consumen CTU-13 Neris y CICIDS2017, hoy en `/vagrant/datasets/` a mano. Para que "reproducible = un comando" cubra la ruta de eval hace falta `fetch-datasets` (descarga desde las URLs canónicas de Stratosphere IPS / UNB + verificación de checksum). Separado de mitre-start; solo la ruta de eval depende de él.
+
+## 🆕 Entradas DAY 235
+
+### DEBT-DOWNSTREAM-INGESTION-NOT-ORCHESTRATED-001
+Severidad: 🟠 P2 · Abierto DAY 235
+El camino aguas abajo (adapters de sensor → bronce → oro/Parquet → Kuzu → grafo) se
+invoca A MANO, binario a binario (así se corrió el zeek_adapter en DAY 235). Falta un
+COMPONENTE que corra full-time y unifique/gestione la ingesta de todos los componentes
+aguas abajo hasta el grafo — responsable de que el grafo se mantenga actualizado y de que
+los datos lleguen al futuro dashboard. Compatible con la decisión DAY 222 (sin switches en
+JSON, grafo data-driven): es plano de CONTROL (mantiene el flujo corriendo), no de datos.
+Pendiente: diseño (¿demonio? ¿watcher inotify como el correlation-engine, o scheduler?
+¿qué dispara cada etapa?) y su puerta de Consejo.
+
+### DEBT-ZEEK-ADAPTER-CONFIG-SURICATA-RESIDUE-001
+Severidad: 🟢 P3 · Abierto DAY 235
+zeek-adapter/config/zeek_adapter.json (generado por el scaffold) tiene input_path
+apuntando a logs/day225-zeek-neris/eve.json — resto de Suricata y path inexistente. El
+binario lo ignora si recibe la entrada por arg2, pero el default es incorrecto. Corregir a
+la fuente Zeek (conn.log) antes del uso automatizado. Primera tarea de DAY 236.
+
+### DEBT-ZEEK-PROTO-CASE-001
+Severidad: 🟢 P3 · Abierto DAY 235 (decisión de diseño abierta)
+Zeek emite proto en minúsculas (tcp/udp/icmp); Suricata lo dio en mayúsculas (TCP). No
+afecta a la convergencia (protocol NO entra en flow_uid), pero la propiedad `protocol` del
+nodo NetworkFlow podría oscilar entre sensores según el orden de escritura del MERGE. El
+bronce de DAY 235 ya lleva minúsculas. Decidir normalización (¿uppercase canónico en todos
+los adapters? ¿el grafo normaliza?) antes de que se fije en más bronce.
+
+### DEBT-SCAFFOLD-GUIDANCE-SURICATA-CENTRIC-001
+Severidad: 🔵 P4 · Abierto DAY 235
+tools/scaffold_adapter.py genera un to_row.hpp con firmas SURICATA-shaped (parse_iso8601,
+make_event_id de 4 args, to_row de 2 args) y una guía de pasos manuales que asume JSON/
+eve.json/event_type. Para sensores TSV (Zeek) no aplica: hubo que reescribir
+to_row.hpp/.cpp/test y adaptar main.cpp. Genericizar el molde y los pasos manuales para que
+el andamiaje no arrastre supuestos de Suricata.
