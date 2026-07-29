@@ -1,102 +1,113 @@
-# PROMPT DE CONTINUIDAD — aRGus NDR — DAY 236
+# PROMPT DE CONTINUIDAD — aRGus NDR — DAY 237
 
 ## Punto de entrada (mide, no asumas)
     git log --oneline -6
     git status
     vagrant status
-DAY 235 cerró **Zeek en el bronce**: adapter escrito, `make zeek-adapter-test` verde, y
-corrida real → 31.735 filas en /vagrant/logs/correlation/zeek-*.csv, TODAS pasando
-validate(). OJO: al cerrar, el adapter quedó SIN commitear (rama feat/zeek-to-graph:
-Makefile modificado + zeek-adapter/ untracked). Lo primero al arrancar: confirmar si el
-commit + push del cierre se hizo. Si no, hacerlo antes de tocar nada.
+DAY 236 cerró **Zeek EN EL GRAFO**: bronce→oro→Kuzu de punta a punta, criterio cumplido y
+flow_uid verificado. Config P3 corregida y commiteada (`1eca3ca0`, config a valores Zeek).
+Lo primero al arrancar: confirmar el commit de docs del cierre (prompt de continuidad + BACKLOG
+DAY 236). Si no se hizo, hacerlo antes de tocar nada. `git add` explícito (nunca -a/-u por la
+instrumentación WIP en zmq_handler.cpp).
 
 ## El estado que ordena el día
-**Paso 5 (Zeek→bronce) GANADO y medido.** El contrato correlation_v1 acepta telemetría
-con veredicto vacío — err_serialize=0 sobre 31.735 filas de Zeek (final_classification /
-threat_category "" y scores 0.0). Son las PRIMERAS filas no-alerta que pasan por
-validate() en la historia del contrato: el bronce es multi-sensor de verdad, no solo
-alerta-shaped. Eso es una propiedad del contrato ahora probada, no supuesta.
-**Siguiente: Zeek al GRAFO.** Como Suricata fue bronce (DAY 226) → oro (227) → Kuzu (228),
-a Zeek le queda ese tramo aguas abajo.
+**Los TRES sensores tienen adapter y saben llegar al grafo, cada uno probado E2E:**
+- aRGus nativo (bronce→oro→Kuzu, DAY 226-228).
+- Suricata (adapter→bronce→oro→Kuzu, DAY 226-228; 2.870 alertas → 775 NetworkFlow).
+- Zeek (adapter→bronce→oro→Kuzu, DAY 235-236; 31.735 telemetría → 31.735 NetworkFlow, 1:1).
 
-## Candidato de batalla DAY 236 (Alonso decide el corte)
-Objetivo declarado: **incluir Zeek en el test MITRE del Makefile (mitre-start) para que el
-grafo tenga TRES telemetrías (aRGus + Suricata + Zeek).**
-1. **LO PRIMERO — corregir config/zeek_adapter.json.** input_path apunta a
-   logs/day225-zeek-neris/eve.json (resto Suricata, path inexistente). A la fuente Zeek.
-   Revisar node_id (hoy cpp_sniffer_v33_day12, el de aRGus) — ver "A medir".
-2. **Commitear el adapter** si el cierre no lo hizo (git add explícito, ver notas).
-3. Tramo aguas abajo de Zeek, espejando Suricata: bronce Zeek → oro (Parquet) → Kuzu.
-   OJO PUERTA MULTI-SENSOR: parquet_to_kuzu_loader declaraba alcance mono-fuente
-   (source_sensor="argus") con aviso de no generalizar sin Consejo. ¿Se generalizó para
-   Suricata en DAY 228? MEDIR contra fichero antes de meter Zeek por ahí.
-4. Wiring en mitre-start para que la corrida del MITRE arrastre también a Zeek al grafo.
-   Corte: "un día, una batalla". Llevar Zeek de bronce al grafo por mitre-start son varios
-   sub-pasos y puede no caber en un día. Alonso corta midiendo, no forzando.
+Lo que FALTA del objetivo declarado: que **UNA corrida de `mitre-start` arrastre a los tres a la
+MISMA BD Kuzu**. Hoy cada sensor aterriza en su propia BD; el mecanismo multi-sensor en una BD
+compartida está PROBADO (Suricata cargó sin tocar el loader, DAY 228; CORRELATES_FLOW poblado
+DAY 232), pero nunca se ha corrido con los tres a la vez desde el target.
 
-## Después de DAY 236
-Wazuh (día siguiente o el mismo): cuarto sensor, mismo estándar de adapter. El
-ADAPTER_TOOLCHAIN ya está en el Vagrantfile para wazuh y el scaffold ya funciona
-(arreglado DAY 235). Con Wazuh, las cuatro señales al grafo → cierre del pipeline.
+## Candidato de batalla DAY 237 (Alonso decide el corte)
+Objetivo: **incluir Zeek en `mitre-start` para que el grafo del ataque tenga TRES telemetrías.**
+Son varios sub-pasos; "un día, una batalla" — cortar midiendo, no forzando.
+1. **LO PRIMERO A MEDIR — cómo ve Zeek el tráfico del MITRE.** nmap -A dispara contra los
+   servicios del `defender`. aRGus esnifa en vivo; Suricata lee su eve.json (producido en vivo en
+   la VM suricata). ¿Cómo llega ese MISMO tráfico a la VM `zeek`? ¿Captura en vivo, o replay de un
+   pcap de la ventana del nmap? MEDIR el setup actual antes de escribir wiring — es el paso que
+   puede no ser trivial.
+2. **Windowing de Zeek a T0.** El conn.log acumulará conexiones entre corridas igual que el
+   eve.json de Suricata (DEBT-MITRE-SURICATA-EVE-NOT-WINDOWED-001). El adapter necesita filtrar a
+   `mtime>T0` o cada run arrastra el tráfico del anterior. El baseline `destroy -f && up` lo
+   neutraliza (nace vacío), así que es hardening, NO bloqueo del MVP.
+3. **Tramo Zeek dentro del script**, espejando la mitad Suricata de `mitre_start.sh`: zeek adapter
+   (toy key exportada inline en el MISMO `-c`) → converter (toy key, verifica HMAC) → loader a la
+   BD **compartida** del run (la misma `mitre-*.kuzu`, no una fresca). El loader es idempotente
+   (MERGE + ON CREATE SET) → cargar los tres oro en la misma BD es seguro.
+4. **Poblador CORRELATES_FLOW + consultas.** Tras cargar los tres, correr el poblador (DAY 232) y
+   medir el titular cross-sensor de TRES vías. Aquí se mide POR FIN si Zeek y Suricata (ambos epoch
+   real del mismo tráfico, mismo node_id) **convergen en UN NetworkFlow** (si el window bucketea
+   igual) o quedan como nodos separados unidos por CORRELATES_FLOW. Es la medida jugosa del día.
+
+## Después de DAY 237
+- Promoción de `mitre-start` a tarea de **EMECAS+++** (decisión DAY 234): test de aceptación
+  `destroy -f && up` desde cero + gate auto-verify (titular_grafo ≤ intersección grep). Se hace
+  cuando `mitre-start` esté COMPLETO con los sensores.
+- **Wazuh** (4º sensor, mismo estándar de adapter). El ADAPTER_TOOLCHAIN ya está en el Vagrantfile
+  y el scaffold funciona (arreglado DAY 235). Con Wazuh, las cuatro señales al grafo → cierre del
+  pipeline.
 
 ## Invariantes (no negociar)
 - Medir, no votar. HECHO ≠ SOSPECHADO; cada afirmación a salida de comando.
-- flow_uid = hash(node_id ‖ community_id), SIN tiempo (Opción B, DAY 225).
-  node_id = punto de observación, NO el host. Join SIEMPRE por community_id.
+- flow_uid = **BLAKE2b(node_id ‖ community_id ‖ flow_start_window ‖ seq_in_window)** — el window SÍ
+  entra (medido DAY 236 en flow_uid.hpp:53, 17 call sites 3-arg). El invariante viejo "sin tiempo,
+  Opción B" del prompt es DERIVA DOCUMENTAL (DEBT-FLOWUID-INVARIANT-DOC-DRIFT-001): corregirlo en
+  docs/paper. node_id = punto de observación, NO el host. Join cross-sensor por community_id.
 - Un día, una batalla. Vía Appia (un criterio que no puede ponerse rojo no mide).
 - No `grep -rn` desde raíz (usa `git grep`). No encadenar salidas grandes.
-  `git add` explícito (nunca -a/-u: instrumentación WIP en zmq_handler.cpp).
-  macOS: nunca `sed -i` sin `-e ''`. Build/commit/push desde el host. A horas malas, parar.
-- SIN switches en JSON (DAY 222): grafo data-driven. Cada componente su propio config con
-  su source_sensor; mismo buzón de bronce plano /vagrant/logs/correlation.
+  `git add` explícito. macOS: nunca `sed -i` sin `-e ''`. Build/commit/push desde el host.
+  A horas malas, parar.
+- SIN switches en JSON (DAY 222): grafo data-driven. Cada componente su config con su source_sensor;
+  mismo buzón de bronce plano /vagrant/logs/correlation.
+- Export de la clave HMAC SIEMPRE inline en el MISMO `vagrant ssh <vm> -c '...'` (un export en un
+  `-c` separado muere con ese shell). La toy key (0123…×4) es la clave end-to-end de mitre-start.
 
-## Estado del adapter de Zeek (DAY 235, HECHO)
-- zeek-adapter/ generado y escrito: to_row.hpp/.cpp (parseo POR NOMBRE del `#fields`,
-  parse_zeek_ts epoch double, event_id = community_id‖ts con prefijo `zeek:`), main.cpp
-  (captura la línea `#fields` + loop, salta el preámbulo `#`), test_to_row.cpp (vector
-  diana real con \t explícitos). Targets en el Makefile (zeek-adapter-build/test/clean,
-  construyen en la VM zeek).
-- community_id = campo de DATOS 23 (token 24 del header por el prefijo literal `#fields`).
-- Zeek = TELEMETRÍA: cols de veredicto vacías. "Todo el jugo" (dns/http/ssl/...) ya en
-  /vagrant/logs/day235-zeek-neris/, pendiente para la batalla N-ficheros (hoy solo conn.log).
+## Estado del tramo Zeek (DAY 236, HECHO y medido)
+- Config P3 cerrada (`1eca3ca0`): input_path → /vagrant/logs/day235-zeek-neris/conn.log,
+  node_id cpp_sniffer_v33_day12, hmac_key_env = NOMBRE de var ARGUS_BRONZE_HMAC_KEY_HEX.
+- Bronce de referencia (toy key): /vagrant/logs/correlation/zeek-2026-07-29-010814.csv (31.735 filas).
+- Oro: /vagrant/logs/day236-zeek-gold/zeek.{avro,parquet} (31.735 válidas, 0 descartadas).
+- Kuzu: /vagrant/logs/day236-zeek-kuzu/zeek.kuzu (Escritas 31.735, fallidas 0). Padre a mano
+  (`mkdir -p`), Kuzu no crea la ruta.
+- Criterio: `MATCH (e:TelemetryEvent)-[:TELEMETRY_ABOUT]->(f:NetworkFlow) RETURN e.source_sensor,
+  e.event_id, f.flow_uid LIMIT 3` → filas `zeek|zeek:…|…`. flow_uid diana
+  `MSPLWl/54skxbMNSmGOsOzDbyun6+K8s/gVFsivQtcE=` = idéntico al recompute del converter (fontanería
+  converter→loader→sink, no oráculo). Todas TelemetryEvent, 0 Alert.
+- Censo: `count(NetworkFlow)` = 31.735, 1:1 con TelemetryEvent, cero colapso (conn.log = una fila
+  por conexión, cada una con su ts → window distinto → flow_uid distinto). Contraste con Suricata
+  (775): la granularidad de la fuente manda. Número de paper.
 
 ## A medir (afecta al día, no se asume)
-- ¿node_id de Zeek? DAY 235 corrió con cpp_sniffer_v33_day12 (el de aRGus). Si Zeek
-  comparte punto de observación con aRGus, converge en el MISMO nodo; si lleva el suyo, el
-  join es cross-sensor por community_id. DECISIÓN DE DISEÑO del grafo; medir el efecto antes
-  de fijarlo en el bronce definitivo. Regenerar el bronce si cambia = una corrida, sin lock-in.
-- ¿parquet_to_kuzu_loader ya generaliza multi-sensor (tras Suricata DAY 228) o sigue
-  mono-fuente? Medir contra fichero antes de meter Zeek por ahí.
-- Convergencia cross-sensor SISTEMÁTICA: en DAY 235 se vio UN flujo con community_id y
-  flow_start idénticos en Zeek y en el vector de Suricata
-  (1:MuSlbWV2Dy5Z168c5sxOWncbYyQ=, 147.32.84.165:1040→94.63.149.152:80). La intersección
-  completa Zeek∩Suricata (grep -Fxf con LC_ALL=C sobre los community_id de los dos bronces)
-  es la prueba de convergencia — hacerla el día del grafo.
+- Cómo llega el tráfico del MITRE a la VM zeek (ver batalla, punto 1). Es el desbloqueo del día.
+- Convergencia Zeek↔Suricata en la BD compartida: ¿UN NetworkFlow (window igual) o dos + arista
+  CORRELATES_FLOW? Medir con los dos oros en una BD, no antes.
+- El binario `parquet_to_kuzu_loader` accede a las cols del Parquet por índice posicional sin
+  validar esquema (fragilidad DAY 228). Inofensivo mientras el oro salga del MISMO converter — que
+  es el caso. No re-medir salvo que cambie el converter.
 
-## Deudas registradas DAY 235 (en docs/BACKLOG.md, sección DAY 235)
-- DEBT-DOWNSTREAM-INGESTION-NOT-ORCHESTRATED-001 (P2): el camino aguas abajo se invoca a
-  mano, binario a binario; falta un componente orquestador full-time que gestione la ingesta
-  hasta el grafo (responsable de mantener el grafo actualizado y alimentar el dashboard).
-- DEBT-ZEEK-ADAPTER-CONFIG-SURICATA-RESIDUE-001 (P3): config con input_path de Suricata.
-- DEBT-ZEEK-PROTO-CASE-001 (P3, decisión abierta): Zeek proto minúsculas vs Suricata mayúsculas.
-- DEBT-SCAFFOLD-GUIDANCE-SURICATA-CENTRIC-001 (P4): la guía embebida del scaffold asume JSON.
+## Deudas registradas DAY 236 (en docs/BACKLOG.md, sección DAY 236)
+- ✅ DEBT-ZEEK-ADAPTER-CONFIG-SURICATA-RESIDUE-001 (P3) — RESUELTA (1eca3ca0).
+- DEBT-MITRE-ZEEK-CONN-NOT-WINDOWED-001 (P3, nueva) — windowing de Zeek a T0 en mitre-start.
+- DEBT-FLOWUID-INVARIANT-DOC-DRIFT-001 (P4, nueva) — el invariante "sin tiempo" no coincide con el
+  código; corregir docs/paper.
+- DEBT-DOWNSTREAM-INGESTION-NOT-ORCHESTRATED-001 (P2) — reforzada: bronce→oro→Kuzu se corrió a mano.
+- DEBT-ZEEK-PROTO-CASE-001 (P3) — proto minúsculas (Zeek) vs mayúsculas (Suricata); decidir antes
+  del cross-sensor (protocol del nodo puede oscilar por orden de escritura, ON CREATE SET).
 
-## Notas de fontanería DAY 235 (medidas, no re-medir)
-- Scaffold arreglado: tools/scaffold_adapter.py estaba DUPLICADO entero (doble concatenación,
-  el segundo `from __future__` en la línea 1250 daba SyntaxError). Fix commiteado en 19cd389d
-  (head -1222 + un entry-point). Desbloquea también wazuh/argus.
-- Build de adapters de sensor = TARGET del Makefile (NO hay CMakeLists raíz), corre en la VM
-  del sensor (`vagrant ssh zeek -c`), build-dir con sufijo (/vagrant es compartido).
-- Corrida del adapter (paso 5):
-  vagrant ssh zeek -c 'export ARGUS_BRONZE_HMAC_KEY_HEX=<64hex> && \
-  cd /vagrant/zeek-adapter && \
-  ./build-zeek/zeek_adapter config/zeek_adapter.json /vagrant/logs/day235-zeek-neris/conn.log'
-  La clave real de aRGus solo hace falta cuando un LECTOR verifique el HMAC; para escribir el
-  bronce vale cualquier clave de 64 hex. El binario acepta la entrada como arg2, sobrescribe input_path.
-- Replay de Zeek: `zeek -C -r <pcap> local` (el -C ignora los ~68/1000 checksums inválidos
-  del Neris). Diana seed 0: 1:IN7uqVpMWxpmuhQTowSQB2XEe0E=.
-- El uid de Zeek NO es estable entre replays (por eso el event_id sale de community_id‖ts, no del uid).
-- Con -Werror, un `[[nodiscard]]` cuyo retorno se ignora ROMPE el build (lección del adapter).
+## Notas de fontanería (medidas, no re-medir)
+- Binarios en `/vagrant/correlation-engine/build/{bronze_to_gold_converter,parquet_to_kuzu_loader,
+  kuzu_query}` del 25-jul, funcionan sin rebuild (usados DAY 228/232/236).
+- CLIs: converter `<bronce.csv> <avro.out> <parquet.out>` (verifica HMAC → necesita la clave);
+  loader `<oro.parquet> <kuzu_db> <schema.cypher>` (NO verifica HMAC → sin clave);
+  kuzu_query `<kuzu_db> <cypher>`. Schema en correlation-engine/schema/schema.cypher.
+- Consultas Cypher sin literales de string dentro de `vagrant ssh -c '...'` (evita el infierno de
+  comillas); si hace falta filtrar por 'zeek', mejor RETURN el source_sensor y leerlo, no WHERE.
+- Loader ~108-117 filas/s (flush por lotes de 512 filas / 1e9 ns).
 
 ## Recordatorio de tono
-Alonso pilota; mide contra fichero y pega salida. `make pipeline-stop` al cerrar.
+Alonso pilota; mide contra fichero y pega salida. `make pipeline-stop` al cerrar. zeek-adapter.md
+está al tope (~30KB/32KB): al condensar, sacar el tramo aguas abajo a /areas/zeek-a-grafo.md,
+espejando parquet-a-kuzu.md de Suricata.

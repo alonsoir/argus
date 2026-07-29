@@ -5617,3 +5617,48 @@ make_event_id de 4 args, to_row de 2 args) y una guía de pasos manuales que asu
 eve.json/event_type. Para sensores TSV (Zeek) no aplica: hubo que reescribir
 to_row.hpp/.cpp/test y adaptar main.cpp. Genericizar el molde y los pasos manuales para que
 el andamiaje no arrastre supuestos de Suricata.
+
+# 🆕 Entradas DAY 236 — para docs/BACKLOG.md
+
+## ✅ RESUELTAS
+- **DEBT-ZEEK-ADAPTER-CONFIG-SURICATA-RESIDUE-001 (P3)** — RESUELTA en `1eca3ca0`.
+  `config/zeek_adapter.json` corregido: `input_path` → `/vagrant/logs/day235-zeek-neris/conn.log`
+  (era `logs/day225-zeek-neris/eve.json`, resto Suricata inexistente); `node_id` se mantiene
+  `cpp_sniffer_v33_day12` (D2, comparte punto de observación con aRGus); `hmac_key_env` es el
+  NOMBRE de la variable de entorno, no su valor (el binario hace `getenv(nombre)`).
+
+## 🆕 NUEVAS
+- **DEBT-MITRE-ZEEK-CONN-NOT-WINDOWED-001 (P3)** — análogo de
+  DEBT-MITRE-SURICATA-EVE-NOT-WINDOWED-001. Cuando Zeek entre en `mitre-start`, su `conn.log`
+  acumulará conexiones entre corridas igual que el `eve.json`. El adapter necesita filtrar a
+  `mtime>T0` o cada run arrastra el tráfico del anterior. El baseline `destroy -f && up` lo
+  neutraliza (nace vacío) → es hardening para correr en caliente, NO bloqueo del MVP.
+- **DEBT-FLOWUID-INVARIANT-DOC-DRIFT-001 (P4)** — el invariante escrito
+  "flow_uid = hash(node_id ‖ community_id), sin tiempo (Opción B)" NO coincide con el código.
+  `compute_flow_uid` (flow_uid.hpp:53) hashea con BLAKE2b
+  `encode_flow_input(node_id, community_id, flow_start_window, seq_in_window)` — el window Y el
+  seq SÍ entran en la preimagen (medido DAY 236: 17 call sites, todas 3-arg, incl.
+  bronze_to_gold_converter.cpp:174). La deriva es BENIGNA para el mecanismo (el modelo cross-sensor
+  de DAY 232 se apoya justamente en que el window separe los nodos de sensores con distinto reloj),
+  pero es una afirmación falsa en docs/paper. Corregir el invariante para que refleje el código.
+
+## 🔁 RECORDATORIOS (abiertas — elevar visibilidad para DAY 237)
+- **DEBT-DOWNSTREAM-INGESTION-NOT-ORCHESTRATED-001 (P2)** — REFORZADA. El tramo bronce→oro→Kuzu de
+  Zeek se corrió A MANO, binario a binario (adapter → converter → loader → kuzu_query). Falta el
+  orquestador full-time. `mitre-start` es el candidato natural a absorber esta orquestación.
+- **DEBT-ZEEK-PROTO-CASE-001 (P3, decisión abierta)** — Zeek escribe `proto` en minúsculas (`tcp`);
+  Suricata en mayúsculas (`TCP`). Irrelevante para flow_uid, pero cuando ambos escriban al MISMO
+  `NetworkFlow` en la BD compartida de mitre-start, la propiedad `protocol` del nodo puede oscilar
+  según el orden de escritura (`ON CREATE SET`: gana el primero). Decidir antes del cross-sensor:
+  normalizar a un caso, o documentar que `protocol` es "sensor-first".
+- **DEBT-SCAFFOLD-GUIDANCE-SURICATA-CENTRIC-001 (P4)** — la guía embebida del scaffold asume
+  JSON/nlohmann; no aplica a sensores TSV. Relevante al generar el adapter de Wazuh.
+
+## 📊 HALLAZGO PARA EL PAPER (no es deuda)
+- Censo del grafo de Zeek: **31.735 TelemetryEvent → 31.735 NetworkFlow (1:1, cero colapso)**,
+  frente a Suricata **2.870 alertas → 775 NetworkFlow**. El ratio evento/flujo es propiedad de la
+  granularidad de la fuente (stream de alertas agrupa varias por conexión; resumen de conexiones da
+  una fila por conexión), no del diseño. El reuso de community_id (~16,7% en el Neris, DAY 225) NO
+  desaparece: el window lo desambigua en flujos distintos → aflora en `CORRELATES_FLOW` (correlación
+  por community_id), no en la identidad del nodo. flow_uid de la fila diana verificado bit a bit
+  contra el recompute del converter (fontanería converter→loader→sink cuadra al bit).
