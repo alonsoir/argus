@@ -1,10 +1,7 @@
 {
   "_comentario": "aRGus NDR — adapter de zeek. DAY 226.",
-  "_node_id": "D2: punto de observacion, NO el host. Debe coincidir con el de aRGus para converger. Valor real medido en el bronce de aRGus: cpp_sniffer_v33_day12",
-  "_hmac_key_env": "Debe ser la MISMA clave que usa aRGus o el lector rechazara estas filas",
-
   "base_dir": "/vagrant/logs/correlation",
   "node_id": "cpp_sniffer_v33_day12",
-  "input_path": "logs/day225-zeek-neris/eve.json",
+  "input_path": "/vagrant/logs/day235-zeek-neris/conn.log",
   "hmac_key_env": "ARGUS_BRONZE_HMAC_KEY_HEX"
 }
