@@ -5662,3 +5662,50 @@ el andamiaje no arrastre supuestos de Suricata.
   desaparece: el window lo desambigua en flujos distintos → aflora en `CORRELATES_FLOW` (correlación
   por community_id), no en la identidad del nodo. flow_uid de la fila diana verificado bit a bit
   contra el recompute del converter (fontanería converter→loader→sink cuadra al bit).
+
+## 🆕 Entradas DAY 237 — Zeek en mitre-start (los tres sensores en un grafo)
+
+Contexto: `make mitre-start` corre ahora los TRES sensores (aRGus + Suricata + Zeek) de punta a
+punta a una BD Kuzu compartida, cero comandos manuales. Zeek entra vía zeekctl LIVE sobre eth1
+(intnet). Titular honesto medido: **44 flujos corroborados por los tres sensores** (estable con
+DAY 233); **1089** = acuerdo de community_id implementación-independiente aRGus↔Zeek (validación del
+estándar, no "detección corroborada").
+
+### Resueltas / neutralizadas
+- ✅ **DEBT-MITRE-ZEEK-CONN-NOT-WINDOWED-001 (P3)** — NEUTRALIZADA por el `zeekctl deploy` fresco en
+  mitre-start: el deploy hace stop+start interno → el conn.log del spool nace vacío ~T0 → windowing
+  por construcción. Queda como hardening OPCIONAL (para correr en caliente sin `destroy -f && up`),
+  NO bloqueo. Medido DAY 237.
+
+### Nuevas
+- 🆕 **DEBT-ZEEK-WEBSOCKETS-MISSING-001 (P4)** — la VM `zeek` no tiene el módulo Python `websockets`
+  → zeekctl arranca con warning y sus comandos `print` / `netstats` quedan no-funcionales
+  (introspección en vivo del nodo: contadores de paquetes, drops de captura). NO afecta a la captura
+  (conn.log se escribe igual, medido: 1126 filas) ni al pipeline. Impacto: el día que haya que
+  verificar que Zeek no dropea paquetes durante un escaneo, `netstats` es la herramienta y hoy está
+  muerta. Arreglo: añadir `websockets>=11.0` al provisioning de zeek (o al bloque ADAPTER_TOOLCHAIN).
+
+### Reconfirmadas / reforzadas
+- **DEBT-EVENT-ID-COLLISION-001 (P2)** — reconfirmada DAY 237: aRGus 2554 filas de bronce → solo 1466
+  TelemetryEvent (~1088 colapsados por `timestamp_(src^dst)` bajo carga de scan). NO afecta el titular
+  (la correlación va por community_id) pero pierde nodos de aRGus. Data-quality.
+- **DEBT-MITRE-SURICATA-EVE-NOT-WINDOWED-001 (P3)** — reconfirmada: en caliente el eve.json acumulado
+  (162 alertas con residuo pre-T0) infla el CENSO de nodos de Suricata, pero NO el titular — las
+  alertas pre-T0 no tienen pareja windowed en aRGus/Zeek (que solo ven la ventana del ataque), así que
+  no corroboran (medido DAY 237: 44 corroborados de 162). Mismo hardening que el windowing de Zeek.
+- **DEBT-DOWNSTREAM-INGESTION-NOT-ORCHESTRATED-001 (P2)** — reducida, NO cerrada: mitre-start ya
+  automatiza los TRES sensores E2E, pero sigue siendo un one-shot (dispara → mide → termina), no el
+  orquestador full-time / plano de control continuo que mantendría el grafo vivo para el dashboard.
+- **DEBT-FLOWUID-INVARIANT-DOC-DRIFT-001 (P4)** — abierta: el invariante "flow_uid sin tiempo, Opción B"
+  de docs/prompt/paper NO coincide con el código (flow_uid.hpp:53 hashea `flow_start_window`). Corregir
+  la documentación al código, no al revés.
+- **DEBT-ZEEK-PROTO-CASE-001 (P3)** — abierta: proto en minúsculas (Zeek) vs mayúsculas (Suricata). No
+  medido DAY 237 si la propiedad `protocol` del nodo osciló en el grafo compartido; decidir antes de
+  pulir el cross-sensor para el paper.
+
+### Notas para EMECAS+++ (cuando estén los 4 sensores, en rama feat/zeek-to-graph)
+- Promoción de `mitre-start` a tarea de EMECAS+++: test de aceptación `destroy -f && up` desde cero
+  (baseline limpio → censos limpios de un solo ataque, sin residuo) + gate auto-verify con la relación
+  honesta `titular_grafo ≤ intersección_grep` (`>` = bug de consulta, rojo; `<` = colisión event_id,
+  WARN+log NO abort; `==` verde). NO clavarlo como igualdad estricta.
+- Decisión DAY 237: probar la nueva versión de EMECAS+++ en la rama de trabajo ANTES de mergear a main.
