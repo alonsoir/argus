@@ -5743,12 +5743,23 @@ reproducible desde clon; recomendada) o (ii) descarga-una-vez desde una VM con i
 `[ -f ] ||`. Hermano de la deuda de datasets (pcap Neris, sin resolver desde DAY 234): el patrón que se
 elija aquí sirve para ambos. BLOQUEA el cierre honesto de A.
 
-### DEBT-WAZUH-AUTHD-FORCE-NOT-PROVISIONED-001 (P2)
-La política `<force>` del authd del manager (reemplazar-siempre: `disconnected_time enabled="no"`,
-`after_registration_time` 0) se aplicó EN VIVO con `tools/fix_authd_force.py`, pero NO está en el
-provisioning `install-wazuh` → un `destroy&up` del manager la revierte y el re-enrollment de un agente
-re-imaginado (con el manager vivo) vuelve a colisionar por nombre duplicado. Codificarla en el heredoc
-`install-wazuh` (Vagrantfile ~1331-1361) o como provision `authd-force` propio en el bloque `wazuh`.
+### DEBT-WAZUH-AUTHD-FORCE-NOT-PROVISIONED-001 — ✅ RESUELTA (DAY 239)
+**Estado:** RESUELTA. La política `<force>` del authd del manager (reemplazar-siempre) se
+codificó en el provisioning como provision `authd-force` en el bloque `wazuh` del Vagrantfile
+(tras `adapter-toolchain`): corre `tools/fix_authd_force.py` + `systemctl restart wazuh-manager`
++ verificación fail-loud del marcador `<disconnected_time enabled="no">0` en `ossec.conf`.
+  **Evidencia (medida, no supuesta):**
+- `destroy&up wazuh` desde cero → provision verde (`=== authd-force OK ===`); un manager nace
+  con `force` codificada, sin pasos manuales.
+- Prueba de enroll: manager fresco → `manage_agents -l` = `ID 001, Name zeek` (enroll limpio en
+  registro vacío). Re-imaging con manager VIVO y zeek ya registrado (el escenario que en DAY 238
+  rebotaba con `Duplicate agent name: zeek`) → 2ª `destroy -f zeek && up zeek` SIN error,
+  `manage_agents -l` = un solo `ID 002, Name zeek` (`force` reemplazó el registro viejo).
+  **Commit:** `48fa558f` (feat/zeek-to-graph). Cierra la batalla A.
+  **Lección anexa:** no sondear liveness de daemons con `wazuh-control status` bajo `set -o pipefail`
+  (sale exit≠0 por daemons opcionales caídos → falso negativo aunque el grep case). La v1/v2 del
+  provision cayeron por esto; la v3 verifica solo el marcador en la config y deja la prueba de authd
+  al enroll E2E.
 
 ### DEBT-WAZUH-AUTHD-NO-PASSWORD-001 (P3)
 El enrollment del manager es SIN contraseña (`authd.pass` ausente) → cualquier host del intnet puede
