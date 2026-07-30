@@ -73,12 +73,35 @@ ADAPTER_TOOLCHAIN = <<-'ADAPTER_TOOLCHAIN_SHELL'
   echo "✅ ADAPTER_TOOLCHAIN verificado"
 ADAPTER_TOOLCHAIN_SHELL
 
+# WAZUH_AGENT_INSTALL — instala el agente Wazuh por dpkg del .deb cacheado en /vagrant.
+# dpkg NO necesita repo/apt/DNS/gnupg (a diferencia de la via apt). El nombre del agente
+# llega por env AGENT_NAME (fijado en cada provision). Version clavada = la del manager.
+WAZUH_AGENT_INSTALL = <<-'WAZUH_AGENT_INSTALL_SHELL'
+  set -e
+  MANAGER_IP="192.168.100.12"
+  DEB="/vagrant/provisioning/wazuh/wazuh-agent_4.14.7-1_amd64.deb"
+  echo "🛡️  WAZUH_AGENT_INSTALL — agente '${AGENT_NAME}' -> manager ${MANAGER_IP}"
+  if /var/ossec/bin/wazuh-control info >/dev/null 2>&1; then
+    echo "✅ agente ya instalado, nada que hacer"; exit 0
+  fi
+  if [ ! -f "$DEB" ]; then
+    echo "❌ no encuentro el .deb en $DEB"
+    echo "   cachealo antes del up:  mkdir -p provisioning/wazuh && cp logs/wazuh-agent_4.14.7-1_amd64.deb provisioning/wazuh/"
+    exit 1
+  fi
+  WAZUH_MANAGER="$MANAGER_IP" WAZUH_AGENT_NAME="$AGENT_NAME" dpkg -i "$DEB"
+  systemctl daemon-reload
+  systemctl enable --now wazuh-agent
+  echo "✅ WAZUH_AGENT_INSTALL — '${AGENT_NAME}' instalado y arrancado"
+WAZUH_AGENT_INSTALL_SHELL
+
 Vagrant.configure("2") do |config|
 
   # ════════════════════════════════════════════════════════════════════════════
   # DEFENDER VM - Full ML Pipeline (Primary)
   # ════════════════════════════════════════════════════════════════════════════
   config.vm.define "defender", primary: true do |defender|
+    defender.vm.provision "shell", name: "wazuh-agent", env: {"AGENT_NAME" => "defender"}, inline: WAZUH_AGENT_INSTALL
     defender.vm.box = "debian/bookworm64"
     defender.vm.box_version = "12.20240905.1"
 
@@ -1073,6 +1096,7 @@ BASHRC_EOF
   # ════════════════════════════════════════════════════════════════════════════
 
   config.vm.define "client", autostart: false do |client|
+    client.vm.provision "shell", name: "wazuh-agent", env: {"AGENT_NAME" => "client"}, inline: WAZUH_AGENT_INSTALL
     client.vm.box = "debian/bookworm64"
     client.vm.box_version = "12.20240905.1"
     client.vm.hostname = "ml-client"
@@ -1137,6 +1161,7 @@ BASHRC_EOF
   # SURICATA VM — IDS signatures (ADR-048 F2)
   # ════════════════════════════════════════════════════════════════════════════
   config.vm.define "suricata", autostart: false do |suricata|
+    suricata.vm.provision "shell", name: "wazuh-agent", env: {"AGENT_NAME" => "suricata"}, inline: WAZUH_AGENT_INSTALL
     suricata.vm.box         = "debian/bookworm64"
     suricata.vm.box_version = "12.20240905.1"
     suricata.vm.hostname    = "argus-suricata"
@@ -1216,6 +1241,7 @@ BASHRC_EOF
   # ZEEK VM — protocol analysis / observability layer (ADR-048 F3)
   # ════════════════════════════════════════════════════════════════════════════
   config.vm.define "zeek", autostart: false do |zeek|
+    zeek.vm.provision "shell", name: "wazuh-agent", env: {"AGENT_NAME" => "zeek"}, inline: WAZUH_AGENT_INSTALL
     zeek.vm.box         = "debian/bookworm64"
     zeek.vm.box_version = "12.20240905.1"
     zeek.vm.hostname    = "argus-zeek"
