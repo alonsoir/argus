@@ -1387,6 +1387,22 @@ BASHRC_EOF
 
     wazuh.vm.provision "shell", name: "adapter-toolchain", inline: ADAPTER_TOOLCHAIN
 
+    wazuh.vm.provision "shell", name: "authd-force", inline: <<-'AUTHD_FORCE_SHELL'
+      set -eu
+      echo "=== authd-force: force=reemplazar-siempre (DEBT-WAZUH-AUTHD-FORCE-NOT-PROVISIONED-001) ==="
+      OSSEC_CONF=/var/ossec/etc/ossec.conf
+      [ -f "$OSSEC_CONF" ] || { echo "ERROR: no existe $OSSEC_CONF (install-wazuh no corrio?)"; exit 1; }
+      command -v python3 >/dev/null 2>&1 || apt-get install -y python3
+      python3 /vagrant/tools/fix_authd_force.py
+      systemctl restart wazuh-manager
+      # Verificacion determinista: el marcador de force quedo en la config. La liveness de
+      # authd NO se sondea (wazuh-control status sale !=0 por daemons opcionales -> falso
+      # negativo); el enroll de un agente (destroy&up) es la prueba E2E de que authd levanta.
+      grep -q '<disconnected_time enabled="no">0</disconnected_time>' "$OSSEC_CONF" \
+        || { echo "ERROR: <force> no quedo en reemplazar-siempre en ossec.conf"; exit 1; }
+      echo "=== authd-force OK (force codificada; el enroll de zeek lo prueba E2E) ==="
+    AUTHD_FORCE_SHELL
+
   end  # End wazuh VM
 
 end  # End Vagrant configuration
