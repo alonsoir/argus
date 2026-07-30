@@ -332,3 +332,6 @@ day222_*.py
 temporal.md
 tools/temporal.md
 tools/scratch/
+
+# El .deb del agente Wazuh va al repo (provisioning reproducible), pese al *.deb global
+!provisioning/wazuh/*.deb
