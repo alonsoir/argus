@@ -335,3 +335,6 @@ tools/scratch/
 
 # El .deb del agente Wazuh va al repo (provisioning reproducible), pese al *.deb global
 !provisioning/wazuh/*.deb
+
+# El .deb del agente Wazuh va al repo (provisioning reproducible), pese al *.deb global
+!provisioning/wazuh/*.deb
