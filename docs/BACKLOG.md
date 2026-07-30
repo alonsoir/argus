@@ -5709,3 +5709,62 @@ estándar, no "detección corroborada").
   honesta `titular_grafo ≤ intersección_grep` (`>` = bug de consulta, rojo; `<` = colisión event_id,
   WARN+log NO abort; `==` verde). NO clavarlo como igualdad estricta.
 - Decisión DAY 237: probar la nueva versión de EMECAS+++ en la rama de trabajo ANTES de mergear a main.
+
+# BACKLOG — sección DAY 238 (añadir a docs/BACKLOG.md)
+
+> Wazuh integrado en el laboratorio como dominio de HOST (no de red). Manager + 4 agentes
+> enrolados; instalación de agentes codificada en el Vagrantfile. Rama `feat/zeek-to-graph`,
+> commit `d31173ea`.
+
+## Resumen de lo HECHO y medido (DAY 238)
+- Reencuadre confirmado contra fichero: **Wazuh es host-domain**, no un 4º sensor de red. El
+  provisioning instala `wazuh-manager` puro; `alerts.json` = eventos de host (FIM, SCA cis_debian12,
+  rootcheck, syscollector, PAM, journald); `community_id` = 0 sobre 520 eventos. Va a su propio grafo /
+  su propia BD Kuzu. Reconfirma DEBT-HOST-DOMAIN-CONTRACT-001 y la decisión DAY 225. Es la mitad
+  EDR/host del híbrido (ADR-046); el pipeline NDR de red quedó cerrado en DAY 237 con 3 sensores.
+- Manager `wazuh` (4.14.7) + CUATRO agentes enrolados y Active: `001 defender · 002 client ·
+  003 suricata · 005 zeek`. Canal agente→manager confirmado E2E (alerts.json sube en vivo).
+- Vagrantfile: constante `WAZUH_AGENT_INSTALL` + provision `wazuh-agent` en las 4 VMs de agente
+  (dpkg del `.deb` cacheado en `/vagrant`, nombre por `env AGENT_NAME`, manager excluido). `ruby -c` /
+  `vagrant validate` OK. Instalación reproducible PROBADA (`destroy&up zeek` completó desde provisioning).
+- Herramientas nuevas: `tools/add_wazuh_agents.py` (inserta agentes en Vagrantfile) y
+  `tools/fix_authd_force.py` (política force del manager). Ambas ancladas/idempotentes/con backup.
+
+## Deudas NUEVAS (DAY 238)
+
+### DEBT-WAZUH-DEB-NOT-IN-REPO-001 (P1)
+El Vagrantfile referencia `provisioning/wazuh/wazuh-agent_4.14.7-1_amd64.deb`, pero el `.deb` está
+**gitignored / sin commitear** (no salió en el `git status` del cierre; el commit `d31173ea` solo
+metió Vagrantfile + los 2 scripts). El `.deb` vive en el disco de Alonso vía carpeta sincronizada, así
+que funciona LOCAL, pero en un clon limpio la guarda del provision `wazuh-agent` hace `exit 1` y el
+agente no se instala → "reproducible en mi máquina", justo lo que la batalla A venía a evitar.
+Resolver: opción (i) `git add -f provisioning/wazuh/*.deb` (binario en git, versión clavada,
+reproducible desde clon; recomendada) o (ii) descarga-una-vez desde una VM con internet con guarda
+`[ -f ] ||`. Hermano de la deuda de datasets (pcap Neris, sin resolver desde DAY 234): el patrón que se
+elija aquí sirve para ambos. BLOQUEA el cierre honesto de A.
+
+### DEBT-WAZUH-AUTHD-FORCE-NOT-PROVISIONED-001 (P2)
+La política `<force>` del authd del manager (reemplazar-siempre: `disconnected_time enabled="no"`,
+`after_registration_time` 0) se aplicó EN VIVO con `tools/fix_authd_force.py`, pero NO está en el
+provisioning `install-wazuh` → un `destroy&up` del manager la revierte y el re-enrollment de un agente
+re-imaginado (con el manager vivo) vuelve a colisionar por nombre duplicado. Codificarla en el heredoc
+`install-wazuh` (Vagrantfile ~1331-1361) o como provision `authd-force` propio en el bloque `wazuh`.
+
+### DEBT-WAZUH-AUTHD-NO-PASSWORD-001 (P3)
+El enrollment del manager es SIN contraseña (`authd.pass` ausente) → cualquier host del intnet puede
+enrolarse, y todos los agentes salen `IP: any`. Aceptable en laboratorio; misma familia "dev, no
+producción" que la toy key HMAC y el `curl` inseguro al etcd. Material honesto para la sección de
+despliegue Wazuh del paper. Se restringe con una `authd.pass` en el manager.
+
+### DEBT-WAZUH-AGENT-INSTALL-ORDER-001 (P3)
+En un `destroy&up`-desde-cero, el manager `wazuh` (autostart:false) debe estar ARRIBA antes que los
+agentes para que el enroll no falle por manager ausente. El orden de bring-up no lo garantiza el
+Vagrantfile (es manual/script). Relevante para la promoción de `mitre-start` a EMECAS+++ con los
+sensores (decisión DAY 234): el gate tendrá que orquestar el orden manager→agentes.
+
+## Deudas relacionadas ya existentes (no duplicar)
+- **DEBT-HOST-DOMAIN-CONTRACT-001** — contrato `host_domain_v1` (Wazuh) separado de `correlation_v1`.
+  Reconfirmada por medida DAY 238: Wazuh es host-domain, su grafo/BD propios. Es el trabajo del paso 2
+  (adapter `alerts.json` → `host_domain_v1` → BD Kuzu propia).
+- **DEBT-DATASET-PROVISIONING-001** (o equivalente registrado DAY 234) — descarga reproducible de
+  blobs grandes en un `up` limpio. DEBT-WAZUH-DEB-NOT-IN-REPO-001 es el mismo patrón; resolver juntos.

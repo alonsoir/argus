@@ -1,147 +1,109 @@
-# PROMPT DE CONTINUIDAD — aRGus NDR — DAY 238
+# PROMPT DE CONTINUIDAD — aRGus NDR — DAY 239
 
 ## Punto de entrada (mide, no asumas)
     git log --oneline -6
     git status
     vagrant status
-DAY 237 cerró **los TRES sensores en un grafo por `mitre-start`**: una corrida, cero comandos
-manuales, aRGus + Suricata + Zeek a la MISMA BD Kuzu. Rama `feat/zeek-to-graph`. Lo primero al
-arrancar: confirmar el commit del cierre DAY 237 (cableado de `scripts/mitre_start.sh` + prompt de
-continuidad + BACKLOG DAY 237). Si no se hizo, hacerlo antes de tocar nada. `git add` explícito
-(nunca -a/-u por la instrumentación WIP en zmq_handler.cpp). **NO mergear a main** (decisión DAY 237):
-antes hay que actualizar EMECAS+++ y probarlo en esta misma rama.
+DAY 238 metió Wazuh en el laboratorio: manager vivo + los CUATRO agentes enrolados, y la
+instalación de agentes codificada en el Vagrantfile. Rama `feat/zeek-to-graph`. Lo primero al
+arrancar: confirmar HEAD = `d31173ea` ("added Vagrantfile to support Wazuh with server/agents…").
+`git add` explícito (nunca -a/-u). **NO mergear a main** (decisión DAY 237): antes, EMECAS+++ verde
+en esta rama con los sensores.
 
-## El estado que ordena el día
-**Los TRES sensores llegan al grafo por una sola corrida de `mitre-start`, probado E2E DAY 237:**
-- aRGus nativo (sniffer eBPF, eth2 intnet) — bronce 2554 → TelemetryEvent 1466 (colapso event_id).
-- Suricata (systemd vivo, eth1=100.10) — alert-only, 162 alertas.
-- Zeek (zeekctl live, eth1=100.11) — conn.log 1126 → 1126 NetworkFlow (1:1).
+## El estado que ordena el día — A CASI cerrada, con DOS cabos sueltos que la bloquean
+La batalla A (codificar los agentes en el Vagrantfile para que `destroy&up` los reproduzca) está
+**probada en su mitad de instalación** pero NO cerrada. Antes de tocar nada nuevo, cerrar A:
 
-Lo que FALTA del objetivo declarado: el **4º sensor, Wazuh**, mismo estándar de adapter. Con Wazuh,
-las cuatro señales al grafo → cierre del pipeline multi-sensor. La VM `wazuh` está **not created**.
+1. **🔴 EL `.deb` NO ESTÁ EN GIT (resolver PRIMERO).** El commit `d31173ea` metió `Vagrantfile` +
+   `tools/add_wazuh_agents.py` + `tools/fix_authd_force.py`, pero
+   `provisioning/wazuh/wazuh-agent_4.14.7-1_amd64.deb` está **gitignored** (no salió ni staged ni
+   untracked en el `git status` de cierre). El Vagrantfile REFERENCIA ese `.deb` → en un clon limpio
+   la guarda del provision hace `exit 1` y el agente no instala. Es "reproducible en mi máquina", el
+   trap que A venía a matar. MEDIR el `.gitignore` (`git check-ignore -v provisioning/wazuh/wazuh-agent_4.14.7-1_amd64.deb`)
+   y DECIDIR:
+    - **opción (i)** `git add -f provisioning/wazuh/*.deb` → binario en git (13 MB), versión clavada al
+      manager, reproducible desde clon. Recomendada.
+    - **opción (ii)** que una VM con internet (defender) baje el `.deb` una vez a `provisioning/wazuh/`
+      en su provisioning con guarda `[ -f ] || curl…`; sin binario en git, a costa de internet+orden.
+      Es hermano de la deuda de datasets (el `.pcap` del Neris tiene el mismo problema, sin resolver
+      desde DAY 234) → lo que decidas aquí es el patrón para ambos.
 
-## Candidato de batalla DAY 238 (Alonso decide el corte midiendo)
-Objetivo: **Wazuh al grafo, y a `mitre-start` como 4ª telemetría.** Son varios sub-pasos; "un día,
-una batalla".
-1. **LO PRIMERO A MEDIR — ¿qué emite Wazuh y lleva community_id?** Wazuh es HIDS (host-based:
-   integridad de ficheros, reglas de log, rootkit), NO un sensor de flujo de red como Zeek/Suricata.
-   La correlación del grafo va por `community_id` (5-tupla). MEDIR si Wazuh produce ALGO con
-   community_id / 5-tupla que pueda unirse a un NetworkFlow, o si su aportación es de OTRA naturaleza
-   (contexto de host, no corroboración de flujo). Esto decide si Wazuh entra por el mismo molde de
-   adapter o si su integración es distinta. Es el paso que puede no ser trivial — NO asumir que
-   Wazuh encaja en correlation_v1 tal cual.
-2. **Levantar la VM `wazuh` de cero.** `vagrant up wazuh` (nombrada; está not created). El
-   provisioning (install-wazuh + adapter-toolchain) entra en la RUTA CRÍTICA por primera vez, igual
-   que zeek DAY 235 — un fallo ahí tumba la corrida, y eso es lo deseado. El ADAPTER_TOOLCHAIN ya
-   está en el Vagrantfile y el scaffold funciona (arreglado DAY 235).
-3. **Scaffold + adapter** siguiendo el estándar [[suricata-adapter]] / [[zeek-adapter]]:
-   `scaffold_adapter.py --sensor wazuh` → escribir el to_row del formato de salida de Wazuh
-   (JSON de alertas, probablemente). Decidir event_id de campos ESTABLES (no de un uid volátil,
-   lección Zeek DAY 235), prefijo `wazuh:`. Cols de veredicto según sea alerta o telemetría.
-4. **Tramo aguas abajo + wiring en `mitre-start`** espejando la mitad Suricata/Zeek: adapter (toy
-   key inline en el MISMO `-c`) → converter → loader a la BD **compartida** del run → poblador. El
-   ciclo de vida (si Wazuh corre como servicio persistente, como Suricata, o hay que arrancarlo, como
-   Zeek) se MIDE en el paso 1/2.
+2. **🔴 LA POLÍTICA `force` DEL MANAGER NO ESTÁ CODIFICADA.** Se aplicó EN VIVO con
+   `tools/fix_authd_force.py` (pone `<force>` = reemplazar-siempre: `disconnected_time enabled="no"`,
+   `after_registration_time` 0), pero un `destroy&up` del manager la revierte. Codificarla en el
+   provisioning `install-wazuh` (heredoc del Vagrantfile ~1331-1361) o como provision `authd-force`
+   propio en el bloque `wazuh` (que corra `fix_authd_force.py` + `systemctl restart wazuh-manager`).
+   Necesita VER el heredoc `install-wazuh` entero para anclar el inserter, o meterlo como provision
+   separado tras la línea 1362 (adapter-toolchain de wazuh).
 
-## Después de DAY 238 — la promoción a EMECAS+++ (en ESTA rama, sin merge)
-- Con los CUATRO sensores en `mitre-start`, promocionarlo a tarea de **EMECAS+++** (decisión DAY 234):
-  test de aceptación `destroy -f && up` desde CERO (baseline limpio → todos los eve.json/conn.log
-  nacen vacíos, censos limpios de un solo ataque) + gate auto-verify (`titular_grafo ≤ intersección
-  grep`, relación honesta: `>` imposible = bug de consulta; `<` = colisión event_id, WARN+log no
-  abort; `==` verde).
-- **DECISIÓN DAY 237 (Alonso): probar la nueva versión de EMECAS+++ en la rama `feat/zeek-to-graph`
-  ANTES de cualquier merge a main.** No se mergea hasta que EMECAS+++ pase verde en la rama con los
-  cuatro sensores. El merge a main es el paso final del pipeline multi-sensor, no de DAY 238.
+## Candidato de batalla DAY 239 (Alonso decide el corte midiendo)
+**Cerrar A del todo**, y solo entonces empezar el paso 2 (el contrato).
+1. Resolver el `.deb` en git (punto 1 de arriba).
+2. Codificar `force` en el provisioning (punto 2).
+3. **PRUEBA FINAL de A** (la que la cierra de verdad): `vagrant destroy -f wazuh && vagrant up wazuh`
+   (manager nace con `force` codificada) → luego `vagrant destroy -f zeek && vagrant up zeek` → el
+   agente debe enrolarse LIMPIO, sin pasos manuales, y aparecer en `manage_agents -l` del manager.
+   Eso prueba que `.deb`-en-repo + `force`-provisionada funcionan desde cero.
+4. Commit del cierre de A (git add explícito): `provisioning/wazuh/*.deb` (si opción i), el
+   Vagrantfile/provision de `force`, continuidad + BACKLOG.
+5. **DESPUÉS**, el paso 2 de Alonso, ya la parte "interesante": contrato **`host_domain_v1`** →
+   adapter que lea el `alerts.json` del manager → **su propia BD Kuzu** (NO el `$KUZU` de red).
+   Batalla propia, probablemente el día siguiente. Ver [[wazuh-host-domain]] y [[contrato-multisensor]].
 
 ## Invariantes (no negociar)
 - Medir, no votar. HECHO ≠ SOSPECHADO; cada afirmación a salida de comando.
-- flow_uid = **BLAKE2b(node_id ‖ community_id ‖ flow_start_window ‖ seq_in_window)** — el window SÍ
-  entra (flow_uid.hpp:53). node_id = punto de observación, NO el host. Join cross-sensor por
-  community_id. El invariante viejo "sin tiempo, Opción B" es DERIVA DOCUMENTAL
-  (DEBT-FLOWUID-INVARIANT-DOC-DRIFT-001): corregir en docs/paper.
-- Un día, una batalla. Vía Appia (un criterio que no puede ponerse rojo no mide).
+- Un día, una batalla. Vía Appia (un criterio que no puede ponerse rojo no mide). A horas malas, parar.
 - No `grep -rn` desde raíz (usa `git grep`). No encadenar salidas grandes. `git add` explícito.
-  macOS: nunca `sed -i` sin `-e ''`. Build/commit/push desde el host. A horas malas, parar.
-- SIN switches en JSON (DAY 222): grafo data-driven. Cada componente su config con su source_sensor;
-  mismo buzón de bronce plano /vagrant/logs/correlation (o /vagrant/logs/lab en mitre-start).
-- Export de la clave HMAC SIEMPRE inline en el MISMO `vagrant ssh <vm> -c '...'` (un export en un
-  `-c` separado muere con ese shell). La toy key (0123…×4) es la clave end-to-end de mitre-start;
-  la clave REAL solo la usa el converter de aRGus (curl al etcd :2379, inseguro, deuda P1).
-- **Zeek en mitre-start = zeekctl LIVE** (DAY 237): `deploy` tras el marker T0 (conn.log nace ~T0,
-  windowing por construcción) → nmap → drenaje → **cosechar del spool ANTES del `stop`** (el stop
-  archiva el conn.log fuera del spool, gzip+fechado) → adapter SOLO-config (input_path en el json,
-  base_dir=$LAB) → converter → loader a la BD compartida. Visibilidad por FLOODING del intnet de
-  VirtualBox (eth1 sale NO-promisc pero captura igual, como Suricata@.10).
+  Build/commit/push desde el host. macOS: nunca `sed -i` sin `-e ''`.
+- **Wazuh = HOST-DOMAIN, medido DAY 238.** NO emite community_id / 5-tupla (0 sobre 520 eventos); es
+  HIDS (FIM, SCA, rootcheck, syscollector, reglas de log). Su identidad es host+regla+timestamp. Va a
+  **su propio grafo / su propia BD Kuzu**, NUNCA al `$KUZU` de red compartido de `mitre-start`.
+  Reconfirma DEBT-HOST-DOMAIN-CONTRACT-001 y la decisión DAY 225. Es la mitad EDR/host del híbrido
+  (ADR-046); el pipeline NDR de red quedó cerrado en DAY 237 con 3 sensores.
+- **Instalación de agentes = `dpkg` del `.deb` cacheado en `/vagrant`, NUNCA `apt`.** Medido DAY 238:
+  `client` no tiene salida a internet (ruta default por el intnet, `via 192.168.100.1`, por diseño de
+  VM de ataque), y las VMs "peladas" no traen gnupg ni DNS estable. dpkg desde la carpeta sincronizada
+  esquiva todo eso. Nombre del agente por `env AGENT_NAME`. **Manager (wazuh) EXCLUIDO** — es el
+  manager, se automonitoriza vía agente 000.
+- **El dato de host_domain_v1 debe nacer de `destroy&up` + MITRE**, no de toques a mano. El
+  `/etc/testwazuh` de defender fue sonda de aprendizaje, NO evidencia.
+- El re-enrollment de un agente re-imaginado con el manager VIVO exige `force`=reemplazar-siempre
+  (colisión de nombre duplicado). En el baseline `destroy -f` pelado (borra TODAS) no colisiona porque
+  el registro del manager nace vacío — la colisión es artefacto de destroy PARCIAL / re-imaging.
 
-## Estado del tramo multi-sensor (DAY 237, HECHO y medido)
-- `make mitre-start` E2E verde: pipeline-start (8 servicios) → clave HMAC real → zeek deploy →
-  nmap -A (113 s) → drenaje → cosecha spool + stop → oros de los tres → 3 loaders a
-  `/vagrant/logs/day234-kuzu/mitre-20260729-065150.kuzu` (fallidas=0) → poblador CORRELATES_FLOW.
-- Censo: `argus|1466 · suricata|162 · zeek|1126`. invariante (community_id distinto en extremos) = 0.
-- **TITULAR HONESTO = 44 flujos corroborados por los TRES sensores** (y la corroboración heterogénea
-  sniffer↔IDS argus/zeek↔suricata = el MISMO 44; estable con los 44 de DAY 233 → el número no se
-  movió al añadir Zeek, que es lo que queremos). Descomposición medida (sin re-correr):
-    - Por par: argus↔zeek = 1089 · argus↔suricata = 44 · suricata↔zeek = 44.
-    - Por nº de sensores: 1 sensor = 131 cids · 2 = 1045 · **3 = 44**. Cuadra: 1089 = 44 + 1045.
-    - **1089** = acuerdo de community_id IMPLEMENTACIÓN-INDEPENDIENTE aRGus(eBPF)↔Zeek sobre tráfico
-      adversarial → valida el estándar community_id a escala, NO es "detección corroborada" (homogéneo,
-      dos sniffers del mismo wire; claim más débil que sniffer↔IDS). No vender 1089 como "flujos
-      corroborados".
-    - Predicción CONFIRMADA: los sensores NO convergen en un NetworkFlow, quedan separados unidos por
-      CORRELATES_FLOW (window micros-exacto, ADR-052 §3.1.4 sin implementar → distinto flow_uid).
-- El windowing asimétrico NO infló el titular: Suricata en caliente (eve acumulado, 162 con pre-T0)
-  solo corroboró 44 — las pre-T0 no tienen pareja windowed en argus/zeek. El inflado queda en el
-  censo de nodos de Suricata, no en el 44.
+## Estado del tramo Wazuh (DAY 238, HECHO y medido)
+- Manager `wazuh` vivo (4.14.7) en `192.168.100.12`. CUATRO agentes enrolados y Active:
+  `001 defender · 002 client · 003 suricata · 005 zeek` (zeek es 005 tras el fix de `force`; el 004
+  fantasma quedó reemplazado). Todos `IP: any` (authd sin password — deuda).
+- Canal agente→manager confirmado E2E (no solo enrollment): `alerts.json` del manager subía en vivo
+  atribuido a defender (215→218 entre dos greps). Puertos: 1515 enrollment, 1514 datos, por el intnet.
+- Wazuh MEDIDO = host-domain: `alerts.json` = eventos de host (FIM/SCA cis_debian12/rootcheck/
+  syscollector/PAM/journald). `grep -c community_id alerts.json` = 0. Forma del evento: `rule`(level/id/
+  groups + mapeos pci_dss/hipaa/nist/gdpr) + `agent` + `decoder` + `location` + `full_log` + `data`.
+- Vagrantfile modificado (commit `d31173ea`): constante `WAZUH_AGENT_INSTALL` (tras ADAPTER_TOOLCHAIN)
+    + provision `wazuh-agent` en defender/client/suricata/zeek (NO wazuh). `ruby -c` y `vagrant validate`
+      OK. **Instalación reproducible PROBADA**: `destroy -f zeek && up zeek` completó → dpkg del `.deb`
+      sincronizado + arranque, sin manos.
+- `force` del manager = reemplazar-siempre APLICADA EN VIVO (no codificada aún, ver cabo suelto 2).
 
-## Cableado de Zeek en scripts/mitre_start.sh (DAY 237, para referencia)
-- Variables: `ZEEKCTL=/opt/zeek/bin/zeekctl`, `ZEEK_ADAPTER=/vagrant/zeek-adapter/build-zeek/zeek_adapter`
-  (confirmado, 2.2M), `ZEEK_SPOOL=/opt/zeek/spool/zeek` (conn.log vivo en texto plano).
-- 5 bloques insertados con `mitre_start_add_zeek.py` (v2, anclado/all-or-nothing/idempotente/backup):
-  vars, `zeekctl deploy` tras el marker, cosecha+`stop` tras el drenaje, oro 4b (adapter→converter),
-  3ª carga a `$KUZU`. `bash -n` limpio. El adapter Zeek se invoca SOLO-config (leidas=1126, sin arg2).
-
-## A medir DAY 238 (afecta al día, no se asume)
-- ¿Wazuh emite community_id / 5-tupla? (ver batalla, punto 1). Es el desbloqueo del día — decide si
-  Wazuh entra por correlation_v1 o su integración es de otra naturaleza (host-context).
-- Ciclo de vida de Wazuh: ¿servicio persistente (como Suricata) o hay que arrancarlo (como Zeek)?
-- `parquet_to_kuzu_loader` accede a las cols del Parquet por índice posicional sin validar esquema
-  (fragilidad DAY 228). Inofensivo mientras el oro salga del MISMO converter — el caso. No re-medir.
-
-## Deudas registradas DAY 237 (en docs/BACKLOG.md, sección DAY 237)
-- ✅ DEBT-MITRE-ZEEK-CONN-NOT-WINDOWED-001 (P3) — NEUTRALIZADA por el `zeekctl deploy` fresco
-  (conn.log nace ~T0). Queda como hardening opcional para correr en caliente sin destroy&up, NO bloqueo.
-- 🆕 DEBT-ZEEK-WEBSOCKETS-MISSING-001 (P4) — falta el módulo py `websockets` en la VM zeek →
-  zeekctl `print`/`netstats` muertos (introspección live, drops de captura). NO afecta captura ni
-  pipeline. Añadir al provisioning de zeek / ADAPTER_TOOLCHAIN.
-- DEBT-EVENT-ID-COLLISION-001 (P2) — reconfirmada: argus 2554 bronce → 1466 TelemetryEvent
-  (~1088 colapsados). No afecta el titular (community_id) pero pierde nodos argus.
-- DEBT-MITRE-SURICATA-EVE-NOT-WINDOWED-001 (P3) — reconfirmada: en caliente el eve.json acumulado
-  infla el censo de Suricata; NO infla el titular (medido DAY 237). Mismo hardening que el de Zeek.
-- DEBT-DOWNSTREAM-INGESTION-NOT-ORCHESTRATED-001 (P2) — mitre-start automatiza ya los TRES sensores
-  E2E; reduce pero NO cierra (sigue siendo one-shot, no un orquestador full-time / plano de control).
-- DEBT-FLOWUID-INVARIANT-DOC-DRIFT-001 (P4) — abierta; el invariante "sin tiempo" no coincide con el
-  código que hashea window. Corregir docs/paper.
-- DEBT-ZEEK-PROTO-CASE-001 (P3) — proto minúsculas (Zeek) vs mayúsculas (Suricata); no medido si
-  afloró en el grafo hoy; decidir antes de pulir el cross-sensor.
+## Herramientas nuevas (DAY 238, commiteadas en d31173ea)
+- `tools/add_wazuh_agents.py` — inserta la constante + los 4 provisions en el Vagrantfile. Anclado,
+  idempotente, all-or-nothing, backup. Ya aplicado (no re-correr; aborta solo si se re-corre).
+- `tools/fix_authd_force.py` — pone la `<force>` del authd del manager en reemplazar-siempre.
+  Idempotente, backup. Se corrió en vivo sobre el manager; FALTA codificarlo en provisioning.
 
 ## Notas de fontanería (medidas, no re-medir)
-- Binarios en `/vagrant/correlation-engine/build/{bronze_to_gold_converter,parquet_to_kuzu_loader,
-  kuzu_query}` (jul 25), funcionan sin rebuild. Adapters: suricata_adapter
-  `/vagrant/suricata-adapter/build-suricata/`, zeek_adapter `/vagrant/zeek-adapter/build-zeek/`.
-- CLIs: converter `<bronce.csv> <avro.out> <parquet.out>` (verifica HMAC → necesita clave);
-  loader `<oro.parquet> <kuzu_db> <schema.cypher>` (NO verifica HMAC → sin clave); kuzu_query
-  `<kuzu_db> <cypher>`. adapters: `<config.json>` posicional (input_path DENTRO del config).
-  Schema en correlation-engine/schema/schema.cypher.
-- Consultas Cypher sin literales de string dentro de `vagrant ssh -c '...'`. Para filtrar por
-  sensor, comparar propiedades (`ea.source_sensor < eb.source_sensor`) en vez de `WHERE ... = 'zeek'`.
-  `collect(DISTINCT ...)` + `size()` SÍ corren en Kuzu 0.11.3 (medido DAY 237). MERGE de rel +
-  ON CREATE SET también (DAY 232).
-- Loader ~108-117 filas/s (flush por lotes de 512 filas / 1e9 ns).
-- pipeline-start levanta 8 servicios (etcd, rag-security, rag-ingester, ml-detector, sniffer eBPF,
-  firewall, vault dev, jenkins). mitre-start EXIGE pipeline-start arriba (clave HMAC del etcd :2379).
+- Topología: manager .12, defender .1 (gateway del intnet), client .50, suricata .10, zeek .11; todos
+  en el intnet `ml_defender_gateway_lan` 192.168.100.0/24. VMs de agente `autostart: false` salvo
+  defender (`primary: true`).
+- `.deb` en `provisioning/wazuh/wazuh-agent_4.14.7-1_amd64.deb` (versión = la del manager, 4.14.7-1).
+- El heredoc `WAZUH_AGENT_INSTALL`: instala por dpkg, guarda doble (salta si `wazuh-control info` OK;
+  falla ruidoso si no hay `.deb`), `WAZUH_MANAGER=192.168.100.12`, nombre por `env AGENT_NAME`.
+- En un `destroy&up`-desde-cero, el manager (autostart:false) debe estar ARRIBA antes que los agentes
+  para que el enroll no falle por manager ausente. El orden de bring-up NO lo garantiza el Vagrantfile
+  (es manual/script) → relevante para la promoción EMECAS+++ (DEBT-WAZUH-AGENT-INSTALL-ORDER-001).
 
 ## Recordatorio de tono
-Alonso pilota; mide contra fichero y pega salida. `make pipeline-stop` al cerrar. Rama de trabajo
-`feat/zeek-to-graph`, sin merge a main hasta EMECAS+++ verde con los 4 sensores. zeek-adapter.md al
-tope (~32KB): el tramo aguas abajo y el de mitre-start ya viven en [[mitre-start-zeek]] y
-[[parquet-a-kuzu]]; no volver a engordar zeek-adapter.md.
+Alonso pilota; mide contra fichero y pega salida. `make pipeline-stop` si procede. Rama
+`feat/zeek-to-graph`, sin merge a main hasta EMECAS+++ verde. El hilo de memoria del tema Wazuh es
+[[wazuh-host-domain]]; el de identidad/contrato, [[contrato-multisensor]] y [[cierre-paper]].
