@@ -1108,11 +1108,12 @@ tools-clean:
 clean-libs:
 	@echo ""
 	@echo "╔═══════════════════════════════════════════════════════════════════════════════════════╗"
-	@echo "║  🧹 Cleaning Libraries (seed-client, plugin-loader, crypto-transport, etcd-client)    ║"
+	@echo "║  🧹 Cleaning Libraries (seed-client, correlation-v1, host-domain-v1, plugin-loader, crypto-transport, etcd-client)    ║"
 	@echo "╚═══════════════════════════════════════════════════════════════════════════════════════╝"
 	@echo ""
 	@$(MAKE) seed-client-clean
 	@$(MAKE) correlation-v1-clean
+	@$(MAKE) host-domain-v1-clean
 	@$(MAKE) crypto-transport-clean
 	@$(MAKE) etcd-client-clean
 	@$(MAKE) plugin-loader-clean
@@ -1185,6 +1186,9 @@ test-libs:
 	@$(MAKE) plugin-loader-test
 	@echo "Testing correlation-v1..."
 	@$(MAKE) correlation-v1-test
+	@echo "Testing host-domain-v1..."
+	@$(MAKE) host-domain-v1-test
+	@echo "Testing plugin-integ-test..."
 	@$(MAKE) plugin-integ-test
 
 test-components: correlation-engine-test
@@ -3098,3 +3102,36 @@ zeek-adapter-test: zeek-adapter-build
 zeek-adapter-clean:
 	@vagrant ssh zeek -c "rm -rf $(ZEEK_ADAPTER_BUILD_DIR)"
 	@echo "✅ zeek-adapter cleaned"
+
+# ─── host-domain-v1 ───────────────────────────────────────────────────────────
+# libhost_domain_v1 — capa de serialización bronce del dominio HOST (contrato
+# host_domain_v1, Wazuh). Definición PRIMARIA (sin oráculo): golden contra referencia
+# Python. Patrón IDÉNTICO a correlation-v1: build standalone (Release) → install
+# /usr/local. Se compila en la VM `defender` (todo el toolchain), como correlation-v1.
+# Deps (crypto/sodium/nlohmann) ya en el Vagrantfile de defender — cero provisioning nuevo.
+# OJO: el Makefile usa TABS, no espacios — al pegar, reconvierte la indentación.
+.PHONY: host-domain-v1-build host-domain-v1-test host-domain-v1-clean host-domain-v1-rebuild
+
+host-domain-v1-build:
+	@echo "╔══════════════════════════════════════════════╗"
+	@echo "║  Building host-domain-v1...                  ║"
+	@echo "╚══════════════════════════════════════════════╝"
+	@vagrant ssh -c 'cd /vagrant/libs/host-domain-v1 && rm -rf build && mkdir -p build && cd build && cmake -DCMAKE_BUILD_TYPE=Release .. && make -j4'
+	@vagrant ssh -c 'cd /vagrant/libs/host-domain-v1/build && sudo make install && sudo ldconfig'
+	@echo "✅ host-domain-v1 instalado"
+
+# SELF-BUILDING (`: host-domain-v1-build`): difiere de correlation-v1-test porque host
+# aún NO tiene consumidor que lo arrastre en pipeline-build. El wazuh-adapter (Pieza 1)
+# será ese consumidor (análogo ml-detector↔correlation-v1); entonces esta línea puede
+# volver al patrón sin prereq. Mientras, así EMECAS (test-all→test-libs) lo cubre solo.
+host-domain-v1-test: host-domain-v1-build
+	@echo "─── host-domain-v1 tests ────────────────────"
+	@vagrant ssh -c 'cd /vagrant/libs/host-domain-v1/build && ctest --output-on-failure'
+
+host-domain-v1-clean:
+	@vagrant ssh -c 'rm -rf /vagrant/libs/host-domain-v1/build'
+	@vagrant ssh -c 'sudo rm -f /usr/local/lib/libhost_domain_v1.so*'
+	@vagrant ssh -c 'sudo rm -rf /usr/local/include/host_domain_v1'
+	@echo "✅ host-domain-v1 limpiado"
+
+host-domain-v1-rebuild: host-domain-v1-clean host-domain-v1-build host-domain-v1-test
