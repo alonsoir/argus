@@ -5779,3 +5779,44 @@ sensores (decisión DAY 234): el gate tendrá que orquestar el orden manager→a
   (adapter `alerts.json` → `host_domain_v1` → BD Kuzu propia).
 - **DEBT-DATASET-PROVISIONING-001** (o equivalente registrado DAY 234) — descarga reproducible de
   blobs grandes en un `up` limpio. DEBT-WAZUH-DEB-NOT-IN-REPO-001 es el mismo patrón; resolver juntos.
+
+# BACKLOG.md — delta DAY 241 (pegar en las secciones correspondientes, NO reescribir el fichero)
+
+## Marcar HECHO / actualizar
+
+- **Paso 2 del cierre (contrato host_domain_v1)** — el diseño se cerró DAY 240; la **Pieza 0
+  (biblioteca `libs/host-domain-v1/`) queda CERRADA DAY 241**: lib de serialización del contrato
+  bronce host, verde en la VM `defender` y colgada de `test-libs`/`clean-libs`. Golden byte-idéntico
+  contra referencia Python (`tests/ref/host_domain_v1_ref.py`), sin oráculo C++. Queda la Pieza 1
+  (`wazuh-adapter/`) para llevar el dato al bronce.
+
+## Deudas NUEVAS a registrar
+
+- **DEBT-HOST-DOMAIN-VALIDATE-V1-MINIMAL-001** (P3) — `validate()` de `host_domain_v1` v1 solo exige el
+  invariante fundamental (`host_id` no vacío) + newline-guard heredado. Guards DIFERIDOS a un commit de
+  contrato posterior, cuando se mida la necesidad: `rule_id` no vacío, rango de `rule_level`, formato de
+  `event_id` (`wz1:`+base64). Mismo patrón de diferido que el guard D-D de `correlation_v1` (col 17).
+
+- **DEBT-HOST-DOMAIN-P2-LOG-ROTATION-001** (P2) — el `wazuh-adapter` (Pieza 1) necesita watermark por
+  `(inode, offset)`: `alerts.json` es live y rota; un offset a secas se rompe en la rotación. Para el
+  camino reproducible del paper (`destroy&up`) lee el fichero fresco entero.
+
+- **DEBT-HOST-DOMAIN-P1-FIM-SCA-ROOTCHECK-001** (P2) — FIM/syscheck/rootcheck/SCA no aparecen en el
+  baseline (auth/sesión). Se provocan con técnica MITRE host-touching en `mitre-start` (paso 3); ahí se
+  mide su forma de `data` y se amplían las comunes/columnas del contrato. Sin esto, el grafo host solo
+  muestra higiene de auth, no "Wazuh cazó el ataque".
+
+- **DEBT-HOST-DOMAIN-EMECAS-INTEGRATION-001** (P1, gate pre-merge) — EMECAS+++ aún NO se ha corrido con
+  la sub-línea host. La lib ya entra por `test-libs`; falta correr el gate completo
+  (`destroy→up→bootstrap→test-all`) con host y verlo verde antes del merge a main de `feat/zeek-to-graph`.
+
+## Decisiones a documentar (no son deudas)
+
+- **D-HOST-5** — en `host_domain_v1` se aplica `csv_string` a TODAS las columnas string (no-op salvo
+  coma/comilla/newline) y `rule_level` va como entero crudo. Diverge a propósito del reparto crudo
+  0,1,5,6,9,10 de `correlation_v1` (que era fidelidad byte a un oráculo que en host NO existe). Los
+  campos JSON-celda llevan coma/comilla por construcción → obligan al quoting.
+
+- **Clave HMAC del ledger host = COMPARTIDA con la red** (`ARGUS_BRONZE_HMAC_KEY_HEX`). Decisión por
+  sencillez (demo, no producción): reutiliza el env var ya cableado en `mitre-start`, cero piezas nuevas.
+  El aislamiento de una clave propia es preocupación de producción, deprioritizada a propósito.
