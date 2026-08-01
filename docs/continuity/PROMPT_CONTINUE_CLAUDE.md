@@ -1,101 +1,66 @@
-# PROMPT DE CONTINUIDAD — aRGus NDR — DAY 243
+# PROMPT DE CONTINUIDAD — aRGus NDR — DAY 244
 
 ## Punto de entrada (mide, no asumas)
     git log --oneline -6
     git status
     vagrant status
-DAY 242 cerró la **Pieza 1: `wazuh-adapter/`** (alerts.json → bronce host_domain_v1 CSV
-sellado). Rama `feat/zeek-to-graph`. Lo primero al arrancar: confirmar que HEAD es el commit
-`updated PROMPT and BACKLOG` (encima del `feat(wazuh-adapter): alerts.json -> bronce
-host_domain_v1 (Pieza 1)…​`), árbol limpio y pusheado. `git add` explícito (nunca `-a`/`-u`).
-**NO mergear a main** (no está integrado; EMECAS+++ aún NO corrido con host). Las VMs
-probablemente `aborted`/`poweroff` tras el sueño del host; se recuperan con `vagrant up NAME`
-(la lib compila/instala en `defender`; el adapter se construye en `wazuh`).
+HEAD = el commit de cierre DAY 243 ("updated PROMPT and BACKLOG (DAY 243: primer bronce
+host REAL…)"), rama feat/zeek-to-graph, árbol limpio, al día con origin. SIN merge a main.
+Untracked benigno: create_wazuh_adapter_skeleton.py (no es entregable). VMs probablemente
+aborted/poweroff tras el sueño del host.
 
-## Estado que ordena el día — PIEZA 0 y PIEZA 1 CERRADAS
-El circuito host va por el bronce. Lo HECHO (medido, no supuesto):
-- **✅ Pieza 0 `libs/host-domain-v1/`** (DAY 241, commit `d1374c40`): biblioteca del contrato
-  bronce host_domain_v1 (Row de 34 cols, `serialize()`/HMAC-SHA256 col 33, `mint_event_id`
-  BLAKE2b `wz1:`, `encode_string_list`, `validate`). Verde en `defender`, dentro de `test-libs`.
-- **✅ Pieza 1 `wazuh-adapter/`** (DAY 242): 13 ficheros (forma calcada de suricata/zeek-adapter
-    + `to_row` de host). `to_row` VERIFICADO en contenedor: C++ y la referencia Python
-      (`host_domain_v1_ref.py`) cruzan **byte-idéntico** sobre las 6 líneas reales del snapshot
-      day240 (rule.id 533/503/5502/5402/5501/5715), y la lib revalida su golden de Pieza 0.
-      **`make wazuh-adapter-test` en la VM `wazuh` (autoridad final) = 2/2 Passed**:
-      `host_domain_v1_golden` (arrastrado por el `add_subdirectory` de la lib en el build suelto)
-    + `wazuh_adapter_to_row`. Bloque de Makefile cableado (`wazuh-adapter-build/test/clean/rebuild`,
-      `vagrant ssh wazuh`, build dir `/vagrant/wazuh-adapter/build-wazuh`, prereq `host-domain-v1-build`).
-- **Contrato del adapter (congelado)**: `schema_version="host_domain_v1"`, `source_sensor="wazuh"`;
-  `event_id` acuñado por `mint_event_id` sobre la **línea CRUDA** (idempotencia por fichero);
-  `host_id`=`agent.id` (PK; vacío → lo rechaza `serialize()`, no el adapter); `data_json` = volcado
-  compacto del bag `data` con **orden de claves preservado** (`ordered_json`), `"{}"` si no hay;
-  **saneador de newline** (`\r`/`\n` reales → escape literal en full_log/rule_description/command:
-  la 533 netstat es multilínea y así SOBREVIVE en vez de rechazarse); comunes de `data` string
-  (`""`=ausente); 10 listas (groups/mitre/cumplimiento) vía `encode_string_list`. El adapter NO
-  enlaza libsodium directo (mint vive en la lib → crypto/sodium llegan PUBLIC transitivos); la
-  config NO tiene `node_id` (la identidad host viaja en la alerta). Deps ya en el Vagrantfile
-  (ADAPTER_TOOLCHAIN en wazuh) → cero provisioning nuevo.
+## Estado que ordena el día — Piezas 0, 1 CERRADAS; PRIMER BRONCE HOST REAL producido
+- ✅ Pieza 0 libs/host-domain-v1/ (DAY 241, d1374c40) — contrato bronce, 34 cols, verde en test-libs.
+- ✅ Pieza 1 wazuh-adapter/ (DAY 242, 11f48096) — alerts.json → bronce host_domain_v1, 2/2 en VM wazuh.
+- ✅ Bronce host REAL (DAY 243): destroy&up de wazuh + 4 agentes (defender/client/suricata/zeek)
+  → adapter sobre alerts.json vivo con TOY_KEY (0123…×4, la misma que suricata/zeek en mitre-start)
+  → 10419 filas en /vagrant/logs/host-domain/, todas 34 cols, 5 host_id (000+001-004), HMAC 10419/10419
+  verificado. Bronce REGENERABLE, FUERA de git (buzón gitignored). NO oro, NO Kuzu (fuera de alcance).
+  Receta para regenerarlo: destroy&up wazuh+agentes (manager ARRIBA primero) → export
+  ARGUS_BRONZE_HMAC_KEY_HEX=0123…×4 → ./build-wazuh/wazuh_adapter config/wazuh_adapter.json.
 
-## Candidato de batalla DAY 243 — el bronce host REAL (destroy&up)
-Hasta hoy el adapter solo produjo bronce en test (líneas congeladas del snapshot). El siguiente
-paso: **filas host firmadas REALES nacidas de `destroy&up`**, no de un toque a mano ni de la
-snapshot (invariante: el dato de host_domain_v1 debe nacer de destroy&up + MITRE).
-Orden sugerido (medir antes de correr):
-1. `destroy&up` del manager `wazuh` (+ agentes en defender/client/suricata/zeek) → `alerts.json`
-   fresco de provisioning. Confirmar: manager arranca, agentes enrolan (política `force`, DAY 239),
-   `alerts.json` crece. OJO al orden (DEBT-WAZUH-AGENT-INSTALL-ORDER-001): manager ARRIBA antes que
-   los agentes.
-2. **Clave HMAC REAL compartida** (`ARGUS_BRONZE_HMAC_KEY_HEX`, la de mitre-start), NO la de test
-   (0xAB). Medir de dónde la toma la corrida reproducible de red y usar la MISMA (así el bronce host
-   es verificable con el mismo mecanismo).
-3. Crear/confirmar el buzón `/vagrant/logs/host-domain`. Correr el adapter sobre
-   `/var/ossec/logs/alerts/alerts.json` (fichero fresco ENTERO; el watermark por `(inode,offset)`
-   es DEBT-HOST-DOMAIN-P2, pieza posterior).
-4. **Criterio**: N filas host en `/vagrant/logs/host-domain/wazuh-*.csv`, todas pasando `validate`,
-   contadores ruidosos (leidas/escritas/descartadas/err) cuadrando con lo medido en el `alerts.json`.
-   NO oro, NO Kuzu todavía.
-   Riesgo a evitar (lección suricata DAY 227): NO escribir a `/tmp` de la VM (se evapora); el bronce
-   que importa va a `/vagrant/logs/host-domain`.
-   Entregable probable: primer **bronce host REAL** firmado con la clave compartida.
+## Batalla candidata DAY 244 — DEBT-HOST-ADAPTER-ALERTS-PERMS-001 (cablear + reproducible)
+Justificación: el bronce host de DAY 243 salió con un `usermod` MANUAL. Mientras eso no viva en
+el provision, el bronce no es reproducible desde cero (choca con "reproducibilidad = propiedad del
+repo"). Es barato y desbloquea la Pieza 2, que consumirá ese bronce.
+1. Añadir al provision `wazuh` del Vagrantfile: `usermod -aG wazuh vagrant` + `mkdir -p
+   /vagrant/logs/host-domain` (dueño vagrant). DEPENDE de install-wazuh (crea el grupo wazuh) →
+   respetar orden en el bloque.
+2. Verificación por invocación, no `test -f` (lección DAY 230/ADAPTER_TOOLCHAIN): que el provision
+   compruebe `id vagrant | grep wazuh` y el buzón exista.
+3. CIERRE con dientes (lección DAY 230 — las VMs autostart:false no se ejercitan en un EMECAS a secas):
+   destroy&up de wazuh DESDE CERO → sin un solo paso manual, el usuario vagrant lee alerts.json y el
+   adapter produce N filas validadas en el buzón. Si hace falta el multi-host, destroy&up también de
+   los 4 agentes (receta arriba). Criterio: bronce host REAL nacido de destroy&up con CERO pasos
+   manuales de permisos.
 
-## Arco después (no de un día, no desviarse)
-- **Pieza 2**: host bronce → **oro Parquet** (host_domain_v1). El `bronze_to_gold_converter` de red
-  es `correlation_v1`-específico (19 cols); host necesita su equivalente para 34 cols.
-- **Pieza 3**: host oro → **Kuzu, SU PROPIA BD** (esquema host_domain_v1: nodos Host/HostEvent/Rule/
-  MitreTechnique, +Control P4 opcional). NUNCA el `$KUZU` de red compartido.
-- **Reproducibilidad**: cablear el adapter host en el camino `destroy&up` (equivalente host de
-  `mitre-start`), para que una corrida arrastre alerts.json → bronce → oro → grafo host.
-- **Paso 3 (DEBT-HOST-DOMAIN-P1)**: técnica MITRE host-touching en `mitre-start` → FIM/SCA/rastro de
-  ataque → "Wazuh cazó el ataque", no solo higiene de auth.
-- **Gate**: EMECAS+++ con host verde en esta rama → merge a main (DEBT-HOST-DOMAIN-EMECAS-INTEGRATION-001).
+## Arco después (una batalla por sesión, no desviarse)
+- Pieza 2 (DEBT-HOST-PIEZA-2-GOLD-001): host bronce → oro AVRO/Parquet host_domain_v1 (34 cols;
+  el converter de red es correlation_v1/19 cols → escribir el de host).
+- Pieza 3 (DEBT-HOST-PIEZA-3-KUZU-001): host oro → Kuzu SU PROPIA BD (nunca el $KUZU de red).
+- mitre-start reacciona a Wazuh (DEBT-MITRE-START-WAZUH-REACT-001) → EMECAS+++ con host verde
+  en esta rama → PR a main.
+- Post-main: migración de secretos (DEBT-ADAPTER-AUTOMATION-DOWNSTREAM-001): vault-client HTTPS,
+  etcd-client solo liveness, rotación con solape de 2 claves.
 
 ## Invariantes (no negociar)
 - Medir, no votar. HECHO ≠ SOSPECHADO; cada afirmación a salida de comando / fichero.
-- Un día, una batalla. Vía Appia (el oro/bronce es la fuente de verdad; el grafo es proyección
-  reconstruible DESDE EL LEDGER). A horas malas, parar.
-- No `grep -rn` desde raíz (usa `git grep` o apunta al fichero/dir). No encadenar salidas grandes.
-  `git add` explícito. Build/commit/push desde el host; la compilación ocurre DENTRO de la VM.
-- **Wazuh = HOST-DOMAIN, NO red.** Su bronce/oro/grafo van a SU PROPIA BD Kuzu, NUNCA al `$KUZU`
-  compartido de red. Contrato `host_domain_v1` separado de `correlation_v1`.
-- **El host es hermano fiel de suricata/zeek**: el adapter produce bronce sellado (CSV) y para.
-- **El dato de host_domain_v1 debe nacer de `destroy&up` + MITRE**, no de toques a mano.
-- **SIN merge a main** hasta EMECAS+++ verde con host en esta rama.
+- Un día, una batalla. Vía Appia (bronce/oro = fuente de verdad; el grafo es proyección). A horas malas, parar.
+- No `grep -rn` desde raíz (git grep o apunta al fichero). No encadenar salidas grandes. git add explícito.
+- Wazuh = HOST-DOMAIN. Su bronce/oro/grafo → SU PROPIA BD Kuzu, nunca el $KUZU de red.
+- El dato de host_domain_v1 nace de destroy&up + MITRE, no de toques a mano.
+- SIN merge a main hasta EMECAS+++ verde con host en esta rama.
+- Trazabilidad: cada tarea de este prompt cita la deuda del BACKLOG que la justifica (BACKLOG↔PROMPT).
 
-## Deudas vivas (registradas, no urgentes)
-- DEBT-HOST-DOMAIN-P2: rotación de `alerts.json` en el watermark (`inode,offset`). Hoy se lee entero.
-- DEBT-HOST-DOMAIN-P1: FIM/SCA/rootcheck NO observados; técnica MITRE host-touching en `mitre-start`.
-- DEBT-HOST-DOMAIN-EMECAS-INTEGRATION-001: EMECAS+++ aún NO corrido con host — gate antes del merge.
-- Guards DIFERIDOS de `validate` v1 (host): `rule_id` no vacío, rango de `rule_level`, formato de
-  `event_id` → commit de contrato posterior, cuando se mida la necesidad.
-- `host-domain-v1-test` self-build: OPCIONAL quitar el prereq `: host-domain-v1-build` ahora que
-  `wazuh-adapter-build` es el consumidor real. No urge (el 2/2 salió sin tocarlo).
-- P4: nodos `Control`/cumplimiento (implementar o diferir; útil para el encuadre hospitalario
-  HIPAA/GDPR — el mapeo ya se captura en el bronce host).
-- DEBT-WAZUH-AGENT-INSTALL-ORDER-001; authd abierto → `authd.pass` (familia "dev, no producción").
+## Deudas vivas (en docs/BACKLOG.md)
+DEBT-HOST-ADAPTER-ALERTS-PERMS-001 (batalla de hoy) · DEBT-HOST-PIEZA-2-GOLD-001 ·
+DEBT-HOST-PIEZA-3-KUZU-001 · DEBT-ADAPTER-AUTOMATION-DOWNSTREAM-001 ·
+DEBT-MITRE-START-WAZUH-REACT-001 · DEBT-WAZUH-AGENT-IN-EACH-PROVISION-001 ·
+DEBT-HOST-DOMAIN-EMECAS-INTEGRATION-001 · DEBT-HOST-DOMAIN-P1 (host-touching) ·
+DEBT-HOST-DOMAIN-P2 (watermark inode,offset) · DEBT-WAZUH-AGENT-INSTALL-ORDER-001.
 
 ## Recordatorio de tono
-Alonso pilota; mide contra fichero y pega salida. La compilación es DENTRO de la VM (el Makefile
-raíz es la fuente de la verdad). Rama `feat/zeek-to-graph`, sin merge a main. Hilos de memoria:
-[[wazuh-adapter]] (Pieza 1, cerrada — leer primero), [[host-domain-contract]] (contrato host +
-Pieza 0), [[wazuh-host-domain]] (Wazuh/host-domain, agentes), [[suricata-adapter]] (plantilla del
-scaffold + lección /tmp), [[cierre-paper]] (criterios de cierre y roadmap del paper honesto).
+Alonso pilota; mide contra fichero y pega salida. La compilación es DENTRO de la VM. Rama
+feat/zeek-to-graph, sin merge a main. Hilos de memoria: [[host-domain-contract]] (contrato +
+DAY 243 completo), [[wazuh-adapter]] (Pieza 1), [[wazuh-host-domain]] (Wazuh/agentes),
+[[hmac-secrets-provisioning]] (arquitectura futura de la clave), [[cierre-paper]] (roadmap).

@@ -5871,3 +5871,34 @@ sensores (decisión DAY 234): el gate tendrá que orquestar el orden manager→a
 - **authd abierto** (enrollment sin contraseña) → restringir con `authd.pass`. Familia "dev, no
   producción", P2/P3.
 - **DEBT-SNIFFER-IP-BYTE-ORDER-001** (lado red) — sigue registrada; no afecta al circuito host.
+
+### DEBT-HOST-ADAPTER-ALERTS-PERMS-001  [PROGRAMADA DAY 244]
+El wazuh-adapter corre como usuario `vagrant`, pero `/var/ossec/logs/alerts/alerts.json`
+es 640 wazuh:wazuh → Permission denied. Fix PROBADO a mano (DAY 243): `usermod -aG wazuh
+vagrant` (traversal+lectura del grupo confirmados en /var/ossec, logs, logs/alerts). FALTA
+cablearlo al provision `wazuh` del Vagrantfile, con dependencia de `install-wazuh` (crea el
+grupo wazuh). Incluir crear el buzón `/vagrant/logs/host-domain` en ese mismo provision.
+Cierre = destroy&up desde CERO que produzca bronce host SIN un solo paso manual de permisos.
+
+### DEBT-HOST-PIEZA-2-GOLD-001
+host bronce → oro AVRO+Parquet host_domain_v1 (34 cols). El bronze_to_gold_converter de red
+es correlation_v1-específico (19 cols) → host necesita su propio converter.
+
+### DEBT-HOST-PIEZA-3-KUZU-001
+host oro → Kuzu en SU PROPIA BD (esquema host_domain_v1: Host/HostEvent/Rule/MitreTechnique,
++Control opcional). NUNCA el $KUZU de red.
+
+### DEBT-ADAPTER-AUTOMATION-DOWNSTREAM-001
+Cada adapter con un main que ESCANEA una carpeta de CSVs → avro/parquet → inserta/actualiza
+en su grafo, automático; trae la clave HMAC al inicio. HOY: REST HTTP en plano a etcd-server
+(aceptable dev, "muy mal" prod). FUTURO: vault-client por HTTPS contra vault-server (clave
+provisionada por Jenkins). Fallo-duro si falta la clave (para ejecución, no warning silencioso).
+Rotación: mantener las 2 últimas claves (solape). etcd-client queda solo para liveness.
+
+### DEBT-MITRE-START-WAZUH-REACT-001
+mitre-start debe hacer REACCIONAR a Wazuh (host-touching → FIM/SCA/rastro). Hoy TOY_KEY;
+objetivo = cada componente va directo a etcd con la clave real, sin TOY_KEY. Gate previo al PR
+a main: EMECAS+++ con host verde en feat/zeek-to-graph.
+
+### DEBT-WAZUH-AGENT-IN-EACH-PROVISION-001
+Instalar el wazuh-agent en el provision del Vagrantfile de cada componente (no a mano).
