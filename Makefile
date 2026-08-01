@@ -3135,3 +3135,18 @@ host-domain-v1-clean:
 	@echo "✅ host-domain-v1 limpiado"
 
 host-domain-v1-rebuild: host-domain-v1-clean host-domain-v1-build host-domain-v1-test
+
+.PHONY: wazuh-adapter-build wazuh-adapter-test wazuh-adapter-clean wazuh-adapter-rebuild
+# =========================== wazuh-adapter (Pieza 1) ===========================
+# Adapter host_domain_v1 para Wazuh. Build SUELTO en la VM `wazuh` (build dir con
+# sufijo; /vagrant es compartida). Prereq host-domain-v1-build = el consumidor real.
+wazuh-adapter-build: host-domain-v1-build
+	vagrant ssh wazuh -c 'cd /vagrant/wazuh-adapter && rm -rf build-wazuh && mkdir -p build-wazuh && cd build-wazuh && cmake -DCMAKE_BUILD_TYPE=Debug .. && make -j4'
+
+wazuh-adapter-test: wazuh-adapter-build
+	vagrant ssh wazuh -c 'cd /vagrant/wazuh-adapter/build-wazuh && ctest --output-on-failure'
+
+wazuh-adapter-clean:
+	vagrant ssh wazuh -c 'rm -rf /vagrant/wazuh-adapter/build-wazuh'
+
+wazuh-adapter-rebuild: wazuh-adapter-clean wazuh-adapter-build
