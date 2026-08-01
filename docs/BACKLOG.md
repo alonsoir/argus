@@ -5820,3 +5820,54 @@ sensores (decisión DAY 234): el gate tendrá que orquestar el orden manager→a
 - **Clave HMAC del ledger host = COMPARTIDA con la red** (`ARGUS_BRONZE_HMAC_KEY_HEX`). Decisión por
   sencillez (demo, no producción): reutiliza el env var ya cableado en `mitre-start`, cero piezas nuevas.
   El aislamiento de una clave propia es preocupación de producción, deprioritizada a propósito.
+
+# BACKLOG — delta DAY 242
+
+> Bloque para MERGEAR en `BACKLOG.md` (no reemplaza el fichero). Actualiza el estado del
+> circuito host y registra las deudas nuevas/vigentes tras cerrar la Pieza 1.
+
+## Cierre host — progreso del circuito (bronce → oro → Kuzu, BD propia)
+
+- ✅ **Pieza 0 — `libs/host-domain-v1/`** (DAY 241, commit `d1374c40`)
+  Biblioteca del contrato bronce `host_domain_v1`: Row de 34 cols, `serialize()`/HMAC-SHA256
+  (col 33), `mint_event_id` (BLAKE2b `wz1:`), `encode_string_list`, `validate`. Golden contra
+  referencia Python (`host_domain_v1_ref.py`). Verde en `defender`, dentro de `test-libs`.
+- ✅ **Pieza 1 — `wazuh-adapter/`** (DAY 242)
+  `alerts.json` → parseo → `mint_event_id`(línea cruda) → `HostDomainV1Row` → `serialize()` →
+  bronce host_domain_v1 CSV sellado, y para. `to_row` verificado byte-a-byte C++⟷Python sobre 6
+  líneas reales del snapshot day240. **`make wazuh-adapter-test` en la VM `wazuh` = 2/2 Passed**
+  (`host_domain_v1_golden` + `wazuh_adapter_to_row`). Buzón: `/vagrant/logs/host-domain`.
+- ⏳ **Pieza 2** — host bronce → **oro Parquet** (`host_domain_v1`, 34 cols). El
+  `bronze_to_gold_converter` de red es `correlation_v1`-específico → host necesita su equivalente.
+- ⏳ **Pieza 3** — host oro → **Kuzu, SU PROPIA BD** (nodos Host/HostEvent/Rule/MitreTechnique,
+  +Control P4). NUNCA el `$KUZU` de red.
+- ⏳ **Bronce REAL** (siguiente batalla, DAY 243) — `destroy&up` + adapter sobre `alerts.json` vivo,
+  clave HMAC compartida real → primeras filas host firmadas nacidas de provisioning.
+- ⏳ **Reproducibilidad** — cablear el adapter host en el camino `destroy&up` (equivalente host de
+  `mitre-start`).
+- ⏳ **Gate** — EMECAS+++ con host verde en `feat/zeek-to-graph` → merge a main.
+
+## Deudas host (registradas)
+
+- **DEBT-HOST-DOMAIN-P2** — `alerts.json` es LIVE y rota; watermark por `(inode, offset)` sin
+  implementar. Hoy se lee el fichero fresco entero (camino reproducible del paper). Pieza posterior.
+- **DEBT-HOST-DOMAIN-P1** — FIM/SCA/rootcheck NO observados en el arranque; se provocan con técnica
+  MITRE host-touching en `mitre-start` (paso 3). Sin eso, el grafo host solo muestra higiene de auth,
+  no "Wazuh cazó el ataque".
+- **DEBT-HOST-DOMAIN-EMECAS-INTEGRATION-001** — EMECAS+++ aún NO modificado/corrido con host; gate
+  obligatorio antes del merge a main.
+- **Guards diferidos `validate` v1 (host)** — `rule_id` no vacío, rango de `rule_level`, formato de
+  `event_id` (`wz1:`+base64). A un commit de contrato posterior, cuando se mida la necesidad.
+- **host-domain-v1-test self-build** — opcional quitar el prereq `: host-domain-v1-build` del target
+  ahora que `wazuh-adapter-build` es el consumidor real (análogo ml-detector↔correlation-v1). No urge.
+- **P4 — nodos Control/cumplimiento** — implementar o diferir; el mapeo (pci_dss/gdpr/hipaa/
+  nist_800_53/tsc/gpg13) YA se captura en el bronce host. Útil para el encuadre hospitalario.
+
+## Deudas vivas de antes (recordatorio)
+
+- **DEBT-WAZUH-AGENT-INSTALL-ORDER-001** — en `destroy&up` desde cero, el manager (`wazuh`,
+  autostart:false) debe estar ARRIBA antes que los agentes o el enroll falla; el orden no lo
+  garantiza el Vagrantfile.
+- **authd abierto** (enrollment sin contraseña) → restringir con `authd.pass`. Familia "dev, no
+  producción", P2/P3.
+- **DEBT-SNIFFER-IP-BYTE-ORDER-001** (lado red) — sigue registrada; no afecta al circuito host.
