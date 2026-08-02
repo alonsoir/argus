@@ -5902,3 +5902,11 @@ a main: EMECAS+++ con host verde en feat/zeek-to-graph.
 
 ### DEBT-WAZUH-AGENT-IN-EACH-PROVISION-001
 Instalar el wazuh-agent en el provision del Vagrantfile de cada componente (no a mano).
+
+
+- DEBT-HOST-ADAPTER-ALERTS-PERMS-001 → CERRADA DAY 244. Provision host-adapter-perms
+  en el bloque wazuh del Vagrantfile (usermod + mkdir + verificacion por estado real).
+  destroy&up en frio -> bronce host REAL sin pasos manuales. Commit <hash>.
+- DEBT-HOST-PIEZA-2-GOLD-001 → CERRADA DAY 244. host-engine/ (converter bronce CSV -> oro
+  Parquet, isla). Puerta HMAC C++ 533/533 (2a impl independiente), oro releible verificado.
+  Commit    95e1e3db..487b4e79  feat/zeek-to-graph -> feat/zeek-to-graph.
