@@ -1385,6 +1385,23 @@ BASHRC_EOF
       /var/ossec/bin/wazuh-control status | head -5 || true
     SHELL
 
+    wazuh.vm.provision "shell", name: "host-adapter-perms", inline: <<-'PERMS_SHELL'
+          set -eu
+          echo "=== host-adapter-perms: vagrant lee alerts.json + buzon host (DEBT-HOST-ADAPTER-ALERTS-PERMS-001) ==="
+          # alerts.json = 640 wazuh:wazuh; el adapter corre como 'vagrant'.
+          # El grupo 'wazuh' lo crea install-wazuh -> esta provision DEPENDE de esa (va despues).
+          usermod -aG wazuh vagrant
+          mkdir -p /vagrant/logs/host-domain
+          # Verificacion por ESTADO real (no 'test -f' ciego): membresia REGISTRADA en /etc/group
+          # (id vagrant la ve al instante; el vagrant ssh post-up ya es sesion fresca -> grupo activo)
+          # y buzon ESCRIBIBLE por vagrant.
+          id vagrant | grep -q '(wazuh)' \
+            || { echo "ERROR: vagrant no quedo en el grupo wazuh (install-wazuh no creo el grupo?)"; exit 1; }
+          sudo -u vagrant test -w /vagrant/logs/host-domain \
+            || { echo "ERROR: /vagrant/logs/host-domain no escribible por vagrant"; exit 1; }
+          echo "=== host-adapter-perms OK (vagrant en grupo wazuh; buzon escribible) ==="
+    PERMS_SHELL
+
     wazuh.vm.provision "shell", name: "adapter-toolchain", inline: ADAPTER_TOOLCHAIN
 
     wazuh.vm.provision "shell", name: "authd-force", inline: <<-'AUTHD_FORCE_SHELL'
