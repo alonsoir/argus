@@ -28,3 +28,24 @@ target_link_directories(host_bronze_to_gold_converter PRIVATE
         ${ARROW_LIBRARY_DIRS} ${PARQUET_LIBRARY_DIRS})
 target_link_libraries(host_bronze_to_gold_converter PRIVATE
         ${ARROW_LIBRARIES} ${PARQUET_LIBRARIES} OpenSSL::Crypto)
+
+# Añadir junto a los find_package existentes (Arrow/Parquet/OpenSSL de Pieza 2):
+find_library(KUZU_LIB kuzu REQUIRED)
+find_path(KUZU_INCLUDE_DIR kuzu.hpp REQUIRED)
+
+# Biblioteca del mapeo puro (sin Kuzu, testeable aislada):
+add_library(host_row STATIC src/host_row.cpp)
+target_include_directories(host_row PUBLIC ${CMAKE_SOURCE_DIR}/include)
+
+# Loader (toca Kuzu + Arrow/Parquet):
+add_executable(host_parquet_to_kuzu_loader tools/host_parquet_to_kuzu_loader.cpp)
+target_include_directories(host_parquet_to_kuzu_loader PRIVATE
+        ${CMAKE_SOURCE_DIR}/include ${KUZU_INCLUDE_DIR} ${ARROW_INCLUDE_DIRS})
+target_link_libraries(host_parquet_to_kuzu_loader PRIVATE
+        host_row ${KUZU_LIB} ${ARROW_LIBRARIES} ${PARQUET_LIBRARIES})
+
+# Test del mapeo (sin Kuzu):
+enable_testing()
+add_executable(test_host_row tests/test_host_row.cpp)
+target_link_libraries(test_host_row PRIVATE host_row)
+add_test(NAME test_host_row COMMAND test_host_row)
