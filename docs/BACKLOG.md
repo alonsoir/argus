@@ -5910,3 +5910,27 @@ Instalar el wazuh-agent en el provision del Vagrantfile de cada componente (no a
 - DEBT-HOST-PIEZA-2-GOLD-001 → CERRADA DAY 244. host-engine/ (converter bronce CSV -> oro
   Parquet, isla). Puerta HMAC C++ 533/533 (2a impl independiente), oro releible verificado.
   Commit    95e1e3db..487b4e79  feat/zeek-to-graph -> feat/zeek-to-graph.
+
+## DAY 245
+
+CIERRA:
+- DEBT-HOST-PIEZA-3-KUZU-001 — ✅ CERRADA. Grafo host oro Parquet → Kuzu, isla en host-engine
+  (schema host_domain_v1.cypher + host_parquet_to_kuzu_loader + host_row + test). Medido en la
+  BD: Host=1, HostEvent=533, Rule=14, MitreTechnique=3; T1548.003 dedup desde 5402+5403; 5715
+  → T1078+T1021 con Lateral Movement. Loader con self-mkdir (cierra fragilidad DAY 228).
+
+NUEVAS (afloradas al construir Pieza 3):
+- DEBT-HOST-LOADER-CYPHER-INTERPOLATION-001 (P2) — el loader construye Cypher por interpolación
+  de strings con escape (cy()), no prepared statements. Suficiente para Wazuh v1; frágil ante
+  full_log adversarial. Endurecer con prepared statements como el sink de red.
+- DEBT-HOST-LOADER-SCHEMA-VALIDATION-001 (P2) — el loader lee las columnas del oro por índice
+  posicional (enum Col) sin validar el schema del Parquet. Un reorden del converter Pieza 2
+  desalinearía en silencio. Misma familia que la fragilidad del loader de red. Validar
+  nombres/tipos al abrir.
+- DEBT-PIPELINE-STATUS-LOGFILES-001 (P3) — enriquecer `pipeline-status` para que liste los
+  ficheros de log actuales de cada componente (tail rápido).
+
+REFINA:
+- DEBT-ADAPTER-AUTOMATION-DOWNSTREAM-001 — el primer corte de etcd-client en los adapters se
+  ADELANTA a pre-main (antes: migración de secretos post-merge). Adapters en pipeline-start +
+  visibles en pipeline-status.
