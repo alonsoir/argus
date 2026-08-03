@@ -1,68 +1,67 @@
-# PROMPT DE CONTINUIDAD — aRGus NDR — DAY 246
+# PROMPT DE CONTINUIDAD — aRGus NDR — DAY 247
 
 ## Punto de entrada (mide, no asumas)
     git log --oneline -6
     git status
     vagrant status
-HEAD = commit de cierre Pieza 3 (DAY 245) + PROMPT/BACKLOG en feat/zeek-to-graph, árbol
-limpio. SIN merge a main. Untracked benigno: build-hostfile.sh, create_wazuh_adapter_skeleton.py,
-verify_host_gold.py (scratch). VMs probablemente aborted tras el sueño del host.
+HEAD = cierres DAY 246: (A) mitre-start clave real + host-engine target WIP + PROMPT/BACKLOG,
+en feat/zeek-to-graph. Untracked scratch benigno: build-hostfile.sh,
+create_wazuh_adapter_skeleton.py, verify_host_gold.py. SIN merge a main. VMs aborted tras el sueño.
 
-## Estado que ordena el día — circuito host COMPLETO, falta integrarlo en el gate
-- ✅ Piezas 0/1/2/3 CERRADAS. El grafo host EXISTE, medido en la BD (no self-report):
-  Host=1, HostEvent=533, Rule=14, MitreTechnique=3; T1548.003 desde 5402+5403 en UN solo
-  nodo (dedup), 5715 → T1078+T1021 con Lateral Movement literal en tactics.
-- ✅ Circuito host de punta a punta e ISLA: alerts.json → bronce (wazuh-adapter) → oro
-  Parquet (host-engine converter) → grafo Kuzu (host_parquet_to_kuzu_loader), su propia BD,
-  NUNCA el $KUZU de red. Loader con self-mkdir (cierra la fragilidad DAY 228).
-- 🔴 LO QUE FALTA: host-engine (converter + loader + test) NO está en el Makefile ni en
-  EMECAS+++. Se compila a mano. Ese es el gate antes del PR a main.
+## Estado que ordena el día — (A) hecha y probada; falta rematarla + host en el gate
+- ✅ (A) CLAVE REAL EN mitre-start: aRGus/suricata/zeek firman el bronce con la clave HMAC
+  REAL de etcd, no toy. Diente DAY 246: head=0450d862, 0 descartes HMAC (2890/81/1255),
+  1123 flujos cross-sensor. Committeada.
+- 🟡 (A) SIN REMATAR (10 min): faltan 2 guards (suricata/zeek converter:
+  `grep -q "descartadas: 0" /tmp/<s>-conv.log || die`, paridad con el de aRGus) + cosméticos
+  (comentario l.54 "clave de juguete" ya es mentira → "clave real"; borrar def huérfana TOY_KEY l.8).
+- 🟡 host-engine EN EL GATE (DEBT-HOST-DOMAIN-EMECAS-INTEGRATION-001): target build/test
+  committeado, VERDE en aislado. FALTA: engancharlo a test-all (l.1236, línea propia — isla,
+  NO test-libs/test-components) + `make emecas+++` verde CON host. Batalla original DAY 246,
+  aparcada. Owed antes del PR a main.
+- 🔴 ÓXIDO MEDIDO DAY 246: el entorno NO es reproducible sin bootstrap. pipeline-start ya no
+  arrastra pipeline-build (Alonso lo quitó hace tiempo) → hoy faltaban libcorrelation_v1.so,
+  ml-detector caído, tools de mitre-start sin construir (4 tropiezos, mismo hueco). emecas SÍ
+  bootstrapea (destroy→up→bootstrap), así que el GATE no se afecta; el problema es correr cosas
+  FUERA de emecas.
 
-## Batalla candidata DAY 246 — EMECAS+++ con host (DEBT-HOST-DOMAIN-EMECAS-INTEGRATION-001)
-Objetivo: cablear la isla host-engine en el Makefile y en el gate; host verde en EMECAS+++.
-1. MEDIR PRIMERO (no asumir): targets actuales del Makefile raíz —
-   `git grep -n 'host-domain-v1\|pipeline-build\|mitre-start\|emecas' -- Makefile` — y cómo
-   se enganchan las libs (patrón host-domain-v1-build/test de Pieza 0) y cómo mitre-start
-   invoca converter+loader de red.
-2. Targets nuevos: `host-engine-build` (vagrant ssh defender → cmake Release + make),
-   `host-engine-test` (: host-engine-build → ctest = test_host_row). Enganchados al grupo de
-   build/test que corresponda, no sueltos.
-3. Una tarea reproducible que lleve alerts.json → bronce → oro → grafo host de una corrida
-   (equivalente host de mitre-start; o `host-graph-start`), para que el dato del grafo host
-   sea generable desde el Makefile (criterio de cierre).
-4. CIERRE con dientes: EMECAS+++ verde CON host en esta rama; los recuentos del grafo host
-   salen de una tarea, no de comandos a mano.
+## Batalla candidata DAY 247 — camino al PR: emecas+++ verde CON host (medir primero)
+0. REMATE de (A) (10 min): pegar los 2 guards + cosméticos + commit. Cierra (A) con dientes.
+1. BASELINE del gate: `make emecas+++` from-scratch SIN host — ¿va verde hoy tras el óxido?
+   Si sí, el óxido fue artefacto de correr-fuera-de-emecas y el gate es sano. Si no, hay rotura
+   real que arreglar antes de meter host. MEDIR, no asumir.
+2. ENGANCHE de host: `host-engine-test` a test-all (l.1236). Confirmar hipótesis
+   kuzu-en-provisioning-de-defender en la 1ª corrida from-scratch (crypto_transport/kuzu ya
+   instalados por pipeline-build en defender).
+3. CIERRE: `make emecas+++` verde CON host → desbloquea el PR de feat a main.
 
-## Arco después (una batalla por sesión) — refinamiento DAY 245
-- etcd-client en los adapters ANTES del PR a main (adelanta la migración de secretos que el
-  roadmap ponía post-main): que traigan la clave HMAC de etcd/Jenkins/Vault en vez de leer
-  ruta/clave del JSON o usar TOY_KEY. Hipótesis: CMakeLists + poco código en el main. MEDIR
-  el coste real antes de prometer que es pequeño.
-- Automatizar aguas abajo: meter los adapters en `pipeline-start` y que aparezcan en
-  `pipeline-status`; enriquecer `pipeline-status` con más info (ficheros de log actuales para
-  `tail` rápido).
-- mitre-start reacciona a Wazuh (DEBT-MITRE-START-WAZUH-REACT-001).
-- EMECAS+++ estable con host + etcd-client probado → PR a main. Resto de migración de
-  secretos (vault-client HTTPS, rotación) post-main.
+## Arco después (una batalla por sesión)
+- (B) adapter AUTÓNOMO (lo que Alonso pedía de fondo): que el adapter se AUTO-obtenga la clave
+  (curl LIGERO a etcd-server /secrets/ml-detector, NO la lib etcd-client pesada — su cadena
+  crypto_transport+seed_client+libsodium-1.0.19-fuente NO está en la VM sensor) + bucle
+  folder-watch + carpeta procesados/. Proyecto multi-sesión (curl=20%, bucle=80%).
+- bootstrap dentro de pipeline-build → entorno reproducible sin ceremonia.
+- mitre-start en emecas+++ como check e2e real (valida PIPELINE e2e, NO self-provisioning del
+  adapter; cuesta zeek en el `up` + tiempo de nmap en CI).
+- Migración secretos "correcta": vault-client HTTPS + etcd-client-solo-liveness + rotación (post-main).
 
 ## Invariantes (no negociar)
-- Medir, no votar. HECHO ≠ SOSPECHADO; cada afirmación a salida de comando / fichero.
-- Un día, una batalla. Vía Appia (bronce/oro = fuente de verdad; el grafo es proyección).
-- Circuito host = ISLA: bronce/oro/grafo/loader/BD propios, corren en defender. NUNCA $KUZU red.
-- No `grep -rn` desde raíz (git grep o apunta al fichero). No encadenar salidas grandes.
-  git add explícito.
-- SIN merge a main hasta EMECAS+++ verde con host en esta rama.
-- Trazabilidad: cada tarea cita su deuda del BACKLOG (BACKLOG↔PROMPT).
+- Medir, no votar. HECHO ≠ SOSPECHADO; cada afirmación a salida de comando/fichero.
+- Un día, una batalla. Vía Appia (bronce/oro = fuente de verdad; grafo = proyección).
+- Circuito host = ISLA (BD/converter/loader propios, en defender, NUNCA $KUZU red).
+- No `grep -rn` desde raíz (git grep o apunta al fichero). No encadenar salidas grandes. git add explícito.
+- SIN merge a main hasta EMECAS+++ verde CON host en esta rama.
+- sed -i de macOS/BSD exige sufijo de backup: `sed -i ''`.
 
-## Deudas vivas (en docs/BACKLOG.md)
-DEBT-HOST-DOMAIN-EMECAS-INTEGRATION-001 (batalla de hoy) ·
-DEBT-HOST-LOADER-CYPHER-INTERPOLATION-001 · DEBT-HOST-LOADER-SCHEMA-VALIDATION-001 ·
-DEBT-MITRE-START-WAZUH-REACT-001 · DEBT-ADAPTER-AUTOMATION-DOWNSTREAM-001 (etcd-client, ahora
-pre-main) · DEBT-PIPELINE-STATUS-LOGFILES-001 · DEBT-HOST-DOMAIN-P1 (Wazuh caza el ataque, no
-higiene) · DEBT-HOST-DOMAIN-P2 (watermark inode,offset).
+## Deudas vivas (docs/BACKLOG.md)
+DEBT-HOST-DOMAIN-EMECAS-INTEGRATION-001 · DEBT-ENV-BOOTSTRAP-NOT-REPRODUCIBLE-001 (nuevo) ·
+DEBT-MITRE-START-GUARDS-SENSOR-001 (nuevo) · DEBT-HMAC-KEY-INSECURE-TRANSPORT-001 ·
+DEBT-TEST-ALL-NOT-STANDALONE-001 (nuevo) · DEBT-TEST-INTEG-SIGN-ABORT-001 (nuevo) ·
+DEBT-SIGN-PLUGINS-ON-BUILD-001 (nuevo) · DEBT-ADAPTER-AUTOMATION-DOWNSTREAM-001 (=B) ·
+DEBT-MITRE-START-WAZUH-REACT-001.
 
 ## Recordatorio de tono
 Alonso pilota; mide contra fichero y pega salida. Compilación DENTRO de la VM (defender para
-host-engine). Rama feat/zeek-to-graph, sin merge a main. Hilos de memoria: [[host-a-kuzu]]
-(Pieza 3 + grafo host), [[host-gold-converter]] (Pieza 2), [[emecas-vagrant]] (gate +
-Vagrantfile), [[hmac-secrets-provisioning]] (etcd-client/secretos), [[cierre-paper]] (roadmap).
+host-engine/tools). Rama feat/zeek-to-graph, sin merge a main. Hilos de memoria:
+[[hmac-secrets-provisioning]] (A/B/secretos), [[emecas-host-integration]] (host en el gate),
+[[host-a-kuzu]] (grafo host), [[emecas-vagrant]] (gate+Vagrantfile), [[cierre-paper]] (roadmap).

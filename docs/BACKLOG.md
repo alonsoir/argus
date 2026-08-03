@@ -5934,3 +5934,32 @@ REFINA:
 - DEBT-ADAPTER-AUTOMATION-DOWNSTREAM-001 — el primer corte de etcd-client en los adapters se
   ADELANTA a pre-main (antes: migración de secretos post-merge). Adapters en pipeline-start +
   visibles en pipeline-status.
+### DEBT-ENV-BOOTSTRAP-NOT-REPRODUCIBLE-001 (P2)
+pipeline-start ya no arrastra pipeline-clean/pipeline-build (se quitó para evitar rebuilds).
+Consecuencia DAY 246: entorno recién despertado no es reproducible sin `bootstrap` manual —
+faltaban libcorrelation_v1.so (test-all + ml-detector caídos) y los tools de mitre-start.
+4 tropiezos el mismo día. Fix: bootstrap como parte de pipeline-build, o declarar/forzar el
+prerequisito. emecas NO se afecta (bootstrapea de por sí).
+
+### DEBT-MITRE-START-GUARDS-SENSOR-001 (P3)
+Los converters de suricata (l.59) y zeek (l.66) en mitre_start.sh no tienen el guard
+`grep -q "descartadas: 0" || die` que aRGus (sección 3) sí tiene → un descarte HMAC silencioso
+pasaría inadvertido. Paridad pendiente. Código medido DAY 246.
+
+### DEBT-TEST-ALL-NOT-STANDALONE-001 (P3)
+test-all asume que bootstrap instaló libcorrelation_v1.so (correlation-v1-test solo hace ctest,
+no install). `make test-all` a pelo peta en correlation-engine-build. Medido DAY 246.
+
+### DEBT-TEST-INTEG-SIGN-ABORT-001 (P3)
+test_integ_sign aborta con `terminate called without an active exception` (en vez de SKIP limpio)
+cuando el plugin .so es symlink colgante, y su exit!=0 NO propaga al make. Medido DAY 246.
+
+### DEBT-SIGN-PLUGINS-ON-BUILD-001 (P3)
+libplugin_xgboost.so quedó sin .sig tras un rebuild → Check 2/8 de test-provision-1 bloquea el
+arranque en modo producción hasta `make sign-plugins` manual. Los plugins deberían firmarse al
+construirse. Medido DAY 246.
+
+### DEBT-HMAC-KEY-INSECURE-TRANSPORT-001 — ACTUALIZACIÓN DAY 246
+(A) cerró el teatro de la toy key: los 3 productores de red firman con la clave HMAC real de
+etcd. PERO el transporte sigue HTTP plano (curl a :2379). Sin cambio: sigue P1. El fix correcto
+(HTTPS/Vault) es post-main.
