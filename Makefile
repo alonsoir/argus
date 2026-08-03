@@ -1233,7 +1233,7 @@ parquet-convert:
 test-parquet: parquet-convert
 	@vagrant ssh -c "cd /vagrant/scripts/parquet && python3 validate_roundtrip.py"
 
-test-all: test-libs test-components test-provision-1 test-invariant-seed plugin-integ-test argus-network-isolate-test test-parquet
+test-all: test-libs test-components test-provision-1 test-invariant-seed plugin-integ-test argus-network-isolate-test test-parquet host-engine-test
 	@echo ""
 	@echo "╔════════════════════════════════════════════════════════════╗"
 	@echo "║  ✅ ALL TESTS COMPLETE                                    ║"
@@ -3150,3 +3150,24 @@ wazuh-adapter-clean:
 	vagrant ssh wazuh -c 'rm -rf /vagrant/wazuh-adapter/build-wazuh'
 
 wazuh-adapter-rebuild: wazuh-adapter-clean wazuh-adapter-build
+
+# ─── host-engine (isla: converter + loader + test_host_row) ────────────────────
+# Self-building (`: host-engine-build`) como host-domain-v1-test (3127): nada en
+# pipeline-build arrastra host-engine (project CMake propio). Corre en defender
+# (VM primaria) -> vagrant ssh -c SIN sufijo de VM; build/ plano vale porque solo
+# defender compila aqui (a diferencia de zeek-adapter, que comparte /vagrant).
+# DEBT-HOST-DOMAIN-EMECAS-INTEGRATION-001 (mitad build+unit).
+.PHONY: host-engine-build host-engine-test host-engine-clean host-engine-rebuild
+host-engine-build:
+	@echo "╔════════════════════════════════════════════════════════════╗"
+	@echo "║  🔨 Building host-engine [VM: defender]                   ║"
+	@echo "╚════════════════════════════════════════════════════════════╝"
+	@vagrant ssh -c 'cd /vagrant/host-engine && rm -rf build && mkdir -p build && cd build && cmake -DCMAKE_BUILD_TYPE=Release .. && make -j4'
+	@echo "✅ host-engine built"
+host-engine-test: host-engine-build
+	@echo "── host-engine: test_host_row ──"
+	@vagrant ssh -c "cd /vagrant/host-engine/build && ctest --output-on-failure"
+host-engine-clean:
+	@vagrant ssh -c "rm -rf /vagrant/host-engine/build"
+	@echo "✅ host-engine cleaned"
+host-engine-rebuild: host-engine-clean host-engine-build host-engine-test
