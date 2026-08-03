@@ -54,16 +54,16 @@ grep -q "descartadas: 0" /tmp/argus-conv.log || die "aRGus: descartadas>0 -> la 
 # 4) Oro de Suricata: adapter alert-only sobre el eve.json vivo (clave de juguete, el loader no verifica HMAC)
 vagrant ssh suricata -c "sudo cp /var/log/suricata/eve.json $LAB/eve-$STAMP.json && sudo chmod 644 $LAB/eve-$STAMP.json"
 vagrant ssh suricata -c "python3 -c \"import json; json.dump({'base_dir':'$LAB','node_id':'cpp_sniffer_v33_day12','input_path':'logs/lab/eve-$STAMP.json','hmac_key_env':'ARGUS_BRONZE_HMAC_KEY_HEX'}, open('$LAB/suri-adapter-$STAMP.json','w'))\""
-vagrant ssh suricata -c "cd /vagrant && ARGUS_BRONZE_HMAC_KEY_HEX=$TOY_KEY $ADAPTER $LAB/suri-adapter-$STAMP.json"
+vagrant ssh suricata -c "cd /vagrant && ARGUS_BRONZE_HMAC_KEY_HEX=$KEY $ADAPTER $LAB/suri-adapter-$STAMP.json"
 SURI_CSV=$(vagrant ssh suricata -c "ls -t $LAB/suricata-*.csv | head -1" 2>/dev/null | tr -d '\r')
-vagrant ssh defender -c "cd $CE && ARGUS_BRONZE_HMAC_KEY_HEX=$TOY_KEY ./bronze_to_gold_converter $SURI_CSV $LAB/suricata-$STAMP.avro $LAB/suricata-$STAMP.parquet"
+vagrant ssh defender -c "cd $CE && ARGUS_BRONZE_HMAC_KEY_HEX=$KEY ./bronze_to_gold_converter $SURI_CSV $LAB/suricata-$STAMP.avro $LAB/suricata-$STAMP.parquet"
 
 
 # 4b) Oro de Zeek: conn.log de la ventana (ya cosechado) -> adapter (toy key inline) -> converter
 vagrant ssh zeek -c "python3 -c \"import json; json.dump({'base_dir':'$LAB','node_id':'cpp_sniffer_v33_day12','input_path':'logs/lab/zeek-$STAMP.conn.log','hmac_key_env':'ARGUS_BRONZE_HMAC_KEY_HEX'}, open('$LAB/zeek-adapter-$STAMP.json','w'))\""
-vagrant ssh zeek -c "cd /vagrant && ARGUS_BRONZE_HMAC_KEY_HEX=$TOY_KEY $ZEEK_ADAPTER $LAB/zeek-adapter-$STAMP.json"
+vagrant ssh zeek -c "cd /vagrant && ARGUS_BRONZE_HMAC_KEY_HEX=$KEY $ZEEK_ADAPTER $LAB/zeek-adapter-$STAMP.json"
 ZEEK_CSV=$(vagrant ssh zeek -c "ls -t $LAB/zeek-*.csv | head -1" 2>/dev/null | tr -d '\r')
-vagrant ssh defender -c "cd $CE && ARGUS_BRONZE_HMAC_KEY_HEX=$TOY_KEY ./bronze_to_gold_converter $ZEEK_CSV $LAB/zeek-$STAMP.avro $LAB/zeek-$STAMP.parquet"
+vagrant ssh defender -c "cd $CE && ARGUS_BRONZE_HMAC_KEY_HEX=$KEY ./bronze_to_gold_converter $ZEEK_CSV $LAB/zeek-$STAMP.avro $LAB/zeek-$STAMP.parquet"
 # 5) Kuzu fresca + carga de los dos oros + poblador CORRELATES_FLOW
 vagrant ssh defender -c "mkdir -p /vagrant/logs/day234-kuzu"
 vagrant ssh defender -c "cd $CE && ./parquet_to_kuzu_loader $LAB/argus-$STAMP.parquet $KUZU $SCHEMA"
