@@ -1,67 +1,55 @@
-# PROMPT DE CONTINUIDAD — aRGus NDR — DAY 247
+# PROMPT DE CONTINUIDAD — aRGus NDR — DAY 248
 
 ## Punto de entrada (mide, no asumas)
     git log --oneline -6
-    git status
+    git branch --show-current
+    git tag | grep pre-release
     vagrant status
-HEAD = cierres DAY 246: (A) mitre-start clave real + host-engine target WIP + PROMPT/BACKLOG,
-en feat/zeek-to-graph. Untracked scratch benigno: build-hostfile.sh,
-create_wazuh_adapter_skeleton.py, verify_host_gold.py. SIN merge a main. VMs aborted tras el sueño.
+Tras DAY 247: feat/zeek-to-graph MERGEADA a main, tag pre-release-0.0.1 sobre main.
+Si sigues en feat, `git checkout main && git pull`. VMs probablemente aborted.
 
-## Estado que ordena el día — (A) hecha y probada; falta rematarla + host en el gate
-- ✅ (A) CLAVE REAL EN mitre-start: aRGus/suricata/zeek firman el bronce con la clave HMAC
-  REAL de etcd, no toy. Diente DAY 246: head=0450d862, 0 descartes HMAC (2890/81/1255),
-  1123 flujos cross-sensor. Committeada.
-- 🟡 (A) SIN REMATAR (10 min): faltan 2 guards (suricata/zeek converter:
-  `grep -q "descartadas: 0" /tmp/<s>-conv.log || die`, paridad con el de aRGus) + cosméticos
-  (comentario l.54 "clave de juguete" ya es mentira → "clave real"; borrar def huérfana TOY_KEY l.8).
-- 🟡 host-engine EN EL GATE (DEBT-HOST-DOMAIN-EMECAS-INTEGRATION-001): target build/test
-  committeado, VERDE en aislado. FALTA: engancharlo a test-all (l.1236, línea propia — isla,
-  NO test-libs/test-components) + `make emecas+++` verde CON host. Batalla original DAY 246,
-  aparcada. Owed antes del PR a main.
-- 🔴 ÓXIDO MEDIDO DAY 246: el entorno NO es reproducible sin bootstrap. pipeline-start ya no
-  arrastra pipeline-build (Alonso lo quitó hace tiempo) → hoy faltaban libcorrelation_v1.so,
-  ml-detector caído, tools de mitre-start sin construir (4 tropiezos, mismo hueco). emecas SÍ
-  bootstrapea (destroy→up→bootstrap), así que el GATE no se afecta; el problema es correr cosas
-  FUERA de emecas.
+## Estado que ordena el día — pipeline cerrado y etiquetado; empieza el proyecto que queda
+- ✅ Pipeline multi-sensor COMPLETO y en main: aRGus/Suricata/Zeek/Wazuh → MITRE (nmap) →
+  DOS grafos Kuzu (red correlation_v1 + host host_domain_v1). Integridad HMAC real e2e en los
+  3 sensores de red (A, con guards). host-engine en el gate. emecas+++ VERDE from-scratch (2h01m).
+- ✅ Tag pre-release-0.0.1 = hito del PIPELINE. NO es el estado de datos del paper.
+- 🎯 PROYECTO QUE QUEDA: herramienta(s) de generación de DATASETS desde los grafos.
+  Prerequisito de los datos del paper y del tag 0.0.2. Ver [[dashboard-export]] para el scope
+  ya decidido (DAY 244): serie de herramientas → CSV de mediciones sobre el grafo de RED,
+  rumbo a Hugging Face con gate de calidad. El FIN real: afinar el pipeline como instrumento
+  científico en las tres lentes (aRGus/Suricata/Zeek); los datasets son subproducto de esa calidad.
 
-## Batalla candidata DAY 247 — camino al PR: emecas+++ verde CON host (medir primero)
-0. REMATE de (A) (10 min): pegar los 2 guards + cosméticos + commit. Cierra (A) con dientes.
-1. BASELINE del gate: `make emecas+++` from-scratch SIN host — ¿va verde hoy tras el óxido?
-   Si sí, el óxido fue artefacto de correr-fuera-de-emecas y el gate es sano. Si no, hay rotura
-   real que arreglar antes de meter host. MEDIR, no asumir.
-2. ENGANCHE de host: `host-engine-test` a test-all (l.1236). Confirmar hipótesis
-   kuzu-en-provisioning-de-defender en la 1ª corrida from-scratch (crypto_transport/kuzu ya
-   instalados por pipeline-build en defender).
-3. CIERRE: `make emecas+++` verde CON host → desbloquea el PR de feat a main.
+## Batalla candidata DAY 248 — arrancar la herramienta de datasets (medir primero)
+1. MEDIR qué expone el grafo: leer schema.cypher (correlation-engine/schema/) y correr kuzu_query
+   sobre una BD de red fresca (la última de mitre-start sirve) para inventariar nodos/aristas/
+   propiedades REALES consultables. No diseñar el export sin ver qué hay.
+2. Decidir la PRIMERA medición-dataset (una, no todas): p.ej. por cada NetworkFlow, sus features
+    + source_sensor + si está corroborado cross-sensor. CSV plano, reproducible desde un comando.
+3. Esqueleto de la herramienta como target del Makefile (reproducibilidad = propiedad del repo):
+   `dataset-export` que corre kuzu_query(s) → CSV en ruta canónica. Empezar por el grafo de RED.
+4. La herramienta es la cazadora de bugs desconocidos: al extraer sistemáticamente, anota toda
+   inconsistencia (p.ej. el conocido argus N filas→M TelemetryEvent — ¿pérdida real o mapeo?).
 
-## Arco después (una batalla por sesión)
-- (B) adapter AUTÓNOMO (lo que Alonso pedía de fondo): que el adapter se AUTO-obtenga la clave
-  (curl LIGERO a etcd-server /secrets/ml-detector, NO la lib etcd-client pesada — su cadena
-  crypto_transport+seed_client+libsodium-1.0.19-fuente NO está en la VM sensor) + bucle
-  folder-watch + carpeta procesados/. Proyecto multi-sesión (curl=20%, bucle=80%).
-- bootstrap dentro de pipeline-build → entorno reproducible sin ceremonia.
-- mitre-start en emecas+++ como check e2e real (valida PIPELINE e2e, NO self-provisioning del
-  adapter; cuesta zeek en el `up` + tiempo de nmap en CI).
-- Migración secretos "correcta": vault-client HTTPS + etcd-client-solo-liveness + rotación (post-main).
+## Deudas DIFERIDAS post-0.0.1 (apuntadas, NO bloqueantes)
+DEBT-HMAC-KEY-INSECURE-TRANSPORT-001 (transporte HMAC HTTP plano; fix = Vault HTTPS/auth/leases) ·
+Vault productivo · rotación de claves real · fault-injection real ·
+DEBT-ENV-BOOTSTRAP-NOT-REPRODUCIBLE-001 (pipeline-start no arrastra build) ·
+DEBT-ADAPTER-AUTOMATION-DOWNSTREAM-001 (B: adapter autónomo — auto-obtención curl + folder-watch
++ procesados/) · DEBT-MITRE-START-WAZUH-REACT-001 · bugs menores del harness
+  (test_integ_sign abort, sign-plugins manual tras rebuild).
 
 ## Invariantes (no negociar)
 - Medir, no votar. HECHO ≠ SOSPECHADO; cada afirmación a salida de comando/fichero.
 - Un día, una batalla. Vía Appia (bronce/oro = fuente de verdad; grafo = proyección).
-- Circuito host = ISLA (BD/converter/loader propios, en defender, NUNCA $KUZU red).
-- No `grep -rn` desde raíz (git grep o apunta al fichero). No encadenar salidas grandes. git add explícito.
-- SIN merge a main hasta EMECAS+++ verde CON host en esta rama.
-- sed -i de macOS/BSD exige sufijo de backup: `sed -i ''`.
-
-## Deudas vivas (docs/BACKLOG.md)
-DEBT-HOST-DOMAIN-EMECAS-INTEGRATION-001 · DEBT-ENV-BOOTSTRAP-NOT-REPRODUCIBLE-001 (nuevo) ·
-DEBT-MITRE-START-GUARDS-SENSOR-001 (nuevo) · DEBT-HMAC-KEY-INSECURE-TRANSPORT-001 ·
-DEBT-TEST-ALL-NOT-STANDALONE-001 (nuevo) · DEBT-TEST-INTEG-SIGN-ABORT-001 (nuevo) ·
-DEBT-SIGN-PLUGINS-ON-BUILD-001 (nuevo) · DEBT-ADAPTER-AUTOMATION-DOWNSTREAM-001 (=B) ·
-DEBT-MITRE-START-WAZUH-REACT-001.
+- Reproducibilidad = propiedad del repo: todo dato del paper, generable por un comando del Makefile.
+- Grafo RED = fresco por medición; grafo HOST = nombre estable (acumular vs por-corrida, pendiente).
+- No datasets per se: el fin es el instrumento; los datasets salen cuando pasen el gate de calidad
+  (irán a Hugging Face solo entonces). NO entregar el pcap-replay CTU (check de fontanería, no deliverable).
+- sed -i de macOS/BSD exige sufijo de backup: `sed -i ''`. Alonso no tiene str_replace: entregar
+  script parcheador (idempotente, ancla por texto) o fichero completo.
 
 ## Recordatorio de tono
-Alonso pilota; mide contra fichero y pega salida. Compilación DENTRO de la VM (defender para
-host-engine/tools). Rama feat/zeek-to-graph, sin merge a main. Hilos de memoria:
-[[hmac-secrets-provisioning]] (A/B/secretos), [[emecas-host-integration]] (host en el gate),
-[[host-a-kuzu]] (grafo host), [[emecas-vagrant]] (gate+Vagrantfile), [[cierre-paper]] (roadmap).
+Alonso pilota; mide contra fichero y pega salida. Ya en main (post-merge). Hilos de memoria:
+[[dashboard-export]] (datasets, scope DAY 244), [[cierre-paper]] (roadmap + tesis honesta del paper),
+[[parquet-a-kuzu]] (loader/consulta del grafo red), [[host-a-kuzu]] (grafo host),
+[[hmac-secrets-provisioning]] (A hecha / B pendiente / secretos).

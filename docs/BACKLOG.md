@@ -5963,3 +5963,32 @@ construirse. Medido DAY 246.
 (A) cerró el teatro de la toy key: los 3 productores de red firman con la clave HMAC real de
 etcd. PERO el transporte sigue HTTP plano (curl a :2379). Sin cambio: sigue P1. El fix correcto
 (HTTPS/Vault) es post-main.
+
+### DEBT-HOST-DOMAIN-EMECAS-INTEGRATION-001 — RESUELTA (DAY 247)
+host-engine (converter+loader+test_host_row) enganchado a test-all (Makefile:1236) y verde
+dentro de emecas+++ from-scratch (2h01m). Provisioning de defender confirmado con arrow/parquet/
+openssl/kuzu para compilar el engine sin instalar nada. Bloqueador del PR: eliminado.
+
+### DEBT-MITRE-START-GUARDS-SENSOR-001 — RESUELTA (DAY 247)
+Converters suricata (l.59) y zeek (l.66) ahora con guard `grep -q "descartadas: 0" || die`,
+paridad con aRGus. Commit f2e606e5.
+
+### DEBT-HMAC-KEY-INSECURE-TRANSPORT-001 (P1) — DIFERIDA post-0.0.1
+(A) cerró el teatro de la toy key: los 3 sensores de red firman con la clave HMAC REAL de etcd
+(head 0450d862, 0 descartes). PERO el transporte sigue HTTP plano (curl a :2379). Fix correcto:
+Vault HTTPS/auth/leases. Feature diferida conscientemente; documentada en el PR y el paper.
+
+### DEBT-ENV-BOOTSTRAP-NOT-REPRODUCIBLE-001 (P2) — DIFERIDA
+pipeline-start ya no arrastra pipeline-clean/pipeline-build → entorno no reproducible sin bootstrap
+manual. Mordió 4× el DAY 246 (test-all, ml-detector, tools de mitre-start). emecas NO se afecta
+(bootstrapea de por sí). Fix: bootstrap como parte de pipeline-build, o declarar/forzar el prereq.
+
+### DEBT-TEST-ALL-NOT-STANDALONE-001 (P3) · DEBT-TEST-INTEG-SIGN-ABORT-001 (P3) · DEBT-SIGN-PLUGINS-ON-BUILD-001 (P3)
+Fricciones de entorno caliente (DAY 246), NO fragilidad del gate — emecas from-scratch las resuelve.
+test-all asume bootstrap; test_integ_sign aborta (terminate) en vez de skip y no propaga exit!=0;
+xgboost pide sign-plugins manual tras rebuild. Menores, diferidas.
+
+### FEATURES DIFERIDAS post-pre-release-0.0.1 (roadmap "avanzar el pipeline")
+Vault productivo · rotación de claves real · fault-injection real · transporte HMAC seguro ·
+DEBT-ADAPTER-AUTOMATION-DOWNSTREAM-001 (B: adapter autónomo) · DEBT-MITRE-START-WAZUH-REACT-001.
+No bloquean el pre-release; un pre-release espera tener deudas nombradas.
