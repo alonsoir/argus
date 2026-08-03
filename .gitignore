@@ -326,9 +326,13 @@ fix_flujo_b_e2e_test_order.py
 write_day209_continuity.py
 ml-detector/tests/bench_internal_extractor.cpp
 day222_*.py
-day222_*.py
 
 # Scratch de sesión — volcados de terminal para pegar en el chat (DAY 223)
 temporal.md
 tools/temporal.md
 tools/scratch/
+
+# El .deb del agente Wazuh va al repo (provisioning reproducible), pese al *.deb global
+!provisioning/wazuh/*.deb
+
+# El .deb del agente Wazuh va al repo (provisioning reproducible), pese al *.deb global

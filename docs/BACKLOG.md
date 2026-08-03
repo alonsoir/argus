@@ -5581,3 +5581,414 @@ El esquema `timestamp_(src^dst)` colisiona bajo scan: muchas filas del mismo seg
 **Componente:** (sin target) — futuro `make fetch-datasets`
 
 El baseline reproducible es `destroy -f && up` desde cero. `mitre-start` NO necesita datasets (genera su tráfico con `nmap -A` en vivo), pero los targets que respaldan los números de ML del paper (transferencia CICIDS2017→Neris 0.0001, PROBE 0, comparación de 3 paradigmas) consumen CTU-13 Neris y CICIDS2017, hoy en `/vagrant/datasets/` a mano. Para que "reproducible = un comando" cubra la ruta de eval hace falta `fetch-datasets` (descarga desde las URLs canónicas de Stratosphere IPS / UNB + verificación de checksum). Separado de mitre-start; solo la ruta de eval depende de él.
+
+## 🆕 Entradas DAY 235
+
+### DEBT-DOWNSTREAM-INGESTION-NOT-ORCHESTRATED-001
+Severidad: 🟠 P2 · Abierto DAY 235
+El camino aguas abajo (adapters de sensor → bronce → oro/Parquet → Kuzu → grafo) se
+invoca A MANO, binario a binario (así se corrió el zeek_adapter en DAY 235). Falta un
+COMPONENTE que corra full-time y unifique/gestione la ingesta de todos los componentes
+aguas abajo hasta el grafo — responsable de que el grafo se mantenga actualizado y de que
+los datos lleguen al futuro dashboard. Compatible con la decisión DAY 222 (sin switches en
+JSON, grafo data-driven): es plano de CONTROL (mantiene el flujo corriendo), no de datos.
+Pendiente: diseño (¿demonio? ¿watcher inotify como el correlation-engine, o scheduler?
+¿qué dispara cada etapa?) y su puerta de Consejo.
+
+### DEBT-ZEEK-ADAPTER-CONFIG-SURICATA-RESIDUE-001
+Severidad: 🟢 P3 · Abierto DAY 235
+zeek-adapter/config/zeek_adapter.json (generado por el scaffold) tiene input_path
+apuntando a logs/day225-zeek-neris/eve.json — resto de Suricata y path inexistente. El
+binario lo ignora si recibe la entrada por arg2, pero el default es incorrecto. Corregir a
+la fuente Zeek (conn.log) antes del uso automatizado. Primera tarea de DAY 236.
+
+### DEBT-ZEEK-PROTO-CASE-001
+Severidad: 🟢 P3 · Abierto DAY 235 (decisión de diseño abierta)
+Zeek emite proto en minúsculas (tcp/udp/icmp); Suricata lo dio en mayúsculas (TCP). No
+afecta a la convergencia (protocol NO entra en flow_uid), pero la propiedad `protocol` del
+nodo NetworkFlow podría oscilar entre sensores según el orden de escritura del MERGE. El
+bronce de DAY 235 ya lleva minúsculas. Decidir normalización (¿uppercase canónico en todos
+los adapters? ¿el grafo normaliza?) antes de que se fije en más bronce.
+
+### DEBT-SCAFFOLD-GUIDANCE-SURICATA-CENTRIC-001
+Severidad: 🔵 P4 · Abierto DAY 235
+tools/scaffold_adapter.py genera un to_row.hpp con firmas SURICATA-shaped (parse_iso8601,
+make_event_id de 4 args, to_row de 2 args) y una guía de pasos manuales que asume JSON/
+eve.json/event_type. Para sensores TSV (Zeek) no aplica: hubo que reescribir
+to_row.hpp/.cpp/test y adaptar main.cpp. Genericizar el molde y los pasos manuales para que
+el andamiaje no arrastre supuestos de Suricata.
+
+# 🆕 Entradas DAY 236 — para docs/BACKLOG.md
+
+## ✅ RESUELTAS
+- **DEBT-ZEEK-ADAPTER-CONFIG-SURICATA-RESIDUE-001 (P3)** — RESUELTA en `1eca3ca0`.
+  `config/zeek_adapter.json` corregido: `input_path` → `/vagrant/logs/day235-zeek-neris/conn.log`
+  (era `logs/day225-zeek-neris/eve.json`, resto Suricata inexistente); `node_id` se mantiene
+  `cpp_sniffer_v33_day12` (D2, comparte punto de observación con aRGus); `hmac_key_env` es el
+  NOMBRE de la variable de entorno, no su valor (el binario hace `getenv(nombre)`).
+
+## 🆕 NUEVAS
+- **DEBT-MITRE-ZEEK-CONN-NOT-WINDOWED-001 (P3)** — análogo de
+  DEBT-MITRE-SURICATA-EVE-NOT-WINDOWED-001. Cuando Zeek entre en `mitre-start`, su `conn.log`
+  acumulará conexiones entre corridas igual que el `eve.json`. El adapter necesita filtrar a
+  `mtime>T0` o cada run arrastra el tráfico del anterior. El baseline `destroy -f && up` lo
+  neutraliza (nace vacío) → es hardening para correr en caliente, NO bloqueo del MVP.
+- **DEBT-FLOWUID-INVARIANT-DOC-DRIFT-001 (P4)** — el invariante escrito
+  "flow_uid = hash(node_id ‖ community_id), sin tiempo (Opción B)" NO coincide con el código.
+  `compute_flow_uid` (flow_uid.hpp:53) hashea con BLAKE2b
+  `encode_flow_input(node_id, community_id, flow_start_window, seq_in_window)` — el window Y el
+  seq SÍ entran en la preimagen (medido DAY 236: 17 call sites, todas 3-arg, incl.
+  bronze_to_gold_converter.cpp:174). La deriva es BENIGNA para el mecanismo (el modelo cross-sensor
+  de DAY 232 se apoya justamente en que el window separe los nodos de sensores con distinto reloj),
+  pero es una afirmación falsa en docs/paper. Corregir el invariante para que refleje el código.
+
+## 🔁 RECORDATORIOS (abiertas — elevar visibilidad para DAY 237)
+- **DEBT-DOWNSTREAM-INGESTION-NOT-ORCHESTRATED-001 (P2)** — REFORZADA. El tramo bronce→oro→Kuzu de
+  Zeek se corrió A MANO, binario a binario (adapter → converter → loader → kuzu_query). Falta el
+  orquestador full-time. `mitre-start` es el candidato natural a absorber esta orquestación.
+- **DEBT-ZEEK-PROTO-CASE-001 (P3, decisión abierta)** — Zeek escribe `proto` en minúsculas (`tcp`);
+  Suricata en mayúsculas (`TCP`). Irrelevante para flow_uid, pero cuando ambos escriban al MISMO
+  `NetworkFlow` en la BD compartida de mitre-start, la propiedad `protocol` del nodo puede oscilar
+  según el orden de escritura (`ON CREATE SET`: gana el primero). Decidir antes del cross-sensor:
+  normalizar a un caso, o documentar que `protocol` es "sensor-first".
+- **DEBT-SCAFFOLD-GUIDANCE-SURICATA-CENTRIC-001 (P4)** — la guía embebida del scaffold asume
+  JSON/nlohmann; no aplica a sensores TSV. Relevante al generar el adapter de Wazuh.
+
+## 📊 HALLAZGO PARA EL PAPER (no es deuda)
+- Censo del grafo de Zeek: **31.735 TelemetryEvent → 31.735 NetworkFlow (1:1, cero colapso)**,
+  frente a Suricata **2.870 alertas → 775 NetworkFlow**. El ratio evento/flujo es propiedad de la
+  granularidad de la fuente (stream de alertas agrupa varias por conexión; resumen de conexiones da
+  una fila por conexión), no del diseño. El reuso de community_id (~16,7% en el Neris, DAY 225) NO
+  desaparece: el window lo desambigua en flujos distintos → aflora en `CORRELATES_FLOW` (correlación
+  por community_id), no en la identidad del nodo. flow_uid de la fila diana verificado bit a bit
+  contra el recompute del converter (fontanería converter→loader→sink cuadra al bit).
+
+## 🆕 Entradas DAY 237 — Zeek en mitre-start (los tres sensores en un grafo)
+
+Contexto: `make mitre-start` corre ahora los TRES sensores (aRGus + Suricata + Zeek) de punta a
+punta a una BD Kuzu compartida, cero comandos manuales. Zeek entra vía zeekctl LIVE sobre eth1
+(intnet). Titular honesto medido: **44 flujos corroborados por los tres sensores** (estable con
+DAY 233); **1089** = acuerdo de community_id implementación-independiente aRGus↔Zeek (validación del
+estándar, no "detección corroborada").
+
+### Resueltas / neutralizadas
+- ✅ **DEBT-MITRE-ZEEK-CONN-NOT-WINDOWED-001 (P3)** — NEUTRALIZADA por el `zeekctl deploy` fresco en
+  mitre-start: el deploy hace stop+start interno → el conn.log del spool nace vacío ~T0 → windowing
+  por construcción. Queda como hardening OPCIONAL (para correr en caliente sin `destroy -f && up`),
+  NO bloqueo. Medido DAY 237.
+
+### Nuevas
+- 🆕 **DEBT-ZEEK-WEBSOCKETS-MISSING-001 (P4)** — la VM `zeek` no tiene el módulo Python `websockets`
+  → zeekctl arranca con warning y sus comandos `print` / `netstats` quedan no-funcionales
+  (introspección en vivo del nodo: contadores de paquetes, drops de captura). NO afecta a la captura
+  (conn.log se escribe igual, medido: 1126 filas) ni al pipeline. Impacto: el día que haya que
+  verificar que Zeek no dropea paquetes durante un escaneo, `netstats` es la herramienta y hoy está
+  muerta. Arreglo: añadir `websockets>=11.0` al provisioning de zeek (o al bloque ADAPTER_TOOLCHAIN).
+
+### Reconfirmadas / reforzadas
+- **DEBT-EVENT-ID-COLLISION-001 (P2)** — reconfirmada DAY 237: aRGus 2554 filas de bronce → solo 1466
+  TelemetryEvent (~1088 colapsados por `timestamp_(src^dst)` bajo carga de scan). NO afecta el titular
+  (la correlación va por community_id) pero pierde nodos de aRGus. Data-quality.
+- **DEBT-MITRE-SURICATA-EVE-NOT-WINDOWED-001 (P3)** — reconfirmada: en caliente el eve.json acumulado
+  (162 alertas con residuo pre-T0) infla el CENSO de nodos de Suricata, pero NO el titular — las
+  alertas pre-T0 no tienen pareja windowed en aRGus/Zeek (que solo ven la ventana del ataque), así que
+  no corroboran (medido DAY 237: 44 corroborados de 162). Mismo hardening que el windowing de Zeek.
+- **DEBT-DOWNSTREAM-INGESTION-NOT-ORCHESTRATED-001 (P2)** — reducida, NO cerrada: mitre-start ya
+  automatiza los TRES sensores E2E, pero sigue siendo un one-shot (dispara → mide → termina), no el
+  orquestador full-time / plano de control continuo que mantendría el grafo vivo para el dashboard.
+- **DEBT-FLOWUID-INVARIANT-DOC-DRIFT-001 (P4)** — abierta: el invariante "flow_uid sin tiempo, Opción B"
+  de docs/prompt/paper NO coincide con el código (flow_uid.hpp:53 hashea `flow_start_window`). Corregir
+  la documentación al código, no al revés.
+- **DEBT-ZEEK-PROTO-CASE-001 (P3)** — abierta: proto en minúsculas (Zeek) vs mayúsculas (Suricata). No
+  medido DAY 237 si la propiedad `protocol` del nodo osciló en el grafo compartido; decidir antes de
+  pulir el cross-sensor para el paper.
+
+### Notas para EMECAS+++ (cuando estén los 4 sensores, en rama feat/zeek-to-graph)
+- Promoción de `mitre-start` a tarea de EMECAS+++: test de aceptación `destroy -f && up` desde cero
+  (baseline limpio → censos limpios de un solo ataque, sin residuo) + gate auto-verify con la relación
+  honesta `titular_grafo ≤ intersección_grep` (`>` = bug de consulta, rojo; `<` = colisión event_id,
+  WARN+log NO abort; `==` verde). NO clavarlo como igualdad estricta.
+- Decisión DAY 237: probar la nueva versión de EMECAS+++ en la rama de trabajo ANTES de mergear a main.
+
+# BACKLOG — sección DAY 238 (añadir a docs/BACKLOG.md)
+
+> Wazuh integrado en el laboratorio como dominio de HOST (no de red). Manager + 4 agentes
+> enrolados; instalación de agentes codificada en el Vagrantfile. Rama `feat/zeek-to-graph`,
+> commit `d31173ea`.
+
+## Resumen de lo HECHO y medido (DAY 238)
+- Reencuadre confirmado contra fichero: **Wazuh es host-domain**, no un 4º sensor de red. El
+  provisioning instala `wazuh-manager` puro; `alerts.json` = eventos de host (FIM, SCA cis_debian12,
+  rootcheck, syscollector, PAM, journald); `community_id` = 0 sobre 520 eventos. Va a su propio grafo /
+  su propia BD Kuzu. Reconfirma DEBT-HOST-DOMAIN-CONTRACT-001 y la decisión DAY 225. Es la mitad
+  EDR/host del híbrido (ADR-046); el pipeline NDR de red quedó cerrado en DAY 237 con 3 sensores.
+- Manager `wazuh` (4.14.7) + CUATRO agentes enrolados y Active: `001 defender · 002 client ·
+  003 suricata · 005 zeek`. Canal agente→manager confirmado E2E (alerts.json sube en vivo).
+- Vagrantfile: constante `WAZUH_AGENT_INSTALL` + provision `wazuh-agent` en las 4 VMs de agente
+  (dpkg del `.deb` cacheado en `/vagrant`, nombre por `env AGENT_NAME`, manager excluido). `ruby -c` /
+  `vagrant validate` OK. Instalación reproducible PROBADA (`destroy&up zeek` completó desde provisioning).
+- Herramientas nuevas: `tools/add_wazuh_agents.py` (inserta agentes en Vagrantfile) y
+  `tools/fix_authd_force.py` (política force del manager). Ambas ancladas/idempotentes/con backup.
+
+## Deudas NUEVAS (DAY 238)
+
+### DEBT-WAZUH-DEB-NOT-IN-REPO-001 (P1)
+El Vagrantfile referencia `provisioning/wazuh/wazuh-agent_4.14.7-1_amd64.deb`, pero el `.deb` está
+**gitignored / sin commitear** (no salió en el `git status` del cierre; el commit `d31173ea` solo
+metió Vagrantfile + los 2 scripts). El `.deb` vive en el disco de Alonso vía carpeta sincronizada, así
+que funciona LOCAL, pero en un clon limpio la guarda del provision `wazuh-agent` hace `exit 1` y el
+agente no se instala → "reproducible en mi máquina", justo lo que la batalla A venía a evitar.
+Resolver: opción (i) `git add -f provisioning/wazuh/*.deb` (binario en git, versión clavada,
+reproducible desde clon; recomendada) o (ii) descarga-una-vez desde una VM con internet con guarda
+`[ -f ] ||`. Hermano de la deuda de datasets (pcap Neris, sin resolver desde DAY 234): el patrón que se
+elija aquí sirve para ambos. BLOQUEA el cierre honesto de A.
+
+### DEBT-WAZUH-AUTHD-FORCE-NOT-PROVISIONED-001 — ✅ RESUELTA (DAY 239)
+**Estado:** RESUELTA. La política `<force>` del authd del manager (reemplazar-siempre) se
+codificó en el provisioning como provision `authd-force` en el bloque `wazuh` del Vagrantfile
+(tras `adapter-toolchain`): corre `tools/fix_authd_force.py` + `systemctl restart wazuh-manager`
++ verificación fail-loud del marcador `<disconnected_time enabled="no">0` en `ossec.conf`.
+  **Evidencia (medida, no supuesta):**
+- `destroy&up wazuh` desde cero → provision verde (`=== authd-force OK ===`); un manager nace
+  con `force` codificada, sin pasos manuales.
+- Prueba de enroll: manager fresco → `manage_agents -l` = `ID 001, Name zeek` (enroll limpio en
+  registro vacío). Re-imaging con manager VIVO y zeek ya registrado (el escenario que en DAY 238
+  rebotaba con `Duplicate agent name: zeek`) → 2ª `destroy -f zeek && up zeek` SIN error,
+  `manage_agents -l` = un solo `ID 002, Name zeek` (`force` reemplazó el registro viejo).
+  **Commit:** `48fa558f` (feat/zeek-to-graph). Cierra la batalla A.
+  **Lección anexa:** no sondear liveness de daemons con `wazuh-control status` bajo `set -o pipefail`
+  (sale exit≠0 por daemons opcionales caídos → falso negativo aunque el grep case). La v1/v2 del
+  provision cayeron por esto; la v3 verifica solo el marcador en la config y deja la prueba de authd
+  al enroll E2E.
+
+### DEBT-WAZUH-AUTHD-NO-PASSWORD-001 (P3)
+El enrollment del manager es SIN contraseña (`authd.pass` ausente) → cualquier host del intnet puede
+enrolarse, y todos los agentes salen `IP: any`. Aceptable en laboratorio; misma familia "dev, no
+producción" que la toy key HMAC y el `curl` inseguro al etcd. Material honesto para la sección de
+despliegue Wazuh del paper. Se restringe con una `authd.pass` en el manager.
+
+### DEBT-WAZUH-AGENT-INSTALL-ORDER-001 (P3)
+En un `destroy&up`-desde-cero, el manager `wazuh` (autostart:false) debe estar ARRIBA antes que los
+agentes para que el enroll no falle por manager ausente. El orden de bring-up no lo garantiza el
+Vagrantfile (es manual/script). Relevante para la promoción de `mitre-start` a EMECAS+++ con los
+sensores (decisión DAY 234): el gate tendrá que orquestar el orden manager→agentes.
+
+## Deudas relacionadas ya existentes (no duplicar)
+- **DEBT-HOST-DOMAIN-CONTRACT-001** — contrato `host_domain_v1` (Wazuh) separado de `correlation_v1`.
+  Reconfirmada por medida DAY 238: Wazuh es host-domain, su grafo/BD propios. Es el trabajo del paso 2
+  (adapter `alerts.json` → `host_domain_v1` → BD Kuzu propia).
+- **DEBT-DATASET-PROVISIONING-001** (o equivalente registrado DAY 234) — descarga reproducible de
+  blobs grandes en un `up` limpio. DEBT-WAZUH-DEB-NOT-IN-REPO-001 es el mismo patrón; resolver juntos.
+
+# BACKLOG.md — delta DAY 241 (pegar en las secciones correspondientes, NO reescribir el fichero)
+
+## Marcar HECHO / actualizar
+
+- **Paso 2 del cierre (contrato host_domain_v1)** — el diseño se cerró DAY 240; la **Pieza 0
+  (biblioteca `libs/host-domain-v1/`) queda CERRADA DAY 241**: lib de serialización del contrato
+  bronce host, verde en la VM `defender` y colgada de `test-libs`/`clean-libs`. Golden byte-idéntico
+  contra referencia Python (`tests/ref/host_domain_v1_ref.py`), sin oráculo C++. Queda la Pieza 1
+  (`wazuh-adapter/`) para llevar el dato al bronce.
+
+## Deudas NUEVAS a registrar
+
+- **DEBT-HOST-DOMAIN-VALIDATE-V1-MINIMAL-001** (P3) — `validate()` de `host_domain_v1` v1 solo exige el
+  invariante fundamental (`host_id` no vacío) + newline-guard heredado. Guards DIFERIDOS a un commit de
+  contrato posterior, cuando se mida la necesidad: `rule_id` no vacío, rango de `rule_level`, formato de
+  `event_id` (`wz1:`+base64). Mismo patrón de diferido que el guard D-D de `correlation_v1` (col 17).
+
+- **DEBT-HOST-DOMAIN-P2-LOG-ROTATION-001** (P2) — el `wazuh-adapter` (Pieza 1) necesita watermark por
+  `(inode, offset)`: `alerts.json` es live y rota; un offset a secas se rompe en la rotación. Para el
+  camino reproducible del paper (`destroy&up`) lee el fichero fresco entero.
+
+- **DEBT-HOST-DOMAIN-P1-FIM-SCA-ROOTCHECK-001** (P2) — FIM/syscheck/rootcheck/SCA no aparecen en el
+  baseline (auth/sesión). Se provocan con técnica MITRE host-touching en `mitre-start` (paso 3); ahí se
+  mide su forma de `data` y se amplían las comunes/columnas del contrato. Sin esto, el grafo host solo
+  muestra higiene de auth, no "Wazuh cazó el ataque".
+
+- **DEBT-HOST-DOMAIN-EMECAS-INTEGRATION-001** (P1, gate pre-merge) — EMECAS+++ aún NO se ha corrido con
+  la sub-línea host. La lib ya entra por `test-libs`; falta correr el gate completo
+  (`destroy→up→bootstrap→test-all`) con host y verlo verde antes del merge a main de `feat/zeek-to-graph`.
+
+## Decisiones a documentar (no son deudas)
+
+- **D-HOST-5** — en `host_domain_v1` se aplica `csv_string` a TODAS las columnas string (no-op salvo
+  coma/comilla/newline) y `rule_level` va como entero crudo. Diverge a propósito del reparto crudo
+  0,1,5,6,9,10 de `correlation_v1` (que era fidelidad byte a un oráculo que en host NO existe). Los
+  campos JSON-celda llevan coma/comilla por construcción → obligan al quoting.
+
+- **Clave HMAC del ledger host = COMPARTIDA con la red** (`ARGUS_BRONZE_HMAC_KEY_HEX`). Decisión por
+  sencillez (demo, no producción): reutiliza el env var ya cableado en `mitre-start`, cero piezas nuevas.
+  El aislamiento de una clave propia es preocupación de producción, deprioritizada a propósito.
+
+# BACKLOG — delta DAY 242
+
+> Bloque para MERGEAR en `BACKLOG.md` (no reemplaza el fichero). Actualiza el estado del
+> circuito host y registra las deudas nuevas/vigentes tras cerrar la Pieza 1.
+
+## Cierre host — progreso del circuito (bronce → oro → Kuzu, BD propia)
+
+- ✅ **Pieza 0 — `libs/host-domain-v1/`** (DAY 241, commit `d1374c40`)
+  Biblioteca del contrato bronce `host_domain_v1`: Row de 34 cols, `serialize()`/HMAC-SHA256
+  (col 33), `mint_event_id` (BLAKE2b `wz1:`), `encode_string_list`, `validate`. Golden contra
+  referencia Python (`host_domain_v1_ref.py`). Verde en `defender`, dentro de `test-libs`.
+- ✅ **Pieza 1 — `wazuh-adapter/`** (DAY 242)
+  `alerts.json` → parseo → `mint_event_id`(línea cruda) → `HostDomainV1Row` → `serialize()` →
+  bronce host_domain_v1 CSV sellado, y para. `to_row` verificado byte-a-byte C++⟷Python sobre 6
+  líneas reales del snapshot day240. **`make wazuh-adapter-test` en la VM `wazuh` = 2/2 Passed**
+  (`host_domain_v1_golden` + `wazuh_adapter_to_row`). Buzón: `/vagrant/logs/host-domain`.
+- ⏳ **Pieza 2** — host bronce → **oro Parquet** (`host_domain_v1`, 34 cols). El
+  `bronze_to_gold_converter` de red es `correlation_v1`-específico → host necesita su equivalente.
+- ⏳ **Pieza 3** — host oro → **Kuzu, SU PROPIA BD** (nodos Host/HostEvent/Rule/MitreTechnique,
+  +Control P4). NUNCA el `$KUZU` de red.
+- ⏳ **Bronce REAL** (siguiente batalla, DAY 243) — `destroy&up` + adapter sobre `alerts.json` vivo,
+  clave HMAC compartida real → primeras filas host firmadas nacidas de provisioning.
+- ⏳ **Reproducibilidad** — cablear el adapter host en el camino `destroy&up` (equivalente host de
+  `mitre-start`).
+- ⏳ **Gate** — EMECAS+++ con host verde en `feat/zeek-to-graph` → merge a main.
+
+## Deudas host (registradas)
+
+- **DEBT-HOST-DOMAIN-P2** — `alerts.json` es LIVE y rota; watermark por `(inode, offset)` sin
+  implementar. Hoy se lee el fichero fresco entero (camino reproducible del paper). Pieza posterior.
+- **DEBT-HOST-DOMAIN-P1** — FIM/SCA/rootcheck NO observados en el arranque; se provocan con técnica
+  MITRE host-touching en `mitre-start` (paso 3). Sin eso, el grafo host solo muestra higiene de auth,
+  no "Wazuh cazó el ataque".
+- **DEBT-HOST-DOMAIN-EMECAS-INTEGRATION-001** — EMECAS+++ aún NO modificado/corrido con host; gate
+  obligatorio antes del merge a main.
+- **Guards diferidos `validate` v1 (host)** — `rule_id` no vacío, rango de `rule_level`, formato de
+  `event_id` (`wz1:`+base64). A un commit de contrato posterior, cuando se mida la necesidad.
+- **host-domain-v1-test self-build** — opcional quitar el prereq `: host-domain-v1-build` del target
+  ahora que `wazuh-adapter-build` es el consumidor real (análogo ml-detector↔correlation-v1). No urge.
+- **P4 — nodos Control/cumplimiento** — implementar o diferir; el mapeo (pci_dss/gdpr/hipaa/
+  nist_800_53/tsc/gpg13) YA se captura en el bronce host. Útil para el encuadre hospitalario.
+
+## Deudas vivas de antes (recordatorio)
+
+- **DEBT-WAZUH-AGENT-INSTALL-ORDER-001** — en `destroy&up` desde cero, el manager (`wazuh`,
+  autostart:false) debe estar ARRIBA antes que los agentes o el enroll falla; el orden no lo
+  garantiza el Vagrantfile.
+- **authd abierto** (enrollment sin contraseña) → restringir con `authd.pass`. Familia "dev, no
+  producción", P2/P3.
+- **DEBT-SNIFFER-IP-BYTE-ORDER-001** (lado red) — sigue registrada; no afecta al circuito host.
+
+### DEBT-HOST-ADAPTER-ALERTS-PERMS-001  [PROGRAMADA DAY 244]
+El wazuh-adapter corre como usuario `vagrant`, pero `/var/ossec/logs/alerts/alerts.json`
+es 640 wazuh:wazuh → Permission denied. Fix PROBADO a mano (DAY 243): `usermod -aG wazuh
+vagrant` (traversal+lectura del grupo confirmados en /var/ossec, logs, logs/alerts). FALTA
+cablearlo al provision `wazuh` del Vagrantfile, con dependencia de `install-wazuh` (crea el
+grupo wazuh). Incluir crear el buzón `/vagrant/logs/host-domain` en ese mismo provision.
+Cierre = destroy&up desde CERO que produzca bronce host SIN un solo paso manual de permisos.
+
+### DEBT-HOST-PIEZA-2-GOLD-001
+host bronce → oro AVRO+Parquet host_domain_v1 (34 cols). El bronze_to_gold_converter de red
+es correlation_v1-específico (19 cols) → host necesita su propio converter.
+
+### DEBT-HOST-PIEZA-3-KUZU-001
+host oro → Kuzu en SU PROPIA BD (esquema host_domain_v1: Host/HostEvent/Rule/MitreTechnique,
++Control opcional). NUNCA el $KUZU de red.
+
+### DEBT-ADAPTER-AUTOMATION-DOWNSTREAM-001
+Cada adapter con un main que ESCANEA una carpeta de CSVs → avro/parquet → inserta/actualiza
+en su grafo, automático; trae la clave HMAC al inicio. HOY: REST HTTP en plano a etcd-server
+(aceptable dev, "muy mal" prod). FUTURO: vault-client por HTTPS contra vault-server (clave
+provisionada por Jenkins). Fallo-duro si falta la clave (para ejecución, no warning silencioso).
+Rotación: mantener las 2 últimas claves (solape). etcd-client queda solo para liveness.
+
+### DEBT-MITRE-START-WAZUH-REACT-001
+mitre-start debe hacer REACCIONAR a Wazuh (host-touching → FIM/SCA/rastro). Hoy TOY_KEY;
+objetivo = cada componente va directo a etcd con la clave real, sin TOY_KEY. Gate previo al PR
+a main: EMECAS+++ con host verde en feat/zeek-to-graph.
+
+### DEBT-WAZUH-AGENT-IN-EACH-PROVISION-001
+Instalar el wazuh-agent en el provision del Vagrantfile de cada componente (no a mano).
+
+
+- DEBT-HOST-ADAPTER-ALERTS-PERMS-001 → CERRADA DAY 244. Provision host-adapter-perms
+  en el bloque wazuh del Vagrantfile (usermod + mkdir + verificacion por estado real).
+  destroy&up en frio -> bronce host REAL sin pasos manuales. Commit <hash>.
+- DEBT-HOST-PIEZA-2-GOLD-001 → CERRADA DAY 244. host-engine/ (converter bronce CSV -> oro
+  Parquet, isla). Puerta HMAC C++ 533/533 (2a impl independiente), oro releible verificado.
+  Commit    95e1e3db..487b4e79  feat/zeek-to-graph -> feat/zeek-to-graph.
+
+## DAY 245
+
+CIERRA:
+- DEBT-HOST-PIEZA-3-KUZU-001 — ✅ CERRADA. Grafo host oro Parquet → Kuzu, isla en host-engine
+  (schema host_domain_v1.cypher + host_parquet_to_kuzu_loader + host_row + test). Medido en la
+  BD: Host=1, HostEvent=533, Rule=14, MitreTechnique=3; T1548.003 dedup desde 5402+5403; 5715
+  → T1078+T1021 con Lateral Movement. Loader con self-mkdir (cierra fragilidad DAY 228).
+
+NUEVAS (afloradas al construir Pieza 3):
+- DEBT-HOST-LOADER-CYPHER-INTERPOLATION-001 (P2) — el loader construye Cypher por interpolación
+  de strings con escape (cy()), no prepared statements. Suficiente para Wazuh v1; frágil ante
+  full_log adversarial. Endurecer con prepared statements como el sink de red.
+- DEBT-HOST-LOADER-SCHEMA-VALIDATION-001 (P2) — el loader lee las columnas del oro por índice
+  posicional (enum Col) sin validar el schema del Parquet. Un reorden del converter Pieza 2
+  desalinearía en silencio. Misma familia que la fragilidad del loader de red. Validar
+  nombres/tipos al abrir.
+- DEBT-PIPELINE-STATUS-LOGFILES-001 (P3) — enriquecer `pipeline-status` para que liste los
+  ficheros de log actuales de cada componente (tail rápido).
+
+REFINA:
+- DEBT-ADAPTER-AUTOMATION-DOWNSTREAM-001 — el primer corte de etcd-client en los adapters se
+  ADELANTA a pre-main (antes: migración de secretos post-merge). Adapters en pipeline-start +
+  visibles en pipeline-status.
+### DEBT-ENV-BOOTSTRAP-NOT-REPRODUCIBLE-001 (P2)
+pipeline-start ya no arrastra pipeline-clean/pipeline-build (se quitó para evitar rebuilds).
+Consecuencia DAY 246: entorno recién despertado no es reproducible sin `bootstrap` manual —
+faltaban libcorrelation_v1.so (test-all + ml-detector caídos) y los tools de mitre-start.
+4 tropiezos el mismo día. Fix: bootstrap como parte de pipeline-build, o declarar/forzar el
+prerequisito. emecas NO se afecta (bootstrapea de por sí).
+
+### DEBT-MITRE-START-GUARDS-SENSOR-001 (P3)
+Los converters de suricata (l.59) y zeek (l.66) en mitre_start.sh no tienen el guard
+`grep -q "descartadas: 0" || die` que aRGus (sección 3) sí tiene → un descarte HMAC silencioso
+pasaría inadvertido. Paridad pendiente. Código medido DAY 246.
+
+### DEBT-TEST-ALL-NOT-STANDALONE-001 (P3)
+test-all asume que bootstrap instaló libcorrelation_v1.so (correlation-v1-test solo hace ctest,
+no install). `make test-all` a pelo peta en correlation-engine-build. Medido DAY 246.
+
+### DEBT-TEST-INTEG-SIGN-ABORT-001 (P3)
+test_integ_sign aborta con `terminate called without an active exception` (en vez de SKIP limpio)
+cuando el plugin .so es symlink colgante, y su exit!=0 NO propaga al make. Medido DAY 246.
+
+### DEBT-SIGN-PLUGINS-ON-BUILD-001 (P3)
+libplugin_xgboost.so quedó sin .sig tras un rebuild → Check 2/8 de test-provision-1 bloquea el
+arranque en modo producción hasta `make sign-plugins` manual. Los plugins deberían firmarse al
+construirse. Medido DAY 246.
+
+### DEBT-HMAC-KEY-INSECURE-TRANSPORT-001 — ACTUALIZACIÓN DAY 246
+(A) cerró el teatro de la toy key: los 3 productores de red firman con la clave HMAC real de
+etcd. PERO el transporte sigue HTTP plano (curl a :2379). Sin cambio: sigue P1. El fix correcto
+(HTTPS/Vault) es post-main.
+
+### DEBT-HOST-DOMAIN-EMECAS-INTEGRATION-001 — RESUELTA (DAY 247)
+host-engine (converter+loader+test_host_row) enganchado a test-all (Makefile:1236) y verde
+dentro de emecas+++ from-scratch (2h01m). Provisioning de defender confirmado con arrow/parquet/
+openssl/kuzu para compilar el engine sin instalar nada. Bloqueador del PR: eliminado.
+
+### DEBT-MITRE-START-GUARDS-SENSOR-001 — RESUELTA (DAY 247)
+Converters suricata (l.59) y zeek (l.66) ahora con guard `grep -q "descartadas: 0" || die`,
+paridad con aRGus. Commit f2e606e5.
+
+### DEBT-HMAC-KEY-INSECURE-TRANSPORT-001 (P1) — DIFERIDA post-0.0.1
+(A) cerró el teatro de la toy key: los 3 sensores de red firman con la clave HMAC REAL de etcd
+(head 0450d862, 0 descartes). PERO el transporte sigue HTTP plano (curl a :2379). Fix correcto:
+Vault HTTPS/auth/leases. Feature diferida conscientemente; documentada en el PR y el paper.
+
+### DEBT-ENV-BOOTSTRAP-NOT-REPRODUCIBLE-001 (P2) — DIFERIDA
+pipeline-start ya no arrastra pipeline-clean/pipeline-build → entorno no reproducible sin bootstrap
+manual. Mordió 4× el DAY 246 (test-all, ml-detector, tools de mitre-start). emecas NO se afecta
+(bootstrapea de por sí). Fix: bootstrap como parte de pipeline-build, o declarar/forzar el prereq.
+
+### DEBT-TEST-ALL-NOT-STANDALONE-001 (P3) · DEBT-TEST-INTEG-SIGN-ABORT-001 (P3) · DEBT-SIGN-PLUGINS-ON-BUILD-001 (P3)
+Fricciones de entorno caliente (DAY 246), NO fragilidad del gate — emecas from-scratch las resuelve.
+test-all asume bootstrap; test_integ_sign aborta (terminate) en vez de skip y no propaga exit!=0;
+xgboost pide sign-plugins manual tras rebuild. Menores, diferidas.
+
+### FEATURES DIFERIDAS post-pre-release-0.0.1 (roadmap "avanzar el pipeline")
+Vault productivo · rotación de claves real · fault-injection real · transporte HMAC seguro ·
+DEBT-ADAPTER-AUTOMATION-DOWNSTREAM-001 (B: adapter autónomo) · DEBT-MITRE-START-WAZUH-REACT-001.
+No bloquean el pre-release; un pre-release espera tener deudas nombradas.

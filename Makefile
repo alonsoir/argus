@@ -1108,11 +1108,12 @@ tools-clean:
 clean-libs:
 	@echo ""
 	@echo "╔═══════════════════════════════════════════════════════════════════════════════════════╗"
-	@echo "║  🧹 Cleaning Libraries (seed-client, plugin-loader, crypto-transport, etcd-client)    ║"
+	@echo "║  🧹 Cleaning Libraries (seed-client, correlation-v1, host-domain-v1, plugin-loader, crypto-transport, etcd-client)    ║"
 	@echo "╚═══════════════════════════════════════════════════════════════════════════════════════╝"
 	@echo ""
 	@$(MAKE) seed-client-clean
 	@$(MAKE) correlation-v1-clean
+	@$(MAKE) host-domain-v1-clean
 	@$(MAKE) crypto-transport-clean
 	@$(MAKE) etcd-client-clean
 	@$(MAKE) plugin-loader-clean
@@ -1185,6 +1186,9 @@ test-libs:
 	@$(MAKE) plugin-loader-test
 	@echo "Testing correlation-v1..."
 	@$(MAKE) correlation-v1-test
+	@echo "Testing host-domain-v1..."
+	@$(MAKE) host-domain-v1-test
+	@echo "Testing plugin-integ-test..."
 	@$(MAKE) plugin-integ-test
 
 test-components: correlation-engine-test
@@ -1229,7 +1233,7 @@ parquet-convert:
 test-parquet: parquet-convert
 	@vagrant ssh -c "cd /vagrant/scripts/parquet && python3 validate_roundtrip.py"
 
-test-all: test-libs test-components test-provision-1 test-invariant-seed plugin-integ-test argus-network-isolate-test test-parquet
+test-all: test-libs test-components test-provision-1 test-invariant-seed plugin-integ-test argus-network-isolate-test test-parquet host-engine-test
 	@echo ""
 	@echo "╔════════════════════════════════════════════════════════════╗"
 	@echo "║  ✅ ALL TESTS COMPLETE                                    ║"
@@ -3073,3 +3077,97 @@ suricata-adapter-clean:
 .PHONY: mitre-start
 mitre-start: ## MITRE -> grafo (requiere pipeline-start arriba). Ver DEBT-HMAC-KEY-INSECURE-TRANSPORT-001.
 	@bash scripts/mitre_start.sh
+
+# zeek-adapter — conn.log -> bronce correlation_v1 (DAY 235)
+# Vive en la VM `zeek`, junto a su fuente de datos. OJO: el resto de targets
+# usan `vagrant ssh -c` a secas, que va a la VM primaria (defender). Este NO.
+# El build dir lleva sufijo porque /vagrant es carpeta COMPARTIDA entre VMs:
+# un `build/` pelado lo pisarían defender y zeek entre sí.
+# ════════════════════════════════════════════════════════════════════════════
+.PHONY: zeek-adapter-build zeek-adapter-test zeek-adapter-clean
+ZEEK_ADAPTER_BUILD_DIR := /vagrant/zeek-adapter/build-zeek
+zeek-adapter-build:
+	@echo "╔════════════════════════════════════════════════════════════╗"
+	@echo "║  🔨 Building zeek-adapter [VM: zeek]                      ║"
+	@echo "╚════════════════════════════════════════════════════════════╝"
+	@vagrant ssh zeek -c 'cd /vagrant/zeek-adapter && \
+		export PKG_CONFIG_PATH=/usr/lib/x86_64-linux-gnu/pkgconfig:$$PKG_CONFIG_PATH && \
+		rm -rf build-zeek && mkdir -p build-zeek && cd build-zeek && \
+		cmake -DCMAKE_BUILD_TYPE=Debug .. && \
+		make -j4'
+	@echo "✅ zeek-adapter built"
+zeek-adapter-test: zeek-adapter-build
+	@echo "── zeek-adapter: test_to_row ──"
+	@vagrant ssh zeek -c "cd $(ZEEK_ADAPTER_BUILD_DIR) && ctest --output-on-failure"
+zeek-adapter-clean:
+	@vagrant ssh zeek -c "rm -rf $(ZEEK_ADAPTER_BUILD_DIR)"
+	@echo "✅ zeek-adapter cleaned"
+
+# ─── host-domain-v1 ───────────────────────────────────────────────────────────
+# libhost_domain_v1 — capa de serialización bronce del dominio HOST (contrato
+# host_domain_v1, Wazuh). Definición PRIMARIA (sin oráculo): golden contra referencia
+# Python. Patrón IDÉNTICO a correlation-v1: build standalone (Release) → install
+# /usr/local. Se compila en la VM `defender` (todo el toolchain), como correlation-v1.
+# Deps (crypto/sodium/nlohmann) ya en el Vagrantfile de defender — cero provisioning nuevo.
+# OJO: el Makefile usa TABS, no espacios — al pegar, reconvierte la indentación.
+.PHONY: host-domain-v1-build host-domain-v1-test host-domain-v1-clean host-domain-v1-rebuild
+
+host-domain-v1-build:
+	@echo "╔══════════════════════════════════════════════╗"
+	@echo "║  Building host-domain-v1...                  ║"
+	@echo "╚══════════════════════════════════════════════╝"
+	@vagrant ssh -c 'cd /vagrant/libs/host-domain-v1 && rm -rf build && mkdir -p build && cd build && cmake -DCMAKE_BUILD_TYPE=Release .. && make -j4'
+	@vagrant ssh -c 'cd /vagrant/libs/host-domain-v1/build && sudo make install && sudo ldconfig'
+	@echo "✅ host-domain-v1 instalado"
+
+# SELF-BUILDING (`: host-domain-v1-build`): difiere de correlation-v1-test porque host
+# aún NO tiene consumidor que lo arrastre en pipeline-build. El wazuh-adapter (Pieza 1)
+# será ese consumidor (análogo ml-detector↔correlation-v1); entonces esta línea puede
+# volver al patrón sin prereq. Mientras, así EMECAS (test-all→test-libs) lo cubre solo.
+host-domain-v1-test: host-domain-v1-build
+	@echo "─── host-domain-v1 tests ────────────────────"
+	@vagrant ssh -c 'cd /vagrant/libs/host-domain-v1/build && ctest --output-on-failure'
+
+host-domain-v1-clean:
+	@vagrant ssh -c 'rm -rf /vagrant/libs/host-domain-v1/build'
+	@vagrant ssh -c 'sudo rm -f /usr/local/lib/libhost_domain_v1.so*'
+	@vagrant ssh -c 'sudo rm -rf /usr/local/include/host_domain_v1'
+	@echo "✅ host-domain-v1 limpiado"
+
+host-domain-v1-rebuild: host-domain-v1-clean host-domain-v1-build host-domain-v1-test
+
+.PHONY: wazuh-adapter-build wazuh-adapter-test wazuh-adapter-clean wazuh-adapter-rebuild
+# =========================== wazuh-adapter (Pieza 1) ===========================
+# Adapter host_domain_v1 para Wazuh. Build SUELTO en la VM `wazuh` (build dir con
+# sufijo; /vagrant es compartida). Prereq host-domain-v1-build = el consumidor real.
+wazuh-adapter-build: host-domain-v1-build
+	vagrant ssh wazuh -c 'cd /vagrant/wazuh-adapter && rm -rf build-wazuh && mkdir -p build-wazuh && cd build-wazuh && cmake -DCMAKE_BUILD_TYPE=Debug .. && make -j4'
+
+wazuh-adapter-test: wazuh-adapter-build
+	vagrant ssh wazuh -c 'cd /vagrant/wazuh-adapter/build-wazuh && ctest --output-on-failure'
+
+wazuh-adapter-clean:
+	vagrant ssh wazuh -c 'rm -rf /vagrant/wazuh-adapter/build-wazuh'
+
+wazuh-adapter-rebuild: wazuh-adapter-clean wazuh-adapter-build
+
+# ─── host-engine (isla: converter + loader + test_host_row) ────────────────────
+# Self-building (`: host-engine-build`) como host-domain-v1-test (3127): nada en
+# pipeline-build arrastra host-engine (project CMake propio). Corre en defender
+# (VM primaria) -> vagrant ssh -c SIN sufijo de VM; build/ plano vale porque solo
+# defender compila aqui (a diferencia de zeek-adapter, que comparte /vagrant).
+# DEBT-HOST-DOMAIN-EMECAS-INTEGRATION-001 (mitad build+unit).
+.PHONY: host-engine-build host-engine-test host-engine-clean host-engine-rebuild
+host-engine-build:
+	@echo "╔════════════════════════════════════════════════════════════╗"
+	@echo "║  🔨 Building host-engine [VM: defender]                   ║"
+	@echo "╚════════════════════════════════════════════════════════════╝"
+	@vagrant ssh -c 'cd /vagrant/host-engine && rm -rf build && mkdir -p build && cd build && cmake -DCMAKE_BUILD_TYPE=Release .. && make -j4'
+	@echo "✅ host-engine built"
+host-engine-test: host-engine-build
+	@echo "── host-engine: test_host_row ──"
+	@vagrant ssh -c "cd /vagrant/host-engine/build && ctest --output-on-failure"
+host-engine-clean:
+	@vagrant ssh -c "rm -rf /vagrant/host-engine/build"
+	@echo "✅ host-engine cleaned"
+host-engine-rebuild: host-engine-clean host-engine-build host-engine-test

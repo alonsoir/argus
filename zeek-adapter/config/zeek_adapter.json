@@ -1,0 +1,7 @@
+{
+  "_comentario": "aRGus NDR — adapter de zeek. DAY 226.",
+  "base_dir": "/vagrant/logs/correlation",
+  "node_id": "cpp_sniffer_v33_day12",
+  "input_path": "/vagrant/logs/day235-zeek-neris/conn.log",
+  "hmac_key_env": "ARGUS_BRONZE_HMAC_KEY_HEX"
+}

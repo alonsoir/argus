@@ -73,12 +73,35 @@ ADAPTER_TOOLCHAIN = <<-'ADAPTER_TOOLCHAIN_SHELL'
   echo "✅ ADAPTER_TOOLCHAIN verificado"
 ADAPTER_TOOLCHAIN_SHELL
 
+# WAZUH_AGENT_INSTALL — instala el agente Wazuh por dpkg del .deb cacheado en /vagrant.
+# dpkg NO necesita repo/apt/DNS/gnupg (a diferencia de la via apt). El nombre del agente
+# llega por env AGENT_NAME (fijado en cada provision). Version clavada = la del manager.
+WAZUH_AGENT_INSTALL = <<-'WAZUH_AGENT_INSTALL_SHELL'
+  set -e
+  MANAGER_IP="192.168.100.12"
+  DEB="/vagrant/provisioning/wazuh/wazuh-agent_4.14.7-1_amd64.deb"
+  echo "🛡️  WAZUH_AGENT_INSTALL — agente '${AGENT_NAME}' -> manager ${MANAGER_IP}"
+  if /var/ossec/bin/wazuh-control info >/dev/null 2>&1; then
+    echo "✅ agente ya instalado, nada que hacer"; exit 0
+  fi
+  if [ ! -f "$DEB" ]; then
+    echo "❌ no encuentro el .deb en $DEB"
+    echo "   cachealo antes del up:  mkdir -p provisioning/wazuh && cp logs/wazuh-agent_4.14.7-1_amd64.deb provisioning/wazuh/"
+    exit 1
+  fi
+  WAZUH_MANAGER="$MANAGER_IP" WAZUH_AGENT_NAME="$AGENT_NAME" dpkg -i "$DEB"
+  systemctl daemon-reload
+  systemctl enable --now wazuh-agent
+  echo "✅ WAZUH_AGENT_INSTALL — '${AGENT_NAME}' instalado y arrancado"
+WAZUH_AGENT_INSTALL_SHELL
+
 Vagrant.configure("2") do |config|
 
   # ════════════════════════════════════════════════════════════════════════════
   # DEFENDER VM - Full ML Pipeline (Primary)
   # ════════════════════════════════════════════════════════════════════════════
   config.vm.define "defender", primary: true do |defender|
+    defender.vm.provision "shell", name: "wazuh-agent", env: {"AGENT_NAME" => "defender"}, inline: WAZUH_AGENT_INSTALL
     defender.vm.box = "debian/bookworm64"
     defender.vm.box_version = "12.20240905.1"
 
@@ -1073,6 +1096,7 @@ BASHRC_EOF
   # ════════════════════════════════════════════════════════════════════════════
 
   config.vm.define "client", autostart: false do |client|
+    client.vm.provision "shell", name: "wazuh-agent", env: {"AGENT_NAME" => "client"}, inline: WAZUH_AGENT_INSTALL
     client.vm.box = "debian/bookworm64"
     client.vm.box_version = "12.20240905.1"
     client.vm.hostname = "ml-client"
@@ -1137,6 +1161,7 @@ BASHRC_EOF
   # SURICATA VM — IDS signatures (ADR-048 F2)
   # ════════════════════════════════════════════════════════════════════════════
   config.vm.define "suricata", autostart: false do |suricata|
+    suricata.vm.provision "shell", name: "wazuh-agent", env: {"AGENT_NAME" => "suricata"}, inline: WAZUH_AGENT_INSTALL
     suricata.vm.box         = "debian/bookworm64"
     suricata.vm.box_version = "12.20240905.1"
     suricata.vm.hostname    = "argus-suricata"
@@ -1216,6 +1241,7 @@ BASHRC_EOF
   # ZEEK VM — protocol analysis / observability layer (ADR-048 F3)
   # ════════════════════════════════════════════════════════════════════════════
   config.vm.define "zeek", autostart: false do |zeek|
+    zeek.vm.provision "shell", name: "wazuh-agent", env: {"AGENT_NAME" => "zeek"}, inline: WAZUH_AGENT_INSTALL
     zeek.vm.box         = "debian/bookworm64"
     zeek.vm.box_version = "12.20240905.1"
     zeek.vm.hostname    = "argus-zeek"
@@ -1359,7 +1385,40 @@ BASHRC_EOF
       /var/ossec/bin/wazuh-control status | head -5 || true
     SHELL
 
+    wazuh.vm.provision "shell", name: "host-adapter-perms", inline: <<-'PERMS_SHELL'
+          set -eu
+          echo "=== host-adapter-perms: vagrant lee alerts.json + buzon host (DEBT-HOST-ADAPTER-ALERTS-PERMS-001) ==="
+          # alerts.json = 640 wazuh:wazuh; el adapter corre como 'vagrant'.
+          # El grupo 'wazuh' lo crea install-wazuh -> esta provision DEPENDE de esa (va despues).
+          usermod -aG wazuh vagrant
+          mkdir -p /vagrant/logs/host-domain
+          # Verificacion por ESTADO real (no 'test -f' ciego): membresia REGISTRADA en /etc/group
+          # (id vagrant la ve al instante; el vagrant ssh post-up ya es sesion fresca -> grupo activo)
+          # y buzon ESCRIBIBLE por vagrant.
+          id vagrant | grep -q '(wazuh)' \
+            || { echo "ERROR: vagrant no quedo en el grupo wazuh (install-wazuh no creo el grupo?)"; exit 1; }
+          sudo -u vagrant test -w /vagrant/logs/host-domain \
+            || { echo "ERROR: /vagrant/logs/host-domain no escribible por vagrant"; exit 1; }
+          echo "=== host-adapter-perms OK (vagrant en grupo wazuh; buzon escribible) ==="
+    PERMS_SHELL
+
     wazuh.vm.provision "shell", name: "adapter-toolchain", inline: ADAPTER_TOOLCHAIN
+
+    wazuh.vm.provision "shell", name: "authd-force", inline: <<-'AUTHD_FORCE_SHELL'
+      set -eu
+      echo "=== authd-force: force=reemplazar-siempre (DEBT-WAZUH-AUTHD-FORCE-NOT-PROVISIONED-001) ==="
+      OSSEC_CONF=/var/ossec/etc/ossec.conf
+      [ -f "$OSSEC_CONF" ] || { echo "ERROR: no existe $OSSEC_CONF (install-wazuh no corrio?)"; exit 1; }
+      command -v python3 >/dev/null 2>&1 || apt-get install -y python3
+      python3 /vagrant/tools/fix_authd_force.py
+      systemctl restart wazuh-manager
+      # Verificacion determinista: el marcador de force quedo en la config. La liveness de
+      # authd NO se sondea (wazuh-control status sale !=0 por daemons opcionales -> falso
+      # negativo); el enroll de un agente (destroy&up) es la prueba E2E de que authd levanta.
+      grep -q '<disconnected_time enabled="no">0</disconnected_time>' "$OSSEC_CONF" \
+        || { echo "ERROR: <force> no quedo en reemplazar-siempre en ossec.conf"; exit 1; }
+      echo "=== authd-force OK (force codificada; el enroll de zeek lo prueba E2E) ==="
+    AUTHD_FORCE_SHELL
 
   end  # End wazuh VM
 

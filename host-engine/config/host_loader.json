@@ -1,0 +1,5 @@
+{
+  "gold_glob": "/vagrant/logs/host-domain/*.parquet",
+  "kuzu_db_path": "/vagrant/logs/host-kuzu/host.kuzu",
+  "schema_path": "/vagrant/host-engine/schema/host_domain_v1.cypher"
+}
