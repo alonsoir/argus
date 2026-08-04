@@ -3157,7 +3157,7 @@ wazuh-adapter-rebuild: wazuh-adapter-clean wazuh-adapter-build
 # (VM primaria) -> vagrant ssh -c SIN sufijo de VM; build/ plano vale porque solo
 # defender compila aqui (a diferencia de zeek-adapter, que comparte /vagrant).
 # DEBT-HOST-DOMAIN-EMECAS-INTEGRATION-001 (mitad build+unit).
-.PHONY: host-engine-build host-engine-test host-engine-clean host-engine-rebuild dataset-export dataset-export-b dataset-export-c dataset-export-all
+.PHONY: host-engine-build host-engine-test host-engine-clean host-engine-rebuild dataset-export dataset-export-b dataset-export-c dataset-export-all ctu-start fetch-neris
 host-engine-build:
 	@echo "╔════════════════════════════════════════════════════════════╗"
 	@echo "║  🔨 Building host-engine [VM: defender]                   ║"
@@ -3184,3 +3184,9 @@ dataset-export-c:
 	python3 scripts/dataset_export.py --mode C $(STAMP)
 
 dataset-export-all: dataset-export-c dataset-export dataset-export-b
+
+ctu-start:  ## 2o traffic driver: replay Neris (CTU-13 sc.1) -> grafo cross-sensor (requiere pipeline-start + pcap)
+	@bash scripts/ctu_start.sh
+
+fetch-neris:  ## descarga+verifica el pcap Neris (~56MB) a datasets/ctu13/ si falta
+	@vagrant ssh client -c "bash /vagrant/scripts/fetch_neris.sh"

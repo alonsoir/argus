@@ -6015,3 +6015,24 @@ DEBT-FLOWSTART-CLOCK-DOMAIN-001 (REFINADA DAY 248)
 Medido: flow_start_sec=0 ⟺ EXACTAMENTE los eventos MALICIOUS/fast-alert (1089/1089). La ruta benigna
 RAW_CAPTURE trae timestamp real. La deuda del reloj está LOCALIZADA 100% en la ruta fast-alert, no dispersa.
 Reencuadre §0 reproducibilidad (reloj→epoch) sigue vigente; ahora con el sitio exacto.
+
+## 🆕 Entradas DAY 249
+
+- DEBT-DATASET-DRIVER-CONTRACT-001 (P2) [ACTUALIZADA] — el seam driver↔harness de
+  mitre_start.sh es UNA línea (la de tráfico); contrato escribible ("poner tráfico en la
+  subred que aRGus vigila entre T0 y T0+drenaje; downstream agnóstico"). DOS drivers
+  demostrados (nmap, CTU tcpreplay). Falta: enforcement/validación del contrato para el 3º.
+- DEBT-CTU-REPLAY-GSO-DROP-001 (P3) — 2630/323154 frames Neris (0.81%) son super-frames
+  GSO/TSO no replayables en Ethernet (EMSGSIZE), deterministas. Declarar en data card.
+  Limpieza opc.: pre-filtrar con `tcpdump -r in -w out 'less 1515'`. NO --mtu-trunc (corrompe).
+- DEBT-DATASET-LAB-BACKGROUND-IN-WINDOW-001 (P3) — la ventana mtime>T0 recoge fondo de lab
+  (argus 120/8.8%, zeek 18, suricata 0). Propiedad por-lente. Filtrar a 147.32 o dejar que el
+  join contra labels lo auto-limpie.
+- DEBT-DATASET-XSENSOR-TELEMETRY-ONLY-001 (P2) — el titular cross-sensor cuenta solo
+  TelemetryEvent → Alert de argus fuera; el 217 es co-visibilidad, no detección corroborada.
+- DEBT-PIPELINE-STATUS-ALL-VMS-001 (P3) — pipeline-status muestre TODAS las VMs; quitar
+  rag-security/rag-ingester.
+- DEBT-PIPELINE-START-DISABLE-RAG-001 (P3) — desactivar rag-security/rag-ingester del arranque
+  de pipeline-start (ahorro de recursos; NO deprecar).
+- DEBT-PIPELINE-START-BINARY-GUARD-001 (P2) — pipeline-start compruebe binarios compilados y
+  los compile si faltan (hoy asume y fracasa; onboarding / "yo dentro de un año").
