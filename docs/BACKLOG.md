@@ -5992,3 +5992,26 @@ xgboost pide sign-plugins manual tras rebuild. Menores, diferidas.
 Vault productivo · rotación de claves real · fault-injection real · transporte HMAC seguro ·
 DEBT-ADAPTER-AUTOMATION-DOWNSTREAM-001 (B: adapter autónomo) · DEBT-MITRE-START-WAZUH-REACT-001.
 No bloquean el pre-release; un pre-release espera tener deudas nombradas.
+
+## DAY 248 — deudas afloradas por la herramienta de datasets (correlacionadas con PROMPT DAY 249)
+
+DEBT-OVERALL-SCORE-LITERAL-001
+overall_threat_score = 0.75 CONSTANTE en los 1089 eventos MALICIOUS (medido dataset-modeA-20260803-064544).
+El "score continuo" de la clase maliciosa es un flag binario disfrazado: no permite ordenar por severidad.
+Fix: o el fast path emite un score real, o se documenta como binario. Tarea: FASE FIX / honestidad del paper.
+
+DEBT-DATASET-DRIVER-CONTRACT-001
+El contrato entre el traffic driver (mitre_start.sh) y el harness downstream es IMPLÍCITO: el driver debe
+dejar el bronce en la ruta esperada, con node_id correcto y clave HMAC del store vivo. Para que drivers
+alternativos (CTU replay; el de los alumnos de Andrés) se integren, hay que NOMBRAR el contrato.
+Tarea: DAY 249 (ctu-start localiza el seam) + sección del paper "la generación de datasets es función del driver".
+
+DEBT-DATASET-AUTHSOURCE-POLYMORPHIC-001
+authoritative_source cambia de vocabulario por sensor: argus = arbitraje de detectores
+(DETECTOR_SOURCE_ML_PRIORITY / _DIVERGENCE); suricata/zeek = el nombre del sensor. No es bug (es procedencia
+honesta) pero un consumidor lo tratará como categórica uniforme y errará. Tarea: documentar en la data card del dataset.
+
+DEBT-FLOWSTART-CLOCK-DOMAIN-001 (REFINADA DAY 248)
+Medido: flow_start_sec=0 ⟺ EXACTAMENTE los eventos MALICIOUS/fast-alert (1089/1089). La ruta benigna
+RAW_CAPTURE trae timestamp real. La deuda del reloj está LOCALIZADA 100% en la ruta fast-alert, no dispersa.
+Reencuadre §0 reproducibilidad (reloj→epoch) sigue vigente; ahora con el sitio exacto.
