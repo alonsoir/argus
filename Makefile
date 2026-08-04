@@ -3157,7 +3157,7 @@ wazuh-adapter-rebuild: wazuh-adapter-clean wazuh-adapter-build
 # (VM primaria) -> vagrant ssh -c SIN sufijo de VM; build/ plano vale porque solo
 # defender compila aqui (a diferencia de zeek-adapter, que comparte /vagrant).
 # DEBT-HOST-DOMAIN-EMECAS-INTEGRATION-001 (mitad build+unit).
-.PHONY: host-engine-build host-engine-test host-engine-clean host-engine-rebuild
+.PHONY: host-engine-build host-engine-test host-engine-clean host-engine-rebuild dataset-export dataset-export-b dataset-export-c dataset-export-all
 host-engine-build:
 	@echo "╔════════════════════════════════════════════════════════════╗"
 	@echo "║  🔨 Building host-engine [VM: defender]                   ║"
@@ -3171,3 +3171,16 @@ host-engine-clean:
 	@vagrant ssh -c "rm -rf /vagrant/host-engine/build"
 	@echo "✅ host-engine cleaned"
 host-engine-rebuild: host-engine-clean host-engine-build host-engine-test
+
+STAMP ?= $(shell ls -t logs/lab/argus-*.parquet 2>/dev/null | head -1 | sed -E 's|.*argus-(.*)\.parquet|\1|')
+
+dataset-export:
+	python3 scripts/dataset_export.py $(STAMP)
+
+dataset-export-b:
+	python3 scripts/dataset_export.py --mode B $(STAMP)
+
+dataset-export-c:
+	python3 scripts/dataset_export.py --mode C $(STAMP)
+
+dataset-export-all: dataset-export-c dataset-export dataset-export-b

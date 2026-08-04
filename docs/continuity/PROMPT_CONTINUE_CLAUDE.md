@@ -1,55 +1,74 @@
-# PROMPT DE CONTINUIDAD — aRGus NDR — DAY 248
+# PROMPT DE CONTINUIDAD — aRGus NDR — DAY 249
 
 ## Punto de entrada (mide, no asumas)
     git log --oneline -6
+    git status
     git branch --show-current
-    git tag | grep pre-release
     vagrant status
-Tras DAY 247: feat/zeek-to-graph MERGEADA a main, tag pre-release-0.0.1 sobre main.
-Si sigues en feat, `git checkout main && git pull`. VMs probablemente aborted.
+Tras DAY 248: `main` con `scripts/dataset_export.py` (A/B/C) + targets del Makefile (commit
+`feat(dataset-export)...`). Si algo quedó sin commitear, ciérralo primero. VMs probablemente aborted.
 
-## Estado que ordena el día — pipeline cerrado y etiquetado; empieza el proyecto que queda
-- ✅ Pipeline multi-sensor COMPLETO y en main: aRGus/Suricata/Zeek/Wazuh → MITRE (nmap) →
-  DOS grafos Kuzu (red correlation_v1 + host host_domain_v1). Integridad HMAC real e2e en los
-  3 sensores de red (A, con guards). host-engine en el gate. emecas+++ VERDE from-scratch (2h01m).
-- ✅ Tag pre-release-0.0.1 = hito del PIPELINE. NO es el estado de datos del paper.
-- 🎯 PROYECTO QUE QUEDA: herramienta(s) de generación de DATASETS desde los grafos.
-  Prerequisito de los datos del paper y del tag 0.0.2. Ver [[dashboard-export]] para el scope
-  ya decidido (DAY 244): serie de herramientas → CSV de mediciones sobre el grafo de RED,
-  rumbo a Hugging Face con gate de calidad. El FIN real: afinar el pipeline como instrumento
-  científico en las tres lentes (aRGus/Suricata/Zeek); los datasets son subproducto de esa calidad.
+## Estado que ordena el día — herramienta de datasets HECHA y validada; empieza el 2º traffic driver
+- ✅ Pipeline multi-sensor en main, tag `pre-release-0.0.1` (DAY 247).
+- ✅ `dataset_export.py` A/B/C (DAY 248). A = veredicto del ORO HMAC-sellado + topología del grafo
+  (cross_sensor_corroborations, reuse_degree por `count(DISTINCT g)`). B = veredicto LEÍDO del grafo por
+  event_id. C = validador del loader (diff ORO↔grafo por event_id, campo a campo del veredicto).
+- ✅ 🟢🟢🟢 MODO C: **LOADER FIEL 4195/4195, 0 dropados, 0 mismatch** → el grafo es proyección
+  bit-a-bit del ORO sellado. La garantía Vía Appia deja de ser afirmación y es NÚMERO reproducible por comando.
+  Corolario medido: **B ≡ A** (no hay pérdida en la proyección). Tres CSV en `logs/datasets/` por `make`.
+- ✅ Cuatro hallazgos medidos (corrida nmap -A `20260803-064544`, `dataset-modeA-*.csv`):
+  (1) `overall_threat_score = 0.75` LITERAL en los 1089 MALICIOUS = flag disfrazado de score continuo;
+  (2) `flow_start_sec = 0` ⟺ EXACTAMENTE los MALICIOUS/fast-alert (reloj localizado en esa ruta);
+  (3) 43% de eventos argus con `authoritative_source = DETECTOR_SOURCE_DIVERGENCE` (el sistema discrepó de su ML);
+  (4) `authoritative_source` polimórfico (argus = arbitraje; suricata/zeek = nombre del sensor).
+- 🎯 REENCUADRE (Alonso, DAY 248): el entregable NO es "un dataset", es un **INSTRUMENTO reproducible que
+  genera un dataset EN FUNCIÓN de un traffic driver** (script de la familia `mitre_start.sh`). Driver simple →
+  dataset simple; driver sofisticado → dataset rico. Dos capas: (1) traffic driver [VARIABLE] |
+  (2) downstream fijo bronce→oro→grafo→`dataset_export` [INVARIANTE, agnóstico del driver, ancla al STAMP].
+  Terceros (alumnos de Andrés) podrían enchufar SU driver. Caveat honesto: el contrato driver↔harness es
+  IMPLÍCITO hoy (`DEBT-DATASET-DRIVER-CONTRACT-001`) → el paper NO vende "plug-and-play", vende
+  "demostramos 2 drivers y especificamos el contrato del tercero".
 
-## Batalla candidata DAY 248 — arrancar la herramienta de datasets (medir primero)
-1. MEDIR qué expone el grafo: leer schema.cypher (correlation-engine/schema/) y correr kuzu_query
-   sobre una BD de red fresca (la última de mitre-start sirve) para inventariar nodos/aristas/
-   propiedades REALES consultables. No diseñar el export sin ver qué hay.
-2. Decidir la PRIMERA medición-dataset (una, no todas): p.ej. por cada NetworkFlow, sus features
-    + source_sensor + si está corroborado cross-sensor. CSV plano, reproducible desde un comando.
-3. Esqueleto de la herramienta como target del Makefile (reproducibilidad = propiedad del repo):
-   `dataset-export` que corre kuzu_query(s) → CSV en ruta canónica. Empezar por el grafo de RED.
-4. La herramienta es la cazadora de bugs desconocidos: al extraer sistemáticamente, anota toda
-   inconsistencia (p.ej. el conocido argus N filas→M TelemetryEvent — ¿pérdida real o mapeo?).
+## Batalla candidata DAY 249 — el 2º traffic driver: replay del CTU (mide primero)
+1. Es un HERMANO de `mitre_start.sh`, NO un modo de `dataset_export.py`. Mismo downstream, distinta fuente de
+   tráfico: `tcpreplay` del pcap Neris del CTU-13 en vez de `nmap -A`. Target nuevo `ctu-start` (molde: [[mitre-start-repro]]).
+2. MEDIR primero: ¿dónde está el pcap/traza del CTU en disco? ¿el driver puede reusar TODO el downstream de
+   `mitre_start.sh` (curl clave viva → captura → converters → loaders → poblador) cambiando SOLO el generador de
+   tráfico? Localizar el seam = primer paso de `DEBT-DATASET-DRIVER-CONTRACT-001`.
+3. Correr → `dataset_export.py` A/B/C sobre esa corrida → segundo CSV + su validación C.
+   Encuadre DAY 247 a respetar: el valor es caracterizar el SESGO de cada lente contra el ground-truth
+   ETIQUETADO del CTU, NO "reproducimos el CTU".
+4. Con los DOS datasets (nmap sintético + CTU etiquetado) → listos para las conclusiones del paper.
 
-## Deudas DIFERIDAS post-0.0.1 (apuntadas, NO bloqueantes)
-DEBT-HMAC-KEY-INSECURE-TRANSPORT-001 (transporte HMAC HTTP plano; fix = Vault HTTPS/auth/leases) ·
-Vault productivo · rotación de claves real · fault-injection real ·
-DEBT-ENV-BOOTSTRAP-NOT-REPRODUCIBLE-001 (pipeline-start no arrastra build) ·
-DEBT-ADAPTER-AUTOMATION-DOWNSTREAM-001 (B: adapter autónomo — auto-obtención curl + folder-watch
-+ procesados/) · DEBT-MITRE-START-WAZUH-REACT-001 · bugs menores del harness
-  (test_integ_sign abort, sign-plugins manual tras rebuild).
+## Deudas nuevas DAY 248 (en BACKLOG, correlacionadas con tareas — BACKLOG↔PROMPT trazables)
+`DEBT-OVERALL-SCORE-LITERAL-001` (overall=0.75 constante en MALICIOUS = binario disfrazado; FASE FIX / honestidad del paper) ·
+`DEBT-DATASET-DRIVER-CONTRACT-001` (contrato traffic-driver↔harness implícito; nombrarlo → tarea ctu-start + sección del paper) ·
+`DEBT-FLOWSTART-CLOCK-DOMAIN-001` (REFINADA: reloj 0 localizado 100% en ruta fast-alert) ·
+`DEBT-DATASET-AUTHSOURCE-POLYMORPHIC-001` (vocabulario de authoritative_source cambia por sensor; documentar en la data card).
+
+## Diferidas post-0.0.1 (apuntadas, NO bloqueantes)
+DEBT-HMAC-KEY-INSECURE-TRANSPORT-001 · Vault productivo · rotación de claves · fault-injection real ·
+DEBT-ENV-BOOTSTRAP-NOT-REPRODUCIBLE-001 · DEBT-ADAPTER-AUTOMATION-DOWNSTREAM-001 · DEBT-MITRE-START-WAZUH-REACT-001 ·
+bugs menores del harness.
+
+## Para el PAPER (cuando lleguen las conclusiones)
+- La contribución = el INSTRUMENTO, no el dataset. Sección explícita: "la generación de datasets es función de
+  un script de la familia mitre_start.sh"; documentar el CONTRATO del traffic driver para que terceros integren el suyo.
+- Números honestos ya medidos: loader fiel 4195/4195 (Vía Appia); 0.75 literal; 43% divergencia de detectores;
+  reloj 0 en fast-alert; Alert SOLO de argus (Suricata/Zeek = contexto, no veredicto). Corroboración cross-sensor
+  real ~5% de las aristas (argus↔zeek domina; suricata = sensor de evento raro).
+- Alcance declarado (no sobrevender): C valida el VEREDICTO, no la 5-tupla (no está en el grafo a propósito);
+  una corrida por driver; tráfico nmap -A / CTU Neris, no el universo de ataques.
 
 ## Invariantes (no negociar)
-- Medir, no votar. HECHO ≠ SOSPECHADO; cada afirmación a salida de comando/fichero.
-- Un día, una batalla. Vía Appia (bronce/oro = fuente de verdad; grafo = proyección).
+- Medir, no votar. HECHO ≠ SOSPECHADO; cada afirmación a salida de comando/fichero. (DAY 248: me inventé un
+  bug de coma/awk para no creer una salida sorprendente — la medición corrigió. No votar.)
+- Un día, una batalla. Vía Appia (bronce/oro = fuente de verdad; grafo = proyección, AHORA certificada por modo C).
 - Reproducibilidad = propiedad del repo: todo dato del paper, generable por un comando del Makefile.
-- Grafo RED = fresco por medición; grafo HOST = nombre estable (acumular vs por-corrida, pendiente).
-- No datasets per se: el fin es el instrumento; los datasets salen cuando pasen el gate de calidad
-  (irán a Hugging Face solo entonces). NO entregar el pcap-replay CTU (check de fontanería, no deliverable).
-- sed -i de macOS/BSD exige sufijo de backup: `sed -i ''`. Alonso no tiene str_replace: entregar
-  script parcheador (idempotente, ancla por texto) o fichero completo.
+- Grafo RED = fresco por medición. sed -i de macOS/BSD exige sufijo: `sed -i ''`.
+- Alonso no tiene str_replace: entregar script completo o parcheador idempotente (ancla por texto).
 
 ## Recordatorio de tono
-Alonso pilota; mide contra fichero y pega salida. Ya en main (post-merge). Hilos de memoria:
-[[dashboard-export]] (datasets, scope DAY 244), [[cierre-paper]] (roadmap + tesis honesta del paper),
-[[parquet-a-kuzu]] (loader/consulta del grafo red), [[host-a-kuzu]] (grafo host),
-[[hmac-secrets-provisioning]] (A hecha / B pendiente / secretos).
+Alonso pilota; mide contra fichero y pega salida. Hilos de memoria: [[dashboard-export]] (herramienta A/B/C +
+los 4 hallazgos + loader fiel), [[cierre-paper]] (tesis honesta + framing del instrumento), [[parquet-a-kuzu]]
+(loader/consulta del grafo red), [[mitre-start-repro]] (el driver mitre = molde de ctu-start).
