@@ -3157,7 +3157,8 @@ wazuh-adapter-rebuild: wazuh-adapter-clean wazuh-adapter-build
 # (VM primaria) -> vagrant ssh -c SIN sufijo de VM; build/ plano vale porque solo
 # defender compila aqui (a diferencia de zeek-adapter, que comparte /vagrant).
 # DEBT-HOST-DOMAIN-EMECAS-INTEGRATION-001 (mitad build+unit).
-.PHONY: host-engine-build host-engine-test host-engine-clean host-engine-rebuild dataset-export dataset-export-b dataset-export-c dataset-export-all ctu-start fetch-neris
+.PHONY: host-engine-build host-engine-test host-engine-clean host-engine-rebuild dataset-export dataset-export-b
+.PHONY: dataset-export-c dataset-export-all ctu-start fetch-neris bias-report fetch-neris-labels
 host-engine-build:
 	@echo "╔════════════════════════════════════════════════════════════╗"
 	@echo "║  🔨 Building host-engine [VM: defender]                   ║"
@@ -3190,3 +3191,9 @@ ctu-start:  ## 2o traffic driver: replay Neris (CTU-13 sc.1) -> grafo cross-sens
 
 fetch-neris:  ## descarga+verifica el pcap Neris (~56MB) a datasets/ctu13/ si falta
 	@vagrant ssh client -c "bash /vagrant/scripts/fetch_neris.sh"
+
+bias-report:  ## sesgo por-lente vs ground-truth CTU (join 5-tupla) -> logs/datasets/bias-report-$(STAMP).txt
+	python3 scripts/join_bias_labels.py $(STAMP)
+
+fetch-neris-labels:  ## descarga+verifica el binetflow del Neris (~386MB) a datasets/ctu13/ si falta
+	@vagrant ssh client -c "bash /vagrant/scripts/fetch_neris_labels.sh"

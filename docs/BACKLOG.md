@@ -6036,3 +6036,49 @@ Reencuadre §0 reproducibilidad (reloj→epoch) sigue vigente; ahora con el siti
   de pipeline-start (ahorro de recursos; NO deprecar).
 - DEBT-PIPELINE-START-BINARY-GUARD-001 (P2) — pipeline-start compruebe binarios compilados y
   los compile si faltan (hoy asume y fracasa; onboarding / "yo dentro de un año").
+<!-- ============================================================= -->
+<!-- DAY 250 — join bias-vs-ground-truth + automatización Makefile -->
+<!-- Append a docs/BACKLOG.md. BACKLOG↔PROMPT trazables.           -->
+<!-- ============================================================= -->
+
+### DAY 250 — deudas nuevas (correlacionadas con tarea)
+
+- **DEBT-BIAS-DENOMINATOR-LENS-OBSERVABLE-001** — El denominador del `bias-report`
+  (flujos botnet contra los que se mide el recall/visibilidad de cada lente) es
+  *lens-observable*: son los flujos botnet vistos por ≥1 lente. Un flujo botnet que
+  NINGUNA lente capturó no deja fila y por tanto no cuenta → el recall real de cada
+  lente podría ser menor. El denominador VERDADERO exige extraer las 5-tuplas botnet
+  directamente del pcap replayado.
+  - *Tarea correlacionada:* `bias-denominator-true` (futuro) — `tshark -r <neris.pcap>`
+    → set de 5-tuplas → intersección con las labels botnet del binetflow = denominador
+    independiente de las lentes. NO bloqueante del número actual; refina el caveat.
+  - *Estado:* ABIERTA, diferida. Declarar el caveat en la data card mientras tanto.
+
+- **DEBT-BIAS-KEY-5TUPLE-AMBIGUITY-001** — 2 de las 14358 5-tuplas casadas (0.014%)
+  aparecen en el binetflow a la vez con label Botnet Y con label clean (Background/Normal),
+  ambas sobre el host infectado 147.32.84.165. El join las cuenta como botnet ("botnet si
+  cualquiera"). Es solape del propio etiquetado manual del CTU, no un fallo del join.
+  - *Tarea correlacionada:* ninguna (magnitud despreciable). Declarar como límite del
+    ground-truth en la data card / sección del paper.
+  - *Estado:* ACEPTADA-Y-DECLARADA.
+
+- **DEBT-BIAS-FASTPATH-LAB-FP-UNMEASURED-001** — El fast-path de argus disparó MALICIOUS
+  también sobre ~51 flujos de fondo de lab (sin-label: no son botnet ni CTU). Como el
+  tráfico de lab no está etiquetado, esos falsos positivos reales NO se miden contra las
+  labels del CTU → la `precision=1.000` del bias-report es contra el ground-truth del CTU,
+  NO absoluta. Relacionada con DEBT-DATASET-LAB-BACKGROUND-IN-WINDOW-001.
+  - *Tarea correlacionada:* al redactar el paper, declarar la precision como condicional
+    al ground-truth CTU; el FP absoluto exigiría etiquetar el fondo de lab (fuera de alcance).
+  - *Estado:* ABIERTA (documental), no bloqueante.
+
+### DAY 250 — deuda actualizada
+
+- **DEBT-DATASETS-FETCH-NOT-AUTOMATED-001** *(ACTUALIZADA)* — La mitad de LABELS queda
+  CERRADA: `scripts/fetch_neris_labels.sh` + target `make fetch-neris-labels` descargan y
+  verifican (sha256 pineado) el binetflow del MCFP, gemelo de `fetch_neris.sh`. Con el pcap
+  ya pineado (DAY 249) y las labels ahora, ambos ficheros CTU son reproducibles desde
+  `vagrant destroy -f && up`. Falta menor: `bias-report` NO cuelga de `fetch-neris-labels`
+  como prerequisito (decisión: mantener bias-report independiente del host/VMs; el guard del
+  script avisa si el binetflow falta). Revisar si se prefiere la garantía dura.
+  - *Estado:* CTU (pcap+labels) CERRADA para reproducibilidad. Queda la política de
+    acoplamiento como decisión abierta menor.
