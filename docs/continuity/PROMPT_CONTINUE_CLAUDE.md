@@ -1,104 +1,94 @@
-# PROMPT DE CONTINUIDAD — aRGus NDR — DAY 251
+# PROMPT DE CONTINUIDAD — aRGus NDR — DAY 252
 
 ## Punto de entrada (mide, no asumas)
     git log --oneline -6
     git status
     git branch --show-current
     vagrant status
-Tras DAY 250: rama `feat/ctu-start` con el commit `feat(bias-report)...`
-(scripts/join_bias_labels.py + scripts/fetch_neris_labels.sh + targets Makefile
-`bias-report`/`fetch-neris-labels` + `.PHONY`). Si algo quedó sin commitear o el
-guard de fetch_neris_labels.sh no arranca (`make fetch-neris-labels` → `OK ...
-verificado`), ciérralo primero. VMs probablemente aborted (bias-report NO las
-necesita: corre solo en host).
+Tras DAY 251: rama `feat/ctu-start`. Debe existir un commit `feat(bias-denominator)`
+con `scripts/bias_denominator_true.py` + `scripts/autopsy_67.py`. Si el `git status`
+del cierre de ayer mostraba los 2 scripts a la vez staged (versión vieja) Y modified
+(versión nueva) → se hizo `git add scripts/bias_denominator_true.py scripts/autopsy_67.py`
+antes del commit (misma trampa DAY 250). `scripts/__pycache__/` a `.gitignore` o sin añadir.
+VMs probablemente aborted (los scripts de ayer corren solo en host).
 
-## Estado que ordena el día — sesgo por-lente MEDIDO, AUTOMATIZADO y bancado
-- ✅ Instrumento de datasets A/B/C en main (DAY 248) + 2º driver `ctu-start` (DAY 249).
-- ✅ 🟢🟢🟢 BATALLA DAY 250 CERRADA: **join bias-vs-ground-truth**. El dataset modo A
-  (STAMP 20260804-080140) cruzado por 5-TUPLA CANONICALIZADA (sin ventana: el replay
-  --mbps=10 reescribió el reloj) contra el binetflow del CTU-13
-  (`datasets/ctu13/capture20110810.binetflow`, 2.8 M flujos, labels Botnet/Normal/
-  Background). Join FIEL: 99.3% de nuestras 14466 5-tuplas casan; clave limpia salvo
-  2 ambiguas (0.014%). Fondo de lab auto-limpia como sin-label (predicción confirmada).
-- ✅ 🎯 EL NÚMERO DEL PAPER (divergencia por-lente, sin fundir lentes — decisión Alonso):
-    - **zeek** = observador 1:1, visibilidad **99.9%** (14178/14188) del botnet, cero veredicto.
-    - **suricata** = 1:1, visibilidad **1.5%**, y sus 237 solapes son TODOS "Generic Protocol
-      Command Decode" = **anomalía de protocolo, NO firma de botnet** (ET Open F1=0 preciso).
-      precision 0.975 / recall 0.015.
-    - **argus** = lente **gruesa y event-heavy** (74 flujos distintos, ×18.5 eventos/flujo),
-      capta el **C&C persistente** no el fan-out efímero; matriz por-fila TP=894 FP=0 FN=248
-      → recall 0.783, y esa detección es **100% fast-path con el ML CIEGO** (945 MALICIOUS,
-      todos overall=0.75 literal / ml≈0.07 / DETECTOR_SOURCE_DIVERGENCE).
-- ✅ AUTOMATIZADO como comando (reproducibilidad = propiedad del repo): `make bias-report`
-  (mismo STAMP que dataset-export, escribe `logs/datasets/bias-report-$STAMP.txt`) +
-  `make fetch-neris-labels` (baja el binetflow del MCFP, cierra la trampa del destroy&up).
+## Estado que ordena el día — OBJETIVO (a) CERRADO, empieza la redacción
+DAY 251 cerró el **denominador verdadero** y su hueco, todo medido, sin conjeturas
+(medir corrigió mis 3 hipótesis seguidas: GSO, S0, flush — las tres falsas).
 
-## CAVEATS que van al paper con los números (NO sobre-cantar — la medición ya corrigió 2 veces)
-1. `precision=1.000` de argus es TRIVIAL: 0 flujos clean-etiquetados en su vista → nada
-   sobre lo que dar FP. NO es "nunca falsa-alarma".
-2. `recall 0.783` es del HEURÍSTICO, no del ML (ML ciego, 0.07). Es la tesis Sommer & Paxson
-   en el ground-truth (el ML no transfiere, la firma lleva lo poco que se detecta). NO
-   redactar "argus detecta el 78%" sin ese split.
-3. El "0.2% de visibilidad" de argus es GRANULARIDAD, no ceguera (argus cuantiza en 74 flujos
-   gruesos vs los ~14000 micro-flujos de zeek). Redactar como sesgo de granularidad por-lente.
-4. El fast-path disparó MALICIOUS también sobre ~51 flujos de fondo de lab (sin-label) → esos
-   FP reales NO se miden contra las labels del CTU (el lab no está etiquetado). Declararlo.
-5. Denominador LENS-OBSERVABLE (flujos botnet vistos por ≥1 lente): un flujo botnet que
-   ninguna lente capturó no cuenta. El denominador VERDADERO exige tshark sobre el pcap.
+- ✅ 🎯 DENOMINADOR VERDADERO (tshark sobre el pcap offline, `bias_denominator_true.py`):
+    - P (5-tuplas distintas en el pcap) = 14520 · B_full (botnet en el binetflow entero) = 14257.
+    - **denominador verdadero = P ∩ B_full = 14255** (COTA SUPERIOR del pcap offline).
+    - **lens-observable (== gt_botnet del join) = 14188** (denominador OPERATIVO).
+    - salud de la clave L−P = 0 (canon fiel, reuso de `join_bias_labels.py` validado).
+- ✅ 🎯 PUNTO CIEGO COMPARTIDO = 14255 − 14188 = **67 flujos = 0.47%**. Caracterizado:
+    - NO GSO (split frame.len: 0 GSO-only) · NO intentos S0 (67/67 con respuesta, 6–46662 pkts).
+    - `autopsy_67.py` lo localiza por medición: NO en oro zeek, **NO en el conn.log crudo de
+      zeek (0/67)** → mueren ANTES del pipeline, en captura/cable. `dataset_export.py` medido:
+      el modo A no deduplica ni filtra → export exonerado.
+    - ETAPA 3 (posición temporal): repartido por casi todo el pcap, sesgo ×4 al arranque
+      (17/67 en el 1er 5% vs 6.3% de los vistos). NO borde limpio.
+    - ETAPA 4 (argus eth2, otra pila): **0/67**. Dos pilas, dos interfaces, mismo veredicto.
+    - **VEREDICTO: el 0.47% es PÉRDIDA DE FIDELIDAD DE REPLAY en el cable** (consistente con
+      los 2630 GSO EMSGSIZE, 0.81%). NO detección, NO pipeline, NO drop de una pila.
+- ✅ Contraste conn_state de los 14178 vistos: S0=9831, SF=3650, RSTO=490, REJ=212, RSTR=35
+  → zeek→oro NO filtra por estado (emitió 9831 S0 sin problema).
 
-## Batalla candidata DAY 251 — redactar el sesgo por-lente en el paper (encuadre DAY 249)
-Roadmap Alonso: "esta semana se escribe la renovación del paper con los datos actuales +
-los 2 datasets". Con el número del sesgo por-lente ya medido y reproducible, la batalla
-natural = **escribir la sección de caracterización del sesgo por-lente** con: la tabla de
-las 3 lentes (visibilidad / detección heterogénea), los 5 caveats de arriba TAL CUAL, y el
-hilo argumental "el ML está ciego sobre Neris, la firma/heurístico lleva la detección" =
-S&P confirmado empíricamente con trazas reproducibles. Medir primero: releer el estado del
-paper actual antes de redactar (qué secciones existen, dónde encaja esto). Alternativas que
-Alonso puede priorizar en su lugar: (a) refinamiento del denominador verdadero (tshark sobre
-el pcap → flujos botnet que NINGUNA lente vio, cierra el caveat 5); (b) decisión de merge
-`feat/ctu-start` → main (el trabajo del instrumento+drivers+bias está listo); (c) README final.
+## Frase honesta para el paper (redáctala tal cual, sin interpretar de más)
+> El denominador "verdadero" (14255) se calcula sobre el pcap OFFLINE. El observable por el
+> banco (14188) difiere en 67 flujos (0.47%). Esos 67 no aparecen en el conn.log crudo de
+> zeek ni en el bronce de argus (dos pilas de captura independientes, dos interfaces), luego
+> no llegaron al cable replayado — límite de fidelidad de replay, consistente con los 2630
+> frames GSO no replayables medidos. El denominador operativo es 14188; el "verdadero" es
+> cota superior. No se atribuye la pérdida más allá de lo que miden tshark y el pipeline.
 
-## Deudas nuevas DAY 250 (en BACKLOG, correlacionadas con tareas — BACKLOG↔PROMPT trazables)
-`DEBT-BIAS-DENOMINATOR-LENS-OBSERVABLE-001` (denominador del bias-report es lens-observable;
-verdadero = tshark 5-tuplas del pcap; correlaciona con una tarea `bias-denominator-true`
-futura) · `DEBT-BIAS-KEY-5TUPLE-AMBIGUITY-001` (2 5-tuplas botnet∧clean, 0.014%, del propio
-etiquetado del CTU; declarar en data card, no bug) · `DEBT-BIAS-FASTPATH-LAB-FP-UNMEASURED-001`
-(el fast-path disparó sobre ~51 flujos de lab sin-label; FP real no medible desde labels CTU) ·
-`DEBT-DATASETS-FETCH-NOT-AUTOMATED-001` (ACTUALIZADA: mitad de labels CERRADA con
-fetch-neris-labels + sha pineado; pcap ya pineado DAY 249 → ambos ficheros CTU reproducibles).
+## LÍMITE DE PROCEDENCIA (regla dura de Alonso, DAY 251 — rige toda la redacción)
+El CTU-13 Neris es un pcap de 2011, NO capturado por nosotros, condiciones de captura
+desconocidas salvo origen universitario. Declararlo como límite. Solo lo que dicen tshark +
+pipeline; cualquier conjetura, etiquetada como tal o no se dice.
 
-## Diferidas (apuntadas, NO bloqueantes)
-`DEBT-PIPELINE-STATUS-ALL-VMS-001` · `DEBT-PIPELINE-START-DISABLE-RAG-001` ·
-`DEBT-PIPELINE-START-BINARY-GUARD-001` · `DEBT-DATASET-XSENSOR-TELEMETRY-ONLY-001` (el 217
-cross-sensor es co-visibilidad, no detección corroborada) · `DEBT-EVENT-ID-COLLISION-001`
-(argus 1369→424 en grafo, colapso 69% en Neris; = la ×18.5 event-multiplicity del bias) ·
-`DEBT-CTU-REPLAY-GSO-DROP-001` (2630/323154=0.81% frames GSO no replayables, deterministas) ·
-`DEBT-DATASET-DRIVER-CONTRACT-001` (seam=1 línea, 2 drivers demostrados, falta enforcement 3º) ·
-DEBT-HMAC-KEY-INSECURE-TRANSPORT-001 · Vault productivo · rotación.
+## Batallas DAY 252 (el trabajo que queda; una por día, mide primero)
+1. **PAPER** — redactar con lo medido: (a) la sección del sesgo por-lente (tabla 3 lentes +
+   los 5 caveats de [[join-bias-ground-truth]]); (b) el denominador verdadero + los 67 como
+   límite de fidelidad de replay; (c) el hilo S&P (ML ciego 0.07, la firma/heurístico lleva la
+   detección). Medir primero: releer el estado ACTUAL del paper (qué secciones existen).
+2. **MAKEFILE para revisores** — cada número del paper detrás de un comando. `bias-report` ya.
+   Añadir targets: `bias-denominator-true` (`python3 scripts/bias_denominator_true.py $(STAMP)`,
+   requiere el raw de tshark → target `neris-pcap-5tuples` que lo genera) y `autopsy-67`. A `.PHONY`.
+3. **OVERHAUL pipeline-start/status** (cierra DEBT-PIPELINE-START-DISABLE-RAG-001,
+   -BINARY-GUARD-001, -STATUS-ALL-VMS-001, -STATUS-LOGFILES-001): pipeline-start levanta TODOS
+   los componentes/VMs MENOS rag-security y rag-ingester (no se borran, no arrancan, no se
+   muestran); compila lo que falte con el MISMO profile que los demás; pipeline-status muestra
+   todos los que corren, incluye el driver usado (ctu-start/mitre-start) si se ejecutó, y por
+   componente su ruta de log + el `vagrant ssh <vm>` para verlo.
+4. **README final** + repo read-only.
 
-## Para el PAPER (redacción ESTA SEMANA)
-- La contribución = el INSTRUMENTO (traffic driver [VARIABLE] | downstream [INVARIANTE]),
-  2 drivers demostrados. El sesgo por-lente es ahora un NÚMERO REPRODUCIBLE por `make bias-report`.
-- Las 3 lentes son heterogéneas por diseño y COMPLEMENTARIAS; el valor es caracterizar el sesgo
-  de cada una, NO normalizarlas. Divergencia total: nadie ve lo mismo, y ahí está la historia.
-- El hallazgo fuerte: sobre el Neris el ML de argus está ciego (0.07) y la detección la lleva el
-  fast-path/heurístico → confirma empíricamente Sommer & Paxson con trazas reproducibles.
-- Alcance declarado: C valida el VEREDICTO no la 5-tupla; join por 5-tupla sin ventana (reloj
-  reescrito por --mbps=10); denominador lens-observable; una corrida por driver.
+## Artefactos de la corrida de referencia (STAMP 20260804-080140, en el HOST, logs/lab/)
+argus-*.bronce.csv (crudo, SIN cabecera, posicional: 7 src_ip,8 dst_ip,9 src_port,10 dst_port,
+11 protocol) · zeek-*.conn.log (crudo) · eve-*.json (suricata crudo) · {argus,suricata,zeek}-*.parquet
+(oro) · logs/datasets/dataset-modeA-20260804-080140.csv (el join lo consume) ·
+logs/datasets/neris-pcap-5tuples-raw.csv (tshark 8 campos, lo consume bias_denominator_true).
+
+## Deudas nuevas / actualizadas DAY 251 (al BACKLOG, correlacionadas con tareas)
+`DEBT-REPLAY-OFFLINE-VS-WIRE-FIDELITY-001` (el denominador true del pcap offline sobre-cuenta
+vs el cable; 0.47% no llega, medido en 2 pilas; cota superior, declarar) ·
+`DEBT-BIAS-DENOMINATOR-LENS-OBSERVABLE-001` ACTUALIZADA → medida y cerrada como cota superior
+(no era ceguera del banco). Diferidas sin cambios: DEBT-EVENT-ID-COLLISION-001,
+DEBT-CTU-REPLAY-GSO-DROP-001, DEBT-DATASET-DRIVER-CONTRACT-001, DEBT-HMAC-KEY-INSECURE-TRANSPORT-001.
 
 ## Invariantes (no negociar)
-- Medir, no votar. HECHO ≠ SOSPECHADO; cada afirmación a salida de comando/fichero. (DAY 250:
-  el "0.2% de argus" parecía ceguera y era granularidad; los awks lo corrigieron. Y el guard de
-  fetch_neris_labels.sh: cazado por LEER el fichero pegado, no por asumir.)
-- Un día, una batalla. Vía Appia (bronce/oro = fuente de verdad; grafo = proyección modo C).
+- Medir, no votar. HECHO ≠ SOSPECHADO. Conjetura etiquetada como tal o no se dice.
+  (DAY 251: 3 hipótesis mías falsas seguidas; el dato mandó cada vez. Los scripts se
+  construyeron para TUMBAR mi propia corazonada con un número, no para confirmarla.)
+- Fidelidad de reuso: los scripts nuevos IMPORTAN `canon()`/loaders de `join_bias_labels.py`
+  y `dataset_export.py`, no reimplementan (bug silencioso proto-case/orientación = la clase que
+  cazamos). Verificar en fixture antes de correr sobre datos reales.
 - Reproducibilidad = propiedad del repo: todo dato del paper, generable por un comando del Makefile.
-- Grafo RED = fresco por medición. sed de macOS/BSD exige sufijo: `sed -i ''`.
-- Alonso no tiene str_replace: entregar script completo o parcheador idempotente (ancla por texto).
-  Al pinear un sha, tocar SOLO la línea `SHA256=`, NUNCA el guard (comparación con el centinela).
+- Alonso pilota; mide contra fichero y pega salida. Alonso no tiene str_replace: script completo.
 - No `grep -rn` desde la raíz (arrastra build/.git/.venv, tarda horas): `git grep` o fichero concreto.
+- sed de macOS/BSD exige sufijo: `sed -i ''`.
 
-## Recordatorio de tono
-Alonso pilota; mide contra fichero y pega salida. Hilos de memoria: [[join-bias-ground-truth]]
-(la batalla del día: join, los números por-lente, los 5 caveats, la automatización),
-[[ctu-start]] (2º driver + la corrida), [[cierre-paper]] (tesis honesta + las 3 lentes),
-[[dashboard-export]] (instrumento A/B/C + loader fiel).
+## Hilos de memoria
+[[join-bias-ground-truth]] (la batalla del denominador verdadero: los 67, la autopsia, el
+veredicto de fidelidad de replay) · [[cierre-paper]] (tesis honesta, las 3 lentes, agenda de
+cierre) · [[ctu-start]] (2º driver + la corrida) · [[dashboard-export]] (instrumento A/B/C).

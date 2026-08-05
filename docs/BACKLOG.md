@@ -6082,3 +6082,16 @@ Reencuadre §0 reproducibilidad (reloj→epoch) sigue vigente; ahora con el siti
   script avisa si el binetflow falta). Revisar si se prefiere la garantía dura.
   - *Estado:* CTU (pcap+labels) CERRADA para reproducibilidad. Queda la política de
     acoplamiento como decisión abierta menor.
+### DAY 251 — denominador verdadero y autopsia del hueco lens-observable
+
+- **DEBT-REPLAY-OFFLINE-VS-WIRE-FIDELITY-001** — El denominador "verdadero" del pcap
+  OFFLINE (14255 5-tuplas botnet) sobre-cuenta respecto al cable replayado. 67 flujos
+  (0.47%) presentes en el pcap NO aparecen en el conn.log crudo de zeek ni en el bronce
+  de argus (dos pilas de captura independientes, eth1/eth2) → no llegan al cable
+  replayado. Consistente con los 2630 frames GSO EMSGSIZE (0.81%). El denominador
+  operativo es el lens-observable (14188); el "verdadero" es cota superior. → Declarar
+  como límite de fidelidad de replay en la data card del paper. Correlaciona con:
+  target `bias-denominator-true` del Makefile.
+- **DEBT-BIAS-DENOMINATOR-LENS-OBSERVABLE-001** — CERRADA/ACTUALIZADA. Medida por
+  `bias_denominator_true.py` + `autopsy_67.py`: el hueco lens-observable NO era ceguera
+  del banco sino fidelidad de replay (ver DEBT-REPLAY-OFFLINE-VS-WIRE-FIDELITY-001).
