@@ -3157,7 +3157,10 @@ wazuh-adapter-rebuild: wazuh-adapter-clean wazuh-adapter-build
 # (VM primaria) -> vagrant ssh -c SIN sufijo de VM; build/ plano vale porque solo
 # defender compila aqui (a diferencia de zeek-adapter, que comparte /vagrant).
 # DEBT-HOST-DOMAIN-EMECAS-INTEGRATION-001 (mitad build+unit).
-.PHONY: host-engine-build host-engine-test host-engine-clean host-engine-rebuild dataset-export dataset-export-b dataset-export-c dataset-export-all
+.PHONY: host-engine-build host-engine-test host-engine-clean host-engine-rebuild dataset-export dataset-export-b
+.PHONY: dataset-export-c dataset-export-all ctu-start fetch-neris bias-report fetch-neris-labels neris-pcap-5tuples
+.PHONY: bias-denominator-true autopsy-67
+
 host-engine-build:
 	@echo "╔════════════════════════════════════════════════════════════╗"
 	@echo "║  🔨 Building host-engine [VM: defender]                   ║"
@@ -3184,3 +3187,38 @@ dataset-export-c:
 	python3 scripts/dataset_export.py --mode C $(STAMP)
 
 dataset-export-all: dataset-export-c dataset-export dataset-export-b
+
+ctu-start:  ## 2o traffic driver: replay Neris (CTU-13 sc.1) -> grafo cross-sensor (requiere pipeline-start + pcap)
+	@bash scripts/ctu_start.sh
+
+fetch-neris:  ## descarga+verifica el pcap Neris (~56MB) a datasets/ctu13/ si falta
+	@vagrant ssh client -c "bash /vagrant/scripts/fetch_neris.sh"
+
+bias-report:  ## sesgo por-lente vs ground-truth CTU (join 5-tupla) -> logs/datasets/bias-report-$(STAMP).txt
+	python3 scripts/join_bias_labels.py $(STAMP)
+
+# ── DAY 252: reproducibilidad del denominador/autopsia para revisores ────────
+NERIS_PCAP_HOST := datasets/ctu13/botnet-capture-20110810-neris.pcap
+NERIS_RAW       := logs/datasets/neris-pcap-5tuples-raw.csv
+
+$(NERIS_RAW):  ## raw tshark (proto/ips/puertos + frame.len) del pcap Neris; lo consumen denominador-true y autopsy
+	@command -v tshark >/dev/null 2>&1 || { echo "[ERROR] tshark no esta en el PATH del host; instala wireshark/tshark"; exit 1; }
+	@test -f $(NERIS_PCAP_HOST) || { echo "[ERROR] falta $(NERIS_PCAP_HOST); corre make fetch-neris"; exit 1; }
+	@mkdir -p logs/datasets
+	tshark -r $(NERIS_PCAP_HOST) \
+	  -T fields -e ip.proto -e ip.src -e ip.dst \
+	  -e tcp.srcport -e tcp.dstport -e udp.srcport -e udp.dstport -e frame.len \
+	  -E separator=, -E occurrence=f \
+	  > $(NERIS_RAW)
+	@echo "[OK] $(NERIS_RAW) generado ($$(wc -l < $(NERIS_RAW)) lineas)"
+
+neris-pcap-5tuples: $(NERIS_RAW)  ## genera el raw tshark del pcap Neris (idempotente: solo si falta el fichero)
+
+bias-denominator-true: $(NERIS_RAW)  ## denominador VERDADERO pcap vs lens-observable -> logs/datasets/bias-denominator-true-$(STAMP).txt
+	python3 scripts/bias_denominator_true.py $(STAMP)
+
+autopsy-67: $(NERIS_RAW)  ## autopsia del hueco de 67 flujos: donde mueren en el pipeline (host puro sobre logs/lab/)
+	python3 scripts/autopsy_67.py $(STAMP)
+
+fetch-neris-labels:  ## descarga+verifica el binetflow del Neris (~386MB) a datasets/ctu13/ si falta
+	@vagrant ssh client -c "bash /vagrant/scripts/fetch_neris_labels.sh"

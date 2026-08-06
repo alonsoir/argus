@@ -336,3 +336,13 @@ tools/scratch/
 !provisioning/wazuh/*.deb
 
 # El .deb del agente Wazuh va al repo (provisioning reproducible), pese al *.deb global
+scripts/__pycache__/
+
+docs/latex/*.pdf
+docs/latex/*.blg
+docs/latex/*.aux
+docs/latex/*.log
+docs/latex/*.out
+docs/latex/*.fls
+docs/latex/*.fdb_latexmk
+docs/latex/*.bbl
