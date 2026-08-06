@@ -345,3 +345,4 @@ docs/latex/*.log
 docs/latex/*.out
 docs/latex/*.fls
 docs/latex/*.fdb_latexmk
+docs/latex/*.bbl
