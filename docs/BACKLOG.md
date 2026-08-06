@@ -6095,3 +6095,28 @@ Reencuadre §0 reproducibilidad (reloj→epoch) sigue vigente; ahora con el siti
 - **DEBT-BIAS-DENOMINATOR-LENS-OBSERVABLE-001** — CERRADA/ACTUALIZADA. Medida por
   `bias_denominator_true.py` + `autopsy_67.py`: el hueco lens-observable NO era ceguera
   del banco sino fidelidad de replay (ver DEBT-REPLAY-OFFLINE-VS-WIRE-FIDELITY-001).
+## DAY 252 — paper v25 a arXiv (sesgo por-lente + denominador verdadero)
+
+### Cerradas
+- **DEBT-BIAS-DENOMINATOR-LENS-OBSERVABLE-001** — CERRADA. Denominador verdadero
+  medido (14255, cota superior del pcap offline) vs operativo (14188 lens-observable).
+  `make bias-denominator-true`.
+- **DEBT-PAPER-BIAS-SECTION-001** — CERRADA. Subsección `sec:eval:bias` en main.tex con
+  tab:denominators + tab:perlens + 5 caveats + los 67. Cada figura tras un `make`. Paper v25 en arXiv.
+- **DEBT-BIAS-REPORT-GRANULARITY-UNCOMMANDED-001** — CERRADA. La granularidad por-lente y el
+  split fast/ml de argus (caveats 2-4) salían de awks manuales de DAY 250; ahora los emite
+  `join_bias_labels.py` extendido → `make bias-report`.
+
+### Nuevas (no bloqueantes del cierre)
+- **DEBT-REPLAY-OFFLINE-VS-WIRE-FIDELITY-001** — el denominador true del pcap offline
+  sobre-cuenta vs el cable; 67 flujos (0.47%) no llegan, medido en 2 pilas de captura.
+  Declarado como cota superior en el paper. No se ataca; es límite del dataset ajeno de 2011.
+- **DEBT-README-STALE-DAY191-001** (P1, batalla DAY 253) — README ancla en DAY ~191-211,
+  se contradice la fecha, afirma F1/Recall sin el subconjunto conductual, es diario y no
+  puerta. Reescritura total (opción B: poda Vía Appia + histórico a CHANGELOG/docs/HITOS.md).
+
+### Diferidas sin cambios
+DEBT-BIAS-KEY-5TUPLE-AMBIGUITY-001 (0.014%, declarada) · DEBT-BIAS-FASTPATH-LAB-FP-UNMEASURED-001 ·
+DEBT-EVENT-ID-COLLISION-001 · DEBT-CTU-REPLAY-GSO-DROP-001 · DEBT-DATASET-DRIVER-CONTRACT-001 ·
+DEBT-HMAC-KEY-INSECURE-TRANSPORT-001 · DEBT-PIPELINE-START-DISABLE-RAG-001 /
+-BINARY-GUARD-001 / -STATUS-ALL-VMS-001 / -STATUS-LOGFILES-001 (overhaul pipeline-start/status).
