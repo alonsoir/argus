@@ -1,0 +1,100 @@
+#!/usr/bin/env bash
+# scripts/custom_start.sh.template — DAY 254. PLANTILLA de traffic driver.
+# Hermano de mitre_start.sh / ctu_start.sh: el downstream (bronce->oro->grafo->
+# veredicto) es INVARIANTE. Lo UNICO que escribes es el disparo de tu trafico:
+# el bloque marcado >>> SEAM <<<. Todo lo demas lleva "# INVARIANTE — NO TOCAR".
+#
+# COMO USARLO:
+#   cp scripts/custom_start.sh.template scripts/mi_driver.sh
+#   # edita SOLO el bloque >>> SEAM <<< con tu disparo de trafico
+#   make custom-start DRIVER=scripts/mi_driver.sh
+#   make validate-driver
+# Requiere: make up && make bootstrap && make pipeline-start antes.
+# Ver docs/WRITING-A-DRIVER.md.
+set -uo pipefail
+CE="/vagrant/correlation-engine/build"; SCHEMA="/vagrant/correlation-engine/schema/schema.cypher"
+LAB="/vagrant/logs/lab"; ADAPTER="/vagrant/suricata-adapter/build-suricata/suricata_adapter"
+ZEEKCTL="/opt/zeek/bin/zeekctl"
+ZEEK_ADAPTER="/vagrant/zeek-adapter/build-zeek/zeek_adapter"
+ZEEK_SPOOL="/opt/zeek/spool/zeek"   # conn.log vivo
+STAMP="$(date -u +%Y%m%d-%H%M%S)"; KUZU="/vagrant/logs/day234-kuzu/mitre-$STAMP.kuzu"
+die(){ echo "X $*" >&2; exit 1; }
+echo ""
+echo "##################################################################"
+echo "#  ALERT  ##  HACK DE DESARROLLO — NO APTO PARA PRODUCCION  ##    #"
+echo "#  custom-start saca la clave HMAC con un GET HTTP EN CLARO al    #"
+echo "#  etcd-server. DEBT-HMAC-KEY-INSECURE-TRANSPORT-001 (P1).        #"
+echo "##################################################################"
+echo ""
+
+# 1) INVARIANTE — NO TOCAR — Clave HMAC del bronce (el hack)
+KEY=$(vagrant ssh defender -c "curl -s http://localhost:2379/secrets/ml-detector | python3 -c 'import sys,json; print(json.load(sys.stdin)[\"key\"])'" 2>/dev/null | tr -d '\r')
+[ ${#KEY} -eq 64 ] || die "clave HMAC no es 64 hex (len=${#KEY}). ¿pipeline-start arriba? ¿etcd-server RUNNING?"
+echo "OK clave HMAC en mano (64 hex, head ${KEY:0:8}...)"
+
+# 2) INVARIANTE — NO TOCAR — Marca T0 + Zeek armado ANTES del trafico
+vagrant ssh defender -c "touch $LAB/mitre-t0-$STAMP.marker"
+vagrant ssh zeek -c "sudo $ZEEKCTL deploy" || die "zeekctl deploy fallo"
+
+# ============================================================================
+# >>> SEAM — LO UNICO QUE ESCRIBES <
+#   Pon aqui el/los comando(s) que generan TU trafico contra la red vigilada
+#   (ml_defender_gateway_lan, 192.168.100.0/24), ENTRE este punto (T0) y el
+#   drenaje de abajo. El trafico DEBE caer donde las 3 lentes lo ven:
+#     - client inyecta desde eth1 (192.168.100.50)
+#     - aRGus sniffa eth2 PRE-NAT en defender (192.168.100.1)
+#     - suricata eth1 (.10) · zeek eth1 (.11)
+#   nmap/tcpreplay BLOQUEAN hasta terminar; si tu herramienta es asincrona,
+#   ajusta el `sleep 45` del drenaje mas abajo.
+#   Guard opcional del prerequisito de tu herramienta (ej. un pcap):
+#     vagrant ssh client -c "test -f /ruta/fichero" || die "falta el fichero"
+#
+#   EJEMPLOS (descomenta UNO o escribe el tuyo, y borra el `die` de abajo):
+#   vagrant ssh client -c "sudo nmap -A 192.168.100.1" || die "nmap fallo"
+#   vagrant ssh client -c "sudo tcpreplay -i eth1 --mbps=10 /vagrant/datasets/ctu13/tu.pcap" || die "tcpreplay fallo"
+echo "-- Disparo DRIVER CUSTOM --"
+die "SEAM vacio: edita el bloque >>> SEAM <<< con tu disparo de trafico y borra este die"
+# >>> FIN SEAM <
+# ============================================================================
+
+# INVARIANTE — NO TOCAR — Drenaje
+echo "-- Drenaje 45s --"; sleep 45
+vagrant ssh zeek -c "sudo cp $ZEEK_SPOOL/conn.log $LAB/zeek-$STAMP.conn.log && sudo chmod 644 $LAB/zeek-$STAMP.conn.log" || die "no hay conn.log en el spool (zeek no vio trafico en la ventana?)"
+vagrant ssh zeek -c "sudo $ZEEKCTL stop"
+
+# 3) INVARIANTE — NO TOCAR — Oro aRGus (bronce ventana mtime>T0, clave real)
+vagrant ssh defender -c "cat \$(find /vagrant/logs/correlation -name 'argus-*.csv' -newer $LAB/mitre-t0-$STAMP.marker | sort) > $LAB/argus-$STAMP.bronce.csv"
+vagrant ssh defender -c "cd $CE && ARGUS_BRONZE_HMAC_KEY_HEX=$KEY ./bronze_to_gold_converter $LAB/argus-$STAMP.bronce.csv $LAB/argus-$STAMP.avro $LAB/argus-$STAMP.parquet" | tee /tmp/argus-conv.log
+grep -q "descartadas: 0" /tmp/argus-conv.log || die "aRGus: descartadas>0 -> la clave no caso"
+
+# 4) INVARIANTE — NO TOCAR — Oro Suricata (adapter alert-only, clave real)
+vagrant ssh suricata -c "sudo cp /var/log/suricata/eve.json $LAB/eve-$STAMP.json && sudo chmod 644 $LAB/eve-$STAMP.json"
+vagrant ssh suricata -c "python3 -c \"import json; json.dump({'base_dir':'$LAB','node_id':'cpp_sniffer_v33_day12','input_path':'logs/lab/eve-$STAMP.json','hmac_key_env':'ARGUS_BRONZE_HMAC_KEY_HEX'}, open('$LAB/suri-adapter-$STAMP.json','w'))\""
+vagrant ssh suricata -c "cd /vagrant && ARGUS_BRONZE_HMAC_KEY_HEX=$KEY $ADAPTER $LAB/suri-adapter-$STAMP.json"
+SURI_CSV=$(vagrant ssh suricata -c "ls -t $LAB/suricata-*.csv | head -1" 2>/dev/null | tr -d '\r')
+vagrant ssh defender -c "cd $CE && ARGUS_BRONZE_HMAC_KEY_HEX=$KEY ./bronze_to_gold_converter $SURI_CSV $LAB/suricata-$STAMP.avro $LAB/suricata-$STAMP.parquet" | tee /tmp/suri-conv.log
+grep -q "descartadas: 0" /tmp/suri-conv.log || die "suricata: descartes HMAC>0 -> clave real no caso"
+
+# 4b) INVARIANTE — NO TOCAR — Oro Zeek (conn.log ventana -> adapter -> converter)
+vagrant ssh zeek -c "python3 -c \"import json; json.dump({'base_dir':'$LAB','node_id':'cpp_sniffer_v33_day12','input_path':'logs/lab/zeek-$STAMP.conn.log','hmac_key_env':'ARGUS_BRONZE_HMAC_KEY_HEX'}, open('$LAB/zeek-adapter-$STAMP.json','w'))\""
+vagrant ssh zeek -c "cd /vagrant && ARGUS_BRONZE_HMAC_KEY_HEX=$KEY $ZEEK_ADAPTER $LAB/zeek-adapter-$STAMP.json"
+ZEEK_CSV=$(vagrant ssh zeek -c "ls -t $LAB/zeek-*.csv | head -1" 2>/dev/null | tr -d '\r')
+vagrant ssh defender -c "cd $CE && ARGUS_BRONZE_HMAC_KEY_HEX=$KEY ./bronze_to_gold_converter $ZEEK_CSV $LAB/zeek-$STAMP.avro $LAB/zeek-$STAMP.parquet" | tee /tmp/zeek-conv.log
+grep -q "descartadas: 0" /tmp/zeek-conv.log || die "zeek: descartes HMAC>0 -> clave real no caso"
+
+# 5) INVARIANTE — NO TOCAR — Kuzu fresca + 3 oros + poblador CORRELATES_FLOW
+vagrant ssh defender -c "mkdir -p /vagrant/logs/day234-kuzu"
+vagrant ssh defender -c "cd $CE && ./parquet_to_kuzu_loader $LAB/argus-$STAMP.parquet $KUZU $SCHEMA"
+vagrant ssh defender -c "cd $CE && ./parquet_to_kuzu_loader $LAB/suricata-$STAMP.parquet $KUZU $SCHEMA"
+vagrant ssh defender -c "cd $CE && ./parquet_to_kuzu_loader $LAB/zeek-$STAMP.parquet $KUZU $SCHEMA"
+vagrant ssh defender -c "cd $CE && ./kuzu_query $KUZU \"MATCH (a:NetworkFlow),(b:NetworkFlow) WHERE a.community_id=b.community_id AND a.flow_uid<b.flow_uid MERGE (a)-[e:CORRELATES_FLOW]->(b) ON CREATE SET e.community_id=a.community_id, e.method='community_id', e.confidence=1.0\""
+
+# 6) Veredicto
+echo ""; echo "======== DRIVER CUSTOM -> GRAFO ($STAMP) ========"
+echo "-- sensores en el grafo --"
+vagrant ssh defender -c "cd $CE && ./kuzu_query $KUZU \"MATCH (e:TelemetryEvent) RETURN e.source_sensor, count(*)\""
+echo "-- invariante (debe ser 0) --"
+vagrant ssh defender -c "cd $CE && ./kuzu_query $KUZU \"MATCH (a:NetworkFlow)-[e:CORRELATES_FLOW]->(b:NetworkFlow) WHERE a.community_id<>b.community_id RETURN count(*)\""
+echo "-- flujos corroborados cross-sensor (EL TITULAR) --"
+vagrant ssh defender -c "cd $CE && ./kuzu_query $KUZU \"MATCH (ea:TelemetryEvent)-[:TELEMETRY_ABOUT]->(a:NetworkFlow)-[e:CORRELATES_FLOW]-(b:NetworkFlow)<-[:TELEMETRY_ABOUT]-(eb:TelemetryEvent) WHERE ea.source_sensor<>eb.source_sensor RETURN count(DISTINCT e.community_id)\""
+echo "BD: $KUZU"; echo "========================================="

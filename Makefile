@@ -336,7 +336,8 @@ up-argus:
 up-suricata:
 	@cd experiments/suricata-comparative && vagrant up suricata client
 
-up: up-argus
+up:
+	@vagrant up defender client suricata zeek wazuh
 
 halt-argus:
 	@vagrant halt defender client
@@ -344,7 +345,8 @@ halt-argus:
 halt-suricata:
 	@cd experiments/suricata-comparative && vagrant halt
 
-halt: halt-argus
+halt:
+	@vagrant halt defender client suricata zeek wazuh
 
 destroy:
 	@vagrant destroy -f
@@ -3222,3 +3224,55 @@ autopsy-67: $(NERIS_RAW)  ## autopsia del hueco de 67 flujos: donde mueren en el
 
 fetch-neris-labels:  ## descarga+verifica el binetflow del Neris (~386MB) a datasets/ctu13/ si falta
 	@vagrant ssh client -c "bash /vagrant/scripts/fetch_neris_labels.sh"
+# ============================================================================
+# DAY 254 — Cara pública: reproducibilidad del paper + driver de ataque custom
+# reproduce-paper COMPONE 7 targets ya existentes (cero reimplementación).
+#   Asume el entorno ARRIBA (make up && make bootstrap). Secuencia estricta
+#   via $(MAKE): el orden importa (ctu-start genera el oro cuyo STAMP
+#   autodetectan los targets posteriores); robusta ante make -j.
+# ============================================================================
+.PHONY: reproduce-paper mitre-dataset custom-start reproduce-paper-deps
+
+reproduce-paper: reproduce-paper-deps ## regenera los numeros del paper (dentro de varianza de replay); asume pipeline arriba
+	@echo "reproduce-paper — regenera los numeros del paper v25 (dentro de la varianza de replay)"
+	@$(MAKE) fetch-neris
+	@$(MAKE) fetch-neris-labels
+	@$(MAKE) ctu-start
+	@$(MAKE) dataset-export
+	@$(MAKE) bias-report
+	@$(MAKE) bias-denominator-true
+	@$(MAKE) autopsy-67
+	@echo "reproduce-paper OK (STAMP=$(STAMP)). Cifras exactas ancladas en paper-artifacts/."
+
+mitre-dataset:  ## mitre-start (nmap) + export modo A + ruta del CSV generado
+	@$(MAKE) mitre-start
+	@$(MAKE) dataset-export
+	@echo "dataset MITRE: logs/datasets/dataset-modeA-$(STAMP).csv"
+
+custom-start:  ## corre un driver custom: make custom-start DRIVER=scripts/tu_driver.sh
+	@test -n "$(DRIVER)" || { echo "uso: make custom-start DRIVER=scripts/tu_driver.sh"; exit 1; }
+	@test -f "$(DRIVER)" || { echo "no existe el driver: $(DRIVER)"; exit 1; }
+	@echo "custom-start DRIVER=$(DRIVER)"
+	@bash $(DRIVER)
+
+reproduce-paper-deps:
+	@$(MAKE) correlation-engine-build
+	@$(MAKE) suricata-adapter-build
+	@$(MAKE) zeek-adapter-build
+
+.PHONY: validate-driver
+
+validate-driver:  ## verifica que la ultima corrida de un driver produjo artefactos validos (oros $STAMP + Kuzu)
+	@echo "validate-driver — STAMP=$(STAMP)"
+	@test -n "$(STAMP)" || { echo "X sin STAMP (falta logs/lab/argus-*.parquet). ¿corriste un driver?"; exit 1; }
+	@vagrant ssh defender -c "test -f /vagrant/logs/lab/argus-$(STAMP).parquet"    || { echo "X falta oro argus-$(STAMP).parquet"; exit 1; }
+	@vagrant ssh defender -c "test -f /vagrant/logs/lab/suricata-$(STAMP).parquet" || { echo "X falta oro suricata-$(STAMP).parquet"; exit 1; }
+	@vagrant ssh defender -c "test -f /vagrant/logs/lab/zeek-$(STAMP).parquet"     || { echo "X falta oro zeek-$(STAMP).parquet"; exit 1; }
+	@vagrant ssh defender -c "test -e /vagrant/logs/day234-kuzu/mitre-$(STAMP).kuzu" || { echo "X falta la BD Kuzu mitre-$(STAMP).kuzu"; exit 1; }
+	@echo "-- censo de sensores (deben aparecer >=2) --"
+	@vagrant ssh defender -c "cd /vagrant/correlation-engine/build && ./kuzu_query /vagrant/logs/day234-kuzu/mitre-$(STAMP).kuzu \"MATCH (e:TelemetryEvent) RETURN e.source_sensor, count(*)\""
+	@echo "OK validate-driver: artefactos del contrato presentes (STAMP=$(STAMP))"
+
+
+
+
