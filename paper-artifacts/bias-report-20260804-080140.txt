@@ -1,0 +1,63 @@
+========================================================================
+JOIN bias-vs-ground-truth  (5-tupla canonica, sin ventana temporal)
+========================================================================
+csv modo A          : logs/datasets/dataset-modeA-20260804-080140.csv
+binetflow (labels)  : datasets/ctu13/capture20110810.binetflow
+STAMP               : 20260804-080140
+binetflow escaneado : 2824636 filas
+5-tuplas replay     : 14466 distintas (union de las 3 lentes)
+5-tuplas con label  : 14358  (99.3% de las nuestras casan en el binetflow)
+
+[VALIDACION CLAVE] 5-tuplas a la vez botnet Y clean en el binetflow: 2
+  -> la 5-tupla NO desambigua estas; 'botnet si cualquiera' las cuenta botnet (declarar).
+     ('udp', '147.32.84.165', '2077', '217.14.50.7', '53') :: ['flow=Background-UDP-Attempt', 'flow=From-Botnet-V42-UDP-DNS']
+     ('tcp', '147.32.84.165', '2073', '78.129.227.128', '5231') :: ['flow=Background', 'flow=From-Botnet-V42-TCP-Established-Custom-Encryption-3']
+
+[DENOMINADOR] flujos botnet (5-tupla) vistos por >=1 lente: 14188
+  CAVEAT: denominador LENS-OBSERVABLE. Un flujo botnet que NINGUNA lente
+  capturo no deja fila -> no cuenta. Denominador VERDADERO = extraer las
+  5-tuplas del pcap replayado (tshark) -> `make bias-denominator-true`.
+
+------------------------------------------------------------------------
+LENTE: argus   (filas en el dataset: 1369)
+------------------------------------------------------------------------
+  VISIBILIDAD: ve 32/14188 flujos botnet del denominador (0.2%)
+  GRANULARIDAD: 48 5-tuplas distintas en 1369 filas (filas/5-tupla=28.5)
+  filas por ground-truth: botnet=1142  clean=0  sin-label=227
+  DETECCION (final_classification==MALICIOUS vs label botnet; solo filas con label):
+    TP=894  FP=0  FN=248  TN=0
+    precision=1.000  recall=0.783
+    NOTA: precision alta puede ser trivial si clean==0 (sin poblacion negativa).
+  SPLIT fast/ml de las 945 filas MALICIOUS (caveat: ML ciego, el heuristico lleva la deteccion):
+    por ground-truth: botnet=894  clean=0  sin-label=51
+    score medio: overall=0.7500  fast=0.7500  ml=0.0745
+    -> overall==fast y ml<<overall => el fast-path decide, el ML esta ciego sobre este trafico.
+    -> las MALICIOUS sin-label son FP contra el fondo de lab (no etiquetado): la precision 1.000 es solo vs CTU.
+  TOP IPs destino por nº de filas de argus (concentracion / flujo grueso persistente):
+       279  147.32.84.165
+       188  60.190.223.75
+       170  195.88.191.59
+       168  122.224.6.164
+       114  94.63.149.152
+
+------------------------------------------------------------------------
+LENTE: suricata   (filas en el dataset: 243)
+------------------------------------------------------------------------
+  VISIBILIDAD: ve 206/14188 flujos botnet del denominador (1.5%)
+  GRANULARIDAD: 212 5-tuplas distintas en 243 filas (filas/5-tupla=1.1)
+  filas por ground-truth: botnet=237  clean=0  sin-label=6
+  DETECCION (cada fila = un evento emitido por suricata; el silencio no deja fila):
+    sobre botnet=237  sobre clean=0  sin-label=6
+    precision (botnet/total emitidas)=0.975   recall (flujos botnet vistos/denominador)=0.015
+    TIPO de evento sobre flujos botnet (firma de botnet vs anomalia de protocolo):
+         237  Generic Protocol Command Decode
+
+------------------------------------------------------------------------
+LENTE: zeek   (filas en el dataset: 16484)
+------------------------------------------------------------------------
+  VISIBILIDAD: ve 14178/14188 flujos botnet del denominador (99.9%)
+  GRANULARIDAD: 14447 5-tuplas distintas en 16484 filas (filas/5-tupla=1.1)
+  filas por ground-truth: botnet=16137  clean=242  sin-label=105
+  (telemetria pura, sin veredicto -> sin matriz de deteccion; solo visibilidad)
+
+========================================================================
