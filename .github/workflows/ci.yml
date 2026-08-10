@@ -47,8 +47,14 @@ jobs:
                       -not -path "*/models/metadata/*" \
                       -not -path "*/config/rules/*"); do
             [ -s "$f" ] || { echo "  ⏭️  $f (empty placeholder — skipped)"; continue; }
-            python3 -m json.tool "$f" > /dev/null && echo "  ✅ $f" || { echo "  ❌ $f"; failed=1; }
-          done
+            if python3 -m json.tool "$f" > /dev/null 2>&1; then \
+              echo "  ✅ $f"; \
+            elif python3 -c "import sys,json; [json.loads(l) for l in open(sys.argv[1]) if l.strip()]" "$f" 2>/dev/null; then \
+            echo "  ✅ $f (JSONL)"; \
+            else \
+              echo "  ❌ $f"; failed=1; \
+            fi          
+            done
           [ $failed -eq 0 ] || exit 1
           echo "=== All JSON configs valid ==="
 
