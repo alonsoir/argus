@@ -121,7 +121,12 @@ Honesty as an engineering property, not an afterthought:
 
 ## History
 
-The full day-by-day engineering log (DAY 111–252) lives in [`docs/HITOS.md`](docs/HITOS.md). It records what was understood on each day; many figures there were later refined or corrected (e.g. F1 = 0.9985 was anchored to the 646-flow behavioral subset). It is **not** the current state of the pipeline.
+The full day-by-day engineering log (DAY 111–252) lives in [`docs/HITOS.md`](docs/HITOS.md). 
+It records what was understood on each day; many figures there were later refined or corrected (e.g. F1 = 0.9985 was anchored to the 646-flow behavioral subset). 
+It is **not** the current state of the pipeline.
+
+There is a docs/continuity/PROMPT_CONTINUE_CLAUDE.md file with the latest update to Claude. Give it to Claude to resume the development, 
+if someday you find something new correlated with Sommer and Paxon.
 
 ## License
 
