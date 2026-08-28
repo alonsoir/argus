@@ -139,3 +139,143 @@ grep -oE '\{-?[0-9]+,' ddos_trees_inline.hpp | grep -oE '\-?[0-9]+' | sort -n | 
 - `DEBT-ML-GEOIP-TRAINED-NOT-SERVED-001` — el modelo se entrenó con columna geográfica separable; el pipeline nunca captura ni enriquece geo → skew train/serve.
 - `DEBT-RANSOMWARE-HEAD-4-FEATURES-UNCOMPUTABLE-001` — 4/10 features de la cabeza ransomware piden telemetría de host (I/O, CPU, ficheros, procesos) imposible en un sniffer de red; la cabeza decide sobre humo estructural. (Relaciona con la señal de daño / dominio host de Wazuh como future-work.)
 - (existente) `DEBT-RANSOMWARE-ML-HEAD-INERT-001` — actualizar con lo medido aquí.
+
+# ADICIÓN al informe (sesión Mié 26-ago) — cabezas Traffic e Internal medidas
+
+> Insertar tras la sección 1.5 (DDoS). Mantiene el etiquetado [HECHO]/[SOSPECHADO]/[REFUTADO].
+
+---
+
+## 1.6 Traffic — execution ≡ training (salvo envoltorio), 44 splits sobre features muertas — [HECHO]
+
+**Skew de árbol EXONERADO.** El `shasum` difería (exec `0d33cc16…` vs train `a0a3ea55…`), pero el `diff` son **6 líneas, todas envoltorio de C++**, cero modelo:
+- `namespace { … }` anónimo + comentario `DEBT-COMPILER-WARNINGS-CLEANUP-001` (fix ODR/LTO)
+- `const TrafficNode*` vs `TrafficNode*` (un `const` en el array de punteros)
+- cierre de namespace + "no newline at end of file"
+
+Ni un `feature_idx`, `threshold` ni `value` distinto. El árbol servido es el entrenado.
+
+Orden de features (cabecera auto-generada, verificado contra fuente):
+`0 packet_rate, 1 connection_rate, 2 tcp_udp_ratio, 3 avg_packet_size, 4 port_entropy, 5 flow_duration_std, 6 src_ip_entropy, 7 dst_ip_concentration, 8 protocol_variety, 9 temporal_consistency`
+
+Censo de nodos (100 árboles, 557 hojas, **457 splits**):
+
+| idx | feature | splits | estado |
+|---|---|---|---|
+| 0 | packet_rate | 22 | viva (flujo) |
+| 1 | connection_rate | 52 | viva (aggregator) |
+| **2** | **tcp_udp_ratio** | **4** | **−9999 SIEMPRE** |
+| 3 | avg_packet_size | 14 | viva (flujo) |
+| 4 | port_entropy | 115 | viva (aggregator) |
+| **5** | **flow_duration_std** | **35** | **−9999 SIEMPRE** |
+| 6 | src_ip_entropy | 120 | viva (aggregator) |
+| 7 | dst_ip_concentration | 48 | viva (aggregator) |
+| **8** | **protocol_variety** | **5** | **−9999 SIEMPRE** |
+| 9 | temporal_consistency | 42 | viva (flujo) |
+
+**Muertas (idx 2+5+8) = 44 de 457 splits = 9.6%.** El grueso lo lleva `flow_duration_std` (35); `tcp_udp_ratio` (4) y `protocol_variety` (5) son marginales. Traffic está MÁS contaminado que DDoS (6.25%), no menos.
+
+**[SOSPECHADO / a medir en procedencia]:** `flow_duration_std` y `protocol_variety` están marcadas "Phase 2 — requiere multi-flow". Que el bosque partiera 35 veces sobre `flow_duration_std` sugiere que en entrenamiento tenía valores reales. Confirmarlo con la corrida de entrenamiento (paso 4) cierra el skew por ambos lados; si se entrenó ya con placeholder, la historia cambia.
+
+## 1.7 Internal — execution ≡ training (salvo envoltorio), 21 splits sobre feature muerta — [HECHO]
+
+**Skew de árbol EXONERADO.** Igual que traffic: `shasum` difiere (exec `66010c78…` vs train `aea02f23…`), `diff` = 6 líneas del mismo envoltorio ODR/LTO. Árbol servido = árbol entrenado.
+
+Orden de features (cabecera, verificado):
+`0 internal_connection_rate, 1 service_port_consistency, 2 protocol_regularity, 3 packet_size_consistency, 4 connection_duration_std, 5 lateral_movement_score, 6 service_discovery_patterns, 7 data_exfiltration_indicators, 8 temporal_anomaly_score, 9 access_pattern_entropy`
+
+Censo (100 árboles, 520 hojas, **420 splits**):
+
+| idx | feature | splits | estado |
+|---|---|---|---|
+| 0 | internal_connection_rate | 5 | viva (aggregator) |
+| 1 | service_port_consistency | 19 | viva (aggregator) |
+| 2 | protocol_regularity | 34 | viva (flujo) |
+| 3 | packet_size_consistency | 16 | viva (flujo) |
+| **4** | **connection_duration_std** | **21** | **−9999 SIEMPRE** |
+| 5 | lateral_movement_score | 40 | viva (aggregator) |
+| 6 | service_discovery_patterns | 55 | viva (aggregator) |
+| 7 | data_exfiltration_indicators | 65 | viva (flujo) |
+| 8 | temporal_anomaly_score | 43 | viva (flujo) |
+| 9 | access_pattern_entropy | 122 | viva (flujo) |
+
+**Muerta (idx 4) = 21 de 420 splits = 5.0%.** Una sola feature muerta, pero usada 21 veces (no marginal).
+
+## 1.8 FOTO SISTÉMICA — las tres cabezas de bosque parten sobre features muertas — [HECHO]
+
+| Cabeza | splits sobre −9999 | total splits | % contaminado | features muertas implicadas |
+|---|---|---|---|---|
+| DDoS | 16 | 256 | 6.25% | geographical_concentration |
+| Traffic | 44 | 457 | 9.6% | tcp_udp_ratio, flow_duration_std, protocol_variety |
+| Internal | 21 | 420 | 5.0% | connection_duration_std |
+
+**Conclusión medida:** el skew train/serve por features centinela NO es un accidente de una cabeza — es **sistémico** en los tres bosques de árbol. Entre el 5% y el 9.6% de las decisiones de cada bosque se toman sobre columnas que en producción son la constante veneno −9999. En los tres casos, execution ≡ training salvo envoltorio de compilador → el defecto está en el VECTOR servido, nunca en el modelo.
+
+Pendiente: **ransomware** (4ª cabeza, estructura distinta sin `trees_inline`, arrastra 4 muertas → % esperado mayor) y **procedencia** (con qué valores se entrenaron las columnas muertas).
+
+## Deuda a reforzar
+`DEBT-ML-SENTINEL-IN-TREE-SPLITS-001` sube de "caso DDoS" a **defecto sistémico de las 3 cabezas de bosque** (81 splits sobre −9999 en total: 16+44+21), pendiente ransomware.
+
+# ADICIÓN al informe (sesión Mié 26-ago, cont.) — cabeza Ransomware + foto de las 4 cabezas
+
+> Insertar tras la sección 1.8. Mantiene etiquetado [HECHO]/[SOSPECHADO]/[REFUTADO].
+
+---
+
+## 1.9 Ransomware — la cabeza más lisiada: 41.9% de splits sobre features muertas — [HECHO]
+
+**Estructura:** también es un RandomForest de 100 árboles / 10 features, mismo mecanismo `{feature_idx, threshold, left, right, value[2]}`, hojas en −2, regla `feature_value <= threshold → left`. Pero:
+- Vive en `ml-detector/src/forest_trees_inline.hpp` (NO en `include/`, NO se llama `ransomware_trees_inline.hpp`) → por eso no aparecía con el patrón de las otras tres.
+- Cadena de generación DISTINTA: cabecera dice `Source: complete_forest_100_trees.json`, `generate_cpp_forest.py`. Las otras tres usan `Generate{DDOS,Traffic,Internal}CPPForest.py`.
+- **NO tiene `.hpp` gemelo en `ml-training/` para shasumear.** En `ml-training/scripts/ransomware/` solo hay `extract_model_params_claude.py` (lee un `.pkl` con `pickle.load`). Procedencia MENOS trazable que las otras tres → hallazgo en sí mismo.
+
+**Mapeo idx→nombre VERIFICADO** contra `ransomware_detector.hpp::Features::to_array()` (no inferido):
+`0 io_intensity, 1 entropy, 2 resource_usage, 3 network_activity, 4 file_operations, 5 process_anomaly, 6 temporal_pattern, 7 access_frequency, 8 data_volume, 9 behavior_consistency`
+
+Censo (100 árboles, 1932 hojas, **1932 splits** — bosque mucho más denso que los otros tres):
+
+| idx | feature | splits | ¿muerta? |
+|---|---|---|---|
+| **0** | **io_intensity** | **289** | **−9999 SIEMPRE (I/O disco, imposible en red)** |
+| 1 | entropy | 375 | viva (flujo) |
+| **2** | **resource_usage** | **299** | **−9999 SIEMPRE (CPU/mem, imposible en red)** |
+| 3 | network_activity | 225 | viva (flujo) |
+| **4** | **file_operations** | **124** | **−9999 SIEMPRE (SMB/CIFS, no implementado)** |
+| **5** | **process_anomaly** | **97** | **−9999 SIEMPRE (telemetría proceso, imposible en red)** |
+| 6 | temporal_pattern | 122 | viva (condicional) |
+| 7 | access_frequency | 84 | viva (flujo) |
+| 8 | data_volume | 101 | viva (flujo) |
+| 9 | behavior_consistency | 116 | viva (flujo) |
+
+**Muertas (idx 0+2+4+5) = 809 de 1932 splits = 41.9%.** Casi la mitad del bosque parte sobre features que valen −9999 siempre.
+
+### 1.9.1 EL HALLAZGO MÁS GRAVE — la feature más importante del modelo es una constante veneno — [HECHO]
+`ransomware_detector.hpp:21` conserva la feature-importance del entrenamiento en el comentario auto-generado:
+```cpp
+float io_intensity;   // [0.0-2.0] - 24% importance
+```
+**`io_intensity` = la feature idx 0, con 24% de importancia (la MÁS importante del bosque de ransomware), es una de las cuatro muertas.** Mide I/O de disco — físicamente inexistente en un sniffer de red — y se sirve como −9999 en toda corrida. El detector de ransomware aprendió a apoyarse principalmente en una señal que el despliegue nunca produce. No es una feature secundaria: es la que más manda.
+
+## 1.10 FOTO DE LAS CUATRO CABEZAS — [HECHO]
+
+| Cabeza | splits sobre −9999 | total splits | % contaminado | features muertas |
+|---|---|---|---|---|
+| DDoS | 16 | 256 | 6.25% | geographical_concentration |
+| Traffic | 44 | 457 | 9.6% | tcp_udp_ratio, flow_duration_std, protocol_variety |
+| Internal | 21 | 420 | 5.0% | connection_duration_std |
+| **Ransomware** | **809** | **1932** | **41.9%** | io_intensity(24% imp.), resource_usage, file_operations, process_anomaly |
+| **TOTAL** | **890** | **3065** | **29.0%** | — |
+
+**Conclusión medida:** el skew train/serve por features centinela es **sistémico en las cuatro cabezas ML**. 890 de 3065 nodos-split (29%) del conjunto deciden sobre columnas que en producción son la constante veneno −9999. En DDoS/traffic/internal, execution ≡ training salvo envoltorio de compilador (verificado por diff) → el defecto está SIEMPRE en el vector servido, nunca en el árbol. Ransomware es el caso extremo: 41.9% de splits muertos, y su feature de mayor importancia (24%) inservible por construcción física.
+
+Esto explica un mecanismo concreto, medido y reproducible de la ceguera del ml_score, CONCURRENTE con la transferencia de distribución (CICIDS→Neris) ya documentada. No la sustituye; se suma por debajo.
+
+## 1.11 Pendiente (procedencia — ahora urgente)
+- Localizar el `.pkl` que lee `extract_model_params_claude.py` y su reporte de importancias → ver con qué VALORES se entrenó `io_intensity` (y las otras muertas). Si se entrenó con I/O simulado en [0,2] y producción sirve −9999 → skew de la feature #1 confirmado por ambos lados.
+- Ídem para las columnas muertas de DDoS/traffic/internal (los `Generate*CPPForest.py` + sus datasets/generadores sintéticos).
+- Runtime dump (ctu-start) para confirmar en caliente + medir el cubo B sobre Neris.
+
+## Deudas a actualizar
+- `DEBT-ML-SENTINEL-IN-TREE-SPLITS-001` → defecto SISTÉMICO de las 4 cabezas (890 splits, 29% del total). Ransomware 41.9%.
+- `DEBT-RANSOMWARE-HEAD-4-FEATURES-UNCOMPUTABLE-001` → reforzada: la feature muerta idx0 `io_intensity` es la de MAYOR importancia del modelo (24%).
+- Nueva: `DEBT-RANSOMWARE-FOREST-PROVENANCE-UNTRACEABLE-001` — el bosque de ransomware (`forest_trees_inline.hpp`, `complete_forest_100_trees.json`) no tiene contraparte `.hpp` en ml-training para verificar execution≡training; su cadena de generación difiere de las otras tres.
