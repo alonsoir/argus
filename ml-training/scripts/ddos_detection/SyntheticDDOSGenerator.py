@@ -108,6 +108,7 @@ class DDOSSyntheticGenerator:
 
     def create_complete_dataset(self) -> pd.DataFrame:
         """Crea dataset balanceado normal vs DDoS"""
+        np.random.seed(42)  # DAY255 reproducibilidad de artefacto: mismo dataset -> mismo .hpp (Via Appia)
         normal_data = self.generate_normal_traffic()
         ddos_data = self.generate_ddos_attacks()
 
@@ -120,7 +121,7 @@ class DDOSSyntheticGenerator:
 
         # Combinar y mezclar
         complete_df = pd.concat([df_normal, df_ddos], ignore_index=True)
-        complete_df = complete_df.sample(frac=1).reset_index(drop=True)
+        complete_df = complete_df.sample(frac=1, random_state=42).reset_index(drop=True)
 
         print(f"✅ Dataset DDoS creado: {len(complete_df)} muestras")
         print(f"📊 Distribución: {complete_df['label'].value_counts().to_dict()}")
