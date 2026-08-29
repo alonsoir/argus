@@ -1,0 +1,9 @@
+# DAY255 paso 3 — eliminación de geographical_concentration (sentinel-en-servicio)
+rama:            diag/ml-heads
+HEAD (previo):   0ac2729b
+generado por:    run_crank_sandbox.sh 2b  (dataset sembrado np.random.seed(42) + RF random_state=42)
+estado-2 (geo):  ba63c6da... (10 feat, geo idx7=16 splits)  |  sembrado 76ea86df (geo=18)
+estado-3 (fix):  56f0c5ae8640cde93c213130cc26752500c4affa72a455f8d9b1fb468cf9bc68 (9 feat, geo AUSENTE)
+censo estado-3:  240 internos / 340 hojas; idx7=traffic_escalation_rate, idx8=resource_saturation_score
+criterio HECHO:  0 splits sobre centinela-en-servicio — CUMPLIDO
+nota:            dataset regenerable por comando (semilla fija); no se committea el JSON de 27MB

@@ -195,7 +195,7 @@ def generate_ddos_cpp_header(forest_data, dataset_info, output_path: str):
 
         # AÑADIR FUNCIÓN PREDICT() - ANTES de cerrar el namespace
         f.write("""/// DDoS Detection Prediction Function
-/// @param features Array of 10 feature values in order:
+/// @param features Array of 9 feature values in order:
 ///   [0] syn_ack_ratio
 ///   [1] packet_symmetry  
 ///   [2] source_ip_dispersion
@@ -203,9 +203,8 @@ def generate_ddos_cpp_header(forest_data, dataset_info, output_path: str):
 ///   [4] packet_size_entropy
 ///   [5] traffic_amplification_factor
 ///   [6] flow_completion_rate
-///   [7] geographical_concentration
-///   [8] traffic_escalation_rate
-///   [9] resource_saturation_score
+///   [7] traffic_escalation_rate
+///   [8] resource_saturation_score
 /// @return Probability of DDoS attack (0.0 to 1.0)
 inline float predict_ddos(const float features[DDOS_NUM_FEATURES]) {
     float normal_prob = 0.0f;

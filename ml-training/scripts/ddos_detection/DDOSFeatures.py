@@ -10,7 +10,6 @@ DDOS_FEATURES = [
     # USER SPACE (análisis complejo)
     "traffic_amplification_factor",  # Request/response size ratio
     "flow_completion_rate",          # Percentage of completed flows
-    "geographical_concentration",    # Geo-IP concentration
     "traffic_escalation_rate",       # Traffic increase over time
     "resource_saturation_score"      # System load correlation
 ]

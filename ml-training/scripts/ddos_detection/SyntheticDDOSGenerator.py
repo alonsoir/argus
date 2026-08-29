@@ -25,7 +25,6 @@ class DDOSSyntheticGenerator:
             # Comportamiento normal estable
             'traffic_amplification_factor': np.random.beta(1, 10, self.n_samples),  # Muy baja amplificación
             'flow_completion_rate': np.random.beta(9, 1, self.n_samples),           # Muy alta completitud
-            'geographical_concentration': np.random.beta(1, 9, self.n_samples),     # Muy baja concentración
             'traffic_escalation_rate': np.random.normal(0.05, 0.02, self.n_samples),# Crecimiento estable
             'resource_saturation_score': np.random.beta(1, 20, self.n_samples)      # Muy baja saturación
         }
@@ -56,7 +55,6 @@ class DDOSSyntheticGenerator:
 
         # HTTP Flood Attack
         http_flood = {
-            'geographical_concentration': np.random.beta(12, 2, n_per_attack),  # Alta concentración geográfica
             'flow_completion_rate': np.random.beta(3, 8, n_per_attack),         # Baja completitud
             'traffic_escalation_rate': np.random.lognormal(1.2, 0.3, n_per_attack), # Escalada rápida
             'source_ip_dispersion': np.random.lognormal(1.5, 0.2, n_per_attack), # IPs concentradas
@@ -97,8 +95,6 @@ class DDOSSyntheticGenerator:
                         data[feature].extend(np.random.beta(5, 3, n_per_attack))  # Amplificación media
                     elif feature == 'flow_completion_rate':
                         data[feature].extend(np.random.beta(2, 6, n_per_attack))  # Completitud baja
-                    elif feature == 'geographical_concentration':
-                        data[feature].extend(np.random.beta(6, 3, n_per_attack))  # Concentración media
                     elif feature == 'traffic_escalation_rate':
                         data[feature].extend(np.random.lognormal(0.6, 0.3, n_per_attack)) # Escalada
                     elif feature == 'resource_saturation_score':
