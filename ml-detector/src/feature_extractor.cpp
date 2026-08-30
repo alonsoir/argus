@@ -224,7 +224,7 @@ bool FeatureExtractor::validate_features(const std::vector<float>& features) {
 std::vector<float> FeatureExtractor::extract_level2_ddos_features(
     const protobuf::NetworkFeatures& nf
 ) {
-    std::vector<float> features(10);
+    std::vector<float> features(9);
 
     // [0] SYN/ACK Ratio
     float total_flags = static_cast<float>(nf.fin_flag_count()) + static_cast<float>(nf.syn_flag_count()) +
@@ -254,17 +254,14 @@ std::vector<float> FeatureExtractor::extract_level2_ddos_features(
     // [6] Flow Completion Rate (using FIN flags)
     features[6] = safe_divide(static_cast<float>(nf.fin_flag_count()), total_packets);
 
-    // [7] Geographical Concentration (placeholder - implement if available)
-    features[7] = 0.5f;  // Default neutral value
-
-    // [8] Traffic Escalation Rate (using flow bytes/s)
+    // [7] Traffic Escalation Rate (using flow bytes/s)
     float flow_bytes_per_sec = static_cast<float>(nf.flow_bytes_per_second());
-    features[8] = normalize(flow_bytes_per_sec, 0.0f, 1e6f);  // Normalize to 1Mbps
+    features[7] = normalize(flow_bytes_per_sec, 0.0f, 1e6f);  // Normalize to 1Mbps
 
-    // [9] Resource Saturation Score (using packet rate)
+    // [8] Resource Saturation Score (using packet rate)
     float packet_rate = safe_divide(total_packets,
                                     std::max(static_cast<float>(nf.flow_duration_microseconds()) / 1e6f, 1.0f));
-    features[9] = normalize(packet_rate, 0.0f, 1000.0f);  // Normalize to 1000 pps
+    features[8] = normalize(packet_rate, 0.0f, 1000.0f);  // Normalize to 1000 pps
 
     return features;
 }

@@ -20,9 +20,8 @@ DDoSDetector::Prediction DDoSDetector::predict(const Features& features) const n
         features.packet_size_entropy,            // [4]
         features.traffic_amplification_factor,   // [5]
         features.flow_completion_rate,           // [6]
-        features.geographical_concentration,     // [7]
-        features.traffic_escalation_rate,        // [8]
-        features.resource_saturation_score       // [9]
+        features.traffic_escalation_rate,        // [7]
+        features.resource_saturation_score       // [8]
     };
 
     // Use the inline prediction function from ddos_trees_inline.hpp

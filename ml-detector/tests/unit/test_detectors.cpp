@@ -54,7 +54,7 @@ void test_ddos_detector() {
 
     // Test metadata
     assert(detector.num_trees() == 100);
-    assert(detector.num_features() == 10);
+    assert(detector.num_features() == 9);
     std::cout << "✓ Metadata: " << detector.num_trees() << " trees, "
               << detector.num_features() << " features\n";
 
@@ -67,7 +67,6 @@ void test_ddos_detector() {
         0.40f,  // packet_size_entropy
         0.10f,  // traffic_amplification_factor
         0.90f,  // flow_completion_rate
-        0.30f,  // geographical_concentration
         0.02f,  // traffic_escalation_rate
         0.10f   // resource_saturation_score
     };
@@ -86,7 +85,6 @@ void test_ddos_detector() {
         0.85f,  // packet_size_entropy
         0.95f,  // traffic_amplification_factor
         0.20f,  // flow_completion_rate (incomplete flows)
-        0.85f,  // geographical_concentration
         0.95f,  // traffic_escalation_rate (sudden spike)
         0.90f   // resource_saturation_score
     };
@@ -258,7 +256,7 @@ void test_batch_prediction() {
     for (auto& features : batch) {
         features = {
             0.5f, 0.5f, 0.5f, 0.5f, 0.5f,
-            0.5f, 0.5f, 0.5f, 0.5f, 0.5f
+            0.5f, 0.5f, 0.5f, 0.5f
         };
     }
 

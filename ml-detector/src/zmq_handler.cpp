@@ -568,7 +568,7 @@ void ZMQHandler::process_event(const std::string& message) {
                         std::vector<float> ddos_features_vec;
                         try {
                             ddos_features_vec = extractor_->extract_level2_ddos_features(nf);
-                            if (ddos_features_vec.size() != 10) {
+                            if (ddos_features_vec.size() != 9) {
                                 throw std::runtime_error("Invalid DDoS feature count");
                             }
                             logger_->debug("   DDoS Features: syn_ack={:.3f}, entropy={:.3f}, amp={:.3f}",
@@ -588,9 +588,8 @@ void ZMQHandler::process_event(const std::string& message) {
                             .packet_size_entropy        = ddos_features_vec[4],
                             .traffic_amplification_factor = ddos_features_vec[5],
                             .flow_completion_rate       = ddos_features_vec[6],
-                            .geographical_concentration = ddos_features_vec[7],
-                            .traffic_escalation_rate    = ddos_features_vec[8],
-                            .resource_saturation_score  = ddos_features_vec[9]
+                            .traffic_escalation_rate    = ddos_features_vec[7],
+                            .resource_saturation_score  = ddos_features_vec[8]
                         };
 
                         auto ddos_result = ddos_detector_->predict(ddos_features);
