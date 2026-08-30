@@ -257,8 +257,8 @@ def main():
 
     # Cargar modelo y datos
     model, dataset_info, scaler = load_ddos_model(
-        "ddos_detection_model.pkl",
-        "ddos_detection_dataset.json"
+        input_pkl,
+        input_json
     )
 
     # Extraer estructura del bosque
@@ -273,7 +273,7 @@ def main():
         print("⚠️  No se pudo normalizar thresholds - scaler no disponible")
 
     # Generar header C++
-    generate_ddos_cpp_header(forest_data, dataset_info, "ddos_trees_inline.hpp")
+    generate_ddos_cpp_header(forest_data, dataset_info, output_hpp)
 
     print(f"\n🎉 SUCCESS! Generated: {output_hpp}")
     print(f"💡 Next: Include in your DDoS detector C++ code")
