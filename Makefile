@@ -3274,5 +3274,6 @@ validate-driver:  ## verifica que la ultima corrida de un driver produjo artefac
 	@echo "OK validate-driver: artefactos del contrato presentes (STAMP=$(STAMP))"
 
 
-
-
+.PHONY: ddos-regen
+ddos-regen:
+	vagrant ssh defender -c 'bash /vagrant/ml-training/scripts/ddos_detection/ddos-regen.sh'
