@@ -6174,7 +6174,7 @@ manifiesto).
 
 ### DEBT-DDOS-HPP-COPIA-DUPLICADA — Dos copias del ddos_trees_inline.hpp que pueden divergir en silencio
 **Severidad:** 🟢 P2 — footgun de mantenimiento
-**Estado:** ABIERTO — DAY 257
+**Estado:** ✅ CERRADA — DAY 257 (commit b921ff04): copia huérfana de scripts/ eliminada (git rm), .gitignore sella re-tracking, ddos-regen verde tras el borrado. Fuente única = ml-detector/include.
 **Componente:** `ml-training/scripts/ddos_detection/ddos_trees_inline.hpp` (copia de la
 manivela) + `ml-detector/include/ml_defender/ddos_trees_inline.hpp` (canónica que
 consume el detector)
@@ -6187,3 +6187,25 @@ ambas rutas. OJO: el `.hpp` de `scripts/` SÍ está trackeado -> no `rm` a ciega
 **Test de cierre:** el gate falla si las dos copias divergen, o solo existe una copia
 trackeada.
 **Estimación:** 0.5 sesión.
+
+### DEBT-DDOS-DOCS-STALE-10FEAT — Docs de ml-training/scripts apuntan a la era 10-features
+**Severidad:** 🔵 P3 — higiene documental, sin impacto en código
+**Estado:** ABIERTO — DAY 257
+**Componente:** `ml-training/scripts/README.md`, `ml-training/scripts/INSTRUCCIONES_CLAUDE_INTEGRACION.md`,
+`ml-training/scripts/documentation/TECHNICAL_INTEGRATION_GUIDE.md`,
+`ml-training/scripts/ddos_detection/generate_ddos_inline.py` (muñón muerto)
+
+Medido DAY 257 (`git grep ddos_trees_inline -- 'ml-training/**'`): varios docs y guías
+describen el `.hpp` con datos de la era vieja de 10 features — "612 nodos" (hoy 580),
+`#include "ddos_trees_inline.hpp"`, y `cp`/rutas a `ml-detector/src/` (la copia real
+que consume el detector vive en `ml-detector/include/ml_defender/`). El muñón muerto
+`generate_ddos_inline.py` escribe a `/vagrant/ml-detector/src/ddos_trees_inline.hpp`
+(ruta que ya no es la canónica). Nada de esto afecta al pipeline (la manivela es
+`ddos-regen.sh` -> `GenerateDDOSCPPForest.py`, y el detector incluye la ruta de
+`include/`), pero engaña a quien herede el repo. Alinear los docs a: 580 nodos, 9
+features (sin geo), fuente única `ml-detector/include/ml_defender/ddos_trees_inline.hpp`,
+manivela = `make ddos-regen`. Considerar borrar o marcar como muerto el
+`generate_ddos_inline.py` en el mismo barrido (ya anotado como muñón en DAY 255).
+**Test de cierre:** `git grep -n "612 nodos\|ml-detector/src/ddos_trees_inline" -- 'ml-training/**'`
+= 0 (o solo notas históricas explícitas).
+**Estimación:** 0.5 sesión (barrido documental).
