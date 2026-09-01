@@ -1,0 +1,11 @@
+# Entorno numérico PINNEADO del crank ML in-VM (RF DDoS + train xgboost comparten pandas/sklearn).
+# DEUDA-DDOS-REPRO-PIN: closure medido del /usr/bin/python3 de defender que produjo el .hpp
+# sha 56f0c5ae (DAY256). NO tocar una versión sin re-medir el sha.
+numpy==2.4.6
+scikit-learn==1.9.0
+pandas==3.0.5
+scipy==1.17.1
+joblib==1.5.3
+threadpoolctl==3.6.0
+python-dateutil==2.9.0.post0
+pytz==2022.7.1
