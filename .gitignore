@@ -346,3 +346,6 @@ docs/latex/*.out
 docs/latex/*.fls
 docs/latex/*.fdb_latexmk
 docs/latex/*.bbl
+
+# artefacto regenerable de la manivela DDoS (fuente única en ml-detector/include)
+ml-training/scripts/ddos_detection/ddos_trees_inline.hpp
