@@ -6120,3 +6120,70 @@ DEBT-BIAS-KEY-5TUPLE-AMBIGUITY-001 (0.014%, declarada) · DEBT-BIAS-FASTPATH-LAB
 DEBT-EVENT-ID-COLLISION-001 · DEBT-CTU-REPLAY-GSO-DROP-001 · DEBT-DATASET-DRIVER-CONTRACT-001 ·
 DEBT-HMAC-KEY-INSECURE-TRANSPORT-001 · DEBT-PIPELINE-START-DISABLE-RAG-001 /
 -BINARY-GUARD-001 / -STATUS-ALL-VMS-001 / -STATUS-LOGFILES-001 (overhaul pipeline-start/status).
+
+<!-- ============================================================= -->
+## DAY 257 — cierre DEUDA-DDOS-REPRO-PIN (rama diag/ml-heads)
+<!-- ============================================================= -->
+
+> Contexto: línea de i+d+i en `diag/ml-heads` (NO main; main protegida), ataca la
+> P0 de clasificación (hermana host: DEBT-RANSOMWARE-ML-HEAD-INERT-001). El skew
+> train/serve por geo quedó reparado DAY 255+ (contrato del detector a 9 features
+> sin `geographical_concentration`; commits 2c9f3fbf/9090cedb/b179faa0/d3874f68), y
+> la propiedad de reproducibilidad del artefacto DDoS cerrada DAY 256 (commit
+> 882fcaf9: target `ddos-regen` + censo `census_ddos_splits.py` + MANIFEST). Aviso
+> honesto vigente para el paper: esto prueba el MÉTODO de reparación del skew (Fase
+> 1), NO promete detector DDoS útil sobre Neris (Betas sintéticas; accuracy 1.0 =
+> sintético). Detector útil = Fase 2 (features reales + labels Neris).
+
+### DEBT-DDOS-REPRO-PIN — Entorno numérico del crank in-VM sin pinnear
+**Severidad:** 🟡 P1 — reproducibilidad del artefacto del paper (el asterisco del claim)
+**Estado:** ✅ CERRADA — DAY 257 (commit 7d8ba303, en origin/diag/ml-heads)
+**Componente:** `Vagrantfile` (provisioning de defender) + `ml-training/requirements-ddos-pinned.txt`
+
+El provisioning de defender instalaba las deps numéricas del crank DDoS con
+`pip3 install pandas scikit-learn` SIN `==` (Vagrantfile:440), y numpy entraba
+transitivo sin fijar -> un `vagrant up` futuro traería otras versiones y otro sha del
+`.hpp`. El `make ddos-regen` de DAY 256 reproducía `56f0c5ae...` byte a byte DENTRO
+de la VM caliente, pero el claim "reproducible desde cero" quedaba sin medir.
+
+**Arreglo (Camino B, medido):** fichero `requirements-ddos-pinned.txt` con el closure
+de 8 versiones del `/usr/bin/python3` que produjo el sha (numpy==2.4.6,
+scikit-learn==1.9.0, pandas==3.0.5, scipy==1.17.1, joblib==1.5.3,
+threadpoolctl==3.6.0, python-dateutil==2.9.0.post0, pytz==2022.7.1). El provisioning
+reemplaza el `pip install` sin `==` por `pip3 install -r requirements-ddos-pinned.txt`
+con hard-fail y SIN fallback apt (los `python3-pandas`/`python3-sklearn` del repo
+producirían otro entorno -> otro sha). NO se toca `ml-training/requirements.txt`
+(pide numpy<2.0.0 para el mundo onnx/matplotlib; medido que NO gobierna el intérprete
+del crank).
+
+**Medida que zanja (HECHO, no supuesto):** `vagrant destroy -f defender && vagrant up
+defender` desde VM limpia -> freeze idéntico 8/8 -> `make ddos-regen` reprodujo
+`56f0c5ae8640...cf9bc68` byte a byte (Puerta 3 verde; censo GO: geo=0, 9 features,
+240 nodos internos / 340 hojas / 580 total). El asterisco "reproducible en mi VM
+caliente" CAE -> reproducible from-scratch.
+
+**Caveat honesto que queda (declararlo, no esconderlo):** el pin fija las 8 versiones
+pip, NO la imagen del box ni el minor del intérprete ni la estabilidad de los wheels
+de PyPI. Ese residuo es supply-chain estándar; el CENSO de splits (geo=0 / 9 features
+/ 240-340) es el invariante PORTABLE que sobrevive aunque el sha drifte por esa vía.
+Claim del paper = sha bit-exacto anclado a box+fecha + censo como invariante portable.
+
+**Test de cierre:** ✅ cumplido — from-scratch reproduce el sha y el censo; el
+`.gitignore` mantiene los `.pkl`/dataset fuera (regenerables por comando, garantía del
+manifiesto).
+
+### DEBT-DDOS-HPP-COPIA-DUPLICADA — Dos copias del ddos_trees_inline.hpp que pueden divergir en silencio
+**Severidad:** 🟢 P2 — footgun de mantenimiento
+**Estado:** ABIERTO — DAY 257
+**Componente:** `ml-training/scripts/ddos_detection/ddos_trees_inline.hpp` (copia de la
+manivela) + `ml-detector/include/ml_defender/ddos_trees_inline.hpp` (canónica que
+consume el detector)
+
+Hoy ambas son byte-idénticas (`56f0c5ae`), pero la Puerta 3 de `ddos-regen.sh` solo
+diffea la de `ml-detector/`. Un cambio futuro que regenere solo una dejaría la otra
+rancia sin que el gate lo note. Resolver: eliminar la duplicación (la de `scripts/`
+es la que la manivela produce en su working dir) O ampliar el diff de la Puerta 3 a
+ambas rutas. OJO: el `.hpp` de `scripts/` SÍ está trackeado -> no `rm` a ciegas.
+**Test de cierre:** el gate falla si las dos copias divergen, o solo existe una copia
+trackeada.
+**Estimación:** 0.5 sesión.
