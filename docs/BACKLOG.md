@@ -6209,3 +6209,28 @@ manivela = `make ddos-regen`. Considerar borrar o marcar como muerto el
 **Test de cierre:** `git grep -n "612 nodos\|ml-detector/src/ddos_trees_inline" -- 'ml-training/**'`
 = 0 (o solo notas históricas explícitas).
 **Estimación:** 0.5 sesión (barrido documental).
+
+### DEBT-ML-DEAD-GENERATORS-RETIRED — Subsistema de generación de cabezas obsoleto, retirado
+**Severidad:** 🟢 P2 — higiene de pipeline, retira armas que disparan torcido
+**Estado:** ✅ CERRADA — DAY 258 (commit 008b2d17): git rm de 4 ficheros (−400 líneas).
+**Componente:** `ml-training/scripts/generate_all_models.py` (orquestador),
+`ml-training/scripts/ddos_detection/generate_ddos_inline.py`,
+`ml-training/scripts/external_traffic/generate_traffic_cpp_forest.py`,
+`ml-training/scripts/ransomware/extract_full_forest.py`
+Medido DAY 258 (`git grep` sobre Makefile/Vagrantfile/ml-training/ml-detector): subsistema
+desconectado del árbol vivo, ningún caller externo (ni build, ni Vagrant, ni la manivela
+canónica `make ddos-regen`). Los generadores producen cabezas con skew medido — el DDoS
+demostrado DAY 255-257; las demás son la misma familia rota. `generate_internal_inline.py`
+era un fantasma: invocado en la tabla del orquestador, inexistente en el repo (el
+orquestador petaría al correrlo). `generate_ddos_inline.py` era un muñón a medio construir
+("Implementar lógica similar a extract_full_forest.py"). Retirados para dejar la cabeza
+limpia: Fase 2 reconstruye sobre el extractor real, sin generador zombie compitiendo por
+ser la manivela. NO arregla ninguna cabeza — despeja el terreno.
+**Hilos vivos que este corte destapa (NO resueltos):**
+- Copias `.hpp` duplicadas en `internal_traffic/` y `external_traffic/` (mismo patrón que
+  DEBT-DDOS-HPP-COPIA-DUPLICADA, cerrada solo para DDoS). Barrer o registrar.
+- DEBT-DDOS-DOCS-STALE-10FEAT sigue ABIERTA; este commit borró 2 hits del muñón (líneas
+  src/ de generate_ddos_inline.py) pero NO cierra la deuda documental.
+- Hermana viva: DEBT-RANSOMWARE-ML-HEAD-INERT-001.
+  **Test de cierre:** ya cerrada — `git ls-files ml-training/scripts/generate_all_models.py` = vacío.
+  **Estimación:** 0 (hecha).
