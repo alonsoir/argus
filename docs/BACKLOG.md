@@ -6190,7 +6190,7 @@ trackeada.
 
 ### DEBT-DDOS-DOCS-STALE-10FEAT — Docs de ml-training/scripts apuntan a la era 10-features
 **Severidad:** 🔵 P3 — higiene documental, sin impacto en código
-**Estado:** ABIERTO — DAY 257
+**Estado:** ✅ CERRADA — DAY 258 (commit c0a9d9aa): retirados los 4 docs que contenían los hits (no corregidos, eliminados); test grep = 0. Ver DEBT-ML-DEAD-GENERATORS-RETIRED.
 **Componente:** `ml-training/scripts/README.md`, `ml-training/scripts/INSTRUCCIONES_CLAUDE_INTEGRACION.md`,
 `ml-training/scripts/documentation/TECHNICAL_INTEGRATION_GUIDE.md`,
 `ml-training/scripts/ddos_detection/generate_ddos_inline.py` (muñón muerto)
