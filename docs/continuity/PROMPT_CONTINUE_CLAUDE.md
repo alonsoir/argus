@@ -1,89 +1,58 @@
-cat > docs/continuity/PROMPT_CONTINUE_CLAUDE.md << 'EOF'
-# PROMPT DE CONTINUIDAD — aRGus NDR — INVESTIGACIÓN: features centinela del ml-detector (el 0.04)
+# CONTINUIDAD DAY258 — Housekeeping DDoS CERRADO (generadores + docs sobre-venta amputados). Siguiente: PR a main / Fase 2.
 
-## Encuadre (esto NO es el cierre a read-only)
-El overhaul de pipeline-start/status y el "repo en modo lectura" quedan APARCADOS.
-Andrés/FEDER ya no marcan fechas. El motor ahora es la LÍNEA DE INVESTIGACIÓN:
-¿por qué el ml_score de aRGus es ciego sobre Neris (ml_medio ~0.07; el 100% de la
-señal MALICIOUS la lleva el fast-path 0.75)? Objetivo: encontrar el error y decidir
-si se arregla. Doble uso: material de paper + reparación de pipeline.
+## Estado (medido, verificar al retomar)
+    git branch --show-current      # diag/ml-heads
+    git log --oneline -6           # HEAD = 708db2d8
+    git status -sb                 # limpio salvo untracked conocidos (ver abajo)
+Untracked que NO se tocan: evidence/seed-repro/*.json (regla propia),
+run_crank_sandbox.sh (reliquia DAY255, muere aparte), "Cierre day255 reparacion ddos.md".
 
-## Punto de entrada (mide, no asumas)
-    git branch --show-current       # ¿estamos en diag/ml-heads? Si no:
-    git checkout -b diag/ml-heads main
-    git log --oneline -2            # main @ 9f1799f8, último tag pre-release-0.0.2
-El informe forense de la sesión anterior está en:
-docs/bugs/Informe ml detector features centinela.MD
-Léelo ENTERO antes de seguir. Está etiquetado [HECHO]/[SOSPECHADO]/[REFUTADO].
-Si el informe sigue sin commitear, primer commit de la rama = ese fichero.
+## HECHO DAY258 (cerrado y en origin/diag/ml-heads)
+- `7a3d42be` Evidencia de la reparación trackeada: 5 patches (seed/geo/footgun/service-vector)
+  + verify_seed_repro.sh. run_crank_sandbox.sh NO trackeado (reliquia DAY255: compara contra
+  .hpp borrado, geo=16, coartada del skew pre-pin).
+- `008b2d17` AMPUTADO el subsistema de generadores de cabezas (−400 líneas):
+  generate_all_models.py + generate_ddos_inline.py + generate_traffic_cpp_forest.py +
+  extract_full_forest.py. Desconectados del árbol vivo (0 callers en Makefile/Vagrant/manivela),
+  producen cabezas con skew medido, generate_internal_inline.py era fantasma. NO arregla
+  cabezas — despeja el terreno para Fase 2.
+- `65c279a3` DEBT-ML-DEAD-GENERATORS-RETIRED en backlog.
+- `c0a9d9aa` RETIRADO el nido documental que sobre-vendía las 4 cabezas (−888 líneas):
+  README de scripts, TECHNICAL_INTEGRATION_GUIDE, INSTRUCCIONES_CLAUDE_INTEGRACION,
+  TechnicalDocumentation.py. "BREAKTHROUGH / accuracy 1.0000" sobre cabezas rotas + geo
+  documentada como feature viva del DDoS (ya amputada). Doc se recrea acoplada a cada
+  cabeza fiable en Fase 2, NO antes.
+- `708db2d8` DEBT-DDOS-DOCS-STALE-10FEAT CERRADA (test grep=0; los hits murieron con los ficheros).
 
-## Lo MEDIDO (no re-medir, ya es HECHO)
-- Centinela = -9999.0f (common/include/sentinel.hpp). "Inalcanzable por ratio real":
-  útil para ausencia, VENENO para un árbol con cortes en [0,1] (-9999 <= threshold
-  siempre → rama fija).
-- 40 features → 4 cabezas. CUBO A = features -9999 SIEMPRE (Phase-2 nunca hechas +
-  geo). Recuento 9 vs 10 SIN reconciliar (lo canté de memoria; contar mecánico).
-  Ransomware = 4/10 muertas por construcción física (I/O disco, CPU, ficheros,
-  procesos — nada vive en un paquete de red). La cabeza más lisiada.
-- DDoS: árbol de EJECUCIÓN (ml-detector/include/ml_defender/ddos_trees_inline.hpp)
-  es BIT-IDÉNTICO al de ENTRENAMIENTO (ml-training/scripts/ddos_detection/...):
-  shasum igual (f14fdf84...). El skew NO está en el árbol, está en el VECTOR servido.
-- DDoS: 100 árboles, 256 nodos-split, 356 hojas. El bosque parte 16 VECES sobre
-  geographical_concentration (idx 7), que vale -9999 SIEMPRE. 16 pasarelas fijas.
-  El modelo se entrenó con una columna geográfica separable; el pipeline NUNCA
-  captura ni enriquece geo. SKEW TRAIN/SERVE medido. Mapeo idx->nombre verificado
-  por los comentarios auto-generados del propio .hpp (no de memoria).
+## Verificado hoy (tranquiliza, no re-medir)
+README raíz del proyecto NO sobre-vende — lenguaje del paper honesto: subconjunto curado
+(646 flujos maliciosos CTU-13 Neris), F1=0.9985, "not the operational picture, stated as such".
+El veneno de sobre-venta estaba contenido en ml-training/scripts/, ya retirado.
 
-## Lo REFUTADO (hipótesis previas tumbadas por el dato — conservar)
-- "El aggregator no se inyecta en prod": FALSO. initialize_ransomware_detection()
-  se llama incondicional (ring_consumer.cpp:194), initialize() no puede fallar por
-  entorno (solo make_unique, return true), get_aggregator() no es null, y la
-  inyección lazy vive en el mismo bloque que la extracción (timing exonerado). Las 9
-  features del cubo B reciben aggregator vivo.
-- "source_ip_dispersion no se calcula": FALSO. Se calcula desde el aggregator
-  (ventana 30s). El bosque DDoS parte solo 1 vez sobre ella. No era el drama.
+## Claim del paper (acotado, honesto — NO sobre-vender)
+DDoS reproducible byte a byte FROM-SCRATCH (box debian + 8 versiones pinneadas, DAY257).
+Censo (geo=0, 9 features, 240/340) = invariante PORTABLE que sobrevive al drift de sha.
+NO afirmado: detector DDoS útil sobre Neris (Betas sintéticas, accuracy 1.0 = sintético = Fase 2).
+El pin NO va al main.tex (paper v25 ya en arXiv; material de Fase 2, vive en la rama).
 
-## Los 3 candidatos del 0.04 tras la sesión
-[REFUTADO] cableado del aggregator (multi-flow a -9999)
-[HECHO parcial] features centinela en cortes de árbol (skew de vector) — geo/DDoS ✅
-[en pie] transferencia de distribución CICIDS->Neris (ya en el paper)
-[SIN MEDIR] procedencia del modelo — el candidato gordo que queda
+## PENDIENTE (barato primero; en orden)
+1. **Copias .hpp duplicadas en internal_traffic/ + external_traffic/** (mismo patrón que
+   DEBT-DDOS-HPP-COPIA-DUPLICADA, cerrada solo para DDoS). Medir con
+   `git ls-files 'ml-training/scripts/**/*_trees_inline.hpp'` y barrer/registrar.
+2. **PR de diag/ml-heads a main (CABEZA FRESCA, no a horas malas).** La rama lleva la
+   reparación completa del skew (footgun+geo+propagación+contrato-servicio+reproducibilidad+pin)
+   + amputación de generadores y docs. Gate: emecas+++ VERDE from-scratch. main PROTEGIDA (PR only, GH013).
+3. **Fase 2 DDoS (LA P0 real, investigación, batalla larga).** Entrenar la cabeza sobre features
+   REALES + labels Neris por el MISMO extractor (no Betas sintéticas). Único camino de
+   "reproducible" → "detecta". Hermana: DEBT-RANSOMWARE-ML-HEAD-INERT-001.
 
-## Pasos siguientes (medir, barato -> caro)
-1) Reconciliar el recuento del cubo A (9 vs 10) con conteo mecánico, no de memoria.
-2) shasum + censo de nodos en internal y traffic (execution vs training) → cruzar con
-   sus features muertas (internal idx4; traffic idx2/5/8).
-3) RANSOMWARE es caso APARTE: no tiene *_trees_inline.hpp. Tiene
-   ml-detector/src/ransomware_detector.cpp + training complete_forest_cpp_example.h /
-   extract_full_forest.py. Entender su estructura antes de contar. Daño esperado mayor.
-4) PROCEDENCIA del modelo: qué corrida generó los *_trees_inline.hpp vivos y con qué
-   valores se entrenaron las features del cubo A (ml-training/scripts/**/Generate*.py,
-   generate_all_models.py, model_verification_report_*.json). Si geo se entrenó en
-   [0,1] → skew confirmado por ambos lados.
-5) VOLCADO runtime (una corrida ctu-start): vectores de 40 reales sobre Neris.
-   Confirma el censo en caliente + mide qué valen las features del cubo B con
-   --mbps=10 (event_count bajo → ratios log2 degeneran aunque el aggregator funcione).
+## Invariantes
+main PROTEGIDA (PR only). Un commit una idea. git grep o fichero concreto (NUNCA grep -rn desde raíz).
+Comandos de salida grande en bloques separados. add explícito por fichero, nunca -u/-a.
+La manivela gira DENTRO de la VM (deps pinneadas ahí). PUSH desde el HOST (macOS), no desde la VM.
+sed BSD/osx: verificar con grep -c antes y después, Y confirmar el NOMBRE del fichero destino
+(hoy un typo .mdd tragó un sed en silencio). Medir, no asumir.
 
-## Lecturas de contraste (CÓDIGO primero, docs después)
-- docs/adr/ADR-059 (reparación del veredicto ml-detector: monocapa->tricapa). Único
-  doc que menciona get_aggregator. ¿Su reparación llegó al código o se quedó en papel?
-- docs/council/PROPUESTA AL CONSEJO DE SABIOS — Auditoría de features de los modelos ML.
-- Ambos DESPUÉS de medir (misma trampa de versión que el paper v24/v25).
-
-## Deudas candidatas a registrar en BACKLOG
-- DEBT-ML-SENTINEL-IN-TREE-SPLITS-001 (features -9999 en cortes [0,1]; geo/DDoS 16 nodos)
-- DEBT-ML-GEOIP-TRAINED-NOT-SERVED-001 (geo entrenada, nunca servida)
-- DEBT-RANSOMWARE-HEAD-4-FEATURES-UNCOMPUTABLE-001 (4/10 piden telemetría de host)
-- actualizar DEBT-RANSOMWARE-ML-HEAD-INERT-001 con lo medido
-
-## Invariantes (no negociar)
-- Medir, no votar. HECHO != SOSPECHADO. Conjetura etiquetada o no se dice.
-- Alonso pilota; mide contra fichero y pega salida. Fichero completo, no str_replace.
-- No `grep -rn` desde raíz: `git grep` o fichero concreto. No encadenar comandos de
-  salida grande en el mismo bloque. main PROTEGIDA: todo por PR.
-- No fetchear el paper a ciegas (render arXiv da v24 vieja; usar v25 pegada).
-
-## Hilos de memoria
-[[byte-order-impacto-ml]] (origen de la pregunta del ml_score), [[cierre-paper]]
-(encuadre de la tesis S&P), [[join-bias-ground-truth]] (el 0.07 medido sobre Neris).
-EOF
+## Nota personal (no borrar)
+Alonso atiende a su padre en el hospital estos días; avanza en ratos sueltos a horas malas.
+aRGus aguanta el ritmo lento — Via Appia, décadas. No forzar. Piano piano si arriva lontano.
