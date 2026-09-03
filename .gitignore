@@ -340,7 +340,6 @@ scripts/__pycache__/
 
 docs/latex/*.pdf
 docs/latex/*.blg
-docs/latex/*.aux
 docs/latex/*.log
 docs/latex/*.out
 docs/latex/*.fls
@@ -349,3 +348,5 @@ docs/latex/*.bbl
 
 # artefacto regenerable de la manivela DDoS (fuente única en ml-detector/include)
 ml-training/scripts/ddos_detection/ddos_trees_inline.hpp
+ml-training/scripts/external_traffic/traffic_trees_inline.hpp
+ml-training/scripts/internal_traffic/internal_trees_inline.hpp
