@@ -6188,6 +6188,42 @@ ambas rutas. OJO: el `.hpp` de `scripts/` SÍ está trackeado -> no `rm` a ciega
 trackeada.
 **Estimación:** 0.5 sesión.
 
+### DEBT-INTERNAL-HPP-COPIA-DUPLICADA — Copia obsoleta del internal_trees_inline.hpp fuera de la fuente única
+**Severidad:** 🟢 P2 — footgun de mantenimiento
+**Estado:** ✅ CERRADA — DAY 258 (commits 20b176dd + 7f0403e5): copia de scripts/ eliminada (git rm), .gitignore sella re-tracking. Fuente única = ml-detector/include.
+**Componente:** `ml-training/scripts/internal_traffic/internal_trees_inline.hpp` (copia de la
+manivela) + `ml-detector/include/ml_defender/internal_trees_inline.hpp` (canónica que
+consume el detector)
+
+Mismo patrón que DEBT-DDOS-HPP-COPIA-DUPLICADA. La copia de `scripts/` divergía de la
+canónica (`diff -q` difiere) y no la consumía nada vivo: `internal_detector.cpp:3` incluye
+solo la de `ml-detector/include/ml_defender/`; las referencias a la de scripts/ eran el
+`print()` de ejemplo de `GenerateInternalCPPForest.py`, docs, y un `model_verification_report`
+fechado. La manivela `GenerateInternalCPPForest.py` sigue VIVA — se retira su salida local
+trackeada, no el generador. A diferencia del DDoS, esta cabeza NO tiene `*-regen.sh` con
+gate de diff; la garantía anti-divergencia es el `.gitignore`, no un test de gate.
+**Test de cierre:** `git ls-files ml-training/scripts/internal_traffic/internal_trees_inline.hpp`
+= vacío, y la ruta está en `.gitignore`.
+**Estimación:** ya cerrada.
+
+### DEBT-TRAFFIC-HPP-COPIA-DUPLICADA — Copia obsoleta del traffic_trees_inline.hpp fuera de la fuente única
+**Severidad:** 🟢 P2 — footgun de mantenimiento
+**Estado:** ✅ CERRADA — DAY 258 (commits 20b176dd + 7f0403e5): copia de scripts/ eliminada (git rm), .gitignore sella re-tracking. Fuente única = ml-detector/include.
+**Componente:** `ml-training/scripts/external_traffic/traffic_trees_inline.hpp` (copia de la
+manivela) + `ml-detector/include/ml_defender/traffic_trees_inline.hpp` (canónica que
+consume el detector)
+
+Mismo patrón que DEBT-DDOS-HPP-COPIA-DUPLICADA. La copia de `scripts/` divergía de la
+canónica (`diff -q` difiere) y no la consumía nada vivo: `traffic_detector.cpp:3` incluye
+solo la de `ml-detector/include/ml_defender/`; las referencias a la de scripts/ eran el
+`print()` de ejemplo de `GenerateTrafficCPPForest.py`, docs, y un `model_verification_report`
+fechado. La manivela `GenerateTrafficCPPForest.py` sigue VIVA — se retira su salida local
+trackeada, no el generador. A diferencia del DDoS, esta cabeza NO tiene `*-regen.sh` con
+gate de diff; la garantía anti-divergencia es el `.gitignore`, no un test de gate.
+**Test de cierre:** `git ls-files ml-training/scripts/external_traffic/traffic_trees_inline.hpp`
+= vacío, y la ruta está en `.gitignore`.
+**Estimación:** ya cerrada.
+
 ### DEBT-DDOS-DOCS-STALE-10FEAT — Docs de ml-training/scripts apuntan a la era 10-features
 **Severidad:** 🔵 P3 — higiene documental, sin impacto en código
 **Estado:** ✅ CERRADA — DAY 258 (commit c0a9d9aa): retirados los 4 docs que contenían los hits (no corregidos, eliminados); test grep = 0. Ver DEBT-ML-DEAD-GENERATORS-RETIRED.
@@ -6227,8 +6263,9 @@ orquestador petaría al correrlo). `generate_ddos_inline.py` era un muñón a me
 limpia: Fase 2 reconstruye sobre el extractor real, sin generador zombie compitiendo por
 ser la manivela. NO arregla ninguna cabeza — despeja el terreno.
 **Hilos vivos que este corte destapa (NO resueltos):**
-- Copias `.hpp` duplicadas en `internal_traffic/` y `external_traffic/` (mismo patrón que
-  DEBT-DDOS-HPP-COPIA-DUPLICADA, cerrada solo para DDoS). Barrer o registrar.
+- Copias `.hpp` duplicadas en `internal_traffic/` y `external_traffic/`: CERRADAS DAY 258
+  (DEBT-INTERNAL-HPP-COPIA-DUPLICADA, DEBT-TRAFFIC-HPP-COPIA-DUPLICADA; commits 20b176dd +
+  .gitignore 7f0403e5). Mismo patrón y resolución que DEBT-DDOS-HPP-COPIA-DUPLICADA.
 - DEBT-DDOS-DOCS-STALE-10FEAT sigue ABIERTA; este commit borró 2 hits del muñón (líneas
   src/ de generate_ddos_inline.py) pero NO cierra la deuda documental.
 - Hermana viva: DEBT-RANSOMWARE-ML-HEAD-INERT-001.
