@@ -1467,7 +1467,6 @@ RingBufferConsumer::extract_ddos_features(
         .packet_size_entropy = ddos.packet_size_entropy(),
         .traffic_amplification_factor = ddos.traffic_amplification_factor(),
         .flow_completion_rate = ddos.flow_completion_rate(),
-        .geographical_concentration = ddos.geographical_concentration(),
         .traffic_escalation_rate = ddos.traffic_escalation_rate(),
         .resource_saturation_score = ddos.resource_saturation_score()
     };
