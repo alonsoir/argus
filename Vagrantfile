@@ -436,10 +436,12 @@ LIBBPF_PROFILE
         echo "✅ XGBoost already installed"
       fi
 
-      # Dependencias Python para entrenamiento ML (ADR-026, train_xgboost_level1_v2.py)
-      pip3 install pandas scikit-learn --break-system-packages --timeout=300 || {
-        echo "⚠️  pandas/scikit-learn pip failed — intentando apt fallback"
-        apt-get install -y python3-pandas python3-sklearn || true
+      # Dependencias Python PINNEADAS del crank ML in-VM (RF DDoS + train xgboost).
+      # DEUDA-DDOS-REPRO-PIN: versiones exactas o abortar. SIN fallback apt: los
+      # python3-pandas/python3-sklearn del repo producen otro entorno → otro sha.
+      pip3 install -r /vagrant/ml-training/requirements-ddos-pinned.txt \
+      --break-system-packages --timeout=300 || {
+      echo "❌ deps ML pinneadas fallaron — NO se cae a apt (reproducibilidad)"; exit 1;
       }
       # Directorio de plugins ML Defender
       mkdir -p /usr/lib/ml-defender/plugins

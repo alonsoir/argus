@@ -299,7 +299,6 @@ int main(int argc, char* argv[]) {
                 .packet_size_entropy = 0.5f,
                 .traffic_amplification_factor = 0.5f,
                 .flow_completion_rate = 0.5f,
-                .geographical_concentration = 0.5f,
                 .traffic_escalation_rate = 0.5f,
                 .resource_saturation_score = 0.5f
             };

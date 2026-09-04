@@ -23,12 +23,11 @@ public:
         float packet_size_entropy;
         float traffic_amplification_factor;
         float flow_completion_rate;
-        float geographical_concentration;
         float traffic_escalation_rate;
         float resource_saturation_score;
 
         /// Convert to array for prediction
-        std::array<float, 10> to_array() const noexcept {
+        std::array<float, 9> to_array() const noexcept {
             return {
                 syn_ack_ratio,
                 packet_symmetry,
@@ -37,7 +36,6 @@ public:
                 packet_size_entropy,
                 traffic_amplification_factor,
                 flow_completion_rate,
-                geographical_concentration,
                 traffic_escalation_rate,
                 resource_saturation_score
             };
@@ -84,7 +82,7 @@ public:
 
     /// Get model metadata
     size_t num_trees() const noexcept { return 100; }
-    size_t num_features() const noexcept { return 10; }
+    size_t num_features() const noexcept { return 9; }  // == ddos::DDOS_NUM_FEATURES (header inline); mantener en sync
     const char* model_version() const noexcept { return "1.0.0"; }
 };
 

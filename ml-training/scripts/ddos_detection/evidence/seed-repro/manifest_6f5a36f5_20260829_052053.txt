@@ -1,0 +1,13 @@
+verify_seed_repro — manifiesto de procedencia
+timestamp     : 20260829_052053
+git_branch    : diag/ml-heads
+git_head      : 6f5a36f5
+generador     : ml-training/scripts/ddos_detection/SyntheticDDOSGenerator.py
+generador_sha : 7186c805284e186cdcf6b0604dc6e439d48494d591be0783a654fda45132a7c5
+n_samples_in  : 5000
+versiones     : numpy 2.3.3 pandas 2.3.3
+run1          : ml-training/scripts/ddos_detection/evidence/seed-repro/dataset_6f5a36f5_7186c805284e_20260829_052053_run1.json
+run1_sha256   : 58b429ddb527c1caf29a6f7899881c1fb8d2bc36fa58828c4a8401aca7f475c9
+run2          : ml-training/scripts/ddos_detection/evidence/seed-repro/dataset_6f5a36f5_7186c805284e_20260829_052053_run2.json
+run2_sha256   : 58b429ddb527c1caf29a6f7899881c1fb8d2bc36fa58828c4a8401aca7f475c9
+match         : SI

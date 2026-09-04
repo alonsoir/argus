@@ -6120,3 +6120,154 @@ DEBT-BIAS-KEY-5TUPLE-AMBIGUITY-001 (0.014%, declarada) · DEBT-BIAS-FASTPATH-LAB
 DEBT-EVENT-ID-COLLISION-001 · DEBT-CTU-REPLAY-GSO-DROP-001 · DEBT-DATASET-DRIVER-CONTRACT-001 ·
 DEBT-HMAC-KEY-INSECURE-TRANSPORT-001 · DEBT-PIPELINE-START-DISABLE-RAG-001 /
 -BINARY-GUARD-001 / -STATUS-ALL-VMS-001 / -STATUS-LOGFILES-001 (overhaul pipeline-start/status).
+
+<!-- ============================================================= -->
+## DAY 257 — cierre DEUDA-DDOS-REPRO-PIN (rama diag/ml-heads)
+<!-- ============================================================= -->
+
+> Contexto: línea de i+d+i en `diag/ml-heads` (NO main; main protegida), ataca la
+> P0 de clasificación (hermana host: DEBT-RANSOMWARE-ML-HEAD-INERT-001). El skew
+> train/serve por geo quedó reparado DAY 255+ (contrato del detector a 9 features
+> sin `geographical_concentration`; commits 2c9f3fbf/9090cedb/b179faa0/d3874f68), y
+> la propiedad de reproducibilidad del artefacto DDoS cerrada DAY 256 (commit
+> 882fcaf9: target `ddos-regen` + censo `census_ddos_splits.py` + MANIFEST). Aviso
+> honesto vigente para el paper: esto prueba el MÉTODO de reparación del skew (Fase
+> 1), NO promete detector DDoS útil sobre Neris (Betas sintéticas; accuracy 1.0 =
+> sintético). Detector útil = Fase 2 (features reales + labels Neris).
+
+### DEBT-DDOS-REPRO-PIN — Entorno numérico del crank in-VM sin pinnear
+**Severidad:** 🟡 P1 — reproducibilidad del artefacto del paper (el asterisco del claim)
+**Estado:** ✅ CERRADA — DAY 257 (commit 7d8ba303, en origin/diag/ml-heads)
+**Componente:** `Vagrantfile` (provisioning de defender) + `ml-training/requirements-ddos-pinned.txt`
+
+El provisioning de defender instalaba las deps numéricas del crank DDoS con
+`pip3 install pandas scikit-learn` SIN `==` (Vagrantfile:440), y numpy entraba
+transitivo sin fijar -> un `vagrant up` futuro traería otras versiones y otro sha del
+`.hpp`. El `make ddos-regen` de DAY 256 reproducía `56f0c5ae...` byte a byte DENTRO
+de la VM caliente, pero el claim "reproducible desde cero" quedaba sin medir.
+
+**Arreglo (Camino B, medido):** fichero `requirements-ddos-pinned.txt` con el closure
+de 8 versiones del `/usr/bin/python3` que produjo el sha (numpy==2.4.6,
+scikit-learn==1.9.0, pandas==3.0.5, scipy==1.17.1, joblib==1.5.3,
+threadpoolctl==3.6.0, python-dateutil==2.9.0.post0, pytz==2022.7.1). El provisioning
+reemplaza el `pip install` sin `==` por `pip3 install -r requirements-ddos-pinned.txt`
+con hard-fail y SIN fallback apt (los `python3-pandas`/`python3-sklearn` del repo
+producirían otro entorno -> otro sha). NO se toca `ml-training/requirements.txt`
+(pide numpy<2.0.0 para el mundo onnx/matplotlib; medido que NO gobierna el intérprete
+del crank).
+
+**Medida que zanja (HECHO, no supuesto):** `vagrant destroy -f defender && vagrant up
+defender` desde VM limpia -> freeze idéntico 8/8 -> `make ddos-regen` reprodujo
+`56f0c5ae8640...cf9bc68` byte a byte (Puerta 3 verde; censo GO: geo=0, 9 features,
+240 nodos internos / 340 hojas / 580 total). El asterisco "reproducible en mi VM
+caliente" CAE -> reproducible from-scratch.
+
+**Caveat honesto que queda (declararlo, no esconderlo):** el pin fija las 8 versiones
+pip, NO la imagen del box ni el minor del intérprete ni la estabilidad de los wheels
+de PyPI. Ese residuo es supply-chain estándar; el CENSO de splits (geo=0 / 9 features
+/ 240-340) es el invariante PORTABLE que sobrevive aunque el sha drifte por esa vía.
+Claim del paper = sha bit-exacto anclado a box+fecha + censo como invariante portable.
+
+**Test de cierre:** ✅ cumplido — from-scratch reproduce el sha y el censo; el
+`.gitignore` mantiene los `.pkl`/dataset fuera (regenerables por comando, garantía del
+manifiesto).
+
+### DEBT-DDOS-HPP-COPIA-DUPLICADA — Dos copias del ddos_trees_inline.hpp que pueden divergir en silencio
+**Severidad:** 🟢 P2 — footgun de mantenimiento
+**Estado:** ✅ CERRADA — DAY 257 (commit b921ff04): copia huérfana de scripts/ eliminada (git rm), .gitignore sella re-tracking, ddos-regen verde tras el borrado. Fuente única = ml-detector/include.
+**Componente:** `ml-training/scripts/ddos_detection/ddos_trees_inline.hpp` (copia de la
+manivela) + `ml-detector/include/ml_defender/ddos_trees_inline.hpp` (canónica que
+consume el detector)
+
+Hoy ambas son byte-idénticas (`56f0c5ae`), pero la Puerta 3 de `ddos-regen.sh` solo
+diffea la de `ml-detector/`. Un cambio futuro que regenere solo una dejaría la otra
+rancia sin que el gate lo note. Resolver: eliminar la duplicación (la de `scripts/`
+es la que la manivela produce en su working dir) O ampliar el diff de la Puerta 3 a
+ambas rutas. OJO: el `.hpp` de `scripts/` SÍ está trackeado -> no `rm` a ciegas.
+**Test de cierre:** el gate falla si las dos copias divergen, o solo existe una copia
+trackeada.
+**Estimación:** 0.5 sesión.
+
+### DEBT-INTERNAL-HPP-COPIA-DUPLICADA — Copia obsoleta del internal_trees_inline.hpp fuera de la fuente única
+**Severidad:** 🟢 P2 — footgun de mantenimiento
+**Estado:** ✅ CERRADA — DAY 258 (commits 20b176dd + 7f0403e5): copia de scripts/ eliminada (git rm), .gitignore sella re-tracking. Fuente única = ml-detector/include.
+**Componente:** `ml-training/scripts/internal_traffic/internal_trees_inline.hpp` (copia de la
+manivela) + `ml-detector/include/ml_defender/internal_trees_inline.hpp` (canónica que
+consume el detector)
+
+Mismo patrón que DEBT-DDOS-HPP-COPIA-DUPLICADA. La copia de `scripts/` divergía de la
+canónica (`diff -q` difiere) y no la consumía nada vivo: `internal_detector.cpp:3` incluye
+solo la de `ml-detector/include/ml_defender/`; las referencias a la de scripts/ eran el
+`print()` de ejemplo de `GenerateInternalCPPForest.py`, docs, y un `model_verification_report`
+fechado. La manivela `GenerateInternalCPPForest.py` sigue VIVA — se retira su salida local
+trackeada, no el generador. A diferencia del DDoS, esta cabeza NO tiene `*-regen.sh` con
+gate de diff; la garantía anti-divergencia es el `.gitignore`, no un test de gate.
+**Test de cierre:** `git ls-files ml-training/scripts/internal_traffic/internal_trees_inline.hpp`
+= vacío, y la ruta está en `.gitignore`.
+**Estimación:** ya cerrada.
+
+### DEBT-TRAFFIC-HPP-COPIA-DUPLICADA — Copia obsoleta del traffic_trees_inline.hpp fuera de la fuente única
+**Severidad:** 🟢 P2 — footgun de mantenimiento
+**Estado:** ✅ CERRADA — DAY 258 (commits 20b176dd + 7f0403e5): copia de scripts/ eliminada (git rm), .gitignore sella re-tracking. Fuente única = ml-detector/include.
+**Componente:** `ml-training/scripts/external_traffic/traffic_trees_inline.hpp` (copia de la
+manivela) + `ml-detector/include/ml_defender/traffic_trees_inline.hpp` (canónica que
+consume el detector)
+
+Mismo patrón que DEBT-DDOS-HPP-COPIA-DUPLICADA. La copia de `scripts/` divergía de la
+canónica (`diff -q` difiere) y no la consumía nada vivo: `traffic_detector.cpp:3` incluye
+solo la de `ml-detector/include/ml_defender/`; las referencias a la de scripts/ eran el
+`print()` de ejemplo de `GenerateTrafficCPPForest.py`, docs, y un `model_verification_report`
+fechado. La manivela `GenerateTrafficCPPForest.py` sigue VIVA — se retira su salida local
+trackeada, no el generador. A diferencia del DDoS, esta cabeza NO tiene `*-regen.sh` con
+gate de diff; la garantía anti-divergencia es el `.gitignore`, no un test de gate.
+**Test de cierre:** `git ls-files ml-training/scripts/external_traffic/traffic_trees_inline.hpp`
+= vacío, y la ruta está en `.gitignore`.
+**Estimación:** ya cerrada.
+
+### DEBT-DDOS-DOCS-STALE-10FEAT — Docs de ml-training/scripts apuntan a la era 10-features
+**Severidad:** 🔵 P3 — higiene documental, sin impacto en código
+**Estado:** ✅ CERRADA — DAY 258 (commit c0a9d9aa): retirados los 4 docs que contenían los hits (no corregidos, eliminados); test grep = 0. Ver DEBT-ML-DEAD-GENERATORS-RETIRED.
+**Componente:** `ml-training/scripts/README.md`, `ml-training/scripts/INSTRUCCIONES_CLAUDE_INTEGRACION.md`,
+`ml-training/scripts/documentation/TECHNICAL_INTEGRATION_GUIDE.md`,
+`ml-training/scripts/ddos_detection/generate_ddos_inline.py` (muñón muerto)
+
+Medido DAY 257 (`git grep ddos_trees_inline -- 'ml-training/**'`): varios docs y guías
+describen el `.hpp` con datos de la era vieja de 10 features — "612 nodos" (hoy 580),
+`#include "ddos_trees_inline.hpp"`, y `cp`/rutas a `ml-detector/src/` (la copia real
+que consume el detector vive en `ml-detector/include/ml_defender/`). El muñón muerto
+`generate_ddos_inline.py` escribe a `/vagrant/ml-detector/src/ddos_trees_inline.hpp`
+(ruta que ya no es la canónica). Nada de esto afecta al pipeline (la manivela es
+`ddos-regen.sh` -> `GenerateDDOSCPPForest.py`, y el detector incluye la ruta de
+`include/`), pero engaña a quien herede el repo. Alinear los docs a: 580 nodos, 9
+features (sin geo), fuente única `ml-detector/include/ml_defender/ddos_trees_inline.hpp`,
+manivela = `make ddos-regen`. Considerar borrar o marcar como muerto el
+`generate_ddos_inline.py` en el mismo barrido (ya anotado como muñón en DAY 255).
+**Test de cierre:** `git grep -n "612 nodos\|ml-detector/src/ddos_trees_inline" -- 'ml-training/**'`
+= 0 (o solo notas históricas explícitas).
+**Estimación:** 0.5 sesión (barrido documental).
+
+### DEBT-ML-DEAD-GENERATORS-RETIRED — Subsistema de generación de cabezas obsoleto, retirado
+**Severidad:** 🟢 P2 — higiene de pipeline, retira armas que disparan torcido
+**Estado:** ✅ CERRADA — DAY 258 (commit 008b2d17): git rm de 4 ficheros (−400 líneas).
+**Componente:** `ml-training/scripts/generate_all_models.py` (orquestador),
+`ml-training/scripts/ddos_detection/generate_ddos_inline.py`,
+`ml-training/scripts/external_traffic/generate_traffic_cpp_forest.py`,
+`ml-training/scripts/ransomware/extract_full_forest.py`
+Medido DAY 258 (`git grep` sobre Makefile/Vagrantfile/ml-training/ml-detector): subsistema
+desconectado del árbol vivo, ningún caller externo (ni build, ni Vagrant, ni la manivela
+canónica `make ddos-regen`). Los generadores producen cabezas con skew medido — el DDoS
+demostrado DAY 255-257; las demás son la misma familia rota. `generate_internal_inline.py`
+era un fantasma: invocado en la tabla del orquestador, inexistente en el repo (el
+orquestador petaría al correrlo). `generate_ddos_inline.py` era un muñón a medio construir
+("Implementar lógica similar a extract_full_forest.py"). Retirados para dejar la cabeza
+limpia: Fase 2 reconstruye sobre el extractor real, sin generador zombie compitiendo por
+ser la manivela. NO arregla ninguna cabeza — despeja el terreno.
+**Hilos vivos que este corte destapa (NO resueltos):**
+- Copias `.hpp` duplicadas en `internal_traffic/` y `external_traffic/`: CERRADAS DAY 258
+  (DEBT-INTERNAL-HPP-COPIA-DUPLICADA, DEBT-TRAFFIC-HPP-COPIA-DUPLICADA; commits 20b176dd +
+  .gitignore 7f0403e5). Mismo patrón y resolución que DEBT-DDOS-HPP-COPIA-DUPLICADA.
+- DEBT-DDOS-DOCS-STALE-10FEAT sigue ABIERTA; este commit borró 2 hits del muñón (líneas
+  src/ de generate_ddos_inline.py) pero NO cierra la deuda documental.
+- Hermana viva: DEBT-RANSOMWARE-ML-HEAD-INERT-001.
+  **Test de cierre:** ya cerrada — `git ls-files ml-training/scripts/generate_all_models.py` = vacío.
+  **Estimación:** 0 (hecha).

@@ -1,61 +1,58 @@
-# PROMPT DE CONTINUIDAD — aRGus NDR — ÚLTIMO PR (overhaul pipeline-start/status) → read-only
+# CONTINUIDAD DAY258 — Housekeeping DDoS CERRADO (generadores + docs sobre-venta amputados). Siguiente: PR a main / Fase 2.
 
-## Punto de entrada (mide, no asumas)
-    git checkout main && git pull
-    git log --oneline -4
-    git tag --list 'pre-release-*'
-Debes ver HEAD en `c94c18f6` (Merge #137, cara pública) y `pre-release-0.0.1` + `-0.0.2`.
-La cara pública (paper v25 arXiv:2604.04952 + reproducibilidad) está CERRADA en main (DAY 254).
-`main` PROTEGIDA (GH013): todo por PR. NUNCA push directo a main.
-Rama de trabajo nueva off main, p.ej. `fix/pipeline-start-overhaul`.
-Limpieza: `docs/readme-cierre` ya fusionada (borrable local+remota).
+## Estado (medido, verificar al retomar)
+    git branch --show-current      # diag/ml-heads
+    git log --oneline -6           # HEAD = 708db2d8
+    git status -sb                 # limpio salvo untracked conocidos (ver abajo)
+Untracked que NO se tocan: evidence/seed-repro/*.json (regla propia),
+run_crank_sandbox.sh (reliquia DAY255, muere aparte), "Cierre day255 reparacion ddos.md".
 
-## Qué es este PR — el ÚLTIMO antes de read-only
-Fontanería interna de `pipeline-start` / `pipeline-status`. NO cara pública.
-Cuatro deudas, un PR. Al terminar: repo en modo LECTURA.
-Regla del día: cada *-start exige binarios y VMs concretas — MEDIR las secciones
-pipeline-start, pipeline-status y *-start del Makefile real ANTES de tocar.
+## HECHO DAY258 (cerrado y en origin/diag/ml-heads)
+- `7a3d42be` Evidencia de la reparación trackeada: 5 patches (seed/geo/footgun/service-vector)
+  + verify_seed_repro.sh. run_crank_sandbox.sh NO trackeado (reliquia DAY255: compara contra
+  .hpp borrado, geo=16, coartada del skew pre-pin).
+- `008b2d17` AMPUTADO el subsistema de generadores de cabezas (−400 líneas):
+  generate_all_models.py + generate_ddos_inline.py + generate_traffic_cpp_forest.py +
+  extract_full_forest.py. Desconectados del árbol vivo (0 callers en Makefile/Vagrant/manivela),
+  producen cabezas con skew medido, generate_internal_inline.py era fantasma. NO arregla
+  cabezas — despeja el terreno para Fase 2.
+- `65c279a3` DEBT-ML-DEAD-GENERATORS-RETIRED en backlog.
+- `c0a9d9aa` RETIRADO el nido documental que sobre-vendía las 4 cabezas (−888 líneas):
+  README de scripts, TECHNICAL_INTEGRATION_GUIDE, INSTRUCCIONES_CLAUDE_INTEGRACION,
+  TechnicalDocumentation.py. "BREAKTHROUGH / accuracy 1.0000" sobre cabezas rotas + geo
+  documentada como feature viva del DDoS (ya amputada). Doc se recrea acoplada a cada
+  cabeza fiable en Fase 2, NO antes.
+- `708db2d8` DEBT-DDOS-DOCS-STALE-10FEAT CERRADA (test grep=0; los hits murieron con los ficheros).
 
-## Las cuatro deudas (todas: medir → componer, no reimplementar)
+## Verificado hoy (tranquiliza, no re-medir)
+README raíz del proyecto NO sobre-vende — lenguaje del paper honesto: subconjunto curado
+(646 flujos maliciosos CTU-13 Neris), F1=0.9985, "not the operational picture, stated as such".
+El veneno de sobre-venta estaba contenido en ml-training/scripts/, ya retirado.
 
-1) DEBT-PIPELINE-START-DISABLE-RAG-001
-   pipeline-start hoy encadena: test-provision-1 → etcd-server-start → rag-start →
-   rag-ingester-start → ml-detector-start → firewall-start → sniffer-start.
-   pipeline-status chequea rag-security y rag-ingester entre otros.
-   CAMBIO: quitar rag-start + rag-ingester-start del arranque, y las dos líneas
-   rag del status. SIN borrar targets ni binarios (rag-build/rag-ingester-build
-   siguen; EMECAS los testea). Considerar flag opt-in (p.ej. WITH_RAG=1) para
-   re-armarlos sin romper EMECAS/test-all.
+## Claim del paper (acotado, honesto — NO sobre-vender)
+DDoS reproducible byte a byte FROM-SCRATCH (box debian + 8 versiones pinneadas, DAY257).
+Censo (geo=0, 9 features, 240/340) = invariante PORTABLE que sobrevive al drift de sha.
+NO afirmado: detector DDoS útil sobre Neris (Betas sintéticas, accuracy 1.0 = sintético = Fase 2).
+El pin NO va al main.tex (paper v25 ya en arXiv; material de Fase 2, vive en la rama).
 
-2) DEBT-PIPELINE-START-BINARY-GUARD-001
-   pipeline-start ASUME binarios compilados (como asumía reproduce-paper antes de
-   reproduce-paper-deps). CAMBIO: guard que compile lo que falte con el MISMO
-   $(PROFILE) antes de arrancar. Generaliza a pipeline-start lo que hoy hace
-   reproduce-paper-deps. Medir qué binario exige cada *-start.
+## PENDIENTE (barato primero; en orden)
+1. **Copias .hpp duplicadas en internal_traffic/ + external_traffic/** (mismo patrón que
+   DEBT-DDOS-HPP-COPIA-DUPLICADA, cerrada solo para DDoS). Medir con
+   `git ls-files 'ml-training/scripts/**/*_trees_inline.hpp'` y barrer/registrar.
+2. **PR de diag/ml-heads a main (CABEZA FRESCA, no a horas malas).** La rama lleva la
+   reparación completa del skew (footgun+geo+propagación+contrato-servicio+reproducibilidad+pin)
+   + amputación de generadores y docs. Gate: emecas+++ VERDE from-scratch. main PROTEGIDA (PR only, GH013).
+3. **Fase 2 DDoS (LA P0 real, investigación, batalla larga).** Entrenar la cabeza sobre features
+   REALES + labels Neris por el MISMO extractor (no Betas sintéticas). Único camino de
+   "reproducible" → "detecta". Hermana: DEBT-RANSOMWARE-ML-HEAD-INERT-001.
 
-3) DEBT-STATUS-ALL-VMS-001
-   pipeline-status solo mira defender (vagrant ssh -c → VM primaria). AMPLIAR a
-   las 5 VMs: defender (aRGus), suricata (systemctl), zeek (zeekctl status),
-   wazuh (manager/agent), client. Añadir: driver de tráfico de la última corrida
-   (marker/STAMP en logs/lab), ruta de log por componente, y el comando
-   `vagrant ssh <vm>` para llegar a cada uno.
+## Invariantes
+main PROTEGIDA (PR only). Un commit una idea. git grep o fichero concreto (NUNCA grep -rn desde raíz).
+Comandos de salida grande en bloques separados. add explícito por fichero, nunca -u/-a.
+La manivela gira DENTRO de la VM (deps pinneadas ahí). PUSH desde el HOST (macOS), no desde la VM.
+sed BSD/osx: verificar con grep -c antes y después, Y confirmar el NOMBRE del fichero destino
+(hoy un typo .mdd tragó un sed en silencio). Medir, no asumir.
 
-4) DEBT-STATUS-LOGFILES-001
-   Rutas de log estándar por componente en el status (logs/lab/*.log). Hermano
-   de la #3; probablemente se resuelven juntas.
-
-## Cierre
-rama → commit → push → PR → merge → pull main. Committear en este PR el registro
-de deuda técnica final. Opcional tag pre-release-0.0.3. DESPUÉS: repo en modo
-lectura (branch protection dura / GitHub "Archive repository").
-
-## Invariantes (no negociar)
-- Medir, no votar. HECHO ≠ SOSPECHADO. Conjetura etiquetada o no se dice.
-- Fidelidad de reuso: componer piezas existentes, no reimplementar.
-- Alonso pilota; mide contra fichero y pega salida. NO str_replace: fichero completo.
-- No `grep -rn` desde raíz: `git grep` o fichero concreto.
-- No encadenar comandos de salida grande en el mismo bloque. sed BSD: `sed -i ''`.
-  Recetas del Makefile con TAB. main PROTEGIDA: todo por PR.
-
-## Hilos de memoria
-[[cierre-paper]] (agenda de cierre; este PR anclado ahí como "el siguiente").
+## Nota personal (no borrar)
+Alonso atiende a su padre en el hospital estos días; avanza en ratos sueltos a horas malas.
+aRGus aguanta el ritmo lento — Via Appia, décadas. No forzar. Piano piano si arriva lontano.
