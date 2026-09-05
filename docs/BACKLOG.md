@@ -5280,24 +5280,17 @@ necesita asterisco hasta que esto se cierre.
 comprobar que `make test-components` devuelve código ≠ 0. La ausencia de tests debe ser una
 condición **declarada explícitamente** por componente, no el efecto colateral de un `||`.
 
-### DEBT-MLDETECTOR-TESTS-NOT-BUILT-001 — 10 de 11 tests del ml-detector nunca se construyen
-**Severidad:** 🔴 P1 — integridad del gate de tests
-**Estado:** ABIERTO — DAY 223 · descubierta DAY 222
-**Componente:** `ml-detector/CMakeLists.txt` / `ml-detector/build/tests`
-De los **11** tests registrados con `add_test`, **10 aparecen en `Not Run`**: el ejecutable no
-existe en `build/tests`. No fallan — **nunca se construyen**. Son: `test_classifier`,
-`test_feature_extractor`, `test_rag_logger_artifact_save`, `test_model_loader`,
-`test_zmq_memory_overflow`, `RansomwareDetectorUnit`, `test_pipeline`, `test_csv_event_writer`,
-`test_csv_feature_extraction`, `test_etcd_client_hmac`. El único que corre de verdad es
-`test_correlation_roundtrip`.
-**Apilada sobre `DEBT-MAKEFILE-TEST-GATE-MASKED-001`:** el `||` impide que la ausencia se note.
-Dos defectos independientes que se tapan mutuamente.
-**Aviso de alcance (DAY 222):** al construir esos 10 lo más probable es que salgan **rojos de
-verdad** — deudas de ML ya conocidas y dadas por irrecuperables en esta línea de investigación.
-Eso NO debe bloquear otras ramas. Al abordarla hay que decidir **explícitamente** qué se arregla
-y qué se marca **known-red** con su propio ID.
-**Test de cierre:** los 10 ejecutables se construyen y `ctest` los ejecuta; cada uno queda en
-verde o registrado como known-red con ID propio. Ninguno vuelve a `Not Run` en silencio.
+DEBT-MLDETECTOR-TESTS-NOT-BUILT-001 — CERRADA DAY259 (refutada por medición, no arreglo).
+Afirmación original ("10/11 tests del ml-detector no se construyen"): NO reproducida.
+Evidencia, dos regímenes:
+- build-production (incremental): ctest -N lista 11; los 11 binarios en disco (+ test_detectors);
+  ctest → 11/11 passed, 0 failed.
+- build-debug FROM-SCRATCH (emecas-day258-0530.log:18037-18064): 11/11 passed, 0 failed;
+  la tabla de ctest sale completa → la máscara || NO disparó.
+  GTest presente en las 3 cachés (GTest_DIR poblado). find_package sin REQUIRED no llegó a morder.
+  Causa histórica del "10/11": no atribuida (nota de época anterior, ya resuelta o mal medida).
+  NO cierra DEBT-MAKEFILE-TEST-GATE-MASKED-001 (máscara latente, viva) ni el fleco de test_detectors
+  fuera de ctest — son deudas independientes, siguen abiertas.
 
 ### DEBT-GRAPH-SCHEMA-MULTISENSOR-001 — Esquema del grafo Kuzu ante múltiples sensores
 **Severidad:** 🔴 P1 — integridad del grafo (pérdida silenciosa de eventos con un 2º sensor)
