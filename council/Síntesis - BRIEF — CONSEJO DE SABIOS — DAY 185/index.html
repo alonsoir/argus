@@ -1,0 +1,873 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source embedded-ML NDR for hospitals and schools">
+      
+      
+        <meta name="author" content="Alonso Isidoro Roman">
+      
+      
+        <link rel="canonical" href="https://alonsoir.github.io/argus/council/S%C3%ADntesis%20-%20BRIEF%20%E2%80%94%20CONSEJO%20DE%20SABIOS%20%E2%80%94%20DAY%20185/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>Síntesis BRIEF — CONSEJO DE SABIOS — DAY 185 - ML Defender (aRGus NDR)</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-header__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ML Defender (aRGus NDR)
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Síntesis   BRIEF — CONSEJO DE SABIOS — DAY 185
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../README.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/BACKLOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Backlog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Security Model
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-tabs__link">
+          
+  
+  
+  ADRs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/contracts/Protobuf contracts.md" class="md-tabs__link">
+          
+  
+  
+  Contracts
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-nav__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ML Defender (aRGus NDR)
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../README.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/BACKLOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADRs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ADRs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013 Seed Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-021-deployment-topology-seed-families.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-021 Topology SSOT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-022-threat-model-opcion2-descartada.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-022 Threat Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Protobuf contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protobuf
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/JSON contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JSON
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Rag security commands.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+  <h1>Síntesis   BRIEF — CONSEJO DE SABIOS — DAY 185</h1>
+
+<p>Leídas las 8. El feedback es duro pero está bien dirigido — y antes de entrar frente por frente, una observación de arbitraje que vale más que cualquier veredicto individual:</p>
+<p><strong>Cuidado con tomar el 8/8 en F1, F2 y F4 como confirmación independiente.</strong> Yo redacté el brief, y en él etiqueté esos tres como "los frentes que dan miedo". Ocho revisores entraron por la puerta que les abrí. Que coincidan ahí no prueba que tenga razón; prueba que el encuadre funcionó como profecía autocumplida — justo el sesgo del que te avisé en mi respuesta. <strong>La señal de oro está en lo que nadie pidió que buscaran:</strong> los hallazgos que aparecieron <em>sin</em> que el brief los teleara. Esos son cuatro, y son los que de verdad importan:</p>
+<ol>
+<li>
+<p><strong>DeepSeek (F6, no listado): el HMAC rompe la promesa "mismos bytes" entre productores.</strong> Si cada adaptador firma con su clave, dos filas con columnas 0-17 idénticas tendrán col 18 distinta → no son "los mismos bytes". Es real, y reencuadra el claim del contrato: lo que es común entre productores son las <strong>columnas 0-17</strong>; la 18 es integridad por-productor, no identidad. No bloquea B4 (DeepSeek exagera ahí — B4 no toca la semántica HMAC), pero <strong>sí obliga a precisar el claim del contrato</strong> cuando lleguen los adaptadores. Señal alta.</p>
+</li>
+<li>
+<p><strong>Kimi/DeepSeek/Qwen, convergentes: el golden capturado bajo classic forzado NO es el oráculo histórico si producción corre es_ES.</strong> Esto es lo más afilado de todo el feedback. El golden congela "lo que <em>debería</em> haber sido" (classic), no "lo que <em>fue</em>" (es_ES con coma). Si el bronce histórico tiene comas, entonces post-B4 produces bronce <em>incompatible con el histórico</em> — D-E deja de ser refactor transparente y pasa a ser <strong>corrección de bug con breaking change</strong>. Tres modelos llegaron ahí solos. Señal máxima.</p>
+</li>
+<li>
+<p><strong>Gemini/ChatGPT/DeepSeek, convergentes: shadow mode para B4.</strong> Correr ambos caminos en paralelo comparando buffers antes de borrar <code>build_row</code>. Y aquí está la elegancia: <strong>eso es exactamente el fuzzing pre-B4 de F1.</strong> Los dos frentes colapsan en una sola acción.</p>
+</li>
+<li>
+<p><strong>Kimi/Qwen: encapsular el formateo numérico en función locale-agnóstica</strong> (<code>std::to_chars</code>/<code>snprintf</code>, no <code>operator&lt;&lt;</code>+<code>imbue</code>). Inmunidad por construcción, no por disciplina. DEBT, no urgente.</p>
+</li>
+</ol>
+<p>Ahora los frentes, con el tally y separando señal de ruido:</p>
+<p><strong>F1 — 8/8: el golden de 27 no basta como red permanente.</strong> Unánime, y aquí sí lo descuento por framing, pero el fondo es correcto. La división real es <em>cómo</em>: cuatro (ChatGPT, Gemini, Kimi, Qwen) dicen fuzzear contra <strong>invariantes</strong> (determinismo, reglas de escape, HMAC correcto) sin oráculo; cuatro (yo, DeepSeek, Grok, Mistral) contra un <strong>oráculo congelado</strong>. <strong>Se reconcilian, y barato:</strong> fuzzea <code>serialize(to_row(e))</code> contra <code>write_record</code> en vivo <strong>antes de B4</strong>, mientras el oráculo aún existe — reutiliza el harness de B3 cambiando los 27 por N millones de eventos aleatorios. Cero divergencias sobre N millones es evidencia masivamente más fuerte que 27 puntos, y <em>de paso es el shadow mode de B4</em>. Tras B4, los invariantes de propiedad quedan como red permanente. <strong>Ruido a descartar:</strong> DeepSeek quiere congelar el binario viejo en Docker para siempre — innecesario si fuzzeas antes de B4. No bloquea (7/8).</p>
+<p><strong>F2 — 7/8: verificar el locale de producción debe condicionar el merge.</strong> El consenso más fuerte de todo el feedback (solo ChatGPT lo deja como investigación aparte). Combínalo con el hallazgo #2 de arriba y la acción es nítida: <strong>un <code>grep</code> de 5 minutos al systemd unit + una muestra del bronce histórico buscando comas.</strong> Si producción es classic → D-E es endurecimiento puro, el golden casa con la historia, todo limpio. Si es es_ES → el bronce histórico está corrupto <em>ahora</em>, D-E es bug-fix con breaking change, y hay que coordinarlo con la capa Kuzu y declararlo. Matriz de locales: es_ES (coma), de_DE (millares), ar_SA (dígitos no latinos), C — cuatro bastan, y es <em>verificación</em> barata (parametrizar el P0b), no soporte. Más de cinco es rendimiento decreciente.</p>
+<p><strong>F3 — 8/8: diferir D-D es legítimo y desbloquea.</strong> Sin disidencia. Condición unánime: DEBT formal con criterio de cierre explícito, nunca "ya lo haré". Y tres modelos (yo, DeepSeek, Gemini) convergieron solos en mi criterio: <strong>cerrar cuando el primer adaptador no-aRGus (Suricata) entre al pipeline</strong> — atado a evento real, no a fecha. DeepSeek añade algo bueno: nota de breaking change en el CHANGELOG, porque productores que hoy emiten <code>""</code> empezarían a ser rechazados. Cero ruido aquí.</p>
+<p><strong>F4 — nadie dice ignorarlo; el suelo unánime es defensa barata ya.</strong> Cuatro lo marcan bloqueante absoluto (DeepSeek, Grok, Mistral, Qwen), cuatro "actúa ya pero no bloquees" (yo, ChatGPT, Gemini, Kimi). Pero fíjate: <em>todos</em> aceptan como mínimo añadir detección ruidosa ahora. El "BLOQUEANTE ABSOLUTO" de Qwen es en parte mi framing rebotando. La posición honesta la afina Kimi: <strong>la pregunta real es si <code>parse_and_verify</code> usa <code>getline</code>.</strong> Si sí, puede haber corrupción activa → investiga el reader. La acción de mínimo común: <strong>rechazar <code>\n</code>/<code>\r</code> embebido en <code>validate</code>/<code>to_row</code> ahora</strong> (3 líneas, error ruidoso), investigar el reader, y decidir el arreglo completo (escapar) según lo que revele. <strong>Consecuencia que ningún modelo vio:</strong> esa defensa hace que <code>rincon_04</code> deje de producir bytes → su entrada en el golden pasa de WRITTEN a rechazado, y hay que regenerarla. No es gratis del todo.</p>
+<p><strong>F5 — 8/8: el claim está sobre-concedido.</strong> Consenso total. Consolidando las ocho reescrituras, el claim honesto es:</p>
+<blockquote>
+<p><em>"Extracción de la serialización del contrato <code>correlation_v1</code> a <code>libcorrelation_v1</code>. Verificada byte-idéntica contra el oráculo <code>build_row</code> sobre 27 vectores enumerados y bajo locale classic. Salvedades: (a) la equivalencia general está </em><em>acotada por enumeración, no probada</em><em> (D-B); (b) el golden se capturó forzando classic — si el daemon de producción operó bajo un locale no-C, el bronce histórico puede divergir y este refactor sería de facto una corrección con breaking change; (c) el formato permite <code>\n</code> embebidos que rompen readers basados en <code>getline</code> (DEBT-BRONZE-EMBEDDED-NEWLINE-001); (d) el guard de enum desconocido (D-D) queda diferido sin regresión; (e) la identidad entre productores cubre las columnas 0-17; la columna 18 (HMAC) depende de la política de claves, aún sin definir."</em></p>
+</blockquote>
+<p>Y ahora lo que de verdad necesitas: <strong>el plan, separando lo que ya es tuyo de lo que condiciona B4.</strong></p>
+<p><em>Commiteable AHORA (hito B1-B3) — nada en el feedback lo invalida:</em> la lib, <code>to_row</code>, el golden, los tres tests verdes. Lo único que cambia es el <strong>mensaje del commit / claim</strong>, que va con la versión honesta de F5. Esto se commitea hoy, no espera al Consejo.</p>
+<p><em>Antes de B4 (medio día de endurecimiento barato que el Consejo acertó en pedir):</em>
+- <code>grep</code> del locale de producción + muestra del bronce histórico (F2). 5 minutos, y es bloqueante si sale es_ES.
+- Fuzz <code>serialize</code> vs <code>write_record</code> en vivo, N millones de eventos (F1 + shadow mode de B4 en una sola acción).
+- Decidir el camino de fallo de clave HMAC: excepción en constructor vs error tipado en serialize (mi transversal). 10 minutos.
+- <code>grep -r build_row</code> para dependencias ocultas antes de borrarlo (Kimi). 1 minuto.
+- Defensa anti-<code>\n</code>/<code>\r</code> en validate + regenerar <code>rincon_04</code> (F4, suelo unánime).</p>
+<p><em>DEBT a registrar, NO bloquean:</em> D-D (cierra con Suricata), arreglo completo del newline (post-FEDER, según investigación del reader), fuzzing de invariantes como red permanente, política de clave HMAC entre productores, formateo numérico locale-agnóstico.</p>
+<p><em>Ruido a no perseguir:</em> el binario viejo en Docker (DeepSeek), la semana de doble escritura en staging (DeepSeek — es production-readiness, fuera de alcance por la sección 7 del propio brief), la matriz de 5+ locales (cuatro bastan).</p>
+<p>Una cosa importante de honestidad: <strong>nadie dijo "no hagas B4".</strong> Dijeron "haz estas cinco cosas baratas antes", y tienen razón en que son baratas. B4 no está bloqueado; está condicionado a medio día de suelo. Eso es exactamente lo que querías del Consejo.</p>
+<p>Vamos por partes, como dijiste. ¿Quieres que el siguiente paso sea redactar las entradas de <code>docs/BACKLOG.md</code> (los cinco DEBT con sus criterios de cierre), o prefieres primero el <code>grep</code> del locale de producción —que es la única pieza que podría cambiar el claim de "refactor limpio" a "bug-fix con breaking change" y conviene saberlo ya?</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.top", "search.highlight"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

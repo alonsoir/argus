@@ -1,0 +1,1023 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source embedded-ML NDR for hospitals and schools">
+      
+      
+        <meta name="author" content="Alonso Isidoro Roman">
+      
+      
+        <link rel="canonical" href="https://alonsoir.github.io/argus/KNOWN-DEBTS-v0.6/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>aRGus NDR — KNOWN-DEBTS-v0.6.md - ML Defender (aRGus NDR)</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#argus-ndr-known-debts-v06md" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="ML Defender (aRGus NDR)" class="md-header__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ML Defender (aRGus NDR)
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              aRGus NDR — KNOWN-DEBTS-v0.6.md
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../README.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../docs/ARCHITECTURE.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../docs/BACKLOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Backlog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../docs/SECURITY_MODEL.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Security Model
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../docs/adr/ADR-013 seed distribution component authentication.md" class="md-tabs__link">
+          
+  
+  
+  ADRs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../docs/contracts/Protobuf contracts.md" class="md-tabs__link">
+          
+  
+  
+  Contracts
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="ML Defender (aRGus NDR)" class="md-nav__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ML Defender (aRGus NDR)
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../README.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/ARCHITECTURE.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/BACKLOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/SECURITY_MODEL.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADRs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ADRs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/adr/ADR-013 seed distribution component authentication.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013 Seed Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/adr/ADR-021-deployment-topology-seed-families.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-021 Topology SSOT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/adr/ADR-022-threat-model-opcion2-descartada.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-022 Threat Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/contracts/Protobuf contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protobuf
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/contracts/JSON contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JSON
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/contracts/Rag security commands.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="argus-ndr-known-debts-v06md">aRGus NDR — KNOWN-DEBTS-v0.6.md</h1>
+<h1 id="deudas-tecnicas-documentadas">Deudas técnicas documentadas</h1>
+<h1 id="ultima-actualizacion-2026-05-01-day-138">Última actualización: 2026-05-01 (DAY 138)</h1>
+<hr />
+<h2 id="debt-compiler-warnings-cleanup-001">DEBT-COMPILER-WARNINGS-CLEANUP-001</h2>
+<p><strong>Severidad:</strong> 🔴 Alta — ODR es P0 bloqueante (Consejo DAY 138: 8/8 unánime)
+<strong>Componente:</strong> etcd-client, ml-detector, sniffer, rag-ingester
+<strong>Descripción:</strong>
+Sub-tareas en orden estricto de prioridad:
+1. [P0 BLOQUEANTE] ODR violations: InternalNode vs TrafficNode en ml-detector
+   y sniffer. Comportamiento indefinido en C++20. Diagnóstico: <code>nm -C | grep</code>.
+   Fix: unificar flags CMake, añadir <code>-Werror=odr</code> si GCC &gt;= 10.
+2. [P1] Protobuf dual-copy en ml-detector — <code>.pb.cc</code> compilado dos veces.
+3. [P2] signed/unsigned en zmq_handler.cpp, rag_logger.cpp, feature_extractor.cpp.
+4. [P3] OpenSSL SHA256_Init/Update/Final deprecated → migrar a EVP_DigestInit_ex.
+5. [P4] -Wreorder en ring_consumer.hpp, zmq_handler.hpp, dual_nic_manager.hpp.
+6. [P5] -Wunused-parameter en ml_defender_features.cpp stubs.
+7. Linker: libsodium.so.26 vs libsodium.so.23 conflict warning (cosmético).
+   <strong>Corrección:</strong> Pre-FEDER. ODR sub-tarea P0 bloqueante para cualquier tag posterior.
+   <strong>Decisión:</strong> Consejo DAY 138 — ODR primero, sin discusión.
+   <strong>Estimación:</strong> 3 sesiones completas.</p>
+<hr />
+<h2 id="debt-variant-b-config-001">DEBT-VARIANT-B-CONFIG-001</h2>
+<p><strong>Severidad:</strong> 🔴 Alta — pre-demo FEDER
+<strong>Componente:</strong> sniffer / main_libpcap.cpp, sniffer-libpcap.json (pendiente crear)
+<strong>Descripción:</strong>
+<code>sniffer-libpcap</code> tiene endpoint ZMQ, seed path e interface hardcodeados en el
+binario. Necesita JSON de configuración propio simplificado.</p>
+<p>Campos que DESAPARECEN del JSON (hardcodeados en binario con comentario explícito):
+- <code>zmq_sender_threads</code> → 1 (monohilo por diseño de libpcap, no configurable)
+- <code>io_thread_pools</code> → 1
+- <code>zmq.socket_pools.push_sockets</code> → 1
+- <code>threading.*</code> → eliminado
+- <code>ring_buffer.*</code> → eliminado (no hay ring buffer eBPF)
+- <code>numa_node</code>, <code>cpu_affinity</code> → no aplica
+- <code>batch_size</code>, <code>flush_interval</code> → no aplica en callback síncrono
+- <code>capture.snaplen</code> → 65535 fijo
+- <code>capture.promiscuous</code> → 1 fijo (NDR siempre promiscuo)</p>
+<p>Campos que SE PRESERVAN:
+- <code>capture.interface</code>, <code>capture.filter.*</code>, <code>capture.timeout_ms</code>
+- <code>output_socket.address/port</code>
+- <code>crypto.*</code> / seed path, <code>logging.*</code></p>
+<p>Campos NUEVOS específicos de Variant B:
+- <code>capture.buffer_size_mb</code> → buffer kernel libpcap (crítico en ARM64)
+- <code>capture.sampling.mode</code> / <code>rate</code> → sampleo bajo alta carga ("none" por defecto)</p>
+<p>Observabilidad: exponer <code>send_failures</code> como métrica. Alerta si drop_rate &gt; 0.1%.</p>
+<p>También pendiente:
+- Test e2e con <code>pcap_open_dead()</code> + inject (CI, sin root)
+- Test manual con <code>tcpreplay</code> sobre <code>lo</code> (fuera de ctest, REQUIRES_ROOT)
+- Validación en hardened-arm64 VM
+  <strong>Corrección:</strong> Pre-demo FEDER (1 agosto 2026)
+  <strong>Consejo DAY 138:</strong> Ver actas Q2, Q3, Q4
+  <strong>Estimación:</strong> 1 sesión</p>
+<hr />
+<h2 id="debt-irp-nftables-001">DEBT-IRP-NFTABLES-001</h2>
+<p><strong>Severidad:</strong> 🔴 Alta — post-merge, pre-demo FEDER
+<strong>Componente:</strong> /usr/local/bin/argus-network-isolate (pendiente implementar)
+<strong>Descripción:</strong>
+ExecStartPre de argus-apt-integrity.service referencia argus-network-isolate
+pero el script no está implementado. Aislamiento actual vía <code>ip link set down</code>
+es insuficiente.</p>
+<p>Protocolo aprobado por Consejo DAY 138 (8/8):
+1. Snapshot ruleset previo: <code>nft list ruleset &gt; /tmp/argus-backup-$$.nft</code>
+2. Generar fichero de reglas de aislamiento
+3. Validar: <code>nft -c -f /tmp/argus-isolate-$$.nft</code>
+4. Aplicar atómico: <code>nft -f /tmp/argus-isolate-$$.nft</code>
+5. Timer rollback automático 300s (si admin no confirma, restaurar)
+6. Fallback emergencia si <code>nft -f</code> falla: <code>ip link set eth0 down</code>
+7. Firma Ed25519 del fichero de reglas (consistente con ADR-025, pendiente decisión)</p>
+<p>iptables rechazado — obsoleto en Debian 12 Bookworm. nftables es el backend
+nativo. No mezclar ambos.
+<strong>Corrección:</strong> Primera iteración post-merge, antes de demo FEDER
+<strong>ADR relacionado:</strong> ADR-042 IRP enmienda E1
+<strong>Consejo DAY 138:</strong> Ver actas Q5
+<strong>Estimación:</strong> 2 sesiones (refactor + tests + AppArmor)</p>
+<hr />
+<h2 id="debt-irp-queue-processor-001">DEBT-IRP-QUEUE-PROCESSOR-001</h2>
+<p><strong>Severidad:</strong> 🔴 Alta — post-merge
+<strong>Componente:</strong> ADR-042 IRP
+<strong>Descripción:</strong> La cola irp-queue no tiene límites de tamaño ni procesador
+systemd dedicado. Sin límites puede crecer sin control bajo ataque sostenido.
+Requiere unidad systemd irp-queue-processor con límites explícitos
+(enmienda E3 ADR-042).
+<strong>Corrección:</strong> Primera iteración post-merge</p>
+<hr />
+<h2 id="debt-pcap-callback-lifetime-doc-001">DEBT-PCAP-CALLBACK-LIFETIME-DOC-001</h2>
+<p><strong>Severidad:</strong> 🟢 Baja — documentación
+<strong>Componente:</strong> sniffer/include/pcap_backend.hpp, sniffer/src/userspace/pcap_backend.cpp
+<strong>Descripción:</strong>
+Añadir comentario explícito de contrato de lifetime de <code>PcapCallbackData</code>:
+- Válido durante toda la sesión de captura
+- No destruir PcapBackend durante pcap_dispatch() activo
+- Señalización asíncrona (SIGALRM + shutdown concurrente) no soportada
+- Si se añade threading posterior → requiere weak_ptr refactoring
+  <strong>Corrección:</strong> Próxima sesión, trivial
+  <strong>Consejo DAY 138:</strong> Q1 — ChatGPT, Kimi</p>
+<hr />
+<h2 id="debt-seeds-secure-transfer-001">DEBT-SEEDS-SECURE-TRANSFER-001</h2>
+<p><strong>Severidad:</strong> 🔴 Alta — mitigado en Vagrant, inaceptable en producción real
+<strong>Componente:</strong> scripts/prod-deploy-seeds.sh
+<strong>Descripción:</strong> Seeds pasan por Mac host vía /vagrant durante el despliegue.
+Actualmente solo válido para entorno Vagrant dev/test. En producción real
+los seeds deben generarse directamente en el nodo hardened sin salir del HSM
+o del canal seguro.
+<strong>Corrección:</strong> post-FEDER (protocolo de distribución out-of-band)
+<strong>Decisión:</strong> D2 Consejo DAY 134</p>
+<hr />
+<h2 id="debt-seeds-local-gen-001">DEBT-SEEDS-LOCAL-GEN-001</h2>
+<p><strong>Severidad:</strong> 🟡 Media
+<strong>Componente:</strong> scripts/prod-deploy-seeds.sh
+<strong>Descripción:</strong> Los seeds se generan en la dev VM y se extraen al Mac host
+antes de instalarse en hardened. En producción real deben generarse
+localmente en cada nodo sin atravesar ningún host intermediario.
+<strong>Corrección:</strong> post-FEDER</p>
+<hr />
+<h2 id="debt-seeds-backup-001">DEBT-SEEDS-BACKUP-001</h2>
+<p><strong>Severidad:</strong> 🟡 Media
+<strong>Componente:</strong> /etc/ml-defender/<em>/seed.bin
+</em><em>Descripción:</em><em> No existe protocolo de backup/recovery para seeds. Si un nodo
+falla catastróficamente los seeds se pierden y el pipeline no puede arrancar.
+Requiere procedimiento de regeneración documentado.
+</em><em>Corrección:</em>* post-FEDER</p>
+<hr />
+<h2 id="known-test-failures-expected-no-action-required">KNOWN-TEST-FAILURES (expected — no action required)</h2>
+<h3 id="known-fail-001-test_config_parser-rag-ingester-dev-vm">KNOWN-FAIL-001: test_config_parser (rag-ingester, dev VM)</h3>
+<p><strong>Severidad:</strong> ℹ️ Informativo — comportamiento correcto por diseño
+<strong>Componente:</strong> rag-ingester / safe_path guard
+<strong>Descripción:</strong> El test falla en dev VM porque carga el config desde
+<code>/vagrant/rag-ingester/config/rag-ingester.json</code>, path fuera del prefix
+permitido <code>/etc/ml-defender/</code>. El safe_path guard emite SECURITY VIOLATION
+y aborta — exactamente como debe comportarse.
+En hardened VM el config vive en <code>/etc/ml-defender/</code> y el test pasaría.
+<strong>Acción:</strong> Ninguna. No es regresión. No confundir con un bug.
+<strong>Referencia:</strong> ADR-028, DEBT-SAFE-PATH-TEST-PRODUCTION-001
+<strong>Descubierto:</strong> DAY 137 — 2026-04-30</p>
+<hr />
+<h2 id="deudas-cerradas">DEUDAS CERRADAS</h2>
+<h3 id="debt-capture-backend-isp-001-cerrada-day-138">✅ DEBT-CAPTURE-BACKEND-ISP-001 — CERRADA DAY 138</h3>
+<p><strong>Commit:</strong> 1a7f723a
+<strong>Descripción:</strong> CaptureBackend refactorizada a interfaz mínima de 5 métodos
+puros. Los 7 métodos eBPF-específicos movidos a EbpfBackend como métodos
+públicos no-virtuales. Veredicto Consejo DAY 137: 5-2-1.</p>
+<h3 id="debt-variant-b-pcap-impl-001-cerrada-day-138">✅ DEBT-VARIANT-B-PCAP-IMPL-001 — CERRADA DAY 138</h3>
+<p><strong>Commits:</strong> 22df0099, da1badf7
+<strong>Descripción:</strong> Pipeline completo pcap_dispatch → NetworkSecurityEvent proto →
+LZ4 → ChaCha20-Poly1305 → ZMQ. Wire format idéntico a Variant A.
+Suite de 8 tests (unit/integ/stress/regression) — 8/8 PASSED.</p>
+<hr />
+<h2 id="notas">Notas</h2>
+<ul>
+<li>Deudas 🔴 Alta post-merge se abordan antes de demo FEDER (1 agosto 2026)</li>
+<li>Deudas 🟡 Media se abordan antes de deadline FEDER (22 septiembre 2026)</li>
+<li>Deudas 🟢 Baja se abordan oportunísticamente</li>
+<li>Ver también: BACKLOG.md sección DEBT para deudas anteriores a v0.6</li>
+<li>Keypair activo: b5b6cbdf67dad75cdd7e3169d837d1d6d4c938b720e34331f8a73f478ee85daa</li>
+</ul>
+<hr />
+<h2 id="debt-vault-config-hardcoded-001">DEBT-VAULT-CONFIG-HARDCODED-001</h2>
+<p><strong>Severidad:</strong> 🟢 Baja — pre-producción real
+<strong>Componente:</strong> common/vault_client.h
+<strong>Descripción:</strong>
+Constantes de configuración Vault hardcodeadas como <code>constexpr</code> en el header:
+<code>VAULT_TIMEOUT_DEV_MS</code>, <code>VAULT_TIMEOUT_PROD_MS</code>, <code>VAULT_JITTER_BASE_MS</code>,
+<code>VAULT_JITTER_RAND_MS</code>, <code>ETCD_LEASE_TTL_S</code>, <code>ETCD_KEEPALIVE_S</code>,
+<code>CACHE_TTL_DEV_S</code>, <code>CACHE_TTL_PROD_S</code>.
+Extraer a fichero JSON de configuración Vault cargado por <code>VaultClientConfig</code>
+en runtime. Mismo patrón que el resto de JSONs de componente gestionados
+por Ansible.
+<strong>Corrección:</strong> post-FEDER, antes de producción real
+<strong>Descubierto:</strong> DAY 151 — 2026-05-14</p>
+<hr />
+<h2 id="debt-bootstrap-status-signature-001">DEBT-BOOTSTRAP-STATUS-SIGNATURE-001</h2>
+<p><strong>Severidad:</strong> 🔴 Alta — pre-FEDER
+<strong>Componente:</strong> etcd-server/src/main.cpp, /run/argus/etcd-bootstrap-status.json
+<strong>Descripción:</strong>
+El fichero de bootstrap status escrito en STEP 0 no lleva firma Ed25519.
+Un atacante con acceso local podría reemplazarlo con fingerprint falso antes
+del arranque. Firmar con <code>crypto_material.sk</code> (disponible en STEP 0) y
+verificar la firma antes de consumir el fichero en cualquier componente.
+Misma cadena de confianza que los plugins (ADR-025).
+<strong>Corrección:</strong> Pre-FEDER, antes de demo
+<strong>Descubierto:</strong> DAY 151 — 2026-05-14 (Claude + Grok, Consejo)</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.tabs", "navigation.top", "search.highlight"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

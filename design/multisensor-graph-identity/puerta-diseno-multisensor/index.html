@@ -1,0 +1,1705 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source embedded-ML NDR for hospitals and schools">
+      
+      
+        <meta name="author" content="Alonso Isidoro Roman">
+      
+      
+        <link rel="canonical" href="https://alonsoir.github.io/argus/design/multisensor-graph-identity/puerta-diseno-multisensor/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>Puerta de diseño — Integración multi-sensor en el grafo - ML Defender (aRGus NDR)</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#puerta-de-diseno-integracion-multi-sensor-en-el-grafo" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../.." title="ML Defender (aRGus NDR)" class="md-header__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ML Defender (aRGus NDR)
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Puerta de diseño — Integración multi-sensor en el grafo
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../../README.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../../docs/ARCHITECTURE.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../../docs/BACKLOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Backlog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../../docs/SECURITY_MODEL.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Security Model
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-tabs__link">
+          
+  
+  
+  ADRs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../docs/contracts/Protobuf contracts.md" class="md-tabs__link">
+          
+  
+  
+  Contracts
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../.." title="ML Defender (aRGus NDR)" class="md-nav__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ML Defender (aRGus NDR)
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../README.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../docs/ARCHITECTURE.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../docs/BACKLOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../docs/SECURITY_MODEL.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADRs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ADRs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013 Seed Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../docs/adr/ADR-021-deployment-topology-seed-families.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-021 Topology SSOT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../docs/adr/ADR-022-threat-model-opcion2-descartada.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-022 Threat Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../docs/contracts/Protobuf contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protobuf
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../docs/contracts/JSON contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JSON
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../docs/contracts/Rag security commands.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#0-resumen-ejecutivo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        0. Resumen ejecutivo
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1-evidencia-medida" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Evidencia medida
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1. Evidencia medida">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#11-suricata-si-emite-community_id" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.1 Suricata sí emite community_id
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#12-paridad-de-community_id-con-argus" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.2 Paridad de community_id con aRGus
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#13-que-campos-trae-cada-tipo-de-evento" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.3 Qué campos trae cada tipo de evento
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#14-la-identidad-de-flujo-actual-no-puede-converger" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.4 La identidad de flujo actual no puede converger
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#15-por-que-la-sincronia-de-relojes-no-resolveria-nada" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.5 Por qué la sincronía de relojes no resolvería nada
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#16-coste-medido-de-quitar-el-tiempo-de-la-identidad" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.6 Coste medido de quitar el tiempo de la identidad
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-la-conclusion-que-cierra-el-debate" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. La conclusión que cierra el debate
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-d1-identidad-de-flujo-sin-componente-temporal" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. D1 — Identidad de flujo sin componente temporal
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-d2-node_id-identifica-el-punto-de-observacion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. D2 — node_id identifica el punto de observación
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-d3-acunacion-de-event_id" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. D3 — Acuñación de event_id
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-d4-telemetria-sin-flowstart" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. D4 — Telemetría sin flow.start
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-d5-politica-de-descarte-con-contador-ruidoso" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. D5 — Política de descarte con contador ruidoso
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-d6-los-cinco-campos-de-veredicto-sin-contrapartida" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. D6 — Los cinco campos de veredicto sin contrapartida
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#9-objeciones-que-podrian-impedir-el-exito" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9. Objeciones que podrían impedir el éxito
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="9. Objeciones que podrían impedir el éxito">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#o1-observan-los-dos-sensores-el-mismo-trafico-potencialmente-fatal" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        O1 — ¿Observan los dos sensores el mismo tráfico? (potencialmente fatal)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#o2-wazuh-no-puede-converger-por-identidad-de-flujo-limitacion-estructural" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        O2 — Wazuh no puede converger por identidad de flujo (limitación estructural)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#o3-cadena-de-custodia-del-hmac-multi-productor-decision-pendiente-no-bloqueante-hoy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        O3 — Cadena de custodia del HMAC multi-productor (decisión pendiente, no bloqueante hoy)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#o4-parquet_to_kuzu_loader-declara-alcance-mono-fuente" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        O4 — parquet_to_kuzu_loader declara alcance mono-fuente
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#o5-la-base-kuzu-persistida-queda-obsoleta" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        O5 — La base Kuzu persistida queda obsoleta
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#10-pendientes-de-medir-antes-de-implementar" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10. Pendientes de medir antes de implementar
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#11-plan-de-implementacion-por-piezas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        11. Plan de implementación por piezas
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#12-lo-que-este-documento-no-resuelve" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        12. Lo que este documento no resuelve
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="puerta-de-diseno-integracion-multi-sensor-en-el-grafo">Puerta de diseño — Integración multi-sensor en el grafo</h1>
+<p><strong>Estado:</strong> propuesta, pendiente de ratificación
+<strong>Fecha:</strong> DAY 225 (2026-07-20)
+<strong>Rama:</strong> <code>feat/suricata-to-graph</code> (desde <code>main</code> fb08e8f6)
+<strong>Destino sugerido en el repo:</strong> <code>docs/design/multisensor-graph-identity/puerta-diseno-multisensor.md</code>
+<strong>Deudas afectadas:</strong> <code>DEBT-GRAPH-SCHEMA-MULTISENSOR-001</code>, <code>DEBT-PARQUET-GOLD-SCHEMA-MULTISENSOR-001</code>, <code>DEBT-FLOWUID-SEQ-COLLISION-001</code>, <code>DEBT-FLOWUID-CANONICAL-ENCODING-001</code>, <code>DEBT-NODEID-CRYPTO-IDENTITY-001</code>, <code>DEBT-BRONZE-HMAC-KEY-POLICY-001</code>, <code>DEBT-HOST-DOMAIN-CONTRACT-001</code>
+<strong>ADRs que requieren enmienda:</strong> ADR-052 (Multi-node Flow Identity), ADR-058 (Circuito completo aguas abajo)</p>
+<blockquote>
+<p><strong>Convención de este documento.</strong> Cada afirmación lleva marca de origen:
+<strong>[MEDIDO]</strong> = verificado contra fichero en DAY 224–225, con el comando que lo reproduce.
+<strong>[DECISIÓN]</strong> = elección de diseño, no un hecho.
+<strong>[PENDIENTE]</strong> = no medido todavía; <strong>no implementar nada que dependa de esto sin medirlo antes</strong>.
+Ninguna cifra de este documento procede de memoria ni de otro documento: todas se
+remidieron contra el código o contra la captura.</p>
+</blockquote>
+<hr />
+<h2 id="0-resumen-ejecutivo">0. Resumen ejecutivo</h2>
+<p>La integración de Suricata (y después Zeek) en el grafo estaba bloqueada por una afirmación
+que nunca se midió: que <code>flow_uid = hash(node_id ‖ community_id ‖ flow_start_window)</code> hacía
+converger dos sensores sobre el mismo nodo <code>NetworkFlow</code>.</p>
+<p><strong>Es falsa.</strong> <code>window_micros()</code> no ventanea — convierte a microsegundos sin agrupar. La
+convergencia exigiría que dos motores fechasen el inicio del mismo flujo con exactitud de
+microsegundo, lo cual no ocurre ni con relojes perfectamente sincronizados, porque "inicio de
+flujo" es una decisión semántica de cada motor, no una lectura de reloj.</p>
+<p><strong>Decisión central: la identidad de flujo deja de depender del tiempo.</strong></p>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Decisión</th>
+<th>Sección</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>D1</td>
+<td><code>flow_uid = hash(node_id ‖ community_id)</code>, tag <code>argus-flowuid-v2</code></td>
+<td>§3</td>
+</tr>
+<tr>
+<td>D2</td>
+<td><code>node_id</code> identifica el <strong>punto de observación</strong>, no el host</td>
+<td>§4</td>
+</tr>
+<tr>
+<td>D3</td>
+<td><code>event_id</code> determinista y prefijado por sensor</td>
+<td>§5</td>
+</tr>
+<tr>
+<td>D4</td>
+<td>La telemetría no materializa <code>flow_start</code>; cuelga de la conversación</td>
+<td>§6</td>
+</tr>
+<tr>
+<td>D5</td>
+<td>Descarte explícito <strong>con contador ruidoso</strong> de eventos sin identidad de flujo</td>
+<td>§7</td>
+</tr>
+<tr>
+<td>D6</td>
+<td>Los 5 campos de veredicto quedan vacíos para sensores externos, nunca con centinela</td>
+<td>§8</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Tres objeciones podrían impedir el éxito</strong> aunque las seis decisiones sean correctas. Están
+en §9. Una de ellas (O1) es potencialmente fatal y <strong>debe verificarse antes de escribir código</strong>.</p>
+<hr />
+<h2 id="1-evidencia-medida">1. Evidencia medida</h2>
+<h3 id="11-suricata-si-emite-community_id">1.1 Suricata sí emite <code>community_id</code></h3>
+<p><strong>[MEDIDO]</strong> El campo nunca había aparecido en ningún log del proyecto. Causa raíz doble:</p>
+<ol>
+<li>Los logs de <code>logs/experiment/</code> (barrido completo, 211.136 eventos, <strong>0 ocurrencias</strong>) salieron
+   de las VMs de <code>experiments/suricata-comparative/</code>, cuyo provisioning es
+   <code>sed -i 's/community-id: false/community-id: yes/' ... || sed -i ...</code>.
+   <code>sed -i</code> devuelve 0 aunque no sustituya nada, así que el <code>||</code> de respaldo es código muerto.</li>
+<li>En la VM <code>suricata</code> del Vagrantfile raíz, la config <strong>sí</strong> estaba puesta
+   (<code>/etc/suricata/suricata.yaml:136-138</code>, <code>community-id: yes</code> + <code>community-id-seed: 0</code>),
+   pero se escribió <strong>45 s después</strong> de arrancar el servicio:
+   <code>ActiveEnterTimestamp</code> 05:12:07 UTC vs <code>mtime</code> del YAML 05:12:52 UTC.
+   El proceso vivo llevaba la config vieja en memoria. El provisioning aplica el <code>sed</code>,
+   verifica con <code>echo</code>, y <strong>no reinicia el servicio</strong>.</li>
+</ol>
+<p>Tras <code>systemctl restart suricata</code> y replay offline:</p>
+<pre><code>suricata -r /vagrant/datasets/ctu13/smallFlows.pcap -l /var/log/suricata-replay-small -v
+grep -c community_id /var/log/suricata-replay-small/eve.json   → 1983
+</code></pre>
+<p><strong>Lección de método (para el paper):</strong> verificar el fichero de configuración no basta. Hay que
+comparar el <code>mtime</code> de la config contra la hora de arranque del proceso. Misma familia que el
+<code>sed</code> que no distingue "hizo" de "no hizo" y que el <code>||</code> enmascarador del Makefile: constructos
+que parecen medir y no miden.</p>
+<h3 id="12-paridad-de-community_id-con-argus">1.2 Paridad de <code>community_id</code> con aRGus</h3>
+<p><strong>[MEDIDO]</strong> Diana E2E <code>1:IN7uqVpMWxpmuhQTowSQB2XEe0E=</code> (flujo Neris
+<code>147.32.84.165:1027 → 74.125.232.195:80</code>): <strong>aparece 2 veces</strong> en el replay del Neris.
+Seed 0 validado extremo a extremo contra el <code>community_id</code> nativo de aRGus.</p>
+<h3 id="13-que-campos-trae-cada-tipo-de-evento">1.3 Qué campos trae cada tipo de evento</h3>
+<p><strong>[MEDIDO]</strong> Una pasada sobre <code>/var/log/suricata-replay-medium/eve.json</code> (replay del
+<code>botnet-capture-20110810-neris.pcap</code>: 323.154 paquetes, 53 MB, 8,4 s, 2.872 alertas,
+0 líneas ilegibles):</p>
+<table>
+<thead>
+<tr>
+<th>event_type</th>
+<th style="text-align: right;">total</th>
+<th style="text-align: right;">con <code>community_id</code></th>
+<th style="text-align: right;">con <code>flow.start</code></th>
+<th style="text-align: right;">con <code>flow_id</code></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>dns</td>
+<td style="text-align: right;">84.570</td>
+<td style="text-align: right;">84.570</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">84.570</td>
+</tr>
+<tr>
+<td>flow</td>
+<td style="text-align: right;">17.346</td>
+<td style="text-align: right;">17.346</td>
+<td style="text-align: right;">17.346</td>
+<td style="text-align: right;">17.346</td>
+</tr>
+<tr>
+<td><strong>alert</strong></td>
+<td style="text-align: right;"><strong>2.872</strong></td>
+<td style="text-align: right;"><strong>2.870</strong></td>
+<td style="text-align: right;"><strong>2.870</strong></td>
+<td style="text-align: right;"><strong>2.870</strong></td>
+</tr>
+<tr>
+<td>http</td>
+<td style="text-align: right;">1.405</td>
+<td style="text-align: right;">1.405</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">1.405</td>
+</tr>
+<tr>
+<td>fileinfo</td>
+<td style="text-align: right;">630</td>
+<td style="text-align: right;">630</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">630</td>
+</tr>
+<tr>
+<td>anomaly</td>
+<td style="text-align: right;">220</td>
+<td style="text-align: right;">220</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">220</td>
+</tr>
+<tr>
+<td>smtp</td>
+<td style="text-align: right;">114</td>
+<td style="text-align: right;">114</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">114</td>
+</tr>
+<tr>
+<td>tls</td>
+<td style="text-align: right;">52</td>
+<td style="text-align: right;">52</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">52</td>
+</tr>
+<tr>
+<td>smb</td>
+<td style="text-align: right;">36</td>
+<td style="text-align: right;">36</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">36</td>
+</tr>
+<tr>
+<td>snmp</td>
+<td style="text-align: right;">16</td>
+<td style="text-align: right;">16</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">16</td>
+</tr>
+<tr>
+<td><strong>stats</strong></td>
+<td style="text-align: right;"><strong>2</strong></td>
+<td style="text-align: right;"><strong>0</strong></td>
+<td style="text-align: right;"><strong>0</strong></td>
+<td style="text-align: right;"><strong>0</strong></td>
+</tr>
+<tr>
+<td>sip</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">1</td>
+</tr>
+</tbody>
+</table>
+<p>Tres consecuencias inmediatas:</p>
+<ul>
+<li><strong>Las alertas traen <code>flow.start</code></strong> (2.870 de 2.872). El adapter de <code>Alert</code> es un <strong>traductor
+  línea a línea</strong>, sin estado, sin tabla de correlación, sin ventana ni desalojo. Queda
+  descartada la hipótesis cara de DAY 224 (que haría falta correlacionar dos eventos).</li>
+<li><strong>La telemetría no lo trae</strong>, en los nueve tipos. Sí trae <code>community_id</code> y <code>flow_id</code>.</li>
+<li><strong><code>stats</code> no tiene identidad de red</strong> y debe descartarse explícitamente.</li>
+</ul>
+<p><strong>[MEDIDO]</strong> Las 2 alertas sin <code>community_id</code>/<code>flow.start</code>/<code>flow_id</code> son ambas la misma firma:
+gid 1, sid 2200076 rev 2, <em>"SURICATA ICMPv4 invalid checksum"</em>, categoría <em>Generic Protocol
+Command Decode</em>, ICMP type 3 code 0. Son alertas de <strong>decoder</strong> sobre paquetes a los que nunca
+se les creó flujo. Correlacionan con el aviso del propio motor (68/1000 checksums inválidos):
+artefacto de la captura de 2011, no ataque.</p>
+<h3 id="14-la-identidad-de-flujo-actual-no-puede-converger">1.4 La identidad de flujo actual no puede converger</h3>
+<p><strong>[MEDIDO]</strong> <code>correlation-engine/include/correlation_engine/flow_uid.hpp</code>, fichero completo:</p>
+<pre><code class="language-cpp">inline uint64_t window_micros(int64_t seconds, int32_t nanos = 0) {
+    return static_cast&lt;uint64_t&gt;(seconds) * 1'000'000ULL + static_cast&lt;uint64_t&gt;(nanos) / 1'000ULL;
+}
+</code></pre>
+<p><strong>No hay bucketing.</strong> Ni módulo, ni truncado, ni tamaño de ventana. <code>flow_start_window</code> es un
+nombre equivocado: no existe ninguna ventana. Los vectores congelados
+(1717480800000000, 1717480830000000) parecen redondos únicamente porque los tests usan
+<code>nanos = 0</code> y segundos redondos; <code>test_flujo_a_b_equivalence.cpp:231</code> llama con
+<code>window_micros(1717480800, 123456000)</code> = 1717480800123456.</p>
+<p><strong>[MEDIDO]</strong> La fórmula tiene <strong>cuatro</strong> entradas, no tres:
+<code>encode_flow_input(node_id, community_id, flow_start_window, seq_in_window = 0)</code> incluye
+<code>put_be32(buf, seq_in_window)</code>. La cabecera del propio fichero lo documenta correctamente
+(<code>ENCODE(node_id, community_id, window, seq)</code>); ADR-058, el BACKLOG y los prompts de
+continuidad llevan meses repitiendo la versión de tres. <strong>Segundo número que viajó de documento
+a documento sin compararse con el código</strong> (el primero fue el "24 campos" de DAY 224).</p>
+<p><strong>[MEDIDO]</strong> <code>seq_in_window</code> es <strong>siempre 0</strong> en producción: <code>main.cpp:138</code> y
+<code>segment_processor.cpp:26</code> llaman con tres argumentos (default 0);
+<code>bronze_to_gold_converter.cpp:171</code> lo fija explícitamente citando
+<code>DEBT-FLOWUID-SEQ-COLLISION-001</code>; <code>parquet_to_kuzu_loader.cpp:45</code> lo confirma. La equivalencia
+Flujo A vs Flujo B es real, no casual.</p>
+<p><strong>Lectura de diseño:</strong> bucketing y <code>seq_in_window</code> son las dos mitades de la misma idea — la
+ventana agrupa, <code>seq</code> desempata los flujos distintos que caen en la misma ventana. <strong>Ninguna de
+las dos se implementó.</strong> No es un olvido aislado: es media pieza de diseño que se quedó fuera
+entera, y por eso el desempate nunca hizo falta.</p>
+<h3 id="15-por-que-la-sincronia-de-relojes-no-resolveria-nada">1.5 Por qué la sincronía de relojes no resolvería nada</h3>
+<p><strong>[DECISIÓN — argumento, no medida]</strong> Aunque se desplegara PTP y todos los relojes coincidieran
+al nanosegundo, <code>flow.start</code> de Suricata y <code>flow_start</code> de aRGus seguirían discrepando: cada
+motor decide cuándo "empieza" un flujo con su propio criterio (primer paquete asociado a la
+entrada de su tabla de flujos, SYN, primer paquete visto). La sincronía resuelve la deriva de
+reloj; no resuelve la <strong>divergencia de definición</strong>. Esto convierte la identidad sin tiempo de
+compromiso pragmático en requisito estructural.</p>
+<h3 id="16-coste-medido-de-quitar-el-tiempo-de-la-identidad">1.6 Coste medido de quitar el tiempo de la identidad</h3>
+<p><strong>[MEDIDO]</strong> Sobre los 17.346 eventos <code>flow</code> del replay del Neris:</p>
+<table>
+<thead>
+<tr>
+<th>proto</th>
+<th style="text-align: right;">eventos</th>
+<th style="text-align: right;"><code>community_id</code> distintos</th>
+<th style="text-align: right;">colapso</th>
+<th style="text-align: right;">%</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>TCP</td>
+<td style="text-align: right;">12.305</td>
+<td style="text-align: right;">11.686</td>
+<td style="text-align: right;">619</td>
+<td style="text-align: right;">5,0 %</td>
+</tr>
+<tr>
+<td>UDP</td>
+<td style="text-align: right;">5.039</td>
+<td style="text-align: right;">2.758</td>
+<td style="text-align: right;">2.281</td>
+<td style="text-align: right;">45,3 %</td>
+</tr>
+<tr>
+<td>ICMP</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0 %</td>
+</tr>
+<tr>
+<td><strong>total</strong></td>
+<td style="text-align: right;"><strong>17.346</strong></td>
+<td style="text-align: right;"><strong>14.446</strong></td>
+<td style="text-align: right;"><strong>2.900</strong></td>
+<td style="text-align: right;"><strong>16,7 %</strong></td>
+</tr>
+</tbody>
+</table>
+<p><strong>[MEDIDO]</strong> Naturaleza del colapso UDP: los repetidos son NetBIOS (<code>sport = dport = 137</code> y
+<code>138</code>, con 27 y 40 repeticiones) y DNS con puerto de origen reutilizado (<code>dport = 53</code>,
+<code>sport</code> 1291 y 2079). Los arranques están separados por <strong>minutos</strong> (2, 3, 13, 37), no por el
+timeout UDP de 30–60 s. <strong>No son fragmentos de un mismo intercambio</strong>: son intercambios
+distintos que comparten 5-tupla. El colapso es real.</p>
+<p>Dos hipótesis se plantearon y <strong>ambas quedaron refutadas contra el fichero</strong>: que el grueso del
+colapso fuera ICMP (es 0) y que fuera fragmentación por timeout (los intervalos son de minutos).
+Se dejan escritas porque el paper documenta el método, no solo el resultado.</p>
+<hr />
+<h2 id="2-la-conclusion-que-cierra-el-debate">2. La conclusión que cierra el debate</h2>
+<p>Los intercambios que colapsan están separados por minutos y a menudo caen dentro de la misma
+hora (09:04:32 / 09:06:49 / 09:09:24 / 09:11:23 para un mismo <code>community_id</code>).</p>
+<ul>
+<li><strong>Separarlos</strong> exige una ventana <strong>sub-minuto</strong>.</li>
+<li><strong>Hacer converger dos sensores</strong> exige una ventana <strong>mucho mayor</strong> que el delta entre ellos.</li>
+</ul>
+<p>Son requisitos incompatibles sobre el mismo parámetro. <strong>No existe ningún valor de tamaño de
+ventana que satisfaga los dos.</strong> Por tanto:</p>
+<ul>
+<li>La opción "implementar el bucketing de verdad" queda <strong>descartada por datos</strong>.</li>
+<li>La opción "época gruesa (hora/día) como tercera entrada" queda <strong>descartada por datos</strong>.</li>
+<li>La identidad sin tiempo no es la alternativa pragmática: <strong>es la única consistente con lo
+  medido</strong>.</li>
+</ul>
+<hr />
+<h2 id="3-d1-identidad-de-flujo-sin-componente-temporal">3. D1 — Identidad de flujo sin componente temporal</h2>
+<p><strong>Decisión.</strong> <code>flow_uid = base64_std(BLAKE2b-256(ENCODE(node_id, community_id)))</code>, con tag de
+esquema <code>argus-flowuid-v2</code>. <code>flow_start</code> deja de ser identidad y pasa a ser <strong>propiedad</strong> del
+nodo.</p>
+<p><strong>A favor</strong></p>
+<ul>
+<li>Convergencia multi-sensor <strong>garantizada</strong>, con probabilidad de fallo silencioso <strong>cero</strong>.
+  Cualquier esquema con ventana tiene probabilidad ≈ δ/N de partir un flujo: pequeña, nunca
+  nula, y <strong>silenciosa</strong> — la familia de fallo que más ha costado en este proyecto (el <code>sed</code>
+  que no falla, el <code>||</code> del Makefile, la config no releída).</li>
+<li>Es el cambio más pequeño posible: <code>compute_flow_uid</code> pierde dos parámetros y el tag sube de
+  versión. El <code>MERGE</code> con <code>ON CREATE SET</code> / <code>ON MATCH SET</code> ya existe: el primer sensor que
+  llega fija <code>flow_start</code>, el segundo se acopla sin machacarlo.</li>
+<li>Coherente con lo que el propio <code>schema.cypher</code> declara que es <code>NetworkFlow</code>: <strong>identidad pura</strong>.</li>
+<li>Cierra <code>DEBT-FLOWUID-SEQ-COLLISION-001</code> por desaparición del objeto: <code>seq</code> sale de la
+  codificación.</li>
+<li>El tag de versión <code>argus-flowuid-vN</code> existe precisamente para esto. Usarlo es lo que estaba
+  previsto, no un parche.</li>
+</ul>
+<p><strong>En contra</strong></p>
+<ul>
+<li><strong>Colapso medido del 16,7 %</strong> de los flujos de la captura (5 % TCP, 45 % UDP). Intercambios
+  distintos que comparten 5-tupla pasan a un único nodo.</li>
+<li>El grafo <strong>no puede distinguir</strong> a cuál de las 40 reutilizaciones pertenece una alerta sin
+  bajar al ledger.</li>
+<li>Un despliegue de larga duración acumula nodos "conversación" que nunca se cierran.</li>
+<li>Se pierde la posibilidad de consultas del tipo "flujos iniciados en la ventana X" resueltas
+  por identidad; hay que resolverlas por propiedad, que es más caro en Kuzu.</li>
+</ul>
+<p><strong>Reencuadre que hace asumible el coste.</strong> Con D1 el nodo deja de ser una <em>instancia</em> de flujo y
+pasa a ser la <strong>conversación</strong> (identidad del 5-tupla). No se pierde información: el oro Parquet
+es <strong>ledger append-only</strong> y conserva cada fila con su <code>flow_start</code> intacto; cada <code>Alert</code> y cada
+<code>TelemetryEvent</code> mantiene su propio timestamp como propiedad y cuelga de la conversación. El
+grafo es <strong>proyección reconstruible</strong> (invariante Via Appia): agrega, no destruye. Para los
+protocolos de puerto fijo (NetBIOS 137/138, donde <code>sport = dport</code> siempre y todo intercambio
+entre el mismo par de hosts comparte 5-tupla para siempre), un nodo por conversación es
+probablemente <strong>mejor</strong> representación de grafo que 40 nodos casi idénticos.</p>
+<p><strong>Limitación conocida a documentar en el README y en el paper.</strong> El grafo modela conversaciones,
+no instancias de flujo. La granularidad de instancia vive en el ledger.</p>
+<hr />
+<h2 id="4-d2-node_id-identifica-el-punto-de-observacion">4. D2 — <code>node_id</code> identifica el punto de observación</h2>
+<p><strong>Decisión.</strong> <code>node_id</code> identifica el <strong>segmento de red observado</strong>, no la máquina que ejecuta
+el sensor. Quien distingue al sensor es <code>source_sensor</code> (col 1 del contrato), que ya viaja
+íntegro por todo el circuito y desde DAY 222 llega al grafo.</p>
+<p><strong>Motivo.</strong> <code>node_id</code> entra en el hash del <code>flow_uid</code>. aRGus corre en la VM <code>defender</code> y
+Suricata en la VM <code>suricata</code>. Si cada adapter acuña su <code>node_id</code> a partir del host, el
+<code>flow_uid</code> diverge aunque <code>community_id</code> coincida — y D1 no habría servido de nada. Este es un
+<strong>tercer eje de divergencia</strong> independiente del tiempo, y es tan fatal como el primero.</p>
+<p><strong>A favor.</strong> Hace explícito lo que ya era cierto: dos sensores que vigilan el mismo cable son el
+mismo punto de observación. <code>source_sensor</code> ya existe exactamente para separar quién habla.</p>
+<p><strong>En contra.</strong> Obliga a una convención de nombrado de puntos de observación que hoy no existe, y
+a que la configuración de cada adapter la respete. Un error de configuración aquí produce
+divergencia silenciosa — el mismo modo de fallo que estamos eliminando en D1, desplazado a la
+config. <strong>Mitigación obligatoria:</strong> el <code>node_id</code> debe declararse en un único sitio por punto de
+observación y verificarse ruidosamente al arrancar cada productor.</p>
+<hr />
+<h2 id="5-d3-acunacion-de-event_id">5. D3 — Acuñación de <code>event_id</code></h2>
+<p><strong>[MEDIDO]</strong> <code>event_id</code> es <code>STRING</code> libre y es PK de <code>Alert</code> (<code>schema.cypher:48</code>) <strong>y</strong> de
+<code>TelemetryEvent</code> (<code>:69</code>) — dos tablas, dos espacios de nombres, sin colisión entre sí. El
+contrato solo restringe formato (rechaza <code>\r</code> embebido). <code>evt-0001</code> en los tests es placeholder,
+no convención. En aRGus el valor procede del protobuf: <code>event.event_id()</code>
+(<code>ml-detector/src/correlation_writer.cpp:86</code>).</p>
+<p><strong>Riesgo.</strong> Nada impide que el <code>event_id</code> de Suricata colisione con el de aRGus dentro de
+<code>Alert</code>. El grafo escribe con <code>MERGE</code>: no fallaría, <strong>machacaría</strong> el evento del otro sensor sin
+error y sin traza.</p>
+<p><strong>Decisión.</strong> El <code>event_id</code> de todo sensor externo se acuña con dos propiedades:</p>
+<ol>
+<li><strong>Prefijado por <code>source_sensor</code></strong>, derivado de la misma constante que ya prefija el basename
+   del bronce (punto único con la col 1). Elimina la colisión entre espacios de sensores.</li>
+<li><strong>Determinista</strong>: reprocesar el mismo <code>eve.json</code> debe producir el mismo <code>event_id</code>, o cada
+   replay duplica nodos en vez de converger. Recomendación: hash del contenido identificador del
+   evento (<code>timestamp</code> + <code>flow_id</code> + <code>signature_id</code> + <code>community_id</code>), no un contador.</li>
+</ol>
+<p><strong>Aviso.</strong> <strong>No usar <code>pcap_cnt</code> como semilla.</strong> Existe en replay offline; en captura viva no está
+garantizado, y un <code>event_id</code> que cambia de forma según el modo de captura es una bomba de
+relojería.</p>
+<hr />
+<h2 id="6-d4-telemetria-sin-flowstart">6. D4 — Telemetría sin <code>flow.start</code></h2>
+<p><strong>Decisión.</strong> Los nueve tipos de telemetría (<code>dns</code>, <code>http</code>, <code>fileinfo</code>, <code>anomaly</code>, <code>smtp</code>,
+<code>tls</code>, <code>smb</code>, <code>snmp</code>, <code>sip</code>) <strong>no materializan</strong> <code>flow_start</code>. Cuelgan de la conversación por
+<code>community_id</code> y conservan su propio <code>timestamp</code> como propiedad del <code>TelemetryEvent</code>.</p>
+<p><strong>A favor.</strong> Con D1 el <code>flow_uid</code> ya no necesita <code>flow_start</code>, así que la ausencia deja de ser un
+problema. Evita el correlacionador con estado (tabla <code>flow_id</code> → <code>start</code>, ventana, desalojo) que
+habría hecho falta para el 98,5 % del volumen. Es la decisión que D1 abarata.</p>
+<p><strong>En contra.</strong> El <code>TelemetryEvent</code> no puede responder "¿cuándo empezó el flujo al que pertenece
+este DNS?" sin saltar al nodo de conversación. Aceptable: es un salto de una arista.</p>
+<p><strong>Alternativa descartada.</strong> Correlacionar por <code>flow_id</code> contra los 17.346 eventos <code>flow</code>. Es
+posible (<code>flow_id</code> está en el 100 % de la telemetría) pero exige estado, ventana y política de
+desalojo, y solo aportaría un campo que ya no participa en la identidad.</p>
+<hr />
+<h2 id="7-d5-politica-de-descarte-con-contador-ruidoso">7. D5 — Política de descarte con contador ruidoso</h2>
+<p><strong>Decisión.</strong> El adapter descarta, sin escribir al bronce:</p>
+<ul>
+<li>eventos <code>stats</code> (sin <code>community_id</code> ni <code>flow_id</code>: no son eventos de red);</li>
+<li>alertas de decoder sin flujo asociado (las 2 de <em>ICMPv4 invalid checksum</em>).</li>
+</ul>
+<p><strong>Y lleva un contador por categoría, expuesto en el log de arranque y de cierre.</strong></p>
+<p><strong>Motivo.</strong> Sin <code>community_id</code> no hay identidad de flujo y no hay a qué colgar el evento en el
+grafo. La alternativa (centinela) contaminaría el grafo con una clave que Suricata nunca emitió.
+Pero el descarte <strong>silencioso</strong> es exactamente la familia de fallo que este proyecto lleva
+semanas persiguiendo: un <code>2 eventos descartados (sin community_id)</code> al final de la corrida es
+barato y hace que el número exista.</p>
+<hr />
+<h2 id="8-d6-los-cinco-campos-de-veredicto-sin-contrapartida">8. D6 — Los cinco campos de veredicto sin contrapartida</h2>
+<p><strong>[MEDIDO]</strong> De los 19 campos del bronce, cinco no tienen origen posible en Suricata:
+<code>final_classification</code>, <code>threat_category</code>, <code>fast_detector_score</code>, <code>ml_detector_score</code>,
+<code>overall_threat_score</code>. Suricata emite <code>signature</code>, <code>category</code> y <code>severity</code> (1–3), no scores.</p>
+<p><strong>Decisión.</strong> Se emiten <strong>vacíos</strong>, nunca con centinela numérico (<code>0.0</code>, <code>-1</code>) ni con
+clasificación inventada. Rellenarlos contaminaría el grafo con un veredicto que Suricata nunca
+emitió, y cualquier consulta que agregue scores mezclaría semánticas incompatibles sin avisar.
+<code>source_sensor</code> (ya en el grafo desde DAY 222) es lo que permite al consumidor filtrar.</p>
+<p><code>authoritative_source</code> <strong>sí</strong> tiene sentido y lo fija el adapter, no el sensor.</p>
+<p><strong>Consecuencia para el consumidor del grafo.</strong> Los campos de veredicto solo son interpretables
+para <code>source_sensor = "argus"</code>. Debe estar escrito en el README y en el paper. Nota de contexto:
+tras la decisión de DAY 221 (aRGus desactivado como clasificador), esos campos tienen valor
+histórico más que operativo.</p>
+<p><strong>[PENDIENTE — bloqueante menor]</strong> Verificar que el validador del contrato
+(<code>libs/correlation-v1/</code>) <strong>acepta</strong> esos cinco campos vacíos. Si <code>validate()</code> los exige no
+vacíos, ninguna fila de Suricata pasaría el contrato y habría que decidir entre relajar el
+validador o partir el contrato. Medir con:
+<code>git grep -n 'validate' -- libs/correlation-v1/src/</code></p>
+<hr />
+<h2 id="9-objeciones-que-podrian-impedir-el-exito">9. Objeciones que podrían impedir el éxito</h2>
+<h3 id="o1-observan-los-dos-sensores-el-mismo-trafico-potencialmente-fatal">O1 — ¿Observan los dos sensores el mismo tráfico? <strong>(potencialmente fatal)</strong></h3>
+<p><strong>[PENDIENTE — medir antes de escribir una línea del adapter]</strong></p>
+<p>Toda la convergencia descansa en que aRGus y Suricata vean <strong>los mismos paquetes</strong>. En la
+topología actual del Vagrantfile raíz, aRGus corre en <code>defender</code> y Suricata en su propia VM.
+Si cada una esnifa su propia interfaz sin mirror/SPAN ni red interna en modo promiscuo, <strong>jamás
+verán los mismos flujos</strong>, y entonces ningún diseño de identidad — ni D1, ni ventanas, ni
+sincronía — produce convergencia alguna. El grafo tendría dos subgrafos disjuntos.</p>
+<p>Ninguna de las decisiones de este documento resuelve O1. Es un problema de <strong>topología de
+laboratorio</strong>, no de identidad.</p>
+<p>Verificar: configuración de red de las cinco VMs en el Vagrantfile raíz (¿red interna
+compartida? ¿<code>virtualbox__intnet</code>? ¿promiscuous mode <code>allow-all</code>?) y, en su defecto, si la vía
+practicable es que <strong>ambos sensores procesen el mismo pcap en modo offline</strong> — que es
+exactamente lo que ya se ha hecho hoy con Suricata y lo que <code>sniffer-libpcap</code> (Variante B)
+permite hacer con aRGus.</p>
+<p><strong>Recomendación:</strong> adoptar el replay offline del mismo pcap como <strong>banco de pruebas oficial de
+convergencia</strong>. Es determinista, reproducible desde el Makefile (requisito de cierre del paper),
+elimina el techo de ~33–38 Mbps de la NIC de VirtualBox y los artefactos multicast que
+introdujeron los 2 FP del CTU-13. El tráfico en vivo se deja como validación posterior con el
+script MITRE, no como base de la medición.</p>
+<h3 id="o2-wazuh-no-puede-converger-por-identidad-de-flujo-limitacion-estructural">O2 — Wazuh no puede converger por identidad de flujo <strong>(limitación estructural)</strong></h3>
+<p><strong>[MEDIDO]</strong> Ya existe <code>DEBT-HOST-DOMAIN-CONTRACT-001</code>: Wazuh es <strong>dominio host</strong>, con contrato
+propio <code>host_domain_v1</code>, separado de <code>correlation_v1</code>. El contrato nunca fue universal para los
+cuatro sensores.</p>
+<p>Wazuh no emite <code>community_id</code> ni observa flujos: emite eventos de host. <strong>El requisito
+"correlación entre todos los engines" no es alcanzable vía <code>flow_uid</code> para Wazuh.</strong> Tres de los
+cuatro componentes (aRGus, Suricata, Zeek) convergen por identidad de flujo; Wazuh se une al
+grafo por otra clave — host/IP y proximidad temporal — mediante una arista distinta y con una
+semántica de correlación explícitamente más débil.</p>
+<p>Esto <strong>no bloquea</strong> la integración de Suricata y Zeek, pero debe estar escrito antes de que el
+paper afirme "grafo unificado de los cuatro componentes". Es una afirmación que hoy sería falsa
+en el sentido en que se leería.</p>
+<h3 id="o3-cadena-de-custodia-del-hmac-multi-productor-decision-pendiente-no-bloqueante-hoy">O3 — Cadena de custodia del HMAC multi-productor <strong>(decisión pendiente, no bloqueante hoy)</strong></h3>
+<p><strong>[MEDIDO]</strong> <code>DEBT-BRONZE-HMAC-KEY-POLICY-001</code> ya cubre esto ("la col 18 (HMAC) no es 'mismos
+bytes' entre productores"), junto con <code>DEBT-SECRETS-MANAGER-PERSISTENCE-001</code> (el
+<code>SecretsManager</code> guarda claves solo en memoria).</p>
+<p>Dos vías, ninguna gratis:</p>
+<ul>
+<li><strong>Cada adapter firma</strong> → hay que distribuir la clave a N productores; el bronce sigue siendo
+  "lo que emanó el sensor", pero la superficie de la clave se multiplica.</li>
+<li><strong>Un colector único firma al aterrizar</strong> → una sola clave, pero el bronce deja de ser lo que
+  emanó el sensor y la cadena de custodia se rompe conceptualmente.</li>
+</ul>
+<p><strong>Recomendación para el cierre:</strong> vía del colector único, documentada como tal, dado que el
+<code>SecretsManager</code> no persiste claves y el proyecto entra en modo lectura el 31-ago. Es la que
+menos superficie nueva abre. <strong>Es una decisión de custodia, no de código.</strong></p>
+<h3 id="o4-parquet_to_kuzu_loader-declara-alcance-mono-fuente">O4 — <code>parquet_to_kuzu_loader</code> declara alcance mono-fuente</h3>
+<p><strong>[MEDIDO]</strong> El loader declara alcance v1 <code>source_sensor = "argus"</code> y advierte explícitamente de
+no generalizar sin pasar antes por <code>DEBT-PARQUET-GOLD-SCHEMA-MULTISENSOR-001</code>. Este documento es
+esa puerta. Al ratificarse, hay que <strong>actualizar el comentario del loader</strong>, no ignorarlo: un
+aviso que se queda escrito después de dejar de ser cierto es otra afirmación que viaja sin
+medirse.</p>
+<h3 id="o5-la-base-kuzu-persistida-queda-obsoleta">O5 — La base Kuzu persistida queda obsoleta</h3>
+<p><strong>[MEDIDO]</strong> <code>CREATE NODE TABLE IF NOT EXISTS</code> <strong>no migra</strong> catálogos Kuzu existentes. Al
+cambiar la codificación del <code>flow_uid</code> (v1 → v2), <strong>todos</strong> los <code>flow_uid</code> cambian: cualquier BD
+persistida anterior queda inconsistente. Los tests y EMECAS+++ no lo detectan porque parten de
+base fresca / VM destruida.</p>
+<p><strong>Recomendación:</strong> recreación explícita, documentada en el Makefile, y una nota en el README.
+No intentar migración: el proyecto cierra en seis semanas y una migración de catálogo es
+superficie nueva sin retorno.</p>
+<hr />
+<h2 id="10-pendientes-de-medir-antes-de-implementar">10. Pendientes de medir antes de implementar</h2>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Qué</th>
+<th>Comando</th>
+<th>Bloquea</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>P1</td>
+<td>¿Ven los dos sensores el mismo tráfico? (O1)</td>
+<td>inspección de red en el Vagrantfile raíz</td>
+<td><strong>Todo</strong></td>
+</tr>
+<tr>
+<td>P2</td>
+<td>¿<code>validate()</code> acepta los 5 campos de veredicto vacíos?</td>
+<td><code>git grep -n 'validate' -- libs/correlation-v1/src/</code></td>
+<td>D6</td>
+</tr>
+<tr>
+<td>P3</td>
+<td>¿El <code>ON MATCH SET</code> machaca <code>flow_start</code>?</td>
+<td><code>cypher_builder.hpp:103,112</code></td>
+<td>D1</td>
+</tr>
+<tr>
+<td>P4</td>
+<td>Delta real Suricata↔aRGus sobre el mismo pcap</td>
+<td><code>sniffer-libpcap</code> + cruce por <code>community_id</code></td>
+<td>Nada — es figura del paper</td>
+</tr>
+</tbody>
+</table>
+<p>P3 merece detalle: con D1, si el <code>ON MATCH SET</code> incluye <code>flow_start_window</code>, el segundo sensor
+en llegar <strong>sobrescribiría</strong> la marca temporal del primero. Debe estar solo en <code>ON CREATE SET</code>.
+Ambos bloques Cypher (líneas 103 y 112) hay que leerlos enteros — no un <code>sed -n</code> — antes de
+tocarlos.</p>
+<p>P4 no bloquea, pero es una figura valiosa: <em>por qué la identidad de flujo compartida entre
+sensores no puede depender del tiempo</em>, con la distribución real del delta. Es material de
+publicación y respalda D1 empíricamente en vez de solo por argumento.</p>
+<hr />
+<h2 id="11-plan-de-implementacion-por-piezas">11. Plan de implementación por piezas</h2>
+<p>Estrictamente en este orden. Cada pieza con verificación ruidosa detrás.</p>
+<ol>
+<li><strong>P1</strong> (topología). Si sale rojo, todo lo demás se replantea sobre replay offline.</li>
+<li><strong><code>flow_uid.hpp</code></strong>: <code>encode_flow_input</code> y <code>compute_flow_uid</code> pierden <code>flow_start_window</code> y
+   <code>seq_in_window</code>; tag <code>argus-flowuid-v1</code> → <strong><code>argus-flowuid-v2</code></strong>.</li>
+<li><strong>Vectores congelados</strong>: regenerar <code>tests/vectors/correlation_vectors.json</code> y
+   <code>test_flow_uid.cpp</code> contra <code>hashlib.blake2b(digest_size=32)</code>, igual que se congelaron.</li>
+<li><strong>Tres llamantes</strong>: <code>main.cpp:138</code>, <code>segment_processor.cpp:26</code>,
+   <code>bronze_to_gold_converter.cpp:174</code>.</li>
+<li><strong>P3</strong> y ajuste de <code>cypher_builder</code> si procede. <code>flow_start_window</code> sigue siendo propiedad;
+   el esquema no se toca.</li>
+<li><strong>Suite completa</strong> del correlation-engine (9/9) sobre árbol limpio:
+   <code>make correlation-engine-clean &amp;&amp; make correlation-engine-test</code>.</li>
+<li><strong>Adapter de Suricata</strong>: traductor línea a línea para <code>alert</code>, ruta de telemetría, descarte
+   contado. JSON propio con <code>base_dir</code> al buzón plano y <code>source_sensor = "suricata"</code>. <strong>Nunca se
+   toca la config interna de Suricata.</strong></li>
+<li><strong>BACKLOG</strong>: cerrar <code>DEBT-FLOWUID-SEQ-COLLISION-001</code>; enmendar ADR-052 y ADR-058; corregir la
+   fórmula de tres entradas allí donde esté escrita; actualizar el comentario de alcance del
+   loader; nota recíproca en <code>DEBT-PARQUET-GOLD-SCHEMA-MULTISENSOR-001</code>.</li>
+</ol>
+<p>El Parquet oro <strong>conserva</strong> <code>flow_start_window</code> (col 19) y <code>seq_in_window</code> (col 20): el ledger
+preserva. Solo dejan de alimentar el hash.</p>
+<hr />
+<h2 id="12-lo-que-este-documento-no-resuelve">12. Lo que este documento <strong>no</strong> resuelve</h2>
+<p>Dicho explícitamente para que nadie lo dé por cerrado:</p>
+<ul>
+<li><strong>O1 no está verificado.</strong> Es la única objeción que puede invalidar la integración entera.</li>
+<li><strong>Wazuh no converge por flujo</strong> (O2). Cualquier afirmación de "grafo unificado de los cuatro
+  componentes" necesita matiz.</li>
+<li><strong>Zeek no se ha medido.</strong> Se asume simetría con Suricata por emitir <code>community_id</code> con el
+  mismo seed, pero <strong>eso es una suposición, no una medida</strong>. Zeek emite <code>conn.log</code> con otra
+  estructura, y la lección de este mismo documento es que las suposiciones sobre formatos de
+  sensor sobreviven meses sin que nadie las compruebe.</li>
+<li><strong>Las columnas 22 (<code>ingested_at</code>) y 23 (<code>temporal_anomaly</code>)</strong> del diseño del Eslabón 1 siguen
+  sin implementar, ni siquiera para aRGus (<code>DEBT-CIRCUIT-TEMPORAL-ANOMALY-PARITY-001</code>). No
+  bloquean la integración multi-sensor, pero el oro sigue teniendo 22 de las 24 columnas
+  diseñadas.</li>
+</ul>
+<hr />
+<p><em>Via Appia Quality — medir quién habla, no solo qué dice. Y medir el número antes de escribirlo.</em></p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.tabs", "navigation.top", "search.highlight"], "search": "../../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

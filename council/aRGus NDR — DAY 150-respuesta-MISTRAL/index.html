@@ -1,0 +1,1793 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source embedded-ML NDR for hospitals and schools">
+      
+      
+        <meta name="author" content="Alonso Isidoro Roman">
+      
+      
+        <link rel="canonical" href="https://alonsoir.github.io/argus/council/aRGus%20NDR%20%E2%80%94%20DAY%20150-respuesta-MISTRAL/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>aRGus NDR — DAY 150 respuesta MISTRAL - ML Defender (aRGus NDR)</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#resumen-ejecutivo" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-header__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ML Defender (aRGus NDR)
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              aRGus NDR — DAY 150 respuesta MISTRAL
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../README.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/BACKLOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Backlog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Security Model
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-tabs__link">
+          
+  
+  
+  ADRs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/contracts/Protobuf contracts.md" class="md-tabs__link">
+          
+  
+  
+  Contracts
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-nav__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ML Defender (aRGus NDR)
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../README.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/BACKLOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADRs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ADRs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013 Seed Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-021-deployment-topology-seed-families.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-021 Topology SSOT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-022-threat-model-opcion2-descartada.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-022 Threat Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Protobuf contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protobuf
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/JSON contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JSON
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Rag security commands.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#resumen-ejecutivo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        📜 Resumen Ejecutivo
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#respuestas-detalladas-a-q1-q5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🔍 Respuestas Detalladas a Q1-Q5
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🔍 Respuestas Detalladas a Q1-Q5">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#q1-compilacion-condicional-vs-dos-binarios" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Q1 — Compilación Condicional vs. Dos Binarios
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Q1 — Compilación Condicional vs. Dos Binarios">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#analisis" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Análisis:
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#argumentos-a-favor-de-ifdef" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Argumentos a favor de #ifdef:
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mitigacion-del-riesgo-de-divergencia" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Mitigación del riesgo de divergencia:
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#veredicto" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Veredicto:
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#q2-orden-de-migracion-de-componentes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Q2 — Orden de Migración de Componentes
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Q2 — Orden de Migración de Componentes">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#analisis-de-dependencias" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Análisis de dependencias:
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#recomendacion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Recomendación:
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#justificacion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Justificación:
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#-" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ---
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="---">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#q3-register_etcd_status-sin-etcd-disponible-en-bootstrap" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Q3 — register_etcd_status sin etcd disponible en bootstrap
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Q3 — register_etcd_status sin etcd disponible en bootstrap">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#analisis_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Análisis:
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#recomendacion_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Recomendación:
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#implementacion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Implementación:
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#-_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ---
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="---">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#q4-cache-tmpfs-y-vagrant-destroy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Q4 — Cache tmpfs y vagrant destroy
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Q4 — Cache tmpfs y vagrant destroy">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#analisis_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Análisis:
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#recomendacion_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Recomendación:
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#implementacion_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Implementación:
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#-_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ---
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="---">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#q5-open-core-argus_vault_enabled-como-unico-separador" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Q5 — Open-Core: ARGUS_VAULT_ENABLED como único separador
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Q5 — Open-Core: ARGUS_VAULT_ENABLED como único separador">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#analisis_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Análisis:
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#recomendacion_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Recomendación:
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#implementacion_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Implementación:
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#-_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ---
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#resumen-de-decisiones-para-day-151" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        📌 Resumen de Decisiones para DAY 151
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#-_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ---
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#orden-de-implementacion-para-day-151" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🚀 Orden de Implementación para DAY 151
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#-_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ---
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#riesgos-residuales-y-mitigaciones" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ⚠ Riesgos Residuales y Mitigaciones
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#-_6" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ---
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#recomendaciones-adicionales" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        💡 Recomendaciones Adicionales
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#-_7" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ---
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#conclusion-final" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        📝 Conclusión Final
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+  <h1>aRGus NDR — DAY 150 respuesta MISTRAL</h1>
+
+<p><strong>Dictamen del Consejo de Sabios — DAY 150 (aRGus NDR)</strong>
+<em>13 de mayo de 2026 | Respuesta unificada y priorizada</em></p>
+<hr />
+<hr />
+<h2 id="resumen-ejecutivo"><strong>📜 Resumen Ejecutivo</strong></h2>
+<p><strong>El progreso de DAY 150 es excepcional:</strong>
+✅ <strong>EMECAS verde completo</strong> (4 PRs mergeados, 0 fallos).
+✅ <strong>ADR-044 implementado</strong> (<code>provision_crypto.sh</code>, <code>vault_client</code>, Jenkinsfile).
+✅ <strong>Modelo open-core claro</strong> (community vs. enterprise).</p>
+<p><strong>Respuestas clave a las preguntas:</strong>
+1. <strong>Compilación condicional (<code>#ifdef</code>)</strong> es <strong>preferible</strong> a dos binarios (Q1).
+2. <strong>Orden de migración</strong> es correcto, pero <strong><code>sniffer</code> debe ir antes que <code>ml-detector</code></strong> (Q2).
+3. <strong><code>etcd-server</code> debe escribir su estado en un fichero local</strong> (<code>/run/argus/etcd-crypto-status.json</code>) (Q3).
+4. <strong>Cache persistente en <code>/etc/ml-defender/</code> para producción</strong> (Q4).
+5. <strong><code>ARGUS_VAULT_ENABLED</code> es suficiente para open-core</strong>, pero <strong>Falco/OpenCanary/Neo4j podrían ser flags adicionales</strong> (Q5).</p>
+<hr />
+<p><strong>Prioridad para DAY 151:</strong>
+1. <strong>Integración <code>etcd-server</code> con <code>VaultClient</code></strong> (P0).
+2. <strong>DEBT-CRYPTO-HEARTBEAT-001</strong> (P1).
+3. <strong>Ansible Jinja2</strong> (P1).</p>
+<hr />
+<hr />
+<hr />
+<h2 id="respuestas-detalladas-a-q1-q5"><strong>🔍 Respuestas Detalladas a Q1-Q5</strong></h2>
+<hr />
+<hr />
+<h3 id="q1-compilacion-condicional-vs-dos-binarios"><strong>Q1 — Compilación Condicional vs. Dos Binarios</strong></h3>
+<p><strong>✅ </strong><code>#ifdef ARGUS_VAULT_ENABLED</code> es la opción correcta.**</p>
+<h4 id="analisis"><strong>Análisis:</strong></h4>
+<table>
+<thead>
+<tr>
+<th>Opción</th>
+<th>Ventajas</th>
+<th>Desventajas</th>
+<th>Recomendación</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong><code>#ifdef</code></strong></td>
+<td><strong>Mantenimiento unificado</strong> (mismo código, misma lógica).</td>
+<td>Riesgo de <strong>divergencia silenciosa</strong> si no se testea bien.</td>
+<td>✅ <strong>Recomendado</strong></td>
+</tr>
+<tr>
+<td><strong>Dos binarios</strong></td>
+<td><strong>Aislamiento total</strong> (community vs. enterprise).</td>
+<td><strong>Duplicación de código</strong>, mantenimiento complejo.</td>
+<td>❌ No recomendado</td>
+</tr>
+</tbody>
+</table>
+<h4 id="argumentos-a-favor-de-ifdef"><strong>Argumentos a favor de <code>#ifdef</code>:</strong></h4>
+<ol>
+<li><strong>Mantenimiento unificado:</strong><ul>
+<li><strong>Mismo código base</strong> para ambos modos (community/enterprise).</li>
+<li><strong>Menos divergencia</strong> (los cambios en la lógica común se aplican a ambos).</li>
+</ul>
+</li>
+<li><strong>Testing simplificado:</strong><ul>
+<li><strong>Mismos tests</strong> para ambos modos (solo cambiar el flag).</li>
+<li><strong>EMECAS</strong> puede validar ambos caminos con <code>ARGUS_VAULT_ENABLED=ON/OFF</code>.</li>
+</ul>
+</li>
+<li><strong>Flexibilidad:</strong><ul>
+<li><strong>Fácil de activar/desactivar</strong> en tiempo de compilación.</li>
+<li><strong>No requiere cambios en el despliegue</strong> (mismo binario, diferente configuración).</li>
+</ul>
+</li>
+</ol>
+<h4 id="mitigacion-del-riesgo-de-divergencia"><strong>Mitigación del riesgo de divergencia:</strong></h4>
+<ol>
+<li><strong>Tests obligatorios para ambos modos:</strong><ul>
+<li><strong>CI/CD debe ejecutar tests con <code>ARGUS_VAULT_ENABLED=ON</code> y <code>OFF</code>.</strong></li>
+<li><strong>Ejemplo en Jenkinsfile:</strong>
+  <code>groovy
+  stages {
+      stage('Test Community') {
+          steps { sh 'make test ARGUS_VAULT_ENABLED=OFF' }
+      }
+      stage('Test Enterprise') {
+          steps { sh 'make test ARGUS_VAULT_ENABLED=ON' }
+      }
+  }</code></li>
+</ul>
+</li>
+<li><strong>Documentación clara:</strong><ul>
+<li><strong>Añadir un <code>ADR-045: Open-Core Separation Strategy</code></strong> que documente:<ul>
+<li><strong>Qué está detrás de <code>ARGUS_VAULT_ENABLED</code></strong> (solo governance criptográfico).</li>
+<li><strong>Qué NO está detrás</strong> (ej: lógica de detección, ML, etc.).</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><strong>Auditoría de código:</strong><ul>
+<li><strong>Herramientas como <code>cppcheck</code> o <code>clang-tidy</code></strong> para detectar código muerto (<code>#ifdef</code> no utilizado).</li>
+</ul>
+</li>
+</ol>
+<h4 id="veredicto"><strong>Veredicto:</strong></h4>
+<p><strong>✅ Mantener <code>#ifdef ARGUS_VAULT_ENABLED</code></strong>, pero:
+- <strong>Asegurar que todos los tests pasan en ambos modos.</strong>
+- <strong>Documentar claramente la separación open-core en un ADR dedicado.</strong></p>
+<hr />
+<hr />
+<h3 id="q2-orden-de-migracion-de-componentes"><strong>Q2 — Orden de Migración de Componentes</strong></h3>
+<p><strong>✅ Orden propuesto es correcto, pero ajustar prioridad de <code>sniffer</code>.</strong></p>
+<h4 id="analisis-de-dependencias"><strong>Análisis de dependencias:</strong></h4>
+<table>
+<thead>
+<tr>
+<th>Componente</th>
+<th>Dependencias</th>
+<th>Riesgo si falla</th>
+<th>Prioridad</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong><code>etcd-server</code></strong></td>
+<td>Ninguna (bootstrap).</td>
+<td><strong>Bloquea todo el sistema.</strong></td>
+<td>1</td>
+</tr>
+<tr>
+<td><strong><code>sniffer</code></strong></td>
+<td><code>etcd-server</code> (para registrar estado).</td>
+<td><strong>Pérdida de telemetría.</strong></td>
+<td><strong>2</strong></td>
+</tr>
+<tr>
+<td><strong><code>ml-detector</code></strong></td>
+<td><code>etcd-server</code>, <code>sniffer</code> (datos de entrada).</td>
+<td><strong>Pérdida de detección ML.</strong></td>
+<td>3</td>
+</tr>
+<tr>
+<td><strong><code>firewall-acl-agent</code></strong></td>
+<td><code>etcd-server</code>, <code>ml-detector</code> (alertas).</td>
+<td><strong>Pérdida de bloqueo automático.</strong></td>
+<td>4</td>
+</tr>
+<tr>
+<td><strong><code>rag-ingester</code></strong></td>
+<td><code>etcd-server</code>.</td>
+<td><strong>Pérdida de logs RAG.</strong></td>
+<td>5</td>
+</tr>
+<tr>
+<td><strong><code>rag-security</code></strong></td>
+<td><code>etcd-server</code>, <code>rag-ingester</code>.</td>
+<td><strong>Pérdida de análisis RAG.</strong></td>
+<td>6</td>
+</tr>
+</tbody>
+</table>
+<h4 id="recomendacion"><strong>Recomendación:</strong></h4>
+<p><strong>✅ Orden ajustado:</strong>
+1. <strong><code>etcd-server</code></strong> (bootstrap, sin dependencias).
+2. <strong><code>sniffer</code></strong> (captura de tráfico, dependencia crítica para <code>ml-detector</code>).
+3. <strong><code>ml-detector</code></strong> (necesita datos de <code>sniffer</code>).
+4. <strong><code>firewall-acl-agent</code></strong> (necesita alertas de <code>ml-detector</code>).
+5. <strong><code>rag-ingester</code></strong> (independiente, pero depende de <code>etcd-server</code>).
+6. <strong><code>rag-security</code></strong> (depende de <code>rag-ingester</code>).</p>
+<h4 id="justificacion"><strong>Justificación:</strong></h4>
+<ul>
+<li><strong><code>sniffer</code> debe ir antes que <code>ml-detector</code></strong> porque este último <strong>depende de los datos de tráfico</strong> que genera <code>sniffer</code>.</li>
+<li><strong><code>firewall-acl-agent</code> depende de <code>ml-detector</code></strong> (para bloquear basándose en alertas ML).</li>
+<li><strong><code>rag-ingester</code> y <code>rag-security</code></strong> son <strong>independientes del pipeline de detección</strong>, pero aún necesitan <code>etcd-server</code>.</li>
+</ul>
+<h2 id="-">---</h2>
+<h3 id="q3-register_etcd_status-sin-etcd-disponible-en-bootstrap"><strong>Q3 — <code>register_etcd_status</code> sin etcd disponible en bootstrap</strong></h3>
+<p><strong>✅ <code>etcd-server</code> debe escribir su estado en un fichero local (<code>/run/argus/etcd-crypto-status.json</code>).</strong></p>
+<h4 id="analisis_1"><strong>Análisis:</strong></h4>
+<ul>
+<li><strong>Problema:</strong><ul>
+<li><code>etcd-server</code> <strong>no puede registrarse en etcd antes de arrancar</strong> (no hay etcd disponible).</li>
+<li>Los demás componentes <strong>esperan a que <code>etcd-server</code> esté listo</strong> (via <code>/health/crypto_ready</code>).</li>
+</ul>
+</li>
+<li><strong>Soluciones posibles:</strong>
+  | Opción | Ventajas | Desventajas |
+  |--------|----------|-------------|
+  | <strong>Fichero local</strong> (<code>/run/argus/etcd-crypto-status.json</code>) | Simple, no depende de etcd. | <strong>No es distribuido</strong> (solo visible en el nodo local). |
+  | <strong>Endpoint HTTP</strong> (<code>/health/crypto_ready</code>) | <strong>Distribuido</strong> (cualquier nodo puede consultarlo). | Requiere que <code>etcd-server</code> exponga un endpoint HTTP. |
+  | <strong>etcd auto-registro</strong> (escribir en sí mismo) | <strong>Consistente con el resto del sistema.</strong> | <strong>Complejidad</strong> (etcd-server debe arrancar con etcd disponible). |</li>
+</ul>
+<h4 id="recomendacion_1"><strong>Recomendación:</strong></h4>
+<p><strong>✅ Usar fichero local + endpoint HTTP (solución híbrida).</strong>
+1. <strong><code>etcd-server</code> escribe su estado en <code>/run/argus/etcd-crypto-status.json</code>:</strong>
+   <code>json
+   {
+     "component": "etcd-server",
+     "crypto_ready": true,
+     "timestamp": "2026-05-13T12:00:00Z",
+     "public_key_fingerprint": "sha256:..."
+   }</code>
+2. <strong><code>etcd-server</code> expone un endpoint HTTP <code>/health/crypto_ready</code></strong> que devuelve el contenido del fichero.
+3. <strong>Los demás componentes:</strong>
+    - <strong>Primero consultan <code>/health/crypto_ready</code> de <code>etcd-server</code></strong> (via HTTP).
+    - <strong>Si falla, leen el fichero local</strong> (fallback para single-node).</p>
+<h4 id="implementacion"><strong>Implementación:</strong></h4>
+<ul>
+<li><strong>En <code>etcd-server</code>:</strong>
+  ```cpp
+  // Tras derivar el keypair:
+  std::ofstream status_file("/run/argus/etcd-crypto-status.json");
+  status_file &lt;&lt; R"({
+      "component": "etcd-server",
+      "crypto_ready": true,
+      "timestamp": ")" &lt;&lt; current_utc_time() &lt;&lt; R"(",
+      "public_key_fingerprint": ")" &lt;&lt; fingerprint &lt;&lt; "\""
+  })";</li>
+</ul>
+<p>// Iniciar servidor HTTP (ej: con libmicrohttpd)
+  start_http_server(8080, <a href="const char* path"></a> {
+      if (std::string(path) == "/health/crypto_ready") {
+          return read_file("/run/argus/etcd-crypto-status.json");
+      }
+      return "404 Not Found";
+  });
+  <code>- **En otros componentes:**</code>cpp
+  bool wait_for_etcd_crypto_ready() {
+      // 1. Intentar HTTP (preferido)
+      if (auto response = http_get("http://etcd-server:8080/health/crypto_ready")) {
+          if (response.status == 200) return true;
+      }
+      // 2. Fallback: leer fichero local (single-node)
+      if (std::ifstream file("/run/argus/etcd-crypto-status.json")) {
+          return parse_json(file).crypto_ready;
+      }
+      return false;
+  }
+  ```</p>
+<h2 id="-_1">---</h2>
+<h3 id="q4-cache-tmpfs-y-vagrant-destroy"><strong>Q4 — Cache tmpfs y <code>vagrant destroy</code></strong></h3>
+<p><strong>✅ Cache persistente en <code>/etc/ml-defender/{component}/crypto-cache/</code> para producción.</strong></p>
+<h4 id="analisis_2"><strong>Análisis:</strong></h4>
+<table>
+<thead>
+<tr>
+<th>Entorno</th>
+<th>Cache Location</th>
+<th>TTL</th>
+<th>Permisos</th>
+<th>Justificación</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Dev (Vagrant)</strong></td>
+<td><code>/run/argus/crypto-cache/</code> (tmpfs)</td>
+<td>1h</td>
+<td>0700</td>
+<td><strong>EMECAS requiere limpieza total</strong> en cada ciclo.</td>
+</tr>
+<tr>
+<td><strong>Prod (Edge)</strong></td>
+<td><code>/etc/ml-defender/{component}/crypto-cache/</code></td>
+<td>72h</td>
+<td>0600</td>
+<td><strong>Supervive reboots</strong>, pero no es permanente.</td>
+</tr>
+</tbody>
+</table>
+<h4 id="recomendacion_2"><strong>Recomendación:</strong></h4>
+<ol>
+<li><strong>Dev (Vagrant):</strong><ul>
+<li><strong>Mantener tmpfs</strong> (<code>/run/argus/crypto-cache/</code>).</li>
+<li><strong>TTL corto</strong> (1h) para forzar renovación frecuente.</li>
+</ul>
+</li>
+<li><strong>Prod (Edge):</strong><ul>
+<li><strong>Cache persistente en <code>/etc/ml-defender/{component}/crypto-cache/</code></strong>.</li>
+<li><strong>TTL largo</strong> (72h) para <strong>sobrevivir reboots</strong>.</li>
+<li><strong>Permisos estrictos</strong> (<code>0600</code>, usuario <code>argus</code>).</li>
+<li><strong>Cifrado adicional</strong> (opcional): Usar <code>fscrypt</code> para cifrar el directorio.</li>
+</ul>
+</li>
+</ol>
+<h4 id="implementacion_1"><strong>Implementación:</strong></h4>
+<ul>
+<li><strong>En <code>vault_client.cpp</code>:</strong>
+  <code>cpp
+  #ifdef ARGUS_VAULT_ENABLED
+      std::string get_cache_path() {
+          #ifdef PRODUCTION
+              return "/etc/ml-defender/" + component_name + "/crypto-cache/";
+          #else
+              return "/run/argus/crypto-cache/";
+          #endif
+      }
+  #endif</code></li>
+<li><strong>En <code>provision_crypto.sh</code> (prod):</strong>
+  <code>bash
+  # Crear directorio de cache con permisos seguros
+  mkdir -p /etc/ml-defender/{component}/crypto-cache
+  chown argus:argus /etc/ml-defender/{component}/crypto-cache
+  chmod 0600 /etc/ml-defender/{component}/crypto-cache</code></li>
+</ul>
+<h2 id="-_2">---</h2>
+<h3 id="q5-open-core-argus_vault_enabled-como-unico-separador"><strong>Q5 — Open-Core: <code>ARGUS_VAULT_ENABLED</code> como único separador</strong></h3>
+<p><strong>✅ <code>ARGUS_VAULT_ENABLED</code> es suficiente para el MVP, pero considerar flags adicionales para funcionalidades avanzadas.</strong></p>
+<h4 id="analisis_3"><strong>Análisis:</strong></h4>
+<table>
+<thead>
+<tr>
+<th>Funcionalidad</th>
+<th>¿Detrás de <code>ARGUS_VAULT_ENABLED</code>?</th>
+<th>¿Nuevo flag?</th>
+<th>Recomendación</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Governance criptográfico</strong></td>
+<td>✅ Sí</td>
+<td>❌ No</td>
+<td>Mantener actual.</td>
+</tr>
+<tr>
+<td><strong>Falco actuation</strong></td>
+<td>❌ No</td>
+<td>✅ <code>ARGUS_FALCO_ENABLED</code></td>
+<td><strong>Nuevo flag</strong> (depende de kernel eBPF).</td>
+</tr>
+<tr>
+<td><strong>Neo4j graph</strong></td>
+<td>❌ No</td>
+<td>✅ <code>ARGUS_NEO4J_ENABLED</code></td>
+<td><strong>Nuevo flag</strong> (depende de librerías externas).</td>
+</tr>
+<tr>
+<td><strong>OpenCanary honeypot</strong></td>
+<td>❌ No</td>
+<td>✅ <code>ARGUS_HONEYPOT_ENABLED</code></td>
+<td><strong>Nuevo flag</strong> (módulo opcional).</td>
+</tr>
+<tr>
+<td><strong>RAG (Retrieval-Augmented Generation)</strong></td>
+<td>❌ No</td>
+<td>⚠ <code>ARGUS_RAG_ENABLED</code></td>
+<td><strong>Opcional</strong> (depende de Python/ML).</td>
+</tr>
+</tbody>
+</table>
+<h4 id="recomendacion_3"><strong>Recomendación:</strong></h4>
+<ol>
+<li><strong>Mantener <code>ARGUS_VAULT_ENABLED</code> como flag principal</strong> (governance criptográfico).</li>
+<li><strong>Añadir flags adicionales para funcionalidades opcionales:</strong><ul>
+<li><strong><code>ARGUS_FALCO_ENABLED</code></strong>: Actuación en tiempo real (eBPF).</li>
+<li><strong><code>ARGUS_NEO4J_ENABLED</code></strong>: Integración con grafo de memoria histórica.</li>
+<li><strong><code>ARGUS_HONEYPOT_ENABLED</code></strong>: OpenCanary (honeypot).</li>
+</ul>
+</li>
+<li><strong>Documentar en <code>ADR-045: Open-Core Feature Flags</code></strong>:
+   | Flag | Descripción | Dependencias | Estado |
+   |------|-------------|---------------|--------|
+   | <code>ARGUS_VAULT_ENABLED</code> | Governance criptográfico (Vault). | libvault_client, Vault server. | ✅ Estable |
+   | <code>ARGUS_FALCO_ENABLED</code> | Actuación en kernel (eBPF). | libfalco, kernel headers. | 🟡 Experimental |
+   | <code>ARGUS_NEO4J_ENABLED</code> | Memoria histórica (Neo4j). | libneo4j-cpp, Neo4j server. | 🟡 Experimental |
+   | <code>ARGUS_HONEYPOT_ENABLED</code> | Honeypot (OpenCanary). | Python 3.10+, OpenCanary. | 🟡 Experimental |</li>
+</ol>
+<h4 id="implementacion_2"><strong>Implementación:</strong></h4>
+<ul>
+<li><strong>En <code>CMakeLists.txt</code>:</strong>
+  <code>cmake
+  option(ARGUS_VAULT_ENABLED "Enable Vault-based crypto governance" OFF)
+  option(ARGUS_FALCO_ENABLED "Enable Falco eBPF actuation" OFF)
+  option(ARGUS_NEO4J_ENABLED "Enable Neo4j historical memory" OFF)
+  option(ARGUS_HONEYPOT_ENABLED "Enable OpenCanary honeypot" OFF)</code></li>
+<li><strong>En el código:</strong>
+  <code>cpp
+  #ifdef ARGUS_FALCO_ENABLED
+      #include &lt;falco.h&gt;
+      // Lógica de Falco
+  #endif</code></li>
+</ul>
+<h2 id="-_3">---</h2>
+<hr />
+<h2 id="resumen-de-decisiones-para-day-151"><strong>📌 Resumen de Decisiones para DAY 151</strong></h2>
+<table>
+<thead>
+<tr>
+<th>Pregunta</th>
+<th>Decisión</th>
+<th>Acción Concreta</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Q1</strong></td>
+<td><code>#ifdef ARGUS_VAULT_ENABLED</code></td>
+<td>Mantener compilación condicional. Añadir tests para ambos modos.</td>
+</tr>
+<tr>
+<td><strong>Q2</strong></td>
+<td>Orden ajustado: <code>etcd-server</code> → <code>sniffer</code> → <code>ml-detector</code> → <code>firewall-acl-agent</code> → <code>rag-ingester</code> → <code>rag-security</code></td>
+<td>Actualizar documentación de migración.</td>
+</tr>
+<tr>
+<td><strong>Q3</strong></td>
+<td>Fichero local + endpoint HTTP</td>
+<td>Implementar <code>/run/argus/etcd-crypto-status.json</code> + <code>/health/crypto_ready</code>.</td>
+</tr>
+<tr>
+<td><strong>Q4</strong></td>
+<td>Cache persistente en <code>/etc/ml-defender/</code> (prod)</td>
+<td>Modificar <code>vault_client.cpp</code> para usar paths condicionales.</td>
+</tr>
+<tr>
+<td><strong>Q5</strong></td>
+<td><code>ARGUS_VAULT_ENABLED</code> + flags adicionales (<code>FALCO</code>, <code>NEO4J</code>, <code>HONEYPOT</code>)</td>
+<td>Añadir opciones en <code>CMakeLists.txt</code> y documentar en ADR-045.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="-_4">---</h2>
+<h2 id="orden-de-implementacion-para-day-151"><strong>🚀 Orden de Implementación para DAY 151</strong></h2>
+<ol>
+<li><strong>P0 — Integración <code>etcd-server</code> con <code>VaultClient</code></strong> (Q1, Q3):<ul>
+<li>Compilación condicional (<code>#ifdef ARGUS_VAULT_ENABLED</code>).</li>
+<li>Fichero local <code>/run/argus/etcd-crypto-status.json</code> + endpoint HTTP.</li>
+</ul>
+</li>
+<li><strong>P1 — DEBT-CRYPTO-HEARTBEAT-001</strong> (Q3):<ul>
+<li>Implementar <code>register_etcd_status()</code> real + keepalive (TTL=10s).</li>
+</ul>
+</li>
+<li><strong>P1 — Ansible Jinja2</strong> (Q2):<ul>
+<li>Templates para <code>firewall-acl-agent</code>, <code>etcd-server</code>, <code>rag-ingester</code>, <code>rag-security</code>.</li>
+</ul>
+</li>
+<li><strong>P2 — ADR-045: Open-Core Feature Flags</strong> (Q5):<ul>
+<li>Documentar flags (<code>VAULT</code>, <code>FALCO</code>, <code>NEO4J</code>, <code>HONEYPOT</code>).</li>
+</ul>
+</li>
+</ol>
+<h2 id="-_5">---</h2>
+<h2 id="riesgos-residuales-y-mitigaciones"><strong>⚠ Riesgos Residuales y Mitigaciones</strong></h2>
+<table>
+<thead>
+<tr>
+<th>Riesgo</th>
+<th>Mitigación</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Divergencia silenciosa con <code>#ifdef</code></strong></td>
+<td>Tests obligatorios para ambos modos (<code>ON</code>/<code>OFF</code>).</td>
+</tr>
+<tr>
+<td><strong><code>etcd-server</code> no expone <code>/health/crypto_ready</code></strong></td>
+<td>Fallback a fichero local (single-node).</td>
+</tr>
+<tr>
+<td><strong>Cache persistente comprometida</strong></td>
+<td>Permisos <code>0600</code> + <code>fscrypt</code> (opcional).</td>
+</tr>
+<tr>
+<td><strong>Flags adicionales no documentados</strong></td>
+<td>Crear <code>ADR-045</code> con tabla de flags.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="-_6">---</h2>
+<h2 id="recomendaciones-adicionales"><strong>💡 Recomendaciones Adicionales</strong></h2>
+<ol>
+<li><strong>Testing de integración:</strong><ul>
+<li><strong>Probar el flujo completo</strong> (<code>etcd-server</code> → <code>sniffer</code> → <code>ml-detector</code>) con <code>ARGUS_VAULT_ENABLED=ON/OFF</code>.</li>
+<li><strong>Simular fallos de Vault</strong> (¿los componentes usan cache correctamente?).</li>
+</ul>
+</li>
+<li><strong>Documentación:</strong><ul>
+<li><strong>Actualizar <code>README.md</code></strong> con instrucciones para compilación open-core.</li>
+<li><strong>Añadir ejemplos de <code>CMakeLists.txt</code></strong> para cada flag.</li>
+</ul>
+</li>
+<li><strong>Seguridad:</strong><ul>
+<li><strong>Auditar permisos</strong> de <code>/etc/ml-defender/{component}/crypto-cache/</code> (debe ser <code>0600</code>).</li>
+<li><strong>Loguear accesos a Vault</strong> (para detectar intentos no autorizados).</li>
+</ul>
+</li>
+</ol>
+<h2 id="-_7">---</h2>
+<h2 id="conclusion-final"><strong>📝 Conclusión Final</strong></h2>
+<p><strong>El diseño actual es robusto y alinea con las mejores prácticas en sistemas distribuidos seguros.</strong>
+- <strong>Prioridad DAY 151:</strong> Integración <code>etcd-server</code> + <code>VaultClient</code> (P0).
+- <strong>Open-core:</strong> <code>ARGUS_VAULT_ENABLED</code> es suficiente para el MVP, pero <strong>flags adicionales</strong> (<code>FALCO</code>, <code>NEO4J</code>, <code>HONEYPOT</code>) son recomendables para funcionalidades avanzadas.
+- <strong>Cache:</strong> <strong>tmpfs para dev</strong>, <strong>persistente para prod</strong>.</p>
+<p><strong>Para el Consejo:</strong>
+¿Estáis de acuerdo con <strong>priorizar la integración de <code>etcd-server</code> con <code>VaultClient</code> y el fichero local de estado</strong> para DAY 151? <strong>Sí</strong>, es el paso crítico para desbloquear el resto del pipeline.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.top", "search.highlight"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

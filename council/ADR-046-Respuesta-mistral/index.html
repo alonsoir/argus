@@ -1,0 +1,1806 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source embedded-ML NDR for hospitals and schools">
+      
+      
+        <meta name="author" content="Alonso Isidoro Roman">
+      
+      
+        <link rel="canonical" href="https://alonsoir.github.io/argus/council/ADR-046-Respuesta-mistral/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>ADR 046 Respuesta mistral - ML Defender (aRGus NDR)</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#resumen-ejecutivo-del-consejo" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-header__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ML Defender (aRGus NDR)
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              ADR 046 Respuesta mistral
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../README.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/BACKLOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Backlog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Security Model
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-tabs__link">
+          
+  
+  
+  ADRs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/contracts/Protobuf contracts.md" class="md-tabs__link">
+          
+  
+  
+  Contracts
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-nav__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ML Defender (aRGus NDR)
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../README.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/BACKLOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADRs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ADRs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013 Seed Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-021-deployment-topology-seed-families.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-021 Topology SSOT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-022-threat-model-opcion2-descartada.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-022 Threat Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Protobuf contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protobuf
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/JSON contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JSON
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Rag security commands.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#resumen-ejecutivo-del-consejo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        📜 Resumen Ejecutivo del Consejo
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#puntos-fuertes-del-adr-046" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ✅ Puntos Fuertes del ADR-046
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#puntos-debiles-y-recomendaciones-de-mejora" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ⚠️ Puntos Débiles y Recomendaciones de Mejora
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="⚠️ Puntos Débiles y Recomendaciones de Mejora">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-falta-de-detalles-en-la-arquitectura-de-correlation-engine" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Falta de Detalles en la Arquitectura de correlation-engine
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-ventana-de-correlacion-500ms" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Ventana de Correlación (±500ms)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-orden-de-integracion-suricata-vs-zeek-vs-wazuh" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Orden de Integración (Suricata vs. Zeek vs. Wazuh)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-consumo-de-recursos-debt-arguspp-resource-001" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Consumo de Recursos (DEBT-ARGUSPP-RESOURCE-001)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5-mitre-generator-como-componente" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. mitre-generator como Componente
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#6-experimento-de-mezcla-datasets-academic-vs-sintetico" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Experimento de Mezcla Datasets (Academic vs. Sintético)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#7-correlation-engine-scope-minimo-viable-v1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. correlation-engine Scope Mínimo Viable (v1)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#8-sincronizacion-ntp-debt-arguspp-ntp-001" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. Sincronización NTP (DEBT-ARGUSPP-NTP-001)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#9-frontera-communityenterprise-tabla-10" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9. Frontera Community/Enterprise (Tabla §10)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#10-validacion-con-datasets-historicos" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10. Validación con Datasets Históricos
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#-" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ---
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#respuestas-a-las-preguntas-abiertas-del-adr-13" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        📌 Respuestas a las Preguntas Abiertas del ADR (§13)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#-_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ---
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#plan-de-accion-recomendado" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🚀 Plan de Acción Recomendado
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🚀 Plan de Acción Recomendado">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#fase-1-validacion-del-concepto-p0" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fase 1: Validación del Concepto (P0)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fase-2-integracion-de-zeek-p1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fase 2: Integración de Zeek (P1)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fase-3-integracion-de-wazuh-p2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fase 3: Integración de Wazuh (P2)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fase-4-validacion-con-mitre-attck-p1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fase 4: Validación con MITRE ATT&amp;CK (P1)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fase-5-paper-v24-p2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fase 5: Paper v24 (P2)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#-_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ---
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#riesgos-criticos-y-mitigaciones" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ⚠️ Riesgos Críticos y Mitigaciones
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#-_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ---
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#recomendaciones-finales-del-consejo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        💡 Recomendaciones Finales del Consejo
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#-_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ---
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#conclusion-del-consejo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        📝 Conclusión del Consejo
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+  <h1>ADR 046 Respuesta mistral</h1>
+
+<p><strong>Análisis del Consejo de Sabios — ADR-046 (aRGus++: Multi-Source Enriched Pipeline)</strong>
+<em>19 de mayo de 2026 | Respuesta estructurada y crítica</em></p>
+<hr />
+<hr />
+<h2 id="resumen-ejecutivo-del-consejo"><strong>📜 Resumen Ejecutivo del Consejo</strong></h2>
+<p><strong>ADR-046 es un avance estratégico crítico para aRGus</strong>, transformándolo de un <strong>NDR puro</strong> a un <strong>sistema híbrido NDR/EDR distribuido con capacidad de autoaprendizaje federado</strong>. El diseño es <strong>técnicamente sólido</strong>, pero requiere <strong>ajustes en claridad, priorización y mitigación de riesgos</strong>. A continuación, se detallan <strong>puntos fuertes, debilidades, recomendaciones y respuestas a las preguntas abiertas</strong>.</p>
+<hr />
+<hr />
+<hr />
+<h2 id="puntos-fuertes-del-adr-046"><strong>✅ Puntos Fuertes del ADR-046</strong></h2>
+<ol>
+<li>
+<p><strong>Visión Arquitectónica Clara</strong></p>
+<ul>
+<li><strong>Separación de responsabilidades</strong>: Edge (captura/detección) vs. Servidor (correlación/enriquecimiento).</li>
+<li><strong>Reutilización de infraestructura</strong>: ZeroMQ + ChaCha20-Poly1305 para transporte, sin nuevas dependencias.</li>
+<li><strong>Consistencia tecnológica</strong>: Todo en C++20 (sin Python en producción).</li>
+</ul>
+</li>
+<li>
+<p><strong>Contribución Científica</strong></p>
+<ul>
+<li><strong>Hipótesis verificable</strong>: <code>F1(ensemble enriquecido) &gt; F1(aRGus solo)</code>.</li>
+<li><strong>Datasets sintéticos vs. académicos</strong>: Descubrimiento empírico valioso (§8) que merece sección en el paper v24.</li>
+<li><strong>Flywheel de aprendizaje federado</strong>: Mecanismo inmunológico distribuido (novel en el contexto de infraestructura crítica).</li>
+</ul>
+</li>
+<li>
+<p><strong>Modelo Open-Core Bien Definido</strong></p>
+<ul>
+<li><strong>Community</strong>: aRGus + Suricata + Zeek + Wazuh + <code>correlation-engine</code>.</li>
+<li><strong>Enterprise</strong>: Plugins ensemble firmados + meta-learner + inteligencia federada.</li>
+</ul>
+</li>
+<li>
+<p><strong>Validación Empírica</strong></p>
+<ul>
+<li><strong>MITRE ATT&amp;CK en tiempo real</strong>: Ground truth de alta calidad (superior a datasets históricos).</li>
+<li><strong>Experimentos reproducibles</strong>: Scripts <code>mitre-generator</code> + manifiesto JSON.</li>
+</ul>
+</li>
+<li>
+<p><strong>Escalabilidad</strong></p>
+<ul>
+<li><strong>Configuraciones flexibles</strong>: Mínima (RPi5), Media (RPi5 + N100), Completa (múltiples nodos).</li>
+</ul>
+</li>
+</ol>
+<hr />
+<hr />
+<hr />
+<h2 id="puntos-debiles-y-recomendaciones-de-mejora"><strong>⚠️ Puntos Débiles y Recomendaciones de Mejora</strong></h2>
+<hr />
+<h3 id="1-falta-de-detalles-en-la-arquitectura-de-correlation-engine"><strong>1. Falta de Detalles en la Arquitectura de <code>correlation-engine</code></strong></h3>
+<p><strong>Problema:</strong>
+- El ADR describe <strong>qué hace</strong> <code>correlation-engine</code> (join temporal por 5-tupla), pero <strong>no cómo lo hace</strong>.
+- <strong>Falta:</strong>
+    - Diagrama de flujo de datos.
+    - Esquema de las tablas intermedias (ej: ¿cómo se almacenan los datos antes del join?).
+    - Detalles de implementación del join temporal (ej: ¿ventana deslizante? ¿buffer en memoria?).</p>
+<p><strong>Recomendación:</strong>
+- <strong>Añadir un diagrama de secuencia</strong> (Mermaid) en §3.3:
+  ```mermaid
+  sequenceDiagram
+      participant Sniffer
+      participant Suricata
+      participant Zeek
+      participant Wazuh
+      participant RAG
+      participant CorrelationEngine
+      participant Neo4j</p>
+<pre><code>  Sniffer-&gt;&gt;RAG: Flow features (CSV)
+  Suricata-&gt;&gt;RAG: eve.json (alerts)
+  Zeek-&gt;&gt;RAG: conn.log, dns.log (JSON)
+  Wazuh-&gt;&gt;WazuhManager: Host events
+  WazuhManager-&gt;&gt;RAG: Forward to server
+
+  RAG-&gt;&gt;CorrelationEngine: Parquet files
+  CorrelationEngine-&gt;&gt;CorrelationEngine: Join por 5-tupla (±500ms)
+  CorrelationEngine-&gt;&gt;Neo4j: Grafo enriquecido
+  CorrelationEngine-&gt;&gt;Parquet: Datasets para entrenamiento
+</code></pre>
+<p><code>- **Detallar el algoritmo de join**:
+    - ¿Cómo se manejan **mensajes fuera de orden** (ej: `eve.json` llega después que el flow de aRGus)?
+    - ¿Se usa un **buffer circular** en memoria? ¿O se persiste en disco?
+    - **Ejemplo de pseudocódigo**:</code>cpp
+      // Buffer de eventos por 5-tupla (src_ip, dst_ip, src_port, dst_port, proto)
+      std::unordered_map<FiveTuple, std::vector\<Event>> buffer;</p>
+<pre><code>  void CorrelationEngine::process_event(const Event&amp; event) {
+      auto key = event.five_tuple();
+      buffer[key].push_back(event);
+
+      // Eliminar eventos fuera de la ventana (±500ms)
+      auto now = std::chrono::system_clock::now();
+      buffer[key].erase(
+          std::remove_if(buffer[key].begin(), buffer[key].end(),
+              [now](const Event&amp; e) {
+                  return std::abs((now - e.timestamp).count()) &gt; 500ms;
+              }),
+          buffer[key].end()
+      );
+
+      // Si hay eventos de todas las fuentes, hacer join
+      if (has_all_sources(buffer[key])) {
+          auto enriched = join_events(buffer[key]);
+          write_to_parquet(enriched);
+          write_to_neo4j(enriched);
+      }
+  }
+  ```
+</code></pre>
+<hr />
+<h3 id="2-ventana-de-correlacion-500ms"><strong>2. Ventana de Correlación (±500ms)</strong></h3>
+<p><strong>Problema:</strong>
+- <strong>500ms puede ser demasiado corto</strong> para algunos protocolos (ej: SMTP, FTP) o <strong>demasiado largo</strong> para otros (ej: DNS, ICMP).
+- <strong>No se justifica el valor</strong> (¿por qué 500ms y no 100ms o 1s?).</p>
+<p><strong>Recomendación:</strong>
+- <strong>Hacerla configurable por protocolo</strong>:
+  <code>json
+  {
+    "correlation": {
+      "window_ms": {
+        "default": 500,
+        "tcp": 1000,    // SMTP, HTTP
+        "udp": 200,     // DNS, QUIC
+        "icmp": 100     // Ping
+      }
+    }
+  }</code>
+- <strong>Justificación en el ADR</strong>:</p>
+<blockquote>
+<p><em>"La ventana de correlación de 500ms por defecto se eligió empíricamente para equilibrar precisión y rendimiento. Protocolos como DNS (UDP) pueden usar ventanas más cortas (200ms), mientras que TCP (HTTP/SMTP) puede requerir ventanas más largas (1s) para acomodar latencias de aplicación. Este valor es configurable por protocolo en <code>correlation.json</code>."</em></p>
+</blockquote>
+<hr />
+<h3 id="3-orden-de-integracion-suricata-vs-zeek-vs-wazuh"><strong>3. Orden de Integración (Suricata vs. Zeek vs. Wazuh)</strong></h3>
+<p><strong>Problema:</strong>
+- El ADR no prioriza qué fuente integrar primero.</p>
+<p><strong>Recomendación:</strong>
+<strong>Priorizar en este orden:</strong>
+1. <strong>Suricata</strong> (P0):
+    - <strong>Razón:</strong> Proporciona <strong>etiquetado automático</strong> (ground truth) para el dataset.
+    - <strong>Impacto:</strong> Permite entrenar el primer modelo enriquecido (<code>XGBoost-enriched</code>) <strong>sin depender de Wazuh o Zeek</strong>.
+2. <strong>Zeek</strong> (P1):
+    - <strong>Razón:</strong> Añade <strong>contexto de protocolo</strong> (DNS, TLS, HTTP), mejorando la calidad del grafo.
+3. <strong>Wazuh</strong> (P2):
+    - <strong>Razón:</strong> <strong>Mayor footprint</strong> (requiere agente + manager). Validar primero que Suricata + Zeek caben en el edge.</p>
+<p><strong>Justificación:</strong>
+- <strong>Suricata primero</strong> permite <strong>validar el valor del enriquecimiento</strong> (etiquetado automático) antes de añadir complejidad.
+- <strong>Zeek segundo</strong> añade <strong>profundidad</strong> (Layer 7) sin requerir cambios en el edge.
+- <strong>Wazuh tercero</strong> es el más costoso (recursos + despliegue).</p>
+<hr />
+<p><strong>Acción:</strong>
+Añadir en §13 (Preguntas abiertas):</p>
+<blockquote>
+<p><em>"El Consejo recomienda integrar las fuentes en el orden: </em><em>Suricata (P0) → Zeek (P1) → Wazuh (P2)</em><em>. Esto permite validar el valor del enriquecimiento de forma incremental."</em></p>
+</blockquote>
+<hr />
+<h3 id="4-consumo-de-recursos-debt-arguspp-resource-001"><strong>4. Consumo de Recursos (DEBT-ARGUSPP-RESOURCE-001)</strong></h3>
+<p><strong>Problema:</strong>
+- <strong>No hay datos concretos</strong> sobre el consumo de CPU/RAM de Suricata + Zeek + Wazuh en RPi5/N100.
+- <strong>Riesgo:</strong> El pipeline completo <strong>puede no caber</strong> en hardware de bajo coste.</p>
+<p><strong>Recomendación:</strong>
+- <strong>Añadir una tabla estimada</strong> en §9.2 (aunque sea aproximada):</p>
+<p>Consumo de Recursos Estimado (aRGus++)</p>
+<table>
+<thead>
+<tr>
+<th>Componente</th>
+<th>CPU (RPi5)</th>
+<th>RAM (RPi5)</th>
+<th>CPU (N100)</th>
+<th>RAM (N100)</th>
+<th>Notas</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>aRGus (sniffer)</td>
+<td>20%</td>
+<td>512MB</td>
+<td>10%</td>
+<td>256MB</td>
+<td>eBPF/XDP</td>
+</tr>
+<tr>
+<td>aRGus (ml-detector)</td>
+<td>30%</td>
+<td>1GB</td>
+<td>15%</td>
+<td>512MB</td>
+<td>XGBoost inference</td>
+</tr>
+<tr>
+<td>Suricata</td>
+<td>40%</td>
+<td>1.5GB</td>
+<td>20%</td>
+<td>768MB</td>
+<td>Modo pasivo, 50K reglas</td>
+</tr>
+<tr>
+<td>Zeek</td>
+<td>35%</td>
+<td>1GB</td>
+<td>15%</td>
+<td>512MB</td>
+<td>Logs básicos (conn, dns, ssl)</td>
+</tr>
+<tr>
+<td>Wazuh Agent</td>
+<td>25%</td>
+<td>512MB</td>
+<td>10%</td>
+<td>256MB</td>
+<td>FIM + procesos</td>
+</tr>
+<tr>
+<td><strong>Total</strong></td>
+<td><strong>150%</strong></td>
+<td><strong>4.5GB</strong></td>
+<td><strong>70%</strong></td>
+<td><strong>2.3GB</strong></td>
+<td><strong>RPi5 no soporta el total</strong></td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li><strong>Conclusión:</strong><ul>
+<li><strong>RPi5 solo</strong>: <strong>No viable</strong> para todas las fuentes (CPU &gt;100%, RAM &gt;4GB).</li>
+<li><strong>RPi5 + N100</strong>:<ul>
+<li><strong>RPi5</strong>: aRGus + Suricata (CPU: 90%, RAM: 2.5GB).</li>
+<li><strong>N100</strong>: Zeek + Wazuh (CPU: 45%, RAM: 1.5GB).</li>
+</ul>
+</li>
+<li><strong>Servidor</strong>: <code>correlation-engine</code> + Neo4j (requiere <strong>8GB RAM mínimo</strong>).</li>
+</ul>
+</li>
+</ul>
+<hr />
+<p><strong>Acción:</strong>
+Añadir en §9.3:</p>
+<blockquote>
+<p><em>"Basado en estimaciones, </em><em>RPi5 no puede ejecutar todas las fuentes simultáneamente</em><em>. La configuración mínima viable es:
+- </em><em>Edge (RPi5)</em><em>: aRGus + Suricata.
+- </em><em>Edge (N100)</em><em>: Zeek + Wazuh.
+- </em><em>Servidor</em><em>: <code>correlation-engine</code> + Neo4j (8GB RAM)."</em></p>
+</blockquote>
+<hr />
+<h3 id="5-mitre-generator-como-componente"><strong>5. <code>mitre-generator</code> como Componente</strong></h3>
+<p><strong>Problema:</strong>
+- No está claro si <code>mitre-generator</code> es un <strong>componente interno</strong> o una <strong>herramienta externa</strong>.</p>
+<p><strong>Recomendación:</strong>
+- <strong>Tratarlo como un componente interno</strong> (C++20) con su propio ADR.
+- <strong>Justificación:</strong>
+    - <strong>Integración estrecha</strong> con <code>correlation-engine</code> (necesita sincronización de timestamps).
+    - <strong>Reproducibilidad</strong>: Atomic Red Team es open-source, pero <strong>el orquestador debe ser determinista</strong>.
+- <strong>Estructura propuesta:</strong>
+  <code>argus/
+  ├── mitre-generator/       # Nuevo componente
+  │   ├── mitre_orchestrator.cpp  # C++20, lanza Atomic Red Team
+  │   ├── manifest_schema.json
+  │   └── CMakeLists.txt</code></p>
+<hr />
+<p><strong>Acción:</strong>
+Añadir en §7:</p>
+<blockquote>
+<p><em>"<code>mitre-generator</code> se implementará como un </em><em>componente interno en C++20</em><em> (no como una herramienta externa). Esto garantiza:
+- </em><em>Determinismo</em><em> (mismos inputs → mismos outputs).
+- </em><em>Integración nativa</em><em> con <code>correlation-engine</code> (sincronización de timestamps).
+- </em><em>Reproducibilidad</em><em> en entornos de prueba."</em></p>
+</blockquote>
+<hr />
+<h3 id="6-experimento-de-mezcla-datasets-academic-vs-sintetico"><strong>6. Experimento de Mezcla Datasets (Academic vs. Sintético)</strong></h3>
+<p><strong>Problema:</strong>
+- <strong>No se especifica si los datos del experimento (§8.2) aún existen</strong>.</p>
+<p><strong>Recomendación:</strong>
+- <strong>Reconstruir el experimento</strong> si los datos no existen.
+    - <strong>Pasos:</strong>
+        1. Entrenar modelos con ratios: 100% académico, 75/25, 50/50, 25/75, 100% sintético.
+        2. Evaluar en <strong>CTU-13 Neris</strong> (holdout).
+        3. Graficar <strong>F1 vs. ratio académico/sintético</strong>.
+    - <strong>Herramientas:</strong>
+        - Usar <code>XGBoost</code> (ya integrado en aRGus).
+        - Datasets académicos: CIC-IDS-2017, CTU-13.
+        - Datasets sintéticos: Generados con <strong>GANs</strong> o <strong>simuladores de tráfico</strong> (ej: <a href="https://github.com/guofei9987/flowgan">FlowGAN</a>).
+- <strong>Si no se pueden reconstruir los datos:</strong>
+    - <strong>Documentar el resultado cualitativo</strong> (sin curva):
+      &gt; <em>"El experimento empírico mostró que los modelos entrenados con datos sintéticos puros superaban a aquellos entrenados con mezclas de datos académicos y sintéticos. Este resultado sugiere que los datasets académicos introducen sesgos que degradan la generalización del modelo."</em></p>
+<hr />
+<p><strong>Acción:</strong>
+Añadir en §8.4:</p>
+<blockquote>
+<p><em>"Si los datos del experimento original no son recuperables, se reconstruirá el experimento usando:
+- </em><em>Datasets académicos</em><em>: CIC-IDS-2017, CTU-13.
+- </em><em>Datasets sintéticos</em><em>: Generados con FlowGAN o simuladores de tráfico.
+- </em><em>Métrica</em><em>: F1 en CTU-13 (holdout)."</em></p>
+</blockquote>
+<hr />
+<h3 id="7-correlation-engine-scope-minimo-viable-v1"><strong>7. <code>correlation-engine</code> Scope Mínimo Viable (v1)</strong></h3>
+<p><strong>Problema:</strong>
+- No está claro qué funcionalidad es <strong>mínima para validar el concepto</strong>.</p>
+<p><strong>Recomendación:</strong>
+<strong>Scope mínimo para v1:</strong>
+1. <strong>Join temporal por 5-tupla</strong> (aRGus + Suricata).
+    - <strong>Razón:</strong> Suricata proporciona <strong>etiquetado automático</strong> (ground truth).
+2. <strong>Salida a Parquet</strong> (para entrenamiento).
+3. <strong>Salida a Neo4j</strong> (grafo básico: <code>Flow</code>, <code>Signature</code>, <code>Alert</code>).</p>
+<p><strong>Excluir en v1:</strong>
+- Zeek (añadir en v2).
+- Wazuh (añadir en v3).
+- Meta-learner (enterprise, post-v1).</p>
+<hr />
+<p><strong>Acción:</strong>
+Añadir en §3.3:</p>
+<blockquote>
+<p><em>"El </em><em>scope mínimo viable (v1)</em><em> de <code>correlation-engine</code> incluye:
+- Join temporal por 5-tupla (aRGus + Suricata).
+- Salida a Parquet (entrenamiento).
+- Salida a Neo4j (grafo básico).
+- </em><em>Excluye</em><em>: Zeek, Wazuh, meta-learner (fases posteriores)."</em></p>
+</blockquote>
+<hr />
+<h3 id="8-sincronizacion-ntp-debt-arguspp-ntp-001"><strong>8. Sincronización NTP (DEBT-ARGUSPP-NTP-001)</strong></h3>
+<p><strong>Problema:</strong>
+- <strong>No se menciona cómo garantizar la sincronización de relojes</strong> (crítico para el join temporal).</p>
+<p><strong>Recomendación:</strong>
+- <strong>Requisitos mínimos:</strong>
+    - <strong>NTP en todos los nodos edge</strong> (sincronización con servidor central).
+    - <strong>Verificación de drift</strong>:
+        - <strong>Máximo drift permitido</strong>: <strong>10ms</strong> (para ventana de 500ms).
+        - <strong>Monitorización</strong>: Alertar si el drift supera el umbral.
+    - <strong>Fallback</strong>: Si NTP falla, <strong>usar el timestamp del servidor central</strong> (asumiendo que el edge tiene conectividad intermitente).</p>
+<hr />
+<p><strong>Acción:</strong>
+Añadir en §9.1:</p>
+<blockquote>
+<p><em>"</em><em>Requisito crítico</em><em>: Todos los nodos edge deben sincronizar sus relojes con el servidor central via NTP, con un </em><em>drift máximo de 10ms</em><em>. Si el drift supera este umbral, el <code>correlation-engine</code> </em><em>descarta eventos</em><em> del nodo afectado y genera una alerta. En caso de fallo de NTP, se usa el timestamp del servidor central (si hay conectividad)."</em></p>
+</blockquote>
+<hr />
+<h3 id="9-frontera-communityenterprise-tabla-10"><strong>9. Frontera Community/Enterprise (Tabla §10)</strong></h3>
+<p><strong>Problema:</strong>
+- <strong><code>correlation-engine</code> está marcado como open-source</strong>, pero <strong>depende de Neo4j</strong> (que es AGPL).</p>
+<p><strong>Recomendación:</strong>
+- <strong>Aclarar la licencia de <code>correlation-engine</code></strong>:
+    - <strong>Opción 1:</strong> <code>correlation-engine</code> es <strong>AGPL</strong> (para cumplir con Neo4j).
+    - <strong>Opción 2:</strong> <strong>Aislar la dependencia de Neo4j</strong> en un plugin separado (enterprise).
+- <strong>Recomendación del Consejo:</strong>
+    - <strong>Mantener <code>correlation-engine</code> como open-source (AGPL)</strong>.
+    - <strong>Documentar la dependencia de Neo4j</strong> claramente:
+      &gt; <em>"<code>correlation-engine</code> usa Neo4j (AGPL) para el grafo de amenazas. Los usuarios deben cumplir con los términos de la licencia AGPL si distribuyen el componente."</em></p>
+<hr />
+<p><strong>Acción:</strong>
+Actualizar §10:</p>
+<blockquote>
+<p><em>"<code>correlation-engine</code> (C++20 + Neo4j) se distribuye bajo </em><em>AGPL-3.0</em><em> para cumplir con la licencia de Neo4j. El resto del pipeline (aRGus, Suricata, Zeek, Wazuh) sigue siendo MIT/Apache 2.0."</em></p>
+</blockquote>
+<hr />
+<h3 id="10-validacion-con-datasets-historicos"><strong>10. Validación con Datasets Históricos</strong></h3>
+<p><strong>Problema:</strong>
+- <strong>§6 argumenta que los datasets históricos (CTU-13, CIC-IDS-2017) no son suficientes para validar aRGus++</strong>.
+- <strong>Pero no se propone una alternativa concreta para validar el pipeline actual (sin MITRE ATT&amp;CK).</strong></p>
+<p><strong>Recomendación:</strong>
+- <strong>Validación en dos fases:</strong>
+    1. <strong>Fase 1 (Pre-MITRE):</strong>
+        - Usar <strong>datasets públicos con etiquetado de Suricata</strong> (ej: <a href="https://stratosphereips.org/datasets">Stratosphere IPS Dataset</a>).
+        - <strong>Objetivo:</strong> Validar que el join temporal funciona y que el etiquetado automático de Suricata mejora el F1.
+    2. <strong>Fase 2 (Post-MITRE):</strong>
+        - Usar <strong>MITRE ATT&amp;CK en tiempo real</strong> (ground truth perfecto).</p>
+<hr />
+<p><strong>Acción:</strong>
+Añadir en §6:</p>
+<blockquote>
+<p><em>"Antes de implementar <code>mitre-generator</code>, se validará el pipeline con:
+- </em><em>Stratosphere IPS Dataset</em><em>: Incluye alertas de Suricata + tráfico de red.
+- </em><em>Objetivo</em><em>: Verificar que el join temporal y el etiquetado automático funcionan correctamente."</em></p>
+</blockquote>
+<hr />
+<h2 id="-">---</h2>
+<h2 id="respuestas-a-las-preguntas-abiertas-del-adr-13"><strong>📌 Respuestas a las Preguntas Abiertas del ADR (§13)</strong></h2>
+<table>
+<thead>
+<tr>
+<th>Pregunta</th>
+<th>Respuesta del Consejo</th>
+<th>Justificación</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Q1: Ventana de correlación (±500ms)</strong></td>
+<td><strong>Configurable por protocolo</strong> (default: 500ms, TCP: 1s, UDP: 200ms, ICMP: 100ms).</td>
+<td>Equilibra precisión y rendimiento.</td>
+</tr>
+<tr>
+<td><strong>Q2: Orden de integración</strong></td>
+<td><strong>Suricata (P0) → Zeek (P1) → Wazuh (P2)</strong>.</td>
+<td>Suricata proporciona etiquetado automático (ground truth).</td>
+</tr>
+<tr>
+<td><strong>Q3: Wazuh en el edge</strong></td>
+<td><strong>P2 (post-validación de Suricata + Zeek)</strong>.</td>
+<td>Mayor footprint; validar primero que el edge soporta las otras fuentes.</td>
+</tr>
+<tr>
+<td><strong>Q4: <code>correlation-engine</code> scope mínimo v1</strong></td>
+<td><strong>aRGus + Suricata (join + Parquet + Neo4j básico)</strong>.</td>
+<td>Permite validar el valor del enriquecimiento con etiquetado automático.</td>
+</tr>
+<tr>
+<td><strong>Q5: <code>mitre-generator</code></strong></td>
+<td><strong>Componente interno (C++20) con su propio ADR</strong>.</td>
+<td>Garantiza determinismo e integración nativa.</td>
+</tr>
+<tr>
+<td><strong>Q6: Experimento de mezcla datasets</strong></td>
+<td><strong>Reconstruir el experimento</strong> (si los datos no existen).</td>
+<td>Prioritario para el paper v24.</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="-_1">---</h2>
+<h2 id="plan-de-accion-recomendado"><strong>🚀 Plan de Acción Recomendado</strong></h2>
+<h3 id="fase-1-validacion-del-concepto-p0"><strong>Fase 1: Validación del Concepto (P0)</strong></h3>
+<table>
+<thead>
+<tr>
+<th>Tarea</th>
+<th>Prioridad</th>
+<th>Tiempo Estimado</th>
+<th>Dependencias</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>ADR-047: <code>correlation-engine</code> v1</strong></td>
+<td>P0</td>
+<td>2 días</td>
+<td>ADR-046</td>
+</tr>
+<tr>
+<td><strong>Implementar <code>correlation-engine</code> (aRGus + Suricata)</strong></td>
+<td>P0</td>
+<td>5 días</td>
+<td>ADR-047</td>
+</tr>
+<tr>
+<td><strong>Validar con Stratosphere IPS Dataset</strong></td>
+<td>P0</td>
+<td>2 días</td>
+<td><code>correlation-engine</code> v1</td>
+</tr>
+<tr>
+<td><strong>DEBT-ARGUSPP-NTP-001</strong></td>
+<td>P0</td>
+<td>1 día</td>
+<td>Ninguna</td>
+</tr>
+</tbody>
+</table>
+<h3 id="fase-2-integracion-de-zeek-p1"><strong>Fase 2: Integración de Zeek (P1)</strong></h3>
+<table>
+<thead>
+<tr>
+<th>Tarea</th>
+<th>Prioridad</th>
+<th>Tiempo Estimado</th>
+<th>Dependencias</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Integrar Zeek en edge</strong></td>
+<td>P1</td>
+<td>3 días</td>
+<td><code>correlation-engine</code> v1</td>
+</tr>
+<tr>
+<td><strong>Actualizar <code>correlation-engine</code> (aRGus + Suricata + Zeek)</strong></td>
+<td>P1</td>
+<td>2 días</td>
+<td>Zeek integrado</td>
+</tr>
+<tr>
+<td><strong>Validar con datasets públicos</strong></td>
+<td>P1</td>
+<td>2 días</td>
+<td><code>correlation-engine</code> v2</td>
+</tr>
+</tbody>
+</table>
+<h3 id="fase-3-integracion-de-wazuh-p2"><strong>Fase 3: Integración de Wazuh (P2)</strong></h3>
+<table>
+<thead>
+<tr>
+<th>Tarea</th>
+<th>Prioridad</th>
+<th>Tiempo Estimado</th>
+<th>Dependencias</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>DEBT-ARGUSPP-RESOURCE-001</strong></td>
+<td>P1</td>
+<td>2 días</td>
+<td>Hardware (RPi5/N100)</td>
+</tr>
+<tr>
+<td><strong>Integrar Wazuh en edge</strong></td>
+<td>P2</td>
+<td>4 días</td>
+<td>DEBT-ARGUSPP-RESOURCE-001</td>
+</tr>
+<tr>
+<td><strong>Actualizar <code>correlation-engine</code> (v3 completa)</strong></td>
+<td>P2</td>
+<td>2 días</td>
+<td>Wazuh integrado</td>
+</tr>
+</tbody>
+</table>
+<h3 id="fase-4-validacion-con-mitre-attck-p1"><strong>Fase 4: Validación con MITRE ATT&amp;CK (P1)</strong></h3>
+<table>
+<thead>
+<tr>
+<th>Tarea</th>
+<th>Prioridad</th>
+<th>Tiempo Estimado</th>
+<th>Dependencias</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>ADR-048: <code>mitre-generator</code></strong></td>
+<td>P1</td>
+<td>1 día</td>
+<td>ADR-046</td>
+</tr>
+<tr>
+<td><strong>Implementar <code>mitre-generator</code></strong></td>
+<td>P1</td>
+<td>3 días</td>
+<td>ADR-048</td>
+</tr>
+<tr>
+<td><strong>Validar con MITRE ATT&amp;CK</strong></td>
+<td>P1</td>
+<td>2 días</td>
+<td><code>mitre-generator</code> + <code>correlation-engine</code> v3</td>
+</tr>
+</tbody>
+</table>
+<h3 id="fase-5-paper-v24-p2"><strong>Fase 5: Paper v24 (P2)</strong></h3>
+<table>
+<thead>
+<tr>
+<th>Tarea</th>
+<th>Prioridad</th>
+<th>Tiempo Estimado</th>
+<th>Dependencias</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Sección: Datasets sintéticos vs. académicos</strong></td>
+<td>P2</td>
+<td>2 días</td>
+<td>Experimento reconstruido</td>
+</tr>
+<tr>
+<td><strong>Sección: aRGus++ (NDR/EDR híbrido)</strong></td>
+<td>P2</td>
+<td>3 días</td>
+<td>Validación completa</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="-_2">---</h2>
+<h2 id="riesgos-criticos-y-mitigaciones"><strong>⚠️ Riesgos Críticos y Mitigaciones</strong></h2>
+<table>
+<thead>
+<tr>
+<th>Riesgo</th>
+<th>Impacto</th>
+<th>Mitigación</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Consumo de recursos en edge</strong></td>
+<td>El pipeline completo no cabe en RPi5.</td>
+<td><strong>Configuraciones escalonadas</strong> (RPi5 + N100).</td>
+</tr>
+<tr>
+<td><strong>Sincronización NTP fallida</strong></td>
+<td>Joins incorrectos en <code>correlation-engine</code>.</td>
+<td><strong>Verificación de drift + fallback a timestamp del servidor</strong>.</td>
+</tr>
+<tr>
+<td><strong>Suricata/Zeek/Wazuh no escalan</strong></td>
+<td>Degradación del rendimiento.</td>
+<td><strong>Benchmarks previos</strong> (DEBT-ARGUSPP-RESOURCE-001).</td>
+</tr>
+<tr>
+<td><strong>Dependencia de Neo4j (AGPL)</strong></td>
+<td>Problemas de licencia.</td>
+<td><strong>Documentar claramente</strong> (AGPL para <code>correlation-engine</code>).</td>
+</tr>
+<tr>
+<td><strong>Falta de ground truth</strong></td>
+<td>Datasets históricos no válidos.</td>
+<td><strong>Usar Stratosphere IPS Dataset + MITRE ATT&amp;CK</strong>.</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="-_3">---</h2>
+<h2 id="recomendaciones-finales-del-consejo"><strong>💡 Recomendaciones Finales del Consejo</strong></h2>
+<ol>
+<li><strong>Priorizar la validación del concepto</strong> (<code>correlation-engine</code> v1 + Suricata).</li>
+<li><strong>Documentar el experimento de mezcla datasets</strong> (§8) en el paper v24.</li>
+<li><strong>Añadir diagramas y pseudocódigo</strong> para clarificar la implementación de <code>correlation-engine</code>.</li>
+<li><strong>Definir configuraciones de despliegue claras</strong> (RPi5 solo, RPi5 + N100, servidor).</li>
+<li><strong>Aislar la dependencia de Neo4j</strong> (AGPL) en <code>correlation-engine</code>.</li>
+<li><strong>Reconstruir el experimento académico vs. sintético</strong> si los datos no existen.</li>
+</ol>
+<h2 id="-_4">---</h2>
+<h2 id="conclusion-del-consejo"><strong>📝 Conclusión del Consejo</strong></h2>
+<p><strong>ADR-046 es un diseño ambicioso y bien fundamentado</strong>, pero requiere <strong>ajustes en claridad, priorización y mitigación de riesgos</strong> para ser implementable. Las recomendaciones del Consejo se centran en:
+1. <strong>Validar el concepto con el scope mínimo viable</strong> (<code>correlation-engine</code> v1 + Suricata).
+2. <strong>Garantizar la sincronización de relojes</strong> (NTP + drift máximo).
+3. <strong>Documentar el consumo de recursos</strong> y definir configuraciones de despliegue realistas.
+4. <strong>Reconstruir el experimento de datasets</strong> para el paper v24.</p>
+<p><strong>Para el equipo de aRGus:</strong>
+¿Estáis de acuerdo con <strong>priorizar <code>correlation-engine</code> v1 (aRGus + Suricata) como primer paso</strong>? <strong>Sí</strong>, es el camino más robusto para validar el valor del enriquecimiento antes de escalar a Zeek y Wazuh. <strong>La sincronización NTP y los benchmarks de recursos son críticos para el éxito.</strong></p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.top", "search.highlight"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

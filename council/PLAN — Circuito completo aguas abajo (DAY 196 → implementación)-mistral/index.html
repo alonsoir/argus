@@ -1,0 +1,1322 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source embedded-ML NDR for hospitals and schools">
+      
+      
+        <meta name="author" content="Alonso Isidoro Roman">
+      
+      
+        <link rel="canonical" href="https://alonsoir.github.io/argus/council/PLAN%20%E2%80%94%20Circuito%20completo%20aguas%20abajo%20%28DAY%20196%20%E2%86%92%20implementaci%C3%B3n%29-mistral/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>PLAN — Circuito completo aguas abajo (DAY 196 → implementación) mistral - ML Defender (aRGus NDR)</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#criticas-estructurales-el-consejo-no-ratifica-sin-esto" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-header__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ML Defender (aRGus NDR)
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              PLAN — Circuito completo aguas abajo (DAY 196 → implementación) mistral
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../README.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/BACKLOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Backlog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Security Model
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-tabs__link">
+          
+  
+  
+  ADRs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/contracts/Protobuf contracts.md" class="md-tabs__link">
+          
+  
+  
+  Contracts
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-nav__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ML Defender (aRGus NDR)
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../README.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/BACKLOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADRs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ADRs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013 Seed Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-021-deployment-topology-seed-families.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-021 Topology SSOT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-022-threat-model-opcion2-descartada.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-022 Threat Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Protobuf contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protobuf
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/JSON contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JSON
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Rag security commands.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#criticas-estructurales-el-consejo-no-ratifica-sin-esto" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🔥 CRÍTICAS ESTRUCTURALES (el Consejo no ratifica sin esto)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🔥 CRÍTICAS ESTRUCTURALES (el Consejo no ratifica sin esto)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-el-circuito-verde-es-un-espejismo-si-no-se-define-fluir-de-forma-medible" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. El "circuito verde" es un espejismo si no se define "fluir" de forma medible
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-la-dualidad-de-pipelines-parquet-es-una-bomba-de-tiempo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. La dualidad de pipelines Parquet es una bomba de tiempo
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-el-hardcode-de-bronze_root-es-un-sintoma-no-el-problema" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. El hardcode de bronze_root es un síntoma, no el problema
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-la-regla-de-centinela-es-ambigua-en-la-practica" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. La regla de centinela es ambigua en la práctica
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5-el-circuito-verde-no-incluye-wazuh-pero-wazuh-es-el-elefante-en-la-habitacion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. El "circuito verde" no incluye Wazuh, pero Wazuh es el elefante en la habitación
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#6-la-migracion-a-zmq-pubsub-es-un-riesgo-de-regresion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. La migración a ZMQ PUB/SUB es un riesgo de regresión
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#7-el-oro-como-ledger-vs-oro-como-join-es-una-decision-con-consecuencias-a-largo-plazo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. El oro-como-ledger vs oro-como-join es una decisión con consecuencias a largo plazo
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#-" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ---
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#decisiones-que-el-consejo-exige-ratificar-o-rechazar" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ⚖️ DECISIONES QUE EL CONSEJO EXIGE RATIFICAR (o rechazar)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#-_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ---
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#riesgos-ocultos-el-consejo-los-senala" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🚨 RIESGOS OCULTOS (el Consejo los señala)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#-_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ---
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#acciones-inmediatas-el-consejo-las-exige" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        📌 ACCIONES INMEDIATAS (el Consejo las exige)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#-_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ---
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#preguntas-directas-al-equipo-sin-escapatoria" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        💥 PREGUNTAS DIRECTAS AL EQUIPO (sin escapatoria)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#-_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ---
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#conclusion-del-consejo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🎯 CONCLUSIÓN DEL CONSEJO
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+  <h1>PLAN — Circuito completo aguas abajo (DAY 196 → implementación) mistral</h1>
+
+<p>Aironman DirtDiver, <strong>el Consejo de Sabios se ha reunido</strong>. Aquí están las respuestas, los desafíos y las objeciones a tu plan, <strong>sin concesiones</strong>. Vamos a desmenuzar los puntos críticos, las decisiones pendientes y los riesgos ocultos. <strong>No hay palmaditas: solo fuego amigo y preguntas incómodas.</strong></p>
+<hr />
+<hr />
+<h2 id="criticas-estructurales-el-consejo-no-ratifica-sin-esto"><strong>🔥 CRÍTICAS ESTRUCTURALES (el Consejo no ratifica sin esto)</strong></h2>
+<h3 id="1-el-circuito-verde-es-un-espejismo-si-no-se-define-fluir-de-forma-medible"><strong>1. El "circuito verde" es un espejismo si no se define "fluir" de forma medible</strong></h3>
+<p>Tesis:</p>
+<blockquote>
+<p><em>"Un motor (aRGus) E2E antes de añadir adapters reales. Circuito verde = una fila entra por sniffer, sale enriquecida del ml-detector, aterriza en bronce como correlation_v1, la LZ la convierte a AVRO→PARQUET, Kuzu materializa el grafo, y el dashboard la recupera."</em></p>
+</blockquote>
+<p><strong>Problema:</strong>
+- <strong>¿Qué significa "aterriza en bronce"?</strong>
+    - ¿Es suficiente con que el fichero CSV exista en el path esperado, o debe <strong>validarse que el HMAC es correcto, las 19 columnas están presentes, y el <code>parse_and_verify</code> no descarta la fila</strong>?
+    - <strong>[MEDIDO]</strong> <code>correlation_reader.parse_and_verify</code> <strong>descarta la fila en silencio</strong> si falla el HMAC o el conteo de columnas. <strong>Si el writer escribe basura, el circuito "fluye" pero el reader lo ignora.</strong> ¿Dónde está la métrica de "flujo real"?
+    - <strong>Propuesta adversarial:</strong> El circuito verde debe incluir <strong>un test automático</strong> que:
+        1. Inyecta un evento sintético en el sniffer (ej: <code>NetworkSecurityEvent</code> con <code>community_id=TEST-123</code>).
+        2. Verifica que el fichero en bronce <strong>contiene la fila con HMAC válido</strong>.
+        3. Verifica que <code>correlation-engine</code> <strong>lee la fila y la materializa en Kuzu</strong> (ej: consulta Cypher <code>MATCH (f:NetworkFlow {community_id: "TEST-123"}) RETURN f</code>).
+        4. <strong>Falla el pipeline si cualquier paso falla.</strong></p>
+<ul>
+<li><strong>¿Y si el Kuzu actual no está configurado para leer desde el medallón?</strong>
+  <strong>[POR VERIFICAR]</strong> <code>kuzu_graph_sink</code> hoy lee <strong>directamente el CSV de bronce</strong> (<code>ifstream</code>). Si el medallón (AVRO/PARQUET) es nuevo, <strong>¿existe ya el conector Kuzu para PARQUET?</strong> Si no, el Eslabón 2 <strong>no puede validarse</strong> hasta que ese conector exista. <strong>Riesgo: bloqueo oculto.</strong></li>
+</ul>
+<hr />
+<h3 id="2-la-dualidad-de-pipelines-parquet-es-una-bomba-de-tiempo"><strong>2. La dualidad de pipelines Parquet es una bomba de tiempo</strong></h3>
+<p><strong>Decisión en §8.1:</strong></p>
+<blockquote>
+<p><em>"El medallón de correlación es greenfield. Se reutilizan patrones, no código."</em></p>
+</blockquote>
+<p><strong>Problema:</strong>
+- <strong><code>scripts/parquet/</code> (RAG-127) y el medallón de correlación (correlation_v1) son dos pipelines paralelos con:</strong>
+    - <strong>Firmas distintas</strong> (Ed25519 vs HMAC-SHA256).
+    - <strong>Esquemas distintos</strong> (127 columnas vs 19 columnas).
+    - <strong>Propósitos distintos</strong> (análisis RAG vs grafo de correlación).
+- <strong>Riesgo:</strong>
+    - Si alguien confunde los pipelines (ej: usa el converter del RAG para el correlation_v1), <strong>el HMAC fallará</strong> (el converter del RAG no valida HMAC-SHA256).
+    - <strong><code>DEBT-DOCS-MEDALLION-DUALITY-001</code> es insuficiente.</strong> Se necesita:
+        - <strong>Nombres de directorios distintos y explícitos</strong> (ej: <code>/parquet/rag/</code> vs <code>/parquet/correlation/</code>).
+        - <strong>Un test de integración</strong> que verifique que el converter de correlación <strong>no toca</strong> los ficheros del RAG.
+        - <strong>Documentación en el README de cada pipeline</strong> con un <strong>⚠️ WARNING: NO CONFUNDIR CON...</strong> en mayúsculas.</p>
+<hr />
+<h3 id="3-el-hardcode-de-bronze_root-es-un-sintoma-no-el-problema"><strong>3. El hardcode de <code>bronze_root</code> es un síntoma, no el problema</strong></h3>
+<p><strong>Decisión en §6.3:</strong></p>
+<blockquote>
+<p><em>"Sacar el hardcode de <code>zmq_handler.cpp:154</code> a JSON (Eslabón 0)."</em></p>
+</blockquote>
+<p><strong>Problema:</strong>
+- <strong>El hardcode es solo la punta del iceberg.</strong> El problema real es que <strong>no hay un único JSON de configuración cross-componente.</strong>
+    - <code>ml-detector</code> tiene su <code>ml_detector_config.json</code>.
+    - <code>correlation-engine</code> <strong>no tiene JSON</strong> (usa <code>--bronze</code> o <code>ARGUS_BRONZE_CSV</code>).
+    - <strong>¿Dónde vive <code>silver_root</code>/<code>gold_root</code>?</strong> No existen aún (<strong>[MEDIDO]</strong>).
+- <strong>Riesgo:</strong>
+    - Si cada componente tiene su propio JSON, <strong>el desync es inevitable</strong> (como en DAY 194).
+    - <strong>Solución adversarial:</strong>
+        - <strong>Un único JSON de infraestructura</strong> (ej: <code>circuit_config.json</code>) que defina:
+          <code>json
+          {
+            "bronze_root": "/data/correlation/bronze",
+            "silver_root": "/data/correlation/silver",
+            "gold_root": "/data/correlation/gold",
+            "zmq": {
+              "ml_detector": { "pub": "tcp://*:5555", "sub": "tcp://localhost:5556" },
+              "correlation_engine": { "sub": "tcp://*:5555" }
+            }
+          }</code>
+        - <strong>Todos los componentes leen de este JSON</strong> (o de un subconjunto generado por Ansible/Jinja2).
+        - <strong>El Eslabón 0 no es solo mover <code>bronze_root</code> a JSON: es definir el JSON único y obligar a todos a usarlo.</strong></p>
+<hr />
+<h3 id="4-la-regla-de-centinela-es-ambigua-en-la-practica"><strong>4. La regla de centinela es ambigua en la práctica</strong></h3>
+<p><strong>Decisión en §5:</strong></p>
+<blockquote>
+<p><em>"Centinela numérico: <code>-1</code> (preferencia). <code>0</code> es ambiguo para score/puerto."</em></p>
+</blockquote>
+<p><strong>Problema:</strong>
+- <strong><code>-1</code> en <code>src_port</code>/<code>dst_port</code>:</strong>
+    - <strong>¿Qué significa un puerto <code>-1</code>?</strong> En networking, los puertos son <code>0-65535</code>. <code>-1</code> es inválido, pero <strong>¿el grafo Kuzu lo interpretará correctamente?</strong>
+    - <strong>Riesgo:</strong> Si Kuzu espera un <code>uint16</code> y recibe <code>-1</code>, <strong>¿lo castea a 65535 (wrap-around) o lo rechaza?</strong>
+    - <strong>Propuesta adversarial:</strong>
+        - <strong>Usar <code>65535</code> como centinela para puertos</strong> (máximo valor uint16, reservado para "no aplica").
+        - <strong>Usar <code>-1.0</code> para scores</strong> (flotante, no ambigüo con <code>0.0</code>).
+        - <strong>Validar en el <code>parse_and_verify</code> que los centinelas sean consistentes</strong> (ej: si <code>protocol</code> es <code>UNKNOWN</code>, entonces <code>src_port</code>/<code>dst_port</code> deben ser <code>65535</code>).</p>
+<ul>
+<li><strong><code>UNKNOWN</code> en campos string:</strong><ul>
+<li><strong>¿Cómo se representa en Kuzu?</strong> ¿Como <code>NULL</code> o como la cadena <code>"UNKNOWN"</code>?</li>
+<li><strong>Riesgo:</strong> Si Kuzu lo trata como <code>NULL</code>, <strong>las consultas Cypher deben usar <code>IS NULL</code> en lugar de <code>= "UNKNOWN"</code></strong>.</li>
+<li><strong>Propuesta adversarial:</strong><ul>
+<li><strong>Decidir ahora:</strong> <code>UNKNOWN</code> en CSV → <code>NULL</code> en Kuzu.</li>
+<li><strong>Documentar en el esquema de Kuzu</strong> qué campos pueden ser <code>NULL</code>.</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<hr />
+<h3 id="5-el-circuito-verde-no-incluye-wazuh-pero-wazuh-es-el-elefante-en-la-habitacion"><strong>5. El "circuito verde" no incluye Wazuh, pero Wazuh es el elefante en la habitación</strong></h3>
+<p><strong>Decisión en §4:</strong></p>
+<blockquote>
+<p><em>"Wazuh es categoría aparte. <code>host_key</code> NO es <code>community_id</code>. El join de Wazuh es por IP + ventana temporal."</em></p>
+</blockquote>
+<p><strong>Problema:</strong>
+- <strong>El circuito verde (Eslabón 4) solo valida aRGus/Suricata/Zeek.</strong> Wazuh <strong>no cabrá en <code>correlation_v1</code> sin cambios</strong> (<strong>[MEDIDO]</strong>).
+- <strong>Riesgo:</strong>
+    - Si el Consejo ratifica el circuito verde <strong>sin resolver Wazuh</strong>, <strong>el 25% de los motores de seguridad quedarán fuera del grafo.</strong>
+    - <strong><code>DEBT-CORRELATION-V1-HOSTKEY-001</code> debe resolverse ANTES del Eslabón 4</strong>, no después.
+- <strong>Propuesta adversarial:</strong>
+    - <strong>Opción A:</strong> Extender <code>correlation_v1</code> a <code>correlation_v2</code> con una columna <code>host_key</code> (rompe el sellado de 19 columnas, pero permite incluir Wazuh).
+    - <strong>Opción B:</strong> Crear un <strong>contrato separado <code>host_event_v1</code></strong> para Wazuh/Andrés, con su propio sink en bronce (ej: <code>/bronze/host/</code>).
+    - <strong>El Consejo debe decidir YA.</strong> Si se elige la Opción B, <strong>el Eslabón 5 (Wazuh) no puede ser posterior al Eslabón 4 (Suricata/Zeek).</strong></p>
+<hr />
+<h3 id="6-la-migracion-a-zmq-pubsub-es-un-riesgo-de-regresion"><strong>6. La migración a ZMQ PUB/SUB es un riesgo de regresión</strong></h3>
+<p><strong>Decisión en §7.6:</strong></p>
+<blockquote>
+<p><em>"Eslabón 6: Migración a ZMQ PUB/SUB. Sustituir FS-drop por el contrato §7.1 en todos los adapters."</em></p>
+</blockquote>
+<p><strong>Problema:</strong>
+- <strong>El FS-drop actual funciona.</strong> ZMQ PUB/SUB <strong>ya existe entre sniffer→ml-detector→firewall</strong> (<strong>[MEDIDO]</strong>).
+- <strong>Riesgo:</strong>
+    - <strong>¿Qué pasa si ZMQ falla en producción?</strong> (ej: buffer lleno, mensajes perdidos).
+    - <strong>¿Hay métricas de latencia/throughput para ZMQ vs FS-drop?</strong> Si no, <strong>la migración es un salto de fe.</strong>
+    - <strong>Propuesta adversarial:</strong>
+        - <strong>Validar ZMQ en paralelo con FS-drop</strong> (dual-write) antes de eliminar el FS-drop.
+        - <strong>Definir un SLA de latencia</strong> (ej: &lt;100ms por evento) y <strong>un test de carga</strong> (ej: 10K eventos/segundo).
+        - <strong>Si ZMQ no cumple el SLA, se revierte a FS-drop.</strong></p>
+<hr />
+<h3 id="7-el-oro-como-ledger-vs-oro-como-join-es-una-decision-con-consecuencias-a-largo-plazo"><strong>7. El oro-como-ledger vs oro-como-join es una decisión con consecuencias a largo plazo</strong></h3>
+<p><strong>Decisión en §10.2:</strong></p>
+<blockquote>
+<p><em>"Lean: oro-como-ledger + join en Kuzu."</em></p>
+</blockquote>
+<p><strong>Problema:</strong>
+- <strong>Oro-como-ledger:</strong>
+    - <strong>Ventaja:</strong> Flexibilidad (Kuzu hace el join).
+    - <strong>Desventaja:</strong> <strong>El oro no es auto-suficiente.</strong> Si Kuzu falla, <strong>el grafo no puede reconstruirse</strong> (el oro son solo filas sueltas).
+- <strong>Oro-como-join:</strong>
+    - <strong>Ventaja:</strong> El oro es un dataset completo y auto-suficiente.
+    - <strong>Desventaja:</strong> <strong>Pérdida de flexibilidad</strong> (si se añade un nuevo motor, hay que re-hacer el join).
+- <strong>Riesgo:</strong>
+    - <strong>Si el oro es el ledger inmutable (Via Appia), ¿cómo se garantiza su integridad?</strong>
+        - <strong>Propuesta adversarial:</strong>
+            - <strong>Firmar el oro con HMAC</strong> (como en bronce).
+            - <strong>Almacenar checksums en un lado</strong> (ej: <code>gold_root/checksums.sha256</code>).
+- <strong>El Consejo debe decidir:</strong>
+    - <strong>¿El oro es un ledger (dato crudo) o un dataset correlacionado (dato procesado)?</strong>
+    - <strong>¿Qué consumidores tendrán acceso al oro?</strong> (Si solo Kuzu, el ledger es suficiente. Si hay otros, el join puede ser necesario).</p>
+<hr />
+<h2 id="-">---</h2>
+<h2 id="decisiones-que-el-consejo-exige-ratificar-o-rechazar"><strong>⚖️ DECISIONES QUE EL CONSEJO EXIGE RATIFICAR (o rechazar)</strong></h2>
+<table>
+<thead>
+<tr>
+<th><strong>Pregunta</strong></th>
+<th><strong>Opciones</strong></th>
+<th><strong>Recomendación del Consejo (con objeciones)</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>1. Formato de salida del adapter (A vs B).</strong></td>
+<td>A: Envelope protobuf intermedio. B: <code>correlation_v1</code> directo a bronce.</td>
+<td><strong>B (ratificado).</strong> Pero: <strong>El AdapterSpec v1.1 debe dejar claro que NO hay envelope protobuf.</strong> El §3 actual es <strong>vapor de documento</strong> y debe eliminarse.</td>
+</tr>
+<tr>
+<td><strong>2. Forma del oro.</strong></td>
+<td>A: Join en Arrow (oro fundido). B: Ledger + join en Kuzu.</td>
+<td><strong>B (ledger + join en Kuzu).</strong> Pero: <strong>Se requiere un mecanismo de validación de integridad del oro (HMAC/checksums).</strong></td>
+</tr>
+<tr>
+<td><strong>3. Centinela numérico.</strong></td>
+<td>A: <code>-1</code>. B: <code>0</code>.</td>
+<td><strong>A (<code>-1</code> para scores, <code>65535</code> para puertos).</strong> Pero: <strong>Validar que Kuzu no castee <code>-1</code> a 65535.</strong></td>
+</tr>
+<tr>
+<td><strong>4. Rotación/follow.</strong></td>
+<td>A: Engine vigila directorio (sigue el fichero más nuevo). B: Lanzador recalcula datado.</td>
+<td><strong>A (vigilar directorio).</strong> Pero: <strong>¿Cómo se maneja el caso de ficheros corruptos? ¿Se salta el fichero o se para el pipeline?</strong></td>
+</tr>
+<tr>
+<td><strong>5. Wazuh.</strong></td>
+<td>A: Extender <code>correlation_v1</code> a <code>v2</code> con <code>host_key</code>. B: Contrato <code>host_event_v1</code> separado.</td>
+<td><strong>B (contrato separado).</strong> Pero: <strong>El Eslabón 5 (Wazuh) debe ser PRIORITARIO, no posterior al Eslabón 4.</strong></td>
+</tr>
+<tr>
+<td><strong>6. Andrés.</strong></td>
+<td>A: Mantener stub. B: Eliminar del scope.</td>
+<td><strong>A (stub).</strong> Pero: <strong>Documentar explícitamente que Andrés NO forma parte del circuito verde.</strong></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="-_1">---</h2>
+<h2 id="riesgos-ocultos-el-consejo-los-senala"><strong>🚨 RIESGOS OCULTOS (el Consejo los señala)</strong></h2>
+<ol>
+<li>
+<p><strong>El <code>correlation-engine</code> hoy lee CSV directamente.</strong></p>
+<ul>
+<li><strong>Si el medallón (AVRO/PARQUET) no tiene un conector Kuzu listo, el Eslabón 2 está bloqueado.</strong></li>
+<li><strong>Acción:</strong> Verificar si existe <code>kuzu_parquet_sink</code> o similar. Si no, <strong>priorizar su implementación.</strong></li>
+</ul>
+</li>
+<li>
+<p><strong>La LZ (Landing Zone) es greenfield, pero no hay dueño claro.</strong></p>
+<ul>
+<li><strong>¿Quién implementa el converter CSV→AVRO→PARQUET?</strong> ¿El equipo de Kuzu? ¿El equipo de infra?</li>
+<li><strong>Riesgo:</strong> Sin dueño, <strong>el Eslabón 1 se alargará indefinidamente.</strong></li>
+</ul>
+</li>
+<li>
+<p><strong>El <code>DEBT-CIRCUIT-BRONZE-ROTATION-FOLLOW-001</code> no tiene solución propuesta.</strong></p>
+<ul>
+<li><strong>Opción A (engine vigila directorio):</strong><ul>
+<li><strong>¿Cómo se maneja el caso de múltiples ficheros nuevos?</strong> (ej: <code>2026-06-26.csv</code>, <code>2026-06-27.csv</code>).</li>
+<li><strong>¿Se procesan en orden? ¿Se asume que el último fichero es el más reciente?</strong></li>
+</ul>
+</li>
+<li><strong>Opción B (lanzador recalcula datado):</strong><ul>
+<li><strong>¿Quién es el "lanzador"?</strong> ¿Un cron? ¿Un script externo?</li>
+<li><strong>Riesgo:</strong> Si el lanzador falla, <strong>el pipeline se para.</strong></li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<p><strong>El <code>DEBT-PARQUET-TIMESTAMP-NS-001</code> no está resuelto.</strong></p>
+<ul>
+<li><strong>El converter RAG-127 tiene un workaround (<code>x1_000_000</code>) para ns.</strong></li>
+<li><strong>Propuesta:</strong> <strong>Fusionar <code>flow_start_sec</code> + <code>flow_start_nano</code> en el writer C++ (Eslabón 0).</strong></li>
+</ul>
+</li>
+<li>
+<p><strong>El <code>firewall-acl-agent</code> ya usa ZMQ PUB/SUB.</strong></p>
+<ul>
+<li><strong>¿Por qué no reutilizar ese patrón para los adapters?</strong></li>
+<li><strong>Riesgo:</strong> Si los adapters usan un patrón distinto, <strong>habrá dos implementaciones de ZMQ en el sistema.</strong></li>
+</ul>
+</li>
+</ol>
+<h2 id="-_2">---</h2>
+<h2 id="acciones-inmediatas-el-consejo-las-exige"><strong>📌 ACCIONES INMEDIATAS (el Consejo las exige)</strong></h2>
+<ol>
+<li><strong>Definir el JSON único de configuración (<code>circuit_config.json</code>)</strong> y obligar a todos los componentes a usarlo. <strong>Eslabón 0 no puede ser solo mover <code>bronze_root</code> a JSON: debe ser el JSON cross-componente.</strong></li>
+<li><strong>Implementar un test de circuito verde automático</strong> (inyectar evento sintético → verificar HMAC → verificar Kuzu).</li>
+<li><strong>Decidir YA el formato del oro (ledger vs join)</strong> y documentar las consecuencias.</li>
+<li><strong>Resoler <code>DEBT-CORRELATION-V1-HOSTKEY-001</code> ANTES del Eslabón 4.</strong> Si se elige contrato separado para Wazuh, <strong>el Eslabón 5 debe ser prioritario.</strong></li>
+<li><strong>Verificar si existe <code>kuzu_parquet_sink</code>.</strong> Si no, <strong>priorizar su implementación (Eslabón 2 bloqueado).</strong></li>
+<li><strong>Asignar dueño a la LZ (Landing Zone).</strong> Sin dueño, <strong>el Eslabón 1 no avanza.</strong></li>
+<li><strong>Documentar la dualidad Parquet (RAG vs correlación) con warnings explícitos.</strong></li>
+</ol>
+<h2 id="-_3">---</h2>
+<h2 id="preguntas-directas-al-equipo-sin-escapatoria"><strong>💥 PREGUNTAS DIRECTAS AL EQUIPO (sin escapatoria)</strong></h2>
+<ol>
+<li><strong>¿Cómo garantizan que el <code>parse_and_verify</code> no descarta filas en silencio durante el circuito verde?</strong> ¿Hay logs de filas descartadas?</li>
+<li><strong>¿Qué métricas de latencia/throughput tienen para ZMQ vs FS-drop?</strong> Si no las tienen, <strong>¿cómo justifican la migración?</strong></li>
+<li><strong>¿Quién es el dueño de la implementación de la LZ (converter CSV→AVRO→PARQUET)?</strong> Si no hay dueño, <strong>¿cómo garantizan que el Eslabón 1 se completa?</strong></li>
+<li><strong>Si el oro es el ledger inmutable (Via Appia), ¿cómo garantizan su integridad?</strong> ¿HMAC? ¿Checksums?</li>
+<li><strong>¿Qué pasa si Kuzu no soporta PARQUET?</strong> ¿Hay un plan B?</li>
+<li><strong>¿Por qué no se usa el patrón ZMQ PUB/SUB del <code>firewall-acl-agent</code> para los adapters?</strong> ¿Hay una razón técnica o es solo falta de coordinación?</li>
+<li><strong>¿Cómo se maneja el caso de ficheros corruptos en bronce?</strong> ¿Se salta el fichero? ¿Se para el pipeline? ¿Se notifica?</li>
+</ol>
+<h2 id="-_4">---</h2>
+<h2 id="conclusion-del-consejo"><strong>🎯 CONCLUSIÓN DEL CONSEJO</strong></h2>
+<p>El plan es <strong>sólido en su estructura</strong>, pero <strong>frágil en los detalles</strong>. Las decisiones clave (oro como ledger, centinelas, Wazuh) <strong>deben ratificarse YA</strong>, y los riesgos ocultos (dualidad Parquet, conector Kuzu-PARQUET, dueño de la LZ) <strong>deben resolverse antes de avanzar</strong>.</p>
+<p><strong>El Consejo no aprueba el plan hasta que:</strong>
+✅ Se defina el JSON único de configuración.
+✅ Se implemente el test de circuito verde automático.
+✅ Se resuelva <code>DEBT-CORRELATION-V1-HOSTKEY-001</code> (Wazuh).
+✅ Se verifique la existencia de <code>kuzu_parquet_sink</code>.
+✅ Se asigne dueño a la LZ.</p>
+<p><strong>¿Aceptan el desafío, o prefieren revisar el plan?</strong> <em>(El Consejo no se andará con rodeos: si no se resuelven estos puntos, el circuito verde será un espejismo.)</em></p>
+<p>FDO</p>
+<p>MISTRAL</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.top", "search.highlight"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

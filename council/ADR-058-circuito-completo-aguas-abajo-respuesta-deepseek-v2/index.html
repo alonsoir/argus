@@ -1,0 +1,1023 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source embedded-ML NDR for hospitals and schools">
+      
+      
+        <meta name="author" content="Alonso Isidoro Roman">
+      
+      
+        <link rel="canonical" href="https://alonsoir.github.io/argus/council/ADR-058-circuito-completo-aguas-abajo-respuesta-deepseek-v2/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>ADR 058 circuito completo aguas abajo respuesta deepseek v2 - ML Defender (aRGus NDR)</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#1-el-predicado-de-equivalencia-no-cubre-las-aristas-de-las-relaciones-con-el-mismo-rigor-que-los-nodos" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-header__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ML Defender (aRGus NDR)
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              ADR 058 circuito completo aguas abajo respuesta deepseek v2
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../README.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/BACKLOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Backlog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Security Model
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-tabs__link">
+          
+  
+  
+  ADRs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/contracts/Protobuf contracts.md" class="md-tabs__link">
+          
+  
+  
+  Contracts
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-nav__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ML Defender (aRGus NDR)
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../README.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/BACKLOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADRs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ADRs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013 Seed Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-021-deployment-topology-seed-families.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-021 Topology SSOT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-022-threat-model-opcion2-descartada.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-022 Threat Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Protobuf contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protobuf
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/JSON contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JSON
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Rag security commands.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-el-predicado-de-equivalencia-no-cubre-las-aristas-de-las-relaciones-con-el-mismo-rigor-que-los-nodos" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. El predicado de equivalencia no cubre las aristas de las relaciones con el mismo rigor que los nodos
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-el-orden-determinista-en-flujo-b-se-decreta-pero-no-se-especifica-como-se-garantiza-en-el-converter" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. El orden determinista en Flujo B se decreta, pero no se especifica cómo se garantiza en el converter
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-la-particion-de-no-incluye-las-propiedades-de-las-relaciones-ni-flow_start_secflow_start_nano" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. La partición D/E no incluye las propiedades de las relaciones, ni flow_start_sec/flow_start_nano
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-la-guarda-canonica-para-nan-y-00-introduce-una-transformacion-sutil-que-debe-ser-identica-en-ambos-caminos" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. La guarda canónica para NaN y -0.0 introduce una transformación sutil que debe ser idéntica en ambos caminos
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-duplicados-en-el-oro-por-entrega-at-least-once-el-adr-aun-no-aborda-el-impacto" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Duplicados en el oro por entrega at-least-once: el ADR aún no aborda el impacto
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-escritura-atomica-en-bronce-el-eslabon-0-sigue-sin-detallar-como-se-garantiza-con-append" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Escritura atómica en bronce: el Eslabón 0 sigue sin detallar cómo se garantiza con append
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-temporal_anomaly-excluida-pero-su-formula-usa-ingested_at-que-es-per-fila-y-no-determinista-correcto-sin-embargo-hay-riesgo-de-que-otros-campos-calculados-dependan-de-ingested_at-sin-ser-detectados" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. temporal_anomaly excluida, pero su fórmula usa ingested_at, que es per-fila y no determinista: correcto. Sin embargo, ¿hay riesgo de que otros campos calculados dependan de ingested_at sin ser detectados?
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-el-adr-no-menciona-como-se-maneja-la-ingesta-de-multiples-archivos-de-bronce-rotacion-diaria-para-la-equivalencia" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. El ADR no menciona cómo se maneja la ingesta de múltiples archivos de bronce (rotación diaria) para la equivalencia
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#9-la-clausula-de-caducidad-32-no-detalla-que-dispara-exactamente-la-activacion-de-debt-join-confidence-001" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9. La cláusula de caducidad (§3.2) no detalla qué dispara exactamente la activación de DEBT-JOIN-CONFIDENCE-001
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#conclusion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Conclusión
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+  <h1>ADR 058 circuito completo aguas abajo respuesta deepseek v2</h1>
+
+<p>He revisado a fondo la v2 del ADR-058. La trazabilidad a <code>fichero:línea</code> es excelente y la mayoría de las correcciones están bien medidas. Sin embargo, en un sistema que debe sostener vidas en hospitales con pocos recursos, cualquier ambigüedad o suposición no validada es un riesgo inaceptable. A continuación, expongo los defectos remanentes que he encontrado, ordenados por criticidad para la seguridad del paciente.</p>
+<hr />
+<h2 id="1-el-predicado-de-equivalencia-no-cubre-las-aristas-de-las-relaciones-con-el-mismo-rigor-que-los-nodos">1. El predicado de equivalencia <strong>no cubre las aristas de las relaciones</strong> con el mismo rigor que los nodos</h2>
+<p>La cláusula de equivalencia para las relaciones dice:</p>
+<blockquote>
+<p><em>aristas {ALERT_ABOUT, TELEMETRY_ABOUT, CORRELATES_FLOW} coinciden (con method/confidence)</em></p>
+</blockquote>
+<p>Pero <strong>no especifica el predicado concreto para esa coincidencia</strong>. ¿Basta con que existan las mismas aristas entre los mismos nodos? ¿Se comparan sus propiedades <code>method</code> y <code>confidence</code> de forma bit-exacta? ¿Qué pasa si una arista se crea con <code>method</code> ligeramente diferente en un camino y en otro por un error de serialización?<br />
+La partición D/E no incluye estas propiedades de arista; se asume que son deterministas-de-dato, pero no está medido ni afirmado explícitamente.<br />
+<strong>Riesgo en hospital:</strong> Una arista con <code>confidence</code> divergente puede hacer que el dashboard muestre una relación como "alta confianza" en un camino y "baja confianza" en otro. Si el personal clínico toma decisiones basadas en ese grafo (p. ej., aislar un dispositivo médico), una diferencia no detectada puede llevar a una falsa sensación de seguridad o a un bloqueo innecesario.<br />
+<strong>Acción requerida:</strong> Definir explícitamente el predicado de igualdad de aristas (al menos <code>(src_label, src_pk, dst_label, dst_pk, edge_label, method, confidence)</code> con igualdad bit-exacta, y justificar si <code>confidence</code> es determinista-de-dato — debería serlo si sale del join determinista, pero debe trazarse).</p>
+<hr />
+<h2 id="2-el-orden-determinista-en-flujo-b-se-decreta-pero-no-se-especifica-como-se-garantiza-en-el-converter">2. El orden determinista en Flujo B se decreta, pero no se especifica cómo se garantiza en el converter</h2>
+<p>Se introduce la <strong>precondición de orden de inserción determinista</strong> para la robustez ante colisión <code>flow_uid</code>:</p>
+<blockquote>
+<p><em>Decreto: el Flujo B inserta en orden determinista por (flow_start_window, seq_in_window) antes del sink Kuzu</em></p>
+</blockquote>
+<p>Pero el converter <strong>Flujo B (Parquet → Kuzu)</strong> es greenfield y no se detalla cómo se logrará ese orden. Parquet no garantiza orden de lectura a menos que se ordene explícitamente. Si el converter lee el archivo Parquet con un iterador que no respeta un orden, o si el Parquet se genera en paralelo y las filas no están ordenadas por <code>(window, seq)</code>, el orden de inserción en Kuzu <strong>no será determinista</strong>, y la precondición se romperá sin que el test de equivalencia pueda distinguirlo de un bug real.<br />
+<strong>Riesgo en hospital:</strong> La colisión <code>flow_uid</code> es rara pero posible (diferentes nodos con misma ventana). Si el orden no es determinista, un incidente de seguridad real podría generar un flujo que, bajo un orden, se descarta, y bajo otro, sobrescribe al benigno. Podría ocultar un flujo malicioso en el dashboard.<br />
+<strong>Acción requerida:</strong> Añadir en §3.1 o en una nota de implementación cómo el Flujo B garantiza el orden (p. ej., <code>ORDER BY flow_start_window, seq_in_window</code> en la consulta de lectura del Parquet, o un paso de ordenación explícito). Esto debe ser verificable en el test de equivalencia.</p>
+<hr />
+<h2 id="3-la-particion-de-no-incluye-las-propiedades-de-las-relaciones-ni-flow_start_secflow_start_nano">3. La partición D/E no incluye las propiedades de las relaciones, ni <code>flow_start_sec</code>/<code>flow_start_nano</code></h2>
+<p>La tabla de partición solo lista propiedades de nodos. ¿Qué pasa con <code>flow_start_sec</code> y <code>flow_start_nano</code>? ¿Se almacenan en Kuzu? Revisando: en el grafo, la tabla <code>NetworkFlow</code> tiene <code>flow_start_window</code> pero no <code>flow_start_sec</code>/<code>nano</code> (según el schema). Sin embargo, el oro-ledger <strong>sí</strong> tendrá esas columnas (son parte del contrato de 19 columnas). Para la equivalencia en Kuzu no aplican, pero entonces la comparación de <code>props_identidad</code> no incluye esos campos. ¿Es eso correcto? Parece que sí. Pero la tabla de partición debería aclarar que <code>flow_start_sec</code>/<code>nano</code> <strong>no están en Kuzu</strong> (como <code>hmac</code>), y por tanto no van al predicado. Es un punto menor, pero para un sistema crítico es mejor ser explícito.</p>
+<hr />
+<h2 id="4-la-guarda-canonica-para-nan-y-00-introduce-una-transformacion-sutil-que-debe-ser-identica-en-ambos-caminos">4. La guarda canónica para NaN y -0.0 introduce una transformación sutil que debe ser idéntica en ambos caminos</h2>
+<p>Se propone canonicalizar NaN a un patrón fijo (<code>0x7ff8000000000000</code>) y <code>-0.0</code> a <code>+0.0</code>. Esto es correcto. Sin embargo, surge un riesgo: en C++, el converter Camino 0 no realiza esa canonicalización hoy; el sink de Kuzu escribe los doubles tal como vienen del parseo. Si el parser de C++ produce <code>-0.0</code> a partir de <code>"-0.0"</code> en el CSV, y el converter Flujo A (en Python o Java) hace la canonicalización, entonces ambos grafos divergirán en el patrón de bits del double almacenado, pero el predicado de equivalencia (que aplica la canonicalización) los considerará iguales. Eso es un falso positivo: <strong>los grafos en disco son diferentes</strong>, lo que afecta a cualquier otra herramienta que lea de Kuzu sin canonicalizar (p. ej., un dashboard que compare scores).<br />
+<strong>Riesgo en hospital:</strong> Si el dashboard o un sistema de monitorización compara scores con <code>==</code> en una consulta Cypher, podría ver diferencias inexplicables entre entornos (desarrollo vs producción) y generar confusión o falsas alarmas.<br />
+<strong>Acción requerida:</strong> El predicado debe exigir que <strong>ambos caminos escriban el double en Kuzu tras aplicar la misma canonicalización</strong>. Es decir, la canonicalización no debe ser solo para la comparación del test, sino parte de la escritura en el grafo. De lo contrario, el test pasará pero los grafos serán bit-distintos. Si no se quiere modificar Camino 0, se debe documentar como deuda (<code>DEBT-CANONICAL-DOUBLE-SINK-001</code>) y justificar por qué no es crítico.</p>
+<hr />
+<h2 id="5-duplicados-en-el-oro-por-entrega-at-least-once-el-adr-aun-no-aborda-el-impacto">5. Duplicados en el oro por entrega at-least-once: el ADR aún no aborda el impacto</h2>
+<p>La v1 mencionaba ZMQ PUSH/PULL at-least-once. La revisión anterior señaló que el oro-ledger podría contener duplicados y eso rompe la unicidad esperada. La v2 no añade ninguna deuda ni aclaración al respecto. En §2 corolario 6 se habla de HMAC por fila, pero un duplicado tendría el mismo HMAC y contenido, invalidando la verificabilidad (¿cuál es la fila canónica?).<br />
+<strong>Riesgo en hospital:</strong> Si se usa el ledger para auditoría forense, un duplicado puede hacer que un evento parezca haber ocurrido dos veces, llevando a decisiones incorrectas sobre el aislamiento de un dispositivo. Además, el replicar el grafo desde el ledger podría introducir el mismo flujo dos veces, y aunque MERGE lo descarte, la mera existencia de duplicados en el oro es una corrupción semántica.<br />
+<strong>Acción requerida:</strong> Crear al menos una deuda P1 (<code>DEBT-GOLD-DEDUP-AT-LEAST-ONCE-001</code>) que capture la necesidad de deduplicación en el oro (por ejemplo, añadiendo un offset de Kafka o un identificador único de publicación). Mientras no se implemente, el oro no es confiable como source-of-truth inmutable.</p>
+<hr />
+<h2 id="6-escritura-atomica-en-bronce-el-eslabon-0-sigue-sin-detallar-como-se-garantiza-con-append">6. Escritura atómica en bronce: el Eslabón 0 sigue sin detallar cómo se garantiza con append</h2>
+<p>El Eslabón 0 propone “escritura atómica <code>.tmp → rename</code> + cierre por tiempo absoluto”. En un archivo de log que crece durante horas, escribir atómicamente cada línea con rename es inviable. La interpretación más plausible es atomicidad en la rotación (al cambiar de día, se cierra el fichero y se renombra). Pero el texto no lo aclara, y el watcher <code>inotify</code>/<code>IN_CLOSE_WRITE</code> está pensado para detectar cuando el writer cierra el fichero tras escribir un bloque. Si el writer escribe muchas líneas y luego cierra, el reader podría leer un archivo parcial.<br />
+<strong>Riesgo en hospital:</strong> Una lectura parcial durante un incidente podría causar que el dashboard muestre solo una fracción de los flujos, ocultando un ataque en curso.<br />
+<strong>Acción requerida:</strong> Especificar claramente la estrategia de atomicidad: ¿se escribe en un archivo temporal durante el día y se renombra al final del día? ¿O se asume que el reader solo lee archivos completos del día anterior? Esto afecta a la latencia y a la integridad de la información en tiempo real. Debe quedar explícito.</p>
+<hr />
+<h2 id="7-temporal_anomaly-excluida-pero-su-formula-usa-ingested_at-que-es-per-fila-y-no-determinista-correcto-sin-embargo-hay-riesgo-de-que-otros-campos-calculados-dependan-de-ingested_at-sin-ser-detectados">7. <code>temporal_anomaly</code> excluida, pero su fórmula usa <code>ingested_at</code>, que es per-fila y no determinista: correcto. Sin embargo, ¿hay riesgo de que otros campos calculados dependan de <code>ingested_at</code> sin ser detectados?</h2>
+<p>Se ha identificado <code>temporal_anomaly</code> como dependiente de <code>ingested_at</code>. ¿Existen otros? Por ejemplo, ¿<code>seq_in_window</code> se calcula en el reader basándose en el orden de llegada de las filas? Si el orden de lectura del bronce no es determinista (múltiples archivos, múltiples hilos), <code>seq_in_window</code> podría variar entre caminos. El ADR no menciona cómo se asigna <code>seq_in_window</code> en el reader. Debería medirse.<br />
+<strong>Riesgo:</strong> Si <code>seq_in_window</code> no es determinista-de-dato sino que depende del orden de procesamiento, la partición D/E es incorrecta y el predicado fallará sin bug.<br />
+<strong>Acción:</strong> Medir en <code>correlation_reader.cpp</code> o <code>main.cpp</code> cómo se asigna <code>seq_in_window</code>. Si se deriva del orden en el CSV, es determinista (el CSV es una secuencia). Si depende del orden de inserción en un mapa interno, podría no serlo. Verificar y documentar.</p>
+<hr />
+<h2 id="8-el-adr-no-menciona-como-se-maneja-la-ingesta-de-multiples-archivos-de-bronce-rotacion-diaria-para-la-equivalencia">8. El ADR no menciona cómo se maneja la ingesta de múltiples archivos de bronce (rotación diaria) para la equivalencia</h2>
+<p>El Camino 0, hoy, solo lee un único archivo de bronce (el actual). Flujo A+B procesará todo el histórico. El test de equivalencia debe definir sobre qué conjunto de datos se ejecuta: ¿solo el archivo de hoy? ¿Todo el directorio? Si es solo el archivo actual, ¿cómo se garantiza que ambos caminos ven exactamente el mismo contenido cuando el writer sigue escribiendo? Se necesita un snapshot común.<br />
+<strong>Riesgo:</strong> Si el test se ejecuta mientras el writer sigue añadiendo líneas, el Camino 0 podría ver una línea más que Flujo A (que procesa hasta un cierto punto), y el test fallaría sin bug.<br />
+<strong>Acción:</strong> Definir que el test de equivalencia se ejecuta sobre un <strong>conjunto de archivos cerrados</strong> (día anterior) o sobre un snapshot inmutable. Debe ser explícito.</p>
+<hr />
+<h2 id="9-la-clausula-de-caducidad-32-no-detalla-que-dispara-exactamente-la-activacion-de-debt-join-confidence-001">9. La cláusula de caducidad (§3.2) no detalla qué dispara exactamente la activación de <code>DEBT-JOIN-CONFIDENCE-001</code></h2>
+<p>Se dice "join adaptativo / no-determinista". ¿Quién decide cuándo se activa? ¿Un cambio en la configuración? ¿Se espera que sea un flag? Si se activa sin que el equipo de guardia lo sepa, el predicado se romperá y las alertas de equivalencia empezarán a sonar. En un hospital, eso puede llevar a desactivar el sistema de monitoreo justo cuando más se necesita.<br />
+<strong>Acción:</strong> Añadir que la activación de ese join será explícita y bajo control de configuración versionada, con un período de solapamiento donde ambos modos sean comparables.</p>
+<hr />
+<h2 id="conclusion">Conclusión</h2>
+<p>La v2 ha corregido los defectos más graves, pero aún quedan puntos críticos para un sistema que salva vidas:
+1. <strong>Predicado de aristas sin concretar</strong> (potencial divergencia no detectada).
+2. <strong>Orden determinista en Flujo B no implementado</strong> (riesgo de no equivalencia por carrera).
+3. <strong>Canonicalización de doubles no garantizada en ambos sinks</strong> (grafos bit-distintos).
+4. <strong>Duplicados en el oro sin tratar</strong> (corrupción de la fuente de verdad).
+5. <strong>Atomicidad y snapshot para el test</strong> no definidos.</p>
+<p>Estos defectos no impiden continuar con la implementación, pero deben ser abordados como deudas explícitas o especificaciones adicionales <strong>antes de poner el sistema en producción en un hospital</strong>. Recomiendo incorporar las acciones indicadas y, si se desea, elevar la criticidad de algunas deudas a P0 (especialmente la deduplicación y el orden determinista).</p>
+<p>¿Procedemos a redactar una v3 con estas inclusiones o se prefiere diferir como tickets? Estoy listo para seguir en modo adversarial hasta que el diseño sea lo más sólido posible.</p>
+<p>FDO</p>
+<p>DEEPSEEK</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.top", "search.highlight"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

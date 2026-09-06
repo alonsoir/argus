@@ -1,0 +1,332 @@
+% ============================================================================
+% ML Defender (aRGus NDR) — v26-pre — DAY 255
+% Contenido nuevo montado en orden de documento + correcciones in-place.
+%
+% "pre" = documenta el DIAGNÓSTICO de las cabezas y el PLAN de reparación;
+%          los arreglos NO están ejecutados aún. Una v26 futura reportará
+%          resultados de reparación medidos.
+%
+% INTEGRACIÓN:
+%   A) Aplicar las 3 correcciones in-place del CHECKLIST (son ediciones, no añadidos).
+%   B) Insertar los 4 bloques nuevos en los puntos indicados (o vía \input).
+% Todo anclado a lo MEDIDO (DAY 255, rama diag/ml-heads).
+% ============================================================================
+
+
+% ╔══════════════════════════════════════════════════════════════════════════╗
+% ║ CHECKLIST — 3 CORRECCIONES IN-PLACE (reemplazos, no añadidos)              ║
+% ╠══════════════════════════════════════════════════════════════════════════╣
+% ║ C1. §Implementation → "Sentinel value selection rationale": el v25 afirma  ║
+% ║     que el centinela es "non-informative, not influencing classification". ║
+% ║     Reemplazar ese párrafo por el bloque [C1] de abajo.                     ║
+% ║                                                                            ║
+% ║ C2. §Formal System Model → "Feature Extraction": reemplazar la oración     ║
+% ║     "The sentinel components remain present in x_f by design: a missing    ║
+% ║      feature must be in the vector to route deterministically to the left  ║
+% ║      child of every split that evaluates it."  por el bloque [C2].         ║
+% ║                                                                            ║
+% ║ C3. §Limitations 10.2 "Incomplete Feature Set": reemplazar el cuerpo por   ║
+% ║     el bloque [C3].                                                         ║
+% ╚══════════════════════════════════════════════════════════════════════════╝
+
+
+% ── [C1] — reemplaza el párrafo "Sentinel value selection rationale" ────────
+\paragraph{Sentinel value selection rationale (revised, DAY~255).}
+Split-domain analysis confirmed all Random Forest thresholds lie within
+$[0.0, 5.1]$; $-9999.0\text{f}$ lies entirely outside this domain and routes
+deterministically to the left child of any split that evaluates it. The
+original design inferred from this that the sentinel is \emph{non-informative}.
+A later code-level audit (DAY~255, \S\ref{sec:eval:deadfeatures}) refutes that
+inference for any feature on which the trained forest actually splits:
+deterministic left-routing is harmless only if the feature was \emph{also}
+sentinel-valued during training. A decision-tree split is selected only where a
+feature varies in the training set --- a constant feature yields zero
+information gain and is never chosen --- so the presence of split nodes on a
+feature is itself evidence that the feature varied at training time and is
+constant only at inference. In that case the sentinel does not vanish from the
+decision: it forces a fixed branch, a systematic train/serve skew.
+$\texttt{quiet\_NaN()}$ was still correctly rejected (undefined cross-compiler
+comparison); $0.5\text{f}$ was correctly rejected (within domain). The corrected
+conclusion is narrower: the sentinel is a sound encoding of \emph{absence} only
+for features absent in both training and serving, a condition
+\S\ref{sec:eval:deadfeatures} shows the current models do not meet.
+
+% ── [C2] — reemplaza la oración del §Formal System Model ────────────────────
+The sentinel components remain present in $x_f$ by design, routing
+deterministically to the left child of any split that evaluates them. We
+initially treated this as classification-neutral; \S\ref{sec:eval:deadfeatures}
+demonstrates by direct audit of the compiled forests that it is not neutral
+whenever the forest was trained on a non-constant distribution of that feature,
+and quantifies the resulting skew across all four heads.
+
+% ── [C3] — reemplaza el cuerpo de §10.2 ────────────────────────────────────
+\textbf{10.2 Incomplete Feature Set (measured impact, DAY~255).}
+Of the 40 features in the ML~Defender contract, a subset carry the
+$-9999.0\text{f}$ sentinel at inference because their computation is not
+available in a network sniffer. \S\ref{sec:eval:deadfeatures} audits the
+compiled forests and finds that all four heads allocate decision splits to
+sentinel-served features --- 890 of 3{,}065 split nodes in total (29\%), rising
+to 41.9\% for the Ransomware head, whose single most important feature
+(\texttt{io\_intensity}, 24\% importance) measures disk I/O and is physically
+inaccessible from network traffic. This is a train/serve skew, concurrent with
+and independent of the distribution-transfer failure of
+\S\ref{sec:eval:xgboost:ood}. It is a measured contributor to the low ML score
+on the labeled Neris botnet (\S\ref{sec:eval:bias}); a remediation plan with
+per-head cost is given in \S\ref{sec:eval:remediation}.
+
+
+% ╔══════════════════════════════════════════════════════════════════════════╗
+% ║ BLOQUE 1 — INSERTO DE ABSTRACT (opcional)                                  ║
+% ║ Colocar tras el bloque "── NEW DAY 252 ──", antes de "ML Defender is       ║
+% ║ released under the MIT license."                                           ║
+% ╚══════════════════════════════════════════════════════════════════════════╝
+
+% ── NEW DAY 255 ──────────────────────────────────────────────────────────
+Finally (DAY~255), a code-level audit of the four embedded classifiers
+establishes \emph{why} the ML score is blind on the labeled botnet independently
+of distribution transfer: every head allocates decision splits to features
+served as a constant absence-sentinel at inference (29\% of all split nodes;
+41.9\% for the Ransomware head, whose highest-importance feature measures disk
+I/O and cannot exist in a network capture). Because a forest never splits on a
+constant feature, the existence of these splits proves the models were trained
+on a feature space the deployment does not reproduce --- a train/serve skew
+provable from the compiled trees alone. We report this as a measured,
+reproducible failure mode and derive a per-head remediation plan whose principled
+resolution for the Ransomware head is host-domain fusion with Wazuh rather than
+further network feature engineering. The repairs are specified and costed here;
+their measured outcomes are deferred to a subsequent revision.
+% ──────────────────────────────────────────────────────────────────────────
+
+
+% ╔══════════════════════════════════════════════════════════════════════════╗
+% ║ BLOQUE 2 — NUEVA SUBSECCIÓN DE EVALUACIÓN                                  ║
+% ║ Insertar al final de §Evaluation, tras §sec:eval:bias                      ║
+% ╚══════════════════════════════════════════════════════════════════════════╝
+
+\subsection{Dead-Feature Audit: A Train/Serve Skew Provable from the Compiled Trees}
+\label{sec:eval:deadfeatures}
+
+The per-lens analysis (\S\ref{sec:eval:bias}) established that on the labeled
+Neris botnet the embedded ML score averages $0.0745$ while the heuristic fast
+path carries detection, attributing the blindness to distribution transfer and
+corroborating Sommer and Paxson~\cite{sommer2010}. Here we report a
+\emph{second, independent} cause, obtained not by replay but by auditing the
+compiled models and the feature-extraction code directly (DAY~255). It does not
+replace the transfer explanation; it sits beneath it and is separately
+reproducible.
+
+\paragraph{Method.}
+Every claim is measured against source and against the auto-generated forest
+files. Two initial hypotheses were refuted by measurement before the finding was
+reached, and are recorded for transparency: (i)~that the multi-flow aggregator
+is never injected in production --- refuted, the initialization path is
+unconditional and cannot fail on environment; (ii)~that
+\texttt{source\_ip\_dispersion} is never computed --- refuted, it is computed
+from the aggregator and the forest barely splits on it.
+
+\paragraph{The sentinel and the tree.}
+Features whose computation is unavailable return the shared constant
+$\texttt{MISSING\_FEATURE\_SENTINEL} = -9999.0\text{f}$. Since every learned
+threshold in the four forests lies in $[0,5.1]$, a served value of $-9999$
+satisfies $\texttt{feature} \le \texttt{threshold}$ at every node that evaluates
+it, forcing the left branch unconditionally. This is benign only if the feature
+was also constant during training. It was not, and this is provable without the
+training artifacts: \emph{a decision-tree split is selected only where a feature
+has non-zero variance in the training set} (a constant column yields zero
+information gain and is never chosen). Therefore the existence of even one split
+node on a feature establishes that the feature varied at training time; served
+as a constant at inference, it constitutes a train/serve distribution mismatch.
+The forest was trained in a feature space the deployment does not reproduce.
+
+\paragraph{The audit.}
+For each head we verified (a)~that the deployed forest is the trained forest and
+(b)~which feature index each split node decides on, cross-referenced against the
+census of features returning the sentinel on every run. Index-to-name mappings
+were verified against the auto-generated comments in each forest file and against
+the detector's \texttt{to\_array()} serialization, not inferred. For the three
+heads with a training-side counterpart (DDoS, Traffic, Internal), the deployed
+forest is byte-identical to the trained one modulo a compiler-warning wrapper
+(anonymous namespace), verified by \texttt{diff}: the served model \emph{is} the
+validated model, so the defect lies entirely in the input vector.
+Table~\ref{tab:deadfeatures} reports the result.
+
+\begin{table}[h]
+    \centering
+    \footnotesize
+    \caption{Split nodes deciding on absence-sentinel features, per head
+        (DAY~255). ``Splits on sentinel'' counts decision nodes whose feature is
+        served as $-9999.0\text{f}$ on every run; each routes left unconditionally.
+        The Ransomware head is the extreme case: its highest-importance feature
+        (\texttt{io\_intensity}, 24\%, recorded in the detector header) measures
+        disk I/O, physically absent from network traffic.}
+    \label{tab:deadfeatures}
+    \begin{tabular}{lrrrl}
+        \toprule
+        \textbf{Head} & \textbf{Splits on sent.} & \textbf{Total splits} &
+        \textbf{\%} & \textbf{Sentinel feature(s)} \\
+        \midrule
+        DDoS       & 16  & 256   & 6.25\% & geographical\_concentration \\
+        Traffic    & 44  & 457   & 9.6\%  & tcp\_udp\_ratio, flow\_duration\_std, protocol\_variety \\
+        Internal   & 21  & 420   & 5.0\%  & connection\_duration\_std \\
+        Ransomware & 809 & 1{,}932 & 41.9\% & io\_intensity (24\% imp.), resource\_usage, file\_operations, process\_anomaly \\
+        \midrule
+        \textbf{Total} & \textbf{890} & \textbf{3{,}065} & \textbf{29.0\%} & --- \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\paragraph{The clean case: geography that is never observed.}
+The DDoS head splits 16 times on \texttt{geographical\_concentration}. The
+pipeline never captures or enriches with geolocation --- the feature was
+deferred to a phase that was never implemented, and is served as the sentinel on
+every run. By the argument above, the 16 splits prove the training data carried
+real, separable geographic values. An \emph{optional} enrichment field, intended
+to be resolved on demand for post-hoc context, was wired into a \emph{mandatory}
+model input vector; the model has no notion of optionality and learned to depend
+on a column the deployment leaves constant. This is a category error at the
+train/serve boundary, not a weak feature.
+
+\paragraph{The structural case: a host signal in a network sensor.}
+The Ransomware head devotes 41.9\% of its splits to four features
+(\texttt{io\_intensity}, \texttt{resource\_usage}, \texttt{file\_operations},
+\texttt{process\_anomaly}) that measure disk, CPU, filesystem, and process
+behavior. These are not unimplemented TODOs recoverable by more sniffer
+engineering: they are host-domain signals that \emph{by construction do not
+travel on the network}. The head's single most important feature (24\%) is among
+them. No network-only model can serve them; the resolution is architectural, not
+a bug fix (\S\ref{sec:eval:remediation}, \S\ref{sec:future:wazuh}).
+
+\paragraph{Significance.}
+The contribution is not the defect but the reproducible forensic record: a set of
+classifiers with high in-sample metrics that, in deployment, decide nearly a third
+of their splits on constants --- a failure mode provable from the compiled
+artifacts alone, rarely audited because there is no incentive to, and, for
+critical infrastructure, worse than no detector because it manufactures false
+confidence. It is concurrent with, and independent of, the distribution-transfer
+result of \S\ref{sec:eval:xgboost:ood} and \S\ref{sec:eval:bias}.
+
+
+% ╔══════════════════════════════════════════════════════════════════════════╗
+% ║ BLOQUE 3 — REMEDIATION PLAN (nueva subsección)                            ║
+% ║ Insertar tras §sec:eval:deadfeatures                                       ║
+% ╚══════════════════════════════════════════════════════════════════════════╝
+
+\subsection{Remediation Plan: Per-Head Cost of Repair}
+\label{sec:eval:remediation}
+
+The audit partitions the four heads by a single physical criterion --- whether
+the sentinel-served feature is computable from network traffic at all --- which
+determines whether repair is a matter of implementation, retraining, or
+architectural change. Table~\ref{tab:remediation} summarizes. The plan is
+specified here; its measured outcomes are the subject of ongoing work and are not
+claimed in this revision. Costs are conditional on a provenance measurement (the
+training-time distribution of each column) that quantifies, but does not change,
+the direction established above.
+
+\begin{table}[h]
+    \centering
+    \footnotesize
+    \caption{Per-head remediation. ``Computable in network?'' is the physical
+    criterion that determines the repair class. The multi-flow aggregator on
+    which Traffic and Internal depend is already live in production.}
+    \label{tab:remediation}
+    \begin{tabular}{lp{3.1cm}p{4.7cm}l}
+        \toprule
+        \textbf{Head} & \textbf{Computable in network?} & \textbf{Repair} & \textbf{Cost} \\
+        \midrule
+        Internal & Yes (aggregator, live) &
+        Implement \texttt{connection\_duration\_std} from the aggregator; retrain if
+        the served range diverges from training & Low \\
+        \addlinespace
+        Traffic & Partly (2/3 via aggregator; \texttt{tcp\_udp\_ratio} needs a
+        protocol field) & Implement the three features; retrain as above & Low--Med \\
+        \addlinespace
+        DDoS & On demand, off the hot path (GeoIP latency) &
+        Remove \texttt{geographical\_concentration} from the model input and retrain;
+        keep it in the contract as an \emph{optional} enrichment field for post-hoc
+        context (decouple model input from enrichment). Whether the repaired ML head
+        outperforms the fast path's rate heuristics is measured, not assumed & Low \\
+        \addlinespace
+        Ransomware & \textbf{No} (host signals) &
+        (A)~retrain network-only, losing the 24\% feature and 41.9\% of splits ---
+        an honest but substantially weaker model; \textbf{(B)~source the four
+        features from Wazuh host telemetry and fuse at the graph} --- the principled
+        fix (\S\ref{sec:future:wazuh}) & (A)~Med / (B)~High \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\paragraph{Governing principle.}
+The systemic fix is a single invariant on the model boundary: \emph{the model
+input vector must contain only deterministically-present features; any feature
+that can be absent is either excluded from the model or has its absence encoded
+identically in training and serving}. The current design violates this by
+training on real values and serving the sentinel. Three heads (Internal, Traffic,
+DDoS) satisfy the invariant by implementing or removing the offending column and
+retraining, and remain inline in the sub-microsecond detector. The Ransomware
+head cannot satisfy it within the network sensor at all: it exits the detector to
+the host domain (\S\ref{sec:future:wazuh}), where the response path becomes
+asynchronous --- host evidence accumulates and, on high-confidence detection,
+emits a block to the firewall \texttt{ipset} as a second evidence source
+alongside the network detector. DDoS, by contrast, remains inline and real-time:
+its signal is network-native and volumetric blocking cannot be deferred.
+
+
+% ╔══════════════════════════════════════════════════════════════════════════╗
+% ║ BLOQUE 4 — RANSOMWARE / HOST-DOMAIN                                        ║
+% ║ 4A → añadir en §"Ransomware Detection: Scope and Validation"               ║
+% ║ 4B → añadir en §future:wazuh (FEAT-INT-1)                                  ║
+% ╚══════════════════════════════════════════════════════════════════════════╝
+
+% ── [4A] tras "What is not validated." ──────────────────────────────────────
+\paragraph{What the DAY~255 audit changes.}
+The dead-feature audit (\S\ref{sec:eval:deadfeatures}) shows that the Ransomware
+head's limitation is not a matter of training-data age but of \emph{sensor
+domain}: four of its ten features --- including its highest-importance feature at
+24\% --- measure disk I/O, CPU, filesystem, and process behavior, none of which
+exist in a network capture. The behavioral indicators validated on Neris (SMB
+burst, connection rate, DNS anomaly) are the network-observable shadow of
+ransomware activity; the encryption behavior that \emph{defines} ransomware is a
+host phenomenon. A network-only ransomware classifier therefore has a principled
+ceiling, independent of retraining. The resolution is host-domain fusion
+(\S\ref{sec:future:wazuh}).
+
+% ── [4B] tras el párrafo existente de §future:wazuh ─────────────────────────
+\paragraph{From enhancement to requirement (DAY~255).}
+The audit in \S\ref{sec:eval:deadfeatures} sharpens the motivation for this
+integration from correlation quality to necessity. The four features that cripple
+the network-side Ransomware head --- disk I/O, resource usage, file operations,
+process anomaly --- are precisely the signals a HIDS observes natively. Wazuh,
+currently deployed to police the integrity of the pipeline's own components, is
+the sensor whose domain contains exactly what the network sensor cannot produce.
+The pipeline already carries the host ingestion path end-to-end (a Wazuh adapter
+emitting a sealed \texttt{host\_domain\_v1} bronze record, a host bronze-to-gold
+converter, and a loader into a dedicated host Kuzu graph), gated in the same
+quality harness as the network path. What remains is not plumbing but two pieces:
+a \emph{driver} that induces ransomware-characteristic host behavior on a
+Wazuh-monitored, isolated VM so the agent emits the corresponding host telemetry,
+and a host-domain model trained on that telemetry rather than on packet features.
+The network and host graphs are then correlated at the
+\texttt{community\_id}/\texttt{flow\_uid} substrate of \S\ref{sec:eval:parity}:
+lateral-movement spread on the network and file encryption on the host become a
+single composite signature that neither lens resolves alone. Because host
+evidence is asynchronous, the host detector's response path is decoupled from the
+inline pipeline: on high-confidence detection it emits a block to the firewall
+\texttt{ipset} as a second evidence source, rather than through the
+sub-microsecond scoring path. This re-derives, from a measured failure, the
+danger-model stance --- detect damage in context rather than classify isolated
+packets --- and is the primary architectural direction for the Ransomware head.
+
+\paragraph{A note on training-data provenance for the host model.}
+A natural question is whether the existing academic corpora (CTU-13, CIC-IDS) can
+supply this host telemetry by routing them through Wazuh. They cannot: these are
+network captures, and the host signals (disk, filesystem, process) were never
+recorded in them --- the same category error the audit identifies, viewed from
+the data side. Two viable sources exist instead: (i)~mapping an existing
+\emph{host-behavior} ransomware dataset (system-call, FIM, or I/O traces) onto the
+\texttt{host\_domain\_v1} contract; or (ii)~generating fresh host telemetry by
+running the characteristic file-encryption I/O pattern --- via controlled benign
+emulation, not live malware --- on the Wazuh-monitored VM already present in the
+pipeline, and harvesting the agent output through the existing adapter. Either
+path yields a host-domain corpus of the correct medium; neither is a retrofit of
+a network dataset.

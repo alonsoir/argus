@@ -1,0 +1,12 @@
+{
+  "type": "record",
+  "name": "CorrelationSmoke",
+  "namespace": "argus.correlation.smoke",
+  "fields": [
+    { "name": "event_id", "type": "string" },
+    { "name": "src_port", "type": "int",
+      "doc": "Unsigned uint32_t del proto. Rango válido: 0-65535. Valores >= 2^31 son reservados para extensión futura." },
+    { "name": "fast_detector_score", "type": "double" },
+    { "name": "hmac_row", "type": "string" }
+  ]
+}

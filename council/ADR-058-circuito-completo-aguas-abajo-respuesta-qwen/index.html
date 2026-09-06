@@ -1,0 +1,1287 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source embedded-ML NDR for hospitals and schools">
+      
+      
+        <meta name="author" content="Alonso Isidoro Roman">
+      
+      
+        <link rel="canonical" href="https://alonsoir.github.io/argus/council/ADR-058-circuito-completo-aguas-abajo-respuesta-qwen/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>ADR 058 circuito completo aguas abajo respuesta qwen - ML Defender (aRGus NDR)</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#defectos-criticos-p0" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-header__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ML Defender (aRGus NDR)
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              ADR 058 circuito completo aguas abajo respuesta qwen
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../README.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/BACKLOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Backlog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Security Model
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-tabs__link">
+          
+  
+  
+  ADRs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/contracts/Protobuf contracts.md" class="md-tabs__link">
+          
+  
+  
+  Contracts
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-nav__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ML Defender (aRGus NDR)
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../README.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/BACKLOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADRs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ADRs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013 Seed Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-021-deployment-topology-seed-families.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-021 Topology SSOT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-022-threat-model-opcion2-descartada.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-022 Threat Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Protobuf contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protobuf
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/JSON contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JSON
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Rag security commands.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#defectos-criticos-p0" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DEFECTOS CRÍTICOS (P0)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="DEFECTOS CRÍTICOS (P0)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-race-condition-en-merge-concurrente-no-discutida" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Race condition en MERGE concurrente no discutida
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-backpressure-y-limites-en-zmq-at-least-once-no-especificados" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Backpressure y límites en ZMQ at-least-once no especificados
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-idempotencia-del-flujo-ab-no-demostrada" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Idempotencia del Flujo A+B no demostrada
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#defectos-de-diseno-p1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DEFECTOS DE DISEÑO (P1)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="DEFECTOS DE DISEÑO (P1)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#4-nan-normalization-no-especificada" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. NaN normalization no especificada
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5-inotify-no-es-portable-ni-universal" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Inotify no es portable ni universal
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#6-recovery-tras-fallo-entre-rename-e-inotify-no-cubierto" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Recovery tras fallo entre rename e inotify no cubierto
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#7-schema-evolution-del-oro-ledger-no-abordada" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Schema evolution del oro-ledger no abordada
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#defectos-de-testing-p1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DEFECTOS DE TESTING (P1)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="DEFECTOS DE TESTING (P1)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#8-estrategia-de-testing-del-predicado-no-especificada" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. Estrategia de testing del predicado no especificada
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#9-performance-del-predicado-no-acotada" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9. Performance del predicado no acotada
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#defectos-de-seguridad-p2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DEFECTOS DE SEGURIDAD (P2)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="DEFECTOS DE SEGURIDAD (P2)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#10-hmac-key-management-no-discutido" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10. HMAC key management no discutido
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#11-confidencialidad-de-datos-no-abordada" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        11. Confidencialidad de datos no abordada
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#defectos-operacionales-p2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DEFECTOS OPERACIONALES (P2)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="DEFECTOS OPERACIONALES (P2)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#12-monitoring-y-alerting-no-especificados" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        12. Monitoring y alerting no especificados
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#13-data-retention-y-cleanup-no-definidos" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        13. Data retention y cleanup no definidos
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#14-rollback-strategy-no-especificada" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        14. Rollback strategy no especificada
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#defectos-de-documentacion-p3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DEFECTOS DE DOCUMENTACIÓN (P3)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="DEFECTOS DE DOCUMENTACIÓN (P3)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#15-timezone-handling-no-explicitado" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        15. Timezone handling no explicitado
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#16-cross-language-consistency-maintenance-no-garantizada" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        16. Cross-language consistency maintenance no garantizada
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#recomendacion-al-consejo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        RECOMENDACIÓN AL CONSEJO
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+  <h1>ADR 058 circuito completo aguas abajo respuesta qwen</h1>
+
+<p>He analizado el ADR-058 en detalle. Aquí están los posibles defectos y áreas de riesgo que he identificado, organizados por severidad:</p>
+<h2 id="defectos-criticos-p0"><strong>DEFECTOS CRÍTICOS (P0)</strong></h2>
+<h3 id="1-race-condition-en-merge-concurrente-no-discutida">1. <strong>Race condition en MERGE concurrente no discutida</strong></h3>
+<p>El ADR afirma que MERGE con <code>ON CREATE SET</code> es robusto a colisiones de <code>flow_uid</code>, pero no analiza condiciones de carrera cuando <strong>múltiples writers concurrentes</strong> (Camino 0 y Flujo A+B en paralelo, o múltiples instancias del mismo path) intentan MERGE el mismo <code>flow_uid</code> simultáneamente.</p>
+<p><strong>Riesgo</strong>: Kuzu puede tener comportamiento no determinista bajo concurrencia alta en MERGE. Si dos procesos hacen MERGE del mismo <code>flow_uid</code> al mismo tiempo:
+- ¿Uno bloquea al otro?
+- ¿Ambos ven <code>ON CREATE</code> y duplican?
+- ¿Hay deadlocks?</p>
+<p><strong>Acción requerida</strong>: Benchmark de concurrencia en Kuzu con el schema específico, o documentación explícita de que el circuito es single-writer por diseño.</p>
+<hr />
+<h3 id="2-backpressure-y-limites-en-zmq-at-least-once-no-especificados">2. <strong>Backpressure y límites en ZMQ at-least-once no especificados</strong></h3>
+<p>Se menciona ZMQ PUSH/PULL at-least-once, pero no hay:
+- Límites de cola (high-water mark)
+- Estrategia de backpressure cuando el consumidor es más lento
+- Qué pasa con mensajes acumulados si el consumidor cae</p>
+<p><strong>Riesgo</strong>: Memory exhaustion en el broker ZMQ si el Flujo A+B es más lento que bronce. At-least-once sin límites puede convertirse en OOM.</p>
+<p><strong>Acción requerida</strong>: Especificar HWM, política de drop/block, y monitoring de queue depth.</p>
+<hr />
+<h3 id="3-idempotencia-del-flujo-ab-no-demostrada">3. <strong>Idempotencia del Flujo A+B no demostrada</strong></h3>
+<p>El predicado de equivalencia asume que Flujo A+B es idempotente (puede re-ejecutarse sin cambiar el resultado), pero no lo demuestra.</p>
+<p><strong>Escenario</strong>: Si Flujo A+B falla a mitad y se re-ejecuta:
+- ¿Los MERGE ya hechos se comportan igual?
+- ¿El Parquet parcial se re-procesa completo o desde el punto de fallo?
+- ¿Hay estado intermedio que pueda corromperse?</p>
+<p><strong>Acción requerida</strong>: Test explícito de idempotencia: ejecutar Flujo A+B dos veces y verificar que el grafo resultante es idéntico a ejecutarlo una vez.</p>
+<hr />
+<h2 id="defectos-de-diseno-p1"><strong>DEFECTOS DE DISEÑO (P1)</strong></h2>
+<h3 id="4-nan-normalization-no-especificada">4. <strong>NaN normalization no especificada</strong></h3>
+<p>Se menciona que "el converter Flujo A normaliza el patrón de NaN" pero no especifica:
+- ¿A qué patrón canonicaliza? (quiet NaN, signaling NaN, payload específico)
+- ¿Cómo se asegura que Camino 0 y Flujo A+B producen el mismo patrón?
+- ¿Qué pasa si ML head produce signaling NaN que se convierte a quiet NaN en AVRO?</p>
+<p><strong>Riesgo</strong>: El predicado <code>==</code> puede fallar por diferencias en patrones de NaN que son semánticamente equivalentes.</p>
+<p><strong>Acción requerida</strong>: Especificar patrón de canonicalización (ej: <code>0x7FF8000000000000</code> para quiet NaN) y test que verifique que ambos paths producen el mismo patrón.</p>
+<hr />
+<h3 id="5-inotify-no-es-portable-ni-universal">5. <strong>Inotify no es portable ni universal</strong></h3>
+<p>El Eslabón 0 depende de <code>inotify</code>/<code>IN_CLOSE_WRITE</code>, pero:
+- No funciona en sistemas de archivos distribuidos (NFS, SMB)
+- No funciona en contenedores con volúmenes montados desde host
+- No está disponible en macOS/Windows (si hay portabilidad)</p>
+<p><strong>Riesgo</strong>: El circuito puede fallar silenciosamente en ciertos entornos de despliegue.</p>
+<p><strong>Acción requerida</strong>:
+- Documentar limitaciones de plataforma
+- Proveer fallback (polling con stat) para entornos no-Linux
+- O restringir explícitamente el despliegue a Linux con filesystem local</p>
+<hr />
+<h3 id="6-recovery-tras-fallo-entre-rename-e-inotify-no-cubierto">6. <strong>Recovery tras fallo entre rename e inotify no cubierto</strong></h3>
+<p>El Eslabón 0 usa escritura atómica <code>.tmp</code> → rename, pero si el proceso cae:
+- Después del rename pero antes de que inotify dispare el evento
+- Después de que inotify dispare pero antes de que el reader procese</p>
+<p><strong>Riesgo</strong>: Archivos procesados parcialmente o no procesados sin retry automático.</p>
+<p><strong>Acción requerida</strong>: Mecanismo de recovery que al iniciar escanee el directorio y procese archivos no marcados como completados.</p>
+<hr />
+<h3 id="7-schema-evolution-del-oro-ledger-no-abordada">7. <strong>Schema evolution del oro-ledger no abordada</strong></h3>
+<p>No hay estrategia para cuando se necesite:
+- Añadir columnas al oro-ledger
+- Cambiar tipos de datos
+- Deprecar campos</p>
+<p><strong>Riesgo</strong>: Cualquier cambio de schema rompe la equivalencia Camino 0 ≡ Flujo A+B hasta que ambos se actualicen, creando ventana de inconsistencia.</p>
+<p><strong>Acción requerida</strong>: Definir protocolo de evolución de schema (versioning, migración dual, feature flags).</p>
+<hr />
+<h2 id="defectos-de-testing-p1"><strong>DEFECTOS DE TESTING (P1)</strong></h2>
+<h3 id="8-estrategia-de-testing-del-predicado-no-especificada">8. <strong>Estrategia de testing del predicado no especificada</strong></h3>
+<p>El predicado de equivalencia es complejo (sets, propiedades, aristas, HMAC), pero no hay:
+- Plan de testing (unit, integration, property-based)
+- Datasets de prueba (edge cases, colisiones, NaN, volúmenes)
+- Criterios de aceptación cuantitativos (¿100% de coincidencia? ¿99.9%?)</p>
+<p><strong>Riesgo</strong>: El test puede ser frágil, lento, o no cubrir casos críticos.</p>
+<p><strong>Acción requerida</strong>:
+- Especificar framework de testing (ej: pytest + hypothesis para property-based)
+- Definir datasets golden (incluyendo edge cases: ICMP, NaN, colisiones)
+- Establecer métricas de performance del test (tiempo máximo aceptable)</p>
+<hr />
+<h3 id="9-performance-del-predicado-no-acotada">9. <strong>Performance del predicado no acotada</strong></h3>
+<p>Comparar sets completos de <code>flow_uid</code> y <code>event_id</code> + todas las propiedades + todas las aristas es O(n) con n = tamaño del grafo.</p>
+<p><strong>Riesgo</strong>: Para volúmenes grandes (millones de flujos), el test puede tardar horas, haciéndolo impráctico para CI/CD.</p>
+<p><strong>Acción requerida</strong>:
+- Benchmark con datos realistas
+- Considerar estrategias de muestreo o particionamiento
+- Establecer SLA de tiempo de test (ej: &lt; 10 min para 1M flujos)</p>
+<hr />
+<h2 id="defectos-de-seguridad-p2"><strong>DEFECTOS DE SEGURIDAD (P2)</strong></h2>
+<h3 id="10-hmac-key-management-no-discutido">10. <strong>HMAC key management no discutido</strong></h3>
+<p>Se menciona HMAC-SHA256 por fila, pero no hay:
+- Estrategia de rotación de claves
+- Almacenamiento seguro de claves
+- Procedimiento ante compromiso de clave
+- Cómo se distribuyen claves a múltiples nodos</p>
+<p><strong>Riesgo</strong>: Si la clave se compromete, la integridad del oro-ledger queda invalidada sin plan de remediación.</p>
+<p><strong>Acción requerida</strong>: Definir key management (vault, rotación automática, re-firma de datos existentes).</p>
+<hr />
+<h3 id="11-confidencialidad-de-datos-no-abordada">11. <strong>Confidencialidad de datos no abordada</strong></h3>
+<p>El ADR se enfoca en integridad (HMAC) pero no menciona:
+- Encriptación de datos sensibles en el oro-ledger
+- Control de acceso al grafo Kuzu
+- Auditoría de accesos</p>
+<p><strong>Riesgo</strong>: Datos sensibles (IPs, patrones de tráfico) pueden estar expuestos.</p>
+<p><strong>Acción requerida</strong>: Evaluar si se necesita encriptación at-rest, y definir RBAC para Kuzu.</p>
+<hr />
+<h2 id="defectos-operacionales-p2"><strong>DEFECTOS OPERACIONALES (P2)</strong></h2>
+<h3 id="12-monitoring-y-alerting-no-especificados">12. <strong>Monitoring y alerting no especificados</strong></h3>
+<p>No hay mención de:
+- Métricas del circuito (throughput, latency, error rate)
+- Alertas por fallos (reader caído, writer lento, ZMQ queue llena)
+- Dashboard de salud del circuito</p>
+<p><strong>Riesgo</strong>: Fallos pueden pasar desapercibidos hasta que causen impacto.</p>
+<p><strong>Acción requerida</strong>: Definir métricas clave y umbrales de alerta.</p>
+<hr />
+<h3 id="13-data-retention-y-cleanup-no-definidos">13. <strong>Data retention y cleanup no definidos</strong></h3>
+<p>No hay política para:
+- Retención del oro-ledger (¿cuánto tiempo se mantiene?)
+- Cleanup de archivos bronce procesados
+- Backup/restore del grafo Kuzu</p>
+<p><strong>Riesgo</strong>: Disk exhaustion por acumulación de datos, o pérdida de datos por cleanup agresivo.</p>
+<p><strong>Acción requerida</strong>: Definir retention policy y estrategia de backup.</p>
+<hr />
+<h3 id="14-rollback-strategy-no-especificada">14. <strong>Rollback strategy no especificada</strong></h3>
+<p>Si Flujo A+B falla el test de equivalencia en producción:
+- ¿Se vuelve a Camino 0 automáticamente?
+- ¿Hay manual intervention?
+- ¿Se pierden datos procesados por Flujo A+B?</p>
+<p><strong>Riesgo</strong>: Tiempo de recuperación largo si no hay plan claro.</p>
+<p><strong>Acción requerida</strong>: Definir procedimiento de rollback y criteria de activación.</p>
+<hr />
+<h2 id="defectos-de-documentacion-p3"><strong>DEFECTOS DE DOCUMENTACIÓN (P3)</strong></h2>
+<h3 id="15-timezone-handling-no-explicitado">15. <strong>Timezone handling no explicitado</strong></h3>
+<p><code>flow_start_sec</code>/<code>flow_start_nano</code> son timestamps, pero no se especifica:
+- ¿Son UTC o local time?
+- ¿Cómo se maneja DST?
+- ¿Cómo se sincronizan relojes entre nodos?</p>
+<p><strong>Riesgo</strong>: Inconsistencias temporales si hay ambigüedad.</p>
+<p><strong>Acción requerida</strong>: Documentar explícitamente que son UTC epoch, y requerir NTP sync.</p>
+<hr />
+<h3 id="16-cross-language-consistency-maintenance-no-garantizada">16. <strong>Cross-language consistency maintenance no garantizada</strong></h3>
+<p>Se menciona paridad C++/Python en <code>flow_uid</code>, pero no hay:
+- CI/CD que verifique la paridad automáticamente
+- Procedimiento para cuando se cambie el encoding</p>
+<p><strong>Riesgo</strong>: La paridad puede romperse silenciosamente en futuros cambios.</p>
+<p><strong>Acción requerida</strong>: Test de paridad en CI que ejecute ambos implementations contra los mismos vectores golden.</p>
+<hr />
+<h2 id="recomendacion-al-consejo"><strong>RECOMENDACIÓN AL CONSEJO</strong></h2>
+<p><strong>No ratificar aún</strong>. El ADR tiene fundamentos sólidos y evidencia medida rigurosa, pero los defectos P0 (concurrencia en MERGE, backpressure ZMQ, idempotencia) son riesgos operacionales que deben resolverse antes de implementación.</p>
+<p><strong>Acción propuesta</strong>:
+1. Resolver defectos P0 con mediciones/benchmarks concretos
+2. Añadir secciones al ADR para P1 (especialmente schema evolution y testing strategy)
+3. Re-someter a ratificación con estos puntos cerrados</p>
+<p>El ADR está ~85% completo. Con 1-2 días de trabajo adicional en los puntos críticos, puede quedar sólido para implementación.</p>
+<p>FDO</p>
+<p>QWEN</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.top", "search.highlight"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

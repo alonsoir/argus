@@ -1,0 +1,1180 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source embedded-ML NDR for hospitals and schools">
+      
+      
+        <meta name="author" content="Alonso Isidoro Roman">
+      
+      
+        <link rel="canonical" href="https://alonsoir.github.io/argus/council/PROPUESTA%20AL%20CONSEJO%20DE%20SABIOS%20%E2%80%94%20Auditor%C3%ADa%20de%20features%20de%20los%20modelos%20ML-qwen/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>RESPUESTA DEL CONSEJO DE SABIOS — Auditoría de features ML - ML Defender (aRGus NDR)</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#respuesta-del-consejo-de-sabios-auditoria-de-features-ml" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-header__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ML Defender (aRGus NDR)
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              RESPUESTA DEL CONSEJO DE SABIOS — Auditoría de features ML
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../README.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/BACKLOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Backlog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Security Model
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-tabs__link">
+          
+  
+  
+  ADRs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/contracts/Protobuf contracts.md" class="md-tabs__link">
+          
+  
+  
+  Contracts
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-nav__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ML Defender (aRGus NDR)
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../README.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/BACKLOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADRs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ADRs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013 Seed Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-021-deployment-topology-seed-families.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-021 Topology SSOT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-022-threat-model-opcion2-descartada.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-022 Threat Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Protobuf contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protobuf
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/JSON contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JSON
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Rag security commands.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#respuesta-a-las-preguntas-planteadas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Respuesta a las preguntas planteadas
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Respuesta a las preguntas planteadas">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-desactivacion-de-la-cabeza-de-ransomware-embebida-actual" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Desactivación de la cabeza de ransomware embebida actual
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-registro-de-debt-para-el-xgboost-de-45-features-anonimas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Registro de DEBT para el XGBoost de 45 features anónimas
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-registro-de-debt-para-features-constantes-del-ddos" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Registro de DEBT para features constantes del DDoS
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-entrenamiento-de-modelo-comportamental-de-ransomware" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Entrenamiento de modelo comportamental de ransomware
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5-aprobacion-de-la-linea-mitre-attck-atomic-red-team" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Aprobación de la línea MITRE ATT&amp;CK / Atomic Red Team
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#resumen-de-decisiones" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Resumen de decisiones
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#nota-final-del-consejo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Nota final del Consejo
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="respuesta-del-consejo-de-sabios-auditoria-de-features-ml">RESPUESTA DEL CONSEJO DE SABIOS — Auditoría de features ML</h1>
+<p><strong>DAY 209 · Deliberación sobre hallazgos de auditoría</strong></p>
+<hr />
+<h2 id="respuesta-a-las-preguntas-planteadas">Respuesta a las preguntas planteadas</h2>
+<h3 id="1-desactivacion-de-la-cabeza-de-ransomware-embebida-actual">1. Desactivación de la cabeza de ransomware embebida actual</h3>
+<p><strong>Decisión: DESACTIVAR INMEDIATAMENTE</strong> (<code>enabled: false</code> en config)</p>
+<p><strong>Fundamento:</strong> El diagnóstico es concluyente. Un modelo con desajuste de dominio estructural —entrenado sobre features de host, alimentado con proxies de red sin correlación semántica— no está "degradado": está generando falsos positivos/negativos sistemáticos. Mantenerlo activo contamina:
+- Cualquier métrica de evaluación que se intente medir
+- La confianza del usuario en el sistema
+- La validez científica de la validación</p>
+<p><strong>Acciones requeridas:</strong>
+- ADR (Architecture Decision Record) documentando: (a) el desajuste de dominio detectado, (b) la imposibilidad de rescate en arquitectura NDR pura, (c) la decisión de desactivación
+- Etiqueta explícita en config: <code>ransomware_detector: { enabled: false, status: "domain_mismatch_detected", debt_ref: "DEBT-RANSOMWARE-DOMAIN-MISMATCH-001" }</code>
+- El detector no debe participar en veredictos de producción hasta que exista un modelo con features del dominio correcto</p>
+<p><strong>Alternativa rechazada:</strong> Mantenerlo activo con etiqueta "proxy-based, no fiable". Esto sigue contaminando métricas y confunde al usuario. La honestidad epistémica exige silencio, no ruido etiquetado.</p>
+<hr />
+<h3 id="2-registro-de-debt-para-el-xgboost-de-45-features-anonimas">2. Registro de DEBT para el XGBoost de 45 features anónimas</h3>
+<p><strong>Decisión: REGISTRAR Y AUTORIZAR BORRADO</strong></p>
+<p><strong>DEBT ID:</strong> <code>DEBT-RANSOMWARE-PROTO-ALIGNED-DEAD-001</code></p>
+<p><strong>Fundamento:</strong> El artefacto es inoperable (45 features anónimas, sin contrato documentado, imposible de alimentar). Pero su existencia es un hecho histórico que debe preservarse como lección arquitectónica: "intentamos un XGBoost de red, falló por falta de contrato de features, abandonamos la línea".</p>
+<p><strong>Acciones requeridas:</strong>
+- Crear fichero <code>DEBTS/RANSOMWARE-PROTO-ALIGNED-DEAD-001.md</code> documentando:
+    - Por qué se creó (intento de detector de red para ransomware)
+    - Por qué falla (features anónimas, sin trazabilidad al entrenamiento)
+    - Por qué se abandona (desajuste de dominio, §2 de la auditoría)
+    - Referencia al commit original y al autor
+- Borrado vía <code>git rm</code> (no <code>rm</code>) para preservar historial
+- El DEBT permanece como registro, el artefacto se elimina del árbol de producción</p>
+<hr />
+<h3 id="3-registro-de-debt-para-features-constantes-del-ddos">3. Registro de DEBT para features constantes del DDoS</h3>
+<p><strong>Decisión: REGISTRAR SIN ACCIÓN INMEDIATA</strong></p>
+<p><strong>DEBT ID:</strong> <code>DEBT-DDOS-FEATURES-CONSTANT-001</code></p>
+<p><strong>Fundamento:</strong> El detector DDoS funciona en lo esencial (6 features reales, incluyendo las de mayor peso). Las 3 features constantes ([2], [3], [7]) son deuda, no emergencia. El modelo no está roto; está subóptimo.</p>
+<p><strong>Acciones requeridas:</strong>
+- Crear fichero <code>DEBTS/DDOS-FEATURES-CONSTANT-001.md</code> documentando:
+    - Las 3 features afectadas y sus valores constantes
+    - El análisis de código que lo demuestra (líneas 224–264 de <code>feature_extractor.cpp</code>)
+    - Impacto: degradación menor, no funcionalidad crítica
+    - Prioridad: baja (arreglar o justificar en iteración futura)
+- No desactivar el detector DDoS
+- No asignar recursos inmediatos; se abordará en sprint de refactor de features</p>
+<p><strong>Nota:</strong> Si en el futuro se mide que estas features constantes afectan significativamente la precisión, se reclasificará a prioridad media.</p>
+<hr />
+<h3 id="4-entrenamiento-de-modelo-comportamental-de-ransomware">4. Entrenamiento de modelo comportamental de ransomware</h3>
+<p><strong>Decisión: AUTORIZAR OPCIÓN A (modelo de red) PARA PRE-FEDER</strong></p>
+<p><strong>Fundamento:</strong> La Opción A es:
+- <strong>Realista:</strong> está dentro del alcance pre-FEDER
+- <strong>Honesta:</strong> detecta las fases de red del ransomware (C2, discovery, lateral, exfil), no el cifrado
+- <strong>Alineada con la arquitectura:</strong> aRGus es NDR; un modelo de red es coherente con su dominio
+- <strong>Entrenable:</strong> los datos de Atomic Red Team (§7) generan la señal necesaria
+- <strong>Validable:</strong> la matriz de ablación mide qué detecta y qué no, con huecos declarados</p>
+<p><strong>La Opción B (híbrido red+host) se difiere a post-FEDER</strong> porque:
+- Requiere integración con Wazuh (nuevo pipeline de telemetría)
+- Amplía el alcance del proyecto más allá de lo comprometido
+- Es técnicamente más compleja (fusión de features heterogéneas)
+- No es urgente: la Opción A ya cubre las fases de red, que son las que aRGus puede ver</p>
+<p><strong>Entregable pre-FEDER:</strong>
+- Modelo RandomForest embebido en C++, 10 features de red, entrenado con datos de Atomic Red Team
+- Documentación explícita de limitaciones: "detecta C2/beaconing, discovery, lateral movement, exfiltración; NO detecta cifrado de ficheros (T1486), que requiere HIDS"
+- Matriz de ablación que valida empíricamente la frontera</p>
+<hr />
+<h3 id="5-aprobacion-de-la-linea-mitre-attck-atomic-red-team">5. Aprobación de la línea MITRE ATT&amp;CK / Atomic Red Team</h3>
+<p><strong>Decisión: APROBAR COMO TRABAJO REAL PRE-FEDER</strong></p>
+<p><strong>Fundamento:</strong> Esta línea es:
+- <strong>Legal:</strong> Atomic Red Team es open source (MIT), no usa malware real, emula técnicas documentadas
+- <strong>Científicamente riguroso:</strong> la matriz de ablación (sensores × técnicas × componentes) es un método de validación defendible
+- <strong>Genera datos:</strong> produce el tráfico necesario para entrenar el modelo de la Opción A
+- <strong>Responde a Andrés:</strong> la matriz con huecos declarados es más fuerte que cualquier número inflado
+- <strong>Publicable:</strong> el método y los resultados son auditables y reproducibles</p>
+<p><strong>Montaje aprobado:</strong>
+- Topología reutilizada de CTU-13 (VM <code>client</code> inyecta, <code>defender</code> observa en <code>eth1</code>)
+- Atomics de Linux (LockBit perfilado por terceros)
+- Sensores: aRGus (cabezas activables una a una), Suricata, Zeek, Wazuh
+- Entregable: matriz de detección por técnica ATT&amp;CK, con declaración explícita de qué sensor ve qué</p>
+<p><strong>Criterio de éxito:</strong> la matriz demuestra empíricamente la frontera NDR/HIDS, con huecos honestos. No se busca "detectar todo"; se busca "saber qué detecta cada capa y por qué".</p>
+<hr />
+<h2 id="resumen-de-decisiones">Resumen de decisiones</h2>
+<table>
+<thead>
+<tr>
+<th>Pregunta</th>
+<th>Decisión</th>
+<th>Acción inmediata</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1. Ransomware embebido</td>
+<td>Desactivar</td>
+<td>ADR + <code>enabled: false</code></td>
+</tr>
+<tr>
+<td>2. XGBoost muerto</td>
+<td>Registrar DEBT + borrar</td>
+<td>Documentar + <code>git rm</code></td>
+</tr>
+<tr>
+<td>3. DDoS constante</td>
+<td>Registrar DEBT</td>
+<td>Documentar, sin acción</td>
+</tr>
+<tr>
+<td>4. Modelo ransomware real</td>
+<td>Opción A (red)</td>
+<td>Entrenar con Atomic Red Team</td>
+</tr>
+<tr>
+<td>5. MITRE ATT&amp;CK</td>
+<td>Aprobar</td>
+<td>Ejecutar matriz de ablación</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="nota-final-del-consejo">Nota final del Consejo</h2>
+<p>La auditoría ha cumplido su propósito: <strong>medir, no votar</strong>. Los hallazgos son structuralmente sólidos, trazados a código, y el diagnóstico es defendible. La frontera NDR/HIDS no es un fracaso; es un hecho arquitectónico que debe publicarse con honestidad.</p>
+<p>El proyecto avanza con rigor científico. La transparencia en el uso de IA, el código abierto como obligación ética, y la democratización de la seguridad empresarial se cumplen cuando admitimos las sombras del sistema.</p>
+<p><strong>Via Appia Quality — un escudo que conoce sus propias sombras.</strong></p>
+<hr />
+<p><em>Respuesta del Consejo de Sabios, 6 de julio de 2026.</em>
+</think></p>
+<h1 id="respuesta-del-consejo-de-sabios-deliberacion-sobre-la-auditoria-de-features">RESPUESTA DEL CONSEJO DE SABIOS — Deliberación sobre la auditoría de features</h1>
+<p><strong>DAY 209 · Resolución</strong></p>
+<hr />
+<h2 id="dictamen-general">Dictamen general</h2>
+<p>La auditoría presentada cumple con el estándar epistémico del proyecto: <strong>medir, no votar</strong>. Cada afirmación está trazada a un fichero, cada diagnóstico distingue entre lo medido y lo supuesto, y la frontera NDR/HIDS se formula como un hecho arquitectónico, no como un fracaso. El método es defendible y los hallazgos son structuralmente sólidos.</p>
+<p>A continuación, las decisiones del Consejo sobre cada pregunta.</p>
+<hr />
+<h2 id="1-desactivacion-de-la-cabeza-de-ransomware-embebida-actual_1">1. Desactivación de la cabeza de ransomware embebida actual</h2>
+<p><strong>Decisión: DESACTIVAR INMEDIATAMENTE.</strong></p>
+<p>El diagnóstico es terminal. Un modelo entrenado sobre entropía de ficheros que recibe varianza de longitud de paquete no está "degradado": está produciendo decisiones sin fundamento semántico. Mantenerlo activo con cualquier nivel de confianza —aunque sea etiquetado como "no fiable"— contamina las métricas de evaluación y falsea la validación científica.</p>
+<p><strong>Acciones:</strong>
+- ADR (Architecture Decision Record) documentando el desajuste de dominio, la imposibilidad de rescate en arquitectura NDR pura, y la decisión de desactivación.
+- Config: <code>enabled: false</code>, con campo <code>status: "domain_mismatch_detected"</code> y referencia al DEBT.
+- El detector queda excluido de cualquier veredicto de producción hasta que exista un modelo con contrato de features del dominio correcto.</p>
+<p><strong>Alternativa rechazada:</strong> mantenerlo activo con etiqueta "proxy-based, no fiable". La honestidad epistémica exige silencio cuando la señal es ruido. Un score sin fundamento es peor que la ausencia de score.</p>
+<hr />
+<h2 id="2-registro-de-debt-ransomware-proto-aligned-dead-001">2. Registro de <code>DEBT-RANSOMWARE-PROTO-ALIGNED-DEAD-001</code></h2>
+<p><strong>Decisión: REGISTRAR Y AUTORIZAR BORRADO.</strong></p>
+<p>El XGBoost de 45 features anónimas es un artefacto muerto, pero su existencia es un hecho histórico con valor pedagógico: documenta un intento fallido de detector de red para ransomware, abandonado por falta de contrato de features. Ese conocimiento no debe perderse.</p>
+<p><strong>Acciones:</strong>
+- Crear <code>DEBTS/RANSOMWARE-PROTO-ALIGNED-DEAD-001.md</code> con: motivo de creación, causa de fallo (features anónimas, sin trazabilidad), razón del abandono (desajuste de dominio, §2 de la auditoría), referencia al commit y al autor.
+- Borrado vía <code>git rm</code> —nunca <code>rm</code>— para preservar el historial.
+- El DEBT permanece como registro; el artefacto se elimina del árbol de producción.</p>
+<p>Las discrepancias afloran como DEBT, no se resuelven en silencio. Principio confirmado.</p>
+<hr />
+<h2 id="3-registro-de-debt-ddos-features-constant-001">3. Registro de <code>DEBT-DDOS-FEATURES-CONSTANT-001</code></h2>
+<p><strong>Decisión: REGISTRAR, SIN ACCIÓN INMEDIATA.</strong></p>
+<p>El detector DDoS funciona en lo esencial: sus features de mayor peso (<code>syn_ack_ratio</code>, <code>packet_symmetry</code>) son legítimas y el fenómeno es de red pura. Las tres features constantes ([2], [3], [7]) son deuda técnica, no emergencia funcional. El modelo está subóptimo, no roto.</p>
+<p><strong>Acciones:</strong>
+- Crear <code>DEBTS/DDOS-FEATURES-CONSTANT-001.md</code> documentando las features afectadas, los valores constantes, el análisis de código (líneas 224–264), el impacto (degradación menor), y la prioridad (baja).
+- No desactivar el detector. No asignar recursos inmediatos.
+- Se abordará en iteración futura de refactor de features. Si métricas posteriores muestran impacto significativo en precisión, se reclasificará a prioridad media.</p>
+<hr />
+<h2 id="4-entrenamiento-de-modelo-comportamental-de-ransomware_1">4. Entrenamiento de modelo comportamental de ransomware</h2>
+<p><strong>Decisión: AUTORIZAR OPCIÓN A (modelo de red) PARA PRE-FEDER. OPCIÓN B (híbrido) QUEDA COMO ROADMAP POST-FEDER.</strong></p>
+<p><strong>Opción A — modelo de red:</strong>
+- Está dentro del alcance pre-FEDER.
+- Es coherente con la arquitectura: aRGus es NDR, un modelo de red respeta su dominio.
+- Los datos de Atomic Red Team (§7) generan la señal necesaria para entrenarlo.
+- Es honesto: detecta C2/beaconing, network discovery (T1046), lateral movement (T1021), exfiltración (T1048). No detecta cifrado (T1486), y eso se declara explícitamente.
+- Es validable: la matriz de ablación mide qué detecta y qué no, con huecos declarados.</p>
+<p><strong>Opción B — modelo híbrido red+host:</strong>
+- Requiere integración con Wazuh (nuevo pipeline de telemetría, fusión de features heterogéneas).
+- Amplía el alcance más allá de lo comprometido en FEDER.
+- Es técnicamente más compleja y no es urgente: la Opción A ya cubre las fases que aRGus puede ver por construcción.
+- Se registra como objetivo post-FEDER, cuando la integración HIDS esté en la hoja de ruta.</p>
+<p><strong>Entregable pre-FEDER:</strong> modelo RandomForest embebido en C++, 10 features de red, entrenado con datos de Atomic Red Team, con documentación explícita de limitaciones y matriz de ablación que valida empíricamente la frontera.</p>
+<hr />
+<h2 id="5-aprobacion-de-la-linea-mitre-attck-atomic-red-team_1">5. Aprobación de la línea MITRE ATT&amp;CK / Atomic Red Team</h2>
+<p><strong>Decisión: APROBAR COMO TRABAJO REAL PRE-FEDER.</strong></p>
+<p>Esta línea cumple todos los criterios del proyecto:
+- <strong>Legal y ética:</strong> Atomic Red Team es open source (MIT), emula técnicas documentadas sin malware real, alineado con el marco ético de no facilitar daño.
+- <strong>Científicamente riguroso:</strong> la matriz de ablación (sensores × técnicas ATT&amp;CK × componentes) es un método de validación defendible y publicable.
+- <strong>Genera datos:</strong> produce el tráfico comportamental necesario para entrenar el modelo de la Opción A.
+- <strong>Responde a Andrés:</strong> la matriz con huecos honestos es más fuerte que cualquier número inflado. Reformula la pregunta de "¿aRGus detecta ransomware?" a "¿qué capa de la defensa ve qué fase del ataque?", que es la pregunta correcta.
+- <strong>Reproducible:</strong> el montaje reutiliza la topología CTU-13, los atomics son públicos, y los resultados son auditables.</p>
+<p><strong>Montaje aprobado:</strong>
+- Topología CTU-13: VM <code>client</code> inyecta, <code>defender</code> observa en <code>eth1</code>.
+- Atomics de Linux con perfil de LockBit (cartografiado por terceros).
+- Sensores: aRGus (cabezas activables una a una para ablación), Suricata, Zeek, Wazuh.
+- Entregable: matriz de detección por técnica ATT&amp;CK, con declaración explícita de qué sensor ve qué y por qué.</p>
+<p><strong>Criterio de éxito:</strong> la matriz demuestra empíricamente la frontera NDR/HIDS. No se busca "detectar todo"; se busca "saber qué detecta cada capa y por qué", con las sombras declaradas.</p>
+<hr />
+<h2 id="resumen-ejecutivo-de-decisiones">Resumen ejecutivo de decisiones</h2>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Pregunta</th>
+<th>Decisión</th>
+<th>Acción inmediata</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Ransomware embebido</td>
+<td>Desactivar</td>
+<td>ADR + <code>enabled: false</code></td>
+</tr>
+<tr>
+<td>2</td>
+<td>XGBoost <code>proto_aligned</code></td>
+<td>Registrar DEBT + borrar</td>
+<td>Documentar + <code>git rm</code></td>
+</tr>
+<tr>
+<td>3</td>
+<td>DDoS features constantes</td>
+<td>Registrar DEBT</td>
+<td>Documentar, prioridad baja</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Modelo ransomware real</td>
+<td>Opción A (red)</td>
+<td>Entrenar con Atomic Red Team</td>
+</tr>
+<tr>
+<td>5</td>
+<td>MITRE ATT&amp;CK / Atomic Red Team</td>
+<td>Aprobar</td>
+<td>Ejecutar matriz de ablación</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="observacion-final">Observación final</h2>
+<p>La auditoría ha producido algo más valioso que un listado de bugs: ha producido <strong>conocimiento arquitectónico defendible</strong>. La frontera entre lo que aRGus puede ver (fases de red) y lo que no puede ver (cifrado en disco) no es un defecto; es una propiedad del sistema que debe publicarse con la misma rigour con la que se publican sus aciertos.</p>
+<p>El detector de ransomware actual no se rescata reentrenándolo. Se rescata reconociendo que su dominio es otro, y que ese otro dominio requiere otro sensor. La honestidad epistémica —admitir lo que el sistema no puede ver— es la base de la transparencia absoluta en el uso de IA que define el marco ético del proyecto.</p>
+<p>El proyecto avanza con rigor. Los hallazgos son trazables, las decisiones son reversibles, y la frontera es un entregable, no un secreto.</p>
+<p><strong>Via Appia Quality — un escudo que conoce sus propias sombras.</strong></p>
+<hr />
+<p><em>Deliberación del Consejo de Sabios, 6 de julio de 2026.</em></p>
+<p>FDO
+qwen</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.top", "search.highlight"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

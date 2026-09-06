@@ -1,0 +1,1401 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source embedded-ML NDR for hospitals and schools">
+      
+      
+        <meta name="author" content="Alonso Isidoro Roman">
+      
+      
+        <link rel="canonical" href="https://alonsoir.github.io/argus/council/Integraci%C3%B3n%20multi-motor%20aRGus-Suricata-Zeek-Wazuh-MISTRAL/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>Integración multi motor aRGus Suricata Zeek Wazuh MISTRAL - ML Defender (aRGus NDR)</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#integracion-multi-motor-en-argus-ndr-analisis-tecnico-y-recomendaciones-para-la-correlacion-de-eventos-de-red-y-host" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-header__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ML Defender (aRGus NDR)
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Integración multi motor aRGus Suricata Zeek Wazuh MISTRAL
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../README.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/BACKLOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Backlog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Security Model
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-tabs__link">
+          
+  
+  
+  ADRs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/contracts/Protobuf contracts.md" class="md-tabs__link">
+          
+  
+  
+  Contracts
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-nav__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ML Defender (aRGus NDR)
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../README.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/BACKLOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADRs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ADRs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013 Seed Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-021-deployment-topology-seed-families.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-021 Topology SSOT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-022-threat-model-opcion2-descartada.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-022 Threat Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Protobuf contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protobuf
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/JSON contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JSON
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Rag security commands.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#introduccion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Introducción
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#analisis-por-inquietudes-tecnicas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Análisis por Inquietudes Técnicas
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Análisis por Inquietudes Técnicas">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#inq-1-community_id-como-pk-unica-vs-modelo-de-dos-claves" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        INQ-1: community_id como PK única vs. modelo de dos claves
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#inq-2-union-hostflujo-no-simetrica" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        INQ-2: Unión host↔flujo no simétrica
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#inq-3-semantica-de-source_wait_timeout" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        INQ-3: Semántica de source_wait_timeout
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#inq-4-cardinalidad-de-crisis-abiertas-y-backpressure" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        INQ-4: Cardinalidad de crisis abiertas y backpressure
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#inq-5-disciplina-de-reloj-y-timestamps-canonicos" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        INQ-5: Disciplina de reloj y timestamps canónicos
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#inq-6-doble-ingesta-eco-de-eventos" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        INQ-6: Doble ingesta / eco de eventos
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#inq-7-transporte-y-resiliencia-de-adapters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        INQ-7: Transporte y resiliencia de adapters
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#inq-8-determinismo-vs-realismo-en-validacion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        INQ-8: Determinismo vs. realismo en validación
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#inq-9-alcance-de-protocolo-de-community_id" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        INQ-9: Alcance de protocolo de community_id
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#respuestas-a-las-preguntas-al-consejo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Respuestas a las Preguntas al Consejo
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Respuestas a las Preguntas al Consejo">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#q1-y-q2-modelo-de-claves-y-grafo-de-correlacion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Q1 y Q2: Modelo de claves y grafo de correlación
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#q3-semantica-de-cierre-de-crisis" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Q3: Semántica de cierre de crisis
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#q4-ingesta-de-evejson-por-wazuh" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Q4: Ingesta de eve.json por Wazuh
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#q5-timestamp-canonico-y-tolerancia-de-reloj" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Q5: Timestamp canónico y tolerancia de reloj
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#q6-recursos-para-e2e" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Q6: Recursos para E2E
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#q7-cota-de-crisis-abiertas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Q7: Cota de crisis abiertas
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#q8-alcance-de-protocolo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Q8: Alcance de protocolo
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#q9-objetivo-de-feder" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Q9: Objetivo de FEDER
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#orden-de-resolucion-y-dependencias" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Orden de Resolución y Dependencias
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#conclusiones-y-siguientes-pasos" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Conclusiones y Siguientes Pasos
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#tablas-comparativas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Tablas Comparativas
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<ol>
+<li>Analizar la compatibilidad de <code>community_id</code> como clave primaria única con los eventos de Wazuh, considerando la naturaleza de los eventos de host y la ausencia de 5-tupla en la mayoría de ellos.</li>
+<li>Evaluar la propuesta de un modelo de dos claves (<code>community_id</code> para flujo y <code>host_key</code> para host) y su impacto en la arquitectura del correlation-engine y en la máquina de estados de crisis.</li>
+<li>Examinar la semántica de <code>source_wait_timeout</code> y su interacción con las fuentes de eventos, especialmente Wazuh, para evitar esperas innecesarias y latencias excesivas.</li>
+<li>Definir la cota dura de crisis abiertas y la política de evicción para manejar la backpressure bajo ataque, asegurando la degradación sin bloqueo.</li>
+<li>Establecer la disciplina de reloj y la tolerancia de tiempo para la correlación de eventos, considerando los diferentes timestamps generados por las fuentes y su impacto en la precisión de la correlación.</li>
+<li>Decidir si Wazuh debe ingerir <code>eve.json</code> de Suricata o si cada motor debe entrar al engine por su propio adapter, para evitar duplicación y eco de eventos.</li>
+<li>Definir el contrato de ingesta por adapter, incluyendo la persistencia de offset y la deduplicación, para garantizar la resiliencia y la consistencia en la ingesta de eventos.</li>
+<li>Establecer el alcance de protocolo para <code>community_id</code>, considerando la inclusión de TCP/UDP/SCTP y la exclusión de ICMP para FEDER, y su impacto en la correlación de eventos.</li>
+</ol>
+<h1 id="integracion-multi-motor-en-argus-ndr-analisis-tecnico-y-recomendaciones-para-la-correlacion-de-eventos-de-red-y-host">Integración Multi-Motor en aRGus NDR: Análisis Técnico y Recomendaciones para la Correlación de Eventos de Red y Host</h1>
+<blockquote>
+<ul>
+<li>El uso de <code>community_id</code> como clave primaria única es insuficiente para correlacionar eventos de host (Wazuh) y de red (Suricata, Zeek, aRGus) debido a la naturaleza asimétrica de los eventos.</li>
+<li>Un modelo de dos claves (<code>community_id</code> + <code>host_key</code>) es recomendable para integrar fuentes heterogéneas, alineado con prácticas de la industria en SIEMs como Elastic y Wazuh.</li>
+<li>La semántica de <code>source_wait_timeout</code> debe ser dinámica y ajustarse al tipo de evento y fuente para evitar latencias innecesarias y mejorar la eficiencia.</li>
+<li>Estrategias de backpressure, como cotas duras y políticas de evicción (LRU, FIFO), son esenciales para manejar alta carga y evitar bloqueos en la correlación de eventos.</li>
+<li>La sincronización de relojes mediante NTP y algoritmos como Berkeley o Lamport es crítica para garantizar la consistencia temporal en la correlación de eventos distribuidos.</li>
+</ul>
+</blockquote>
+<hr />
+<h2 id="introduccion">Introducción</h2>
+<p>El proyecto aRGus NDR busca integrar cuatro motores de seguridad —aRGus, Suricata, Zeek y Wazuh— para correlacionar eventos de red y host, utilizando <code>community_id</code> como identificador clave. Sin embargo, la naturaleza distinta de los eventos generados por Wazuh (HIDS/SIEM basado en host) frente a los sensores de red plantea desafíos técnicos significativos. Este reporte profundiza en las inquietudes técnicas planteadas, analiza la validez de las premisas iniciales y propone soluciones basadas en estándares, buenas prácticas y ejemplos concretos de la industria, con el objetivo de fundamentar las decisiones de diseño para una integración robusta y escalable.</p>
+<hr />
+<h2 id="analisis-por-inquietudes-tecnicas">Análisis por Inquietudes Técnicas</h2>
+<h3 id="inq-1-community_id-como-pk-unica-vs-modelo-de-dos-claves">INQ-1: <code>community_id</code> como PK única vs. modelo de dos claves</h3>
+<p><strong>Contexto:</strong> La premisa inicial propone usar <code>community_id</code> como clave primaria única para correlacionar eventos. Sin embargo, Wazuh genera eventos de host que no siempre tienen una 5-tupla clara, lo que dificulta la correlación con eventos de red basados en flujos.</p>
+<p><strong>Hallazgos:</strong>
+- En sistemas SIEM como Elastic y Wazuh, es común utilizar modelos de claves múltiples para integrar fuentes heterogéneas (red + host). Por ejemplo, Wazuh puede correlacionar eventos de host mediante un <code>host_key</code> (IP, hostname, agent_id) en combinación con identificadores de flujo .
+- El uso de <code>community_id</code> como única PK puede generar problemas de diseño y deuda técnica en sistemas con fuentes asimétricas, ya que no captura la naturaleza de los eventos de host que no tienen 5-tupla .
+- No se encontraron estándares específicos para la correlación de eventos de flujo y host, pero la práctica común es usar claves compuestas que reflejen tanto la identidad del flujo como del host .</p>
+<p><strong>Recomendaciones:</strong>
+- Adoptar un modelo de dos claves (<code>community_id</code> + <code>host_key</code>) para permitir la correlación robusta entre eventos de red y host.
+- Validar y actualizar las premisas P1-P5, especialmente el cálculo de <code>community_id</code> y la sincronización de relojes, para asegurar alineación con buenas prácticas .</p>
+<hr />
+<h3 id="inq-2-union-hostflujo-no-simetrica">INQ-2: Unión host↔flujo no simétrica</h3>
+<p><strong>Contexto:</strong> La correlación entre eventos de host y flujo no es simétrica debido a la diferencia en la naturaleza de los datos (eventos de red basados en flujos vs. eventos de host basados en IPs/agent_id).</p>
+<p><strong>Hallazgos:</strong>
+- En soluciones SIEM, la correlación entre eventos de red y host se maneja mediante inventarios de IPs internas y reglas que evitan uniones espurias. Por ejemplo, Wazuh y Elastic correlacionan eventos de host con flujos de red mediante inventarios y políticas de normalización .
+- Se utilizan esquemas de datos que relacionan IPs con agent_id y otros identificadores para evitar ambigüedades en la correlación .
+- La integración de Wazuh con Suricata mediante agentes que leen <code>eve.json</code> permite unificar alertas y correlacionar eventos de host con flujos de red .</p>
+<p><strong>Recomendaciones:</strong>
+- Implementar un inventario de IPs internas y reglas de correlación para evitar uniones espurias entre eventos de host y flujo.
+- Utilizar esquemas de datos que relacionen IPs, hostnames y agent_id para robustecer la correlación .</p>
+<hr />
+<h3 id="inq-3-semantica-de-source_wait_timeout">INQ-3: Semántica de <code>source_wait_timeout</code></h3>
+<p><strong>Contexto:</strong> El tiempo de espera para el cierre de crisis debe ser dinámico y evitar latencias innecesarias, especialmente cuando no todas las fuentes reportan eventos.</p>
+<p><strong>Hallazgos:</strong>
+- Sistemas de correlación como Suricata+EveBox y Zeek+Kibana implementan tiempos de espera ajustables según el tipo de evento y fuente, para optimizar la eficiencia .
+- Se recomienda computar dinámicamente las fuentes "esperadas" para un evento dado, para evitar que <code>source_wait_timeout</code> imponga esperas innecesarias .
+- La implementación de tiempos de espera adaptativos mejora la respuesta del sistema y reduce la latencia en la correlación .</p>
+<p><strong>Recomendaciones:</strong>
+- Implementar una lógica dinámica para calcular <code>source_wait_timeout</code> basada en el tipo de evento y las fuentes involucradas.
+- Utilizar algoritmos de ajuste de timeout que consideren la carga del sistema y la criticidad del evento .</p>
+<hr />
+<h3 id="inq-4-cardinalidad-de-crisis-abiertas-y-backpressure">INQ-4: Cardinalidad de crisis abiertas y backpressure</h3>
+<p><strong>Contexto:</strong> Bajo alta carga (ej. ataques DDoS), el sistema debe limitar el número de crisis abiertas para evitar saturación y bloqueos.</p>
+<p><strong>Hallazgos:</strong>
+- Estrategias de backpressure como cotas duras y políticas de evicción (LRU, FIFO) son comunes en sistemas distribuidos para garantizar resiliencia .
+- Motores como Suricata y Zeek implementan políticas de evicción y degradación para manejar carga excesiva sin bloquear el sistema .
+- La emisión de eventos parciales sin bloqueo es una práctica para mantener la disponibilidad bajo alta carga .</p>
+<p><strong>Recomendaciones:</strong>
+- Establecer una cota dura de crisis abiertas y aplicar políticas de evicción (ej. LRU) para manejar backpressure.
+- Implementar degradación sin bloqueo mediante la emisión de eventos parciales cuando la carga supere la capacidad de procesamiento .</p>
+<hr />
+<h3 id="inq-5-disciplina-de-reloj-y-timestamps-canonicos">INQ-5: Disciplina de reloj y timestamps canónicos</h3>
+<p><strong>Contexto:</strong> La sincronización de relojes es crítica para la correlación precisa de eventos en sistemas distribuidos.</p>
+<p><strong>Hallazgos:</strong>
+- La sincronización de relojes en sistemas distribuidos se logra mediante algoritmos como Berkeley y Lamport, y protocolos como NTP, para garantizar una línea de tiempo consistente .
+- El sesgo de reloj (clock skew) debe minimizarse para garantizar el orden correcto de eventos; lo ideal es que sea cero, pero en la práctica se toleran valores pequeños (ej. ≤ 50 ms en laboratorio) .
+- La normalización de timestamps a un formato canónico (ej. UTC) y la aplicación de ajustes para compensar diferencias de tiempo entre fuentes son prácticas comunes .
+- El monitoreo constante de la derivación de reloj es necesario para detectar y corregir discrepancias que puedan afectar la correlación .</p>
+<p><strong>Recomendaciones:</strong>
+- Implementar sincronización de relojes mediante NTP y algoritmos de Berkeley o Lamport.
+- Normalizar timestamps a UTC y aplicar ajustes para compensar diferencias entre fuentes.
+- Monitorear la derivación de reloj para detectar y corregir discrepancias en tiempo real .</p>
+<hr />
+<h3 id="inq-6-doble-ingesta-eco-de-eventos">INQ-6: Doble ingesta / eco de eventos</h3>
+<p><strong>Contexto:</strong> Evitar la duplicación de eventos en sistemas que integran múltiples fuentes (ej. Wazuh + Suricata).</p>
+<p><strong>Hallazgos:</strong>
+- Se utilizan claves de deduplicación como <code>(source_engine, native_event_id)</code> para evitar eventos duplicados en sistemas SIEM .
+- Es preferible que cada motor ingrese al sistema de correlación por su propio adapter para evitar eco y duplicación de eventos .
+- La ingesta de <code>eve.json</code> de Suricata por Wazuh puede generar duplicación y eco de eventos, lo que complica la correlación .</p>
+<p><strong>Recomendaciones:</strong>
+- Utilizar claves de deduplicación para identificar y filtrar eventos duplicados.
+- Preferir que cada motor ingrese al engine mediante su propio adapter en lugar de que Wazuh ingiera logs de Suricata .</p>
+<hr />
+<h3 id="inq-7-transporte-y-resiliencia-de-adapters">INQ-7: Transporte y resiliencia de adapters</h3>
+<p><strong>Contexto:</strong> La ingesta de logs en tiempo real desde archivos o sockets debe ser resiliente a fallos de red y rotación de archivos.</p>
+<p><strong>Hallazgos:</strong>
+- Herramientas como Filebeat y Logstash son ejemplos de adapters robustos para ingesta de logs en tiempo real .
+- La persistencia de offsets y la deduplicación en sistemas como Kafka y Redis son fundamentales para garantizar la consistencia y la resiliencia .
+- Se recomienda implementar lógicas de reintento con backoff exponencial para manejar fallos transitorios .
+- Patrones de caché como write-through y write-behind son útiles para la persistencia de offsets y deduplicación .</p>
+<p><strong>Recomendaciones:</strong>
+- Utilizar librerías y frameworks robustos para la ingesta de logs (ej. Filebeat, Logstash).
+- Implementar persistencia de offsets y deduplicación mediante patrones de caché y reintentos con backoff exponencial .</p>
+<hr />
+<h3 id="inq-8-determinismo-vs-realismo-en-validacion">INQ-8: Determinismo vs. realismo en validación</h3>
+<p><strong>Contexto:</strong> Validar el sistema de correlación con pruebas deterministas y realistas para garantizar reproducibilidad y cobertura.</p>
+<p><strong>Hallazgos:</strong>
+- Se utilizan pcaps fijos como "golden sets" para pruebas deterministas en herramientas como tcpreplay .
+- Pruebas con herramientas como nmap o atomic-red-team aportan realismo para evaluar la respuesta del sistema .
+- La combinación de pruebas deterministas y realistas es clave para garantizar la robustez y la reproducibilidad en entornos CI/CD .</p>
+<p><strong>Recomendaciones:</strong>
+- Utilizar pcaps fijos para pruebas deterministas y herramientas como nmap para pruebas realistas.
+- Implementar un pipeline de CI/CD que combine ambas aproximaciones para validar el sistema .</p>
+<hr />
+<h3 id="inq-9-alcance-de-protocolo-de-community_id">INQ-9: Alcance de protocolo de <code>community_id</code></h3>
+<p><strong>Contexto:</strong> Evaluar el soporte de <code>community_id</code> para protocolos como ICMP y su impacto en la correlación.</p>
+<p><strong>Hallazgos:</strong>
+- <code>community_id</code> soporta ICMP en implementaciones como Suricata y Zeek, mapeando type/code a pseudo-puertos .
+- La exclusión de ICMP para FEDER puede simplificar la correlación inicial, pero puede limitar la detección de eventos importantes .
+- Decisiones de diseño en proyectos similares documentan la exclusión de ICMP para simplificar la correlación .</p>
+<p><strong>Recomendaciones:</strong>
+- Incluir TCP/UDP/SCTP en <code>community_id</code> y diferir ICMP para FEDER, evaluando su impacto en la correlación.
+- Documentar la decisión de diseño y evaluar alternativas para incluir ICMP en el futuro .</p>
+<hr />
+<h2 id="respuestas-a-las-preguntas-al-consejo">Respuestas a las Preguntas al Consejo</h2>
+<h3 id="q1-y-q2-modelo-de-claves-y-grafo-de-correlacion">Q1 y Q2: Modelo de claves y grafo de correlación</h3>
+<p><strong>Análisis:</strong>
+- Un modelo de dos claves (<code>community_id</code> + <code>host_key</code>) permite representar crisis con dos tipos de aristas (flujo y host), facilitando la correlación de eventos heterogéneos.
+- Esto mejora la flexibilidad y robustez del grafo de correlación, especialmente en entornos con múltiples fuentes de datos asimétricas.
+- Ejemplos de esquemas de datos en SIEMs muestran que este modelo es más adecuado para representar relaciones complejas entre eventos .</p>
+<p><strong>Recomendación:</strong>
+- Adoptar el modelo de dos claves para el grafo de correlación, permitiendo representar crisis con aristas de flujo y host.</p>
+<hr />
+<h3 id="q3-semantica-de-cierre-de-crisis">Q3: Semántica de cierre de crisis</h3>
+<p><strong>Análisis:</strong>
+- Computar dinámicamente las fuentes "esperadas" para una crisis permite evitar tiempos de espera innecesarios.
+- Implementar una lógica adaptativa para <code>source_wait_timeout</code> mejora la eficiencia y reduce la latencia en la correlación.
+- Ejemplos en sistemas SIEM muestran que este enfoque optimiza la gestión de eventos y la respuesta a incidentes .</p>
+<p><strong>Recomendación:</strong>
+- Implementar un mecanismo dinámico para calcular <code>source_wait_timeout</code> basado en el tipo de evento y fuentes involucradas.</p>
+<hr />
+<h3 id="q4-ingesta-de-evejson-por-wazuh">Q4: Ingesta de <code>eve.json</code> por Wazuh</h3>
+<p><strong>Análisis:</strong>
+- Que Wazuh ingiera <code>eve.json</code> de Suricata puede generar duplicación y eco de eventos, complicando la correlación.
+- Es preferible que cada motor ingrese al engine por su propio adapter para evitar redundancia y garantizar la consistencia.
+- Esto simplifica la deduplicación y mejora la resiliencia del sistema .</p>
+<p><strong>Recomendación:</strong>
+- Evitar que Wazuh ingiera <code>eve.json</code> de Suricata; preferir que cada motor entre al engine por su propio adapter.</p>
+<hr />
+<h3 id="q5-timestamp-canonico-y-tolerancia-de-reloj">Q5: Timestamp canónico y tolerancia de reloj</h3>
+<p><strong>Análisis:</strong>
+- La sincronización de relojes mediante NTP y algoritmos como Berkeley o Lamport es esencial para garantizar la consistencia temporal.
+- Se recomienda una tolerancia de reloj ≤ 50 ms en entornos de laboratorio y más estricta en producción.
+- El monitoreo constante de la derivación de reloj es clave para detectar y corregir discrepancias .</p>
+<p><strong>Recomendación:</strong>
+- Utilizar NTP para sincronización de relojes y monitorear la derivación de reloj en tiempo real.</p>
+<hr />
+<h3 id="q6-recursos-para-e2e">Q6: Recursos para E2E</h3>
+<p><strong>Análisis:</strong>
+- Ejecutar 5 VMs simultáneas en un M2 Pro con 32 GB de RAM puede ser viable para pruebas E2E, pero puede requerir optimización.
+- Alternativas como perfiles ligeros, arranque secuencial o entornos CI dedicados pueden mejorar la escalabilidad y el rendimiento.
+- Es importante evaluar la carga de trabajo y los requisitos de memoria para garantizar la estabilidad .</p>
+<p><strong>Recomendación:</strong>
+- Evaluar la viabilidad técnica y considerar alternativas para optimizar el uso de recursos en pruebas E2E.</p>
+<hr />
+<h3 id="q7-cota-de-crisis-abiertas">Q7: Cota de crisis abiertas</h3>
+<p><strong>Análisis:</strong>
+- Establecer cotas duras y políticas de evicción (ej. LRU) es esencial para manejar alta carga y evitar bloqueos.
+- Esto permite garantizar la resiliencia del sistema y la disponibilidad bajo condiciones de ataque.
+- Ejemplos en sistemas SIEM muestran que este enfoque mejora la gestión de eventos y la respuesta a incidentes .</p>
+<p><strong>Recomendación:</strong>
+- Implementar cotas duras y políticas de evicción para manejar la carga de crisis abiertas.</p>
+<hr />
+<h3 id="q8-alcance-de-protocolo">Q8: Alcance de protocolo</h3>
+<p><strong>Análisis:</strong>
+- Limitar <code>community_id</code> a TCP/UDP/SCTP y diferir ICMP para FEDER simplifica la correlación inicial.
+- Sin embargo, ICMP es un protocolo importante para la detección de eventos de red, y su exclusión puede limitar la capacidad de detección.
+- Decisiones de diseño en proyectos similares documentan la exclusión de ICMP para simplificar la correlación .</p>
+<p><strong>Recomendación:</strong>
+- Incluir TCP/UDP/SCTP en <code>community_id</code> y diferir ICMP para FEDER, evaluando su impacto y documentando la decisión.</p>
+<hr />
+<h3 id="q9-objetivo-de-feder">Q9: Objetivo de FEDER</h3>
+<p><strong>Análisis:</strong>
+- Enfocar FEDER como un <strong>pipeline vivo</strong> de correlación prioriza la detección en tiempo real y la respuesta rápida.
+- Enfocarlo como un <strong>corpus etiquetado y reproducible</strong> prioriza la precisión y la capacidad de análisis forense.
+- La elección afecta el orden de las fases de desarrollo: un pipeline vivo requiere optimización de throughput, mientras que un corpus exige reproducibilidad y etiquetado riguroso .</p>
+<p><strong>Recomendación:</strong>
+- Evaluar los objetivos de FEDER en función de las prioridades del proyecto: throughput y respuesta rápida vs. precisión y análisis forense.</p>
+<hr />
+<h2 id="orden-de-resolucion-y-dependencias">Orden de Resolución y Dependencias</h2>
+<p>La investigación sugiere que el orden de fases propuesto (Fase 0 a Fase 6) es técnicamente sólido, pero debe considerarse la prioridad de reproducibilidad si FEDER se enfoca como corpus. En ese caso, se recomienda ajustar las fases para garantizar la calidad y consistencia de los datos antes de escalar la producción.</p>
+<hr />
+<h2 id="conclusiones-y-siguientes-pasos">Conclusiones y Siguientes Pasos</h2>
+<p>La integración multi-motor en aRGus NDR requiere un modelo de correlación basado en dos claves (<code>community_id</code> + <code>host_key</code>) para manejar la heterogeneidad de eventos de red y host. La sincronización de relojes, la gestión dinámica de tiempos de espera, y la implementación de estrategias de backpressure son fundamentales para garantizar la robustez y escalabilidad del sistema. Además, se recomienda validar y actualizar las premisas técnicas iniciales para alinearse con estándares y buenas prácticas de la industria.</p>
+<p>Como siguientes pasos, se propone:
+1. Implementar un modelo de dos claves para la correlación de eventos.
+2. Desarrollar un mecanismo dinámico para el cálculo de <code>source_wait_timeout</code>.
+3. Establecer cotas y políticas de evicción para manejar la carga de crisis abiertas.
+4. Implementar sincronización de relojes mediante NTP y monitoreo de derivación.
+5. Evaluar la ingesta de eventos mediante adapters independientes para evitar duplicación.
+6. Validar el alcance de protocolo para <code>community_id</code>, incluyendo TCP/UDP/SCTP y evaluando la exclusión de ICMP.
+7. Definir el objetivo de FEDER (pipeline vivo vs. corpus) y ajustar las fases de desarrollo en consecuencia.</p>
+<hr />
+<h2 id="tablas-comparativas">Tablas Comparativas</h2>
+<table>
+<thead>
+<tr>
+<th>Aspecto</th>
+<th>PK Única (<code>community_id</code>)</th>
+<th>Modelo de Dos Claves (<code>community_id</code> + <code>host_key</code>)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Capacidad de correlación</td>
+<td>Limitada para eventos de host sin 5-tupla</td>
+<td>Robusta para eventos de red y host heterogéneos</td>
+</tr>
+<tr>
+<td>Complejidad de implementación</td>
+<td>Menor, pero menos flexible</td>
+<td>Mayor, pero más flexible y escalable</td>
+</tr>
+<tr>
+<td>Ejemplos en la industria</td>
+<td>Poco documentados</td>
+<td>Común en SIEMs como Elastic, Wazuh</td>
+</tr>
+<tr>
+<td>Impacto en grafo de correlación</td>
+<td>Dificulta representación de crisis complejas</td>
+<td>Permite representar crisis con aristas de flujo y host</td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>Estrategia de Backpressure</th>
+<th>Descripción</th>
+<th>Ventajas</th>
+<th>Desventajas</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Cotas duras + evicción LRU</td>
+<td>Límite fijo de crisis abiertas, evicción LRU</td>
+<td>Garantiza resiliencia, evita bloqueos</td>
+<td>Puede perder eventos importantes</td>
+</tr>
+<tr>
+<td>Emisión de eventos parciales</td>
+<td>Emitir eventos sin bloquear el sistema</td>
+<td>Mantiene disponibilidad bajo alta carga</td>
+<td>Eventos parciales pueden ser menos precisos</td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>Opción FEDER</th>
+<th>Pipeline Vivo</th>
+<th>Corpus Etiquetado y Reproducible</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Prioridad</td>
+<td>Throughput y respuesta rápida</td>
+<td>Precisión y análisis forense</td>
+</tr>
+<tr>
+<td>Reproducibilidad</td>
+<td>Baja</td>
+<td>Alta</td>
+</tr>
+<tr>
+<td>Escalabilidad</td>
+<td>Alta</td>
+<td>Media</td>
+</tr>
+<tr>
+<td>Impacto en desarrollo</td>
+<td>Requiere optimización de rendimiento</td>
+<td>Requiere etiquetado y validación rigurosa</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<p>Este reporte proporciona una base técnica sólida para fundamentar las decisiones de diseño en la integración multi-motor de aRGus NDR, considerando las particularidades de Wazuh y los demás motores, y alineándose con las mejores prácticas de la industria en sistemas SIEM y de correlación de eventos de seguridad.</p>
+<p>MISTRAL</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.top", "search.highlight"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

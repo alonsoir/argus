@@ -1,0 +1,1379 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source embedded-ML NDR for hospitals and schools">
+      
+      
+        <meta name="author" content="Alonso Isidoro Roman">
+      
+      
+        <link rel="canonical" href="https://alonsoir.github.io/argus/adr/ADR-058-circuito-completo-aguas-abajo/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>ADR-058 — Circuito completo aguas abajo (medallón: adapters → bronce → LZ → Kuzu → dashboard) - ML Defender (aRGus NDR)</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#adr-058-circuito-completo-aguas-abajo-medallon-adapters-bronce-lz-kuzu-dashboard" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-header__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ML Defender (aRGus NDR)
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              ADR-058 — Circuito completo aguas abajo (medallón: adapters → bronce → LZ → Kuzu → dashboard)
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../README.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/BACKLOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Backlog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Security Model
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-tabs__link">
+          
+  
+  
+  ADRs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/contracts/Protobuf contracts.md" class="md-tabs__link">
+          
+  
+  
+  Contracts
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-nav__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ML Defender (aRGus NDR)
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../README.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/BACKLOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADRs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ADRs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013 Seed Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-021-deployment-topology-seed-families.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-021 Topology SSOT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-022-threat-model-opcion2-descartada.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-022 Threat Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Protobuf contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protobuf
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/JSON contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JSON
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Rag security commands.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-contexto" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Contexto
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-decision-forma-del-oro-ratificada-99-day-197" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Decisión — Forma del oro (ratificada 9/9, DAY 197)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-caminos-del-medallon-y-criterio-de-cierre" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Caminos del medallón y criterio de cierre
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. Caminos del medallón y criterio de cierre">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#31-predicado-de-equivalencia-especificacion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.1 Predicado de equivalencia (especificación)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#32-clausula-de-caducidad-atada-a-108" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.2 Cláusula de caducidad (atada a 10.8)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-evidencia-medida-gate-day-198-99-contra-bytes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Evidencia medida — Gate DAY 198 (9/9 contra bytes)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4. Evidencia medida — Gate DAY 198 (9/9 contra bytes)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#v1-propagacion-de-flow_start_window-al-oro-decision-materializar" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        V1 — Propagación de flow_start_window al oro ✓ (decisión: MATERIALIZAR)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#v2-centinela-1-en-campos-numericos-veredicto-fantasma-en-puertos" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        V2 — Centinela -1 en campos numéricos ✓ (veredicto: FANTASMA en puertos)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#v3-writerreader-resuelven-al-mismo-path-roja-benigna" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        V3 — Writer/reader resuelven al mismo path ✓ (roja BENIGNA)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#v4-precondicion-day194-satisfecha" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        V4 — Precondición day194 ✓ (satisfecha)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#v5-puerto-icmp-en-sniffer-sin-centinela-negativo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        V5 — Puerto ICMP en sniffer ✓ (sin centinela negativo)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#v6-writer-no-remapea-el-puerto-0-atraviesa-limpio" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        V6 — Writer no remapea el puerto ✓ (0 atraviesa limpio)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#v7-verbo-de-escritura-al-grafo-merge-equivalencia-robusta-a-colision" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        V7 — Verbo de escritura al grafo ✓ (MERGE, equivalencia robusta a colisión)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#v8-interpolacion-de-cypher-linea-154-logging-aislado-adr-057-intacto" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        V8 — Interpolación de Cypher (línea 154) ✓ (logging aislado, ADR-057 intacto)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#v9-encoding-canonico-de-flow_uid-resuelta-de-facto" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        V9 — Encoding canónico de flow_uid ✓ (resuelta de facto)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-eslabon-0-primera-implementacion-mismo-pr-que-este-adr" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Eslabón 0 (primera implementación, mismo PR que este ADR)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-deudas-estado-post-gate-day-198" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Deudas (estado post-gate DAY 198)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-consecuencias" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Consecuencias
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-pendiente-de-ratificacion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. Pendiente de ratificación
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="adr-058-circuito-completo-aguas-abajo-medallon-adapters-bronce-lz-kuzu-dashboard">ADR-058 — Circuito completo aguas abajo (medallón: adapters → bronce → LZ → Kuzu → dashboard)</h1>
+<ul>
+<li><strong>Estado:</strong> PROPUESTO (pendiente ratificación final del Consejo)</li>
+<li><strong>Fecha:</strong> DAY 199 (hoy)</li>
+<li><strong>Rama:</strong> <code>day196/circuit-adapters-zmq</code></li>
+<li><strong>Supersede / consolida:</strong> <code>PLAN — Circuito completo aguas abajo (DAY 196 → implementación).md</code> (consolidado DAY 197, §10 = decisiones cerradas)</li>
+<li><strong>Relacionado:</strong> ADR-046 v4, ADR-051 (parity gate), ADR-052 (flow_uid identidad multi-nodo), ADR-057 (Kuzu / bitemporalidad)</li>
+<li><strong>Invariante rector:</strong> medir, no votar. Toda decisión de este ADR está trazada a <code>fichero:línea</code> del binario, no a memoria.</li>
+</ul>
+<hr />
+<h2 id="1-contexto">1. Contexto</h2>
+<p>El circuito aguas abajo materializa el flujo completo desde los adaptadores hasta el
+dashboard: <code>adapters → bronce → Landing Zone (medallón) → grafo Kuzu → dashboard</code>.
+La forma del oro fue ratificada 9/9 por el Consejo en DAY 197. Este ADR la sella y
+añade la evidencia medida en el gate de DAY 198 (6 verificaciones contra bytes).</p>
+<p>El supuesto operativo de partida es que la inferencia ML está rota/incompleta
+(DEBT-RANSOMWARE-ML-HEAD-INERT-001): el circuito se cierra primero por el camino que
+<strong>ya existe</strong>, y la re-cualificación de modelos se difiere a post-circuito.</p>
+<hr />
+<h2 id="2-decision-forma-del-oro-ratificada-99-day-197">2. Decisión — Forma del oro (ratificada 9/9, DAY 197)</h2>
+<p><strong>Oro-como-ledger + join en Kuzu (write-time).</strong> El ledger es el ÚNICO oro. Kuzu y
+cualquier wide-table (incl. matriz de features ML, ADR-040) son <strong>proyecciones
+co-iguales reconstruibles</strong>, no oros alternativos. No existe caso para oro-como-join.</p>
+<p>Corolarios cerrados (§10 del plan):</p>
+<ol>
+<li><strong><code>flow_uid</code> es la PK del grafo</strong>, NO <code>community_id</code> (coherencia ADR-052).</li>
+<li><strong><code>node_id</code> / <code>community_id</code> / <code>flow_start_window</code></strong> son columnas de primera clase
+   del oro-ledger (hipótesis del proyecto: contribución por nodo).</li>
+<li><strong>Wazuh</strong> → contrato de dominio host <strong>separado</strong> (host↔red), conectado al grafo por
+   <code>agent_id</code>/IP con método+confianza anotados en la arista (no fusionado en el contrato
+   <code>correlation_v1</code>). Decisión sube antes del Eslabón 1.<blockquote>
+<p>NOTA [medido DAY 198]: el nombre <code>host_domain_v1</code> del prompt de continuidad <strong>no
+aparece en ningún doc del repo</strong>. La deuda canónica de integración Wazuh es
+<code>DEBT-ARGUSPP-WAZUH-001</code> (F4, OPEN); el contrato a crear es
+<code>DEBT-HOST-DOMAIN-CONTRACT-001</code> (P1); el diseño host↔red (Translation node /
+<code>agent_id</code> / NAT, anotando método+confianza) vive en <code>BACKLOG.md:4244,4283</code>. El
+nombre del contrato se define al abrir esa deuda, no aquí.</p>
+</blockquote>
+</li>
+<li><strong>Timestamp se funde en la LZ</strong>, NO en el writer C++.</li>
+<li><strong>ZMQ handoff = PUSH/PULL</strong> (at-least-once), no PUB/SUB.</li>
+<li><strong>Integridad del oro</strong> [medido DAY 198, plan-doc §10.1, líneas 235/258/312]:<ul>
+<li><strong>HMAC-SHA256 por-fila</strong> heredado de bronce como <strong>columna</strong> del oro, verificable
+  contra clave. Replay del grafo coherente en el tiempo ⟺ filas conservan su HMAC.</li>
+<li><strong>Firma del Parquet consolidado como artefacto</strong> — <strong>greenfield, HMAC-SHA256
+  coherente con bronce. NO reutiliza el firmador Ed25519</strong> del pipeline
+  <code>scripts/parquet/</code> (capa RAG-127, contrato distinto). Confundir ambos firmadores
+  es exactamente <code>DEBT-DOCS-MEDALLION-DUALITY-001</code>: RAG-127/Ed25519 (análisis) vs
+  correlación-19/HMAC (grafo). El converter del circuito <strong>no</strong> llama al firmador RAG.</li>
+</ul>
+</li>
+</ol>
+<hr />
+<h2 id="3-caminos-del-medallon-y-criterio-de-cierre">3. Caminos del medallón y criterio de cierre</h2>
+<p>Tres caminos (medido DAY 197 — el conector Parquet→Kuzu NO existe ni en prototipo):</p>
+<ul>
+<li><strong>Camino 0</strong> — <code>ifstream</code> bronce → Kuzu. <strong>Ya existe</strong> (<code>correlation-engine/src/main.cpp</code>).</li>
+<li><strong>Flujo A</strong> — bronce → AVRO → Parquet oro. Greenfield.</li>
+<li><strong>Flujo B</strong> — Parquet → Kuzu. Greenfield (Eslabón 2).</li>
+</ul>
+<p><strong>Criterio de cierre del medallón</strong> = test de equivalencia <strong>Camino-0 ≡ Flujo-A+B</strong>.</p>
+<h3 id="31-predicado-de-equivalencia-especificacion">3.1 Predicado de equivalencia (especificación)</h3>
+<p>El único output común a ambas ramas es la <strong>proyección Kuzu</strong>. El predicado se define
+ahí, no sobre representaciones intermedias. <strong>Medido DAY 198</strong> contra
+<code>schema.cypher</code> y <code>cypher_builder.hpp</code>: el grafo tiene 3 tablas de nodo
+(<code>NetworkFlow</code> PK=<code>flow_uid</code>, <code>Alert</code>/<code>TelemetryEvent</code> PK=<code>event_id</code>) y 3 relaciones
+(<code>ALERT_ABOUT</code>, <code>TELEMETRY_ABOUT</code>, <code>CORRELATES_FLOW</code>). Un predicado solo sobre
+<code>flow_uid</code> sería <strong>demasiado estrecho</strong> (dos grafos pueden coincidir en flujos y diferir
+en alerts, scores o aristas). El predicado completo:</p>
+<pre><code>EQUIV(Camino0, FlujoA+B) :=
+   set(flow_uid)_C0                  == set(flow_uid)_AB         # NetworkFlow
+ ∧ set(event_id)_C0                  == set(event_id)_AB         # Alert ∪ TelemetryEvent
+ ∧ ∀ uid: props_identidad(uid)_C0    == props_identidad(uid)_AB  # node_id, community_id,
+                                                                 #   flow_start_window, seq_in_window
+ ∧ ∀ eid: props_veredicto(eid)_C0    == props_veredicto(eid)_AB  # cols 12-17; los 3 scores
+                                                                 #   double BIT-EXACTOS por defecto (ver nota)
+ ∧ aristas {ALERT_ABOUT, TELEMETRY_ABOUT, CORRELATES_FLOW} coinciden (con method/confidence)
+ ∧ ∀ fila: hmac_row preservado de bronce
+</code></pre>
+<p><strong>Nota — igualdad de los scores: BIT-EXACTA por defecto (medido DAY 198):</strong> los 3
+<code>double</code> (cols 14-16) se comparan <strong>bit a bit</strong>, no con tolerancia. Justificación medida,
+no supuesta: ambos caminos parten del <strong>mismo</strong> double — el de <code>parse_double</code> sobre el
+<strong>mismo bronce CSV</strong> (Camino 0 y Flujo A leen el mismo texto; la degradación texto→double,
+si la hay, es idéntica en ambos y se cancela en el predicado). El único tramo donde
+difieren es AVRO→Parquet→conector, y ese tramo es <strong>lossless por tipo</strong>: AVRO <code>double</code> y
+el tipo físico <code>DOUBLE</code> de Parquet son ambos IEEE 754 binary64 — la misma representación
+que un <code>double</code> de C++. Un round-trip double→AVRO→Parquet→double <strong>preserva los bits</strong>
+salvo que el converter (a) trunque a <code>float32</code>, (b) recompute el score en oro en vez de
+copiarlo, o (c) reformatee vía texto intermedio. Esos tres son <strong>exactamente los bugs que
+el test debe cazar</strong> — una ε los enmascararía. (El path de logging ya fuerza
+<code>precision(17)</code> + <code>locale::classic()</code> en <code>cypher_builder.hpp:151</code>: el único punto de
+pérdida real es texto, y ahí ya está cubierto.)</p>
+<blockquote>
+<p><strong>Cláusula de escape de ε (condicionada a medición, no a priori):</strong> ε se introduce
+<strong>solo si</strong> la medición sobre el Flujo-A real exhibe no-bit-exactitud <strong>con causa
+entendida y benigna</strong> (p.ej. una cuantización inevitable y documentada del converter).
+Entonces ε se <strong>deriva de esa cuantización medida</strong> — no es un número a ojo — y se
+documenta la fuente. Hasta entonces el criterio es <code>==</code>. Esto honra "medir, no votar":
+no ratificamos hoy una tolerancia para una pérdida no medida que el análisis de tipos
+predice <strong>inexistente</strong>.</p>
+<p><strong>Guarda NaN (independiente de ε, P2):</strong> bajo IEEE 754 <code>NaN != NaN</code>. Si algún score
+puede ser NaN (ML head inerte, score sin inicializar), el predicado <code>==</code> necesita regla
+explícita — canonicalizar NaN o comparar patrón de bits (<code>memcmp</code> de los 8 bytes). Con
+ε pasaba igual (<code>|NaN−NaN| &lt; ε</code> también es falso), solo que quedaba oculto. Acción: el
+converter Flujo A normaliza el patrón de NaN. No bloquea el cierre del predicado.</p>
+</blockquote>
+<p><strong>Nota — robustez a colisión <code>flow_uid</code> (medido DAY 198):</strong> el sink usa <strong>MERGE</strong> en
+ambos paths (<code>cypher_builder.hpp:100,154</code>), con <strong>solo <code>ON CREATE SET</code>, sin
+<code>ON MATCH SET</code></strong> (8 ocurrencias CREATE, 0 MATCH). Consecuencia: ante dos flujos que
+hashean al mismo <code>flow_uid</code> (colisión por <code>seq_in_window=0</code>,
+<code>DEBT-FLOWUID-SEQ-COLLISION-001</code>), el segundo hace MATCH puro y sus propiedades se
+<strong>descartan de forma idéntica en ambos caminos</strong>. Por tanto la <strong>equivalencia se
+sostiene</strong> ante colisión — Camino 0 y Flujo A+B producen el mismo grafo. La colisión es
+deuda de <strong>fidelidad</strong> (se pierde un flujo real, P2), NO de <strong>equivalencia</strong> (ambos
+caminos pierden el mismo). El predicado §3.1 es robusto a la colisión; el medallón <strong>no
+queda bloqueado</strong> por ella.
+Relacionado: <code>DEBT-NEO4J-FLOW-KEY-COMPOSITE-001</code> (PK compuesta <code>(flow_uid, seq)</code> aún no
+implementada — el schema usa PK simple). Sobre <code>DEBT-FLOWUID-CANONICAL-ENCODING-001</code>
+<strong>[medido DAY 198, <code>flow_uid.hpp</code>]: resuelta de facto.</strong> El encoding
+(<code>encode_flow_input</code>) es canónico, self-describing e inyectivo por construcción:
+length-prefix <code>uint16</code> BE antes de cada string variable (sin separador → imposible
+colisión de encoding entre <code>node_id</code>/<code>community_id</code>), <code>window</code> y <code>seq</code> como enteros
+<strong>big-endian de ancho fijo</strong> (<code>put_be64</code>/<code>put_be32</code>, no string decimal → sin ambigüedad
+cross-language), tag de versión <code>"argus-flowuid-v1"</code> (16B) prefijado al input (el
+esquema se versiona dentro del hash), BLAKE2b-256 sin truncado (<code>static_assert</code>
+digest_size=32). <strong>Vectores congelados verificados byte-idénticos C++ ↔
+<code>hashlib.blake2b</code></strong> — la paridad cross-language ya existe. Consecuencia para el
+predicado: <code>set(flow_uid)_C0 == set(flow_uid)_AB</code> <strong>no puede fallar por encoding</strong>; solo
+por colisión <code>seq</code> (neutralizada por MERGE para equivalencia) o por bug del converter
+(que es lo que el test debe cazar). Acción residual: el converter Flujo A <strong>reusa</strong>
+<code>encode_flow_input</code> (o, si es Python, los vectores golden congelados), no reimplementa.</p>
+<h3 id="32-clausula-de-caducidad-atada-a-108">3.2 Cláusula de caducidad (atada a 10.8)</h3>
+<p>El predicado §3.1 es <strong>válido mientras el join sea determinista</strong> (hoy: parámetros en
+JSON → propiedad mantenida). Al activar <code>DEBT-JOIN-CONFIDENCE-001</code> (join adaptativo /
+no-determinista), dos caminos pueden tomar decisiones de join distintas y la
+equivalencia rompe <strong>por diseño, no por bug</strong>. En ese momento el predicado debe
+revisarse (probablemente relajarse a equivalencia sobre el subconjunto determinista +
+banda de tolerancia en el join confidence).</p>
+<hr />
+<h2 id="4-evidencia-medida-gate-day-198-99-contra-bytes">4. Evidencia medida — Gate DAY 198 (9/9 contra bytes)</h2>
+<blockquote>
+<p>Cada fila está trazada al binario. Ninguna afirmación se apoya en memoria.</p>
+</blockquote>
+<h3 id="v1-propagacion-de-flow_start_window-al-oro-decision-materializar">V1 — Propagación de <code>flow_start_window</code> al oro  ✓ (decisión: MATERIALIZAR)</h3>
+<ul>
+<li><strong>Medido (reader):</strong> <code>correlation-engine/src/main.cpp:117</code> computa
+  <code>window = window_micros(flow_start_sec, flow_start_nano)</code> en <strong>read-time</strong>. La window
+  es input del hash (<code>compute_flow_uid(node_id, community_id, window)</code>, <code>main.cpp:118</code>),
+  no una columna.</li>
+<li><strong>Medido (writer):</strong> <code>ml-detector/src/correlation_writer.cpp:88-89</code> escribe
+  <code>flow_start_sec = ts.seconds()</code> y <code>flow_start_nano = ts.nanos()</code> por separado;
+  <strong>nunca</strong> un <code>flow_start_window</code>. Confirmado por ambos extremos: la window es 100%
+  derivada, no existe en el contrato.</li>
+<li><strong>Decisión:</strong> materializar <code>flow_start_window</code> como <strong>columna hash-input del oro</strong>,
+  junto a <code>node_id</code> (col 3) y <code>community_id</code> (col 4). Sin esto, una fila del ledger no
+  es re-verificable independientemente: el día que cambie el bucketing de
+  <code>window_micros()</code>, el <code>flow_uid</code> re-derivado deja de coincidir con el que entró al
+  hash. Es <strong>precondición de Via Appia</strong>, no preferencia. Greenfield puro (nada que
+  migrar — no existe en ningún extremo).</li>
+<li><strong>Deuda:</strong> <code>DEBT-GOLD-NODE-DIMENSION-001</code> se amplía para incluir <code>flow_start_window</code>
+  como 4º hash-input materializado.</li>
+</ul>
+<h3 id="v2-centinela-1-en-campos-numericos-veredicto-fantasma-en-puertos">V2 — Centinela <code>-1</code> en campos numéricos  ✓ (veredicto: FANTASMA en puertos)</h3>
+<p>Cadena medida extremo a extremo:</p>
+<ul>
+<li><strong>Proto:</strong> <code>protobuf/network_security.proto:105-106</code> → <code>uint32 source_port</code>,
+  <code>uint32 destination_port</code>. Estructuralmente <strong>no puede transportar <code>-1</code></strong>.</li>
+<li><strong>Sniffer:</strong> <code>ring_consumer.cpp:874-875</code> y <code>main_libpcap.cpp:130-137</code> asignan el
+  puerto vía <code>ntohs()</code> (→ <code>uint16</code>) o campo unsigned. ICMP usa puerto <strong><code>0</code></strong>
+  (<code>test_community_id.cpp:62</code>: <code>compute_community_id(..., 0, 0, 1)</code>), no <code>-1</code>.</li>
+<li><strong>Writer:</strong> <code>correlation_writer.cpp:91-92</code> copia <code>nf.source_port()</code> directo al Row,
+  sin remapeo. <code>"0"</code> se serializa tal cual.</li>
+<li><strong>Reader:</strong> <code>correlation_reader.cpp</code> <code>parse_num&lt;uint32_t&gt;</code> con <code>std::from_chars</code>
+  acepta <code>"0"</code>. Fila <strong>sobrevive</strong>.</li>
+</ul>
+<p><strong>Conclusión:</strong> no hay descarte silencioso de filas ICMP. El centinela <code>-1</code> que se
+temía no existe en <code>src_port</code>/<code>dst_port</code>. <strong>NO se cambian los tipos</strong> (<code>uint32_t</code> se
+mantiene): cambiarlos a signed introduciría divergencia con el proto y una rama de
+centinela que ningún productor alimenta.</p>
+<p><strong>Riesgo residual (P2):</strong> <code>flow_start_sec</code> (<code>int64_t</code>) y <code>flow_start_nano</code> (<code>int32_t</code>)
+<strong>sí</strong> son signed (<code>correlation_record.hpp:14-15</code>). Un <code>-1</code> ahí sobrevive como valor y
+se propagaría al hash vía <code>window_micros(-1,-1)</code> sin marca de centinela. Riesgo
+<strong>semántico</strong>, no de pérdida de fila.</p>
+<p><strong>Trampa documental (P2):</strong> el comentario de <code>correlation_reader.hpp:12</code> colapsa
+"campo numérico ilegible" sin distinguir corrupto de centinela. Inocuo hoy (no hay
+centinela en los unsigned); trampa para un campo unsigned futuro con centinela <code>-1</code>.</p>
+<ul>
+<li><strong>Deuda:</strong> <code>DEBT-PARSE-VERIFY-SENTINEL-001</code> <strong>degradada P0 → P2</strong>. Acción: documentar
+  que el contrato usa <code>0</code> para puerto-ausente; documentar la asimetría
+  signed(sec/nano)/unsigned(puertos); vigilar campos unsigned futuros.</li>
+</ul>
+<h3 id="v3-writerreader-resuelven-al-mismo-path-roja-benigna">V3 — Writer/reader resuelven al mismo path  ✓ (roja BENIGNA)</h3>
+<ul>
+<li><strong>Writer:</strong> <code>correlation_writer.cpp:177</code> →
+  <code>return config_.base_dir + "/" + date + ".csv"</code> (rota por fecha).</li>
+<li><strong>Reader:</strong> <code>main.cpp:60-68,104</code> abre un <strong>único path fijo</strong> (<code>--bronze</code> o
+  <code>ARGUS_BRONZE_CSV</code>) con un solo <code>ifstream in(bronze_path)</code>.</li>
+<li><strong>Rotation-follow roto (medido):</strong> <code>main.cpp:125-132</code> hace <code>in.clear(); drain()</code>
+  sobre el <strong>mismo</strong> handle. Cuando el writer rota a medianoche al fichero del día
+  siguiente, el reader sigue tailando el de ayer y <strong>nunca ve el nuevo</strong>.</li>
+<li><strong>Veredicto:</strong> roja con causa conocida y <strong>parche ya planificado</strong> (Eslabón 0:
+  watcher <code>inotify</code>/<code>IN_CLOSE_WRITE</code>). No bloquea el ADR; lo justifica.</li>
+<li><strong>Deudas P0 confirmadas:</strong> <code>DEBT-CIRCUIT-BRONZE-ROTATION-FOLLOW-001</code>,
+  <code>DEBT-CONFIG-BRONZE-HARDCODE-001</code> (fuentes de config divergentes: writer = JSON
+  <code>base_dir</code>, reader = env/arg; sincronizados a mano).</li>
+</ul>
+<h3 id="v4-precondicion-day194-satisfecha">V4 — Precondición day194  ✓ (satisfecha)</h3>
+<ul>
+<li><strong>Medido:</strong> <code>remotes/origin/day194/ransomware-provenance-desync</code> existe; <strong>PR #107
+  mergeado</strong> (commit <code>77a3de9c</code>), con DAY194/195 dentro (provenance audit + desync
+  dirimido + lab firetest spec). El trabajo está integrado.</li>
+<li>La precondición del plan ("confirmar que day194 está cerrada") apuntaba al nombre
+  <strong>local</strong> (inexistente); la rama real es remota y ya mergeada. <strong>No hay bloqueo.</strong></li>
+<li><strong>Limpieza opcional (no bloqueante):</strong> borrar la rama remota efímera post-merge.</li>
+</ul>
+<h3 id="v5-puerto-icmp-en-sniffer-sin-centinela-negativo">V5 — Puerto ICMP en sniffer  ✓ (sin centinela negativo)</h3>
+<p>Cubierto en V2: ICMP usa <code>0</code> (<code>test_community_id.cpp:62</code>), no <code>-1</code>.</p>
+<h3 id="v6-writer-no-remapea-el-puerto-0-atraviesa-limpio">V6 — Writer no remapea el puerto  ✓ (<code>0</code> atraviesa limpio)</h3>
+<p>Cubierto en V2: <code>correlation_writer.cpp:91-92</code> copia directa sin transformar.</p>
+<h3 id="v7-verbo-de-escritura-al-grafo-merge-equivalencia-robusta-a-colision">V7 — Verbo de escritura al grafo  ✓ (MERGE, equivalencia robusta a colisión)</h3>
+<ul>
+<li><strong>Medido:</strong> <code>cypher_builder.hpp:100-114</code> (path producción, prepared <code>$param</code>) y
+  <code>:154-179</code> (path logging, interpolado) usan <strong>MERGE</strong> sobre <code>NetworkFlow {flow_uid}</code> y
+  <code>Alert/TelemetryEvent {event_id}</code>. Solo <code>ON CREATE SET</code>, <strong>cero <code>ON MATCH SET</code></strong>.</li>
+<li><strong>Consecuencia para §3.1:</strong> colisión <code>flow_uid</code> → segundo flujo descartado idéntico en
+  ambos caminos → equivalencia robusta (ver nota §3.1). Fidelidad P2, no bloqueante.</li>
+</ul>
+<h3 id="v8-interpolacion-de-cypher-linea-154-logging-aislado-adr-057-intacto">V8 — Interpolación de Cypher (línea 154)  ✓ (logging aislado, ADR-057 intacto)</h3>
+<ul>
+<li><strong>Medido:</strong> la interpolación de string <code>{flow_uid:'" &lt;&lt; fuid &lt;&lt; "'}</code> vive <strong>solo</strong> en
+  <code>build_cypher()</code>, que alimenta <code>logger_-&gt;info("[CYPHER] {}", ...)</code>
+  (<code>logging_graph_sink.cpp:27</code>) — <strong>no toca BD</strong>. Producción (<code>KuzuGraphSink</code>) usa
+  exclusivamente prepared statements parametrizados (<code>kuzu_graph_sink.cpp:90-96</code>).</li>
+<li><code>cypher_builder.hpp:46</code> documenta el invariante: producción y logging comparten
+  <code>make_bindings()</code> → no pueden divergir. <code>:122</code> marca el <code>esc()</code> como defensa del log,
+  NO como frontera de seguridad. <strong>No hay regresión de ADR-057</strong> (Cypher injection).</li>
+</ul>
+<h3 id="v9-encoding-canonico-de-flow_uid-resuelta-de-facto">V9 — Encoding canónico de <code>flow_uid</code>  ✓ (resuelta de facto)</h3>
+<ul>
+<li><strong>Medido (<code>flow_uid.hpp</code>):</strong> <code>encode_flow_input</code> es canónico e inyectivo:
+  length-prefix <code>uint16</code> BE por string (sin separador), <code>window</code>/<code>seq</code> como enteros BE
+  de ancho fijo (<code>put_be64</code>/<code>put_be32</code>), tag de versión <code>"argus-flowuid-v1"</code> (16B)
+  prefijado, BLAKE2b-256 sin truncado (<code>static_assert</code> digest_size=32).</li>
+<li><strong>Paridad cross-language ya congelada:</strong> vectores verificados byte-idénticos contra
+  <code>hashlib.blake2b(digest_size=32)</code>. El converter Flujo A no puede divergir si reusa el
+  encoding. → <code>set(flow_uid)</code> no falla por encoding; <code>DEBT-FLOWUID-CANONICAL-ENCODING-001</code>
+  resuelta de facto (acción residual: no-duplicación, ver §3.1).</li>
+</ul>
+<hr />
+<h2 id="5-eslabon-0-primera-implementacion-mismo-pr-que-este-adr">5. Eslabón 0 (primera implementación, mismo PR que este ADR)</h2>
+<p>Config bronce a JSON (<code>bronze_root</code> + patrón naming, calcado de <code>csv_writer</code>
+<code>config_loader.cpp:455</code>) + watcher <code>inotify</code>/<code>IN_CLOSE_WRITE</code> + escritura atómica
+<code>.tmp</code> → rename + cierre por tiempo absoluto.</p>
+<p>Cierra: <code>DEBT-CONFIG-BRONZE-HARDCODE-001</code> + <code>DEBT-CIRCUIT-BRONZE-ROTATION-FOLLOW-001</code>
+(ambas P0).</p>
+<hr />
+<h2 id="6-deudas-estado-post-gate-day-198">6. Deudas (estado post-gate DAY 198)</h2>
+<blockquote>
+<p>Nombres verificados contra <code>grep -rhoE 'DEBT-[A-Z0-9-]+' docs/ | sort -u</code> (DAY 198):
+todos existen literalmente en el repo. No hay nombre inventado de memoria.</p>
+</blockquote>
+<p><strong>P0:</strong>
+- <code>DEBT-CIRCUIT-BRONZE-ROTATION-FOLLOW-001</code> (medida V3 — Eslabón 0)
+- <code>DEBT-CONFIG-BRONZE-HARDCODE-001</code> (medida V3 — Eslabón 0)
+- <code>DEBT-GOLD-NODE-DIMENSION-001</code> (ampliada V1 — incluye <code>flow_start_window</code>)
+- <code>DEBT-GOLD-INTEGRITY-HMAC-001</code>
+- <code>DEBT-ZMQ-DELIVERY-GUARANTEE-001</code></p>
+<p><strong>P1:</strong>
+- <code>DEBT-HOST-DOMAIN-CONTRACT-001</code> (pre-Eslabón 1; contrato Wazuh host↔red por definir)
+- <code>DEBT-PARQUET-KUZU-CONNECTOR-001</code> (greenfield, Eslabón 2)
+- <code>DEBT-CIRCUIT-FS-DROP-001</code></p>
+<p><strong>P2:</strong>
+- <code>DEBT-PARSE-VERIFY-SENTINEL-001</code> (<strong>degradada de P0</strong> — medida V2; doc + vigilancia)
+- <code>DEBT-ADAPTERSPEC-ENVELOPE-001</code>
+- <code>DEBT-DOCS-MEDALLION-DUALITY-001</code> (firma del oro HMAC ≠ Ed25519 RAG — ver §2.6)
+- <code>DEBT-JOIN-CONFIDENCE-001</code> (gobierna la cláusula de caducidad §3.2)
+- <code>DEBT-FLOWUID-SEQ-COLLISION-001</code> (medida V7 — <code>seq_in_window=0</code>; fidelidad, no
+  equivalencia; no bloquea el medallón)
+- <code>DEBT-NEO4J-FLOW-KEY-COMPOSITE-001</code> (PK compuesta <code>(flow_uid, seq)</code> no implementada;
+  el schema usa PK simple <code>flow_uid</code>)
+- <code>DEBT-FLOWUID-CANONICAL-ENCODING-001</code> (<strong>resuelta de facto</strong> — medida DAY 198;
+  encoding inyectivo length-prefixed + BE + tag versión, paridad C++/Python congelada;
+  acción residual: converter Flujo A reusa <code>encode_flow_input</code>, no reimplementa)</p>
+<p><strong>P3:</strong>
+- higiene <code>backups/</code>/<code>.backup</code> → <code>git rm --cached</code> / <code>.gitignore</code>
+- limpieza rama remota <code>day194/...</code> efímera (V4)</p>
+<hr />
+<h2 id="7-consecuencias">7. Consecuencias</h2>
+<ul>
+<li>El medallón se cierra primero por Camino 0 (existe), con el test de equivalencia
+  §3.1 como gate de aceptación de Flujo A+B.</li>
+<li>El contrato de 19 columnas <strong>no se modifica</strong> (V2 lo dejó intacto: los tipos son
+  correctos extremo a extremo).</li>
+<li><code>flow_start_window</code> se añade al oro como columna nueva (V1) — no toca el contrato
+  bronce, solo el converter Flujo A y el esquema del oro-ledger.</li>
+<li>El ADR entra en el mismo PR que el Eslabón 0 (commit de doc no pasa gate de build,
+  va con la implementación) — coherente con la regla de rama del plan.</li>
+</ul>
+<hr />
+<h2 id="8-pendiente-de-ratificacion">8. Pendiente de ratificación</h2>
+<p>Decisión VIVA para el Consejo (una, consciente): <strong>ratificar la igualdad BIT-EXACTA por
+defecto en los 3 scores double (cols 14-16) del predicado §3.1</strong>, con ε degradada a
+cláusula de escape condicionada a medición (se deriva de una cuantización concreta del
+Flujo-A real, o no se introduce). Con esto el predicado queda <strong>uniforme</strong>: <code>==</code> para
+todas las columnas, ε como única excepción documentada. El cambio respecto a la versión
+previa es deliberado: presentar una ε "ya cerrada" para una pérdida <strong>no medible hasta
+que exista el Flujo A</strong> sería votar, no medir. Se sube como punto consciente, no como
+hueco. 10.8 diferida con ticket (<code>DEBT-JOIN-CONFIDENCE-001</code>). Con esta ratificación, el
+plan cierra como ADR.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.top", "search.highlight"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

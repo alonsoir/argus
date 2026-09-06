@@ -1,0 +1,1049 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source embedded-ML NDR for hospitals and schools">
+      
+      
+        <meta name="author" content="Alonso Isidoro Roman">
+      
+      
+        <link rel="canonical" href="https://alonsoir.github.io/argus/council/Informe%20de%20auditor%C3%ADa%20del%20veredicto%20del%20ml-detector%20%E2%80%94%20para%20el%20Consejo%20de%20Sabios-claude/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>Memorándum adversarial — Claude contra el propio informe de auditoría - ML Defender (aRGus NDR)</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#memorandum-adversarial-claude-contra-el-propio-informe-de-auditoria" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-header__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ML Defender (aRGus NDR)
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Memorándum adversarial — Claude contra el propio informe de auditoría
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../README.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/BACKLOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Backlog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Security Model
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-tabs__link">
+          
+  
+  
+  ADRs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/contracts/Protobuf contracts.md" class="md-tabs__link">
+          
+  
+  
+  Contracts
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-nav__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ML Defender (aRGus NDR)
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../README.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/BACKLOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADRs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ADRs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013 Seed Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-021-deployment-topology-seed-families.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-021 Topology SSOT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-022-threat-model-opcion2-descartada.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-022 Threat Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Protobuf contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protobuf
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/JSON contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JSON
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Rag security commands.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#advertencia-de-metodo-lease-primero" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Advertencia de método (léase primero)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#a1-el-informe-trata-la-arquitectura-monocapa-como-negligencia-la-memoria-dice-que-fue-una-retirada-por-concurrencia-eso-ataca-directamente-el-requisito-de-determinista" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        A1 🔴 — El informe trata la arquitectura monocapa como negligencia. La memoria dice que fue una retirada por concurrencia. Eso ataca directamente el requisito de "determinista".
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#a2-058-s-coste-despreciable-mide-el-coste-por-flujo-el-des-gateo-multiplica-los-flujos-no-el-coste-unitario-el-agregado-bajo-carga-no-esta-medido" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        A2 🟠 — "0.58 μs, coste despreciable" mide el coste POR FLUJO. El des-gateo multiplica los flujos, no el coste unitario. El agregado bajo carga no está medido.
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#a3-la-gravedad-del-defecto-c-esta-acoplada-al-defecto-b-y-el-informe-no-lo-dice-ademas-la-prueba-del-bronce-demuestra-el-mecanismo-no-el-impacto" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        A3 🟡🟠 — La gravedad del Defecto C está acoplada al Defecto B, y el informe no lo dice. Además, la prueba del bronce demuestra el MECANISMO, no el IMPACTO.
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#a4-pedimos-al-consejo-ratificar-el-noisy-or-pero-su-insumo-clave-fiabilidad-por-cabeza-no-existe-todavia" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        A4 🟠 — Pedimos al Consejo ratificar el noisy-OR, pero su insumo clave (fiabilidad por cabeza) no existe todavía.
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#a5-la-traza-de-threat_category-paro-un-salto-antes-de-tiempo-c-acotado-puede-ser-demasiado-generoso" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        A5 🟠 — La traza de threat_category paró un salto antes de tiempo. "(c) acotado" puede ser demasiado generoso.
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#a6-critico-para-el-defecto-b-es-razonamiento-a-priori-no-medimos-con-que-frecuencia-el-gate-realmente-muerde" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        A6 🟡 — "Crítico" para el Defecto B es razonamiento a priori. No medimos con qué frecuencia el gate realmente muerde.
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#a7-el-plan-de-fase-2-es-un-refactor-todo-o-nada-del-camino-mas-caliente-no-propone-forma-segura-de-aterrizarlo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        A7 🟠 — El plan de fase 2 es un refactor todo-o-nada del camino más caliente. No propone forma segura de aterrizarlo.
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#a8-el-patron-de-error-del-combinador-dos-rectificaciones-por-lectura-parcial-es-un-riesgo-metodologico-no-solo-un-incidente-cerrado" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        A8 🟡 — El patrón de error del combinador (dos rectificaciones por lectura parcial) es un riesgo metodológico, no solo un incidente cerrado.
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#lo-que-el-informe-hace-bien-y-deberia-sobrevivir-al-escrutinio" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Lo que el informe hace bien y debería sobrevivir al escrutinio
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#el-punto-unico-si-el-consejo-solo-atiende-a-uno" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        El punto único, si el Consejo solo atiende a uno
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="memorandum-adversarial-claude-contra-el-propio-informe-de-auditoria">Memorándum adversarial — Claude contra el propio informe de auditoría</h1>
+<p><strong>Objeto:</strong> crítica hostil al documento <code>INFORME-ML-DETECTOR-VERDICT-AUDIT.md</code>
+<strong>Autor:</strong> Claude, actuando como uno de los nueve revisores del Consejo, en modo adversario contra su propio trabajo
+<strong>Fecha:</strong> DAY 212</p>
+<hr />
+<h2 id="advertencia-de-metodo-lease-primero">Advertencia de método (léase primero)</h2>
+<p>Este memorándum ataca deliberadamente el informe que yo mismo redacté. No es falsa modestia ni teatro: es el método <em>medir no votar</em> aplicado al propio informe antes de que lo hagan los otros ocho modelos.</p>
+<p><strong>Sesgo compartido, límite real:</strong> soy una sola voz, y comparto arquitectura y sesgos con al menos algunos de los otros modelos del Consejo. Los puntos que YO no veo son, por construcción, los que necesito de ellos. Que yo haya encontrado ocho grietas no significa que sean las ocho que importan — significa que estas ocho ya no pueden usarse como sorpresa contra nosotros.</p>
+<p><strong>Leyenda de severidad:</strong>
+- 🔴 <strong>BLOQUEANTE</strong> — debe resolverse (o declararse explícitamente) antes de escribir código en fase 2.
+- 🟠 <strong>MEDIR</strong> — el informe afirma como cerrado algo que no se midió; hay que medirlo o degradar la afirmación a supuesto.
+- 🟡 <strong>MATIZAR</strong> — la afirmación es defendible pero está formulada con más fuerza de la que la evidencia sostiene.</p>
+<hr />
+<h2 id="a1-el-informe-trata-la-arquitectura-monocapa-como-negligencia-la-memoria-dice-que-fue-una-retirada-por-concurrencia-eso-ataca-directamente-el-requisito-de-determinista">A1 🔴 — El informe trata la arquitectura monocapa como negligencia. La memoria dice que fue una retirada por concurrencia. Eso ataca directamente el requisito de "determinista".</h2>
+<p><strong>Qué afirma el informe:</strong> que el estado monocapa es una deuda a deshacer — mover el veredicto, reconectar las cabezas, y listo. Todo el §10 (fase 2) asume que la desconexión fue descuido.</p>
+<p><strong>El ataque:</strong> el propio historial del proyecto dice que la reducción de siete modelos a cuatro en agosto de 2025 se hizo <strong>por condiciones de carrera</strong>, con "estabilización hardcodeada, nunca revertida". Si las cabezas se apartaron del camino del veredicto bajo presión de concurrencia (o de latencia sub-milisegundo), entonces <strong>reconectarlas puede resucitar exactamente las carreras que motivaron apartarlas</strong> — y romper el determinismo, que es el requisito nº1 del encuadre (§0).</p>
+<p>El informe habla mucho de <em>fiable</em> y casi nada de <em>determinista</em>. No hay una sola medición de determinismo en las doce secciones. Y el requisito del usuario es literal: "fiable <strong>y</strong> determinista".</p>
+<p><strong>Lo que lo cierra, y por qué es bloqueante:</strong> antes de escribir una línea de reconexión hay que <strong>establecer por qué existe la monocapa</strong>. ¿Fue descuido, retirada por latencia, o retirada por carrera? No lo sabemos — lo asumimos. Si no sabemos por qué se apartaron las cabezas, no podemos afirmar que reconectarlas sea seguro. Y la reconexión toca el camino más caliente del sistema (mover persistencia, cambiar el orden de escritura, poblar <code>ml_context</code> desde las cabezas): todo eso es superficie de concurrencia. <strong>TSAN no es un paso más de fase 2; es un gate previo.</strong> El informe menciona un stress test en el Paso 3, pero no pone el determinismo como condición de entrada. Debe serlo.</p>
+<p><strong>Veredicto:</strong> este es el hueco más grave del informe, y es un hueco por omisión, no por error. El Consejo lo habría encontrado. Mejor que entremos con la pregunta ya formulada: <em>¿la monocapa es deuda o es defensa?</em></p>
+<hr />
+<h2 id="a2-058-s-coste-despreciable-mide-el-coste-por-flujo-el-des-gateo-multiplica-los-flujos-no-el-coste-unitario-el-agregado-bajo-carga-no-esta-medido">A2 🟠 — "0.58 μs, coste despreciable" mide el coste POR FLUJO. El des-gateo multiplica los flujos, no el coste unitario. El agregado bajo carga no está medido.</h2>
+<p><strong>Qué afirma el informe:</strong> que el Defecto B no tiene coartada de coste, porque <code>predict</code> cuesta 0.58 μs sobre un presupuesto de 10 ms (§7.1).</p>
+<p><strong>El ataque:</strong> el 0.58 μs es correcto y honesto <strong>por flujo</strong>. Pero el des-gateo no encarece un flujo — hace que las cuatro cabezas corran en el <strong>100%</strong> de los flujos en lugar del ~5% que hoy pasa el gate de L1. El coste relevante no es "0.58 μs por flujo" sino "0.58 μs × 4 cabezas × 20 veces más flujos, sostenido a tasa de línea". Los experimentos del paper corren a 10/50/100 Mbps. <strong>A 100 Mbps con backpressure activo, ¿tiene el pipeline holgura para correr cuatro cabezas en cada flujo sin cambiar su comportamiento de drop?</strong> No lo medimos. Y el determinismo del <em>drop bajo presión</em> es precisamente lo que el circuit-breaker del config gobierna — que tampoco tocamos.</p>
+<p><strong>Lo que lo cierra:</strong> un stress test que mida throughput agregado con las cuatro cabezas en el 100% de flujos, a tasa de línea, observando el comportamiento del backpressure. Hasta entonces, la frase correcta no es "el Defecto B no tiene coartada de coste" sino "<strong>no tiene coartada de coste por-flujo; el coste agregado a tasa de línea está sin medir</strong>".</p>
+<p><strong>Veredicto:</strong> el informe generaliza de una medición unitaria a una afirmación de sistema. La medición es buena; la generalización va un paso por delante de ella.</p>
+<hr />
+<h2 id="a3-la-gravedad-del-defecto-c-esta-acoplada-al-defecto-b-y-el-informe-no-lo-dice-ademas-la-prueba-del-bronce-demuestra-el-mecanismo-no-el-impacto">A3 🟡🟠 — La gravedad del Defecto C está acoplada al Defecto B, y el informe no lo dice. Además, la prueba del bronce demuestra el MECANISMO, no el IMPACTO.</h2>
+<p><strong>Qué afirma el informe:</strong> que el Defecto C (persistencia pre-cabezas) es crítico porque envenena el grafo, con la fila <code>RAW_CAPTURE</code> como prueba (§4).</p>
+<p><strong>El ataque, en dos capas:</strong></p>
+<p>Primero, el acoplamiento. Por culpa del Defecto B (el gate), en un flujo que L1 marca BENIGN <strong>las cabezas nunca corren</strong>. Así que en ese flujo el bronce no podría contener veredictos de cabeza aunque moviéramos la escritura — no hay nada que escribir. <strong>El impacto informativo del Defecto C solo muerde en flujos donde L1 dijo ATTACK</strong> (las cabezas corren) <strong>y la escritura precede a las cabezas.</strong> Es decir: hoy, con el pipeline gateado, el Defecto C pierde relativamente poco, porque las cabezas casi no corren. C se vuelve verdaderamente crítico <strong>después</strong> de arreglar B. El informe presenta A, B, C como tres defectos apilados independientes; en realidad <strong>la severidad de C es condicional a que B se arregle.</strong> Eso no lo hace menos importante — lo hace importante <em>en un orden concreto</em>, y el orden importa para el plan.</p>
+<p>Segundo, la evidencia. La fila que pegué es <code>BENIGN / RAW_CAPTURE</code>: prueba que la escritura ocurre antes del etiquetado del ml-detector (el mecanismo). Pero es un flujo que L1 marcó benigno — que nunca habría entrado al gate de todas formas. <strong>No tengo una fila de bronce que pruebe el caso fuerte:</strong> un flujo donde L1 dijo ATTACK, las cabezas corrieron y re-etiquetaron, y aun así el bronce se escribió con la etiqueta pre-cabezas. Sin esa fila, "el Defecto C hace perder información que las cabezas habrían añadido" está <strong>afirmado</strong>, no probado — porque en los flujos benignos (los únicos que tengo pegados) las cabezas no añaden nada.</p>
+<p><strong>Lo que lo cierra:</strong> capturar una fila de bronce de un flujo ATTACK y compararla con la telemetría de cabezas del mismo evento en el log del ml-detector. Si el bronce carece de lo que el log tiene, el caso fuerte queda probado.</p>
+<p><strong>Veredicto:</strong> C es real y grave, pero el informe debe (i) declarar que su gravedad es condicional al arreglo de B, y (ii) reconocer que la evidencia actual prueba el mecanismo, no todavía el impacto.</p>
+<hr />
+<h2 id="a4-pedimos-al-consejo-ratificar-el-noisy-or-pero-su-insumo-clave-fiabilidad-por-cabeza-no-existe-todavia">A4 🟠 — Pedimos al Consejo ratificar el noisy-OR, pero su insumo clave (fiabilidad por cabeza) no existe todavía.</h2>
+<p><strong>Qué afirma el informe:</strong> noisy-OR <code>P = 1 − ∏(1 − pᵢ)</code> con <code>pᵢ = fiabilidad_i · score_i</code>, presentado como "acordado", a ratificar (§6, P4).</p>
+<p><strong>El ataque:</strong> la fórmula depende de <code>fiabilidad_i</code>, y el propio informe dice que la fiabilidad discriminante de las cabezas sobre tráfico real <strong>no está medida</strong> (es MITRE, diferido — §11). Estamos pidiendo ratificar un operador cuyo insumo numérico principal no existe. Peor: "acordado" sugiere una decisión tomada, cuando es una <strong>preferencia de diseño sin base empírica en el documento</strong> — no mostramos ninguna comparación medida frente a media ponderada, max-de-N, o Dempster-Shafer. El argumento de monotonía es teórico y correcto, pero es un argumento, no una medición.</p>
+<p><strong>Lo que lo cierra:</strong> o (a) degradar "acordado" a "propuesto, pendiente de ratificación", y presentar el noisy-OR como hipótesis de diseño con su justificación teórica explícita y sin las fiabilidades reales; o (b) reconocer que el operador y sus pesos son ambos <strong>pre-medición</strong>, y que el cableado puede montarse con la <em>estructura</em> del noisy-OR pero con pesos provisionales declarados, sustituibles por los medidos cuando MITRE llegue (cambio de una línea de config por cabeza).</p>
+<p><strong>Veredicto:</strong> el informe viste una preferencia de diseño como acuerdo, y ancla una fórmula en un número que aún no tenemos. Es defendible como propuesta; no como conclusión.</p>
+<hr />
+<h2 id="a5-la-traza-de-threat_category-paro-un-salto-antes-de-tiempo-c-acotado-puede-ser-demasiado-generoso">A5 🟠 — La traza de <code>threat_category</code> paró un salto antes de tiempo. "(c) acotado" puede ser demasiado generoso.</h2>
+<p><strong>Qué afirma el informe:</strong> que el firewall consume <code>threat_category</code> en grado "(c) acotado" — modula <code>timeout</code> y <code>DetectionType</code>, pero no decide si-bloquear (§5).</p>
+<p><strong>El ataque:</strong> leí STEP 5 (determina acción) y STEP 6 (reenvía al <code>BatchProcessor</code>), pero <strong>no leí qué hace el <code>BatchProcessor</code> con el <code>DetectionType</code></strong>. Si el BatchProcessor enruta, prioriza o actúa distinto según el tipo de detección, entonces <code>threat_category</code> influye en la acción más allá del timeout, y "(c) acotado" se queda corto. Concluí "acotado" habiendo parado la traza un salto antes del consumidor final del <code>DetectionType</code>. Es exactamente el error de lectura parcial que el informe presume haber evitado — cometido en la última traza.</p>
+<p><strong>Lo que lo cierra:</strong> leer el <code>add_detections</code>/<code>process</code> del <code>BatchProcessor</code> y ver si ramifica sobre <code>DetectionType</code>. Un grep y una función.</p>
+<p><strong>Veredicto:</strong> cerré una traza que no estaba cerrada. Honestidad obliga: "(c) acotado" es <strong>provisional hasta leer el BatchProcessor</strong>, no una conclusión firme.</p>
+<hr />
+<h2 id="a6-critico-para-el-defecto-b-es-razonamiento-a-priori-no-medimos-con-que-frecuencia-el-gate-realmente-muerde">A6 🟡 — "Crítico" para el Defecto B es razonamiento a priori. No medimos con qué frecuencia el gate realmente muerde.</h2>
+<p><strong>Qué afirma el informe:</strong> que el Defecto B es de gravedad crítica porque produce falsos negativos estructurales (un flujo de exfiltración que L1 marca BENIGN nunca activa al interno).</p>
+<p><strong>El ataque:</strong> probamos que el gate <strong>puede</strong> causar ese falso negativo. No medimos con qué <strong>frecuencia</strong> ocurre. Si la recall de L1 es alta, el gate rara vez muerde, y B es "crítico en teoría, raro en la práctica". El plan tenía una medición para esto (distribución de <code>authoritative_source</code> sobre un <code>detector.log</code> real — la 0.3) que <strong>no ejecutamos</strong>. Así que "crítico" descansa en la existencia del fallo, no en su tasa.</p>
+<p><strong>Lo que lo cierra:</strong> correr la distribución de <code>authoritative_source</code> (y, mejor, un conteo de flujos BENIGN-por-L1 que las cabezas habrían marcado, cuando MITRE lo permita). Cuantifica el "cuánto".</p>
+<p><strong>Veredicto:</strong> la criticidad estructural es real y suficiente para justificar el arreglo. Pero el informe debe distinguir "el fallo existe y es estructural" (probado) de "el fallo es frecuente" (no medido). Un revisor riguroso separa capacidad de un fallo de su tasa.</p>
+<hr />
+<h2 id="a7-el-plan-de-fase-2-es-un-refactor-todo-o-nada-del-camino-mas-caliente-no-propone-forma-segura-de-aterrizarlo">A7 🟠 — El plan de fase 2 es un refactor todo-o-nada del camino más caliente. No propone forma segura de aterrizarlo.</h2>
+<p><strong>Qué afirma el informe:</strong> un §10 con cinco pasos que, sumados, reordenan <code>process_event</code>, tocan dos componentes, mueven la persistencia, repueblan <code>ml_context</code> y regeneran golden vectors.</p>
+<p><strong>El ataque:</strong> eso es una cirugía grande y de alto riesgo sobre el camino caliente, presentada como un bloque. La memoria del proyecto tiene un precedente que debería asustarnos: una regresión silenciosa de 61 días en el firewall-crypto. Los refactores todo-o-nada del camino crítico son precisamente cómo se producen esas regresiones. El informe lista pasos, pero no propone una <strong>estrategia de aterrizaje incremental ni un modo seguro de validación en vivo.</strong></p>
+<p><strong>Sugerencia constructiva (que el informe debería incorporar):</strong> <strong>modo sombra.</strong> Calcular el veredicto nuevo (noisy-OR de N cabezas) en paralelo al viejo (<code>max</code>), <strong>registrar la divergencia entre ambos sin actuar sobre el nuevo</strong>, durante un periodo de observación con tráfico real. Esto (i) mide la frecuencia del gate (cierra A6), (ii) valida el determinismo del camino nuevo bajo carga sin arriesgar el escudo (mitiga A1/A2), y (iii) da datos de divergencia para el paper sin comprometerse a una conclusión antes de mirar. El escudo sigue protegiendo con <code>max(fast, L1)</code> mientras el noisy-OR se observa en sombra. Solo cuando el modo sombra demuestre que el veredicto nuevo es estable y mejor, se promueve a decisión.</p>
+<p><strong>Veredicto:</strong> el plan es correcto en los pasos y peligroso en la forma de aterrizarlos. El modo sombra convierte un salto de fe en una medición incremental — y es más coherente con <em>medir no votar</em> que un big-bang.</p>
+<hr />
+<h2 id="a8-el-patron-de-error-del-combinador-dos-rectificaciones-por-lectura-parcial-es-un-riesgo-metodologico-no-solo-un-incidente-cerrado">A8 🟡 — El patrón de error del combinador (dos rectificaciones por lectura parcial) es un riesgo metodológico, no solo un incidente cerrado.</h2>
+<p><strong>Qué afirma el informe:</strong> que la lectura completa del tramo 432–486 resuelve la naturaleza del combinador (<code>provenance</code> es una colección de N veredictos), corrigiendo afirmaciones previas (§6).</p>
+<p><strong>El ataque:</strong> me equivoqué <strong>dos veces</strong> sobre el mismo bloque antes de acertar — "germen extensible" → "dos escalares, reescribir" → "colección, injertar". El informe presenta la tercera lectura como final. Pero si dos lecturas parciales produjeron dos conclusiones opuestas, el riesgo no es esa instancia — es <strong>cuántas otras funciones del informe descansan en lecturas que no fueron completas.</strong> ¿Leí <code>send_enriched_event</code> entera? ¿El <code>BatchProcessor</code> (ver A5)? ¿La sección de cabezas 558–819 la vi completa o por tramos? Un revisor hostil no confía en la tercera lectura solo porque sea la tercera; pregunta qué garantiza que no haya una cuarta cosa sin leer.</p>
+<p><strong>Lo que lo cierra:</strong> un inventario explícito de qué funciones se leyeron <strong>enteras</strong> (con rango de líneas) y cuáles se conocen solo por grep o por tramos. La honestidad del informe mejora si declara su propia cobertura de lectura.</p>
+<p><strong>Veredicto:</strong> no es un error de contenido — la tercera lectura es correcta. Es un riesgo de proceso que el informe debería reconocer en lugar de dar por saldado con una corrección puntual.</p>
+<hr />
+<h2 id="lo-que-el-informe-hace-bien-y-deberia-sobrevivir-al-escrutinio">Lo que el informe hace bien y debería sobrevivir al escrutinio</h2>
+<p>Un adversario justo también dice qué es sólido, para que no se malgaste esfuerzo del Consejo re-atacándolo:</p>
+<ul>
+<li><strong>Las mediciones crudas son firmes.</strong> La fila de bronce, el 0.58 μs, la salud de extractores contada feature a feature, el filtro <code>attack_detected_level1()</code> del firewall, la estructura <code>provenance</code> — todo leído de fichero, todo pegado, todo corroborable en <code>main</code>. El ataque válido es a la <em>interpretación</em> de esas mediciones (A2, A3, A6), casi nunca a las mediciones mismas.</li>
+<li><strong>La separación (A) cablear / (B) cabezas fiables es correcta y debe mantenerse.</strong> Es la línea que impide el sesgo de confirmación.</li>
+<li><strong>El falso positivo del bench (<code>0.00 μs</code> por dead-code) documentado como lección</strong> es exactamente el rigor que el proyecto predica. Sobrevive.</li>
+<li><strong>La honestidad sobre los límites (§11)</strong> — MITRE imprescindible, calidad discriminante no medida — es la parte que un revisor deshonesto omitiría. Mantenerla.</li>
+</ul>
+<hr />
+<h2 id="el-punto-unico-si-el-consejo-solo-atiende-a-uno">El punto único, si el Consejo solo atiende a uno</h2>
+<p><strong>A1: ¿la monocapa es deuda o es defensa?</strong> Todo lo demás son refinamientos de un plan; A1 puede invalidar la premisa del plan. Si las cabezas se apartaron del veredicto por concurrencia o latencia, "reconectarlas" no es deshacer un descuido — es reintroducir el problema que alguien ya resolvió apartándolas, y reintroducirlo contra el requisito explícito de determinismo. <strong>Antes de cablear, hay que saber por qué se descableó.</strong> Esa pregunta no está en el informe, y es la que yo, como adversario, atacaría primero.</p>
+<p>Recomendación de secuencia, derivada de este memo: (1) establecer el porqué histórico de la monocapa; (2) montar el noisy-OR en <strong>modo sombra</strong> (A7) con gate de <strong>TSAN</strong> (A1) y medición de <strong>coste agregado bajo carga</strong> (A2); (3) usar la sombra para medir frecuencia del gate (A6) y divergencia; (4) solo entonces promover a decisión y reordenar la persistencia (A3). Nada de esto depende de una fecha. Todo depende de medir antes de actuar.</p>
+<hr />
+<p><em>Un adversario que quiere que la pieza funcione, no que el informe gane. El escudo tiene que proteger de verdad — y para eso, primero hay que atacarlo nosotros.</em></p>
+<p>fdo claude</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.top", "search.highlight"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

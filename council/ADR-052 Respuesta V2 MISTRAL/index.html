@@ -1,0 +1,1768 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source embedded-ML NDR for hospitals and schools">
+      
+      
+        <meta name="author" content="Alonso Isidoro Roman">
+      
+      
+        <link rel="canonical" href="https://alonsoir.github.io/argus/council/ADR-052%20Respuesta%20V2%20MISTRAL/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>ADR 052 Respuesta V2 MISTRAL - ML Defender (aRGus NDR)</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#analisis-por-seccion-clave" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-header__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ML Defender (aRGus NDR)
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              ADR 052 Respuesta V2 MISTRAL
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../README.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/BACKLOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Backlog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Security Model
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-tabs__link">
+          
+  
+  
+  ADRs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/contracts/Protobuf contracts.md" class="md-tabs__link">
+          
+  
+  
+  Contracts
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-nav__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ML Defender (aRGus NDR)
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../README.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/BACKLOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADRs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ADRs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013 Seed Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-021-deployment-topology-seed-families.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-021 Topology SSOT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-022-threat-model-opcion2-descartada.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-022 Threat Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Protobuf contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protobuf
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/JSON contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JSON
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Rag security commands.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#analisis-por-seccion-clave" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🔍 Análisis por Sección Clave
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🔍 Análisis por Sección Clave">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#0-mision-primaria-el-corpus-como-producto" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🎯 §0. Misión Primaria: El Corpus como Producto
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#31-identidad-de-flujo-flow_uid" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🔐 §3.1. Identidad de Flujo: flow_uid
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#32-correlacion-hostred" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🔗 §3.2. Correlación Host↔Red
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3335-modelo-de-amenaza-y-defensas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🛡️ §3.3–§3.5. Modelo de Amenaza y Defensas
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#36-marca-de-confianza-features-del-corpus" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        📊 §3.6. Marca de Confianza: Features del Corpus
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#37-etiquetado-de-procedencia" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🏷️ §3.7. Etiquetado de Procedencia
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#38-mapa-de-cobertura-de-sensores" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🗺️ §3.8. Mapa de Cobertura de Sensores
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#39-senal-arpndp" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🔍 §3.9. Señal ARP/NDP
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#310-rate-limit-de-cardinalidad" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ⚖️ §3.10. Rate-Limit de Cardinalidad
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#-" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ---
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#respuestas-a-las-preguntas-abiertas-v2-6" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        📌 Respuestas a las Preguntas Abiertas (v2, §6)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#-_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ---
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#recomendaciones-accionables-para-el-consejo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🎯 Recomendaciones Accionables para el Consejo
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🎯 Recomendaciones Accionables para el Consejo">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-decisiones-inmediatas-bloqueantes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Decisiones Inmediatas (Bloqueantes)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-tareas-para-el-equipo-p0p1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Tareas para el Equipo (P0/P1)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-deudas-a-abrir-p2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Deudas a Abrir (P2)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#-_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ---
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#resumen-ejecutivo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        📊 Resumen Ejecutivo
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#-_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ---
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#conclusion-y-proximos-pasos" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🔥 Conclusión y Próximos Pasos
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#pregunta-final-para-el-consejo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Pregunta final para el Consejo:
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+  <h1>ADR 052 Respuesta V2 MISTRAL</h1>
+
+<p>El <strong>ADR-052 v2</strong> es un avance significativo respecto a la v1, con una <strong>misión primaria clara</strong> (§0) que alinea todas las decisiones técnicas bajo el principio de que <strong>el grafo es un corpus de entrenamiento, no solo un sistema de correlación en vivo</strong>. Esto resuelve muchas ambigüedades y refuerza la coherencia del diseño. A continuación, mi análisis estructurado, <strong>puntos fuertes, débiles, respuestas a las preguntas abiertas (v2)</strong>, y recomendaciones accionables para el Consejo.</p>
+<hr />
+<hr />
+<h2 id="analisis-por-seccion-clave"><strong>🔍 Análisis por Sección Clave</strong></h2>
+<hr />
+<h3 id="0-mision-primaria-el-corpus-como-producto"><strong>🎯 §0. Misión Primaria: El Corpus como Producto</strong></h3>
+<p><strong>✅ Fortalezas:</strong>
+- <strong>Principio ordenador claro</strong>: El grafo existe para <strong>producir un corpus de entrenamiento enriquecido y trazable</strong>, no solo para correlación en vivo. Esto es <strong>revolucionario</strong> en el contexto de sistemas de detección, ya que prioriza la <strong>integridad científica</strong> sobre la operatividad inmediata.
+    - <strong>Ejemplo de alineación</strong>: La decisión de <strong>etiquetar (no borrar) flujos inyectados</strong> (§3.7) es coherente con la necesidad de retener <em>ground truth</em> para entrenar modelos robustos (similar a cómo <a href="https://attack.mitre.org/">MITRE ATT&amp;CK</a> incluye técnicas adversarias en sus datasets).
+    - <strong>Conexión con ADR-040</strong>: El uso de <strong>Inverse Probability Weighting (IPW)</strong> para ajustar sesgos en el corpus (ej: flujos observados por un solo sensor) es una práctica estándar en <em>causal inference</em> (ej: <a href="https://www.hsph.harvard.edu/miguel-hernan/causal-inference-book/">Hernán &amp; Robins, 2020</a>).</p>
+<ul>
+<li><strong>Invariante de proyecto</strong>:<blockquote>
+<p><em>"El grafo de aRGus es, antes que nada, un corpus de entrenamiento que además hace correlación en vivo. Cuando ambos fines chocan, ganan la retención y la integridad de la etiqueta."</em></p>
+</blockquote>
+<ul>
+<li>Esto resuelve el <strong>dilema clásico en SIEMs</strong>: ¿filtrar ruido (operatividad) o retenerlo (entrenamiento)? La respuesta aquí es <strong>retener y etiquetar</strong>, lo que es <strong>correcto para ML adversarial</strong> (ej: <a href="https://arxiv.org/abs/1412.6572">Goodfellow et al., 2015</a>).</li>
+</ul>
+</li>
+</ul>
+<p><strong>⚠️ Puntos débiles / Riesgos:</strong>
+- <strong>Falta de métricas de calidad del corpus</strong>:
+    - ¿Cómo se medirá la <strong>calidad del corpus</strong>? Por ejemplo:
+        - <strong>Cobertura de técnicas MITRE</strong>: ¿Qué % de técnicas ATT&amp;CK están representadas en el corpus?
+        - <strong>Balance de clases</strong>: ¿Hay suficiente representación de flujos benignos vs. maliciosos?
+        - <strong>Trazabilidad</strong>: ¿Se puede reconstruir el 100% de los flujos desde los pcaps originales?
+    - <strong>Recomendación</strong>:
+        - Añadir un <strong>§0.1: Métricas de Calidad del Corpus</strong> con KPIs como:
+            - <code>% de flujos con</code>provenance_ground_truth<code>validado (objetivo: &gt;90%).</code>
+            - <code>% de flujos con</code>witness_count &gt;= 2<code>(objetivo: &gt;70%).</code>
+            - <code>Tiempo medio de reconstrucción de un flujo desde pcap (objetivo: &lt;1s).</code></p>
+<ul>
+<li><strong>Tensión entre correlación en vivo y corpus</strong>:<ul>
+<li>En la práctica, <strong>el grafo puede crecer demasiado</strong> si se retiene todo. Por ejemplo, en un entorno con 10K flujos/segundo, el grafo podría alcanzar <strong>millones de nodos/día</strong>.</li>
+<li><strong>Recomendación</strong>:<ul>
+<li>Implementar un <strong>mecanismo de archivado automático</strong> (ej: flujos &gt;30 días se mueven a un grafo histórico en Neo4j o a un data lake como Parquet).</li>
+<li>Usar <strong>compresión de aristas</strong> para flujos correlacionados (ej: agrupar flujos de la misma sesión en un meta-nodo).</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<hr />
+<hr />
+<h3 id="31-identidad-de-flujo-flow_uid"><strong>🔐 §3.1. Identidad de Flujo: <code>flow_uid</code></strong></h3>
+<p><strong>✅ Fortalezas:</strong>
+- <strong>Codificación canónica (§3.1.1)</strong>:
+    - La fórmula <code>flow_uid = base64(SHA3-256(utf8(node_id) ‖ 0x00 ‖ utf8(community_id) ‖ 0x00 ‖ uint64_be(flow_start_window)))</code> es <strong>determinista, reproducible y resistente a colisiones</strong>.
+    - <strong>SHA3-256</strong> es una elección sólida (resistente a <em>length-extension attacks</em>, a diferencia de SHA-1/2).
+    - <strong>Test de paridad cross-implementación</strong> (C++/Python) es <strong>crítico</strong> para evitar inconsistencias en el corpus.</p>
+<ul>
+<li>
+<p><strong>Definición de <code>node_id</code> (§3.1.2)</strong>:</p>
+<ul>
+<li><code>node_id = base64(SHA256(sensor_public_key))</code> es <strong>inmutable, único y verificable</strong>, alineado con <strong>ADR-027</strong> (identidad criptográfica).</li>
+<li><strong>Ventaja</strong>: Permite <strong>firmar flujos</strong> en el futuro (ej: el sensor podría firmar el <code>flow_uid</code> para probar su origen).</li>
+</ul>
+</li>
+<li>
+<p><strong>Aclaración de <code>node_id</code> ≠ correlación cross-nodo (§3.1.3)</strong>:</p>
+<ul>
+<li><strong>Consenso correcto</strong>: Dos sensores que ven el mismo flujo <strong>deben tener <code>flow_uid</code> distintos</strong> (por diseño). La correlación se hace vía <code>community_id</code> (arista <code>FLOW_IDENTITY</code>).</li>
+<li>Esto resuelve el <strong>"Box-Car Problem"</strong> (Gemini/Qwen): el <em>skew</em> de reloj solo afecta a la correlación, no a la identidad.</li>
+</ul>
+</li>
+<li>
+<p><strong><code>flow_start_window</code> (§3.1.4)</strong>:</p>
+<ul>
+<li><strong>Decisión de usar buckets fijos</strong> (no <code>CrisisWindow</code>) es <strong>correcta</strong> porque:<ul>
+<li>Es <strong>reproducible offline</strong> (requisito §0).</li>
+<li>Evita depender de estado dinámico (ej: <code>CrisisWindow</code> podría cambiar entre sensores).</li>
+</ul>
+</li>
+<li><strong><code>seq_in_window</code></strong> para evitar colisiones UDP es <strong>elegante y minimalista</strong>.</li>
+<li><strong>Default de 60s</strong> es razonable (cubre el <code>TIME-WAIT</code> de TCP).</li>
+</ul>
+</li>
+</ul>
+<p><strong>⚠️ Puntos débiles / Mejoras:</strong>
+- <strong><code>flow_start_window</code> y flujos de larga duración</strong>:
+    - <strong>Problema</strong>: Flujos persistentes (ej: SSH, VPN) podrían generar <strong>múltiples <code>flow_uid</code></strong> si se extienden más de un bucket.
+    - <strong>Recomendación</strong>:
+        - Usar <strong><code>flow_start_window</code> solo para el primer paquete del flujo</strong> (evento de inicio). Los paquetes posteriores <strong>referencian el <code>flow_uid</code> inicial</strong> (no generan nuevos).
+        - Ejemplo:
+          <code>cypher
+          (:NetworkFlow {flow_uid: "abc123", flow_start_window: 1717200000})
+          -[:CONTINUES]-&gt;(:NetworkFlow {flow_uid: "abc123", flow_start_window: 1717200060})</code>
+        - Esto evita fragmentar flujos legítimos.</p>
+<ul>
+<li>
+<p><strong><code>sensor_native_flow_id</code> (§3.1.4.4)</strong>:</p>
+<ul>
+<li><strong>Problema</strong>: Suricata y Zeek ya tienen sus propios <code>flow_id</code>/<code>uid</code>. ¿Cómo se integran?</li>
+<li><strong>Recomendación</strong>:<ul>
+<li><strong>Priorizar <code>sensor_native_flow_id</code> sobre <code>(flow_start_window ‖ seq_in_window)</code></strong> cuando esté disponible.</li>
+<li>Para el sniffer propio de aRGus, usar el mecanismo de buckets + <code>seq_in_window</code>.</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<p><strong>Validación de <code>N</code> (60s)</strong>:</p>
+<ul>
+<li><strong>Riesgo</strong>: 60s podría ser <strong>demasiado corto</strong> para entornos con alta reutilización de puertos (ej: contenedores efímeros).</li>
+<li><strong>Recomendación</strong>:<ul>
+<li><strong>Calibrar <code>N</code> empíricamente</strong> sobre un <em>golden pcap</em> de producción:<ol>
+<li>Extraer todos los flujos y calcular el <strong>tiempo medio entre reutilizaciones de 5-tuplas</strong> en el mismo nodo.</li>
+<li>Elegir <code>N</code> como el <strong>percentil 1</strong> de esta distribución (ej: si el 99% de los reciclajes ocurren después de 120s, usar <code>N=120s</code>).</li>
+</ol>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<hr />
+<hr />
+<h3 id="32-correlacion-hostred"><strong>🔗 §3.2. Correlación Host↔Red</strong></h3>
+<p><strong>✅ Fortalezas:</strong>
+- <strong>Doble arista (flujo↔flujo y host↔flujo)</strong>:
+    - <strong>Flujo↔flujo</strong>: Por <code>community_id</code> (determinista, cross-sensor).
+    - <strong>Host↔flujo</strong>: Por <code>agent_id</code> + <strong>coincidencia temporal asimétrica</strong> (5s red→host, 30s host→red).
+    - Esto es <strong>coherente con modelos de grafos en ciberseguridad</strong> (ej: <a href="https://www.microsoft.com/en-us/research/publication/cyberbattle-simulation/">Microsoft’s Cyber Battle Simulation</a>).</p>
+<ul>
+<li><strong>Manejo de NAT (§3.2.1)</strong>:<ul>
+<li><strong>Menú de mecanismos</strong> con anotación de confianza es <strong>práctico y realista</strong>.</li>
+<li><strong>Resolución de conflictos</strong>: Usar <strong>mayoría ponderada por confianza</strong> es una solución robusta.</li>
+<li><strong><code>CONFLICT_NAT</code></strong>: Etiquetar (no fallar silenciosamente) es <strong>correcto para el corpus</strong>.</li>
+</ul>
+</li>
+</ul>
+<p><strong>⚠️ Puntos débiles / Mejoras:</strong>
+- <strong>Falta de ejemplo concreto de <code>agent_id</code></strong>:
+    - ¿Cómo se construye el <code>agent_id</code> canónico? ¿Es un UUID generado por Wazuh? ¿O un hash de <code>hostname + domain</code>?
+    - <strong>Recomendación</strong>:
+        - Definir <code>agent_id</code> como:
+          <code>python
+          agent_id = SHA256(hostname + "|" + domain + "|" + os_uuid)</code>
+          donde <code>os_uuid</code> es un identificador único del sistema (ej: <code>/etc/machine-id</code> en Linux).</p>
+<ul>
+<li>
+<p><strong>Ventanas temporales asimétricas</strong>:</p>
+<ul>
+<li><strong>Problema</strong>: 5s (red→host) podría ser <strong>demasiado corto</strong> si hay latencia en la red.</li>
+<li><strong>Recomendación</strong>:<ul>
+<li>Usar <strong>ventanas dinámicas</strong> basadas en la latencia medida entre sensores y hosts.</li>
+<li>Ejemplo:<ul>
+<li>Medir el <strong>RTT medio</strong> entre el sensor de red y el host (ej: 10ms).</li>
+<li>Ajustar la ventana como <code>RTT * 10</code> (ej: 100ms para red→host).</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<p><strong>Falta de manejo de DHCP</strong>:</p>
+<ul>
+<li><strong>Problema</strong>: En redes con DHCP, la IP de un host puede cambiar, rompiendo la correlación.</li>
+<li><strong>Recomendación</strong>:<ul>
+<li>Usar <strong><code>agent_id</code> + <code>mac_address</code></strong> como clave principal para la correlación host↔flujo.</li>
+<li>Ejemplo:
+  <code>cypher
+  (:Host {agent_id: "abc", mac: "00:11:22:33:44:55"})
+  -[:OBSERVED]-&gt;(:NetworkFlow {flow_uid: "xyz", src_ip: "192.168.1.10"})</code></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<hr />
+<hr />
+<h3 id="3335-modelo-de-amenaza-y-defensas"><strong>🛡️ §3.3–§3.5. Modelo de Amenaza y Defensas</strong></h3>
+<p><strong>✅ Fortalezas:</strong>
+- <strong>Vectores A y B claramente diferenciados</strong>:
+    - <strong>Vector A (MITM)</strong>: Ciego al <code>community_id</code> (MAC no está en el hash).
+    - <strong>Vector B (Inyección)</strong>: Manipulable (5-tupla falsa → <code>community_id</code> falso).
+    - Esto alinea con el <strong>principio de defensa en profundidad</strong> (ej: <a href="https://csrc.nist.gov/publications/detail/sp/800-53/rev-5/final">NIST SP 800-53</a>).</p>
+<ul>
+<li>
+<p><strong>Tres líneas de defensa</strong>:</p>
+<ol>
+<li><strong><code>flow_uid</code> + <code>node_id</code></strong>: Anti-inyección (vector B).</li>
+<li><strong>Correlación host↔red</strong>: Anti-MITM (vector A).</li>
+<li><strong><code>community_id.orphan_rate</code></strong>: Detección de sensores comprometidos.</li>
+<li><strong>Cobertura completa</strong>: Cada vector tiene su propia defensa.</li>
+</ol>
+</li>
+<li>
+<p><strong>Límite fundamental del vector A (§3.4.1)</strong>:</p>
+<ul>
+<li><strong>Correcto</strong>: Si el host está comprometido, el vector A es <strong>indetectable sin una fuente out-of-band</strong> (ej: switch con port-security).</li>
+<li><strong>Honestidad intelectual</strong>: Documentar este límite es <strong>clave para la validez científica del corpus</strong>.</li>
+</ul>
+</li>
+</ul>
+<p><strong>⚠️ Puntos débiles / Mejoras:</strong>
+- <strong>Falta de detección de MITM en L3/L4</strong>:
+    - <strong>Problema</strong>: El modelo actual solo detecta MITM en L2 (ARP/NDP). Pero MITM también puede ocurrir en L3 (ej: BGP hijacking) o L4 (ej: TCP session hijacking).
+    - <strong>Recomendación</strong>:
+        - Añadir <strong>señales adicionales</strong> para detectar MITM en otras capas:
+            - <strong>L3</strong>: Cambios en la ruta (ej: <code>traceroute</code> anómalo).
+            - <strong>L4</strong>: Anomalías en el estado TCP (ej: RST inesperados, saltos en <code>seq_num</code>).
+            - <strong>L7</strong>: Mismatches en certificados TLS (ej: certificado no esperado).</p>
+<ul>
+<li><strong><code>orphan_rate</code> y cobertura de sensores</strong>:<ul>
+<li><strong>Problema</strong>: <code>orphan_rate</code> es <strong>ruidoso</strong> si no se tiene en cuenta el <strong>mapa de cobertura</strong> (§3.8).</li>
+<li><strong>Recomendación</strong>:<ul>
+<li>Definir <code>orphan_rate</code> como:
+  <code>orphan_rate = (número de community_id únicos emitidos por el sensor NO vistos por otros sensores en su área de cobertura)
+                / (número total de community_id únicos emitidos por el sensor)</code></li>
+<li><strong>Umbral</strong>: Marcar como sospechoso si <code>orphan_rate &gt; 0.95</code> (ajustable).</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<hr />
+<hr />
+<h3 id="36-marca-de-confianza-features-del-corpus"><strong>📊 §3.6. Marca de Confianza: <em>Features</em> del Corpus</strong></h3>
+<p><strong>✅ Fortalezas:</strong>
+- <strong>Enfoque correcto</strong>: La confianza no es un veredicto opaco, sino <strong>features para el modelo</strong> (alineado con ADR-040 y IPW).
+- <strong>Propiedades primitivas</strong>:
+    - <code>witness_count</code> / <code>corroboration_count</code>.
+    - <code>is_host_plane_anchored</code>.
+    - <code>nat_resolution_method</code> + <code>nat_confidence</code>.
+    - <code>orphan_rate</code> del sensor.
+    - Esto permite <strong>recomputar <code>trust_tier</code></strong> si la semántica evoluciona.</p>
+<p><strong>⚠️ Puntos débiles / Mejoras:</strong>
+- <strong>Falta de definición de <code>trust_tier</code></strong>:
+    - ¿Cómo se deriva <code>trust_tier</code> a partir de las primitivas?
+    - <strong>Recomendación</strong>:
+        - Definir una <strong>tabla de decisión</strong> clara. Ejemplo:</p>
+<pre><code>      | `witness_count` | `is_host_plane_anchored` | `nat_confidence` | `orphan_rate` | `trust_tier`       |
+            |------------------|---------------------------|------------------|----------------|--------------------|
+      | &gt;= 2             | true                      | &gt;= 80            | &lt; 0.1          | `CORROBORATED`     |
+      | 1                | true                      | &gt;= 60            | &lt; 0.5          | `SINGLE_SENSOR`    |
+      | 1                | false                     | &gt;= 60            | &gt;= 0.5         | `ORPHAN`           |
+      | Any              | Any                       | Any              | Any            | `CONFLICT_NAT`     |
+</code></pre>
+<ul>
+<li><strong>Falta de peso IPW</strong>:<ul>
+<li><strong>Problema</strong>: ¿Cómo se usan estas features para calcular los <strong>pesos IPW</strong> (ADR-040)?</li>
+<li><strong>Recomendación</strong>:<ul>
+<li>Usar un modelo de <strong>regresión logística</strong> para predecir la probabilidad de que un flujo sea <em>ground truth</em> (basado en las primitivas).</li>
+<li>El peso IPW para un flujo sería:
+  <code>weight = 1 / predicted_probability</code></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<hr />
+<hr />
+<h3 id="37-etiquetado-de-procedencia"><strong>🏷️ §3.7. Etiquetado de Procedencia</strong></h3>
+<p><strong>✅ Fortalezas:</strong>
+- <strong>Dos campos ortogonales</strong>:
+    - <code>provenance_suspected</code>: Heurística de runtime (ej: <code>orphan_rate</code> alto).
+    - <code>provenance_ground_truth</code>: Verdad de escenario (ej: manifiesto MITRE).
+    - Esto evita <strong>sesgo de confirmación</strong> (no se usa la salida del detector para validar al detector).</p>
+<ul>
+<li><strong>Etiquetado como arista append-only</strong>:<ul>
+<li><strong>Correcto</strong>: Evita que un motor comprometido <strong>des-etiquete</strong> flujos maliciosos.</li>
+<li>Ejemplo:
+  <code>cypher
+  (:NetworkFlow)-[:TAGGED_AS {
+    method: "MITRE_GROUND_TRUTH",
+    source: "ADR-050-SESSION-1",
+    timestamp: 1717200000,
+    analyst: "auto"
+  }]-&gt;(:Tag {label: "INJECTED"})</code></li>
+</ul>
+</li>
+</ul>
+<p><strong>⚠️ Puntos débiles / Mejoras:</strong>
+- <strong>Falta de jerarquía de etiquetas</strong>:
+    - <strong>Problema</strong>: ¿Qué pasa si un flujo tiene <strong>múltiples etiquetas conflictivas</strong> (ej: <code>provenance_suspected: true</code> pero <code>provenance_ground_truth: false</code>)?
+    - <strong>Recomendación</strong>:
+        - Definir una <strong>jerarquía de prioridad</strong>:
+            1. <code>provenance_ground_truth</code> (fuente: manifiesto MITRE).
+            2. <code>provenance_suspected</code> (fuente: heurísticas).
+            3. <code>trust_tier</code> (fuente: features).
+        - En caso de conflicto, <strong>la etiqueta de mayor prioridad prevalece</strong>.</p>
+<ul>
+<li><strong>Falta de etiquetas para flujos benignos</strong>:<ul>
+<li><strong>Problema</strong>: El enfoque actual se centra en etiquetar flujos maliciosos (<code>INJECTED</code>, <code>MITM</code>), pero <strong>no hay etiquetas para flujos benignos</strong>.</li>
+<li><strong>Recomendación</strong>:<ul>
+<li>Añadir etiquetas como:<ul>
+<li><code>BENIGN</code> (flujo normal).</li>
+<li><code>FALSE_POSITIVE</code> (flujo benigno marcado como malicioso por error).</li>
+<li><code>UNKNOWN</code> (flujo no clasificado).</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<hr />
+<hr />
+<h3 id="38-mapa-de-cobertura-de-sensores"><strong>🗺️ §3.8. Mapa de Cobertura de Sensores</strong></h3>
+<p><strong>✅ Fortalezas:</strong>
+- <strong>Prerrequisito para la honestidad del corpus</strong>:
+    - Sin este mapa, <strong><code>orphan_rate</code> y los pesos IPW son ruido</strong>.
+    - Ejemplo: Un flujo visto por un solo sensor en una subred <strong>no monitorizada por otros</strong> no debe contar como <code>ORPHAN</code>.</p>
+<p><strong>⚠️ Puntos débiles / Mejoras:</strong>
+- <strong>Falta de diseño concreto</strong>:
+    - ¿Cómo se representa el mapa de cobertura? ¿Como un <strong>grafo de topología</strong> o una <strong>tabla de adyacencia</strong>?
+    - <strong>Recomendación</strong>:
+        - Usar un <strong>grafo de topología</strong> en Neo4j:
+          <code>cypher
+          (:Sensor {node_id: "sensor1"})-[:MONITORS]-&gt;(:Subnet {cidr: "192.168.1.0/24"})
+          (:Sensor {node_id: "sensor2"})-[:MONITORS]-&gt;(:Subnet {cidr: "192.168.2.0/24"})</code>
+        - <strong>Ventaja</strong>: Permite consultas como:
+          <code>cypher
+          MATCH (s:Sensor {node_id: "sensor1"})-[:MONITORS]-&gt;(sub:Subnet)
+          MATCH (f:NetworkFlow {src_ip: "192.168.1.10"})
+          WHERE sub.cidr CONTAINS f.src_ip
+          RETURN s, f</code>
+          para validar si un sensor <strong>debería</strong> haber visto un flujo.</p>
+<ul>
+<li><strong>Falta de actualización dinámica</strong>:<ul>
+<li><strong>Problema</strong>: La topología de red puede cambiar (ej: nuevos sensores, subredes).</li>
+<li><strong>Recomendación</strong>:<ul>
+<li>Implementar un <strong>mecanismo de sincronización</strong> con el inventario de endpoints (ADR-046 §3.9).</li>
+<li>Usar <strong>etcd</strong> (ADR-048) para almacenar el mapa de cobertura y notificar cambios.</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<hr />
+<hr />
+<h3 id="39-senal-arpndp"><strong>🔍 §3.9. Señal ARP/NDP</strong></h3>
+<p><strong>✅ Fortalezas:</strong>
+- <strong>Nodo de primera clase</strong>: Correcto, ya que permite consultas temporales y detección de cambios de estado.
+- <strong>Modelado como <code>:IpMacBinding</code></strong>:
+    - Propiedades: <code>ip</code>, <code>mac</code>, <code>valid_from</code>, <code>valid_to</code>, <code>previous_mac</code>.
+    - <strong>Ventaja</strong>: Permite detectar <strong>re-bindings</strong> (cambios de MAC para una IP), que son señal de MITM (vector A).</p>
+<p><strong>⚠️ Puntos débiles / Mejoras:</strong>
+- <strong>Falta de integración con Wazuh</strong>:
+    - <strong>Problema</strong>: ¿Cómo se recoge la señal ARP/NDP? ¿Wazuh emite eventos de cambio de MAC?
+    - <strong>Recomendación</strong>:
+        - Usar el <strong>agente de Wazuh</strong> para monitorizar la tabla ARP del host:
+          <code>bash
+          arp -a | grep "192.168.1.1"</code>
+        - Emitir un evento cuando la MAC para una IP cambie.</p>
+<ul>
+<li><strong>Falta de detección de ARP spoofing pasivo</strong>:<ul>
+<li><strong>Problema</strong>: Un atacante puede <strong>envenenar la caché ARP</strong> sin generar tráfico (ej: enviando paquetes ARP gratuitos).</li>
+<li><strong>Recomendación</strong>:<ul>
+<li>Monitorizar <strong>paquetes ARP gratuitos</strong> (gratis ARP) en el sensor de red.</li>
+<li>Ejemplo:
+  <code>python
+  # Pseudocódigo para Suricata
+  if packet.arp.op == "reply" and packet.arp.sender_ip == packet.arp.target_ip:
+      emit_arp_spoofing_alert()</code></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<hr />
+<hr />
+<h3 id="310-rate-limit-de-cardinalidad"><strong>⚖️ §3.10. Rate-Limit de Cardinalidad</strong></h3>
+<p><strong>✅ Fortalezas:</strong>
+- <strong>Enforcement en el correlation-engine</strong>: Correcto, ya que Neo4j no debe ser el rate-limiter primario.
+- <strong>Umbral adaptativo</strong>: Basado en <strong>Count-Min Sketch / HyperLogLog</strong> para estimar cardinalidad.
+- <strong>No se descarta evidencia</strong>: Los flujos que superan el umbral se <strong>etiquetan</strong> (<code>rate_limited: true</code>) o se agrupan en un meta-nodo (<code>:HighCardinalityFlowCluster</code>).</p>
+<p><strong>⚠️ Puntos débiles / Mejoras:</strong>
+- <strong>Falta de definición de <code>baseline</code></strong>:
+    - ¿Cómo se calcula la <strong>baseline por nodo/rol</strong>?
+    - <strong>Recomendación</strong>:
+        - Usar el <strong>percentil 95</strong> de la cardinalidad histórica por nodo.
+        - Ejemplo:
+          <code>python
+          baseline = np.percentile(historical_cardinalities, 95)</code>
+- <strong>Falta de acción para flujos rate-limitados</strong>:
+    - <strong>Problema</strong>: ¿Qué se hace con los flujos etiquetados como <code>rate_limited</code>?
+    - <strong>Recomendación</strong>:
+        - <strong>Agrupar en un meta-nodo</strong> con propiedades:
+          <code>cypher
+          (:HighCardinalityFlowCluster {
+            start_time: 1717200000,
+            end_time: 1717200060,
+            node_id: "sensor1",
+            cardinality: 10000,
+            sample_flow_uids: ["abc123", "def456", ...]  # Muestra de flujos
+          })</code>
+        - Esto permite <strong>analizar el clustering</strong> sin perder información.</p>
+<hr />
+<h2 id="-">---</h2>
+<h2 id="respuestas-a-las-preguntas-abiertas-v2-6"><strong>📌 Respuestas a las Preguntas Abiertas (v2, §6)</strong></h2>
+<table>
+<thead>
+<tr>
+<th><strong>Pregunta</strong></th>
+<th><strong>Respuesta</strong></th>
+<th><strong>Justificación</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Q1: Ratificación de §3.1.3</strong></td>
+<td><strong>Sí, ratificar.</strong> Dos sensores NO deben compartir <code>flow_uid</code>. El skew solo amenaza el <em>match</em> de correlación, no la identidad.</td>
+<td><strong>Consenso técnico</strong>: El diseño actual es coherente con el principio de que cada observación es una muestra independiente para el corpus.</td>
+</tr>
+<tr>
+<td><strong>Q2: Diseño del mapa de cobertura</strong></td>
+<td><strong>Grafo de topología en Neo4j</strong> (nodos <code>:Sensor</code> y <code>:Subnet</code>, aristas <code>:MONITORS</code>).</td>
+<td><strong>Ventajas</strong>: Permite consultas flexibles (ej: "¿qué sensores deberían haber visto este flujo?"). <strong>Integración</strong>: Usar el inventario de endpoints (ADR-046 §3.9) como fuente de verdad.</td>
+</tr>
+<tr>
+<td><strong>Q3: Calibración de <code>N</code> y <code>nat_confidence_floor</code></strong></td>
+<td><strong>Metodología</strong>: Usar <em>golden pcap</em> de producción para: (1) Calcular el percentil 1 del intervalo de reúso de 5-tuplas → <code>N</code>. (2) Medir la precisión de cada método NAT → <code>nat_confidence_floor</code>.</td>
+<td><strong>Ejemplo</strong>: Si el 99% de los reciclajes ocurren después de 120s, usar <code>N=120s</code>. Para NAT, si el método <code>LOG</code> tiene 95% de precisión, usar <code>nat_confidence_floor=95</code>.</td>
+</tr>
+<tr>
+<td><strong>Q4: Forma final de <code>trust_tier</code></strong></td>
+<td><strong>Enum derivado + score continuo para IPW</strong>. Guardar las primitivas (<code>witness_count</code>, <code>nat_confidence</code>, etc.) y derivar <code>trust_tier</code> como vista. El score continuo se usa para IPW.</td>
+<td><strong>Flexibilidad</strong>: Permite ajustar la semántica sin cambiar el esquema. <strong>IPW</strong>: Usar regresión logística para predecir la probabilidad de <em>ground truth</em>.</td>
+</tr>
+<tr>
+<td><strong>Q5: <code>provenance</code> y <code>acceptance_criteria.md</code></strong></td>
+<td><strong>Confirmar</strong>: Añadir el eje <code>provenance</code> <strong>sin modificar</strong> el enum congelado de presencia (<code>DROP/CONFIG/POLICY/BUG/UNKNOWN</code>).</td>
+<td><strong>Razón</strong>: Evita descongelar artefactos y mantiene la separación de preocupaciones.</td>
+</tr>
+<tr>
+<td><strong>Q6: Fuente out-of-band para vector A con host comprometido</strong></td>
+<td><strong>Documentar el límite y abrir DEBT</strong>. Asumir que el vector A con host comprometido es <strong>indetectable sin fuente externa</strong> (ej: switch con port-security).</td>
+<td><strong>Honestidad científica</strong>: No prometemos lo que no podemos detectar. <strong>DEBT</strong>: <code>DEBT-ARGUSPP-PORT-SECURITY-001</code> para integrar señales de switches.</td>
+</tr>
+<tr>
+<td><strong>Q7: Señal de host más allá de L2</strong></td>
+<td><strong>Incluir en v2</strong>: Añadir detección de anomalías TCP/TLS (ej: RST inesperados, mismatches de certificados) como parte de la señal del host plane.</td>
+<td><strong>Razón</strong>: El vector A no se limita a L2 (ej: BGP hijacking, TCP session hijacking). <strong>Prioridad</strong>: Alta, ya que mejora la cobertura de detección.</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="-_1">---</h2>
+<h2 id="recomendaciones-accionables-para-el-consejo"><strong>🎯 Recomendaciones Accionables para el Consejo</strong></h2>
+<hr />
+<h3 id="1-decisiones-inmediatas-bloqueantes"><strong>1. Decisiones Inmediatas (Bloqueantes)</strong></h3>
+<table>
+<thead>
+<tr>
+<th><strong>Decisión</strong></th>
+<th><strong>Acción</strong></th>
+<th><strong>Responsable</strong></th>
+<th><strong>Plazo</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Ratificar §3.1.3</strong></td>
+<td>Confirmar que <code>flow_uid</code> es único por sensor y que el skew no afecta a la identidad.</td>
+<td>Consejo</td>
+<td><strong>Inmediato</strong></td>
+</tr>
+<tr>
+<td><strong>Aprobar diseño del mapa de cobertura</strong></td>
+<td>Grafo de topología en Neo4j (<code>:Sensor</code>-[:MONITORS]-&gt;<code>:Subnet</code>).</td>
+<td>Consejo</td>
+<td><strong>Inmediato</strong></td>
+</tr>
+<tr>
+<td><strong>Aprobar <code>N=60s</code> como default</strong></td>
+<td>Usar 60s para <code>flow_start_window</code>, calibrable con <em>golden pcap</em>.</td>
+<td>Consejo</td>
+<td><strong>Inmediato</strong></td>
+</tr>
+<tr>
+<td><strong>Aprobar <code>trust_tier</code> como vista derivada</strong></td>
+<td>Guardar primitivas y derivar <code>trust_tier</code> como vista.</td>
+<td>Consejo</td>
+<td><strong>Inmediato</strong></td>
+</tr>
+<tr>
+<td><strong>Aprobar <code>provenance</code> como eje separado</strong></td>
+<td>Añadir <code>provenance_suspected</code> y <code>provenance_ground_truth</code> sin tocar <code>acceptance_criteria.md</code>.</td>
+<td>Consejo</td>
+<td><strong>Inmediato</strong></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h3 id="2-tareas-para-el-equipo-p0p1"><strong>2. Tareas para el Equipo (P0/P1)</strong></h3>
+<table>
+<thead>
+<tr>
+<th><strong>Tarea</strong></th>
+<th><strong>Descripción</strong></th>
+<th><strong>Responsable</strong></th>
+<th><strong>Plazo</strong></th>
+<th><strong>Dependencias</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Implementar <code>DEBT-SENSOR-COVERAGE-MAP-001</code></strong></td>
+<td>Crear grafo de topología en Neo4j y sincronizar con inventario de endpoints.</td>
+<td>Equipo de Grafo</td>
+<td>2 semanas</td>
+<td>ADR-046 §3.9</td>
+</tr>
+<tr>
+<td><strong>Implementar <code>DEBT-FLOWUID-CANONICAL-ENCODING-001</code></strong></td>
+<td>Codificar <code>flow_uid</code> en C++/Python y validar paridad.</td>
+<td>Equipo de Sensores</td>
+<td>1 semana</td>
+<td>-</td>
+</tr>
+<tr>
+<td><strong>Implementar <code>DEBT-NODEID-CRYPTO-IDENTITY-001</code></strong></td>
+<td>Generar <code>node_id</code> como <code>SHA256(sensor_public_key)</code> y ligarlo a ADR-027.</td>
+<td>Equipo de Seguridad</td>
+<td>1 semana</td>
+<td>ADR-027</td>
+</tr>
+<tr>
+<td><strong>Implementar vigilancia ARP/NDP</strong></td>
+<td>Emitir eventos <code>:IpMacBinding</code> desde Wazuh y sensores de red.</td>
+<td>Equipo de Host Plane</td>
+<td>2 semanas</td>
+<td>Wazuh integrado</td>
+</tr>
+<tr>
+<td><strong>Calibrar <code>N</code> y <code>nat_confidence_floor</code></strong></td>
+<td>Usar <em>golden pcap</em> para ajustar parámetros.</td>
+<td>Equipo de QA</td>
+<td>1 semana</td>
+<td>-</td>
+</tr>
+<tr>
+<td><strong>Añadir métricas de calidad del corpus</strong></td>
+<td>Implementar KPIs como <code>% flujos con</code>provenance_ground_truth``.</td>
+<td>Equipo de ML</td>
+<td>2 semanas</td>
+<td>ADR-040</td>
+</tr>
+<tr>
+<td><strong>Implementar rate-limit adaptativo</strong></td>
+<td>Usar Count-Min Sketch en el correlation-engine.</td>
+<td>Equipo de Correlación</td>
+<td>2 semanas</td>
+<td>-</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h3 id="3-deudas-a-abrir-p2"><strong>3. Deudas a Abrir (P2)</strong></h3>
+<table>
+<thead>
+<tr>
+<th><strong>DEBT</strong></th>
+<th><strong>Descripción</strong></th>
+<th><strong>Prioridad</strong></th>
+<th><strong>Responsable</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>DEBT-ARGUSPP-PORT-SECURITY-001</strong></td>
+<td>Integrar señales de switches (port-security) para detectar vector A con host comprometido.</td>
+<td>Alta</td>
+<td>Equipo de Red</td>
+</tr>
+<tr>
+<td><strong>DEBT-ARGUSPP-TCP-TLS-ANOMALIES-001</strong></td>
+<td>Añadir detección de anomalías TCP/TLS (RST, seq_num, certificados).</td>
+<td>Alta</td>
+<td>Equipo de Sensores</td>
+</tr>
+<tr>
+<td><strong>DEBT-CORPUS-QUALITY-METRICS-001</strong></td>
+<td>Definir e implementar métricas de calidad del corpus (cobertura MITRE, balance de clases).</td>
+<td>Media</td>
+<td>Equipo de ML</td>
+</tr>
+</tbody>
+</table>
+<h2 id="-_2">---</h2>
+<h2 id="resumen-ejecutivo"><strong>📊 Resumen Ejecutivo</strong></h2>
+<table>
+<thead>
+<tr>
+<th><strong>Aspecto</strong></th>
+<th><strong>Estado en v2</strong></th>
+<th><strong>Evaluación</strong></th>
+<th><strong>Acciones Recomendadas</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Misión primaria (§0)</strong></td>
+<td>Claramente definida</td>
+<td>✅ <strong>Excelente</strong></td>
+<td>Añadir métricas de calidad del corpus.</td>
+</tr>
+<tr>
+<td><strong><code>flow_uid</code> (§3.1)</strong></td>
+<td>Codificación canónica, <code>node_id</code> criptográfico</td>
+<td>✅ <strong>Sólido</strong></td>
+<td>Validar <code>N=60s</code> con <em>golden pcap</em>; manejar flujos de larga duración.</td>
+</tr>
+<tr>
+<td><strong>Correlación host↔red (§3.2)</strong></td>
+<td>Doble arista, manejo de NAT</td>
+<td>✅ <strong>Robusto</strong></td>
+<td>Definir <code>agent_id</code> como <code>SHA256(hostname + domain + os_uuid)</code>.</td>
+</tr>
+<tr>
+<td><strong>Modelo de amenaza (§3.3–3.5)</strong></td>
+<td>Vectores A/B claros, 3 líneas de defensa</td>
+<td>✅ <strong>Completo</strong></td>
+<td>Añadir detección de MITM en L3/L4.</td>
+</tr>
+<tr>
+<td><strong>Marca de confianza (§3.6)</strong></td>
+<td>Features para IPW</td>
+<td>✅ <strong>Correcto</strong></td>
+<td>Definir tabla de decisión para <code>trust_tier</code>.</td>
+</tr>
+<tr>
+<td><strong>Etiquetado (§3.7)</strong></td>
+<td>Dos campos ortogonales</td>
+<td>✅ <strong>Innovador</strong></td>
+<td>Añadir jerarquía de etiquetas y etiquetas para flujos benignos.</td>
+</tr>
+<tr>
+<td><strong>Mapa de cobertura (§3.8)</strong></td>
+<td>Prerrequisito identificado</td>
+<td>✅ <strong>Crítico</strong></td>
+<td>Implementar como grafo de topología en Neo4j.</td>
+</tr>
+<tr>
+<td><strong>Señal ARP/NDP (§3.9)</strong></td>
+<td>Nodo de primera clase</td>
+<td>✅ <strong>Adecuado</strong></td>
+<td>Integrar con Wazuh y detectar ARP spoofing pasivo.</td>
+</tr>
+<tr>
+<td><strong>Rate-limit (§3.10)</strong></td>
+<td>Adaptativo en correlation-engine</td>
+<td>✅ <strong>Práctico</strong></td>
+<td>Definir baseline por nodo/rol.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="-_3">---</h2>
+<h2 id="conclusion-y-proximos-pasos"><strong>🔥 Conclusión y Próximos Pasos</strong></h2>
+<p>El <strong>ADR-052 v2 es un documento maduro y técnicamente sólido</strong>, con una <strong>misión primaria clara</strong> que guía todas las decisiones. Las <strong>mejoras clave</strong> respecto a v1 son:
+1. <strong>Enfoque en el corpus</strong> (§0), que alinea el diseño con la producción de modelos de ML.
+2. <strong>Definiciones concretas</strong> (<code>flow_uid</code>, <code>node_id</code>, <code>flow_start_window</code>).
+3. <strong>Resolución de preguntas abiertas</strong> (Q1–Q7) con consenso técnico.</p>
+<p><strong>Próximos pasos para el Consejo</strong>:
+1. <strong>Ratificar las decisiones inmediatas</strong> (§3.1.3, mapa de cobertura, <code>N=60s</code>, <code>trust_tier</code>, <code>provenance</code>).
+2. <strong>Asignar tareas al equipo</strong> (implementación de DEBTs P0/P1).
+3. <strong>Abrir DEBTs P2</strong> para señales adicionales (port-security, TCP/TLS).</p>
+<h2 id="pregunta-final-para-el-consejo"><strong>Pregunta final para el Consejo</strong>:</h2>
+<p><strong>¿Están de acuerdo con las recomendaciones para:</strong>
+1. <strong>Ratificar §3.1.3</strong> (identidad ≠ correlación cross-nodo)?
+2. <strong>Aprobar el diseño del mapa de cobertura como grafo de topología en Neo4j</strong>?
+3. <strong>Priorizar la implementación de <code>DEBT-SENSOR-COVERAGE-MAP-001</code> y <code>DEBT-FLOWUID-CANONICAL-ENCODING-001</code> como P0</strong>?
+MISTRAL</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.top", "search.highlight"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

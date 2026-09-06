@@ -1,0 +1,1070 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source embedded-ML NDR for hospitals and schools">
+      
+      
+        <meta name="author" content="Alonso Isidoro Roman">
+      
+      
+        <link rel="canonical" href="https://alonsoir.github.io/argus/council/Informe%20de%20auditor%C3%ADa%20del%20veredicto%20del%20ml-detector%20%E2%80%94%20para%20el%20Consejo%20de%20Sabios-gemini/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>Informe de auditoría del veredicto del ml detector — para el Consejo de Sabios gemini - ML Defender (aRGus NDR)</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#bloque-1-las-cabezas-rotas-y-la-falacia-del-gatekeeper" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-header__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ML Defender (aRGus NDR)
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Informe de auditoría del veredicto del ml detector — para el Consejo de Sabios gemini
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../README.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/BACKLOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Backlog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Security Model
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-tabs__link">
+          
+  
+  
+  ADRs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/contracts/Protobuf contracts.md" class="md-tabs__link">
+          
+  
+  
+  Contracts
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-nav__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ML Defender (aRGus NDR)
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../README.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/BACKLOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADRs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ADRs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013 Seed Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-021-deployment-topology-seed-families.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-021 Topology SSOT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-022-threat-model-opcion2-descartada.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-022 Threat Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Protobuf contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protobuf
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/JSON contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JSON
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Rag security commands.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#bloque-1-las-cabezas-rotas-y-la-falacia-del-gatekeeper" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Bloque 1: Las cabezas rotas y la falacia del gatekeeper
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Bloque 1: Las cabezas rotas y la falacia del gatekeeper">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#p1-recuperabilidad-de-ransomware-y-traffic" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        P1. Recuperabilidad de Ransomware y Traffic
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#p2-peso-0-o-ausencia-la-postura-cientifica" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        P2. ¿Peso 0 o Ausencia? La postura científica
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#p3-la-cascada-de-traffic-l748-e-internal" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        P3. La cascada de Traffic (L748) e Internal
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#bloque-2-el-cableado-y-la-arquitectura-de-la-fase-2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Bloque 2: El cableado y la arquitectura de la Fase 2
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Bloque 2: El cableado y la arquitectura de la Fase 2">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#p4-ratificacion-del-operador-noisy-or" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        P4. Ratificación del operador Noisy-OR
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#p5-insercion-en-provenance-adr-002" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        P5. Inserción en provenance (ADR-002)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#p6-coordinacion-del-des-gateo-ml-detector-firewall" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        P6. Coordinación del des-gateo (ML-Detector + Firewall)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#bloque-3-la-persistencia-y-el-destino-del-grafo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Bloque 3: La persistencia y el destino del Grafo
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Bloque 3: La persistencia y el destino del Grafo">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#p7-movimiento-de-escrituras-post-inferencia-y-golden-vectors" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        P7. Movimiento de escrituras post-inferencia y Golden Vectors
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#p8-poblacion-de-ml_context-para-el-rag" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        P8. Población de ml_context para el RAG
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#plan-de-accion-inmediato-refinamiento-del-borrador-de-adr" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Plan de acción inmediato (Refinamiento del borrador de ADR)
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+  <h1>Informe de auditoría del veredicto del ml detector — para el Consejo de Sabios gemini</h1>
+
+<p>El Consejo de Sabios se ha reunido. Hemos examinado el código en <code>main</code>, contrastado las trazas de ejecución y analizado las métricas presentadas. Ante todo, el Consejo reconoce y valida el rigor de esta auditoría: descubrir el <strong>Defecto C (el envenenamiento de la persistencia en bronce pre-inferencia)</strong> mediante la captura cruda de una fila real demuestra que se está operando bajo el principio innegociable de <em>medir, no votar</em>. Es gran ingeniería.</p>
+<p>Nos ponemos en modo adversario. Si el listón es proteger infraestructuras críticas sin falsas sensaciones de seguridad, el estado actual de <code>main</code> es una vulnerabilidad arquitectónica: estamos vendiendo un blindaje tricapa en el papel (arXiv:2604.04952) mientras ejecutamos un portero monocapa que desecha la especialización y corrompe el dato histórico del grafo.</p>
+<p>A continuación emitimos nuestro veredicto y las respuestas técnicas directas a las encrucijadas planteadas.</p>
+<hr />
+<h2 id="bloque-1-las-cabezas-rotas-y-la-falacia-del-gatekeeper">Bloque 1: Las cabezas rotas y la falacia del gatekeeper</h2>
+<h3 id="p1-recuperabilidad-de-ransomware-y-traffic">P1. Recuperabilidad de Ransomware y Traffic</h3>
+<ul>
+<li><strong>Ransomware (L2):</strong> <strong>No es recuperable mediante reentrenamiento bajo su código actual.</strong> Llamar <code>entropy</code> a la varianza de la longitud del paquete dividida por $100.000$ no es un problema de pesos; es un error matemático conceptual. La varianza mide dispersión; la entropía de Shannon:</li>
+</ul>
+<p>$$H(X) = -\sum_{i=1}^{n} P(x_i) \log_2 P(x_i)$$</p>
+<p>mide incertidumbre e información (crucial para detectar payloads cifrados). Un clasificador entrenado con una feature mal calculada se apoya en una ilusión. <strong>Dictamen:</strong> La cabeza de Ransomware debe ser declarada en el plan como "Bypass por fallo de feature estractora inline" hasta que el extractor calcule entropía real sin romper el determinismo de nanosegundos.
+* <strong>Traffic (L3):</strong> <strong>No es recuperable.</strong> Si 5 de 10 features son constantes fijadas a <code>1.0f</code>, el modelo está operando capado, respondiendo a sesgos del dataset de laboratorio donde se entrenó.</p>
+<h3 id="p2-peso-0-o-ausencia-la-postura-cientifica">P2. ¿Peso 0 o Ausencia? La postura científica</h3>
+<p>Introducir una cabeza con peso $\approx 0$ en el combinador para salvar las apariencias del diagrama tricapa es cosmética, no ingeniería. Si un clasificador no aporta capacidad discriminatoria medida, su inclusión activa añade complejidad ciclomática y riesgo de degradación sin beneficio.</p>
+<p><strong>La postura honesta:</strong> La cabeza debe figurar en el código como <strong>desactivada explícitamente (<code>ENABLED = false</code> o peso estructural 0 documentado en el código)</strong>. En el paper se debe reflejar la realidad: <em>"El pipeline arquitectónico está preparado para la topología tricapa, pero las cabezas L2-Ransomware y L3-Traffic operan en modo pasivo/bypass debido a la falta de telemetría de dominio representativa en producción."</em> Esto es transparente y protege la reputación del proyecto.</p>
+<h3 id="p3-la-cascada-de-traffic-l748-e-internal">P3. La cascada de Traffic (L748) e Internal</h3>
+<p><strong>Debe ser eliminada inmediatamente.</strong> Si la cabeza de Traffic no es fiable, usarla como gatekeeper para decidir si se activa el Internal (que sí tiene un extractor robusto con 7/2 features reales cableadas desde eBPF) es un suicidio por cascada de errores. El Internal debe correr desacoplado de Traffic. Si el paquete entra al pipeline de ML, el Internal computa su inferencia siempre. Los $0.58 \, \mu\text{s}$ medidos en el benchmark borran cualquier excusa de coste computacional.</p>
+<hr />
+<h2 id="bloque-2-el-cableado-y-la-arquitectura-de-la-fase-2">Bloque 2: El cableado y la arquitectura de la Fase 2</h2>
+<h3 id="p4-ratificacion-del-operador-noisy-or">P4. Ratificación del operador Noisy-OR</h3>
+<p>El Consejo <strong>ratifica unánimemente el uso de Noisy-OR</strong> para la unificación de los veredictos de las cabezas probabilísticas:</p>
+<p>$$P = 1 - \prod_{i=1}^{N} (1 - (\text{fiabilidad}_i \times \text{score}_i))$$</p>
+<ul>
+<li><strong>Por qué supera a las alternativas:</strong> La media ponderada penaliza al sistema si tres cabezas están en silencio (score bajo) ante un ataque claro detectado por una sola cabeza experta. El <code>max</code> puro ignora la corroboración cruzada (si el Internal y el DDoS sospechan del mismo flujo, la probabilidad conjunta debe escalar). El Noisy-OR gestiona esto de forma limpia, es monótono y respeta la fiabilidad medida de cada componente.</li>
+</ul>
+<h3 id="p5-insercion-en-provenance-adr-002">P5. Inserción en <code>provenance</code> (ADR-002)</h3>
+<p>Mantener el eje bidireccional de <code>authoritative_source</code> (Fast vs ML) es una herencia del diseño monocapa viejo. La solución limpia es tratar a todas las cabezas como **fuentes homogéneas dentro de la colección <code>provenance-&gt;verdicts()**</code>.</p>
+<p>El combinador Noisy-OR debe iterar sobre esta colección, calcular el score consolidado y usar <code>provenance-&gt;set_final_decision()</code>. Para no romper la telemetría actual, <code>authoritative_source</code> puede setearse como un enum nuevo: <code>DETECTOR_SOURCE_ENSEMBLE_NOISY_OR</code>.</p>
+<h3 id="p6-coordinacion-del-des-gateo-ml-detector-firewall">P6. Coordinación del des-gateo (ML-Detector + Firewall)</h3>
+<p>Hacerlo en dos commits separados rompería el entorno integrado y congelaría el despliegue. Proponemos un <strong>PR Atómico en el monorepo</strong> apalancado en la compatibilidad del contrato de <code>network_security.proto</code>:</p>
+<ol>
+<li>En el <code>ml-detector</code>, en lugar de forzar que el veredicto altere los flags L1 antiguos, se debe poblar el campo de decisión final unificado del evento (<code>provenance-&gt;final_decision() == DROP</code>).</li>
+<li>En el <code>firewall-acl-agent/src/api/zmq_subscriber.cpp</code>, se modifica la guarda agresiva:</li>
+</ol>
+<pre><code class="language-cpp">// Dejar de mirar solo L1; mirar la decisión consolidada del ensemble
+if (event.provenance().final_decision() != DROP &amp;&amp; !ml.attack_detected_level1()) {
+    return;
+}
+
+</code></pre>
+<p>Esto permite que si L1 falla pero el ensemble (Internal) levanta un <code>DROP</code>, el firewall actúe, manteniendo compatibilidad hacia atrás si se procesan eventos antiguos donde solo L1 venía poblado.</p>
+<hr />
+<h2 id="bloque-3-la-persistencia-y-el-destino-del-grafo">Bloque 3: La persistencia y el destino del Grafo</h2>
+<h3 id="p7-movimiento-de-escrituras-post-inferencia-y-golden-vectors">P7. Movimiento de escrituras post-inferencia y Golden Vectors</h3>
+<p>El contrato <code>correlation_v1</code> define la estructura y tipos de las columnas, no los valores dinámicos que viajan en ellas. Si al mover la persistencia al final de <code>process_event</code> el campo <code>threat_category</code> pasa de registrar <code>RAW_CAPTURE</code> (el valor por defecto del sniffer) a registrar <code>SUSPICIOUS_INTERNAL</code> o <code>ATTACK</code>, <strong>los golden vectors de los tests deben ser regenerados de forma justificada</strong>.</p>
+<p>Fijar un bug que escribía datos incompletos no es romper un contrato; es subsanar una fuga de datos. Los tests deben reflejar el comportamiento correcto del sistema modificado.</p>
+<h3 id="p8-poblacion-de-ml_context-para-el-rag">P8. Población de <code>ml_context</code> para el RAG</h3>
+<p><strong>Sí, debe poblarse dinámicamente con la salida de las cabezas.</strong> El hardcodeo de <code>"RANSOMWARE"</code> en L505 es una deuda técnica crítica (<code>DEBT-RAG-ATTACKFAMILY-HARDCODED-001</code>). Si el Internal es la cabeza que dispara el Noisy-OR, <code>ml_context.attack_family</code> debe registrar <code>"LATERAL_MOVEMENT"</code> o <code>"INTERNAL_SUSPICIOUS"</code>. De lo contrario, el RAG aguas abajo estará indexando documentación médica y de respuesta a incidentes errónea, inutilizando el sistema para los operadores del hospital.</p>
+<hr />
+<h2 id="plan-de-accion-inmediato-refinamiento-del-borrador-de-adr">Plan de acción inmediato (Refinamiento del borrador de ADR)</h2>
+<pre><code>[Sniffer eBPF] ---&gt; [L1 Gatekeeper (Pasa todo)] ---&gt; [Cabezas en Paralelo (L1, Internal)]
+                                                             |
+                                                       [Noisy-OR Combinador]
+                                                             |
+                                                  [Sellar Veredicto y Contexto]
+                                                             |
+                                               [Escritura a Disco: Bronce/RAG/CSV]
+                                                             |
+                                                     [Emisión ZMQ al Firewall]
+
+</code></pre>
+<ol>
+<li><strong>Modificar <code>zmq_handler.cpp</code>:</strong> Retrasar las llamadas a <code>correlation_writer_</code>, <code>rag_logger_</code> y <code>csv_writer_</code> hasta la línea inmediatamente anterior a <code>send_enriched_event(event)</code> (antigua L850).</li>
+<li><strong>Bypass de cabezas rotas:</strong> Setear la fiabilidad estática de Ransomware y Traffic a <code>0.0f</code> en la matriz de configuración del Noisy-OR. Configurar Internal con su peso F1 real derivado del comportamiento de sus 7 features reales.</li>
+<li><strong>Desacoplar L748:</strong> Permitir que <code>Internal::predict</code> se ejecute siempre que el evento pase la validación inicial, ignorando el output de Traffic.</li>
+<li><strong>Lanzar Pipeline de Integración:</strong> Ejecutar <code>test-e2e-live</code> con el cambio atómico monorepo (ML + Firewall). Regenerar vectores golden de la capa bronce documentando el cambio de <code>RAW_CAPTURE</code> al veredicto real del ensemble.</li>
+</ol>
+<p>El Consejo concluye su sesión. El camino está medido y la arquitectura Tricapa real es alcanzable mediante la limpieza implacable de estas compuertas.</p>
+<p>Asumiendo que liberamos al detector Internal del yugo de la cabeza de Traffic, ¿contamos en este momento con suficientes trazas en el entorno controlado de simulación (MITRE/Atomic Red Team) para calcular la matriz de fiabilidad inicial del Internal antes de integrarlo al Noisy-OR?</p>
+<p>fdo
+gemini</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.top", "search.highlight"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

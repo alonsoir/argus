@@ -1,0 +1,1163 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source embedded-ML NDR for hospitals and schools">
+      
+      
+        <meta name="author" content="Alonso Isidoro Roman">
+      
+      
+        <link rel="canonical" href="https://alonsoir.github.io/argus/council/ADR-057%20Fase%200%20%C2%B7%20Decisi%C3%B3n%20Vela%20%C2%B7%20Estrategia%20de%20escritura%20Kuzu-QWEN/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>CONTRIBUCIÓN AL CONSEJO — Sistemas Distribuidos en C++ - ML Defender (aRGus NDR)</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#contribucion-al-consejo-sistemas-distribuidos-en-c" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-header__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ML Defender (aRGus NDR)
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              CONTRIBUCIÓN AL CONSEJO — Sistemas Distribuidos en C++
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../README.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/BACKLOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Backlog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Security Model
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-tabs__link">
+          
+  
+  
+  ADRs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/contracts/Protobuf contracts.md" class="md-tabs__link">
+          
+  
+  
+  Contracts
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-nav__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ML Defender (aRGus NDR)
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../README.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/BACKLOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADRs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ADRs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013 Seed Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-021-deployment-topology-seed-families.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-021 Topology SSOT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-022-threat-model-opcion2-descartada.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-022 Threat Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Protobuf contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protobuf
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/JSON contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JSON
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Rag security commands.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#respuestas-a-las-preguntas-jodias" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Respuestas a las preguntas jodías
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Respuestas a las preguntas jodías">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#q1-el-61-transfiere-o-es-artefacto-de-vm" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Q1 — ¿El ×61 transfiere o es artefacto de VM?
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#q2-staleness-a-bajo-caudal" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Q2 — Staleness a bajo caudal
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#q3-el-reader-del-smoke-es-un-juguete" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Q3 — El reader del smoke es un juguete
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#q4-a-escala-real-el-cuello-es-la-memoria" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Q4 — A escala real, el cuello es la MEMORIA
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#q5-atomicidad-un-flow-envenenado-tira-1000-detecciones" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Q5 — Atomicidad: un flow envenenado tira 1000 detecciones
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#q6-1000-es-un-numero-magico" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Q6 — 1000 es un número mágico
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#q7-borrar-el-wal-es-lo-contrario-de-lo-que-necesita-produccion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Q7 — Borrar el WAL es lo contrario de lo que necesita producción
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#q8-diferir-sharding-es-diferir-o-es-cerrar-la-puerta" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Q8 — Diferir sharding ¿es diferir, o es cerrar la puerta?
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#q9-el-footgun-esta-prevenido-o-solo-anotado" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Q9 — El footgun ¿está prevenido o solo anotado?
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#resumen-de-veredictos" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Resumen de veredictos
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="contribucion-al-consejo-sistemas-distribuidos-en-c">CONTRIBUCIÓN AL CONSEJO — Sistemas Distribuidos en C++</h1>
+<p><strong>Consejero: Qwen (Alibaba)</strong> · Especialidad: concurrencia, durabilidad, patrones de escritura en grafos</p>
+<hr />
+<h2 id="respuestas-a-las-preguntas-jodias">Respuestas a las preguntas jodías</h2>
+<h3 id="q1-el-61-transfiere-o-es-artefacto-de-vm">Q1 — ¿El ×61 transfiere o es artefacto de VM?</h3>
+<p><strong>Objeción:</strong> El ×61 puede ser 80% <code>fsync</code> encolado por la capa de virtualización y 20% parse/plan real. En SSD NVMe nativo, <code>fsync</code> baja de ~50ms a ~200μs → run1 sube ×250, el ×61 se convierte en ×1.2.</p>
+<p><strong>Experimento:</strong> Ejecutar <strong>el mismo binario</strong> en dos entornos:
+- Host nativo con SSD NVMe (fio: <code>fsync</code> lat &lt;300μs)
+- VM VirtualBox con <code>/tmp</code> en vboxsf (fio: <code>fsync</code> lat &gt;30ms)</p>
+<p>Medir <strong>por separado</strong> con <code>strace -c</code> o <code>perf</code>:
+1. Tiempo en <code>fsync()</code> por upsert (run1 vs run2)
+2. Tiempo en parse/plan de Cypher (usar <code>EXPLAIN ANALYZE</code> de Kuzu si existe, o instrumentar el driver)</p>
+<p><strong>Número que zanja:</strong> Si <code>fsync</code> en run1 representa &gt;70% del por-upsert p50, el ×61 es artefacto. Si representa &lt;30%, el ×61 es estructural.</p>
+<p><strong>Veredicto:</strong> <strong>Bloqueante para Fase 0.</strong> No podemos basar una decisión de arquitectura en una medición contaminada. El experimento cuesta 4 horas.</p>
+<hr />
+<h3 id="q2-staleness-a-bajo-caudal">Q2 — Staleness a bajo caudal</h3>
+<p><strong>Objeción:</strong> Un batch de 1000 a 3 flows/s tarda 333s. Si un APT entra a las 03:14:00 y el batch no se flusha hasta 03:19:33, el SOC ve el ataque con 5.5 minutos de retraso. Eso es inaceptable para un NDR.</p>
+<p><strong>Experimento:</strong> Implementar <code>flush(size &gt;= 1000 OR time &gt;= T_ms)</code> y medir:
+- Throughput vs <code>T_ms ∈ {100, 500, 1000, 5000}</code>
+- Staleness p99 por fuente (tiempo desde que el flow llega al sink hasta que es visible en Kuzu)</p>
+<p><strong>Número que zanja:</strong> Para un NDR, el SLO típico es <strong>staleness p99 &lt; 5s por fuente</strong> (ventana de correlación ACTIVA). El experimento dará el <code>T_ms</code> que cumple ese SLO sin colapsar throughput. Mi predicción: <code>T_ms = 1000</code> es el punto de equilibrio.</p>
+<p><strong>Veredicto:</strong> <strong>Bloqueante para Fase 0.</strong> Sin <code>flush-by-time</code>, el sistema no es production-ready para detección en tiempo real. Es un cambio de 20 líneas de código.</p>
+<hr />
+<h3 id="q3-el-reader-del-smoke-es-un-juguete">Q3 — El reader del smoke es un juguete</h3>
+<p><strong>Objeción:</strong> Medir contención con <code>count(*)</code> es como medir el rendimiento de una base de datos con <code>SELECT 1</code>. La correlación multi-hop (3 saltos por <code>community_id</code>) toca índices, caché de páginas, y el buffer manager de forma radicalmente distinta.</p>
+<p><strong>Experimento:</strong> Reemplazar el reader del smoke por una query de correlación realista:</p>
+<pre><code class="language-cypher">MATCH (src:IP {ip: $src_ip})-[:FLOW*1..3]-&gt;(dst:IP)
+WHERE dst.reputation &lt; 0.2
+RETURN dst.ip, dst.reputation, count(*) AS risk_score
+ORDER BY risk_score DESC
+LIMIT 10
+</code></pre>
+<p>Ejecutar <strong>en paralelo</strong> con el writer batcheado (1 writer, 1000/batch) y medir:
+- Latencia p50/p99 de la query de correlación
+- Throughput del writer (¿cae cuando hay readers haciendo traversal?)</p>
+<p><strong>Número que zanja:</strong> Si la latencia p99 de correlación sube &gt;×5 bajo carga de escritura, la conclusión "un writer batcheado mantiene la lectura sana" es falsa.</p>
+<p><strong>Veredicto:</strong> <strong>Bloqueante para Fase 0.</strong> Sin esta medición, no sabemos si el sistema soporta su caso de uso principal (correlación bajo riada).</p>
+<hr />
+<h3 id="q4-a-escala-real-el-cuello-es-la-memoria">Q4 — A escala real, el cuello es la MEMORIA</h3>
+<p><strong>Objeción:</strong> 822 MB para 100k nodos implica ~8.2 KB/nodo. Una red hospitalaria con 1M flows en ventana de 24h → 8.2 GB. RPi5 (8 GB) muere. N100 (16 GB) aprieta. Kuzu 0.11.3 no tiene índice de rango ni tiering nativo.</p>
+<p><strong>Experimento:</strong>
+1. <strong>Curva RSS vs nodos:</strong> Cargar 100k / 500k / 1M nodos (mismo schema, distribución realista de IPs/puertos). Medir RSS tras checkpoint.
+2. <strong>Estrategia hot→cold:</strong> Implementar un job que cada hora:
+    - Exporta nodos con <code>last_seen &lt; now() - 1h</code> a Parquet (DuckDB)
+    - Los borra de Kuzu
+    - Mantiene en Kuzu solo la ventana caliente (última hora)
+    - Las queries de correlación histórica hacen <code>UNION</code> con DuckDB</p>
+<p>Medir RSS con tiering activo vs sin tiering.</p>
+<p><strong>Número que zanja:</strong> Si RSS con tiering se mantiene &lt;2 GB para 1M nodos totales (hot + cold), la estrategia es viable. Si no, Kuzu in-process en RPi5 es inviable para producción.</p>
+<p><strong>Veredicto:</strong> <strong>Hardening posterior (ADR-041), pero con condición:</strong> Si la curva RSS escala super-linealmente (&gt;1.2× lineal), es bloqueante. Si es lineal, se puede diferir.</p>
+<hr />
+<h3 id="q5-atomicidad-un-flow-envenenado-tira-1000-detecciones">Q5 — Atomicidad: un flow envenenado tira 1000 detecciones</h3>
+<p><strong>Objeción:</strong> Kuzu (como la mayoría de grafos ACID) tiene semántica <strong>todo-o-nada</strong> por transacción. Si el flow 734 de un UNWIND de 1000 viola una constraint (ej. IP inválida, timestamp negativo), <strong>todo el batch hace rollback</strong>. Un atacante puede envenenar 999 detecciones legítimas con 1 flow malformado.</p>
+<p><strong>Experimento:</strong>
+1. Verificar en la documentación de Kuzu 0.11.3 o código fuente: ¿<code>UNWIND</code> con una fila inválida → rollback total o parcial?
+2. Si es total, implementar <strong>quarantine por lotes pequeños</strong>:
+    - Dividir UNWIND de 1000 en 10 transacciones de 100
+    - O: validar schema en el sink ANTES de construir el UNWIND (reject invalid, batch valid)</p>
+<p>Medir: throughput con quarantine vs sin quarantine, y tasa de pérdida de detecciones legítimas bajo ataque de envenenamiento (1% de flows malformados).</p>
+<p><strong>Número que zanja:</strong> Si Kuzu hace rollback total y no implementamos quarantine, la tasa de pérdida es 99.9% (999 de 1000). Con quarantine de 100/batch, baja a 99% (99 de 100). Con validación previa, baja a 0%.</p>
+<p><strong>Veredicto:</strong> <strong>Bloqueante para Fase 0.</strong> Un NDR que pierde detecciones por envenenamiento es un fallo de seguridad crítico. La solución (validación previa o batches pequeños) es trivial.</p>
+<hr />
+<h3 id="q6-1000-es-un-numero-magico">Q6 — 1000 es un número mágico</h3>
+<p><strong>Objeción:</strong> No hay justificación empírica para batch=1000. El óptimo de throughput (10000) puede ser el peor operativo (staleness 33s, blast radius 10000 flows).</p>
+<p><strong>Experimento:</strong> Sweep <code>batch ∈ {10, 100, 500, 1000, 5000, 10000}</code> midiendo <strong>cuatro métricas simultáneas</strong>:
+1. Throughput (upserts/s)
+2. Staleness p99 (con <code>flush-by-time</code> de Q2 fijado en 1000ms)
+3. RSS pico
+4. Blast radius (flows perdidos si 1 batch falla)</p>
+<p><strong>Número que zanja:</strong> El óptimo operativo es el batch que maximiza <code>throughput / (staleness × blast_radius)</code>. Mi predicción: el codo está en batch=500 o 1000, pero sin el sweep no lo sabemos.</p>
+<p><strong>Veredicto:</strong> <strong>Hardening posterior (ADR-041), pero con condición:</strong> Si el sweep muestra que batch=100 es 90% del throughput de batch=1000 con 10× menos blast radius, es bloqueante cambiar a 100.</p>
+<hr />
+<h3 id="q7-borrar-el-wal-es-lo-contrario-de-lo-que-necesita-produccion">Q7 — Borrar el WAL es lo contrario de lo que necesita producción</h3>
+<p><strong>Objeción:</strong> El smoke test "resuelve" el WAL huérfano borrándolo (<code>cleanup_db</code>). En producción, el WAL contiene transacciones commiteadas pero no checkpointed. Borrarlo = pérdida de datos confirmados. El smoke no probó recuperación real.</p>
+<p><strong>Experimento:</strong> Implementar <code>restore_from_wal_smoke_test</code> (DEBT-LABEL-WAL-001):
+1. Escribir 10000 upserts en batches de 100
+2. Hacer <code>SIGKILL</code> al proceso a mitad del batch 500
+3. Reiniciar el proceso <strong>sin borrar el WAL</strong>
+4. Verificar:
+    - ¿Los batches 1-499 (commiteados) sobreviven?
+    - ¿El batch 500 (incompleto) se hace rollback?
+    - ¿El proceso puede seguir escribiendo?</p>
+<p><strong>Número que zanja:</strong> Si los batches commiteados no sobreviven, hay un agujero de durabilidad. Si sobreviven, el sistema es production-ready en cuanto a WAL.</p>
+<p><strong>Veredicto:</strong> <strong>Bloqueante para Fase 0.</strong> Un NDR que pierde datos tras un crash no es confiable. El experimento es obligatorio.</p>
+<hr />
+<h3 id="q8-diferir-sharding-es-diferir-o-es-cerrar-la-puerta">Q8 — Diferir sharding ¿es diferir, o es cerrar la puerta?</h3>
+<p><strong>Objeción:</strong> Si el write path asume grafo único (ej. correlador que hace <code>MATCH (a)-[:FLOW]-&gt;(b)</code> sin <code>community_id</code> como routing key), retrofittear sharding requiere reescribir el correlador, el sink, y las queries de lectura. "Diferir sharding" se convierte en "imposibilitarlo".</p>
+<p><strong>Experimento:</strong> Revisar el código del sink y correlador. Verificar:
+1. ¿El sink escribe con una <code>community_id</code> explícita que pueda usarse como routing key?
+2. ¿El correlador asume que todo el grafo está en una sola instancia de Kuzu?
+3. ¿Las queries de lectura pueden ejecutarse contra un subgrafo identificado por <code>community_id</code>?</p>
+<p>Si la respuesta a las tres es SÍ, sharding es un add-on (fan-out de queries,聚合 de resultados). Si es NO, sharding es una reescritura.</p>
+<p><strong>Número que zanja:</strong> Invariante mínima: <strong>toda escritura debe incluir <code>community_id</code> como propiedad del nodo/arista, y toda query de correlación debe poder filtrar por <code>community_id</code></strong>. Si ese invariante se mantiene hoy, sharding es diferible sin cerrar la puerta.</p>
+<p><strong>Veredicto:</strong> <strong>Bloqueante para Fase 0 solo si el invariante no se mantiene hoy.</strong> Si ya se mantiene, es hardening posterior.</p>
+<hr />
+<h3 id="q9-el-footgun-esta-prevenido-o-solo-anotado">Q9 — El footgun ¿está prevenido o solo anotado?</h3>
+<p><strong>Objeción:</strong> <code>DEBT-KUZU-SINGLE-DATABASE-GUARD-001</code> documenta el footgun, pero una deuda técnica no es una guarda. Si depende de que el programador lea la documentación, el footgun existe.</p>
+<p><strong>Experimento:</strong> Implementar un <strong>singleton con verificación en construcción</strong>:</p>
+<pre><code class="language-cpp">class KuzuDatabase {
+    static std::once_flag init_flag;
+    static std::unique_ptr&lt;KuzuDatabase&gt; instance;
+
+public:
+    static KuzuDatabase&amp; get_instance(const std::string&amp; path) {
+        std::call_once(init_flag, [&amp;]() {
+            instance.reset(new KuzuDatabase(path));
+        });
+        return *instance;
+    }
+
+    KuzuDatabase(const KuzuDatabase&amp;) = delete;
+    KuzuDatabase&amp; operator=(const KuzuDatabase&amp;) = delete;
+};
+</code></pre>
+<p>Escribir un test que intente abrir un 2º <code>Database</code> (bypaseando el singleton) y espere fallo controlado (excepción o <code>exit=2</code>).</p>
+<p><strong>Número que zanja:</strong> Si el test pasa (2º <code>Database</code> falla de forma controlada), el footgun está prevenido. Si no, solo está documentado.</p>
+<p><strong>Veredicto:</strong> <strong>Bloqueante para Fase 0.</strong> Un footgun que corrompe datos no puede depender de disciplina. La implementación es trivial (30 líneas).</p>
+<hr />
+<h2 id="resumen-de-veredictos">Resumen de veredictos</h2>
+<table>
+<thead>
+<tr>
+<th>Pregunta</th>
+<th>Veredicto</th>
+<th>Acción</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Q1</td>
+<td><strong>Bloqueante</strong></td>
+<td>Medir ×61 en hardware real, separar fsync de parse/plan</td>
+</tr>
+<tr>
+<td>Q2</td>
+<td><strong>Bloqueante</strong></td>
+<td>Implementar <code>flush-by-time</code>, fijar SLO staleness &lt;5s</td>
+</tr>
+<tr>
+<td>Q3</td>
+<td><strong>Bloqueante</strong></td>
+<td>Reemplazar reader trivial por correlación multi-hop real</td>
+</tr>
+<tr>
+<td>Q4</td>
+<td><strong>Hardening</strong></td>
+<td>Medir curva RSS vs nodos; si es super-lineal, bloqueante</td>
+</tr>
+<tr>
+<td>Q5</td>
+<td><strong>Bloqueante</strong></td>
+<td>Verificar semántica de fallo de UNWIND, implementar quarantine</td>
+</tr>
+<tr>
+<td>Q6</td>
+<td><strong>Hardening</strong></td>
+<td>Sweep de batch sizes; si batch=100 es 90% del throughput, bloqueante</td>
+</tr>
+<tr>
+<td>Q7</td>
+<td><strong>Bloqueante</strong></td>
+<td>Implementar test de recuperación real tras SIGKILL</td>
+</tr>
+<tr>
+<td>Q8</td>
+<td><strong>Condicional</strong></td>
+<td>Verificar invariante de <code>community_id</code>; si no se mantiene, bloqueante</td>
+</tr>
+<tr>
+<td>Q9</td>
+<td><strong>Bloqueante</strong></td>
+<td>Implementar singleton con test de 2º Database</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<p><strong>Conclusión del consejero:</strong> El ADR-057 tiene una base sólida (UNWIND+1writer es ×61 más rápido), pero <strong>7 de 9 preguntas son bloqueantes para Fase 0</strong>. El smoke test midió el mejor caso en un entorno contaminado. Antes de declarar "production-ready", necesitamos:
+1. Medir en hardware real (Q1)
+2. Garantizar staleness &lt;5s (Q2)
+3. Validar correlación bajo carga (Q3)
+4. Garantizar atomicidad bajo envenenamiento (Q5)
+5. Validar durabilidad real (Q7)
+6. Prevenir el footgun de forma fail-closed (Q9)</p>
+<p>El resto (Q4, Q6, Q8) puede diferirse a ADR-041 <strong>solo si</strong> las condiciones específicas se cumplen.</p>
+<p><em>La documentación es un voto; el smoke es una medida. Pero el smoke debe medir lo correcto.</em> — Qwen, DAY 182</p>
+<p>FDO</p>
+<p>QWEN</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.top", "search.highlight"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

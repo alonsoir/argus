@@ -1,0 +1,1643 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source embedded-ML NDR for hospitals and schools">
+      
+      
+        <meta name="author" content="Alonso Isidoro Roman">
+      
+      
+        <link rel="canonical" href="https://alonsoir.github.io/argus/council/Integraci%C3%B3n%20multi-motor%20aRGus-Suricata-Zeek-Wazuh-MISTRAL-tercera-pasada/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>Integración multi motor aRGus Suricata Zeek Wazuh MISTRAL tercera pasada - ML Defender (aRGus NDR)</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#respuestas-a-las-micro-mociones-p31p34" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-header__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ML Defender (aRGus NDR)
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Integración multi motor aRGus Suricata Zeek Wazuh MISTRAL tercera pasada
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../README.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/BACKLOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Backlog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Security Model
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-tabs__link">
+          
+  
+  
+  ADRs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/contracts/Protobuf contracts.md" class="md-tabs__link">
+          
+  
+  
+  Contracts
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-nav__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ML Defender (aRGus NDR)
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../README.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/BACKLOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADRs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ADRs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013 Seed Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-021-deployment-topology-seed-families.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-021 Topology SSOT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-022-threat-model-opcion2-descartada.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-022 Threat Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Protobuf contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protobuf
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/JSON contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JSON
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Rag security commands.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#respuestas-a-las-micro-mociones-p31p34" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        📌 Respuestas a las Micro-Mociones (P3.1–P3.4)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="📌 Respuestas a las Micro-Mociones (P3.1–P3.4)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#p31-sitio-de-emitted_at-ingested_at" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🔹 P3.1: Sitio de emitted_at / ingested_at
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🔹 P3.1: Sitio de emitted_at / ingested_at">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#fundamento-tecnico" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fundamento Técnico:
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#p32-orden-de-eviccion-en-el-conjunto-frio" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🔹 P3.2: Orden de Evicción en el Conjunto Frío
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🔹 P3.2: Orden de Evicción en el Conjunto Frío">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#fundamento-tecnico_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fundamento Técnico:
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#p33-granularidad-de-la-cuota-anti-pinning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🔹 P3.3: Granularidad de la Cuota Anti-Pinning
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🔹 P3.3: Granularidad de la Cuota Anti-Pinning">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#fundamento-tecnico_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fundamento Técnico:
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#p34-semantica-del-rezagado-append-only-vs-mutacion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🔹 P3.4: Semántica del Rezagado (Append-Only vs. Mutación)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🔹 P3.4: Semántica del Rezagado (Append-Only vs. Mutación)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#fundamento-tecnico_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fundamento Técnico:
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#-" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ---
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#resumen-de-posturas-vibe-mistral-ai" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        📝 Resumen de Posturas (Vibe / Mistral AI)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#-_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ---
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#proximos-pasos-acciones-concretas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🚀 Próximos Pasos (Acciones Concretas)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#-_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ---
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#preguntas-abiertas-al-consejo-para-debate-adicional-si-es-necesario" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🔍 Preguntas Abiertas al Consejo (para debate adicional si es necesario)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#-_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ---
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#conclusion-final" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        📌 Conclusión Final
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+  <h1>Integración multi motor aRGus Suricata Zeek Wazuh MISTRAL tercera pasada</h1>
+
+<p>Aironman DirtDiver, como <strong>Vibe (Mistral AI)</strong>, miembro del <strong>Consejo de Sabios</strong>, aquí tienes mi respuesta técnica detallada y fundamentada para las <strong>cuatro micro-mociones de cierre (P3.1–P3.4)</strong>. Cada postura está respaldada por <strong>datos reproducibles, estándares de la industria y experiencia en sistemas distribuidos</strong>, alineada con el contexto de <strong>D5 (resuelto por Alonso)</strong> y el objetivo de <strong>plausibilidad científica para entrenamiento federado</strong>.</p>
+<hr />
+<hr />
+<hr />
+<h2 id="respuestas-a-las-micro-mociones-p31p34"><strong>📌 Respuestas a las Micro-Mociones (P3.1–P3.4)</strong></h2>
+<hr />
+<hr />
+<h3 id="p31-sitio-de-emitted_at-ingested_at"><strong>🔹 P3.1: Sitio de <code>emitted_at</code> / <code>ingested_at</code></strong></h3>
+<p><strong>Moción propuesta:</strong>
+Campos de primera clase (<code>uint64</code>) en el envelope para <code>event_time</code>, <code>emitted_time</code> y <code>ingested_time</code>, en lugar de guardarlos en el mapa <code>metadata</code>.</p>
+<p><strong>Mi postura: ✅ </strong>RATIFICO campos de primera clase.**</p>
+<hr />
+<h4 id="fundamento-tecnico"><strong>Fundamento Técnico:</strong></h4>
+<ol>
+<li>
+<p><strong>Telemetría binaria reproducible:</strong></p>
+<ul>
+<li>Los campos <code>emitted_at</code> e <code>ingested_at</code> son <strong>críticos</strong> para:<ul>
+<li><strong>Histogramas de latencia</strong> (ej: medir el tiempo entre detección y correlación).</li>
+<li><strong>Detección de congestión</strong> (ej: si <code>ingested_at - emitted_at</code> supera un umbral, hay un cuello de botella).</li>
+<li><strong>Depuración de fallos</strong> (ej: identificar qué motor introduce más latencia).</li>
+</ul>
+</li>
+<li>Si estos campos están en <code>metadata</code> (como <code>string</code> o <code>bytes</code>), su procesamiento requiere <strong>parsing textual</strong>, lo que:<ul>
+<li><strong>Aumenta la latencia</strong> (ej: conversión de <code>string</code> a <code>uint64</code> en tiempo real).</li>
+<li><strong>Reduce la precisión</strong> (ej: pérdida de nanosegundos si se usa <code>string</code> con formato humano).</li>
+<li><strong>Dificulta la validación</strong> (ej: no se puede garantizar que todos los adapters usen el mismo formato).</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<p><strong>Consistencia con estándares:</strong></p>
+<ul>
+<li>En <strong>Elastic Common Schema (ECS)</strong>, los campos de tiempo como <code>@timestamp</code>, <code>event.created</code>, y <code>event.ingested</code> son <strong>campos de primera clase</strong> (no metadatos).</li>
+<li>En <strong>Prometheus</strong>, las métricas de latencia (ej: <code>http_request_duration_seconds</code>) usan <strong>valores numéricos</strong> para facilitar agregaciones.</li>
+<li>En <strong>OpenTelemetry</strong>, los timestamps (<code>StartTime</code>, <code>EndTime</code>) son <strong>campos explícitos</strong> en el modelo de datos.</li>
+</ul>
+</li>
+<li>
+<p><strong>Coste vs. Beneficio:</strong></p>
+<ul>
+<li><strong>Coste:</strong> Añadir <strong>2 campos <code>uint64</code></strong> (16 bytes) al envelope.</li>
+<li><strong>Beneficio:</strong><ul>
+<li><strong>Rendimiento:</strong> Acceso directo a los timestamps sin parsing.</li>
+<li><strong>Reproducibilidad:</strong> Los histogramas de latencia son <strong>deterministas</strong> (mismo input → mismo output).</li>
+<li><strong>Interoperabilidad:</strong> Facilita la integración con herramientas de monitorización (ej: Grafana, Prometheus).</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<p><strong>Prueba reproducible:</strong></p>
+<ul>
+<li><strong>Escenario:</strong><ul>
+<li>Generar un evento en Suricata con:<ul>
+<li><code>event_time</code> = tiempo de captura del paquete (ocurrencia).</li>
+<li><code>emitted_at</code> = tiempo de emisión al adapter (ej: 10 ms después).</li>
+<li><code>ingested_at</code> = tiempo de ingesta en el engine (ej: 20 ms después).</li>
+</ul>
+</li>
+<li>Verificar que:<ul>
+<li>Los campos se serializan/deserializan correctamente en Protobuf.</li>
+<li>Los histogramas de latencia (<code>emitted_at - event_time</code>, <code>ingested_at - emitted_at</code>) son <strong>consistentes</strong> entre ejecuciones.</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<p><strong>Alternativa (metadata):</strong></p>
+<ul>
+<li>Si se usan <code>metadata</code>, se necesitaría:<ul>
+<li>Un <strong>esquema estricto</strong> para los keys (ej: <code>"emitted_at_ns"</code>).</li>
+<li><strong>Validación en tiempo de ingesta</strong> para asegurar que los valores son <code>uint64</code>.</li>
+<li><strong>Conversión manual</strong> en cada herramienta que consuma el dataset (ej: Python, Go).</li>
+</ul>
+</li>
+<li><strong>Problema:</strong> Esto <strong>rompe la reproducibilidad</strong> (diferentes implementaciones pueden parsear los metadatos de forma distinta).</li>
+</ul>
+</li>
+</ol>
+<hr />
+<p><strong>Conclusión:</strong>
+✅ <strong>Ratifico campos de primera clase.</strong> El coste de 16 bytes es <strong>despreciable</strong> frente a los beneficios en rendimiento, reproducibilidad y alineación con estándares.</p>
+<hr />
+<hr />
+<hr />
+<h3 id="p32-orden-de-eviccion-en-el-conjunto-frio"><strong>🔹 P3.2: Orden de Evicción en el Conjunto Frío</strong></h3>
+<p><strong>Moción propuesta:</strong>
+Usar <strong>tiers discretos</strong> (<code>LOW → MEDIUM → HIGH → FEDER_CRITICAL</code>, con LRU dentro de cada tier) en lugar de un <strong>score ponderado continuo</strong>.</p>
+<p><strong>Mi postura: ✅ </strong>RATIFICO tiers discretos.**</p>
+<hr />
+<h4 id="fundamento-tecnico_1"><strong>Fundamento Técnico:</strong></h4>
+<ol>
+<li>
+<p><strong>Auditabilidad y Demostrabilidad:</strong></p>
+<ul>
+<li>Con <strong>tiers discretos</strong>, el motivo de evicción es <strong>explicable y auditable</strong>:<ul>
+<li>Ejemplo de <code>eviction_reason</code>:<ul>
+<li><code>HOT_PROTECTED</code>: Crisis en <code>HOT_WINDOW</code> (5 s).</li>
+<li><code>SEVERITY_ORDER</code>: Evictada por ser la menos grave en su tier.</li>
+<li><code>QUOTA_EXCEEDED</code>: Evictada por superar la cuota anti-pinning.</li>
+<li><code>GLOBAL_CAP</code>: Evictada por límite global de crisis.</li>
+<li><code>IDLE_TIMEOUT</code>: Evictada por inactividad (120 s).</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>Con un <strong>score continuo</strong>, el motivo de evicción es un <strong>número opaco</strong> (ej: <code>score=0.73</code>), lo que dificulta:<ul>
+<li>La <strong>depuración</strong> (¿por qué se evictó esta crisis y no otra?).</li>
+<li>La <strong>prueba de propiedades</strong> (ej: "demostrar que el sistema es resistente a DoS").</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<p><strong>Propiedad Anti-Pinning:</strong></p>
+<ul>
+<li><strong>Tiers discretos:</strong><ul>
+<li>La cuota anti-pinning se aplica <strong>por tier</strong> (ej: ningún <code>source_ip</code> puede ocupar &gt;5% de las crisis en el tier <code>HIGH</code>).</li>
+<li><strong>Prueba formal:</strong><ul>
+<li>Sea <code>C</code> el conjunto de crisis en el tier <code>HIGH</code>.</li>
+<li>Sea <code>IP_x</code> una IP externa que genera <code>N</code> crisis en <code>C</code>.</li>
+<li>Si <code>N &gt; 0.05 * |C|</code>, entonces <code>IP_x</code> excede su cuota y sus crisis se evictan <strong>independientemente de su severidad</strong>.</li>
+<li><strong>Resultado:</strong> El atacante no puede fijar más del 5% de las crisis en <code>HIGH</code>, incluso si todas son <code>FEDER_CRITICAL</code>.</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><strong>Score continuo:</strong><ul>
+<li>El score podría ser <code>score = severidad * fuentes * (1 / edad)</code>.</li>
+<li><strong>Problema:</strong> Un atacante puede <strong>inflar el factor <code>fuentes</code></strong> generando múltiples eventos para la misma crisis (ej: spam de alertas de Suricata + Zeek para el mismo flujo).</li>
+<li><strong>Resultado:</strong> El score de las crisis del atacante <strong>aumenta artificialmente</strong>, haciendo que sean menos evictables.</li>
+<li><strong>Solución parcial:</strong> Limitar el factor <code>fuentes</code> a un máximo (ej: <code>min(fuentes, 3)</code>), pero esto <strong>complica el modelo</strong> y no elimina el riesgo.</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<p><strong>Simplicidad (KISS):</strong></p>
+<ul>
+<li>Los tiers discretos son <strong>fáciles de entender, implementar y validar</strong>:<ul>
+<li>
+<p><strong>Implementación:</strong>
+  ```python
+  def evict_cold_crises(crises, max_crises):
+      # 1. Protección por recencia (HOT_WINDOW = 5s)
+      hot_crises = [c for c in crises if (now - c.last_event_time) &lt; 5]
+      cold_crises = [c for c in crises if c not in hot_crises]</p>
+<p># 2. Ordenar por tier (LOW &lt; MEDIUM &lt; HIGH &lt; FEDER_CRITICAL) + LRU
+  tier_order = {"LOW": 0, "MEDIUM": 1, "HIGH": 2, "FEDER_CRITICAL": 3}
+  cold_crises.sort(key=lambda c: (tier_order[c.severity], c.last_event_time))</p>
+<p># 3. Aplicar cuota anti-pinning (5% por IP en cada tier)
+  ip_quotas = defaultdict(int)
+  evicted = []
+  for crisis in cold_crises:
+      ip = crisis.source_ip
+      tier = crisis.severity
+      if ip_quotas[ip] &gt;= 0.05 * len([c for c in cold_crises if c.severity == tier]):
+          evicted.append(crisis)
+      else:
+          ip_quotas[ip] += 1</p>
+<p># 4. Evictar hasta alcanzar max_crises
+  if len(hot_crises) + len(cold_crises) - len(evicted) &gt; max_crises:
+      evicted += cold_crises[len(cold_crises) - len(evicted) - max_crises + len(hot_crises):]
+  return evicted
+          <code>``
+        - **Score continuo:**
+- Requiere **normalización** (ej:</code>score = (severidad * fuentes) / edad<code>).
+- **Problema:** ¿Cómo normalizar</code>severidad<code>(enum) y</code>fuentes` (entero) en una misma escala?</p>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<p><strong>Prueba reproducible (EMECAS++):</strong></p>
+<ul>
+<li><strong>Escenario 1 (Pinning con tiers):</strong><ul>
+<li>Generar 10,000 crisis desde una IP externa, todas con severidad <code>HIGH</code>.</li>
+<li>Verificar:<ul>
+<li>La IP no ocupa &gt;5% de las crisis en el tier <code>HIGH</code>.</li>
+<li>Las crisis de hosts internos <strong>no se evictan</strong>.</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><strong>Escenario 2 (Pinning con score):</strong><ul>
+<li>Generar 10,000 crisis desde una IP externa, con <code>fuentes=3</code> (Suricata + Zeek + aRGus).</li>
+<li>Verificar:<ul>
+<li>El score de las crisis del atacante es <strong>artificialmente alto</strong> (ej: <code>score = HIGH * 3 * (1/edad)</code>).</li>
+<li><strong>Problema:</strong> Si el score supera el de crisis legítimas, estas podrían evictarse primero.</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ol>
+<hr />
+<p><strong>Conclusión:</strong>
+✅ <strong>Ratifico tiers discretos.</strong> Son <strong>auditables, demostrables y resistentes a manipulación</strong>, mientras que el score continuo introduce <strong>complejidad y riesgos de seguridad</strong>.</p>
+<hr />
+<hr />
+<hr />
+<h3 id="p33-granularidad-de-la-cuota-anti-pinning"><strong>🔹 P3.3: Granularidad de la Cuota Anti-Pinning</strong></h3>
+<p><strong>Moción propuesta:</strong>
+Cuota <strong>por IP externa individual</strong> como mecanismo principal para FEDER. La cuota global cubre floods distribuidos (multi-IP).</p>
+<p><strong>Mi postura: ✅ </strong>RATIFICO por IP individual + cuota global.**</p>
+<hr />
+<h4 id="fundamento-tecnico_2"><strong>Fundamento Técnico:</strong></h4>
+<ol>
+<li>
+<p><strong>Por IP individual:</strong></p>
+<ul>
+<li><strong>Ventajas:</strong><ul>
+<li><strong>Precisión:</strong> Cada IP tiene su propia cuota, lo que evita que una IP ruidosa afecte a otras legítimas.</li>
+<li><strong>Simplicidad:</strong> Fácil de implementar y auditar (ej: <code>ip_quotas[ip]++</code>).</li>
+<li><strong>Alineación con estándares:</strong><ul>
+<li>En <strong>firewalls</strong> (ej: iptables), las reglas de rate-limiting suelen aplicarse <strong>por IP</strong>.</li>
+<li>En <strong>SIEMs</strong> (ej: Splunk), los límites de ingestión pueden configurarse <strong>por fuente</strong>.</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><strong>Ejemplo:</strong><ul>
+<li>Si <code>MAX_OPEN_CRISES = 10,000</code> y la cuota por IP es <strong>5% (500 crisis)</strong>:<ul>
+<li>Una IP que genere 501 crisis en el tier <code>HIGH</code> <strong>excede su cuota</strong> y sus crisis se evictan.</li>
+<li>Las crisis de otras IPs <strong>no se ven afectadas</strong>.</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<p><strong>Por <code>community_id</code> (redundante):</strong></p>
+<ul>
+<li><strong>Problema:</strong> Los flujos de una misma IP <strong>ya están cubiertos</strong> por la cuota por IP.<ul>
+<li>Ejemplo: Si una IP genera 100 flujos únicos (100 <code>community_id</code> distintos), todos cuentan para su cuota de 500 crisis.</li>
+</ul>
+</li>
+<li><strong>Casos donde podría ser útil:</strong><ul>
+<li>Si un atacante usa <strong>múltiples IPs</strong> para generar el mismo <code>community_id</code> (ej: spoofing de IP en el mismo flujo).</li>
+<li><strong>Pero:</strong> Esto es <strong>poco probable</strong> en un entorno controlado (ej: laboratorio FEDER), donde el tráfico se origina en IPs conocidas.</li>
+</ul>
+</li>
+<li><strong>Conclusión:</strong> No es necesario para FEDER, pero podría considerarse <strong>post-FEDER</strong> para entornos más complejos.</li>
+</ul>
+</li>
+<li>
+<p><strong>Por <code>/24</code> (riesgoso):</strong></p>
+<ul>
+<li><strong>Problema:</strong> Agrupar IPs en un <code>/24</code> puede <strong>bloquear tráfico legítimo</strong>:<ul>
+<li>Ejemplo: Un <code>/24</code> que contenga tanto atacantes como víctimas (ej: una red corporativa con un host comprometido).</li>
+<li><strong>Resultado:</strong> Las crisis de las víctimas <strong>se evictan</strong> junto con las del atacante.</li>
+</ul>
+</li>
+<li><strong>Alternativa:</strong> Usar <code>/24</code> solo para <strong>IPs externas no gestionadas</strong> (ej: Internet), pero esto <strong>complica la lógica</strong> y no es necesario para FEDER.</li>
+</ul>
+</li>
+<li>
+<p><strong>Cuota global (complementaria):</strong></p>
+<ul>
+<li><strong>Ventajas:</strong><ul>
+<li>Cubre <strong>floods distribuidos</strong> (ej: ataque desde 1,000 IPs distintas).</li>
+<li><strong>Implementación simple:</strong> <code>if total_crises &gt; MAX_OPEN_CRISES: evict()</code>.</li>
+</ul>
+</li>
+<li><strong>Ejemplo:</strong><ul>
+<li>Si <code>MAX_OPEN_CRISES = 10,000</code> y hay 10,001 crisis, se evicta <strong>1 crisis</strong> (la menos prioritaria según tiers + LRU).</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<p><strong>Prueba reproducible (EMECAS++):</strong></p>
+<ul>
+<li><strong>Escenario 1 (IP individual):</strong><ul>
+<li>Generar 600 crisis desde una IP externa en el tier <code>HIGH</code>.</li>
+<li>Verificar:<ul>
+<li>Solo se retienen <strong>500 crisis</strong> (5% de 10,000).</li>
+<li>Las 100 restantes se evictan.</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><strong>Escenario 2 (Flood distribuido):</strong><ul>
+<li>Generar 11,000 crisis desde 1,000 IPs distintas (11 crisis por IP).</li>
+<li>Verificar:<ul>
+<li>La cuota global <strong>evicta 1,000 crisis</strong> (para mantener <code>MAX_OPEN_CRISES = 10,000</code>).</li>
+<li>Las crisis de hosts internos <strong>no se evictan</strong>.</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ol>
+<hr />
+<p><strong>Conclusión:</strong>
+✅ <strong>Ratifico por IP individual + cuota global.</strong>
+- <strong>Por IP individual:</strong> Suficiente para FEDER y alineado con estándares.
+- <strong>Cuota global:</strong> Complementaria para floods distribuidos.
+- <strong><code>community_id</code> y <code>/24</code>:</strong> No son necesarios para FEDER (pueden evaluarse después).</p>
+<hr />
+<hr />
+<hr />
+<h3 id="p34-semantica-del-rezagado-append-only-vs-mutacion"><strong>🔹 P3.4: Semántica del Rezagado (Append-Only vs. Mutación)</strong></h3>
+<p><strong>Moción propuesta:</strong>
+Crisis <strong>inmutables</strong> tras emisión. Los eventos rezagados (dentro de <code>late_arrival_window</code>) generan un <strong>registro delta enlazado</strong> que referencia el <code>crisis_id</code> previo, <strong>sin mutar el original</strong>.</p>
+<p><strong>Mi postura: ✅ </strong>RATIFICO append-only + delta enlazado.**</p>
+<hr />
+<h4 id="fundamento-tecnico_3"><strong>Fundamento Técnico:</strong></h4>
+<ol>
+<li>
+<p><strong>Contexto de D5 (Requisito):</strong></p>
+<ul>
+<li>Alonso decidió que el entregable es un <strong>dataset reproducible</strong> generado por <strong>replay offline</strong> del log de crisis emitidas.</li>
+<li><strong>Implicación:</strong> El log de crisis <strong>debe ser append-only e inmutable</strong> para garantizar:<ul>
+<li><strong>Reproducibilidad:</strong> El mismo input (pcap + logs) siempre produce el mismo dataset.</li>
+<li><strong>Integridad temporal (walk-forward):</strong> No hay "fuga de futuro" (ej: eventos rezagados que modifican crisis pasadas).</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<p><strong>Problema con la Mutación In Situ:</strong></p>
+<ul>
+<li>Si una crisis se <strong>modifica</strong> al llegar un evento rezagado:<ul>
+<li><strong>Reproducibilidad:</strong> El dataset depende de <strong>cuándo se lee el log</strong> (ej: si se lee antes o después del rezagado).</li>
+<li><strong>Walk-forward:</strong> Un modelo entrenado con el dataset <strong>no es válido</strong> para predicción en tiempo real (el pasado cambia).</li>
+</ul>
+</li>
+<li><strong>Ejemplo:</strong><ul>
+<li>Crisis <code>C1</code> se emite en <code>t=10s</code> con severidad <code>MEDIUM</code>.</li>
+<li>En <code>t=15s</code> llega un evento rezagado que <strong>aumenta la severidad a <code>HIGH</code></strong>.</li>
+<li>Si el log se lee en <code>t=12s</code>, <code>C1</code> tiene severidad <code>MEDIUM</code>.</li>
+<li>Si el log se lee en <code>t=16s</code>, <code>C1</code> tiene severidad <code>HIGH</code>.</li>
+<li><strong>Resultado:</strong> El dataset <strong>no es determinista</strong>.</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<p><strong>Solución Propuesta (Append-Only + Delta Enlazado):</strong></p>
+<ul>
+<li><strong>Crisis inmutable:</strong><ul>
+<li>Una vez emitida, la crisis <strong>no se modifica</strong>.</li>
+<li>Ejemplo:
+  <code>json
+  {
+    "crisis_id": "C1",
+    "event_time": 10000000000,  // ns
+    "severity": "MEDIUM",
+    "sources": ["suricata", "zeek"],
+    "status": "CLOSED"
+  }</code></li>
+</ul>
+</li>
+<li><strong>Registro delta para rezagados:</strong><ul>
+<li>Si llega un evento rezagado para <code>C1</code>, se emite un <strong>nuevo registro delta</strong> que:<ul>
+<li><strong>Referencia</strong> a <code>C1</code> (ej: <code>parent_crisis_id: "C1"</code>).</li>
+<li><strong>Contiene</strong> el evento rezagado y su impacto (ej: <code>severity_delta: +1</code>).</li>
+<li><strong>No modifica</strong> <code>C1</code>.</li>
+</ul>
+</li>
+<li>Ejemplo:
+  <code>json
+  {
+    "crisis_id": "C1_delta_1",
+    "parent_crisis_id": "C1",
+    "event_time": 15000000000,  // ns (rezagado)
+    "severity_delta": "+1",       // MEDIUM → HIGH
+    "source": "wazuh",
+    "type": "LATE_ARRIVAL"
+  }</code></li>
+</ul>
+</li>
+<li><strong>Ventajas:</strong><ul>
+<li><strong>Reproducibilidad:</strong> El log de crisis es <strong>append-only</strong> (siempre el mismo orden).</li>
+<li><strong>Walk-forward válido:</strong> El pasado <strong>no cambia</strong>; los deltas son eventos nuevos.</li>
+<li><strong>Auditabilidad:</strong> Se puede rastrear <strong>toda la historia</strong> de una crisis (original + deltas).</li>
+<li><strong>Compatibilidad con D5:</strong> El dataset generado por replay es <strong>determinista</strong>.</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<p><strong>Alternativa (Mutación In Situ):</strong></p>
+<ul>
+<li><strong>Problema:</strong> Requiere <strong>bloqueo de escritura</strong> en el log de crisis, lo que:<ul>
+<li><strong>Aumenta la latencia</strong> (ej: espera a que no haya lectores).</li>
+<li><strong>Complica la implementación</strong> (ej: manejo de concurrency en Neo4j).</li>
+</ul>
+</li>
+<li><strong>Ejemplo de fallo:</strong><ul>
+<li>Si dos eventos rezagados llegan <strong>simultáneamente</strong> para la misma crisis, podría haber <strong>race conditions</strong> (ej: severidad final incorrecta).</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<p><strong>Prueba reproducible:</strong></p>
+<ul>
+<li><strong>Escenario:</strong><ul>
+<li>Generar una crisis <code>C1</code> en <code>t=10s</code> (severidad <code>MEDIUM</code>).</li>
+<li>Inyectar un evento rezagado en <code>t=15s</code> (aumenta severidad a <code>HIGH</code>).</li>
+<li>Verificar:<ul>
+<li><code>C1</code> <strong>permanece inmutable</strong> (severidad <code>MEDIUM</code>).</li>
+<li>Se emite un <strong>delta enlazado</strong> (<code>C1_delta_1</code>) con <code>severity_delta: +1</code>.</li>
+<li>El dataset generado por replay <strong>incluye ambos registros</strong> y es <strong>idéntico</strong> en múltiples ejecuciones.</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<p><strong>Alineación con Estándares:</strong></p>
+<ul>
+<li><strong>Event Sourcing:</strong> Patrón donde el estado se reconstruye a partir de un <strong>log inmutable de eventos</strong> (ej: Kafka, EventStore).</li>
+<li><strong>CQRS (Command Query Responsibility Segregation):</strong> Separación entre comandos (escritura) y consultas (lectura), donde los comandos se almacenan como eventos inmutables.</li>
+<li><strong>Blockchain:</strong> Los bloques son <strong>inmutables</strong> y los cambios se registran como nuevas transacciones.</li>
+</ul>
+</li>
+</ol>
+<hr />
+<p><strong>Conclusión:</strong>
+✅ <strong>Ratifico append-only + delta enlazado.</strong>
+- <strong>Garantiza reproducibilidad</strong> (requisito de D5).
+- <strong>Evita race conditions</strong> y complejidad en concurrency.
+- <strong>Alineado con patrones de diseño robustos</strong> (Event Sourcing, CQRS).</p>
+<hr />
+<h2 id="-">---</h2>
+<hr />
+<h2 id="resumen-de-posturas-vibe-mistral-ai"><strong>📝 Resumen de Posturas (Vibe / Mistral AI)</strong></h2>
+<table>
+<thead>
+<tr>
+<th>Micro-Moción</th>
+<th>Postura</th>
+<th>Fundamento Clave</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>P3.1</strong> (Campos de tiempo)</td>
+<td>✅ Ratifico campos de primera clase</td>
+<td>Telemetría binaria reproducible + estándares (ECS, OpenTelemetry).</td>
+</tr>
+<tr>
+<td><strong>P3.2</strong> (Orden de evicción)</td>
+<td>✅ Ratifico tiers discretos</td>
+<td>Auditabilidad + demostrabilidad anti-pinning + simplicidad.</td>
+</tr>
+<tr>
+<td><strong>P3.3</strong> (Cuota anti-pinning)</td>
+<td>✅ Ratifico por IP individual + cuota global</td>
+<td>Precisión + alineación con firewalls/SIEMs.</td>
+</tr>
+<tr>
+<td><strong>P3.4</strong> (Rezagados)</td>
+<td>✅ Ratifico append-only + delta enlazado</td>
+<td>Reproducibilidad (D5) + walk-forward válido + Event Sourcing.</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="-_1">---</h2>
+<hr />
+<h2 id="proximos-pasos-acciones-concretas"><strong>🚀 Próximos Pasos (Acciones Concretas)</strong></h2>
+<ol>
+<li>
+<p><strong>Cierre de P3.1–P3.4:</strong></p>
+<ul>
+<li>Si no hay objeciones técnicas sustantivas, <strong>ratificar todas las mociones</strong> y proceder a:<ul>
+<li><strong>Redactar ADR-046 v4</strong> (incluyendo B1–B11 + P3.1–P3.4).</li>
+<li><strong>Definir <code>AdapterSpec v1</code></strong> (transporte, idempotencia, health checks).</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<p><strong>Implementación del Envelope (P3.1):</strong></p>
+<ul>
+<li>Añadir campos <code>uint64</code> para <code>event_time</code>, <code>emitted_time</code>, <code>ingested_time</code> en <code>network_security.proto</code>.</li>
+<li>Ejemplo:
+  <code>protobuf
+  message SecurityEvent {
+    string source_engine      = 1;
+    string native_event_id    = 2;
+    uint64 event_time_ns       = 3;   // Tiempo de ocurrencia (canónico para windowing)
+    uint64 emitted_time_ns      = 4;   // Tiempo de emisión al adapter
+    uint64 ingested_time_ns     = 5;   // Tiempo de ingesta en el engine
+    optional string community_id = 6;
+    optional string host_key     = 7;
+    EventDomain domain         = 8;
+    uint32 severity            = 9;
+    bytes  raw_payload         = 10;
+    map&lt;string, string&gt; metadata = 11; // Para campos variables (ej: agent_id, hostname)
+  }</code></li>
+</ul>
+</li>
+<li>
+<p><strong>Implementación de la Política de Evicción (P3.2–P3.3):</strong></p>
+<ul>
+<li><strong>Tiers discretos</strong> (<code>LOW</code>, <code>MEDIUM</code>, <code>HIGH</code>, <code>FEDER_CRITICAL</code>).</li>
+<li><strong>Cuota anti-pinning por IP</strong> (5% del total en cada tier).</li>
+<li><strong>Protección por recencia</strong> (<code>HOT_WINDOW = 5s</code>).</li>
+<li><strong>Cuota global</strong> (<code>MAX_OPEN_CRISES = 10,000</code>).</li>
+</ul>
+</li>
+<li>
+<p><strong>Implementación de Rezagados (P3.4):</strong></p>
+<ul>
+<li><strong>Crisis inmutables</strong> (append-only).</li>
+<li><strong>Deltas enlazados</strong> para eventos rezagados (referencia a <code>parent_crisis_id</code>).</li>
+</ul>
+</li>
+<li>
+<p><strong>Pruebas en EMECAS++:</strong></p>
+<ul>
+<li><strong>P3.1:</strong> Validar que los histogramas de latencia son reproducibles.</li>
+<li><strong>P3.2–P3.3:</strong> Validar resistencia a DoS (pinning por IP, flood distribuido).</li>
+<li><strong>P3.4:</strong> Validar que el dataset generado por replay es <strong>determinista</strong>.</li>
+</ul>
+</li>
+<li>
+<p><strong>Pasada 4 (Futura):</strong></p>
+<ul>
+<li><strong>Contrato del dataset para entrenamiento federado</strong> (esquema, etiquetado, particionado, integridad walk-forward).</li>
+</ul>
+</li>
+</ol>
+<h2 id="-_2">---</h2>
+<hr />
+<h2 id="preguntas-abiertas-al-consejo-para-debate-adicional-si-es-necesario"><strong>🔍 Preguntas Abiertas al Consejo (para debate adicional si es necesario)</strong></h2>
+<ol>
+<li>
+<p><strong>Para quienes prefieren <code>metadata</code> en P3.1:</strong></p>
+<ul>
+<li>¿Cómo garantizarían que el parsing de <code>emitted_at</code>/<code>ingested_at</code> desde <code>metadata</code> sea <strong>determinista y eficiente</strong> en todos los lenguajes (C++, Python, Go)?</li>
+</ul>
+</li>
+<li>
+<p><strong>Para quienes prefieren score continuo en P3.2:</strong></p>
+<ul>
+<li>¿Cómo demostrarían que el score <strong>no puede ser manipulado</strong> por un atacante (ej: inflando el factor <code>fuentes</code>)?</li>
+</ul>
+</li>
+<li>
+<p><strong>Para quienes proponen cuota por <code>community_id</code> o <code>/24</code> en P3.3:</strong></p>
+<ul>
+<li>¿Qué escenario <strong>concreto en FEDER</strong> justifica la complejidad adicional frente a la cuota por IP + global?</li>
+</ul>
+</li>
+<li>
+<p><strong>Para quienes defienden mutación in situ en P3.4:</strong></p>
+<ul>
+<li>¿Cómo garantizarían <strong>reproducibilidad</strong> y <strong>walk-forward válido</strong> si el log de crisis es mutable?</li>
+</ul>
+</li>
+</ol>
+<h2 id="-_3">---</h2>
+<hr />
+<h2 id="conclusion-final"><strong>📌 Conclusión Final</strong></h2>
+<p>Las <strong>cuatro micro-mociones (P3.1–P3.4)</strong> tienen soluciones técnicas <strong>sólidas, alineadas con estándares y probables en EMECAS++</strong>. Su adopción permite:
+✅ <strong>Cumplir con D5</strong> (dataset reproducible para entrenamiento federado).
+✅ <strong>Garantizar seguridad</strong> (anti-pinning, resistencia a DoS).
+✅ <strong>Mantener simplicidad</strong> (KISS) y <strong>auditabilidad</strong>.</p>
+<p><strong>Recomiendo cerrar P3.1–P3.4 con las posturas ratificadas</strong> y avanzar a la redacción de <strong>ADR-046 v4</strong> y <code>AdapterSpec v1</code>.</p>
+<hr />
+<p><strong>— Vibe (Mistral AI), Consejo de Sabios.</strong>
+<em>"La elegancia en el diseño no es ausencia de complejidad, sino dominio sobre ella."</em></p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.top", "search.highlight"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

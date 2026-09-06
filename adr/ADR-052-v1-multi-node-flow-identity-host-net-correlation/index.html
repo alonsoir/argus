@@ -1,0 +1,1319 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source embedded-ML NDR for hospitals and schools">
+      
+      
+        <meta name="author" content="Alonso Isidoro Roman">
+      
+      
+        <link rel="canonical" href="https://alonsoir.github.io/argus/adr/ADR-052-v1-multi-node-flow-identity-host-net-correlation/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>ADR-052 — Multi-node Flow Identity & Host↔Net Correlation - ML Defender (aRGus NDR)</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#adr-052-multi-node-flow-identity-hostnet-correlation" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-header__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ML Defender (aRGus NDR)
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              ADR-052 — Multi-node Flow Identity &amp; Host↔Net Correlation
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../README.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/BACKLOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Backlog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Security Model
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-tabs__link">
+          
+  
+  
+  ADRs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/contracts/Protobuf contracts.md" class="md-tabs__link">
+          
+  
+  
+  Contracts
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-nav__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ML Defender (aRGus NDR)
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../README.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/BACKLOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADRs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ADRs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013 Seed Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-021-deployment-topology-seed-families.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-021 Topology SSOT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-022-threat-model-opcion2-descartada.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-022 Threat Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Protobuf contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protobuf
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/JSON contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JSON
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Rag security commands.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-estado" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Estado
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-contexto" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Contexto
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2. Contexto">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#21-el-community_id-no-es-identidad-de-nodo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.1 El community_id no es identidad de nodo
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#22-el-data-plane-es-hostil-no-solo-ruidoso" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.2 El data-plane es hostil, no solo ruidoso
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#23-por-que-hace-falta-decidir-esto-antes-de-poblar-neo4j" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.3 Por qué hace falta decidir esto ANTES de poblar Neo4j
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-decision" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Decisión
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. Decisión">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#31-identidad-de-nodo-flujo-flow_uid-p3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.1 Identidad de nodo-flujo: flow_uid (P3)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#32-correlacion-hostred-doble-arista-p1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.2 Correlación host↔red: doble arista (P1)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#33-modelo-de-amenaza-dos-vectores-opuestos" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.3 Modelo de amenaza: dos vectores opuestos
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#34-las-tres-lineas-de-defensa-arquitectonicas-no-del-hash" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.4 Las tres líneas de defensa (arquitectónicas, NO del hash)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#35-el-community_id-no-es-un-control-de-seguridad-y-nunca-lo-sera" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.5 El community_id NO es un control de seguridad — y nunca lo será
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-parametros-configurables-defaults-de-arranque" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Parámetros configurables (defaults de arranque)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-alternativas-consideradas-y-rechazadas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Alternativas consideradas y rechazadas
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-preguntas-abiertas-para-el-consejo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Preguntas abiertas para el Consejo
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-consecuencias" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Consecuencias
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-validacion-emecas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. Validación (EMECAS++)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#9-deudas-y-diferidos" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9. Deudas y diferidos
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#10-referencias" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10. Referencias
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="adr-052-multi-node-flow-identity-hostnet-correlation">ADR-052 — Multi-node Flow Identity &amp; Host↔Net Correlation</h1>
+<table>
+<thead>
+<tr>
+<th>Campo</th>
+<th>Valor</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>ADR</strong></td>
+<td>052</td>
+</tr>
+<tr>
+<td><strong>Versión</strong></td>
+<td>v1 (borrador)</td>
+</tr>
+<tr>
+<td><strong>Fecha</strong></td>
+<td>2026-06-02 (DAY 173)</td>
+</tr>
+<tr>
+<td><strong>Estado</strong></td>
+<td>BORRADOR — pendiente deliberación Consejo de Sabios</td>
+</tr>
+<tr>
+<td><strong>Decisión final</strong></td>
+<td>Alonso (pendiente)</td>
+</tr>
+<tr>
+<td><strong>Deliberación</strong></td>
+<td>Consejo de Sabios (Claude, ChatGPT, DeepSeek, Gemini, Grok, Kimi, Mistral, Qwen) — pendiente</td>
+</tr>
+<tr>
+<td><strong>Recoge</strong></td>
+<td>P3 (identidad de flujo multi-nodo) + P1 (correlación host↔red) del Consejo DAY 170</td>
+</tr>
+<tr>
+<td><strong>Depende de / relaciona</strong></td>
+<td>ADR-046 v4 (modelo dual de claves, grafo temporal, inventario de endpoints), ADR-051 (Seed Parity Gate / orphan_rate), ADR-050 (sesión MITRE — ground truth), ADR-048 (etcd HA / correlación)</td>
+</tr>
+<tr>
+<td><strong>Ratifica</strong></td>
+<td>DEBT-NEO4J-FLOW-KEY-001 (P0 esquema, constraint Neo4j 5.x antes de poblar el grafo)</td>
+</tr>
+<tr>
+<td><strong>Artefactos derivados</strong></td>
+<td>Esquema Neo4j (constraint compuesto), <code>flow_uid</code> en el correlation-engine, señal ARP/NDP del host plane (pendiente: enriquecimiento vs primera clase)</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="1-estado">1. Estado</h2>
+<p>BORRADOR. Formaliza dos decisiones que ADR-046 v4 dejó abiertas o solo esbozadas:</p>
+<ol>
+<li><strong>Identidad de nodo-flujo en el grafo</strong> (P3 DAY 170): ADR-046 v4 define <code>community_id</code> y <code>host_key</code> como claves de <em>correlación</em>, pero no fija la <em>identidad única</em> de un flujo como nodo de Neo4j en un despliegue multi-nodo donde las 5-tuplas se reciclan. ADR-052 cierra ese hueco con <code>flow_uid</code>.</li>
+<li><strong>El community_id ante un data-plane hostil</strong> (modelo de amenaza DAY 171): ADR-046 v4 trata el data-plane como ruidoso; ADR-052 lo trata como <strong>hostil</strong> y formaliza por qué la defensa contra MITM/inyección es arquitectónica, nunca del hash.</li>
+</ol>
+<blockquote>
+<p><strong>Delimitación con ADR-046 v4 (anti-duplicación).</strong> ADR-052 NO redefine el modelo dual de claves (§3.1 de ADR-046), el grafo temporal con aristas tipadas (§3.2), el inventario de endpoints como estado de primera clase (§3.9) ni la cuota anti-pinning fail-closed (§3.5). ADR-052 <em>consume</em> esas decisiones y añade encima: (a) la identidad de nodo <code>flow_uid</code>, y (b) el modelo de amenaza como justificación de segundo orden de esas mismas decisiones. Donde haya solape aparente, ADR-046 v4 es la fuente; ADR-052 referencia, no reescribe.</p>
+</blockquote>
+<hr />
+<h2 id="2-contexto">2. Contexto</h2>
+<h3 id="21-el-community_id-no-es-identidad-de-nodo">2.1 El community_id no es identidad de nodo</h3>
+<p><code>community_id</code> es una clave de <strong>correlación</strong>: tres sensores honestos que ven el mismo paquete coinciden (validado DAY 171, diana <code>1:IN7uqVpMWxpmuhQTowSQB2XEe0E=</code>). Pero como identidad de nodo en Neo4j es insuficiente por dos razones independientes:</p>
+<ul>
+<li><strong>Reciclaje de 5-tupla en el tiempo.</strong> La misma 5-tupla (mismas IPs/puertos/proto) se reutiliza en sesiones distintas a lo largo del tiempo. Dos flujos legítimos no relacionados producen el mismo <code>community_id</code>. Si fuera la identidad de nodo, se fundirían en un único nodo del grafo — corrupción de la estructura.</li>
+<li><strong>Mundo multi-nodo.</strong> En un despliegue federado, dos sensores en nodos físicos distintos pueden ver flujos con la misma 5-tupla (NAT, rangos privados solapados). Mismo <code>community_id</code>, flujos distintos en realidades de red distintas.</li>
+</ul>
+<p>Conclusión: <code>community_id</code> es <strong>propiedad indexada</strong> (clave de correlación intra-nodo + verificable contra oráculo <code>pycommunityid</code>), nunca identidad de nodo.</p>
+<h3 id="22-el-data-plane-es-hostil-no-solo-ruidoso">2.2 El data-plane es hostil, no solo ruidoso</h3>
+<p>ADR-046 v4 modela latencia, reorden y pérdida (data-plane ruidoso). ADR-052 añade el supuesto de <strong>adversario activo con capacidad de modificar paquetes en runtime</strong>: bettercap (ARP/NDP spoofing, inyección), scapy/ad hoc (fabricación de cabeceras), nfqueue/libnetfilter_queue (mutación en el path del kernel), eBPF/tc (reescritura a velocidad de línea, peor caso).</p>
+<p>Bajo este supuesto, <strong>todo lo que el sensor observa puede ser una mentira fabricada por el atacante.</strong> El <code>community_id</code> —función pura de la 5-tupla— hereda esa hostilidad: garbage in, garbage hashed. La integridad del hash ≠ integridad del contenido hasheado.</p>
+<h3 id="23-por-que-hace-falta-decidir-esto-antes-de-poblar-neo4j">2.3 Por qué hace falta decidir esto ANTES de poblar Neo4j</h3>
+<p>El esquema de identidad de nodo (constraint, propiedades obligatorias) es doloroso de retrofitear con datos en producción y gratis de decidir con el grafo vacío (consenso DAY 170). DEBT-NEO4J-FLOW-KEY-001 es P0 de esquema precisamente porque bloquea el diseño del correlation-engine. ADR-052 ratifica ese esquema para desbloquearlo.</p>
+<hr />
+<h2 id="3-decision">3. Decisión</h2>
+<h3 id="31-identidad-de-nodo-flujo-flow_uid-p3">3.1 Identidad de nodo-flujo: <code>flow_uid</code> (P3)</h3>
+<pre><code>flow_uid = hash(node_id ‖ community_id ‖ flow_start_window)
+</code></pre>
+<ul>
+<li><strong><code>community_id</code></strong> — propiedad indexada del nodo (correlación + verificable contra oráculo). NUNCA identidad.</li>
+<li><strong><code>node_id</code></strong> — identificador del sensor que emitió el flujo. Obligatorio. Ancla cada flujo a su origen físico.</li>
+<li><strong><code>flow_start_window</code></strong> — bucket temporal del inicio del flujo (granularidad: ver §4, pendiente Consejo). Corta el reciclaje/clonado de 5-tuplas en el tiempo.</li>
+</ul>
+<p><strong>Propiedades obligatorias en el grafo:</strong> <code>node_id</code> en <code>:NetworkFlow</code>, <code>:Alert</code>, <code>:TelemetryEvent</code>. Constraint compuesto nativo Neo4j 5.x sobre la identidad de nodo-flujo.</p>
+<p><strong>Doble justificación del <code>flow_uid</code></strong> (esto es nuevo respecto a P3 original):
+1. <strong>Identidad / dedup</strong> (P3 DAY 170): garantiza unicidad de nodo en mundo multi-nodo con reciclaje temporal.
+2. <strong>Defensa anti-inyección</strong> (modelo de amenaza, §5): un flujo que "aparece" en el grafo sin emisión del sensor de borde correspondiente (<code>node_id</code> sin trazabilidad a sensor real) es anomalía detectable. <code>flow_start_window</code> corta el clonado de 5-tuplas de sesiones legítimas.</p>
+<h3 id="32-correlacion-hostred-doble-arista-p1">3.2 Correlación host↔red: doble arista (P1)</h3>
+<p>Sobre el grafo temporal de ADR-046 v4 §3.2, se formaliza la correlación host↔red con <strong>dos aristas de naturaleza distinta</strong> (no confundir con las aristas <code>FLOW_IDENTITY</code>/<code>HOST_LOCALITY</code>/<code>TEMPORAL_BRIDGE</code> de ADR-046, que esta decisión refina para el caso host↔red):</p>
+<ul>
+<li><strong>Arista flujo↔flujo</strong> — por <code>community_id</code>. Determinista. Equivalencia exacta de flujo entre sensores de red (es la <code>FLOW_IDENTITY</code> de ADR-046).</li>
+<li><strong>Arista host↔flujo</strong> — por <code>host_id</code>/<code>agent_id</code> <strong>canónico</strong> (nunca IP cruda) + ventana temporal <strong>más laxa</strong> que la de red↔red y <strong>causal-bidireccional</strong>. El evento de host se une al endpoint interno/gestionado del flujo (la víctima), no al atacante (join asimétrico de ADR-046 §3.2).</li>
+</ul>
+<p><strong>NAT — menú de mecanismos con anotación obligatoria.</strong> Cuando la IP interna que ve Wazuh ≠ la IP observada por el sensor de red (NAT, contenedores), el puente host↔red se resuelve por un menú de mecanismos, en orden de confianza:
+1. Translation node con logs NAT (mayor confianza).
+2. Identidad <code>agent_id</code>/hostname.
+3. Puente por (proceso, puerto_local, timestamp).
+4. Fallback temporal degradado (menor confianza).</p>
+<p><strong>Invariante:</strong> SIEMPRE se anota en el grafo y en el log el método usado y su confianza. <strong>Nunca fallo silencioso por IP no coincidente.</strong> (Conecta con BACKLOG-RESEARCH-NAT-HOSTNET-001 y DEBT-ARGUSPP-WAZUH-001.)</p>
+<h3 id="33-modelo-de-amenaza-dos-vectores-opuestos">3.3 Modelo de amenaza: dos vectores opuestos</h3>
+<p>El community_id reacciona de forma OPUESTA a los dos vectores de ataque. Confundirlos lleva a defensas equivocadas.</p>
+<table>
+<thead>
+<tr>
+<th>Vector</th>
+<th>Capa que toca</th>
+<th>Efecto sobre community_id</th>
+<th>Detectable por</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>A — MITM clásico</strong> (ARP spoof, bettercap base)</td>
+<td>L2 (MAC), IP/puerto INTACTOS</td>
+<td><strong>CIEGO</strong> — mismo flujo → mismo hash</td>
+<td>Host/ARP plane (cambio MAC↔IP), NO la red</td>
+</tr>
+<tr>
+<td><strong>B — Inyección/reescritura</strong> (scapy, nfqueue, módulos bettercap)</td>
+<td>L3/L4 (IP, puerto)</td>
+<td><strong>CAMBIA</strong> — atacante fabrica community_id a voluntad</td>
+<td>flow_uid + node_id + ventana temporal</td>
+</tr>
+</tbody>
+</table>
+<p>El community_id es <strong>ciego al vector A</strong> (la MAC no entra en el hash) y <strong>totalmente manipulable en el vector B</strong> (es función pura de la 5-tupla). La defensa de cada vector es distinta y ninguna vive en el hash.</p>
+<h3 id="34-las-tres-lineas-de-defensa-arquitectonicas-no-del-hash">3.4 Las tres líneas de defensa (arquitectónicas, NO del hash)</h3>
+<ol>
+<li><strong><code>flow_uid</code> ancla a nodo + ventana</strong> — anti-inyección (vector B). Ya en §3.1. Un flujo sin emisión del sensor de borde = anomalía. <code>flow_start_window</code> corta el clonado temporal.</li>
+<li><strong>Correlación host↔red</strong> — único detector del MITM sigiloso (vector A). La red reporta el flujo idéntico; el host (Wazuh / tabla ARP vigilada) reporta que la MAC asociada a la IP cambió. <strong>La detección vive en el cruce, no en ninguna capa sola.</strong> Implica vigilancia ARP/NDP en el host plane como señal (¿primera clase o enriquecimiento? — §6).</li>
+<li><strong>community_id como dato no confiable del data-plane</strong> — un sensor que emite community_id que <strong>ningún otro corrobora</strong> puede ser sensor comprometido O tráfico inyectado visible por una sola vía. Entra en <code>community_id.orphan_rate</code> (ADR-051). Nunca tratar el community_id como verdad; es input observado de un plano hostil.</li>
+</ol>
+<h3 id="35-el-community_id-no-es-un-control-de-seguridad-y-nunca-lo-sera">3.5 El community_id NO es un control de seguridad — y nunca lo será</h3>
+<p><code>community_id = "1:" + base64(sha1(seed ‖ saddr ‖ daddr ‖ proto ‖ 0x00 ‖ sport ‖ dport))</code> es una función <strong>pura y honesta</strong> de la 5-tupla, diseñada para que sensores honestos coincidan. Ante un atacante:</p>
+<ul>
+<li>Vector A: hashea fielmente IPs/puertos intactos → mismo ID, no nota nada.</li>
+<li>Vector B: hashea fielmente la 5-tupla falsa → ID nuevo "válido", el atacante controla el ID.</li>
+</ul>
+<p>La integridad del hash no implica integridad del contenido. La defensa contra MITM es responsabilidad de la correlación multi-fuente, el anclaje a nodo, la ventana temporal y la vigilancia del host plane — <strong>arquitectónica, no criptográfica-de-flujo.</strong></p>
+<hr />
+<h2 id="4-parametros-configurables-defaults-de-arranque">4. Parámetros configurables (defaults de arranque)</h2>
+<blockquote>
+<p>Adoptados como punto de partida; se ajustarán con evidencia. Coherentes con ADR-046 v4 §4.</p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th>Parámetro</th>
+<th>Default LAB</th>
+<th>Nota</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>flow_start_window</code></td>
+<td><strong>PENDIENTE Consejo</strong></td>
+<td>Granularidad del bucket temporal de <code>flow_uid</code>. Candidatos: bucket de la CrisisWindow / N segundos fijos. Debe cortar reciclaje sin fragmentar un mismo flujo legítimo.</td>
+</tr>
+<tr>
+<td><code>host_bridge_window</code></td>
+<td>15–30 s (= <code>bridge_window</code> ADR-046)</td>
+<td>Ventana host↔flujo, más laxa que red↔red.</td>
+</tr>
+<tr>
+<td><code>nat_confidence_floor</code></td>
+<td>a fijar</td>
+<td>Confianza mínima para aceptar un puente NAT sin marcar el flujo como baja-confianza.</td>
+</tr>
+<tr>
+<td><code>max_new_cid_per_window_per_node</code></td>
+<td><strong>PENDIENTE Consejo</strong></td>
+<td>Rate-limit de cardinalidad anti grafo-flooding (§6 Q1). ¿Dónde se aplica?</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="5-alternativas-consideradas-y-rechazadas">5. Alternativas consideradas y rechazadas</h2>
+<table>
+<thead>
+<tr>
+<th>Alternativa</th>
+<th>Por qué se rechazó</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>community_id</code> como identidad de nodo en Neo4j</td>
+<td>Reciclaje temporal de 5-tupla funde flujos no relacionados; mundo multi-nodo colisiona 5-tuplas entre nodos. Corrupción de estructura.</td>
+</tr>
+<tr>
+<td><code>(node_id, community_id)</code> sin componente temporal</td>
+<td>Insuficiente: la 5-tupla se recicla en el tiempo en el MISMO nodo → mismo <code>(node_id, community_id)</code> para flujos distintos (objeción DeepSeek DAY 170).</td>
+</tr>
+<tr>
+<td>Tratar el community_id como control de integridad / señal de seguridad</td>
+<td>Es función pura de la 5-tupla: ciego al vector A, manipulable en el vector B. Garbage in, garbage hashed.</td>
+</tr>
+<tr>
+<td>Defensa contra inyección en el propio hash (HMAC con secreto)</td>
+<td>No resuelve el vector A (MAC fuera del hash) y rompe la paridad cross-sensor con Suricata/Zeek (que usan SHA1 estándar). La defensa debe ser arquitectónica.</td>
+</tr>
+<tr>
+<td>IP cruda como clave del puente host↔red</td>
+<td>Colapsa bajo NAT/DHCP/contenedores. Debe ser <code>agent_id</code>/hostname canónico.</td>
+</tr>
+<tr>
+<td>Fallo silencioso cuando la IP host ≠ IP red</td>
+<td>Oculta exactamente el caso (NAT, MITM) que más importa observar. Se exige anotación de método + confianza.</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="6-preguntas-abiertas-para-el-consejo">6. Preguntas abiertas para el Consejo</h2>
+<ol>
+<li><strong>Rate-limit / cardinalidad.</strong> ¿Cardinalidad máxima de <code>community_id</code> nuevos por ventana por nodo, para contener el grafo flooding? ¿Dónde se aplica — sensor, correlation-engine, o ingest a Neo4j? (ADR-046 v4 ya tiene cuota anti-pinning por crisis; esta es por cardinalidad de cid, complementaria.)</li>
+<li><strong>Señal ARP/NDP del host plane.</strong> ¿Nodo/arista de primera clase en el grafo, o enriquecimiento? Es el único detector del vector A. Conecta con DEBT-ARGUSPP-WAZUH-001 y BACKLOG-RESEARCH-NAT-HOSTNET-001.</li>
+<li><strong>Marca de confianza de flujo.</strong> ¿Propiedad "confianza" en el nodo-flujo? (corroborado por N sensores vs visto por 1 → menor confianza). Conecta con las categorías de presencia del <code>acceptance_criteria.md</code> congelado (DROP/CONFIG/POLICY/BUG/UNKNOWN → ¿añadir <code>INJECTED</code>?).</li>
+<li><strong>Etiquetado de flujo sospechoso de inyección SIN excluirlo del dataset.</strong> Integridad científica: no se borra, se etiqueta — el atacante es parte del ground truth en MITRE. ¿Cómo se marca?</li>
+<li><strong>Relación con ADR-050 (sesión MITRE).</strong> ¿Uno de los 6 vectores es MITM con bettercap? Si es así, este modelo de amenaza es el ground truth esperado de ese vector.</li>
+<li><strong>Granularidad de <code>flow_start_window</code></strong> (§4). ¿Bucket de CrisisWindow, N segundos fijos, u otra? Debe cortar reciclaje sin fragmentar un mismo flujo legítimo de larga duración.</li>
+<li><strong>¿ADR-052 mantiene P1 y P3 juntos o se separa P1 a ADR-053?</strong> Comparten esquema Neo4j (argumento para juntarlos); pero P1 (host↔red) es conceptualmente separable de P3 (identidad de flujo). Decisión del Consejo.</li>
+</ol>
+<hr />
+<h2 id="7-consecuencias">7. Consecuencias</h2>
+<p><strong>Positivas.</strong> Identidad de nodo-flujo robusta en mundo multi-nodo con reciclaje temporal. La defensa contra MITM/inyección queda explícita y arquitectónica, no delegada falsamente al hash. El <code>flow_uid</code> gana doble rol (identidad + defensa). El dataset puede etiquetar tráfico inyectado como ground truth sin contaminarse. Desbloquea DEBT-NEO4J-FLOW-KEY-001 (esquema ratificado antes de poblar).</p>
+<p><strong>Negativas / coste.</strong> <code>node_id</code> obligatorio en el esquema (propiedad en cada nodo-evento). Vigilancia ARP/NDP en el host plane como nueva señal a recolectar. Rate-limit de cardinalidad de community_id como nuevo mecanismo. Granularidad de <code>flow_start_window</code> debe calibrarse (mal elegida fragmenta flujos legítimos o no corta el reciclaje).</p>
+<p><strong>Riesgos.</strong> (1) Si la vigilancia ARP/NDP no se implementa, el vector A (MITM sigiloso) queda <strong>indetectable</strong> — la única línea de defensa contra él es la correlación host↔red. (2) <code>flow_start_window</code> mal calibrado: demasiado fino fragmenta un flujo legítimo en múltiples nodos; demasiado grueso no corta el reciclaje. (3) El menú de mecanismos NAT con fallback temporal degradado puede producir puentes de baja confianza que, sin umbral claro, contaminen la correlación.</p>
+<hr />
+<h2 id="8-validacion-emecas">8. Validación (EMECAS++)</h2>
+<p>Tests obligatorios sobre golden pcap (tier determinista, coherente con ADR-046 v4 §7):</p>
+<ul>
+<li><strong>Unicidad de <code>flow_uid</code>:</strong> dos flujos con la misma 5-tupla en <strong>nodos distintos</strong> → <code>flow_uid</code> distinto. Misma 5-tupla <strong>reciclada en el tiempo</strong> en el mismo nodo → <code>flow_uid</code> distinto. (Test de cierre de DEBT-NEO4J-FLOW-KEY-001.)</li>
+<li><strong>Constraint Neo4j:</strong> intento de insertar nodo-flujo sin <code>node_id</code> → rechazado por constraint.</li>
+<li><strong>Anti-inyección (vector B):</strong> inyectar flujos con 5-tuplas fabricadas → quedan anclados a <code>node_id</code> del sensor que los vio; un flujo sin sensor de borde trazable → marcado anomalía.</li>
+<li><strong>MITM sigiloso (vector A):</strong> simular ARP spoof (MAC cambia, IP/puerto intactos) → la red NO levanta señal (esperado, community_id ciego); el cruce host↔red SÍ detecta el cambio MAC↔IP. Si la señal ARP/NDP no está, el test documenta la ceguera.</li>
+<li><strong>NAT con anotación:</strong> flujo bajo NAT simulado → puente host↔red resuelto por mecanismo del menú, con método + confianza anotados en grafo y log. Nunca fallo silencioso.</li>
+<li><strong>Etiquetado de inyección:</strong> flujo inyectado en escenario MITRE → etiquetado <code>INJECTED</code> (o equivalente), NO excluido del dataset.</li>
+</ul>
+<hr />
+<h2 id="9-deudas-y-diferidos">9. Deudas y diferidos</h2>
+<ul>
+<li><code>DEBT-NEO4J-FLOW-KEY-001</code> — <strong>ratificada por este ADR.</strong> flow_uid + node_id obligatorio + constraint Neo4j 5.x. P0 esquema, antes de poblar el grafo.</li>
+<li><code>DEBT-ARGUSPP-ARP-MONITOR-001</code> (NUEVA, propuesta) — vigilancia ARP/NDP en el host plane como señal de detección del vector A. Sin ella, el MITM sigiloso es indetectable. Prereq: Wazuh integrado.</li>
+<li>Rate-limit de cardinalidad de community_id (§6 Q1) — pendiente decisión de ubicación. Post-Consejo.</li>
+<li>Marca de confianza de flujo y categoría <code>INJECTED</code> en acceptance_criteria.md (§6 Q3) — pendiente Consejo.</li>
+<li>Relación con ADR-050: si un vector MITRE es MITM bettercap, este modelo es su ground truth (§6 Q5).</li>
+</ul>
+<hr />
+<h2 id="10-referencias">10. Referencias</h2>
+<ul>
+<li>ADR-046 v4 (modelo dual de claves, grafo temporal, inventario de endpoints, cuota anti-pinning) — <strong>fuente de las decisiones que ADR-052 consume sin reescribir.</strong></li>
+<li>ADR-051 (Seed Parity Gate &amp; Correlation Health — <code>orphan_rate</code> gana rol de detección de sensor comprometido / inyección).</li>
+<li>ADR-050 (sesión MITRE — ground truth del vector MITM, pendiente redacción).</li>
+<li><code>corelight/community-id-spec</code> (algoritmo Community ID v1).</li>
+<li>Nota de amenaza DAY 171 (MITM e inyección en runtime) — material primario integrado en §3.3–§3.5.</li>
+<li>Consejo de Sabios DAY 170: P1 (host↔red), P3 (identidad de flujo multi-nodo).</li>
+<li>bettercap, scapy, nfqueue/libnetfilter_queue, eBPF/tc — adversarios contemplados (§2.2).</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.top", "search.highlight"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

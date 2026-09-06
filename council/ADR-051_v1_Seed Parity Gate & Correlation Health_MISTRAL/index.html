@@ -1,0 +1,1288 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source embedded-ML NDR for hospitals and schools">
+      
+      
+        <meta name="author" content="Alonso Isidoro Roman">
+      
+      
+        <link rel="canonical" href="https://alonsoir.github.io/argus/council/ADR-051_v1_Seed%20Parity%20Gate%20%26%20Correlation%20Health_MISTRAL/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>ADR 051 v1 Seed Parity Gate & Correlation Health MISTRAL - ML Defender (aRGus NDR)</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#1-fortalezas-del-adr" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-header__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ML Defender (aRGus NDR)
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              ADR 051 v1 Seed Parity Gate & Correlation Health MISTRAL
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../README.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/BACKLOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Backlog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Security Model
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-tabs__link">
+          
+  
+  
+  ADRs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/contracts/Protobuf contracts.md" class="md-tabs__link">
+          
+  
+  
+  Contracts
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-nav__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ML Defender (aRGus NDR)
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../README.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/BACKLOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADRs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ADRs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013 Seed Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-021-deployment-topology-seed-families.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-021 Topology SSOT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-022-threat-model-opcion2-descartada.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-022 Threat Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Protobuf contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protobuf
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/JSON contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JSON
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Rag security commands.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-fortalezas-del-adr" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Fortalezas del ADR
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1. Fortalezas del ADR">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#enfoque-data-plane-como-pilar" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ✅ Enfoque data-plane como pilar
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mecanismos-accionables" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ✅ Mecanismos accionables
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#honestidad-sobre-dependencias" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ✅ Honestidad sobre dependencias
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-riesgos-y-mitigaciones" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Riesgos y Mitigaciones
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2. Riesgos y Mitigaciones">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#latencia-en-arranque" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ⚠️ Latencia en arranque
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#redundancia-gate-periodico-vs-health-check-continuo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ⚠️ Redundancia: Gate periódico vs. Health-check continuo
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#falsos-positivos-en-orphan_rate" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ⚠️ Falsos positivos en orphan_rate
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dependencia-de-pycommunityid-como-oraculo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ⚠️ Dependencia de pycommunityid como oráculo
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-respuestas-a-las-preguntas-abiertas-del-consejo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Respuestas a las Preguntas Abiertas del Consejo
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. Respuestas a las Preguntas Abiertas del Consejo">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-flujo-diana-de-referencia-inyeccion-sintetica-o-trafico-real" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🔹 1. Flujo-diana de referencia: ¿Inyección sintética o tráfico real?
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-re-ejecucion-periodica-del-gate" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🔹 2. Re-ejecución periódica del gate
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-politica-de-degradacion-fail-closed-o-degradacion-gracefully" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🔹 3. Política de degradación: ¿Fail-closed o degradación gracefully?
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-propuestas-adicionales-para-el-consejo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Propuestas Adicionales para el Consejo
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4. Propuestas Adicionales para el Consejo">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#debt-seed-gate-diagnostic-001-mejoras-al-diagnostico" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        📌 DEBT-SEED-GATE-DIAGNOSTIC-001: Mejoras al diagnóstico
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#validacion-cruzada-entre-sensores" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        📌 Validación cruzada entre sensores
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pruebas-de-caos-chaos-engineering" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        📌 Pruebas de caos (chaos engineering)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-resumen-de-acciones-para-el-consejo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Resumen de Acciones para el Consejo
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#-" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ---
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-pregunta-final-para-el-consejo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Pregunta Final para el Consejo
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+  <h1>ADR 051 v1 Seed Parity Gate & Correlation Health MISTRAL</h1>
+
+<p>Aironman DirtDiver, este ADR-051 es un documento técnico robusto y bien estructurado, que aborda un problema crítico en la correlación multi-fuente: <strong>la paridad de seed como garantía de integridad en el <code>community_id</code></strong>. Tu enfoque en el <strong>principio <em>data-plane</em></strong> (validar lo que los sensores <em>emiten</em>, no lo que <em>configuran</em>) es coherente con la filosofía de fallos ruidosos y <em>fail-closed</em> que ya rige en el sistema. Aquí tienes un análisis estructurado para aportar a la deliberación del Consejo, con preguntas clave y observaciones técnicas:</p>
+<hr />
+<hr />
+<h2 id="1-fortalezas-del-adr"><strong>1. Fortalezas del ADR</strong></h2>
+<h3 id="enfoque-data-plane-como-pilar">✅ <strong>Enfoque <em>data-plane</em> como pilar</strong></h3>
+<ul>
+<li><strong>Elimina la brecha intención vs. comportamiento</strong>: El gate y el health-check operan sobre el <code>community_id</code> emitido, no sobre la configuración. Esto cierra el modo de fallo silencioso más peligroso (sensores desincronizados que <em>parecen</em> operativos).</li>
+<li><strong>Coherencia con el ecosistema</strong>: Alinea con el gate NTP (DEBT-ARGUSPP-NTP-001) y el principio de <em>"hardcoded keys NOT acceptable"</em> del sniffer. La filosofía <em>fail-closed</em> es consistente.</li>
+</ul>
+<h3 id="mecanismos-accionables">✅ <strong>Mecanismos accionables</strong></h3>
+<ul>
+<li><strong>Gate bloqueante en arranque</strong>: Decisión valiente y necesaria para entornos críticos (hospitalario). Un NDR que correla basura es peor que uno que no correla.</li>
+<li><strong>Diagnóstico granular</strong>: El volcado de <code>sensor / cid esperado / cid emitido</code> en fallos del gate permite realineación en segundos. El <code>orphan_rate</code> <strong>per-sensor</strong> (no global) es clave para identificar el sensor problemático.</li>
+<li><strong>Reutilización del cross-check E2E</strong>: Convierte un experimento manual (DAY 171/172) en infraestructura operacional.</li>
+</ul>
+<h3 id="honestidad-sobre-dependencias">✅ <strong>Honestidad sobre dependencias</strong></h3>
+<ul>
+<li><strong>Prerequisitos explícitos</strong>: DEBT-ARGUSPP-COUNTER-DUMP-001, DEBT-CORRELATION-TIMEOUT-CALIB-001, y DEBT-SENSOR-COVERAGE-MAP-001 están claramente declarados. Esto evita sorpresas en implementación.</li>
+<li><strong>Umbrales provisionales</strong>: El ADR reconoce que el <code>source_wait_timeout</code> actual (ADR-046 v4) es insuficiente y delega su calibración a B. Transparencia técnica.</li>
+</ul>
+<hr />
+<hr />
+<h2 id="2-riesgos-y-mitigaciones"><strong>2. Riesgos y Mitigaciones</strong></h2>
+<h3 id="latencia-en-arranque">⚠️ <strong>Latencia en arranque</strong></h3>
+<ul>
+<li><strong>Problema</strong>: El gate bloqueante añade una fase de verificación. Aunque es rápido (1 flujo de referencia), en entornos con alta disponibilidad, cada segundo cuenta.</li>
+<li><strong>Mitigación</strong>:<ul>
+<li><strong>Inyección sintética del flujo-diana</strong> (recomendación del borrador) es la opción más determinista. Usar el flujo Neris (<code>147.32.84.165:1027 → 74.125.232.195:80</code>) garantiza repetibilidad.</li>
+<li><strong>Alternativa</strong>: Si se opta por tráfico real, definir un <em>timeout</em> máximo para el gate (ej. 30 segundos). Si no se observa el flujo en ese tiempo, fallar con un mensaje claro: <em>"No se detectó tráfico de referencia en X segundos. Inyectar flujo sintético o revisar conectividad"</em>.</li>
+</ul>
+</li>
+</ul>
+<h3 id="redundancia-gate-periodico-vs-health-check-continuo">⚠️ <strong>Redundancia: Gate periódico vs. Health-check continuo</strong></h3>
+<ul>
+<li><strong>Pregunta abierta #2</strong>: ¿Es necesario re-ejecutar el gate periódicamente?<ul>
+<li><strong>Argumento a favor</strong>: Un sensor podría recargar su configuración en caliente (ej. <code>suricata.yaml</code> modificado) y driftar el seed <em>post-arranque</em>. El gate periódico lo detectaría.</li>
+<li><strong>Argumento en contra</strong>: El <code>orphan_rate</code> ya cubre este caso. Un drift de seed se manifestaría como un aumento repentino en <code>orphan_rate</code> para ese sensor.</li>
+<li><strong>Recomendación</strong>:<ul>
+<li><strong>No implementar gate periódico por defecto</strong>, pero <strong>permitir su activación opcional</strong> (ej. cada 6 horas) en entornos de alta criticidad.</li>
+<li><strong>Anotar en el grafo</strong> cuando un sensor es degradado por <code>orphan_rate</code> alto (ej. etiqueta <code>sensor_status=degraded</code> en Neo4j). Esto mantiene la trazabilidad sin bloquear el sistema.</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="falsos-positivos-en-orphan_rate">⚠️ <strong>Falsos positivos en <code>orphan_rate</code></strong></h3>
+<ul>
+<li><strong>Problema</strong>: El <code>orphan_rate</code> puede dispararse por:<ol>
+<li><strong>Drift de seed</strong> (objetivo del ADR).</li>
+<li><strong>Cobertura asimétrica legítima</strong> (ej. aRGus no ve ICMP).</li>
+<li><strong>Pérdida real de flujos</strong> (drops, saturación).</li>
+</ol>
+</li>
+<li><strong>Mitigación</strong>:<ul>
+<li><strong>DEBT-SENSOR-COVERAGE-MAP-001 es crítico</strong>. Sin él, el <code>orphan_rate</code> es ininterpretable.</li>
+<li><strong>Umbrales dinámicos</strong>: Usar percentiles (ej. P95) en lugar de umbrales fijos para <code>orphan_rate</code>, ya que la cobertura asimétrica puede ser esperada en ciertos segmentos.</li>
+<li><strong>Contexto en alertas</strong>: Incluir en el mensaje de alerta el <em>tipo de flujo</em> (protocolo, puertos) para distinguir entre causas. Ej:
+  <code>ALERT: orphan_rate=0.85 para sensor=Suricata-01 (flujos ICMP).
+  Posible causa: Cobertura asimétrica (aRGus no cubre ICMP) o pérdida real.</code></li>
+</ul>
+</li>
+</ul>
+<h3 id="dependencia-de-pycommunityid-como-oraculo">⚠️ <strong>Dependencia de <code>pycommunityid</code> como oráculo</strong></h3>
+<ul>
+<li><strong>Problema</strong>: El oráculo (<code>pycommunityid</code>) debe ser <strong>inmutable y auditado</strong>. Si el oráculo tiene un bug, el gate fallaría para todos los sensores, incluso si están alineados entre sí.</li>
+<li><strong>Mitigación</strong>:<ul>
+<li><strong>Versionar el oráculo</strong>: Incluir el hash del binario de <code>pycommunityid</code> en el mensaje de fallo del gate.</li>
+<li><strong>Cross-check entre sensores</strong>: Si todos los sensores coinciden entre sí (aunque no con el oráculo), podría ser un error en el oráculo. <strong>Propuesta</strong>: Añadir una regla de <em>quorum</em>: si N-1 sensores coinciden entre sí pero no con el oráculo, generar una alerta de <em>"posible error en oráculo"</em> (no bloqueante, pero visible).</li>
+</ul>
+</li>
+</ul>
+<hr />
+<hr />
+<h2 id="3-respuestas-a-las-preguntas-abiertas-del-consejo"><strong>3. Respuestas a las Preguntas Abiertas del Consejo</strong></h2>
+<h3 id="1-flujo-diana-de-referencia-inyeccion-sintetica-o-trafico-real">🔹 <strong>1. Flujo-diana de referencia: ¿Inyección sintética o tráfico real?</strong></h3>
+<p><strong>Recomendación: Inyección sintética</strong>.
+- <strong>Ventajas</strong>:
+    - Determinista y repetible (el flujo Neris ya está validado en DAY 171/172).
+    - No depende de la disponibilidad de tráfico real en el momento del arranque.
+    - Permite probar el gate en entornos de <em>staging</em> sin tráfico productivo.
+- <strong>Implementación</strong>:
+    - Usar una herramienta como <code>tcpreplay</code> o <code>scapy</code> para inyectar el flujo-diana al arranque.
+    - Si la inyección falla (ej. problema de red), el gate debe fallar con un mensaje claro: <em>"No se pudo inyectar flujo de referencia. Verificar conectividad o permisos"</em>.</p>
+<h3 id="2-re-ejecucion-periodica-del-gate">🔹 <strong>2. Re-ejecución periódica del gate</strong></h3>
+<p><strong>Recomendación: No periódica por defecto, pero configurable</strong>.
+- <strong>Por defecto</strong>: Solo en arranque.
+- <strong>Opcional</strong>: Permitir configurar una re-ejecución periódica (ej. cada 6 horas) en entornos donde la recarga en caliente de configuraciones es común.
+- <strong>Justificación</strong>: El <code>orphan_rate</code> ya cubre el drift en runtime. La re-ejecución periódica añade complejidad sin un beneficio claro en la mayoría de los casos.</p>
+<h3 id="3-politica-de-degradacion-fail-closed-o-degradacion-gracefully">🔹 <strong>3. Política de degradación: ¿Fail-closed o degradación gracefully?</strong></h3>
+<p><strong>Recomendación: Degradación gracefully con anotación en el grafo</strong>.
+- <strong>En runtime</strong>:
+    - Si un sensor S tiene <code>orphan_rate &gt; umbral</code> (ej. 0.9) durante T minutos (ej. 5), <strong>degradarlo</strong>: excluirlo de la correlación pero <strong>anotar su presencia en el grafo</strong> con una etiqueta como:
+      <code>cypher
+      (flow)-[:DETECTED_BY {method: "suricata", confidence: "low", reason: "high_orphan_rate"}]-&gt;(sensor)</code>
+    - <strong>No bloquear el sistema</strong>: La correlación continúa con los N-1 sensores restantes.
+- <strong>Alertas</strong>:
+    - Generar una alerta crítica: <em>"Sensor S degradado por orphan_rate=0.95. Revisar seed o cobertura."</em>
+    - Incluir en la alerta el <code>community_id</code> emitido por S para el último flujo huérfano (para diagnóstico rápido).
+- <strong>Justificación</strong>:
+    - En un hospital, <strong>la disponibilidad parcial es mejor que la indisponibilidad total</strong>.
+    - La anotación en el grafo mantiene la trazabilidad: el operador sabe que la correlación para ciertos flujos puede estar incompleta.</p>
+<hr />
+<hr />
+<h2 id="4-propuestas-adicionales-para-el-consejo"><strong>4. Propuestas Adicionales para el Consejo</strong></h2>
+<h3 id="debt-seed-gate-diagnostic-001-mejoras-al-diagnostico">📌 <strong>DEBT-SEED-GATE-DIAGNOSTIC-001: Mejoras al diagnóstico</strong></h3>
+<ul>
+<li><strong>Incluir el <em>seed inferido</em></strong> en el mensaje de fallo del gate:<ul>
+<li>Si el <code>community_id</code> emitido por un sensor no coincide con el oráculo, intentar inferir el seed que el sensor está usando (ej. mediante fuerza bruta sobre el flujo-diana).</li>
+<li>Ejemplo de mensaje:
+  ```
+  Gate FAILED para sensor=Zeek-02:</li>
+<li>community_id esperado: 1:IN7uqVpMWxpmuhQTowSQB2XEe0E=</li>
+<li>community_id emitido: 1:AB3cdEfGhIjKlMnOpQrStUvWxYz=</li>
+<li>Seed inferido: 0xDEADBEEF (vs. seed configurado: 0xCAFEBABE)</li>
+<li>Acción: Verificar configuración de Zeek-02 o reiniciar con seed=0xCAFEBABE.
+  ```</li>
+</ul>
+</li>
+</ul>
+<h3 id="validacion-cruzada-entre-sensores">📌 <strong>Validación cruzada entre sensores</strong></h3>
+<ul>
+<li><strong>Regla de quorum</strong>: Si N-1 sensores coinciden entre sí pero no con el oráculo, generar una alerta de <em>"posible error en oráculo"</em> (no bloqueante).</li>
+<li><strong>Implementación</strong>:<ul>
+<li>Comparar los <code>community_id</code> emitidos por todos los sensores para el flujo-diana.</li>
+<li>Si hay consenso entre N-1 sensores, pero no con el oráculo, notificar:
+  <code>WARNING: N-1 sensores coinciden entre sí (community_id=1:XYZ), pero no con el oráculo (1:ABC).
+  Posible error en oráculo o en el sensor disidente (Sensor-K).</code></li>
+</ul>
+</li>
+</ul>
+<h3 id="pruebas-de-caos-chaos-engineering">📌 <strong>Pruebas de caos (<em>chaos engineering</em>)</strong></h3>
+<ul>
+<li><strong>Propuesta</strong>: Incluir en el plan de pruebas un escenario donde:<ol>
+<li>Se fuerza un drift de seed en un sensor (ej. modificar <code>suricata.yaml</code> en caliente).</li>
+<li>Se verifica que:<ul>
+<li>El gate falla en el próximo arranque.</li>
+<li>El <code>orphan_rate</code> del sensor driftado aumenta en runtime.</li>
+<li>La degradación gracefully funciona (el sensor es excluido pero anotado).</li>
+</ul>
+</li>
+</ol>
+</li>
+</ul>
+<hr />
+<hr />
+<h2 id="5-resumen-de-acciones-para-el-consejo"><strong>5. Resumen de Acciones para el Consejo</strong></h2>
+<table>
+<thead>
+<tr>
+<th><strong>Decisión</strong></th>
+<th><strong>Recomendación</strong></th>
+<th><strong>Prioridad</strong></th>
+<th><strong>Dependencias</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Flujo-diana</td>
+<td>Inyección sintética (Neris)</td>
+<td>Alta</td>
+<td>Ninguna</td>
+</tr>
+<tr>
+<td>Gate periódico</td>
+<td>No por defecto, configurable</td>
+<td>Media</td>
+<td>DEBT-CORRELATION-TIMEOUT-CALIB-001</td>
+</tr>
+<tr>
+<td>Degradación en runtime</td>
+<td>Gracefully + anotación en grafo</td>
+<td>Alta</td>
+<td>DEBT-SENSOR-COVERAGE-MAP-001</td>
+</tr>
+<tr>
+<td>Diagnóstico del gate</td>
+<td>Incluir seed inferido</td>
+<td>Alta</td>
+<td>DEBT-SEED-GATE-DIAGNOSTIC-001</td>
+</tr>
+<tr>
+<td>Quorum entre sensores</td>
+<td>Alertar si N-1 coinciden vs. oráculo</td>
+<td>Media</td>
+<td>Ninguna</td>
+</tr>
+</tbody>
+</table>
+<h2 id="-">---</h2>
+<h2 id="6-pregunta-final-para-el-consejo"><strong>6. Pregunta Final para el Consejo</strong></h2>
+<p>El ADR-051 es técnicamente sólido, pero su éxito depende de la <strong>operatividad de los prerequisitos</strong> (especialmente DEBT-ARGUSPP-COUNTER-DUMP-001 y DEBT-CORRELATION-TIMEOUT-CALIB-001). <strong>¿El Consejo está de acuerdo en priorizar estos DEBTs como P0 para el siguiente sprint?</strong> Sin ellos, el health-check será incompleto, y el gate podría convertirse en un <em>single point of failure</em> si no se calibra correctamente.</p>
+<hr />
+<p><strong>¿Qué aspectos te gustaría profundizar, Aironman DirtDiver?</strong> ¿O prefieres que desarrolle algún punto en concreto (ej. diseño detallado del gate, pseudocódigo para el <code>orphan_rate</code>, o un ejemplo de anotación en Neo4j)?</p>
+<p>FDO
+MISTRAL</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.top", "search.highlight"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

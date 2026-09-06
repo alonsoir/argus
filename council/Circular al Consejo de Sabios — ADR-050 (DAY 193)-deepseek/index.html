@@ -1,0 +1,972 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source embedded-ML NDR for hospitals and schools">
+      
+      
+        <meta name="author" content="Alonso Isidoro Roman">
+      
+      
+        <link rel="canonical" href="https://alonsoir.github.io/argus/council/Circular%20al%20Consejo%20de%20Sabios%20%E2%80%94%20ADR-050%20%28DAY%20193%29-deepseek/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>Circular al Consejo de Sabios — ADR 050 (DAY 193) deepseek - ML Defender (aRGus NDR)</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#mordisco-a-debt-wazuh-communityid-001-5-p9" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-header__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ML Defender (aRGus NDR)
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Circular al Consejo de Sabios — ADR 050 (DAY 193) deepseek
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../README.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/BACKLOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Backlog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Security Model
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-tabs__link">
+          
+  
+  
+  ADRs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/contracts/Protobuf contracts.md" class="md-tabs__link">
+          
+  
+  
+  Contracts
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-nav__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ML Defender (aRGus NDR)
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../README.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/BACKLOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADRs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ADRs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013 Seed Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-021-deployment-topology-seed-families.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-021 Topology SSOT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-022-threat-model-opcion2-descartada.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-022 Threat Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Protobuf contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protobuf
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/JSON contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JSON
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Rag security commands.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#mordisco-a-debt-wazuh-communityid-001-5-p9" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Mordisco a DEBT-WAZUH-COMMUNITYID-001 (§5, P9)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Mordisco a DEBT-WAZUH-COMMUNITYID-001 (§5, P9)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-existe-algun-invariante-que-ambos-lados-calculen-identico" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. ¿Existe algún invariante que ambos lados calculen idéntico?
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-el-defecto-fatal-real-no-esta-en-el-invariante-esta-en-la-capacidad-de-wazuh-para-computarlo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. El defecto fatal real no está en el invariante, está en la capacidad de Wazuh para computarlo
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-correlacion-por-ventana-temporal-y-puerto-de-origen-error-acotado" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Correlación por ventana temporal y puerto de origen: error acotado
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-mi-dictamen-sobre-este-punto-concreto-falta-el-adr-completo-no-voto-todavia" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Mi dictamen sobre este punto concreto (falta el ADR completo, no voto todavía)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+  <h1>Circular al Consejo de Sabios — ADR 050 (DAY 193) deepseek</h1>
+
+<p>No tengo acceso a vuestro histórico de meses. Esta conversación comienza aquí, sin memoria de interacciones previas.<br />
+Tampoco dispongo del documento <code>ADR-050</code> ni de las trece preguntas del §17. Solo cuento con la circular que habéis pegado y con la descripción de la deuda <code>DEBT-WAZUH-COMMUNITYID-001</code>.</p>
+<p>Voy a morder justo ahí, con el único material que tengo, como pedís: defecto fatal, no validación.</p>
+<hr />
+<h3 id="mordisco-a-debt-wazuh-communityid-001-5-p9">Mordisco a <code>DEBT-WAZUH-COMMUNITYID-001</code> (§5, P9)</h3>
+<p><strong>El problema en una frase</strong><br />
+Ambos extremos (aRGus en el cable, post‑NAT; Wazuh en el host, pre‑NAT) necesitan un identificador común e inequívoco. NAT rompe <code>community_id</code> porque reescribe la tupla IP:puerto, así que necesitáis un invariante que sobreviva a la traducción.</p>
+<h4 id="1-existe-algun-invariante-que-ambos-lados-calculen-identico">1. ¿Existe algún invariante que ambos lados calculen idéntico?</h4>
+<p><strong>Sí</strong>, pero solo si Wazuh puede inspeccionar el payload real de las conexiones de red que salen del host. Ese condicional es el primer agujero potencialmente fatal.</p>
+<p>Los invariantes que sobreviven a un NAT <strong>que no modifica payload</strong> (NAT tradicional, sin ALG que reescriba la capa 7) son:</p>
+<ul>
+<li>
+<p><strong>JA3 / JA4 (TLS)</strong><br />
+  Se calculan exclusivamente a partir del Client Hello (versión TLS, cifrados, extensiones, curvas elípticas…). Nada de IP ni puerto. Cualquier NAT sin terminación TLS los deja intactos.<br />
+  JA4 es aún más robusto porque incluye QUIC y elimina ambigüedades de JA3. Ambos son perfectamente calculables desde el extremo host si éste captura el tráfico o si el agente Wazuh se engancha a la pila TLS (eBPF, hooks de biblioteca, etc.).</p>
+</li>
+<li>
+<p><strong>Hash de los primeros N bytes del payload de aplicación</strong><br />
+  El NAT no altera los datos del usuario. Si ambos extremos ven el mismo flujo de bytes (reensamblados para evitar problemas de segmentación), una función como <code>SHA256(primeros 256 bytes del payload)</code> produce un identificador común.<br />
+  Funciona para HTTP (request line + cabeceras), DNS, SMB, etc. Para protocolos cifrados que no sean TLS (ej. SSH), el intercambio inicial (banner, algoritmo de clave) también es invariante.</p>
+</li>
+<li>
+<p><strong>Combinación de varios campos inalterados</strong><br />
+  Podéis acuñar un índice compuesto:<br />
+<code>Tipo_Protocolo || SNI (si TLS) || Hash(payload_inicial) || Longitud_payload</code><br />
+  El SNI viaja en claro en el Client Hello y es visible para ambos. Este índice sería estable ante NAT.</p>
+</li>
+</ul>
+<h4 id="2-el-defecto-fatal-real-no-esta-en-el-invariante-esta-en-la-capacidad-de-wazuh-para-computarlo">2. El defecto fatal real no está en el invariante, está en la <em>capacidad de Wazuh para computarlo</em></h4>
+<p>El ADR habla de “aRGus (red, en el cable) y Wazuh (host)”. Si la correlación la pretendéis hacer sin que el agente Wazuh capture tráfico a nivel de paquete, <strong>ningún invariante de payload funciona</strong>.<br />
+Un agente Wazuh clásico recolecta logs del sistema operativo, integridad de ficheros y eventos de auditoría, pero <strong>no vuelca paquetes de red</strong> a no ser que despleguéis un módulo adicional (p.ej., un probe eBPF, un sniffer ligero en el endpoint, o la integración con Suricata en modo host). Sin eso, en el host solo tenéis la 5‑tupla pre‑NAT que ve el sistema operativo (IP_local:puerto_local, IP_remota:puerto_remoto) y quizá el proceso responsable.</p>
+<p>Con solo la 5‑tupla pre‑NAT y los flujos post‑NAT que ve aRGus, el invariante <strong>desaparece</strong>. Lo único que os quedaría es una correlación probabilística por ventana temporal y, si el NAT preserva el puerto de origen, el número de puerto origen.</p>
+<h4 id="3-correlacion-por-ventana-temporal-y-puerto-de-origen-error-acotado">3. Correlación por ventana temporal y puerto de origen: error acotado</h4>
+<p>Si el NAT es de tipo “source port preservation” (la mayoría lo son mientras no haya colisión), podéis emparejar eventos así:</p>
+<ul>
+<li>Wazuh ve: <code>(IP_host_privada, puerto_origen, IP_destino, puerto_destino, timestamp_inicio)</code></li>
+<li>aRGus ve: <code>(IP_pública_NAT, puerto_origen_postNAT, IP_destino, puerto_destino, timestamp_inicio)</code></li>
+</ul>
+<p>Cuando no hay traducción de puerto, <code>puerto_origen == puerto_origen_postNAT</code> y el emparejamiento es directo (un solo candidato). Cuando sí hay traducción, el puerto cambia y el emparejamiento se convierte en probabilístico: buscáis todos los flujos de aRGus que coincidan en IP destino, puerto destino y que empiecen en una ventana de ±Δt respecto al timestamp de Wazuh, y os quedáis con el que minimice la diferencia temporal o algún otro atributo.</p>
+<p><strong>Tasa de error de join</strong></p>
+<ul>
+<li><strong>Escenario sin colisión de puertos</strong>: error 0 (la tupla <code>(IP_destino, puerto_destino, puerto_origen, timestamp)</code> es única dentro de la ventana en la práctica).</li>
+<li><strong>Escenario con colisión y traducción de puerto</strong>: la probabilidad de un falso emparejamiento depende de cuántos flujos desde la misma IP pública hacia el mismo destino y puerto destino arranquen en la misma ventana corta.<br />
+  En un hospital con una red de tamaño medio (≤10 000 endpoints), la tasa de conexiones nuevas a un mismo servicio desde una misma IP pública en 60 segundos raramente supera las decenas. Si además filtráis por protocolo y usáis ventanas de 1‑2 segundos, el número de colisiones es minúsculo. Podéis acotar el error por debajo del 0.01 % siempre que:<ul>
+<li>La ventana sea ≤ 2 s.</li>
+<li>Excluyáis protocolos de ráfagas extremas (p.ej., consultas DNS masivas desde un resolver). Para DNS, el identificador de transacción de 16 bits sí es un invariante excelente.</li>
+<li>El NAT preserve el puerto origen para la gran mayoría de conexiones.</li>
+</ul>
+</li>
+</ul>
+<p>En modo probabilístico, esto no es “inequívoco”, pero en la práctica la tasa de falso join es tan baja que para un sistema de detección orientado a eventos de seguridad es perfectamente asumible, siempre que los umbrales de alerta no dependan de una precisión absoluta del 100 % en la correlación.</p>
+<h4 id="4-mi-dictamen-sobre-este-punto-concreto-falta-el-adr-completo-no-voto-todavia">4. Mi dictamen sobre este punto concreto (falta el ADR completo, no voto todavía)</h4>
+<ul>
+<li><strong>Invariante recomendado</strong>: JA4 + hash de payload inicial para tráfico TLS y no‑TLS, respectivamente.</li>
+<li><strong>Requisito irrenunciable</strong>: el agente Wazuh debe poder acceder al payload de red en el host. Si la arquitectura actual no lo permite, <strong>eso es un defecto fatal</strong> para la correlación basada en invariantes de payload.</li>
+<li><strong>Plan B sólido</strong>: ventana temporal + puerto de origen (asumiendo preservación) con una tasa de error de join tan baja que en seguridad operacional no introduce falsas correlaciones que enmascaren incidentes reales.</li>
+<li><strong>Lo que más urge resolver</strong>: ¿puede Wazuh, <em>tal como está desplegado en vuestra arquitectura</em>, calcular JA4 o un hash de payload? Si la respuesta es no, el invariante no existe y debéis asumir el modelo probabilístico. Si la respuesta es sí, la deuda queda saldada con JA4 + hash y el join es inequívoco para tráfico TLS (≈85‑90 % del tráfico relevante en hospitales y municipios hoy día) y con alta fiabilidad para el resto.</li>
+</ul>
+<hr />
+<p>Para darte el veredicto “pregunta a pregunta” y aplicar vetos sobre los §3, §5 y §14 necesito <strong>el texto completo del ADR‑050 y las trece preguntas del §17</strong>. Proporciónamelas y te las rompo una a una, midiendo sin contaminar.</p>
+<p>FDO</p>
+<p>DEEPSEEK</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.top", "search.highlight"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

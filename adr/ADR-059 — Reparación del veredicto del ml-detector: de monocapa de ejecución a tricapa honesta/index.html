@@ -1,0 +1,1369 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source embedded-ML NDR for hospitals and schools">
+      
+      
+        <meta name="author" content="Alonso Isidoro Roman">
+      
+      
+        <link rel="canonical" href="https://alonsoir.github.io/argus/adr/ADR-059%20%E2%80%94%20Reparaci%C3%B3n%20del%20veredicto%20del%20ml-detector%3A%20de%20monocapa%20de%20ejecuci%C3%B3n%20a%20tricapa%20honesta/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>ADR-059 — Reparación del veredicto del ml-detector: de monocapa de ejecución a tricapa honesta - ML Defender (aRGus NDR)</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#adr-059-reparacion-del-veredicto-del-ml-detector-de-monocapa-de-ejecucion-a-tricapa-honesta" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-header__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ML Defender (aRGus NDR)
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              ADR-059 — Reparación del veredicto del ml-detector: de monocapa de ejecución a tricapa honesta
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../README.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/BACKLOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Backlog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Security Model
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-tabs__link">
+          
+  
+  
+  ADRs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/contracts/Protobuf contracts.md" class="md-tabs__link">
+          
+  
+  
+  Contracts
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-nav__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ML Defender (aRGus NDR)
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../README.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/BACKLOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADRs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ADRs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013 Seed Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-021-deployment-topology-seed-families.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-021 Topology SSOT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-022-threat-model-opcion2-descartada.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-022 Threat Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Protobuf contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protobuf
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/JSON contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JSON
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Rag security commands.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#0-marco-innegociable" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        0. Marco (innegociable)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1-contexto-que-esta-roto-y-por-que-medido" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Contexto — qué está roto y por qué (medido)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-decision-resumen-ejecutivo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Decisión — resumen ejecutivo
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-decisiones-ratificadas-por-el-consejo-cerradas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Decisiones ratificadas por el Consejo (cerradas)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-destino-de-las-cuatro-cabezas-medido-day-212" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Destino de las cuatro cabezas (medido DAY 212)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4. Destino de las cuatro cabezas (medido DAY 212)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#41-acoplamiento-oculto-trafficransomware-medido-day-212-hallazgo-nuevo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.1 Acoplamiento oculto Traffic↔Ransomware [MEDIDO DAY 212] — hallazgo nuevo
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-el-problema-de-rendimiento-monohilo-vs-sniffer-multihilo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. El problema de rendimiento — monohilo vs sniffer multihilo
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-plan-de-trabajo-accionable-tdh-cada-paso-con-gate-de-medicion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Plan de trabajo accionable (TDH — cada paso con gate de medición)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="6. Plan de trabajo accionable (TDH — cada paso con gate de medición)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#precondicion-concurrencia-resuelta-1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        PRECONDICIÓN — Concurrencia (RESUELTA, §1)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#paso-0-fix-del-detonador-latente-bloqueante-antes-del-des-gateo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        PASO 0 — Fix del detonador latente (BLOQUEANTE, antes del des-gateo)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#paso-1-decisiones-de-cabezas-medicion-de-granularidad-hecha-4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        PASO 1 — Decisiones de cabezas (medición de granularidad: HECHA, §4)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#paso-2-cableado-defectos-abc-secuencia-de-prs-de-glm-7-d2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        PASO 2 — Cableado (Defectos A+B+C), secuencia de PRs de glm (§7-D2)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#paso-3-pulso-del-internal-sobre-datos-etiquetados-52b-i" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        PASO 3 — Pulso del Internal sobre datos etiquetados (5.2b-i)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#paso-4-gate-de-throughput-redefinido-por-el-consejo-el-propuesto-era-insuficiente" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        PASO 4 — Gate de throughput (REDEFINIDO por el Consejo — el propuesto era insuficiente)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#paso-5-des-gateo-del-firewall-pr2-7-d2-pcap-relay-e2e-en-hardware-propio" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        PASO 5 — Des-gateo del firewall (PR2, §7-D2) + pcap relay e2e en hardware propio
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#paso-6-pr3-eliminar-fallback-a-l1-en-el-firewall-tras-validar-n-dias" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        PASO 6 — PR3: eliminar fallback a L1 en el firewall (tras validar N días)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#paso-7-numeros-al-paper-config-honesta" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        PASO 7 — Números al paper (config honesta)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-decisiones-abiertas-arbitrio-de-alonso" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Decisiones abiertas — ARBITRIO de Alonso
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="7. Decisiones abiertas — ARBITRIO de Alonso">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#d1-arbitrio-peso-0-vs-cabeza-ausente" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        D1 [ARBITRIO] — Peso 0 vs. cabeza ausente
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#d2-arbitrio-pr-atomico-vs-secuenciado" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        D2 [ARBITRIO] — PR atómico vs. secuenciado
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#d3-arbitrio-ya-inclinado-redaccion-del-monohilo-en-el-paper" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        D3 [ARBITRIO — ya inclinado] — Redacción del monohilo en el paper
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-deudas-tecnicas-a-docsbacklogmd" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. Deudas técnicas (a docs/BACKLOG.md)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#9-consecuencias" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9. Consecuencias
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#10-cierre" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10. Cierre
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="adr-059-reparacion-del-veredicto-del-ml-detector-de-monocapa-de-ejecucion-a-tricapa-honesta">ADR-059 — Reparación del veredicto del <code>ml-detector</code>: de monocapa de ejecución a tricapa honesta</h1>
+<p><strong>Estado:</strong> PROPUESTO · pendiente de arbitraje final de Alonso en 2 decisiones abiertas (§7) y de mediciones-gate (§6)
+<strong>Fecha:</strong> DAY 212
+<strong>Contexto de decisión:</strong> auditoría DAY 209–212 + dos rondas del Consejo de Sabios (9 modelos) + reconciliación
+<strong>Repositorio:</strong> todo lo afirmado es corroborable en <code>main</code>; los números de línea son de DAY 212 (re-grepear si hay deriva)
+<strong>Reemplaza/deriva de:</strong> <code>DEBT-VERDICT-MONOCAPA-001</code></p>
+<hr />
+<h2 id="0-marco-innegociable">0. Marco (innegociable)</h2>
+<p>El fin de este ADR <strong>no es una fecha</strong>. Es dejar el <code>ml-detector</code> <strong>fiable y determinista</strong>, o saber con prueba técnica medida qué parte no puede quedar bien todavía y por qué. Dos sentidos de "arreglar", que este documento mantiene separados en todo momento:</p>
+<ul>
+<li><strong>(A) Cablear bien</strong> — que la arquitectura de ejecución coincida con la que el diseño promete, y que la señal llegue correcta aguas abajo hasta el grafo. <strong>En nuestras manos, medible ahora.</strong></li>
+<li><strong>(B) Cabezas fiables</strong> — que cada clasificador discrimine de verdad sobre tráfico real. <strong>Depende de datos</strong> (algunos aún no generados). No se promete por decreto.</li>
+</ul>
+<p>Cada afirmación se etiqueta: <strong>[MEDIDO]</strong> (verificado sobre fichero), <strong>[PENDIENTE]</strong> (requiere medición nombrada), <strong>[ARBITRIO]</strong> (decisión de Alonso). Nada de "por diseño" donde la verdad es "estabilizado tras una crisis".</p>
+<hr />
+<h2 id="1-contexto-que-esta-roto-y-por-que-medido">1. Contexto — qué está roto y por qué (medido)</h2>
+<p>El veredicto del <code>ml-detector</code> (<code>final_classification</code>) es, en ejecución, <strong>monocapa</strong> (<code>max(fast_path, L1)</code>), pese a que el paper (arXiv:2604.04952) dibuja una tricapa. Tres defectos apilados, todos <strong>[MEDIDO]</strong>:</p>
+<ul>
+<li><strong>Defecto A (secuencia):</strong> el veredicto se sella (<code>set_overall_threat_score</code>, L402) <strong>antes</strong> de que corran las 4 cabezas (L558–819).</li>
+<li><strong>Defecto B (gate L1) — causa raíz:</strong> las cabezas solo corren si <code>label_l1 == 1</code> (L552). L1 es portero, no compañero de ensemble. Un flujo de exfiltración interna que L1 marca BENIGN nunca activa al Internal.</li>
+<li><strong>Defecto C (persistencia pre-cabezas):</strong> bronce/RAG/CSV se escriben (L525–542) <strong>antes</strong> del gate y las cabezas. El grafo ingiere estado pre-inferencia. Prueba cruda: fila de bronce con <code>threat_category = RAW_CAPTURE</code> (etiqueta del sniffer, no del ml-detector).</li>
+</ul>
+<p><strong>Origen de la monocapa — no fue descuido [MEDIDO]:</strong> en agosto de 2025 se produjo una <strong>condición de concurrencia</strong> en la inferencia; la estabilización fue <strong>colapsar el procesamiento a un solo hilo</strong>, nunca revertido. Hoy: <code>worker_thread_</code> es un único <code>std::unique_ptr&lt;std::thread&gt;</code> (<code>zmq_handler.hpp:113</code>); el <code>event</code> es local a <code>process_event</code> (L322); <code>config.threading.worker_threads: 2</code> es <strong>cosmético</strong> (<code>main.cpp:238</code> solo lo imprime). El <code>ml-detector</code> es <strong>estrictamente monohilo</strong>. La monocapa es una <strong>cicatriz de estabilización</strong>, no chapuza.</p>
+<hr />
+<h2 id="2-decision-resumen-ejecutivo">2. Decisión — resumen ejecutivo</h2>
+<p>Reconectar la tricapa <strong>en modo monohilo</strong>, con honestidad de pesos: cada cabeza entra al veredicto según su <strong>fiabilidad medida</strong>, y el paper lo declara. El cableado (A) se hace ahora; la fiabilidad de las cabezas (B) se persigue con datos, declarando cada límite con su razón técnica. Dos cabezas entran con <strong>peso 0 documentado</strong> por razones de extractor, no de arquitectura.</p>
+<p>Esto es <strong>determinista por construcción [MEDIDO, ratificado 8/8 por el Consejo]</strong>: un único hilo, <code>event</code> local, writers ya serializados → cero <em>interleaving</em>. Reconectar las cabezas <strong>no reabre la carrera de agosto 2025</strong>, porque esa carrera vivía en el paralelismo de inferencia y hoy no hay segundo hilo.</p>
+<hr />
+<h2 id="3-decisiones-ratificadas-por-el-consejo-cerradas">3. Decisiones ratificadas por el Consejo (cerradas)</h2>
+<p>Consenso de las 9 voces; van al plan sin más discusión.</p>
+<ol>
+<li><strong>Monohilo confirmado como base del cableado.</strong> El determinismo ya está pagado; reconectar no lo vuelve a cobrar. <em>(8/8)</em></li>
+<li><strong>Operador de combinación: noisy-OR</strong> <code>P = 1 − ∏(1 − pᵢ)</code>, <code>pᵢ = clip(fiabilidad_i, ε, 1−ε) · score_calibrado_i</code>, ε≈0.01. Monótono, con corroboración, no diluye, siempre ≥ max. <em>(7/8 ratifican; refinamientos de clip [kimi], calibración [deepseek], tabla de saturación [glm] incorporados.)</em></li>
+<li><strong>Inyección en <code>provenance</code> (ADR-002) como N veredictos homogéneos.</strong> Cada cabeza → <code>add_verdicts()</code>; el combinador itera <code>provenance-&gt;verdicts()</code>; <code>provenance-&gt;set_final_decision()</code> es el punto único de decisión. <code>authoritative_source</code> se conserva por compatibilidad del wire, redefinido a <code>ENSEMBLE_NOISY_OR</code>. <code>discrepancy_score</code> recalculado como desv. típica de scores activos (señal para el SOC). <em>(8/8)</em></li>
+<li><strong>Matar la cascada Traffic→Internal (L748).</strong> El Internal corre siempre, desacoplado. El dominio (interno/internet) se resuelve por <strong>lookup determinista</strong> (RFC1918 + subredes configuradas), no por ML. <em>(8/8)</em></li>
+<li><strong><code>fast_score</code> NO entra en el noisy-OR.</strong> Es un heurístico del sniffer sin fiabilidad medible; se mantiene como circuit-breaker: <code>final = max(fast_score, P_noisy_or)</code>. <em>(glm GAP-002, aceptado.)</em></li>
+<li><strong>Traffic FUERA del noisy-OR aunque se repare.</strong> Estima P(dominio interno), no P(malicioso) — variable distinta; agregarla con noisy-OR sería type-incorrecto. Aporta contexto de dominio, no un voto de amenaza. <em>(chatgpt, disidencia de raíz aceptada como refinamiento.)</em></li>
+<li><strong>Poblar <code>ml_context</code> desde las cabezas</strong> (post-inferencia). Elimina <code>DEBT-RAG-ATTACKFAMILY-HARDCODED-001</code> como efecto colateral (<code>attack_family</code> derivado de la cabeza dominante, ya no hardcodeado). <em>(8/8)</em></li>
+<li><strong>Regenerar golden vectors como <code>correlation_v2</code></strong> (post-cabezas); congelar <code>correlation_v1</code> como regresión del fast-path. Contrato invariante en esquema, no en contenido. <em>(8/8)</em></li>
+</ol>
+<hr />
+<h2 id="4-destino-de-las-cuatro-cabezas-medido-day-212">4. Destino de las cuatro cabezas (medido DAY 212)</h2>
+<p>Ninguna se maquilla. Cada una entra al veredicto según su fiabilidad medida, con pronóstico de recuperación <strong>distinto</strong> — el ADR no las trata igual.</p>
+<table>
+<thead>
+<tr>
+<th>Cabeza</th>
+<th>Salud extractor [MEDIDO]</th>
+<th style="text-align: center;">Peso inicial</th>
+<th>Pronóstico de recuperación</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Internal (L3)</strong></td>
+<td>7/10 features reales [MEDIDO, y REFORZADO DAY 212]. En el ml-detector: <code>[5]</code> lateral, <code>[7]</code> exfil, etc. Y en el sniffer, sus features multi-flujo (<code>lateral_movement_score</code>, <code>service_discovery_patterns</code>) YA leen <code>unique_ips_count</code>/<code>unique_ports_count</code> de un agregado poblado con IPs/puertos reales — no son cascarón.</td>
+<td style="text-align: center;"><strong>Provisional 0.3</strong></td>
+<td><strong>Mejor candidato, con más base de la que creíamos.</strong> El cable no solo está verificado poblado: las features de ventana están <em>implementadas y vivas</em> leyendo el agregado real. Sube a F1-medido tras pulso MITRE (§6, Paso 3). Sigue sin ascender por vectores de juguete — la calidad discriminante sobre tráfico real es lo pendiente, no la existencia del dato.</td>
+</tr>
+<tr>
+<td><strong>DDoS (L2)</strong></td>
+<td>6/10 honesto, features de peso reales</td>
+<td style="text-align: center;"><strong>F1-medido</strong></td>
+<td>Degradado pero vivo. Peso = su F1 medido.</td>
+</tr>
+<tr>
+<td><strong>Traffic (L3)</strong></td>
+<td><strong>Doble extractor [MEDIDO — corrige el diagnóstico previo].</strong> El del <code>ml-detector</code> (<code>feature_extractor.cpp</code>) es 5/10 constante. Pero el del <strong>sniffer</strong> (<code>ml_defender_features.cpp</code>) tiene varias features de ventana YA VIVAS leyendo un agregado real.</td>
+<td style="text-align: center;"><strong>0</strong> de momento (y fuera del noisy-OR, §3.6)</td>
+<td><strong>Más recuperable de lo que el diagnóstico inicial afirmó.</strong> El <code>TimeWindowAggregator</code> existe, se alimenta con IPs/puertos reales (<code>TimeWindowEvent{src_ip,dst_ip,src_port,dst_port,protocol,bytes}</code>), y expone <code>unique_ips_count</code>/<code>unique_ports_count</code> sobre ventana de 30s. <code>dst_ip_concentration</code> ya está implementada y leyendo ese agregado. Solo <code>protocol_variety</code> queda en <code>SENTINEL</code> — y su arreglo es añadir <code>unique_protocols_count</code> a <code>WindowStats</code> (el dato ya está en <code>TimeWindowEvent.protocol</code>). Horas, no rediseño. Pendientes reales: (a) reparentar el agregador (§4.1), (b) transportar estas features al ml-detector (hoy el <code>ml-detector</code> usa su propio extractor 5/10, no el del sniffer).</td>
+</tr>
+<tr>
+<td><strong>Ransomware (L2)</strong></td>
+<td>1/10 real. <code>entropy</code> = varianza de longitud de paquete ÷ 100.000, no Shannon.</td>
+<td style="text-align: center;"><strong>0</strong></td>
+<td><strong>La más profunda.</strong> La señal (entropía de <em>payload</em>) NO está en <code>NetworkFeatures</code> en ninguna granularidad (el sniffer no captura payload, quizá no debe por privacidad). Recuperación = rediseño de features de flujo (volumen a SMB/445, ratios asimétricos) o fuente nueva. No es "corregir la fórmula".</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Hallazgo de granularidad [MEDIDO, con un matiz honesto]:</strong> <code>NetworkFeatures</code> es un <strong>flujo individual</strong> (<code>source_ip</code>/<code>destination_ip</code> escalares, no <code>repeated</code>; contadores de un <code>flow</code>). Esto confirma a glm/qwen: las features de distribución (entropía IPs, concentración destino, variedad protocolo) son imposibles a esta granularidad. <strong>Pero</strong> el sniffer tiene un <code>TimeWindowAggregator</code> (<code>ml_defender_features.cpp</code>, ~12 sitios) y esas features están marcadas como Phase-2-pendiente, no como imposibles. La reconciliación: Traffic no es "irrecuperable" ni "reescribir el extractor del ml-detector" — es <strong>completar la Phase 2 del sniffer y transportar las features de ventana</strong>.</p>
+<h3 id="41-acoplamiento-oculto-trafficransomware-medido-day-212-hallazgo-nuevo">4.1 Acoplamiento oculto Traffic↔Ransomware [MEDIDO DAY 212] — hallazgo nuevo</h3>
+<p>Al medir si el <code>TimeWindowAggregator</code> respira, se destapó un acoplamiento que ni la auditoría ni el Consejo habían visto:</p>
+<ul>
+<li>El agregador <strong>se alimenta</strong> — no es un cascarón: <code>ransomware_feature_processor.cpp:134</code> llama <code>aggregator_-&gt;add_event(tw_event)</code>.</li>
+<li>Pero el agregador <strong>lo posee el procesador de ransomware</strong> (<code>ransomware_feature_processor.cpp:26</code> lo instancia).</li>
+<li>El extractor de features de ML (que calcula Traffic vía <code>get_window_stats</code>) <strong>no tiene agregador propio: lo toma prestado</strong> — <code>ring_consumer.cpp:817-818</code>: <code>if (!ml_extractor_.has_aggregator() &amp;&amp; ransomware_processor_) ml_extractor_.set_aggregator(ransomware_processor_-&gt;get_aggregator())</code>.</li>
+</ul>
+<p><strong>Consecuencia:</strong> las features de ventana de Traffic solo funcionan si el <strong>procesador de ransomware está activo</strong>. Si ransomware se desactiva (y es la cabeza que el ADR pone a peso 0), Traffic se queda sin agregador → sus features de ventana devuelven <code>MISSING_FEATURE_SENTINEL</code>. Dos cabezas que creíamos independientes están acopladas por una fuente de datos compartida. → nota <code>NOTA-ACOPLAMIENTO-TRAFFIC-RANSOMWARE-001</code> (§8).</p>
+<p>Además, <code>ring_consumer.cpp:1345</code> menciona un <strong><code>FlowAggregator</code></strong> pendiente (<code>// Phase 2: replace with real values once FlowAggregator is available</code>), distinto del <code>TimeWindowAggregator</code> temporal. Es posible que las features de distribución de Traffic (entropía de IPs, variedad de protocolo) necesiten ese agregador por-flujo, no el temporal de ransomware que hoy toman prestado.</p>
+<blockquote>
+<p><strong>[MEDIDO — tercera medición, CERRADA DAY 212]:</strong> el agregado NO es un cascarón ni respira aire equivocado. <code>TimeWindowEvent</code> lleva <code>src_ip</code>, <code>dst_ip</code>, <code>src_port</code>, <code>dst_port</code>, <code>protocol</code>, <code>bytes</code>; el procesador de ransomware lo puebla con los valores reales del evento; <code>WindowStats</code> expone <code>unique_ips_count</code> y <code>unique_ports_count</code> sobre ventana de 30s. Es <strong>exactamente</strong> el dato que las features de distribución de dominio necesitan, y el extractor del Internal en el sniffer YA lo usa (<code>lateral_movement_score</code> = <code>unique_ips/event_count</code>; <code>service_discovery</code> = <code>unique_ports/event_count</code>). <strong>Corrección honesta del ADR:</strong> la afirmación previa "las features de distribución son imposibles a granularidad de flujo" era cierta para <code>NetworkFeatures</code> (un flujo) pero FALSA para el sniffer, que tiene una segunda vía (el <code>TimeWindowAggregator</code>) ya construida y poblada. El diagnóstico inicial midió el extractor roto del <code>ml-detector</code> sin ver el extractor más sano del <code>sniffer</code>. Traffic es más recuperable de lo afirmado.</p>
+</blockquote>
+<p><strong>Reencuadre del acoplamiento (§4.1 sigue en pie, con marco corregido):</strong> no es "Traffic depende de una cabeza muerta para un dato que quizá no sirve". Es "Traffic y el Internal comparten un agregado <strong>sano y poblado</strong> que hoy cuelga del ciclo de vida del procesador de ransomware. Hay que <strong>reparentarlo</strong> (darle vida propia, independiente de que ransomware esté activo), no construirlo de cero." Trabajo menor, no proyecto.</p>
+<hr />
+<h2 id="5-el-problema-de-rendimiento-monohilo-vs-sniffer-multihilo">5. El problema de rendimiento — monohilo vs sniffer multihilo</h2>
+<p>Consecuencia directa del monohilo, y el riesgo real que el Consejo (glm, gemini, qwen, deepseek, kimi) marca por encima de la concurrencia:</p>
+<p><strong>El desajuste de impedancia.</strong> El sniffer es multihilo (múltiples workers publicando datagramas por ZMQ) contra un <code>input_socket_</code> PULL monohilo del ml-detector (<code>high_water_mark: 1000</code>, <code>mode: connect</code>). Más productores contra un consumidor único = la cola se llena más rápido.</p>
+<p><strong>La regla que gobierna el afinado [derivada, a validar por medición]:</strong> el paralelismo del productor está limitado por el serialismo del consumidor. <strong>Si el ml-detector monohilo es el cuello de botella, subir los hilos del sniffer lo empeora, no lo mejora.</strong> El número óptimo de hilos del sniffer no es "los más posibles" — es "los que el ml-detector puede drenar sin dropear". Ese número es un <strong>resultado</strong> del stress test, no un parámetro a priori.</p>
+<p><strong>El peligro concreto [Consejo, unánime en el mecanismo]:</strong> no es que el sistema "vaya lento". Es que una escritura síncrona a disco (bronce/RAG/CSV bajo <code>mutex_</code>) <strong>bloquee el event loop</strong> → ZMQ acumula → se alcanza el HWM → el sniffer eBPF <strong>descarta tráfico</strong>. Un NDR que dropea bajo carga no es lento: está <strong>ciego</strong>. El benchmark de inferencia (0.58 μs) se vuelve irrelevante si la persistencia añade milisegundos de cola de I/O por evento.</p>
+<p><strong>Orden de trabajo [decisión, ratificada implícitamente]:</strong> primero el ml-detector correcto y monohilo; luego se mide qué tasa drena; luego se afina el sniffer contra esa tasa. Afinar los hilos del sniffer contra un consumidor sin su tricapa cableada no tiene sentido — cambiaría el perfil de carga a mitad de camino. <strong>Si ni afinando ZMQ el sniffer deja de ahogar al ml-detector, se baja también la config multihilo del sniffer</strong> (cada componente con su hilo de trabajo, y el estudio de la verdadera config multihilo por componente queda para post-reparación). Hipótesis abierta a post-ADR: el único componente genuinamente multihilo podría ser el <code>firewall-agent</code> (I/O-bound, no compute-bound con dependencia estricta por evento).</p>
+<hr />
+<h2 id="6-plan-de-trabajo-accionable-tdh-cada-paso-con-gate-de-medicion">6. Plan de trabajo accionable (TDH — cada paso con gate de medición)</h2>
+<p>Sin fechas. Cada paso tiene un gate; nada sube al veredicto sin su pulso medido. Orden por dependencia, no por preferencia.</p>
+<h3 id="precondicion-concurrencia-resuelta-1">PRECONDICIÓN — Concurrencia (RESUELTA, §1)</h3>
+<p>Monohilo confirmado y validado 8/8. Reconectar es determinista por construcción. Si en el futuro se toca la concurrencia, es un gate de TSAN — pero <strong>no bloquea el cableado monohilo de hoy</strong>.</p>
+<h3 id="paso-0-fix-del-detonador-latente-bloqueante-antes-del-des-gateo">PASO 0 — Fix del detonador latente (BLOQUEANTE, antes del des-gateo)</h3>
+<p><code>DEBT-RING-CONSUMER-BACKWARD-ZERO-001</code> (P1, glm+qwen). Hoy <code>ring_consumer.cpp:908</code> hace <code>set_total_backward_bytes(0)</code> en fast-path; inofensivo porque el Internal no corre ahí. <strong>El des-gateo del Paso 2 lo detonaría:</strong> cada flujo fast-path tendría <code>backward=0</code> → la feature <code>[7]</code> del Internal (exfil: <code>forward/backward &gt; 2.0</code>) dispararía con ratio infinito → falso positivo sistemático de exfiltración.
+<strong>Fix:</strong> usar <code>flow.dbytes</code> real, o tratar <code>backward=0</code> como dato ausente (skip feature, no ratio infinito).
+<strong>Gate:</strong> fix en <code>main</code> + test que verifique que <code>[7]</code> no dispara con backward ausente.</p>
+<h3 id="paso-1-decisiones-de-cabezas-medicion-de-granularidad-hecha-4">PASO 1 — Decisiones de cabezas (medición de granularidad: HECHA, §4)</h3>
+<ul>
+<li>Internal: cablear, peso provisional <strong>0.3</strong> declarado.</li>
+<li>DDoS: cablear, peso = F1 medido.</li>
+<li>Traffic: peso <strong>0</strong>, fuera del noisy-OR. Recuperación = Phase-2 sniffer (proyecto aparte).</li>
+<li>Ransomware: peso <strong>0</strong>, <code>status: DISABLED_UNRELIABLE</code>, score suprimido en provenance. Recuperación = rediseño de features (proyecto aparte).
+  <strong>Gate:</strong> decisión documentada por cabeza con su razón técnica (hecho en §4).</li>
+</ul>
+<h3 id="paso-2-cableado-defectos-abc-secuencia-de-prs-de-glm-7-d2">PASO 2 — Cableado (Defectos A+B+C), secuencia de PRs de glm (§7-D2)</h3>
+<ol>
+<li><strong>Mover</strong> el bloque combinador (399–416) <strong>y</strong> las tres escrituras de persistencia (525–542) a <strong>después</strong> de las cabezas (post-819), antes de <code>send_enriched_event</code> (850).</li>
+<li><strong>Sacar Internal del gate de L1</strong> — corre siempre. (Traffic también corre, pero para dominio determinista, no para el noisy-OR.)</li>
+<li><strong>Sustituir <code>max</code> por noisy-OR</strong> sobre <code>provenance-&gt;verdicts()</code> poblado con las cabezas de peso &gt; 0.</li>
+<li><strong>Poblar <code>ml_context</code></strong> con la salida de las cabezas (mata DEBT-RAG-4).</li>
+<li><strong>Internal con peso modulado por dominio</strong> (glm): <code>peso = peso_base × factor_dominio</code> (1.0 interno / 0.3 externo), NO gateado — evita FP de exfil en tráfico de internet.</li>
+<li><strong>Relajar gate B:</strong> si <code>fast_score &gt; malicious_threshold</code>, las cabezas corren aunque L1 diga BENIGN (qwen — evita FP de fast-path sin corroboración).
+   <strong>Tests del combinador (TDH):</strong> (a) una dispara→sube; (b) dos corroboran→refuerzo; (c) fiabilidad-0 no envenena; (d) golden v2 verdes; (e) saturación dentro de tabla.
+   <strong>Gate:</strong> tests verdes.</li>
+</ol>
+<h3 id="paso-3-pulso-del-internal-sobre-datos-etiquetados-52b-i">PASO 3 — Pulso del Internal sobre datos etiquetados (5.2b-i)</h3>
+<p>F1 real del Internal sobre MITRE ATT&amp;CK / Atomic Red Team en entorno controlado (lateral/exfil). No unos <code>curl</code> — señal suficiente y etiquetada para que el pipeline la recoja.
+<strong>Gate:</strong> F1 medido existe → ajustar peso 0.3 → F1 (si F1&gt;0.7 sube; si &lt;0.5 baja o se reconsidera).</p>
+<h3 id="paso-4-gate-de-throughput-redefinido-por-el-consejo-el-propuesto-era-insuficiente">PASO 4 — Gate de throughput (REDEFINIDO por el Consejo — el propuesto era insuficiente)</h3>
+<p>No basta latencia global. Se exige <strong>descomposición por fase</strong> + medición de ceguera:
+- <strong>Desglose de latencia por etapa</strong> (chatgpt/glm/qwen): t_extract, t_predict×cabeza, t_proto, t_bronce, t_rag, t_csv, t_zmq. Sin esto se optimiza a ciegas.
+- <strong>Latencia p50/p99/p99.9</strong> recepción→emisión. Umbral: p99 &lt; 10ms (deepseek propone escalonado: 5/10/20ms a 10/50/100 Mbps).
+- <strong>Tasa de drop del socket ZMQ del ml-detector</strong> (no solo del pipeline): profundidad de cola, HWM alcanzado, mensajes perdidos. <strong>Umbral: 0 a tasa objetivo.</strong> Un drop aquí = ceguera.
+- <strong>Throughput sostenido en pps</strong> (no solo Mbps): ref ~9.000 pps a 10 Mbps (CTU-13 Neris). <strong>10 minutos continuos</strong>, no ráfagas (kimi — el I/O degrada con el tiempo).
+- <strong>CPU del worker</strong> &lt; 80% de un core.
+- <strong>Perfil de estrés hacia el peor caso</strong> (gemini): small packets (64B) + ráfaga de ataque (DDoS/escaneo), NO flujos limpios de descargas.
+- <strong>Distinguir VM de hardware</strong> (kimi): 100 Mbps en VirtualBox virtio es límite virtual; el paper dice "en VM X pps; proyección hardware Z", no equipara.
+  <strong>Gate:</strong> todos los umbrales verdes en 3 corridas EMECAS consecutivas. Si la persistencia síncrona rompe el presupuesto → refactor a I/O asíncrono (ring buffer lock-free worker↔I/O) ANTES de reclamar tasa de línea en el paper.</p>
+<h3 id="paso-5-des-gateo-del-firewall-pr2-7-d2-pcap-relay-e2e-en-hardware-propio">PASO 5 — Des-gateo del firewall (PR2, §7-D2) + pcap relay e2e en hardware propio</h3>
+<p>Relajar <code>attack_detected_level1()</code> del firewall a <code>ensemble || L1</code>. TTL real recepción→clasificación→firewall. Número de "hardware suelo" para el paper.
+<strong>Gate:</strong> sin sobre-bloqueo masivo; TTL medido.</p>
+<h3 id="paso-6-pr3-eliminar-fallback-a-l1-en-el-firewall-tras-validar-n-dias">PASO 6 — PR3: eliminar fallback a L1 en el firewall (tras validar N días)</h3>
+<h3 id="paso-7-numeros-al-paper-config-honesta">PASO 7 — Números al paper (config honesta)</h3>
+<p>Qué cabeza pesa cuánto; Ransomware/Traffic declaradas con su razón técnica. Limitación = <strong>hueco de cobertura</strong> ("aún no tenemos estas cabezas fiables"), NO divergencia predicha. Threading = <strong>"estabilizado a monohilo, no elegido"</strong> (§7-D3).</p>
+<hr />
+<h2 id="7-decisiones-abiertas-arbitrio-de-alonso">7. Decisiones abiertas — ARBITRIO de Alonso</h2>
+<h3 id="d1-arbitrio-peso-0-vs-cabeza-ausente">D1 [ARBITRIO] — Peso 0 vs. cabeza ausente</h3>
+<p><strong>Recomendación (síntesis glm):</strong> peso 0 <strong>con <code>status: DISABLED_UNRELIABLE</code> en provenance y score crudo suprimido (o −1)</strong>. La cabeza figura (arquitectura tricapa honesta) pero NO escribe un score basura que un analista malinterprete. Reconcilia los dos bandos del Consejo (weight-0: deepseek/kimi/mistral // ausente: gemini/grok/qwen).</p>
+<h3 id="d2-arbitrio-pr-atomico-vs-secuenciado">D2 [ARBITRIO] — PR atómico vs. secuenciado</h3>
+<p><strong>Recomendación (glm, secuenciado-aditivo):</strong> PR1 añade campo NUEVO <code>attack_detected_ensemble()</code> sin tocar el viejo → firewall sigue leyendo L1 → nada aguas abajo cambia. PR2 cambia el gate del firewall a <code>ensemble || L1</code> (cinturón y tirantes). PR3 elimina el fallback tras N días. Desarma la objeción del bando atómico (consistencia) sin su riesgo (rollback dual). Bando atómico: deepseek/gemini/mistral. Bando secuenciado: grok/kimi/glm/qwen.</p>
+<h3 id="d3-arbitrio-ya-inclinado-redaccion-del-monohilo-en-el-paper">D3 [ARBITRIO — ya inclinado] — Redacción del monohilo en el paper</h3>
+<p>chatgpt y kimi frenan "monohilo por decisión de determinismo" como demasiado fuerte. <strong>Recomendación aceptada por Alonso:</strong> <em>"El determinismo se priorizó sobre el paralelismo; la concurrencia se eliminó en agosto 2025 como estabilización ante una condición de carrera, y no se ha reintroducido porque un hilo satisface el presupuesto medido."</em> Describe el hecho sin presuponer que fue la única decisión correcta.</p>
+<hr />
+<h2 id="8-deudas-tecnicas-a-docsbacklogmd">8. Deudas técnicas (a <code>docs/BACKLOG.md</code>)</h2>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>P</th>
+<th>Descripción</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>DEBT-VERDICT-MONOCAPA-001</code></td>
+<td>P0</td>
+<td>El defecto padre. Se cierra al completar este ADR.</td>
+</tr>
+<tr>
+<td><code>DEBT-BRONZE-WRITTEN-PRE-HEADS-001</code></td>
+<td>P1</td>
+<td>Persistencia pre-cabezas. Cierra en Paso 2.</td>
+</tr>
+<tr>
+<td><code>DEBT-RING-CONSUMER-BACKWARD-ZERO-001</code></td>
+<td>P1</td>
+<td><code>backward_bytes=0</code> en fast-path. Detonador del des-gateo. Paso 0.</td>
+</tr>
+<tr>
+<td><code>DEBT-CONFIG-COSMETIC-THREADS-001</code></td>
+<td><strong>P0-paper</strong></td>
+<td><code>worker_threads: 2</code> miente sobre la arquitectura. Eliminar o <code>=1</code> con comentario, y quitar el <code>log-&gt;info</code> de <code>main.cpp:238</code>, ANTES de publicar. Un revisor que vea "2" y lea "monohilo" rompe la credibilidad del paper.</td>
+</tr>
+<tr>
+<td><code>DEBT-PERSISTENCE-SYNC-BLOCKING-001</code></td>
+<td>P1</td>
+<td>¿La persistencia síncrona bloquea el event loop bajo carga? Medir en Paso 4; si sí, I/O asíncrono.</td>
+</tr>
+<tr>
+<td><code>DEBT-SNIFFER-WINDOW-FEATURES-PHASE2-001</code></td>
+<td>P2</td>
+<td>Alcance real [MEDIDO, menor de lo pensado]: (a) añadir <code>unique_protocols_count</code> a <code>WindowStats</code> para <code>protocol_variety</code> (el dato ya está en <code>TimeWindowEvent.protocol</code>); (b) transportar las features de ventana del sniffer al ml-detector (hoy el ml-detector usa su propio extractor 5/10, no el sano del sniffer). NO es rediseño: el agregado ya existe, se alimenta con IPs reales, y varias features ya están vivas.</td>
+</tr>
+<tr>
+<td><code>NOTA-ACOPLAMIENTO-TRAFFIC-RANSOMWARE-001</code></td>
+<td>P2</td>
+<td>El agregado (sano y poblado) lo posee el procesador de ransomware; Traffic y el Internal lo heredan condicionalmente (<code>ring_consumer.cpp:817</code>). <strong>Reparentar</strong>, no reconstruir: darle vida propia independiente de que ransomware esté activo. Trabajo menor.</td>
+</tr>
+<tr>
+<td><code>DEBT-TRAFFIC-EXTRACTOR-CONSTANTS-001</code></td>
+<td>P2-alto</td>
+<td>Traffic 5/10 constante. Depende de la deuda anterior.</td>
+</tr>
+<tr>
+<td><code>DEBT-RANSOMWARE-ML-HEAD-INERT-001</code></td>
+<td>P2</td>
+<td><code>entropy</code> no-Shannon; señal de payload ausente del contrato. Recuperación profunda.</td>
+</tr>
+<tr>
+<td><code>DEBT-MODEL-THREADSAFETY-001</code></td>
+<td>P3</td>
+<td>Modelos de inferencia asumidos thread-safe, sin verificar. Solo importa si se reintroduce multihilo.</td>
+</tr>
+<tr>
+<td><code>DEBT-ML-SCORE-FIELD-L1-ONLY-001</code></td>
+<td>P3</td>
+<td><code>ml_detector_score</code> = solo L1. Semántico.</td>
+</tr>
+<tr>
+<td><code>DEBT-BACKPRESSURE-DOCUMENTATION-001</code></td>
+<td>P3</td>
+<td>Comportamiento de backpressure ZMQ sin documentar.</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Housekeeping:</strong> <code>git rm</code> de <code>proto_aligned</code>; corregir narrativa tricapa→realidad en el paper; <code>README.md</code> + <code>docs/BACKLOG.md</code>.</p>
+<hr />
+<h2 id="9-consecuencias">9. Consecuencias</h2>
+<p><strong>Positivas:</strong> el veredicto pasa a ser lo que el paper dice; el grafo ingiere estado post-inferencia; la señal interna llega al firewall; cada cabeza pesa según su fiabilidad medida; el determinismo se preserva (monohilo); el paper gana una posición honesta e inatacable sobre threading.</p>
+<p><strong>Negativas / costes:</strong> fase 2 es cirugía del camino más caliente (mitigada por monohilo determinista + PRs aditivos secuenciados); el throughput monohilo puede resultar insuficiente y forzar I/O asíncrono o bajar los hilos del sniffer (medible en Paso 4); dos cabezas quedan a peso 0 con recuperación diferida y honestamente declarada.</p>
+<p><strong>Lo que NO hace este ADR:</strong> no promete cuatro cabezas fiables (dos necesitan datos/rediseño); no resuelve la config multihilo por componente (estudio post-reparación); no afina los hilos del sniffer (resultado del Paso 4, no de este ADR).</p>
+<hr />
+<h2 id="10-cierre">10. Cierre</h2>
+<p>El <code>ml-detector</code> tiene defectos, algunos serios, todos medidos y corroborables en <code>main</code>. Este ADR los repara con honestidad: cablea la tricapa en monohilo determinista, mete cada cabeza según su fiabilidad medida, y declara con razón técnica las dos que no pueden quedar bien todavía. No baja el listón: un escudo que hace lo que dice que hace, para hospitales que no pueden pagar otro.</p>
+<p><em>Via Appia Quality — medir quién clasifica, no solo cómo de bien. El escudo conoce sus sombras, incluida la fecha en que las proyectó: agosto de 2025. Repararlo no es borrar la cicatriz; es entender por qué se hizo y devolver la señal sin reabrir la herida.</em></p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.top", "search.highlight"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

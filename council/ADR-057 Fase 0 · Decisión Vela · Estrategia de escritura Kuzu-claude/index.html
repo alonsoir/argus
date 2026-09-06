@@ -1,0 +1,1064 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source embedded-ML NDR for hospitals and schools">
+      
+      
+        <meta name="author" content="Alonso Isidoro Roman">
+      
+      
+        <link rel="canonical" href="https://alonsoir.github.io/argus/council/ADR-057%20Fase%200%20%C2%B7%20Decisi%C3%B3n%20Vela%20%C2%B7%20Estrategia%20de%20escritura%20Kuzu-claude/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>RESPUESTA DEL CONSEJERO — Claude (Anthropic) - ML Defender (aRGus NDR)</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#respuesta-del-consejero-claude-anthropic" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-header__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ML Defender (aRGus NDR)
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              RESPUESTA DEL CONSEJERO — Claude (Anthropic)
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../README.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/BACKLOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Backlog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Security Model
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-tabs__link">
+          
+  
+  
+  ADRs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/contracts/Protobuf contracts.md" class="md-tabs__link">
+          
+  
+  
+  Contracts
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-nav__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ML Defender (aRGus NDR)
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../README.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/BACKLOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADRs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ADRs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013 Seed Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-021-deployment-topology-seed-families.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-021 Topology SSOT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-022-threat-model-opcion2-descartada.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-022 Threat Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Protobuf contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protobuf
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/JSON contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JSON
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Rag security commands.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#a-las-9-preguntas-adversariales-adr-057-fase-0-day-182" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        a las 9 preguntas adversariales · ADR-057 Fase 0 · DAY 182
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="a las 9 preguntas adversariales · ADR-057 Fase 0 · DAY 182">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#veredicto-global-leelo-primero" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Veredicto global (léelo primero)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#q1-el-61-transfiere-o-es-artefacto-de-vm" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Q1 — ¿El ×61 transfiere o es artefacto de VM?
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#q2-staleness-a-bajo-caudal" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Q2 — Staleness a bajo caudal
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#q3-el-reader-es-un-juguete" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Q3 — El reader es un juguete
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#q4-memoria-a-escala-real-la-reframo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Q4 — Memoria a escala real (la reframo)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#q5-fila-envenenada-tira-el-batch" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Q5 — Fila envenenada tira el batch
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#q6-1000-es-numero-magico" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Q6 — 1000 es número mágico
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#q7-recuperar-el-wal-no-borrarlo-correccion-honesta" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Q7 — Recuperar el WAL, no borrarlo (+ corrección honesta)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#q8-sharding-diferible-sin-reescritura" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Q8 — Sharding: ¿diferible sin reescritura?
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#q9-el-footgun-prevenido-o-anotado" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Q9 — El footgun: ¿prevenido o anotado?
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cierre-del-consejero" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cierre del consejero
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="respuesta-del-consejero-claude-anthropic">RESPUESTA DEL CONSEJERO — Claude (Anthropic)</h1>
+<h2 id="a-las-9-preguntas-adversariales-adr-057-fase-0-day-182">a las 9 preguntas adversariales · ADR-057 Fase 0 · DAY 182</h2>
+<blockquote>
+<p>Bajo la regla de la sesión: cada respuesta termina en experimento, número o invariante.
+Sin (b), descártala — la mía incluida.</p>
+</blockquote>
+<hr />
+<h3 id="veredicto-global-leelo-primero">Veredicto global (léelo primero)</h3>
+<p><strong>Ninguna de las nueve bloquea el merge de Fase 0</strong> (schema + <code>ingested_at</code> + <code>temporal_anomaly</code> + ingest_clock). Eso es independiente de todo esto y ya está verde en EMECAS.</p>
+<p>Lo que está en juego es la afirmación grande: <em>"el sink Kuzu es production-ready para infraestructura crítica"</em>. Ahí hay <strong>dos puertas reales</strong> (Q7 durabilidad, Q4 memoria a escala) y <strong>una grieta</strong> en nuestra propia frase (Q3 lectura). El resto es hardening con orden de prioridad. Y agravante transversal: <strong>Kuzu upstream está ARCHIVADO</strong> — si Q7 o Q4 salen mal, no viene un fix de upstream; lo posees tú.</p>
+<hr />
+<h3 id="q1-el-61-transfiere-o-es-artefacto-de-vm">Q1 — ¿El ×61 transfiere o es artefacto de VM?</h3>
+<p><strong>Se puede DECOMPONER con tus propios números, no hace falta creer.</strong> Modelo: <code>coste(n) = P + S + n·E</code>, donde P=parse/plan (fijo/query), S=commit+fsync (fijo/commit), E=ejecución por fila.</p>
+<ul>
+<li>run1 (n=1): P + S + E = 6.016 ms</li>
+<li>run2 (n=1000): P + S + 1000·E = 93.970 ms</li>
+<li>Resta: 999·E = 87.954 ms → <strong>E ≈ 88 µs/fila</strong> (trabajo real del MERGE, irreducible)</li>
+<li>→ <strong>P + S ≈ 5.93 ms</strong> (el coste FIJO que el batch amortiza)</li>
+</ul>
+<p>El ×61 es <strong>enteramente</strong> amortizar esos 5.93 ms (de 1-por-fila a 1-por-1000). La pregunta es qué fracción de 5.93 ms es <code>fsync</code> (S) vs parse/plan (P). En VirtualBox <code>fsync</code> es patológico; mi hipótesis: <strong>S ≈ 5 ms, P &lt; 1 ms</strong>. Si en hardware real <code>fsync</code> baja a ~0.2 ms, run1 sube a ~800/s, run2 apenas se mueve (ya amortiza S), y <strong>el ×61 se encoge a ~×13</strong>.</p>
+<p>→ <strong>Experimento:</strong> (a) prepared statement — preparar UN MERGE y ejecutarlo 1000× aísla P (parse/plan una vez); (b) BD en tmpfs vs SSD aísla S. Correr en el N100. <strong>Número objetivo:</strong> P, S, E por separado → predecir throughput real.</p>
+<p>→ <strong>Veredicto:</strong> NO bloqueante. Aunque ×61→×13, la dirección y la decisión (batch gana, single-writer forzado) son <strong>invariantes al hardware</strong>. Recalibra la expectativa, no revierte D1/D2. <strong>Hardening / calibración.</strong></p>
+<hr />
+<h3 id="q2-staleness-a-bajo-caudal">Q2 — Staleness a bajo caudal</h3>
+<p><strong>El smoke midió el mejor caso (saturado). La política correcta es <code>flush(size OR time)</code>, y a bajo caudal el time-flush es casi gratis</strong> — porque bajo caudal = pocos flushes. El coste solo muerde en el régimen MEDIO (caudal que dispara el time-flush antes de llenar el batch, pagando el fijo de 5.93 ms más a menudo).</p>
+<p>→ <strong>Experimento:</strong> añadir <code>flush_interval_ms</code> al sink; correr el smoke NO saturado (inyectar 3, 30, 300 flows/s) y medir staleness e2e (ingested→queryable) p99 vs <code>flush_interval</code>. <strong>Número objetivo:</strong> el mayor <code>flush_interval</code> que mantenga staleness p99 bajo el SLO de detección. Propuesta de arranque: <strong>bracket 250–1000 ms</strong>, calibrar contra el SLO de ADR-057.</p>
+<p>→ <strong>Veredicto:</strong> la EXISTENCIA del time-flush es un <strong>requisito de diseño del sink</strong> (bloqueante para la implementación de DEBT-KUZU-WRITE-BATCHING-001, no para el merge de schema). El valor es tunable. <strong>Bloqueante del sink, no de Fase 0.</strong></p>
+<hr />
+<h3 id="q3-el-reader-es-un-juguete">Q3 — El reader es un juguete</h3>
+<p><strong>Sí, es una grieta real en nuestra propia frase "la lectura se mantiene sana".</strong> <code>count(*)</code> probablemente toca un atajo de metadatos; no ejercita el join/traversal que usa la correlación. PERO: Kuzu usa lecturas por snapshot (MVCC-like) — los lectores no bloquean al único writer. Una traversal de 3 saltos cuesta más TIEMPO de lectura, pero el riesgo de contención real es indirecto: un snapshot largo obliga a Kuzu a <strong>retener más versiones</strong> → crece la cadena de versiones → memoria + coste de lookup. Eso enlaza con Q4.</p>
+<p>→ <strong>Experimento:</strong> sustituir el <code>count(*)</code> por UNA query de correlación canónica — traversal 2–3 hops desde nodo semilla por <code>community_id</code> (flow→Alert o flow→flow) — y remedir contención p50/p99 <strong>y</strong> si un lector pesado frena al writer. <strong>Número objetivo:</strong> definir la "lectura de correlación" representativa (la que correrá de verdad la capa de detección) y meterla en el smoke.</p>
+<p>→ <strong>Veredicto:</strong> NO bloqueante para Fase 0 (schema es independiente del coste de lectura). Pero <strong>la frase "lectura sana" está sin probar</strong> hasta esto. Honestidad: bájala a "provisional" en el acta. <strong>Hardening P1 del smoke.</strong></p>
+<hr />
+<h3 id="q4-memoria-a-escala-real-la-reframo">Q4 — Memoria a escala real (la reframo)</h3>
+<p><strong>El miedo "1M nodos = 8 GB lineal" probablemente es falso, y eso cambia todo.</strong> Kuzu es una GDB <strong>embebida en disco con buffer manager</strong> — no in-memory. Los 822 MB son casi seguro Kuzu cogiendo un trozo por defecto de la RAM del i9 para su buffer pool, <strong>NO una función lineal de 100k nodos</strong>. A 1M nodos no esperas 8 GB de RSS: esperas más DISCO y un working set <strong>acotado por el buffer pool</strong> (configurable).</p>
+<p>→ Las preguntas reales pasan a ser: (a) ¿cuál es el buffer pool MÍNIMO con el que Kuzu aún rinde en N100/RPi5? (b) ¿tamaño en disco a 1M/10M nodos? (c) ¿degrada la latencia con gracia cuando el working set excede el pool (thrashing de páginas)?</p>
+<p>→ <strong>Experimento:</strong> fijar el buffer pool de Kuzu explícitamente (SystemConfig — <strong>verificar el nombre exacto del knob</strong>) a 512 MB / 1 GB / 2 GB y correr el smoke a <strong>1M init_nodes</strong>. <strong>Número objetivo:</strong> confirmar que RSS sigue el TOPE del pool (plateau), no el conteo de nodos; min pool que mantiene throughput dentro de X% en N100; curva tamaño-en-disco vs nodos.</p>
+<p>→ <strong>Veredicto:</strong> NO bloquea el merge de schema, pero es <strong>el riesgo #1 de production-readiness</strong> y el smoke debe fijar un pool explícito que MODELE el target embebido (ahora lo oculta dejando que Kuzu coja RAM por defecto). Mi apuesta: tunable, no fatal — pero <strong>hay que verificarlo, no asumirlo.</strong> <strong>Bloqueante de la afirmación "cabe en embebido". P0 a medir.</strong></p>
+<hr />
+<h3 id="q5-fila-envenenada-tira-el-batch">Q5 — Fila envenenada tira el batch</h3>
+<p><strong>Confirmado por diseño: un UNWIND es UNA transacción → all-or-nothing. Una fila maligna revienta las 1000.</strong> Para un NDR que ingiere tráfico hostil, es una superficie de DoS de ingesta. PERO el sitio correcto para cerrarla no es la DB — es el <strong>borde</strong>: el sink construye el Cypher desde campos <strong>validados y tipados</strong> (<code>flow_uid</code>=hash controlado, <code>community_id</code>=computado, strings acotados), no desde strings crudos del atacante. Y la <strong>inyección Cypher ya la cerraste tú</strong> (H-1 en <code>cypher_builder.hpp</code>), así que el vector restante es semántico (valor válido-pero-error), no inyección.</p>
+<p>→ <strong>Experimento:</strong> inyectar una fila mala conocida en un batch del smoke; observar si commitean 0 o 999 (confirmar all-or-nothing). Implementar <strong>retry con bisección</strong>: batch falla → parte en mitades → reintenta → cuarentena la fila tóxica → commitea el resto.</p>
+<p>→ <strong>Veredicto:</strong> <strong>Hardening, pero P1 (no P2)</strong> por el cruce con seguridad en infra crítica. Fix real = validación en el borde (enlaza con el patch H-1) + bisect-retry en el path de fallo.</p>
+<hr />
+<h3 id="q6-1000-es-numero-magico">Q6 — 1000 es número mágico</h3>
+<p><strong>Lo admito: 1000 fue razonable pero injustificado, y la decomposición de Q1 predice dónde está el codo.</strong> El overhead fijo amortizado es (P+S)/batch: a batch=100 → 59 µs/fila (~40% sobre los 88 de ejecución); a batch=1000 → 5.9 µs/fila (~6%). <strong>El codo está en ~300–500</strong>, no en 1000. Pasar a 10000 no compra casi throughput y empeora staleness (Q2), RSS y blast radius (Q5).</p>
+<p>→ <strong>Experimento:</strong> sweep <code>batch ∈ {1,10,50,100,300,1000,3000,10000}</code>, graficar upserts/s <strong>y</strong> latencia de commit (proxy de staleness) <strong>y</strong> maxRSS. <strong>Número objetivo:</strong> el codo, sesgado HACIA ABAJO por seguridad operativa (staleness/aislamiento). Predicción: el óptimo operativo ≈ <strong>200–500</strong>, no el óptimo de throughput.</p>
+<p>→ <strong>Veredicto:</strong> Hardening barato; correr antes de fijar la constante del sink. <strong>No bloqueante.</strong></p>
+<hr />
+<h3 id="q7-recuperar-el-wal-no-borrarlo-correccion-honesta">Q7 — Recuperar el WAL, no borrarlo (+ corrección honesta)</h3>
+<p><strong>Corrección que me debo:</strong> el <code>unordered_map::at</code> del incidente fue <strong>casi seguro auto-infligido</strong>, no prueba de que la recuperación de Kuzu esté rota. Nosotros borramos el <code>.kuzu</code> pero dejamos el <code>.wal</code> (std::remove solo quitó uno) → un WAL <strong>huérfano de su BD</strong>, una inconsistencia ARTIFICIAL, no un crash real. Un crash real deja AMBOS ficheros intactos a media transacción. Así que <strong>no tenemos evidencia de fallo de recuperación</strong> — tenemos evidencia de que un WAL sin su BD rompe la reapertura (esperado). Retiré demasiada alarma; lo correcto es probar el caso real.</p>
+<p>→ <strong>Experimento (el de verdad, restore_from_wal_smoke):</strong> (1) riada de upserts; (2) <code>kill -9</code> a media riada (crash real, sin cleanup, ambos ficheros intactos); (3) reabrir SIN cleanup; (4) verificar: abre sin lanzar, Kuzu replayó el WAL, y el conteo de upserts commiteados-y-ackeados <strong>sobrevive</strong> (durabilidad), sin transacción parcial visible. <strong>Número objetivo:</strong> 0 commits ackeados perdidos tras SIGKILL.</p>
+<p>→ <strong>Veredicto:</strong> <strong>La puerta más seria.</strong> No bloquea el merge de schema, pero <strong>SÍ bloquea declarar el sink production-ready para infra crítica</strong>. Si la reapertura tras SIGKILL lanza → es P0 de durabilidad, y con upstream archivado lo posees tú (wrapper de recuperación). <strong>P0 a medir, posible bloqueante.</strong></p>
+<hr />
+<h3 id="q8-sharding-diferible-sin-reescritura">Q8 — Sharding: ¿diferible sin reescritura?</h3>
+<p><strong>Diferir la implementación, sí; diferir la <em>shardability</em>, no — pero el coste de preservarla hoy es casi cero porque ya tienes el seam.</strong> La invariante mínima: el write path no debe asumir grafo único. <code>IGraphSink</code> <strong>ya es ese seam en escritura</strong>. Lo que falta es el espejo en LECTURA: el correlador no debe sostener un <code>Database*</code> concreto, sino leer a través de un <code>IGraphQuery</code> que un día pueda hacer fan-out. La tensión honesta: la correlación por <code>community_id</code> cruza particiones por definición → sharding SIEMPRE cuesta algo de correlación cross-shard; por eso la shard key debe co-localizar comunidades (hash grueso de <code>community_id</code>).</p>
+<p>→ <strong>Entregable (chequeo arquitectónico, no medición):</strong> auditar que (a) el write path lleva una routing key explícita —o puede sin cambiar firma—, y (b) el correlador lee tras interfaz, no tras <code>Database*</code> concreto. Si (b) falla, ESE es el rincón donde nos pintamos; coste de arreglarlo HOY: bajo.</p>
+<p>→ <strong>Veredicto:</strong> No bloqueante. <strong>Acción barata AHORA:</strong> crear <code>IGraphQuery</code> espejando <code>IGraphSink</code>. Difiere la implementación, no el seam.</p>
+<hr />
+<h3 id="q9-el-footgun-prevenido-o-anotado">Q9 — El footgun: ¿prevenido o anotado?</h3>
+<p><strong>Hoy solo anotado — y el smoke probó que Kuzu NO se autoprotege in-process (el 2º Database ABRE).</strong> Una deuda no es una guarda. La guarda debe ser NUESTRA: envolver el <code>Database</code> de Kuzu en un tipo cuyo constructor marque un flag global de proceso y <strong>lance en la segunda construcción</strong> (fail-closed). ~10 líneas + un test.</p>
+<p>→ <strong>Experimento/test:</strong> unit test que construye el wrapper dos veces y <strong>espera que la segunda lance</strong>. Fail-closed verificado.</p>
+<p>→ <strong>Veredicto:</strong> Hardening barato; hacerlo junto al trabajo del sink (cierra DEBT-KUZU-SINGLE-DATABASE-GUARD-001). <strong>No bloqueante</strong>, pero trivial — hazlo ya.</p>
+<hr />
+<h3 id="cierre-del-consejero">Cierre del consejero</h3>
+<p>Orden de ataque por prioridad real, no por número:
+1. <strong>Q7</strong> (durabilidad tras SIGKILL) — posible P0, y con upstream archivado no hay red de seguridad.
+2. <strong>Q4</strong> (memoria con buffer pool fijo a escala 1M) — el cuello vinculante probable en embebido.
+3. <strong>Q3</strong> (lectura de correlación real) — nuestra frase "lectura sana" está sin probar.
+4. <strong>Q1/Q6</strong> (decomponer P/S/E + sweep de batch) — baratos, recalibran y justifican el 1000→~300.
+5. <strong>Q2/Q5/Q8/Q9</strong> — requisitos de diseño del sink y hardening; ninguno tumba la decisión núcleo.</p>
+<p>Lo que NINGUNA toca: <strong>D1 (UNWIND+1writer) y D2 (Vela no)</strong> siguen en pie. Lo que TODAS recuerdan: "sink production-ready" ≠ "Vela no hace falta", y solo la primera sigue abierta.</p>
+<blockquote>
+<p><em>La documentación es un voto; el smoke es una medida. Y una corrección a tiempo vale más que una certeza cómoda.</em> — DAY 182</p>
+<p>FDO</p>
+<p>CLAUDE</p>
+</blockquote>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.top", "search.highlight"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

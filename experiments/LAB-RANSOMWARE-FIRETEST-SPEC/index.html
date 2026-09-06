@@ -1,0 +1,1293 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source embedded-ML NDR for hospitals and schools">
+      
+      
+        <meta name="author" content="Alonso Isidoro Roman">
+      
+      
+        <link rel="canonical" href="https://alonsoir.github.io/argus/experiments/LAB-RANSOMWARE-FIRETEST-SPEC/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>LAB-RANSOMWARE-FIRETEST — Especificación de laboratorio para la validación de detección de ransomware en red - ML Defender (aRGus NDR)</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#lab-ransomware-firetest-especificacion-de-laboratorio-para-la-validacion-de-deteccion-de-ransomware-en-red" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-header__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ML Defender (aRGus NDR)
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              LAB-RANSOMWARE-FIRETEST — Especificación de laboratorio para la validación de detección de ransomware en red
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../README.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/BACKLOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Backlog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Security Model
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-tabs__link">
+          
+  
+  
+  ADRs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/contracts/Protobuf contracts.md" class="md-tabs__link">
+          
+  
+  
+  Contracts
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-nav__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ML Defender (aRGus NDR)
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../README.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/BACKLOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADRs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ADRs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013 Seed Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-021-deployment-topology-seed-families.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-021 Topology SSOT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-022-threat-model-opcion2-descartada.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-022 Threat Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Protobuf contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protobuf
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/JSON contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JSON
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Rag security commands.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#0-proposito-y-alcance" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        0. Propósito y alcance
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1-hipotesis-registrada-falsable-fechada" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Hipótesis registrada (falsable, fechada)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-separacion-de-dos-experimentos-ortogonales" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Separación de dos experimentos ortogonales
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2. Separación de dos experimentos ortogonales">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#e1-deteccion-de-ransomware-detecta-el-modelo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        E1 — Detección de ransomware (¿detecta el modelo?)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#e2-port-arm64-sensor-en-hardware-modesto-corre-argus-en-bajo-consumo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        E2 — Port ARM64 / sensor en hardware modesto (¿corre aRGus en bajo consumo?)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-arquitectura-de-laboratorio-tres-capas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Arquitectura de laboratorio — tres capas
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. Arquitectura de laboratorio — tres capas">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#31-capa-victima-x86_64" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.1 Capa víctima — x86_64
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#32-capa-sensor-argus" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.2 Capa sensor — aRGus
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#33-capa-de-captura-tap-mirror" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.3 Capa de captura — tap / mirror
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-aislamiento-y-contencion-de-malware-activo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Aislamiento y contención de malware activo
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-procedencia-y-cadena-de-custodia-de-las-muestras" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Procedencia y cadena de custodia de las muestras
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-protocolo-de-ejecucion-cuando-haya-hardware" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Protocolo de ejecución (cuando haya hardware)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-metricas-e-instrumentacion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Métricas e instrumentación
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-lista-de-hardware-separada-por-funcion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. Lista de hardware — separada por función
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#9-trabajo-ejecutable-ahora-sin-hardware-peligroso" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9. Trabajo ejecutable AHORA (sin hardware peligroso)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#10-dependencias-calendario-y-marco-honesto" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10. Dependencias, calendario y marco honesto
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#11-resultado-esperado-para-el-paper" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        11. Resultado esperado para el paper
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="lab-ransomware-firetest-especificacion-de-laboratorio-para-la-validacion-de-deteccion-de-ransomware-en-red">LAB-RANSOMWARE-FIRETEST — Especificación de laboratorio para la validación de detección de ransomware en red</h1>
+<table>
+<thead>
+<tr>
+<th>Campo</th>
+<th>Valor</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Documento</strong></td>
+<td>Especificación de diseño experimental</td>
+</tr>
+<tr>
+<td><strong>Estado</strong></td>
+<td>Diseño cerrado · ejecución pendiente de hardware</td>
+</tr>
+<tr>
+<td><strong>Origen</strong></td>
+<td>DAY 195 — primer acto cerrado (desync dirimido), segundo acto especificado</td>
+</tr>
+<tr>
+<td><strong>Autor</strong></td>
+<td>Alonso Isidoro Román</td>
+</tr>
+<tr>
+<td><strong>Revisión</strong></td>
+<td>Consejo de Sabios</td>
+</tr>
+<tr>
+<td><strong>Deudas relacionadas</strong></td>
+<td><code>DEBT-RANSOMWARE-FEATURE-SEMANTICS-001</code>, <code>DEBT-RANSOMWARE-ML-HEAD-INERT-001</code></td>
+</tr>
+<tr>
+<td><strong>Método invariante</strong></td>
+<td>"Medir, no votar." Tirar hacia atrás desde el binario. Toda afirmación contra fichero, nunca contra memoria.</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="0-proposito-y-alcance">0. Propósito y alcance</h2>
+<p>Esta especificación define la infraestructura de laboratorio necesaria para someter el detector de ransomware de aRGus a su <strong>prueba de fuego</strong>: detonar ransomware real en un entorno controlado y aislado, capturar con el propio sniffer de aRGus la secuencia completa de tráfico que genera, y medir qué detecta el pipeline en producción — distinguiendo con instrumentación lo que detecta el <strong>fast path</strong> heurístico de lo que detecta la <strong>cabeza ML</strong> (RandomForest embebido).</p>
+<p>Este experimento es el <strong>paso de captura del ACRL</strong> (Adversarial Capture-Retrain Loop) aplicado al dominio que hasta ahora faltaba: ransomware observado <em>en red</em>, en el mismo espacio de features que el sensor ve en producción. No es un experimento más; es el que cierra —o refuta— la hipótesis de la cabeza ML inerte abierta en DAY 195.</p>
+<p><strong>Lo que esta prueba decide.</strong> Si la detección de ransomware en aRGus es real y de qué componente proviene. El resultado determina si los modelos fundacionales necesitan reentrenamiento contra ground truth de red (no contra el espacio host de <code>files/processes_guaranteed.csv</code>) antes de cualquier despliegue en producción.</p>
+<p><strong>Lo que esta prueba NO es.</strong> No es un experimento de reentrenamiento. Para reentrenar hace falta un corpus grande; para <em>diagnosticar</em> basta un puñado de detonaciones bien capturadas. Diagnóstico antes que cura.</p>
+<hr />
+<h2 id="1-hipotesis-registrada-falsable-fechada">1. Hipótesis registrada (falsable, fechada)</h2>
+<blockquote>
+<p>Se registra <strong>antes</strong> de ejecutar el experimento, deliberadamente. Una predicción firmada con fecha es ciencia; la misma frase dicha tras ver los resultados es sesgo de confirmación. La diferencia entre ambas es la fecha del commit.</p>
+</blockquote>
+<p><strong>H1 (Alonso, DAY 195):</strong> En la detonación de ransomware real, el <strong>fast path heurístico del sniffer detectará más que la cabeza ML del ml-detector</strong>. El sistema no disparará en todas las acciones del ransomware, pero sí en las suficientes para indicar que algo anómalo está ocurriendo.</p>
+<p><strong>Criterio de confirmación de H1:</strong> en los eventos del canal de ransomware durante la detonación, la nota <code>final</code> proviene mayoritariamente del <code>fast</code> (<code>source=DETECTOR_SOURCE_DIVERGENCE</code>, <code>final=fast</code>), con la cabeza ML (<code>ml</code>) deprimida y poco discriminante.</p>
+<p><strong>Criterio de refutación de H1:</strong> la cabeza ML (<code>ml</code>) produce scores altos y discriminantes de forma consistente y es la que sostiene la nota <code>final</code> (<code>source=ML_PRIORITY</code>). En ese caso, la hipótesis de la cabeza inerte caería y habría que revisar <code>SEMANTICS-001</code>.</p>
+<p><strong>Predicción secundaria a contrastar:</strong> indicio previo (relays NERIS, diciembre 2025) mostró <code>ml≈0.1454</code> clavado bajo frente a <code>fast=0.7000</code>. Es indicio sostenido por memoria del operador, <strong>no</strong> prueba; este experimento lo eleva a dato capturado o lo refuta.</p>
+<hr />
+<h2 id="2-separacion-de-dos-experimentos-ortogonales">2. Separación de dos experimentos ortogonales</h2>
+<p>El error a evitar desde la lista de la compra: <strong>mezclar dos experimentos que tienen víctimas, objetivos y hardware distintos.</strong></p>
+<h3 id="e1-deteccion-de-ransomware-detecta-el-modelo">E1 — Detección de ransomware (¿detecta el modelo?)</h3>
+<p>Mide si aRGus, sobre tráfico de ransomware real, detecta, y desde qué componente. Las víctimas que ejecutan el malware son <strong>x86_64</strong>, porque las familias reales con huella de red documentada son binarios x86. Una Raspberry Pi ARM <strong>no ejecuta</strong> ese binario y por tanto <strong>no sirve como cobaya de infección</strong>.</p>
+<h3 id="e2-port-arm64-sensor-en-hardware-modesto-corre-argus-en-bajo-consumo">E2 — Port ARM64 / sensor en hardware modesto (¿corre aRGus en bajo consumo?)</h3>
+<p>Mide si aRGus compila y corre sobre ARM64 (Raspberry Pi) como sniffer pasivo. Es un caso de uso real y <strong>vendible</strong>: un NDR open source que corre en hardware barato de bajo consumo es exactamente lo que un hospital pequeño o un ayuntamiento puede permitirse desplegar. Es argumento de paper, no solo de laboratorio.</p>
+<p><strong>Por qué no se mezclan:</strong> E1 mide <em>si el modelo detecta</em>; E2 mide <em>si aRGus corre en hardware modesto</em>. Confundirlos lleva a pedir el hardware equivocado y a no poder atribuir un fallo a su causa. La Raspberry Pi pertenece a E2 (sensor), nunca a E1 (víctima).</p>
+<blockquote>
+<p><strong>Consecuencia operativa:</strong> E2 (port ARM64 sobre tráfico <strong>benigno</strong>) no necesita malware y se puede ejecutar <strong>ya</strong>, sin esperar al hardware de laboratorio. Ver §9.</p>
+</blockquote>
+<hr />
+<h2 id="3-arquitectura-de-laboratorio-tres-capas">3. Arquitectura de laboratorio — tres capas</h2>
+<pre><code>   ┌─────────────────────────────────────────────────────────┐
+   │            RED DE LABORATORIO AISLADA (air-gapped)        │
+   │                                                          │
+   │   ┌──────────────┐   ┌──────────────┐                    │
+   │   │  VÍCTIMA x86 │   │  VÍCTIMA x86 │   (sacrificables,   │
+   │   │  (detona)    │   │  (lateral)   │    snapshot+restore)│
+   │   └──────┬───────┘   └──────┬───────┘                    │
+   │          │                  │                            │
+   │       ┌──┴──────────────────┴──┐                         │
+   │       │  SWITCH GESTIONADO      │  ← port mirroring / TAP │
+   │       │  (puerto espejo)        │                         │
+   │       └───────────┬─────────────┘                         │
+   │                   │ (copia pasiva del tráfico)            │
+   │            ┌──────┴───────┐                               │
+   │            │   SENSOR     │  aRGus (x86 o Pi ARM64)       │
+   │            │   aRGus      │  NO se infecta. Solo escucha. │
+   │            └──────────────┘                               │
+   │                                                          │
+   │   SIN gateway al exterior · SIN carpetas compartidas      │
+   │   con el anfitrión · anfitrión fuera del segmento         │
+   └─────────────────────────────────────────────────────────┘
+</code></pre>
+<h3 id="31-capa-victima-x86_64">3.1 Capa víctima — x86_64</h3>
+<p>Donde detona el malware, donde cifra ficheros, desde donde intenta moverse lateral. Son <strong>sacrificables</strong> y se restauran de snapshot tras cada ejecución. Mínimo dos nodos para que el movimiento lateral tenga destino y genere tráfico inter-host observable (que es justo la huella de red que interesa). Es la capa que concentra el aislamiento serio (§4).</p>
+<h3 id="32-capa-sensor-argus">3.2 Capa sensor — aRGus</h3>
+<p>Donde corre aRGus escuchando. <strong>No se infecta:</strong> ve tráfico, no ejecuta payload. Puede ser:
+- una <strong>Raspberry Pi (ARM64)</strong> → valida E2 de paso, o
+- otra <strong>x86 pequeña</strong> → más simple, sin port, si E2 se desacopla.</p>
+<p>El sensor recibe una copia pasiva del tráfico de las víctimas; nunca está en la ruta de datos.</p>
+<h3 id="33-capa-de-captura-tap-mirror">3.3 Capa de captura — tap / mirror</h3>
+<p>Cómo el sensor ve el tráfico de las víctimas sin estar en la ruta. Un <strong>switch gestionado barato con port mirroring</strong> o un <strong>TAP de red</strong>. Es la pieza que se olvida pedir y que, sin ella, bloquea todo el montaje. Sin captura no hay experimento.</p>
+<hr />
+<h2 id="4-aislamiento-y-contencion-de-malware-activo">4. Aislamiento y contención de malware activo</h2>
+<p>Estos requisitos <strong>no son negociables</strong>. No es la VM aislada genérica de un laboratorio de pruebas; es contención de malware vivo que cifra de verdad y busca propagarse.</p>
+<ul>
+<li><strong>Sin ruta al exterior.</strong> Red virtual/física sin gateway a Internet ni a la red doméstica. El C&amp;C no debe poder alcanzar a su operador real, y el ransomware no debe poder alcanzar nada que importe.</li>
+<li><strong>Anfitrión fuera del segmento.</strong> El portátil de trabajo (y cualquier máquina personal) <strong>no</strong> forma parte de la red de laboratorio. Ninguna interfaz compartida.</li>
+<li><strong>Sin carpetas compartidas</strong> (<code>vboxsf</code>, montajes, unidades de red) entre víctimas y anfitrión. El ransomware cifra lo que alcanza; no debe alcanzar nada tuyo.</li>
+<li><strong>Snapshots antes de cada detonación</strong> y restauración completa después. Estado limpio garantizado entre ejecuciones.</li>
+<li><strong>Tensión explícita y asumida:</strong> cuanto más se deja al malware comportarse (cifrar, moverse lateral) para capturar tráfico realista, más estricto debe ser el sellado. Las dos cosas a la vez.</li>
+</ul>
+<blockquote>
+<p><strong>Nota de alcance.</strong> El objetivo del experimento es <em>observar</em> el comportamiento de red natural del malware dentro de la contención, no potenciarlo. La disciplina aquí es la misma que aplica el proyecto a la procedencia de datos, ahora aplicada a binarios peligrosos.</p>
+</blockquote>
+<hr />
+<h2 id="5-procedencia-y-cadena-de-custodia-de-las-muestras">5. Procedencia y cadena de custodia de las muestras</h2>
+<p>Para un proyecto con financiación FEDER y destino hospitalario, la cadena de custodia de las muestras <strong>no es burocracia: es lo que separa "experimento reproducible" de "el investigador manejó malware sin registro".</strong></p>
+<p>Por cada muestra detonada se registra:</p>
+<table>
+<thead>
+<tr>
+<th>Campo</th>
+<th>Detalle</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Hash</strong></td>
+<td>SHA-256 del binario exacto detonado</td>
+</tr>
+<tr>
+<td><strong>Fuente</strong></td>
+<td>Repositorio académico/forense de procedencia</td>
+</tr>
+<tr>
+<td><strong>Fecha</strong></td>
+<td>De obtención y de detonación</td>
+</tr>
+<tr>
+<td><strong>Familia</strong></td>
+<td>Identificación de la familia, si se conoce</td>
+</tr>
+<tr>
+<td><strong>Entorno</strong></td>
+<td>Snapshot, topología, versión de aRGus usada</td>
+</tr>
+<tr>
+<td><strong>Resultado</strong></td>
+<td>Captura asociada (PCAP) y log DUAL-SCORE asociado</td>
+</tr>
+</tbody>
+</table>
+<p>Las muestras se obtienen exclusivamente de <strong>repositorios de muestras con procedencia documentada</strong>, en el marco de investigación de seguridad defensiva. El manejo se ajusta a las normas éticas y legales aplicables a la investigación con malware.</p>
+<hr />
+<h2 id="6-protocolo-de-ejecucion-cuando-haya-hardware">6. Protocolo de ejecución (cuando haya hardware)</h2>
+<ol>
+<li><strong>Snapshot</strong> de todas las víctimas en estado limpio.</li>
+<li><strong>aRGus en marcha</strong> en el sensor, capturando, con instrumentación DUAL-SCORE activa (§7).</li>
+<li><strong>Detonar</strong> una muestra en una víctima. Registrar hash, hora de inicio.</li>
+<li><strong>Dejar comportarse</strong> dentro de la contención: cifrado, intento de movimiento lateral hacia la segunda víctima.</li>
+<li><strong>Capturar</strong> todo el tráfico (PCAP crudo) en paralelo al log de aRGus.</li>
+<li><strong>Registrar</strong> la corrida DUAL-SCORE completa del canal de ransomware.</li>
+<li><strong>Etiquetar</strong> la captura con la metadata de §5.</li>
+<li><strong>Restaurar</strong> snapshots. Estado limpio para la siguiente.</li>
+<li><strong>Repetir</strong> con varias familias/muestras para no concluir sobre una sola.</li>
+</ol>
+<hr />
+<h2 id="7-metricas-e-instrumentacion">7. Métricas e instrumentación</h2>
+<p>La instrumentación clave ya existe en el pipeline: los logs <code>DUAL-SCORE</code>. Por cada evento del canal de ransomware se registra <code>fast</code>, <code>ml</code>, <code>final</code>, <code>source</code> y <code>divergencia</code>. La medición que dirime H1 sale de ahí, sin reentrenar nada:</p>
+<ul>
+<li><strong>¿De qué componente viene <code>final</code>?</strong> <code>source=DETECTOR_SOURCE_DIVERGENCE</code> con <code>final=fast</code> (heurístico) vs <code>source=ML_PRIORITY</code> (cabeza ML).</li>
+<li><strong>¿Dónde se distribuye <code>ml</code>?</strong> Clavado bajo (~0.14, hipótesis inerte) vs alto y discriminante.</li>
+<li><strong>¿En qué acciones dispara y en cuáles no?</strong> Cifrado local vs movimiento lateral vs C&amp;C.</li>
+<li><strong>Tasa de divergencia</strong> sobre el total de eventos del canal.</li>
+</ul>
+<p>Salida del experimento: "N eventos, X% <code>source=DIVERGENCE</code>, distribución de <code>ml</code>", que reemplaza el actual "lo recuerdo bien" por dato capturado.</p>
+<hr />
+<h2 id="8-lista-de-hardware-separada-por-funcion">8. Lista de hardware — separada por función</h2>
+<blockquote>
+<p>La topología real no es "Raspberry Pi y x86 pequeños" como bloque. Es esto:</p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th>Función</th>
+<th>Hardware</th>
+<th>Cantidad mínima</th>
+<th>Se infecta</th>
+<th>Notas</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Víctima</strong></td>
+<td>x86_64 pequeño (mini-PC / NUC-like)</td>
+<td>2</td>
+<td><strong>Sí</strong> (sacrificable)</td>
+<td>Detonación + destino de lateral. Snapshot+restore.</td>
+</tr>
+<tr>
+<td><strong>Sensor</strong></td>
+<td>Raspberry Pi (ARM64) <strong>o</strong> x86 pequeña</td>
+<td>1</td>
+<td><strong>No</strong></td>
+<td>Pi valida E2 de paso; x86 más simple.</td>
+</tr>
+<tr>
+<td><strong>Captura</strong></td>
+<td>Switch gestionado con port mirroring <strong>o</strong> TAP de red</td>
+<td>1</td>
+<td>No</td>
+<td>Pieza crítica. Sin esto no hay experimento.</td>
+</tr>
+<tr>
+<td><strong>(E2 aparte)</strong></td>
+<td>Raspberry Pi para port ARM64</td>
+<td>1</td>
+<td>No</td>
+<td>Puede solaparse con el sensor. Trabajo ejecutable ya (§9).</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="9-trabajo-ejecutable-ahora-sin-hardware-peligroso">9. Trabajo ejecutable AHORA (sin hardware peligroso)</h2>
+<p>Mientras llega el equipo de laboratorio, avanza lo que <strong>no depende del malware</strong>:</p>
+<ul>
+<li><strong>Port ARM64 sobre tráfico benigno (E2).</strong> Compilar aRGus limpio a ARM64, hacerlo correr en una Raspberry Pi, validar que el pipeline <code>sniffer → detector</code> funciona sobre tráfico benigno en ARM. Es un hito completo, desacoplado de E1, que cuando llegue el resto del laboratorio deja el sensor ya probado y solo pendiente de detonar.</li>
+<li><strong>Pipeline faltante (circuito completo).</strong> Adapters, Landing Zones, grafo, herramienta MITRE — el trabajo decidido como prioridad en DAY 195. El microscopio antes que la muestra.</li>
+<li><strong>Documentación.</strong> Esta spec en repo y en la sección de metodología experimental del paper.</li>
+</ul>
+<p>Esto respeta la decisión de DAY 195: terminar el circuito asumiendo la inferencia ML rota/incompleta, y reentrenar los fundacionales <strong>después</strong>, contra ground truth de circuito completo —no contra eval host— y con ransomware <strong>real en red</strong>, no más sintético host (si no, el segundo experimento MITRE choca con la misma pared que el primero).</p>
+<hr />
+<h2 id="10-dependencias-calendario-y-marco-honesto">10. Dependencias, calendario y marco honesto</h2>
+<ul>
+<li><strong>Hitos:</strong> go/no-go 1 de agosto 2026 · final 22 de septiembre 2026.</li>
+<li><strong>Apoyo de hardware:</strong> posible vía Dr. Andrés Caro Lindo. Se asume <strong>no disponible en verano</strong> (vacaciones). El plan no depende de que esté.</li>
+<li><strong>Ritmo realista:</strong> proyecto de una sola persona con responsabilidades personales en paralelo. El hardware llega "cuando llega". Eso es el ritmo de un proyecto individual con vida alrededor, <strong>no un retraso imputable al plan ni al investigador</strong>.</li>
+<li><strong>Marco para el paper:</strong> si en septiembre la prueba de fuego no se ha ejecutado por falta de hardware, el paper sostiene perfectamente <em>"diseño de laboratorio especificado, ejecución pendiente de hardware"</em>. Es honesto y es lo que hay. Un límite material no se convierte en deuda personal.</li>
+</ul>
+<hr />
+<h2 id="11-resultado-esperado-para-el-paper">11. Resultado esperado para el paper</h2>
+<p>Pase lo que pase con la ejecución, esta spec produce un activo publicable:</p>
+<ul>
+<li>Si se ejecuta y confirma H1 → caso concreto y trazado de <strong>domain mismatch host↔red</strong> en modelos fundacionales, capturado tirando hacia atrás desde el binario. Es la misma tesis del <em>synthetic-data discovery</em>, instanciada y medida.</li>
+<li>Si se ejecuta y refuta H1 → la cabeza ML funciona mejor de lo previsto; resultado igualmente valioso y honesto.</li>
+<li>Si no llega el hardware → diseño experimental cerrado y reproducible como contribución metodológica, ejecución señalada como trabajo futuro.</li>
+</ul>
+<p>La fortaleza del trabajo no está en no tener componentes flojos. Está en nombrarlos con precisión y diseñar el experimento que los mide. Eso es lo que vuelve defendible —y no fanfarrón— el objetivo de fondo: un conjunto de sensores en tiempo real open source, documentado con una honestidad que las siguientes generaciones puedan auditar.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.top", "search.highlight"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

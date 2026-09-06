@@ -1,0 +1,94 @@
+# Patch para CMakeLists.txt - Hardening Options
+# Aplicar a: ml-detector, firewall-acl-agent, rag-security
+#
+# Añadir DESPUÉS de project() y ANTES de add_executable()
+
+# ==============================================================================
+# HARDENING OPTIONS - Preparados para Fase Post-Papers
+# ==============================================================================
+# Para activar: cmake -DENABLE_HARDENING=ON ..
+# Para sanitizers: cmake -DENABLE_HARDENING=ON -DSANITIZER=address ..
+# ==============================================================================
+
+option(ENABLE_HARDENING "Enable hardening compiler flags" OFF)
+set(SANITIZER "" CACHE STRING "Sanitizer to use (address, thread, undefined, memory)")
+
+if(ENABLE_HARDENING)
+    message(STATUS "🛡️ Hardening ENABLED - Security flags active")
+
+    # Basic Security Flags
+    add_compile_options(
+        -Wall
+        -Wextra
+        -Werror
+        -Wformat=2
+        -Wformat-security
+        -fstack-protector-strong
+        -D_FORTIFY_SOURCE=2
+        -fPIE
+    )
+
+    # Advanced Warnings
+    add_compile_options(
+        -Wconversion
+        -Wsign-conversion
+        -Wnull-dereference
+        -Wdouble-promotion
+        -Wshadow
+        -Wcast-qual
+    )
+
+    # Linker Flags
+    add_link_options(
+        -pie
+        -Wl,-z,relro
+        -Wl,-z,now
+    )
+
+    # Sanitizers (use ONE at a time)
+    if(SANITIZER STREQUAL "address")
+        message(STATUS "🔍 AddressSanitizer ENABLED (memory errors)")
+        add_compile_options(-fsanitize=address -fno-omit-frame-pointer)
+        add_link_options(-fsanitize=address)
+    elseif(SANITIZER STREQUAL "thread")
+        message(STATUS "🔍 ThreadSanitizer ENABLED (race conditions)")
+        add_compile_options(-fsanitize=thread)
+        add_link_options(-fsanitize=thread)
+    elseif(SANITIZER STREQUAL "undefined")
+        message(STATUS "🔍 UndefinedBehaviorSanitizer ENABLED")
+        add_compile_options(-fsanitize=undefined)
+        add_link_options(-fsanitize=undefined)
+    elseif(SANITIZER STREQUAL "memory")
+        message(STATUS "🔍 MemorySanitizer ENABLED (uninitialized reads)")
+        add_compile_options(-fsanitize=memory -fno-omit-frame-pointer)
+        add_link_options(-fsanitize=memory)
+    elseif(NOT SANITIZER STREQUAL "")
+        message(WARNING "⚠️ Unknown sanitizer: ${SANITIZER}")
+    endif()
+else()
+    message(STATUS "🔓 Hardening DISABLED (development mode)")
+endif()
+
+# ==============================================================================
+# USAGE EXAMPLES:
+# ==============================================================================
+# Fase actual (desarrollo):
+#   cmake .. && make
+#
+# Fase hardening (basic security):
+#   cmake -DENABLE_HARDENING=ON .. && make
+#
+# Fase hardening (con AddressSanitizer):
+#   cmake -DENABLE_HARDENING=ON -DSANITIZER=address .. && make
+#   ./ml-detector -c config.json
+#
+# Limpiar y cambiar sanitizer:
+#   rm -rf * && cmake -DENABLE_HARDENING=ON -DSANITIZER=thread .. && make
+#
+# Performance Impact:
+#   - Basic flags: ~5% overhead
+#   - ASan: ~2× slowdown, ~3× memory
+#   - TSan: ~5-15× slowdown, ~10× memory
+#   - UBSan: ~20% overhead
+#   - MSan: ~3× slowdown
+# ==============================================================================

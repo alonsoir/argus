@@ -1,0 +1,1196 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source embedded-ML NDR for hospitals and schools">
+      
+      
+        <meta name="author" content="Alonso Isidoro Roman">
+      
+      
+        <link rel="canonical" href="https://alonsoir.github.io/argus/council/Reconciliaci%C3%B3n%20del%20Consejo%20de%20Sabios%20%E2%80%94%20auditor%C3%ADa%20del%20ml-detector/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>Reconciliación del Consejo de Sabios — auditoría del ml-detector - ML Defender (aRGus NDR)</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#reconciliacion-del-consejo-de-sabios-auditoria-del-ml-detector" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-header__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ML Defender (aRGus NDR)
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Reconciliación del Consejo de Sabios — auditoría del ml-detector
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../README.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/BACKLOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Backlog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Security Model
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-tabs__link">
+          
+  
+  
+  ADRs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/contracts/Protobuf contracts.md" class="md-tabs__link">
+          
+  
+  
+  Contracts
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-nav__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ML Defender (aRGus NDR)
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../README.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/BACKLOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADRs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ADRs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013 Seed Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-021-deployment-topology-seed-families.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-021 Topology SSOT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-022-threat-model-opcion2-descartada.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-022 Threat Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Protobuf contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protobuf
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/JSON contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JSON
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Rag security commands.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#parte-1-consenso-va-al-adr-sin-mas-discusion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Parte 1 — Consenso (va al ADR sin más discusión)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#parte-2-desacuerdos-reales-alonso-decide" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Parte 2 — Desacuerdos reales (Alonso decide)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Parte 2 — Desacuerdos reales (Alonso decide)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#d1-es-recuperable-la-cabeza-traffic-el-desacuerdo-mas-importante-y-es-medible" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        D1 🎯 — ¿Es recuperable la cabeza Traffic? El desacuerdo más importante, y es medible.
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#d2-es-recuperable-la-cabeza-ransomware" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        D2 — ¿Es recuperable la cabeza Ransomware?
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#d3-cabeza-con-peso-0-vs-cabeza-ausente" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        D3 — Cabeza con peso 0 vs. cabeza ausente
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#d4-des-gateo-de-dos-componentes-pr-atomico-o-secuenciado" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        D4 — Des-gateo de dos componentes: ¿PR atómico o secuenciado?
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#d5-la-disidencia-de-raiz-de-chatgpt-sobre-el-noisy-or-no-la-despachemos" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        D5 ⚠️ — La disidencia de raíz de chatgpt sobre el noisy-OR (no la despachemos)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#parte-3-lo-que-el-consejo-encontro-y-la-auditoria-no-vio-los-hallazgos-valiosos" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Parte 3 — Lo que el Consejo encontró y la auditoría NO vio (los hallazgos valiosos)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Parte 3 — Lo que el Consejo encontró y la auditoría NO vio (los hallazgos valiosos)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#hallazgo-critico-el-backward_bytes-0-es-un-debt-p1-que-el-arreglo-de-fase-2-detonaria-glm-corroborado-por-qwen" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🔴 HALLAZGO CRÍTICO — el backward_bytes = 0 es un DEBT P1 que el arreglo de fase 2 DETONARÍA (glm, corroborado por qwen)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#el-falso-positivo-de-exfiltracion-en-trafico-de-internet-glm" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        El falso positivo de exfiltración en tráfico de internet (glm)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#el-falso-positivo-del-fast-path-bajo-el-gate-b-qwen" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        El falso positivo del fast-path bajo el gate B (qwen)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fast_score-no-tiene-fiabilidad-medible-glm-gap-002" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        fast_score no tiene fiabilidad medible (glm GAP-002)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#calibracion-de-scores-deepseek" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Calibración de scores (deepseek)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#saturacion-del-noisy-or-y-clip-de-fiabilidad-glm-kimi" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Saturación del noisy-OR y clip de fiabilidad (glm, kimi)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#parte-4-mis-ocho-puntos-adversarios-cruzados-contra-el-consejo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Parte 4 — Mis ocho puntos adversarios, cruzados contra el Consejo
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#parte-5-refinamientos-al-noisy-or-casi-consenso-para-el-adr" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Parte 5 — Refinamientos al noisy-OR (casi-consenso, para el ADR)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#parte-6-secuencia-de-fase-2-reconciliada" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Parte 6 — Secuencia de fase 2 reconciliada
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cierre-lo-que-solo-tu-puedes-decidir-ahora" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cierre — lo que solo tú puedes decidir ahora
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="reconciliacion-del-consejo-de-sabios-auditoria-del-ml-detector">Reconciliación del Consejo de Sabios — auditoría del <code>ml-detector</code></h1>
+<p><strong>Entrada:</strong> 8 dictámenes (chatgpt, deepseek, gemini, grok, kimi, glm, mistral, qwen) + el voto adversario de Claude = 9 voces.
+<strong>Árbitro final:</strong> Alonso. Este documento no decide; separa lo acordado de lo disputado y pone cada decisión donde corresponde.
+<strong>Método:</strong> <em>medir no votar</em> aplicado al propio Consejo. Donde hay desacuerdo real, se presenta con las dos caras y —cuando existe— la medición que lo zanja. No se promedian opiniones.</p>
+<p>Reconciliación del Consejo de Sabios — auditoría del ml-detector.md</p>
+<hr />
+<h2 id="parte-1-consenso-va-al-adr-sin-mas-discusion">Parte 1 — Consenso (va al ADR sin más discusión)</h2>
+<p>Lo que las nueve voces sostienen. Esto es suelo firme.</p>
+<ul>
+<li><strong>Los tres defectos A, B, C están confirmados</strong> por todos los que verificaron el repo (qwen y grok afirman haberlo hecho línea a línea; gemini, deepseek, mistral, glm, kimi lo aceptan como medido y trazable). Ninguno rebate un solo hecho. La auditoría es correcta.</li>
+<li><strong>P3 — matar la cascada Traffic→Internal: unánime (8/8).</strong> El Internal corre siempre, desacoplado. Una cabeza sana no debe depender de una rota para decidir si se ejecuta. El dominio (interno/internet) se resuelve por <strong>lookup determinista</strong> sobre rangos RFC1918 + subredes configuradas (deepseek, glm), no por ML.</li>
+<li><strong>P4 — noisy-OR como operador: ratificado (7/8).</strong> <code>P = 1 − ∏(1 − pᵢ)</code>, <code>pᵢ = fiabilidad_i · score_i</code>. Monótono, incorpora corroboración, no diluye, siempre ≥ max. Media ponderada rechazada por dilución; max-de-N por ignorar corroboración; Dempster-Shafer por complejidad innecesaria. <em>(La única disidencia, chatgpt, es de raíz y se trata en la Parte 2-D5.)</em></li>
+<li><strong>P5 — inyección en <code>provenance</code>: unánime.</strong> Las cabezas entran como <code>add_verdicts()</code> homogéneos; el combinador itera <code>provenance-&gt;verdicts()</code>; <code>provenance-&gt;set_final_decision()</code> es el punto único de decisión. <code>authoritative_source</code> se conserva por compatibilidad del wire pero se redefine a <code>ENSEMBLE_NOISY_OR</code> (o "contribuyente dominante"). glm añade: recalcular <code>discrepancy_score</code> como desviación estándar de los scores de cabezas activas → discrepancia alta = señal para el SOC.</li>
+<li><strong>P7 — golden vectors: regenerar, no forzar invarianza (unánime).</strong> El reordenamiento <em>cambia a propósito</em> qué se escribe al bronce; si el golden no cambia, el reordenamiento no hizo nada. El contrato es invariante en <strong>esquema</strong>, no en <strong>contenido</strong>. deepseek y glm proponen versionar: congelar <code>correlation_v1</code> como legado pre-cabezas (regresión del fast-path) y crear <code>correlation_v2</code> post-cabezas con campos nuevos (<code>specialized_head_scores</code>, <code>final_ensemble_score</code>).</li>
+<li><strong>P8 — poblar <code>ml_context</code> desde las cabezas: unánime.</strong> Y con un regalo: hacerlo <strong>elimina <code>DEBT-RAG-ATTACKFAMILY-HARDCODED-001</code> como efecto colateral</strong> (glm, gemini, qwen, mistral). El <code>attack_family</code> se deriva de la cabeza dominante; ya no se hardcodea. Una deuda menos, sin fix separado.</li>
+</ul>
+<hr />
+<h2 id="parte-2-desacuerdos-reales-alonso-decide">Parte 2 — Desacuerdos reales (Alonso decide)</h2>
+<p>Aquí el Consejo NO es unánime. Presento las dos caras y la medición que zanja, donde la hay. Estas son tuyas.</p>
+<h3 id="d1-es-recuperable-la-cabeza-traffic-el-desacuerdo-mas-importante-y-es-medible">D1 🎯 — ¿Es recuperable la cabeza Traffic? El desacuerdo más importante, y es medible.</h3>
+<p><strong>Cara A (recuperable ya):</strong> deepseek — las features muertas (entropía de IPs, concentración de destino, variedad de protocolo) se calculan con datos que <em>ya están</em> en <code>NetworkFeatures</code>. Es feature engineering, no carencia de datos.</p>
+<p><strong>Cara B (irrecuperable a la granularidad actual):</strong> glm y qwen, con un argumento técnico que deepseek no contempla. <strong>Un <code>NetworkFeatures</code> es UN flujo: tiene exactamente 1 IP origen, 1 IP destino, 1 protocolo.</strong> La entropía de una distribución de un solo elemento es 0 (o la constante en que se normaliza). Las features no son constantes por pereza — <strong>son matemáticamente imposibles a la granularidad de entrada.</strong> Para que "entropía de IPs origen" tenga sentido, el extractor necesita un <em>agregado de N flujos</em>, no un flujo. Eso es un cambio de contrato de entrada (glm) o de telemetría del sniffer con ventanas temporales (qwen), no un reentrenamiento.</p>
+<p><strong>La medición que zanja D1 (y que nadie ha hecho todavía):</strong> <em>¿qué granularidad tiene <code>NetworkFeatures</code> — un flujo individual o un agregado en ventana?</em> Si es un flujo, glm/qwen tienen razón y Traffic no es recuperable sin tocar el contrato de entrada. Si el sniffer ya agrega por ventana, deepseek podría tener razón. <strong>Esta es la única medición que decide si Traffic vive, muere o renace con otro contrato.</strong> Mi lectura se inclina a glm/qwen (un <code>NetworkFeatures</code> parece un flujo, no un agregado), pero es testable y no lo he verificado — no lo voto.</p>
+<h3 id="d2-es-recuperable-la-cabeza-ransomware">D2 — ¿Es recuperable la cabeza Ransomware?</h3>
+<p><strong>Cara A (recuperable con trabajo):</strong> kimi, mistral, qwen — corregir el extractor para calcular entropía de Shannon real + reentrenar contra ground-truth de ransomware. El concepto existe; el extractor miente.</p>
+<p><strong>Cara B (irrecuperable en su forma actual):</strong> deepseek, gemini, grok, y sobre todo <strong>glm con el argumento decisivo:</strong> aunque corrigieras la fórmula a Shannon real <em>sobre tamaños de paquete</em>, seguiría sin discriminar — el tráfico cifrado (TLS) tiene tamaños de registro estrechos (~16 KB), entropía <strong>baja</strong>, no alta. La entropía que discrimina ransomware es la de los <strong>bytes de payload</strong> (cifrado vs estructurado), y <strong><code>NetworkFeatures</code> no contiene payload</strong> — contiene agregados de flujo. No hay camino desde el contrato de entrada hasta la feature que el nombre promete. Arreglarla es construir una cabeza nueva con otras features (volumen a puertos SMB/445, ratio petición/respuesta asimétrico, conexiones a C2 conocido), no reparar esta.</p>
+<p><strong>Mi lectura:</strong> glm gana el argumento técnico. "Corregir a Shannon" es un espejismo si la señal vive en un dato que el contrato no transporta. Pero, como en D1, la pregunta de fondo es medible: <em>¿qué transporta <code>NetworkFeatures</code>?</em> La misma medición de granularidad de D1 informa esto.</p>
+<h3 id="d3-cabeza-con-peso-0-vs-cabeza-ausente">D3 — Cabeza con peso 0 vs. cabeza ausente</h3>
+<p><strong>Peso 0 documentado:</strong> deepseek, kimi, mistral. <strong>Ausente:</strong> gemini, grok, qwen (código muerto que consume ciclos y confunde).</p>
+<p><strong>La síntesis que reconcilia (glm), y que recomiendo:</strong> el peligro del peso 0 no es el peso — es que la cabeza <strong>siga ejecutando <code>predict()</code></strong> y escriba un score basura en <code>provenance</code>/RAG. Un analista que lea "ransomware_head: 0.73 confidence" creerá que significa algo, aunque el peso en el noisy-OR sea 0. <strong>Resolución:</strong> peso 0 <strong>solo si</strong> el veredicto de esa cabeza se marca <code>status: DISABLED_UNRELIABLE</code> en el provenance y su score crudo se omite o se pone a <code>-1</code>. Nunca basura al wire con un "peso 0" que el humano no ve. Si eso no se garantiza, mejor la ausencia. Esto une los dos bandos: honestidad de arquitectura (la cabeza figura) sin ruido semántico (no escribe un número mentiroso).</p>
+<h3 id="d4-des-gateo-de-dos-componentes-pr-atomico-o-secuenciado">D4 — Des-gateo de dos componentes: ¿PR atómico o secuenciado?</h3>
+<p><strong>Atómico:</strong> deepseek, gemini, mistral (garantiza consistencia; el ml-detector pasa a ser la única fuente de verdad de la decisión de bloqueo, el firewall un mero ejecutor de <code>provenance.final_decision</code>).</p>
+<p><strong>Secuenciado (mayoría, 4):</strong> grok, kimi, glm, qwen. Argumento de seguridad, más fuerte: un rollback de un PR atómico deja dos componentes en estado inconsistente e irrevertible. Entre PR1 y PR2, el sistema es <strong>más restrictivo</strong>, nunca roto.</p>
+<p><strong>La propuesta más rigurosa (glm), que recomiendo porque desarma la objeción del bando atómico:</strong>
+- <strong>PR1 (ml-detector):</strong> reconecta cabezas + noisy-OR + mueve persistencia. <strong>Mantiene <code>attack_detected_level1()</code> con su significado viejo</strong> y <strong>añade un campo NUEVO</strong> <code>attack_detected_ensemble()</code>. El firewall sigue leyendo el viejo. Nada aguas abajo cambia.
+- <strong>PR2 (firewall):</strong> cambia el gate a <code>attack_detected_ensemble() || attack_detected_level1()</code> — cinturón y tirantes: si el ensemble falla, L1 sigue protegiendo; si L1 se equivoca, el ensemble corrige.
+- <strong>PR3 (más tarde, validado N días):</strong> elimina el fallback a L1.</p>
+<p>El campo aditivo hace que el bando atómico tenga su consistencia (el campo viejo nunca cambia de significado hasta PR3) sin el riesgo de rollback dual. <strong>Secuenciado con campo aditivo domina a ambas posturas originales.</strong></p>
+<h3 id="d5-la-disidencia-de-raiz-de-chatgpt-sobre-el-noisy-or-no-la-despachemos">D5 ⚠️ — La disidencia de raíz de chatgpt sobre el noisy-OR (no la despachemos)</h3>
+<p>Siete ratifican noisy-OR. chatgpt lo ataca en la raíz, y el punto es serio: <strong>las cabezas no estiman la misma variable aleatoria.</strong> L1 estima P(ataque); Internal estima P(movimiento lateral); Traffic estima P(es interno); DDoS estima P(ddos). El noisy-OR es matemáticamente correcto solo si todas estiman <code>P(mismo evento)</code>. Combinarlas directamente mezcla probabilidades de eventos distintos.</p>
+<p><strong>Cómo lo reconcilio, y por qué refuerza el resto del plan:</strong> el noisy-OR es válido si cada cabeza que entra estima <code>P(este flujo es malicioso vía mi especialidad)</code> — entonces "lateral OR ddos OR exfil OR..." ≈ "malicioso" es una unión legítima. Pero <strong>Traffic NO estima eso</strong> — estima P(dominio interno), que no es una probabilidad de amenaza. Aplicando el punto de chatgpt: <strong>Traffic nunca debe entrar en el noisy-OR</strong>, porque responde otra pregunta. Eso, lejos de romper el plan, <strong>confirma D1/P3</strong>: Traffic sale del veredicto (a lo sumo aporta contexto de dominio, mejor por lookup determinista). La lección de chatgpt para el ADR: <strong>el combinador solo agrega cabezas que estiman probabilidad-de-malicioso; las que estiman otra cosa (dominio) son contexto, no votos.</strong> Y su propuesta arquitectónica de fondo (separar <em>Detectores</em> de <em>Clasificadores</em>, combinador que opere sobre contratos/metadatos y no conozca nombres de cabezas) es la dirección correcta a medio plazo, aunque no bloquee el cableado inmediato.</p>
+<hr />
+<h2 id="parte-3-lo-que-el-consejo-encontro-y-la-auditoria-no-vio-los-hallazgos-valiosos">Parte 3 — Lo que el Consejo encontró y la auditoría NO vio (los hallazgos valiosos)</h2>
+<p>Estos son el oro del método: puntos ciegos de la auditoría, cazados por el Consejo.</p>
+<h3 id="hallazgo-critico-el-backward_bytes-0-es-un-debt-p1-que-el-arreglo-de-fase-2-detonaria-glm-corroborado-por-qwen">🔴 HALLAZGO CRÍTICO — el <code>backward_bytes = 0</code> es un DEBT P1 que el arreglo de fase 2 DETONARÍA (glm, corroborado por qwen)</h3>
+<p>La auditoría marcó el doble camino de <code>backward_bytes</code> como "nota, no-DEBT aún, medir cuál domina". <strong>glm y qwen dicen, independientemente, que eso está mal</strong>, y glm da el razonamiento que lo convierte en el hallazgo más importante de toda la ronda:</p>
+<p>Hoy <code>ring_consumer.cpp:908</code> (<code>set_total_backward_bytes(0)</code>) es inofensivo <strong>porque el Internal nunca corre en flujos fast-path</strong> (doble gate: L1 + Traffic). <strong>Pero fase 2 des-gatea el Internal para que corra en TODO flujo.</strong> En el momento del des-gateo, cualquier flujo que pase por ese camino tendrá <code>backward_bytes = 0</code> → la feature <code>[7]</code> del Internal (exfiltración: <code>forward/backward &gt; 2.0</code>) dispara con <strong>ratio infinito</strong> → <strong>cada flujo fast-path se convierte en un falso positivo de exfiltración.</strong></p>
+<p>No es teórico: es un bug latente que el propio arreglo de fase 2 despertaría. <strong>Debe corregirse ANTES del des-gateo, no después.</strong> → Nuevo <code>DEBT-RING-CONSUMER-BACKWARD-ZERO-001</code> (P1). Fix: usar <code>flow.dbytes</code> real (como <code>ml_defender_features.cpp:753</code>) o tratar <code>backward_bytes=0</code> como "dato ausente" (skip feature, no ratio infinito). Esto refuta directamente mi decisión de la sesión anterior de dejarlo como nota. <strong>Tenían razón; yo lo subestimé.</strong></p>
+<h3 id="el-falso-positivo-de-exfiltracion-en-trafico-de-internet-glm">El falso positivo de exfiltración en tráfico de internet (glm)</h3>
+<p>Consecuencia de desacoplar el Internal (P3): correrá también sobre tráfico de internet, donde la feature <code>[7]</code> (outbound_ratio &gt; 2.0) dispara con cualquier descarga grande legítima (streaming, actualización de OS: forward &gt;&gt; backward). Mitigación de glm, elegante: el peso del Internal en el noisy-OR <strong>modulado por dominio</strong>, no gateado — <code>peso_internal = peso_base × factor_dominio</code> (1.0 si interno, 0.3 si externo, o lo que la medición dicte). Preserva la señal de exfiltración interna sin bloqueos espurios en internet. <strong>Punto ciego mío y de casi todo el Consejo.</strong></p>
+<h3 id="el-falso-positivo-del-fast-path-bajo-el-gate-b-qwen">El falso positivo del fast-path bajo el gate B (qwen)</h3>
+<p><code>final_score = max(fast, ml)</code>. Si el sniffer dispara (fast=0.9) y L1 dice BENIGN (ml=0.1), el veredicto es MALICIOUS <strong>sin que ninguna cabeza corra</strong> (gate B las bloquea). Un fast-path ruidoso genera falsos positivos sin corroboración. Recomendación de qwen: si <code>fast_score &gt; malicious_threshold</code>, las cabezas <strong>deben</strong> correr aunque L1 diga BENIGN. Yo había mirado solo la dirección de falsos negativos (L1-benigno suprime cabezas); qwen añade la de falsos positivos (fast dispara solo). Buen catch.</p>
+<h3 id="fast_score-no-tiene-fiabilidad-medible-glm-gap-002"><code>fast_score</code> no tiene fiabilidad medible (glm GAP-002)</h3>
+<p><code>fast_score</code> es un heurístico del sniffer, no una cabeza ML: sin F1, sin fiabilidad, no entra en <code>provenance-&gt;verdicts()</code>. Pregunta para el ADR: ¿es miembro del ensemble o pre-filtro con rol especial? Recomendación de glm (correcta): <strong>pre-filtro / circuit-breaker.</strong> Mantener <code>final = max(fast_score, noisy_or_ml)</code> — el fast-path es un cortacircuitos de &lt;1ms para patrones obvios, no un clasificador probabilístico. No entra en el noisy-OR.</p>
+<h3 id="calibracion-de-scores-deepseek">Calibración de scores (deepseek)</h3>
+<p>Los scores crudos de las cabezas pueden estar <strong>descalibrados</strong>. El noisy-OR necesita probabilidades reales para tener semántica de probabilidad conjunta. Puede requerir calibración Platt o isotónica por cabeza. La auditoría no mencionó calibración; es un requisito real para que <code>pᵢ</code> signifique algo.</p>
+<h3 id="saturacion-del-noisy-or-y-clip-de-fiabilidad-glm-kimi">Saturación del noisy-OR y clip de fiabilidad (glm, kimi)</h3>
+<ul>
+<li><strong>glm:</strong> con 3+ cabezas fiables coincidiendo, el score satura cerca de 1.0 y el threshold se vuelve un filo de cuchillo. No es defecto, es propiedad — pero exige fiabilidades bien calibradas. Documentar una <strong>tabla de saturación</strong> en el ADR; regla: "si se añade una 5ª cabeza con fiabilidad &gt;0.7, reevaluar". Con la config realista inicial (Internal 0.5, DDoS 0.4, Ransomware 0, Traffic 0) no se alcanza.</li>
+<li><strong>kimi:</strong> clip de fiabilidad mínima <code>pᵢ = clip(fiabilidad, ε, 1−ε) · score</code>, ε≈0.01, para que una cabeza medida con poquísimos datos ni se anule matemáticamente ni domine. Honesto: "no sabemos si es exactamente 0".</li>
+</ul>
+<hr />
+<h2 id="parte-4-mis-ocho-puntos-adversarios-cruzados-contra-el-consejo">Parte 4 — Mis ocho puntos adversarios, cruzados contra el Consejo</h2>
+<p>Honestidad simétrica: qué aguantó y qué no.</p>
+<ul>
+<li><strong>A1 (¿la monocapa es deuda o defensa? origen de concurrencia) — NADIE del Consejo lo tocó.</strong> Ni una de las ocho voces preguntó por qué se desconectaron las cabezas ni si reconectarlas amenaza el determinismo. Razón justa: el informe que recibieron no incluía el dato de concurrencia (agosto 2025, 7→4 por condiciones de carrera) — eso vivía solo en mi memorándum adversario, que probablemente no les llegó. <strong>No lo refutaron; no lo tuvieron.</strong> Sigue vivo y <strong>sin validar</strong>. Es un punto ciego <em>compartido</em> por todo el Consejo. → Debe entrar en el ADR como <strong>precondición</strong>: establecer por qué existe la monocapa y validar la reconexión bajo TSAN antes de asumir que es puro descuido. Este es el punto que más necesita tu criterio, Alonso, porque las nueve voces lo pasamos por alto o no lo tuvimos.</li>
+<li><strong>A2 (coste agregado bajo carga, no por-flujo) — corroborado.</strong> grok, qwen, kimi meten gates de latencia end-to-end (&lt;10ms p99) y stress en sus planes. El Consejo confirma que la medición unitaria no basta.</li>
+<li><strong>A3 (gravedad de C acoplada a B; el bronce prueba mecanismo, no impacto) — parcialmente.</strong> Nadie lo formuló así, pero la reordenación de glm (cablear con pesos provisionales) lo maneja de facto. El matiz evidencial (una fila ATTACK probaría el caso fuerte) sigue siendo mío y en pie.</li>
+<li><strong>A4 (insumos del noisy-OR sin medir) — fuertemente corroborado y profundizado.</strong> deepseek (calibración), glm (saturación), kimi (clip), qwen (pesos medidos no votados) y chatgpt (¿operación siquiera type-correcta?) golpean todos aquí. Fue un buen punto; el Consejo lo hizo más fuerte.</li>
+<li><strong>A5 (la traza de <code>threat_category</code> paró antes del BatchProcessor) — abierto.</strong> Ningún miembro leyó el BatchProcessor tampoco. Sigue sin cerrar.</li>
+<li><strong>A6 (frecuencia con que el gate muerde, sin medir) — corroborado.</strong> grok añade el gate "% de eventos donde las cabezas cambian el veredicto vs baseline". Justo esa medición.</li>
+<li><strong>A7 (sin estrategia de aterrizaje incremental / modo sombra) — fuertemente corroborado.</strong> glm/kimi/grok/qwen proponen PRs secuenciados con invariantes de seguridad; el PR1/PR2/PR3 aditivo de glm es una versión rigurosa de mi modo sombra.</li>
+<li><strong>A8 (riesgo de lectura parcial) — persiste como meta-riesgo.</strong> kimi no pudo acceder al repo y deliberó sobre el informe a confianza; otros afirman haber verificado. La cobertura de verificación del propio Consejo es desigual.</li>
+</ul>
+<hr />
+<h2 id="parte-5-refinamientos-al-noisy-or-casi-consenso-para-el-adr">Parte 5 — Refinamientos al noisy-OR (casi-consenso, para el ADR)</h2>
+<p>Fusionando deepseek + glm + kimi, la fórmula que va al ADR no es la cruda del informe, sino:</p>
+<pre><code>pᵢ = clip(fiabilidad_i, ε, 1−ε) · score_calibrado_i        (ε ≈ 0.01)
+P  = 1 − ∏(1 − pᵢ)     sobre cabezas que estiman P(malicioso)
+final_score = max(fast_score, P)     (fast_score = circuit-breaker, NO entra en el ∏)
+</code></pre>
+<p>Con: <code>score_calibrado</code> = score crudo pasado por calibración por cabeza (Platt/isotónica) si se demuestra descalibración; <code>fiabilidad_i</code> = F1 medido (Internal/DDoS) o 0 declarado (Ransomware/Traffic); Traffic <strong>fuera</strong> del producto (estima dominio, no malicia — D5); tabla de saturación documentada; <code>discrepancy_score</code> = desv. típica de scores activos.</p>
+<hr />
+<h2 id="parte-6-secuencia-de-fase-2-reconciliada">Parte 6 — Secuencia de fase 2 reconciliada</h2>
+<p>Integrando todo. Ninguna fecha; cada paso con gate de medición.</p>
+<pre><code>PRECONDICIÓN 0 (nueva, de A1 — el punto que nadie tocó):
+  Establecer POR QUÉ existe la monocapa. ¿Descuido, o retirada por concurrencia/latencia?
+  Si fue concurrencia: la reconexión es un gate de TSAN, no un refactor cualquiera.
+  Gate: causa histórica documentada + plan de validación TSAN.
+
+PASO 0 (nuevo, de glm/qwen — el detonador latente):
+  Fix DEBT-RING-CONSUMER-BACKWARD-ZERO-001 (backward_bytes=0 en fast-path).
+  SIN esto, el des-gateo del Paso 2 convierte cada flujo fast-path en falso positivo de exfiltración.
+  Gate: fix en main + test que verifique que [7] no dispara con backward ausente.
+
+PASO 1 — Decisiones de cabezas (D1, D2, D3):
+  MEDICIÓN QUE DECIDE: granularidad de NetworkFeatures (flujo vs agregado en ventana).
+    → decide si Traffic/Ransomware son recuperables o requieren nuevo contrato de entrada.
+  Ransomware: peso 0 con status DISABLED_UNRELIABLE (glm), score suprimido. No cablear al veredicto.
+  Traffic: FUERA del noisy-OR (D5 — estima dominio, no malicia). Dominio por lookup determinista.
+  Internal: cablear, peso PROVISIONAL 0.3 declarado (&quot;cable verificado, discriminación no medida&quot;).
+  Gate: decisión documentada por cabeza con su razón técnica.
+
+PASO 2 — Cableado (Defectos A+B+C), con la secuencia de PRs de glm (D4):
+  PR1 (ml-detector): noisy-OR sobre provenance + mover persistencia post-cabezas +
+                     poblar ml_context desde cabezas (elimina DEBT-RAG-4) +
+                     campo NUEVO attack_detected_ensemble() (no tocar el viejo) +
+                     Internal con peso modulado por dominio (glm, evita FP en internet).
+  PR2 (firewall): gate = ensemble || L1 (cinturón y tirantes).
+  Relajar gate B: si fast_score &gt; threshold, las cabezas corren aunque L1 diga BENIGN (qwen).
+  Tests del combinador: (a) una dispara, (b) dos corroboran, (c) fiabilidad-0 no envenena,
+                        (d) golden v2 verdes, (e) saturación dentro de tabla.
+  Gate: tests verdes + TSAN limpio (precondición 0).
+
+PASO 3 — Pulso del Internal (5.2b-i): F1 real sobre datos MITRE/Atomic etiquetados.
+  Ajustar peso 0.3 → F1 medido. Gate: número existe.
+
+PASO 4 — Stress + latencia agregada bajo carga (A2): 4 cabezas × 100% flujos a tasa de línea.
+  % de eventos donde las cabezas cambian el veredicto (A6). Gate: p99 &lt; 10ms; sin sobre-bloqueo.
+
+PASO 5 — pcap relay e2e en hardware propio: TTL real. Número de &quot;hardware suelo&quot; para el paper.
+
+PASO 6 — PR3: eliminar fallback a L1 en el firewall (tras validar N días).
+
+PASO 7 — Paper: config honesta (qué cabeza pesa cuánto), Ransomware/Traffic declaradas
+          con su razón técnica. Limitación = hueco de cobertura, NO divergencia predicha.
+</code></pre>
+<hr />
+<h2 id="cierre-lo-que-solo-tu-puedes-decidir-ahora">Cierre — lo que solo tú puedes decidir ahora</h2>
+<p>El Consejo convergió en casi todo el cableado (A) y te deja tres decisiones y una medición:</p>
+<ol>
+<li><strong>La medición que desbloquea D1 y D2:</strong> ¿qué granularidad tiene <code>NetworkFeatures</code> — un flujo o un agregado en ventana? Es un <code>grep</code> del proto y del sniffer. Decide si Traffic y Ransomware son reparables o son cabezas nuevas. <strong>Es la próxima medición natural.</strong></li>
+<li><strong>La precondición que nadie del Consejo tuvo (A1):</strong> ¿por qué existe la monocapa? Si la respuesta es "concurrencia", reconectar las cabezas es un gate de TSAN, no un refactor. Ninguna de las nueve voces lo validó — es nuestro punto ciego compartido, y por eso es donde más falta tu criterio.</li>
+<li><strong>Las decisiones de política</strong> que el Consejo dejó abiertas: peso-0-con-status vs ausencia (recomiendo la síntesis de glm), atómico vs secuenciado (recomiendo secuenciado-aditivo de glm), y si aceptas la lectura de chatgpt de sacar Traffic del noisy-OR por estimar otra variable.</li>
+</ol>
+<p>El acuerdo de fondo de las nueve voces es rotundo y coincide con tu listón: <strong>el cableado (A) se arregla ya, con honestidad; la fiabilidad de las cabezas (B) se persigue con transparencia y datos, declarando cada límite con su razón técnica.</strong> Nadie bajó el listón. Ransomware y Traffic no se maquillan: se declaran rotas con el porqué, y el paper dice la verdad medida.</p>
+<p><em>Reconciliado por Claude, novena voz — que también tuvo su punto ciego (el <code>backward_bytes</code>), cazado por glm y qwen. El escudo conoce mejor sus sombras cuando nueve pares las buscan a la vez.</em></p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.top", "search.highlight"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

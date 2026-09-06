@@ -1,0 +1,1504 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source embedded-ML NDR for hospitals and schools">
+      
+      
+        <meta name="author" content="Alonso Isidoro Roman">
+      
+      
+        <link rel="canonical" href="https://alonsoir.github.io/argus/council/sintesis%20-%20ADR-052%20Respuesta%20V1/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>ADR-052 — Registro de deliberación del Consejo de Sabios (8/8) - ML Defender (aRGus NDR)</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#adr-052-registro-de-deliberacion-del-consejo-de-sabios-88" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-header__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ML Defender (aRGus NDR)
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              ADR-052 — Registro de deliberación del Consejo de Sabios (8/8)
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../README.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/BACKLOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Backlog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Security Model
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-tabs__link">
+          
+  
+  
+  ADRs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/contracts/Protobuf contracts.md" class="md-tabs__link">
+          
+  
+  
+  Contracts
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-nav__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ML Defender (aRGus NDR)
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../README.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/BACKLOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADRs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ADRs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013 Seed Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-021-deployment-topology-seed-families.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-021 Topology SSOT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-022-threat-model-opcion2-descartada.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-022 Threat Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Protobuf contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protobuf
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/JSON contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JSON
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Rag security commands.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-mapa-de-votacion-un-vistazo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Mapa de votación (un vistazo)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-sintesis-pregunta-por-pregunta" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Síntesis pregunta por pregunta
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2. Síntesis pregunta por pregunta">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#q1-rate-limit-cardinalidad-de-community_id" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Q1 — Rate-limit / cardinalidad de community_id
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#q2-senal-arpndp-primera-clase-o-enriquecimiento" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Q2 — Señal ARP/NDP: primera clase o enriquecimiento
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#q3-marca-de-confianza-de-flujo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Q3 — Marca de confianza de flujo
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#q4-etiquetar-inyeccion-sin-excluir-del-dataset" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Q4 — Etiquetar inyección sin excluir del dataset
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#q5-relacion-con-adr-050-sesion-mitre" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Q5 — Relación con ADR-050 (sesión MITRE)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#q6-granularidad-de-flow_start_window-la-decision-central" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Q6 — Granularidad de flow_start_window (la decisión central)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#q7-p1-y-p3-juntos-o-separar-a-adr-053" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Q7 — ¿P1 y P3 juntos o separar a ADR-053?
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-hallazgos-fuera-de-las-7-preguntas-deben-entrar-a-adr-052-v2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Hallazgos fuera de las 7 preguntas (deben entrar a ADR-052 v2)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-tabla-consolidada-de-acciones" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Tabla consolidada de acciones
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-lo-que-te-toca-decidir-como-arbitro" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Lo que te toca decidir como árbitro
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="adr-052-registro-de-deliberacion-del-consejo-de-sabios-88">ADR-052 — Registro de deliberación del Consejo de Sabios (8/8)</h1>
+<table>
+<thead>
+<tr>
+<th>Campo</th>
+<th>Valor</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>ADR</strong></td>
+<td>052 — Multi-node Flow Identity &amp; Host↔Net Correlation</td>
+</tr>
+<tr>
+<td><strong>Versión deliberada</strong></td>
+<td>v1 (borrador)</td>
+</tr>
+<tr>
+<td><strong>Fecha</strong></td>
+<td>DAY 173</td>
+</tr>
+<tr>
+<td><strong>Consejeros (8/8)</strong></td>
+<td>Claude (CL), ChatGPT (GPT), DeepSeek (DS), Gemini (GE), Grok (GR), Qwen (QW), Kimi (KI), Mistral (MI)</td>
+</tr>
+<tr>
+<td><strong>Árbitro final</strong></td>
+<td>Alonso (pendiente)</td>
+</tr>
+<tr>
+<td><strong>Veredicto agregado</strong></td>
+<td>APROBADO CON MODIFICACIONES — ningún consejero pide rechazo ni rediseño de dirección. Los reparos son de <em>especificación</em>, no de <em>rumbo</em>.</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>Nota de método.</strong> Este documento <em>recoge</em> la deliberación; no decide. Las filas marcadas <strong>[ÁRBITRO]</strong> son disensos reales que el Consejo no resuelve por sí mismo y requieren tu decisión. El voto de Claude se trata aquí como uno más de los ocho, sin peso especial.</p>
+</blockquote>
+<hr />
+<h2 id="1-mapa-de-votacion-un-vistazo">1. Mapa de votación (un vistazo)</h2>
+<table>
+<thead>
+<tr>
+<th>Pregunta</th>
+<th>Consenso</th>
+<th>CL</th>
+<th>GPT</th>
+<th>DS</th>
+<th>GE</th>
+<th>GR</th>
+<th>QW</th>
+<th>KI</th>
+<th>MI</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Q1</strong> Rate-limit: ubicación primaria</td>
+<td><strong>correlation-engine, antes de Neo4j</strong> (8/8)</td>
+<td>✔</td>
+<td>✔</td>
+<td>✔</td>
+<td>✔</td>
+<td>✔</td>
+<td>✔</td>
+<td>✔</td>
+<td>✔</td>
+</tr>
+<tr>
+<td><strong>Q1</strong> Umbral adaptativo (no fijo)</td>
+<td>Mayoría 7/8</td>
+<td>✔</td>
+<td>✔</td>
+<td>✔</td>
+<td>✔</td>
+<td>✔</td>
+<td>✔</td>
+<td>✔</td>
+<td>✖ (1000 fijo)</td>
+</tr>
+<tr>
+<td><strong>Q1</strong> Nunca descartar evidencia (colapsar/marcar)</td>
+<td>8/8</td>
+<td>✔</td>
+<td>✔</td>
+<td>✔</td>
+<td>✔</td>
+<td>✔</td>
+<td>✔</td>
+<td>✔</td>
+<td>✔</td>
+</tr>
+<tr>
+<td><strong>Q2</strong> ARP/NDP primera clase</td>
+<td><strong>Unánime 8/8</strong></td>
+<td>✔</td>
+<td>✔</td>
+<td>✔</td>
+<td>✔</td>
+<td>✔</td>
+<td>✔</td>
+<td>✔</td>
+<td>✔</td>
+</tr>
+<tr>
+<td><strong>Q2</strong> Modelar <em>estado de binding</em>, no paquete crudo</td>
+<td>Mayoría fuerte</td>
+<td>✔</td>
+<td>✔</td>
+<td>~</td>
+<td>~</td>
+<td>~</td>
+<td>✔</td>
+<td>✔</td>
+<td>~</td>
+</tr>
+<tr>
+<td><strong>Q3</strong> Sí, marca de confianza</td>
+<td><strong>Unánime 8/8</strong></td>
+<td>✔</td>
+<td>✔</td>
+<td>✔</td>
+<td>✔</td>
+<td>✔</td>
+<td>✔</td>
+<td>✔</td>
+<td>✔</td>
+</tr>
+<tr>
+<td><strong>Q3</strong> Forma de la marca</td>
+<td><strong>[ÁRBITRO]</strong> — disenso</td>
+<td>señales</td>
+<td>0-100</td>
+<td>count</td>
+<td>0-1</td>
+<td>enum</td>
+<td>señales</td>
+<td>enum</td>
+<td>enum</td>
+</tr>
+<tr>
+<td><strong>Q4</strong> Etiquetar, nunca borrar</td>
+<td><strong>Unánime 8/8</strong></td>
+<td>✔</td>
+<td>✔</td>
+<td>✔</td>
+<td>✔</td>
+<td>✔</td>
+<td>✔</td>
+<td>✔</td>
+<td>✔</td>
+</tr>
+<tr>
+<td><strong>Q5</strong> bettercap = vector MITRE; 052 = su threat model</td>
+<td><strong>Unánime 8/8</strong></td>
+<td>✔</td>
+<td>✔</td>
+<td>✔</td>
+<td>✔</td>
+<td>✔</td>
+<td>✔</td>
+<td>✔</td>
+<td>✔</td>
+</tr>
+<tr>
+<td><strong>Q6</strong> Descartar CrisisWindow para identidad</td>
+<td><strong>Unánime 8/8</strong></td>
+<td>✔</td>
+<td>✔</td>
+<td>✔</td>
+<td>✔</td>
+<td>✔</td>
+<td>✔</td>
+<td>✔</td>
+<td>✔</td>
+</tr>
+<tr>
+<td><strong>Q6</strong> Mecanismo de identidad intra-nodo</td>
+<td><strong>[ÁRBITRO]</strong> — 3 familias</td>
+<td>N fijo+tol</td>
+<td>timestamp fino</td>
+<td>bucket+seq</td>
+<td>session_counter</td>
+<td>híbrido</td>
+<td>sensor_id nativo</td>
+<td>bucket 60s inmut.</td>
+<td>bucket 300s</td>
+</tr>
+<tr>
+<td><strong>Q7</strong> P1+P3 juntos en ADR-052</td>
+<td><strong>Unánime 8/8</strong></td>
+<td>✔</td>
+<td>✔</td>
+<td>✔</td>
+<td>✔</td>
+<td>✔</td>
+<td>✔</td>
+<td>✔</td>
+<td>✔</td>
+</tr>
+</tbody>
+</table>
+<p><code>✔</code> a favor · <code>✖</code> en contra · <code>~</code> compatible con matices</p>
+<hr />
+<h2 id="2-sintesis-pregunta-por-pregunta">2. Síntesis pregunta por pregunta</h2>
+<h3 id="q1-rate-limit-cardinalidad-de-community_id">Q1 — Rate-limit / cardinalidad de <code>community_id</code></h3>
+<p><strong>Consenso.</strong> El control <strong>primario vive en el correlation-engine, antes de la ingesta a Neo4j</strong>. Neo4j nunca es el rate-limiter primario (cuando el grafo te frena, el daño ya ocurrió) — a lo sumo backstop vía constraint. Métrica = <strong>cardinalidad de <code>community_id</code> distintos por ventana por <code>node_id</code></strong> (DS, GE, QW lo precisan; no nº de eventos). Umbral <strong>adaptativo sobre baseline por nodo</strong> (CL/rol, GPT 10×p95, DS ~media+σ, GE/QW 3σ, GR media+3-5σ, KI 10× histórico) — solo MI propone fijo (1000). <strong>Nunca se descarta evidencia</strong>: al superar el cap, el flujo se marca y/o colapsa en un meta-nodo de primera clase (GE <code>:GraphFloodingAnomaly</code>, QW <code>:HighCardinalityFlowCluster</code>, GPT degrade-priority, CL <code>rate_limited:true</code> + evento). El flooding <em>es</em> el ataque: que salte el cap es una detección.</p>
+<p><strong>Implementación sugerida (convergente).</strong> Estructura probabilística en stream para medir cardinalidad sin reventar memoria: <strong>Count-Min Sketch</strong> (GE, QW) o <strong>HyperLogLog</strong> (DS, QW) por <code>node_id</code>, ventana deslizante. Conecta con <code>orphan_rate</code> (ADR-051).</p>
+<p><strong>[ÁRBITRO] — ¿rate-limit también en el sensor?</strong> KI (dos capas: publicación en sensor + aceptación en ingest), CL (autolímite grueso para proteger el IPC), GPT (sensor solo telemetría, no bloquea), DS (feedback al sensor) dicen sí. <strong>MI dice no</strong>: un sensor comprometido no respeta su propio límite. <em>Reconciliación posible:</em> el límite en sensor es <strong>backpressure</strong> para proteger el bus IPC y al motor (defensa frente a sensor sano desbocado o carga), <strong>no</strong> un control de seguridad; el control de seguridad real es el del motor. Si aceptas esta distinción, ambas posturas coexisten.</p>
+<hr />
+<h3 id="q2-senal-arpndp-primera-clase-o-enriquecimiento">Q2 — Señal ARP/NDP: primera clase o enriquecimiento</h3>
+<p><strong>Consenso unánime: primera clase.</strong> Es el único detector del vector A (MITM L2 sigiloso); como enriquecimiento embebido en <code>:NetworkFlow</code> se pierde la consulta temporal y la capacidad de observar ARP sin flujo asociado (KI lo argumenta con rigor).</p>
+<p><strong>Cómo modelarlo (consenso fuerte): estado de binding, no volcado de paquetes.</strong> No un nodo por paquete ARP (colapsaría el grafo — irónico dado Q1). Un nodo de <strong>estado</strong> de binding IP↔MAC con propiedades temporales, y el <strong>re-binding (cambio de MAC para una IP) como la señal</strong>:
+- Nombres propuestos: <code>:IpMacBinding</code> con <code>valid_from</code>/<code>valid_to</code> (QW), <code>:L2Resolution</code> con <code>previous_mac</code> (KI), <code>:L2Binding</code> (GE), <code>:MACBinding</code>/<code>:ARPEvent</code> (GR), <code>:NeighborBinding</code>/<code>:ARPObservation</code> (GPT), <code>:ArpCacheEntry</code> (DS). Mismo concepto, nombre a fijar.
+- Encaja con el inventario de endpoints de ADR-046 §3.9.</p>
+<p><strong>Dos límites que el Consejo añade al borrador (no estaban en §3.4):</strong>
+- <strong>[LÍMITE FUNDAMENTAL — KI]</strong> ARP/NDP solo detecta el vector A <strong>bajo el supuesto de host sano</strong>. Si el atacante tiene root en el endpoint, la señal ARP que reporta Wazuh <em>también</em> miente. Para host comprometido se necesita <strong>una tercera fuente out-of-band</strong> (switch con port-security, sensor en modo promiscuo que vea las solicitudes ARP). Sin ella, vector A con host comprometido es <strong>indetectable por diseño</strong>. → debe constar como nota de límite en §3.4.
+- <strong>[ALCANCE — QW]</strong> El vector A no es solo L2. MITM por <strong>rogue gateway / DNS poisoning / BGP hijack</strong> no cambia la MAC. La señal de host debería incluir también <strong>anomalías de estado TCP</strong> (RST inesperados, saltos de seqnum = inyección en conexión) y <strong>mismatches TLS</strong> (certificado distinto al esperado), vía Wazuh/osquery.</p>
+<hr />
+<h3 id="q3-marca-de-confianza-de-flujo">Q3 — Marca de confianza de flujo</h3>
+<p><strong>Consenso unánime: sí.</strong> Basada en corroboración cross-sensor + método NAT + <code>orphan_rate</code>.</p>
+<p><strong>[ÁRBITRO] — forma de la marca.</strong> Tres opciones:
+- <strong>Score continuo</strong> — GPT (0-100), GE (0-1). Filtra fácil (<code>WHERE confidence &gt; 50</code>).
+- <strong>Enum ordinal</strong> — KI (<code>CORROBORATED</code>/<code>SINGLE_SENSOR</code>/<code>ORPHAN</code>/<code>INJECTED</code>/<code>CONFLICT_NAT</code>), MI (<code>HIGH</code>/<code>MEDIUM</code>/<code>LOW</code>/<code>INJECTED</code>), GR, DS (<code>corroboration_count</code> entero).
+- <strong>Vector de señales primitivas + tier derivado</strong> — QW (<code>is_cross_sensor_corroborated</code>, <code>is_host_plane_anchored</code>, <code>nat_resolution_method</code>, <code>trust_tier</code>), CL (guardar <code>witness_count</code>/evidencia, derivar confianza como vista computada, no congelar).</p>
+<p><em>Aviso de dos consejeros:</em> GPT y CL advierten explícitamente contra un único valor que <strong>envejece mal</strong> / es opaco (<code>trusted=true</code>, float congelado al ingestar). La opción "señales primitivas + tier derivado" las subsume: guardas lo medible, recomputas el verdicto cuando evolucione la semántica.</p>
+<p><strong>[OBJECIÓN CL+DS — depende de una pieza que falta]</strong> "Visto por 1 sensor" <strong>no</strong> es sospechoso por sí mismo: es lo normal en <strong>cobertura no solapada</strong>. Sin un <strong>mapa de cobertura/visibilidad de sensores</strong> (qué sensor puede ver qué segmento/VLAN/subred), <code>orphan_rate</code> queda dominado por flujos benignos de cobertura única y es ruido como señal de compromiso; y la regla "flujo sin sensor de borde trazable = anomalía" (§3.1/§3.4) no tiene contra qué validarse. → <strong>nueva DEBT</strong> (ver §4, A-NEW-1). Doble respaldo.</p>
+<p><strong>Categoría <code>INJECTED</code> en <code>acceptance_criteria.md</code>.</strong> Consenso de que debe existir. <strong>[MATIZ CL]</strong>: no metas <code>INJECTED</code> <em>dentro</em> del enum congelado DROP/CONFIG/POLICY/BUG/UNKNOWN — ese enum responde "por qué observado ≠ esperado en corrida benigna"; <code>INJECTED</code> es otro eje (procedencia adversaria). Ponlo en un eje <code>provenance</code> separado para no descongelar el artefacto ni cometer error de categoría. (Resuelve también Q4.)</p>
+<hr />
+<h3 id="q4-etiquetar-inyeccion-sin-excluir-del-dataset">Q4 — Etiquetar inyección sin excluir del dataset</h3>
+<p><strong>Consenso unánime: etiquetar (label/taint), nunca borrar.</strong> Filtrar por defecto en queries de producción (<code>WHERE NOT n:SuspiciousFlow</code>), incluir explícitamente en MITRE/threat-hunt (GE, QW, DS, MI, GPT). El atacante es parte del ground truth.</p>
+<p><strong>Dos aportes que elevan la integridad científica (recogerlos ambos):</strong>
+- <strong>[CL] Separar dos campos ortogonales que NUNCA se colapsan:</strong> <code>INJECTED_SUSPECTED</code> (heurística runtime: cid huérfano, <code>node_id</code> sin sensor de borde trazable, re-binding correlado) vs <code>INJECTED_GROUND_TRUTH</code> (del manifiesto del escenario MITRE, no del detector). Si los fundes, <strong>validas el detector contra su propia salida (circular)</strong>. El <em>delta</em> entre ambos campos <em>es</em> tu precision/recall.
+- <strong>[KI] Procedencia trazable y no repudiable del etiquetado:</strong> no basta <code>injected=true</code>. Arista <code>:TAGGED_AS {method, source: 'ADR-050-SESSION-N', timestamp, analyst}</code> → <code>:Tag</code>, append-only, para que un motor comprometido no pueda "des-etiquetar".</p>
+<p>Combinados: campo suspected-vs-ground-truth (CL) + provenance del tag (KI) = etiquetado científicamente honesto <strong>y</strong> auditable.</p>
+<hr />
+<h3 id="q5-relacion-con-adr-050-sesion-mitre">Q5 — Relación con ADR-050 (sesión MITRE)</h3>
+<p><strong>Consenso unánime.</strong> Uno de los 6 vectores debe ser <strong>MITM con bettercap</strong>, y ADR-052 es su <strong>modelo de amenaza / ground truth arquitectónico</strong>. ADR-050 debe citar a ADR-052 como threat model subyacente.</p>
+<p><strong>Aportes a recoger:</strong>
+- <strong>Mapeo MITRE ATT&amp;CK</strong> (GE, QW): Vector A → <strong>T1557</strong> (Adversary-in-the-Middle); Vector B → <strong>T1565</strong> (Data Manipulation) o <strong>T1090</strong> (Proxy) según inyecte o tunelice.
+- <strong>[CL+DS] Dos vectores, no uno:</strong> vector A (bettercap, L2) <strong>y</strong> vector B (scapy/nfqueue, L3/L4) como escenarios separados. El vector A es el único cuya detección depende <em>enteramente</em> del cruce host↔red — un camino de detección sin ground truth es un pasivo, no un activo. DS añade: los tests de ADR-050 deben verificar las dos líneas de defensa por separado.</p>
+<hr />
+<h3 id="q6-granularidad-de-flow_start_window-la-decision-central">Q6 — Granularidad de <code>flow_start_window</code> (la decisión central)</h3>
+<p><strong>Consenso negativo unánime: CrisisWindow queda descartada como componente de identidad</strong> (variable y dependiente de contenido → rompe determinismo cross-sensor e invalida <code>flow_uid</code> históricos si cambia la config). CL, GPT, KI explícitos; el resto, al sustituirla, implícito.</p>
+<p><strong>Consenso de propiedades (lo que todos quieren, aunque difieran en cómo):</strong>
+1. La identidad debe ser <strong>estable e inmutable una vez fijada al inicio del flujo</strong> (KI explícito "timestamp de <em>inicio</em>, no de <em>actualización</em>"; flujos largos se extienden con aristas de duración de ADR-046, no fragmentan su identidad).
+2. El bucket fijo y rígido es frágil por <strong>skew de reloj en frontera</strong> (el "Box-Car problem" de GE/QW).
+3. <strong>Calibrar el valor sobre golden pcap</strong>, no fijarlo a ojo (CL percentil-1 del intervalo de reúso, GR, MI, DS test no-colisión UDP).</p>
+<p><strong>[ÁRBITRO] — mecanismo. Tres familias en disputa:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Familia</th>
+<th>Quién</th>
+<th>Idea</th>
+<th>A favor</th>
+<th>En contra</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>(a) Consumir <code>flow_id</code>/<code>uid</code> nativo del sensor</strong></td>
+<td>QW</td>
+<td><code>flow_uid = hash(node_id ‖ sensor_native_flow_id)</code>; elimina la ventana para identidad</td>
+<td>Suricata/Zeek ya resuelven la unicidad de instancia</td>
+<td>No existe para el sniffer propio de aRGus (eBPF/XDP, paquetes crudos) — QW lo admite y cae a bucket 5min</td>
+</tr>
+<tr>
+<td><strong>(b) <code>session_counter</code> estatal en el motor</strong></td>
+<td>GE</td>
+<td>El motor mantiene flujos activos por <code>(node_id, community_id)</code>; +1 al reciclar</td>
+<td>Robusto a skew</td>
+<td>Mete <strong>estado</strong> (Redis) en el correlation-engine; pierde cómputo local determinista; el propio GE pregunta si el motor está listo</td>
+</tr>
+<tr>
+<td><strong>(c) <code>N</code> fijo epoch-aligned + tolerancia de match</strong></td>
+<td>CL (+ GPT timestamp fino, KI/MI/DS bucket fijo)</td>
+<td><code>floor(epoch/N)</code>, determinista, local por sensor; el match de correlación admite ±tolerancia desacoplada de la frontera</td>
+<td>Sin estado, computable en el sensor; NTP (DEBT-NTP cerrada DAY 167) lo sostiene</td>
+<td>Hay que calibrar <code>N</code> y la tolerancia</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Clarificación que conviene que zanjes primero (puede disolver medio disenso) — [CL]:</strong> con <code>node_id</code> <em>dentro</em> del hash, dos sensores que ven el mismo flujo físico <strong>ya producen <code>flow_uid</code> distinto por diseño</strong> — no deben coincidir en identidad; coinciden por <code>community_id</code> (arista <code>FLOW_IDENTITY</code>). Por tanto la "fragmentación de un flujo legítimo en múltiples nodos" del §7 <strong>no es un bug, es el modelo intencionado</strong>, y el Box-Car (GE/QW) amenaza solo el <strong>match de correlación</strong> (arista), no la <strong>identidad</strong> (nodo). Si aceptas esta lectura: la familia (b) resuelve un problema que el diseño no tiene; el reto real se parte en dos sub-problemas con solución independiente:
+- <strong>Cortar reciclaje <em>intra-nodo</em></strong> → componente temporal/secuencial de inicio. Para <strong>UDP de reúso instantáneo de puerto</strong> (objeción válida de DS), añadir <code>seq_in_window</code>: <code>flow_uid = hash(node_id ‖ community_id ‖ flow_start_window ‖ seq_in_window)</code>.
+- <strong>No romper el match <em>cross-nodo</em></strong> → tolerancia ± en correlación, desacoplada de fronteras (CL), apoyada en NTP.</p>
+<p><strong>[P0 INCONTESTABLE — KI, único pero crítico] Codificación canónica del <code>flow_uid</code>.</strong> El borrador no fija función de hash, codificación, endianness ni delimitador. Dos implementaciones (sensor C++ vs motor Python) producirán <code>flow_uid</code> distintos para el mismo flujo → rompe la unicidad. Propuesta KI: <code>base64(sha3-256(utf8(node_id) ‖ 0x00 ‖ utf8(community_id) ‖ 0x00 ‖ uint64_be(flow_start_window)))</code>. Delimitador <code>0x00</code> para evitar <em>prefix collision</em>. <strong>Debe entrar como §3.1.1 antes de tocar Neo4j.</strong></p>
+<hr />
+<h3 id="q7-p1-y-p3-juntos-o-separar-a-adr-053">Q7 — ¿P1 y P3 juntos o separar a ADR-053?</h3>
+<p><strong>Consenso unánime: juntos en ADR-052.</strong> Comparten esquema Neo4j (constraint compuesto, <code>node_id</code> obligatorio), modelo de amenaza (data-plane hostil) y validación (golden pcap MITRE). Separar ahora generaría deuda de esquema y referencias cruzadas frágiles.</p>
+<p><strong>Condición de escisión futura (CL, DS, QW, KI):</strong> separar <strong>por madurez/tamaño, no por concepto</strong> — si el trabajo de host↔red/NAT/ARP crece (varias DEBTs, su propia calibración, bloqueo por Wazuh), se escinde el <em>detalle de implementación</em> de P1 a ADR-053 dejando 052 como decisión unificadora que lo referencia. En código, QW sugiere ya separar paquetes (<code>correlation-engine/identity</code> vs <code>correlation-engine/host_net_bridge</code>).</p>
+<hr />
+<h2 id="3-hallazgos-fuera-de-las-7-preguntas-deben-entrar-a-adr-052-v2">3. Hallazgos fuera de las 7 preguntas (deben entrar a ADR-052 v2)</h2>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Hallazgo</th>
+<th>Origen</th>
+<th>Por qué importa</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>H1</td>
+<td><strong><code>node_id</code> no está definido.</strong> ¿UUID? ¿hash de config? Propuesta: <code>SHA256(public_key del sensor)</code> ligado a certificado (SPIFFE/SPIRE) o serial de hardware. Debe estar en inventario de endpoints (ADR-046 §3.9) + cert Noise (ADR-027).</td>
+<td>MI (fuerte), KI 2.3, DS 2.1</td>
+<td>Sin <code>node_id</code> inmutable y verificable, <code>flow_uid</code> colisiona y la defensa anti-inyección se reduce a "confiar en que el <code>node_id</code> es honesto". <strong><code>flow_uid</code> prueba autenticidad de origen, no honestidad de contenido</strong> (KI).</td>
+</tr>
+<tr>
+<td>H2</td>
+<td><strong>Codificación canónica del hash</strong> (ver Q6, P0).</td>
+<td>KI 2.1</td>
+<td>Determinismo cross-implementación. Bloqueante de esquema.</td>
+</tr>
+<tr>
+<td>H3</td>
+<td><strong>Mapa de cobertura/visibilidad de sensores</strong> (qué sensor puede ver qué segmento).</td>
+<td>CL Q3, DS 2.1</td>
+<td>Sin él, <code>orphan_rate</code> y "single-sensor = sospechoso" son ruido. Habilita la defensa anti-inyección topológica.</td>
+</tr>
+<tr>
+<td>H4</td>
+<td><strong>Resolución de conflictos entre mecanismos NAT del menú.</strong> Si dos mecanismos discrepan (translation-node dice IP_A, proc+puerto dice IP_B) → consenso por mayoría ponderada por confianza; marcar <code>CONFLICT_NAT</code>; <strong>nunca</strong> fallback silencioso al mecanismo 4.</td>
+<td>KI 2.4</td>
+<td>El §3.2 ordena el menú pero no dice qué pasa con respuestas inconsistentes.</td>
+</tr>
+<tr>
+<td>H5</td>
+<td><strong>Terminología "causal-bidireccional" (§3.2) → "coincidencia temporal asimétrica".</strong> Causalidad real (relojes de Lamport/vectoriales) es cara y frágil.</td>
+<td>QW Riesgo B</td>
+<td>El host plane (Wazuh) tiene mucha más latencia de ingest que el data-plane; la ventana host↔red debe ser tolerante a ese lag, no implementar causalidad.</td>
+</tr>
+<tr>
+<td>H6</td>
+<td><strong>Cuantificar ventanas host↔red asimétricas.</strong> Red→Host ~5 s; Host→Red ~30 s (configurable).</td>
+<td>MI, QW</td>
+<td>El §4 deja <code>host_bridge_window</code> en 15-30 s sin distinguir dirección.</td>
+</tr>
+<tr>
+<td>H7</td>
+<td><strong>Definir <code>orphan_rate</code> concretamente en ADR-051</strong> (fórmula + umbral), pero <strong>condicionado a H3</strong>. MI propone <code>cid_sensor / cid_cluster</code> con umbral 0.9; CL objeta que el umbral debe ser relativo a cobertura esperada, no absoluto.</td>
+<td>MI, DS, CL</td>
+<td>Cierra el bucle de "detección de sensor comprometido" de §3.4 línea 3.</td>
+</tr>
+<tr>
+<td>H8</td>
+<td><strong>(Opcional, GPT) Documentar la distinción <code>FlowObservation</code> vs <code>FlowIdentity</code></strong> aunque hoy ambas sean el mismo <code>flow_uid</code>.</td>
+<td>GPT</td>
+<td><code>flow_uid</code> identifica "la observación de un flujo por un sensor", no "el flujo lógico". Dejarlo escrito evita una migración dolorosa si en 1-2 años correláis múltiples observaciones del mismo flujo lógico. No obligatorio ahora.</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="4-tabla-consolidada-de-acciones">4. Tabla consolidada de acciones</h2>
+<p>Prioridad: <strong>P0</strong> = bloquea esquema Neo4j (antes de poblar) · <strong>P1</strong> = motor/stream · <strong>P2</strong> = host plane / validación · <strong>P3</strong> = MITRE/ground-truth.</p>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Acción</th>
+<th>Prio</th>
+<th>Consenso</th>
+<th>Depende de</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>A1</strong></td>
+<td>Ratificar <code>DEBT-NEO4J-FLOW-KEY-001</code>: <code>flow_uid</code> + <code>node_id</code> obligatorio + constraint compuesto Neo4j 5.x en <code>:NetworkFlow</code>/<code>:Alert</code>/<code>:TelemetryEvent</code>.</td>
+<td>P0</td>
+<td>8/8</td>
+<td>A2, A3, H1</td>
+</tr>
+<tr>
+<td><strong>A2</strong></td>
+<td>Fijar <strong>codificación canónica del <code>flow_uid</code></strong> (§3.1.1): función de hash, delimitador <code>0x00</code>, endianness, longitud.</td>
+<td>P0</td>
+<td>KI (incontestable)</td>
+<td>—</td>
+</tr>
+<tr>
+<td><strong>A3</strong></td>
+<td><strong>[ÁRBITRO]</strong> Decidir mecanismo de identidad intra-nodo (familia a/b/c de Q6) y, si aplica, <code>seq_in_window</code> para UDP.</td>
+<td>P0</td>
+<td>parcial</td>
+<td>clarificación cross-node</td>
+</tr>
+<tr>
+<td><strong>A4</strong></td>
+<td>Definir <strong><code>node_id</code></strong> como identidad criptográfica verificable (clave pública del sensor / cert), no string arbitrario.</td>
+<td>P0</td>
+<td>MI+KI+DS</td>
+<td>ADR-027, ADR-046 §3.9</td>
+</tr>
+<tr>
+<td><strong>A5</strong></td>
+<td>Schema enforcement en ingest: rechazar a DLQ todo evento sin <code>node_id</code>.</td>
+<td>P0</td>
+<td>8/8</td>
+<td>A1</td>
+</tr>
+<tr>
+<td><strong>A6</strong></td>
+<td>Rate-limit de cardinalidad en <strong>correlation-engine</strong> (Count-Min Sketch / HyperLogLog por <code>node_id</code>, ventana deslizante, umbral adaptativo sobre baseline). Superar cap → meta-nodo <code>:GraphFloodingAnomaly</code>/<code>:HighCardinalityFlowCluster</code>, nunca drop.</td>
+<td>P1</td>
+<td>8/8 (ubicación)</td>
+<td>ADR-051</td>
+</tr>
+<tr>
+<td><strong>A7</strong></td>
+<td><strong>[ÁRBITRO]</strong> ¿Backpressure de publicación en el sensor además del control del motor? (Kimi/CL sí como backpressure; MI no como seguridad).</td>
+<td>P1</td>
+<td>disenso</td>
+<td>A6</td>
+</tr>
+<tr>
+<td><strong>A8</strong></td>
+<td>Menú NAT con <strong>anotación obligatoria de método+confianza</strong> en grafo y log + <strong>regla de conflicto</strong> (<code>CONFLICT_NAT</code>, mayoría ponderada, sin fallback silencioso).</td>
+<td>P1</td>
+<td>8/8 + KI(H4)</td>
+<td>—</td>
+</tr>
+<tr>
+<td><strong>A9</strong></td>
+<td>Ventanas host↔red <strong>asimétricas cuantificadas</strong> (Red→Host ~5 s, Host→Red ~30 s) y renombrar "causal-bidireccional" → "coincidencia temporal asimétrica".</td>
+<td>P1</td>
+<td>MI, QW</td>
+<td>—</td>
+</tr>
+<tr>
+<td><strong>A10</strong></td>
+<td><strong>Marca de confianza</strong>: guardar señales primitivas (<code>witness_count</code>, <code>is_host_plane_anchored</code>, <code>nat_method</code>+confianza) y derivar <code>trust_tier</code> como vista. <strong>[ÁRBITRO]</strong> forma final (score vs enum vs señales).</td>
+<td>P1</td>
+<td>sí marca (8/8); forma en disputa</td>
+<td>A11</td>
+</tr>
+<tr>
+<td><strong>A11</strong></td>
+<td><strong>Nueva DEBT: mapa de cobertura/visibilidad de sensores</strong> (sensor↔segmento). Sin él, <code>orphan_rate</code> y la defensa anti-inyección topológica son ruido.</td>
+<td>P1</td>
+<td>CL+DS</td>
+<td>—</td>
+</tr>
+<tr>
+<td><strong>A12</strong></td>
+<td>ARP/NDP como <strong>nodo de estado de primera clase</strong> (<code>:IpMacBinding</code> con <code>valid_from</code>/<code>valid_to</code>); el <strong>re-binding</strong> es la señal. <code>DEBT-ARGUSPP-ARP-MONITOR-001</code> emite <em>cambios de estado</em>, no paquetes crudos.</td>
+<td>P2</td>
+<td>8/8 (1ª clase)</td>
+<td>Wazuh, DEBT-ARGUSPP-WAZUH-001</td>
+</tr>
+<tr>
+<td><strong>A13</strong></td>
+<td>Nota de <strong>límite fundamental</strong> en §3.4: ARP/NDP detecta vector A solo con <strong>host sano</strong>; host comprometido requiere fuente out-of-band (switch port-security).</td>
+<td>P2</td>
+<td>KI</td>
+<td>A12</td>
+</tr>
+<tr>
+<td><strong>A14</strong></td>
+<td>Ampliar señal de host más allá de L2: <strong>anomalías TCP</strong> (RST/seqnum) y <strong>mismatch TLS</strong> vía Wazuh/osquery (MITM L3: rogue gw/DNS/BGP).</td>
+<td>P2</td>
+<td>QW</td>
+<td>A12</td>
+</tr>
+<tr>
+<td><strong>A15</strong></td>
+<td>Etiquetado de inyección con <strong>dos campos ortogonales</strong>: <code>INJECTED_SUSPECTED</code> (heurística) ≠ <code>INJECTED_GROUND_TRUTH</code> (manifiesto MITRE). Eje <code>provenance</code> <strong>separado</strong> del enum congelado de <code>acceptance_criteria.md</code>.</td>
+<td>P2/P3</td>
+<td>CL (+ etiquetar 8/8)</td>
+<td>A11</td>
+</tr>
+<tr>
+<td><strong>A16</strong></td>
+<td><strong>Provenance del tag</strong>: arista <code>:TAGGED_AS {method, source, timestamp, analyst}</code> append-only → <code>:Tag</code>. Filtrar por defecto en producción, incluir en threat-hunt.</td>
+<td>P2</td>
+<td>KI + GE/QW/DS/MI</td>
+<td>—</td>
+</tr>
+<tr>
+<td><strong>A17</strong></td>
+<td>Alinear ADR-050: vector A (bettercap, <strong>T1557</strong>) y vector B (scapy/nfqueue, <strong>T1565/T1090</strong>) como escenarios separados; citar ADR-052 como threat model; los flujos del red team se etiquetan <code>INJECTED_GROUND_TRUTH</code>.</td>
+<td>P3</td>
+<td>8/8</td>
+<td>ADR-050</td>
+</tr>
+<tr>
+<td><strong>A18</strong></td>
+<td>Tests EMECAS++ adicionales: no-colisión UDP con reúso inmediato de puerto (DS), <code>orphan_rate</code> con sensor comprometido simulado (MI), escala (1M flujos, constraint + rate-limit) (MI/GR).</td>
+<td>P2</td>
+<td>DS, MI, GR</td>
+<td>A1, A6</td>
+</tr>
+<tr>
+<td><strong>A19</strong></td>
+<td>(Opcional) Documentar <code>FlowObservation</code> vs <code>FlowIdentity</code> para evitar migración futura.</td>
+<td>P3</td>
+<td>GPT</td>
+<td>—</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="5-lo-que-te-toca-decidir-como-arbitro">5. Lo que te toca decidir como árbitro</h2>
+<p>Tres nudos que el Consejo deja abiertos (todo lo demás tiene consenso suficiente para implementar):</p>
+<ol>
+<li>
+<p><strong>A3 — mecanismo de identidad <code>flow_uid</code> intra-nodo.</strong> Recomendación implícita del mapa: zanjar primero la clarificación cross-node (identidad ≠ correlación); si la aceptas, (c) <code>N</code> fijo + tolerancia de match queda como la opción sin estado y determinista, con (a) <code>sensor_native_flow_id</code> como refuerzo <em>cuando el sensor lo provea</em> (Suricata/Zeek) y <code>seq_in_window</code> para UDP. (b) <code>session_counter</code> estatal solo si rechazas la clarificación.</p>
+</li>
+<li>
+<p><strong>A10 — forma de la marca de confianza.</strong> Señales primitivas + tier derivado reconcilia a 6 de 8 y respeta la advertencia (GPT/CL) contra el float opaco que envejece mal.</p>
+</li>
+<li>
+<p><strong>A7 — backpressure en el sensor.</strong> Resoluble tratándolo como backpressure de IPC (no control de seguridad), lo que hace compatibles a Kimi/CL con Mistral.</p>
+</li>
+</ol>
+<p>Veredicto agregado del Consejo: <strong>APROBADO CON MODIFICACIONES</strong>. Incorporando A2, A4 y A3 (los tres P0 de esquema), se desbloquea <code>DEBT-NEO4J-FLOW-KEY-001</code> y se puede poblar el grafo.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.top", "search.highlight"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

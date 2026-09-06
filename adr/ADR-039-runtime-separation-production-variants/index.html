@@ -1,0 +1,1552 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source embedded-ML NDR for hospitals and schools">
+      
+      
+        <meta name="author" content="Alonso Isidoro Roman">
+      
+      
+        <link rel="canonical" href="https://alonsoir.github.io/argus/adr/ADR-039-runtime-separation-production-variants/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>ADR-039: Build/Runtime Separation for Production Variants - ML Defender (aRGus NDR)</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#adr-039-buildruntime-separation-for-production-variants" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-header__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ML Defender (aRGus NDR)
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              ADR-039: Build/Runtime Separation for Production Variants
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../README.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/BACKLOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Backlog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Security Model
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-tabs__link">
+          
+  
+  
+  ADRs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/contracts/Protobuf contracts.md" class="md-tabs__link">
+          
+  
+  
+  Contracts
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-nav__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ML Defender (aRGus NDR)
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../README.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/BACKLOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADRs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ADRs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013 Seed Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-021-deployment-topology-seed-families.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-021 Topology SSOT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-022-threat-model-opcion2-descartada.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-022 Threat Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Protobuf contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protobuf
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/JSON contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JSON
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Rag security commands.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-contexto-y-motivacion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Contexto y Motivación
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-decision" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Decisión
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-justificacion-de-seguridad" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Justificación de seguridad
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. Justificación de seguridad">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#por-que-el-compilador-no-debe-estar-en-produccion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Por qué el compilador NO debe estar en producción
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#axioma-de-separacion-buildruntime-bsr" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Axioma de Separación Build/Runtime (BSR)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-implementacion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Implementación
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4. Implementación">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#41-flags-de-compilacion-de-produccion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.1 Flags de compilación de producción
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#42-estructura-de-directorios" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.2 Estructura de directorios
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#43-targets-makefile" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.3 Targets Makefile
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#44-vagrantfile-hardened-x86" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.4 Vagrantfile hardened-x86
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#45-gates-ci-obligatorios" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.5 Gates CI obligatorios
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-metricas-publicables-contribucion-al-paper-5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Métricas publicables (contribución al paper §5)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-alternativas-descartadas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Alternativas descartadas
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="6. Alternativas descartadas">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#opcion-a-builder-vm-separada-descartada-para-v1-debt-build-pipeline-001" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Opción A — Builder VM separada (descartada para v1, DEBT-BUILD-PIPELINE-001)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#opcion-c-compilar-en-la-imagen-hardened-en-tiempo-de-provisioning-y-luego-eliminar-el-compilador" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Opción C — Compilar en la imagen hardened en tiempo de provisioning y luego eliminar el compilador
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-deuda-tecnica-generada" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Deuda técnica generada
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-consecuencias" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. Consecuencias
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#9-tests-requeridos" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9. Tests requeridos
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#10-decisiones-del-consejo-de-sabios-day-130-88" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10. Decisiones del Consejo de Sabios — DAY 130 (8/8)
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="adr-039-buildruntime-separation-for-production-variants">ADR-039: Build/Runtime Separation for Production Variants</h1>
+<p><strong>Estado:</strong> APROBADO — Consejo de Sabios 8/8, DAY 130
+<strong>Fecha:</strong> DAY 130 — 25 Abril 2026
+<strong>Autor:</strong> Alonso Isidoro Román
+<strong>Relacionado con:</strong>
+- ADR-030 (aRGus-AppArmor-Hardened — variante de producción)
+- ADR-031 (aRGus-seL4-Genode — investigación)
+- ADR-025 (Plugin Integrity Verification via Ed25519)
+- BACKLOG-FEDER-001 (demo FEDER, deadline 22 septiembre 2026)</p>
+<hr />
+<h2 id="1-contexto-y-motivacion">1. Contexto y Motivación</h2>
+<p>ADR-030 especifica que la imagen de producción debe ser mínima: sin compiladores,
+sin herramientas de debug, sin dependencias de desarrollo. Sin embargo, ADR-030
+no especifica <em>cómo</em> se producen los binarios que se instalan en esa imagen.</p>
+<p>Existen dos enfoques posibles:</p>
+<p><strong>Opción A — Build en imagen separada (builder VM):</strong>
+Una VM de build dedicada compila, genera <code>.deb</code> firmados y los deposita en <code>dist/</code>.
+La imagen hardened solo ejecuta <code>dpkg -i</code>.</p>
+<p><strong>Opción B — Build en VM de desarrollo, runtime en imagen hardened:</strong>
+La VM de desarrollo (aRGus-dev, ya existente) compila con flags de producción
+mediante targets Makefile dedicados (<code>make build-production-x86</code>,
+<code>make build-production-arm64</code>). Los binarios resultantes se depositan en <code>dist/</code>
+y se instalan en la imagen hardened via provisioner Vagrant.</p>
+<p>Este ADR documenta la elección entre ambas opciones y sus consecuencias.</p>
+<hr />
+<h2 id="2-decision">2. Decisión</h2>
+<p><strong>Se adopta la Opción B — Build en VM de desarrollo, runtime en imagen hardened.</strong></p>
+<p>La Opción A (builder VM separada) es arquitectónicamente más correcta a largo plazo
+pero introduce complejidad innecesaria para el deadline FEDER (1 agosto 2026 go/no-go).
+La Opción B reutiliza infraestructura existente y es suficiente para demostrar la
+separación build/runtime en la demo FEDER.</p>
+<p>La Opción A se documenta como evolución post-FEDER (DEBT-BUILD-PIPELINE-001).</p>
+<p><strong>Aprobado por Consejo de Sabios 8/8, DAY 130.</strong>
+Ver acta: <code>docs/consejo/CONSEJO-ADR039-DAY130.md</code></p>
+<hr />
+<h2 id="3-justificacion-de-seguridad">3. Justificación de seguridad</h2>
+<h3 id="por-que-el-compilador-no-debe-estar-en-produccion">Por qué el compilador NO debe estar en producción</h3>
+<p>Un compilador en la imagen de producción amplía la superficie de ataque de forma
+significativa:</p>
+<ol>
+<li>
+<p><strong>Compilación de payloads en tiempo de ejecución (Living off the Land):</strong>
+   Si un atacante consigue ejecución de código arbitrario, encuentra gcc/clang/cmake
+   listos para compilar y ejecutar código malicioso adicional sin necesidad de
+   transferencia de binarios externos — aumentando drásticamente su probabilidad
+   de detección por aRGus.</p>
+</li>
+<li>
+<p><strong>CVEs en el toolchain:</strong> gcc, clang, make, cmake, binutils acumulan CVEs
+   regularmente. Cada paquete de desarrollo instalado en producción es superficie
+   de ataque adicional cuantificable.</p>
+</li>
+<li>
+<p><strong>Tamaño de imagen y superficie de ataque medible:</strong> La reducción de paquetes
+   instalados es una métrica publicable en el paper (§5 Draft v17).</p>
+</li>
+</ol>
+<h3 id="axioma-de-separacion-buildruntime-bsr">Axioma de Separación Build/Runtime (BSR)</h3>
+<blockquote>
+<p><strong>Dado un sistema S con un conjunto de componentes C, si el subconjunto de
+componentes necesarios para la compilación C_build está ausente del entorno
+de ejecución E_runtime, entonces la superficie de ataque de E_runtime es
+estrictamente menor que la de E_runtime ∪ C_build, para cualquier ataque
+que requiera C_build. La verificación criptográfica de integridad de los
+binarios en E_runtime es condición necesaria para que BSR sea efectivo.</strong></p>
+<p><em>Corolario operativo:</em> La restricción es estructural (ausencia de paquetes),
+no configurable (permisos). Un atacante con ejecución arbitraria en E_runtime
+debe exfiltrar datos e importar binarios externamente, aumentando su probabilidad
+de detección. Esta propiedad es invariante bajo configuration drift.</p>
+</blockquote>
+<p><strong>Supuesto de confianza explícito (supply chain):</strong> La seguridad del binario de
+producción es tan buena como la seguridad del entorno de build. Si la VM de
+desarrollo está comprometida, el binario firmado también lo está. Este supuesto
+("trusted build environment assumption") debe declararse explícitamente en el
+paper §5 y en la documentación de despliegue.</p>
+<p><strong>Referencias:</strong>
+- Saltzer, J. H., &amp; Schroeder, M. D. (1975). <em>The protection of information in
+  computer systems.</em> Proceedings of the IEEE. (Principio de mínimo privilegio)
+- Howard, M., &amp; Lipner, S. (2006). <em>The Security Development Lifecycle.</em>
+  Microsoft Press. (Attack Surface Reduction)
+- NIST SP 800-160 Vol. 1 (2016). <em>Systems Security Engineering.</em>
+- Manadhata, P. K., &amp; Wing, J. M. (2011). <em>An attack surface metric.</em>
+  IEEE Transactions on Software Engineering.</p>
+<hr />
+<h2 id="4-implementacion">4. Implementación</h2>
+<h3 id="41-flags-de-compilacion-de-produccion">4.1 Flags de compilación de producción</h3>
+<p>Los targets <code>make build-production-*</code> compilan con los siguientes flags,
+aprobados por el Consejo 8/8 con enmiendas DAY 130:</p>
+<pre><code class="language-makefile"># Flags base de producción — aprobados Consejo 8/8 DAY 130
+PROD_CXXFLAGS = -O2 -DNDEBUG \
+                -fstack-protector-strong \
+                -fPIE -pie \
+                -D_FORTIFY_SOURCE=2 \
+                -fvisibility=hidden \
+                -fstack-clash-protection \
+                -fno-strict-overflow \
+                -Werror=format-security \
+                -fasynchronous-unwind-tables \
+                -Wl,-z,relro -Wl,-z,now \
+                -Wl,-z,noexecstack
+
+# x86-64 — baseline para máxima compatibilidad hospitalaria (Consejo 5/8)
+# Hardware objetivo: Intel Core 2 Duo+ (2006), Xeon cualquier generación
+# x86-64-v2 disponible como opt-in: make build-production-x86-v2
+PROD_CXXFLAGS_X86 = $(PROD_CXXFLAGS) -march=x86-64 -mtune=generic -pipe
+
+# x86-64-v2 — opt-in para hardware moderno (post-2009, SSE4.2+POPCNT)
+# Documentado en docs/HARDWARE-REQUIREMENTS.md
+PROD_CXXFLAGS_X86_V2 = $(PROD_CXXFLAGS) -march=x86-64-v2 -mtune=generic -pipe
+
+# ARM64 — Raspberry Pi 4/5 (ARMv8.2-A)
+PROD_CXXFLAGS_ARM64 = $(PROD_CXXFLAGS) -march=armv8.2-a -pipe
+
+# Solo x86-64, donde el hardware lo soporta:
+# -fcf-protection=full  (Control-Flow Integrity — evaluar por componente)
+</code></pre>
+<p><strong>Justificación de cada flag:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Flag</th>
+<th>Propósito</th>
+<th>CWE mitigado</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>-O2 -DNDEBUG</code></td>
+<td>Optimización estable, sin asserts de debug</td>
+<td>—</td>
+</tr>
+<tr>
+<td><code>-fstack-protector-strong</code></td>
+<td>Protección contra stack smashing</td>
+<td>CWE-121</td>
+</tr>
+<tr>
+<td><code>-fPIE -pie</code></td>
+<td>ASLR completo del ejecutable</td>
+<td>CWE-119</td>
+</tr>
+<tr>
+<td><code>-D_FORTIFY_SOURCE=2</code></td>
+<td>Verificación de límites en funciones de string</td>
+<td>CWE-120/121</td>
+</tr>
+<tr>
+<td><code>-fvisibility=hidden</code></td>
+<td>Reduce exportación de símbolos</td>
+<td>—</td>
+</tr>
+<tr>
+<td><code>-fstack-clash-protection</code></td>
+<td>Protección contra stack clash en procesos largos</td>
+<td>CWE-121</td>
+</tr>
+<tr>
+<td><code>-fno-strict-overflow</code></td>
+<td>Previene optimizaciones peligrosas en validación</td>
+<td>CWE-190</td>
+</tr>
+<tr>
+<td><code>-Werror=format-security</code></td>
+<td>Previene format string bugs</td>
+<td>CWE-134</td>
+</tr>
+<tr>
+<td><code>-fasynchronous-unwind-tables</code></td>
+<td>Genera core dumps útiles para forense</td>
+<td>—</td>
+</tr>
+<tr>
+<td><code>-Wl,-z,relro -Wl,-z,now</code></td>
+<td>RELRO full + resolución inmediata (anti GOT overwrite)</td>
+<td>CWE-122</td>
+</tr>
+<tr>
+<td><code>-Wl,-z,noexecstack</code></td>
+<td>Stack no ejecutable</td>
+<td>CWE-119</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Sin:</strong> <code>-g</code> (symbols), <code>-fsanitize=*</code>, <code>-fno-omit-frame-pointer</code>, <code>-DDEBUG</code>.</p>
+<p><strong>Nota sobre símbolos de debug (Kimi DAY 130):</strong> Para capacidad forense en
+producción hospitalaria, se pueden generar símbolos separados:</p>
+<pre><code class="language-bash">objcopy --only-keep-debug dist/x86/argus-ml-detector dist/x86/argus-ml-detector.debug
+strip --strip-debug dist/x86/argus-ml-detector
+# binario.debug se guarda en vault seguro, no en imagen hardened
+</code></pre>
+<p>Documentado como DEBT-PROD-DEBUG-SYMBOLS-001 (backlog v1.1).</p>
+<h3 id="42-estructura-de-directorios">4.2 Estructura de directorios</h3>
+<pre><code>dist/
+  x86/
+    argus-sniffer
+    argus-ml-detector
+    argus-rag-ingester
+    argus-rag-security
+    argus-firewall-acl-agent
+    argus-etcd-server
+    plugins/
+      xgboost_plugin.so
+      xgboost_plugin.so.sig       &lt;- firma Ed25519 (ADR-025)
+    models/
+      xgboost_cicids2017_v2.ubj
+      xgboost_cicids2017_v2.ubj.sig
+    configs/
+      *.json
+    SHA256SUMS                    &lt;- checksums obligatorios (ChatGPT DAY 130)
+  arm64/
+    (misma estructura)
+  README.md                       &lt;- &quot;Artefactos generados. No editar manualmente.&quot;
+</code></pre>
+<p><strong>CRÍTICO:</strong> <code>dist/</code> está en <code>.gitignore</code>. Los artefactos binarios no se versionan.</p>
+<h3 id="43-targets-makefile">4.3 Targets Makefile</h3>
+<pre><code class="language-makefile">build-production-x86:
+    # Compila con flags de producción x86 (baseline) en la VM de desarrollo
+    # Output: dist/x86/
+
+build-production-x86-v2:
+    # Opt-in: flags x86-64-v2 para hardware moderno (SSE4.2+POPCNT)
+    # Output: dist/x86-v2/
+
+build-production-arm64:
+    # Compila con flags de producción arm64 en la VM de desarrollo
+    # Output: dist/arm64/
+
+sign-production:
+    # Firma Ed25519 (ADR-025): binarios + plugins + modelos
+    # Requiere: make build-production-* previo
+    # Output: *.sig para cada artefacto
+
+checksums-production:
+    # Genera SHA256SUMS para cada artefacto en dist/
+    # Verificado por provisioner de hardened VM antes de instalación
+
+dist-clean:
+    # Limpia dist/ completamente
+</code></pre>
+<h3 id="44-vagrantfile-hardened-x86">4.4 Vagrantfile hardened-x86</h3>
+<pre><code>vagrant/hardened-x86/Vagrantfile
+</code></pre>
+<p>Características:
+- Imagen base: <code>debian/trixie64</code> (Debian 13 mínima)
+- Sin instalación de: gcc, clang, cmake, make, build-essential, gdb, strace
+- Instala desde <code>dist/x86/</code> via provisioner con verificación de checksums
+- Verifica firmas Ed25519 antes de instalar cada artefacto
+- AppArmor en enforce mode desde el arranque
+- systemd units instaladas desde <code>etcd-server/config/</code>
+- Ed25519 keypair generado en runtime (ADR-025)</p>
+<h3 id="45-gates-ci-obligatorios">4.5 Gates CI obligatorios</h3>
+<pre><code class="language-bash"># CHECK-PROD-NO-COMPILER — más robusto que 'which' (Kimi + Qwen DAY 130)
+make check-prod-no-compiler
+
+# Implementación:
+# vagrant ssh hardened-x86 -c &quot;
+#   for cmd in gcc clang cc c++ g++ cmake make gmake; do
+#     command -v \$cmd &gt;/dev/null 2&gt;&amp;1 &amp;&amp; echo FAIL &amp;&amp; exit 1
+#   done
+#   dpkg -l | grep -E 'build-essential|gcc|clang|cmake' | grep '^ii' &amp;&amp; exit 1
+#   exit 0
+# &quot;
+
+# CHECK-PROD-CHECKSEC — verifica hardening de binarios (ChatGPT DAY 130)
+make check-prod-checksec
+# checksec --file=dist/x86/argus-* → PIE, RELRO full, NX enabled
+
+# CHECK-PROD-PIPELINE-6/6 — pipeline arranca en hardened VM
+# CHECK-PROD-APPARMOR — AppArmor 6/6 enforce, 0 denials
+# CHECK-PROD-SIGN — TEST-INTEG-SIGN 7/7 en hardened VM
+# CHECK-PROD-SHA256 — verificación de checksums en dist/
+</code></pre>
+<hr />
+<h2 id="5-metricas-publicables-contribucion-al-paper-5">5. Métricas publicables (contribución al paper §5)</h2>
+<table>
+<thead>
+<tr>
+<th>Métrica</th>
+<th>aRGus-dev</th>
+<th>aRGus-production</th>
+<th>Delta</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Paquetes instalados</td>
+<td>~450</td>
+<td>&lt; 80 (estimado)</td>
+<td>−82%</td>
+</tr>
+<tr>
+<td>Tamaño imagen disco</td>
+<td>~8 GB</td>
+<td>&lt; 2 GB (estimado)</td>
+<td>−75%</td>
+</tr>
+<tr>
+<td>gcc/clang presentes</td>
+<td>Sí</td>
+<td>No</td>
+<td>—</td>
+</tr>
+<tr>
+<td>CVEs toolchain expuestos</td>
+<td>N</td>
+<td>0</td>
+<td>−100%</td>
+</tr>
+<tr>
+<td>Syscalls permitidas (seccomp)</td>
+<td>no restringidas</td>
+<td>whitelist por componente</td>
+<td>documentar</td>
+</tr>
+<tr>
+<td>Tiempo arranque pipeline</td>
+<td>documentar</td>
+<td>documentar</td>
+<td>documentar</td>
+</tr>
+<tr>
+<td>Memoria RSS por componente</td>
+<td>documentar</td>
+<td>documentar</td>
+<td>documentar</td>
+</tr>
+</tbody>
+</table>
+<p><em>Valores exactos se completarán tras implementación (DEBT-PROD-METRICS-001).</em></p>
+<hr />
+<h2 id="6-alternativas-descartadas">6. Alternativas descartadas</h2>
+<h3 id="opcion-a-builder-vm-separada-descartada-para-v1-debt-build-pipeline-001">Opción A — Builder VM separada (descartada para v1, DEBT-BUILD-PIPELINE-001)</h3>
+<p>Una tercera VM (<code>vagrant/builder/</code>) compila, firma y deposita en <code>dist/</code>.
+La hardened no tiene acceso a la dev VM. Arquitectura ideal a largo plazo.</p>
+<p><strong>Por qué se pospone:</strong>
+- Requiere un tercer Vagrantfile y pipeline de CI adicional
+- Complejidad innecesaria para demo FEDER (deadline 1 agosto 2026)
+- La separación build/runtime ya se garantiza con Opción B en la práctica</p>
+<p><strong>Cuándo activar:</strong> Post-FEDER, cuando haya equipo. DEBT-BUILD-PIPELINE-001.</p>
+<h3 id="opcion-c-compilar-en-la-imagen-hardened-en-tiempo-de-provisioning-y-luego-eliminar-el-compilador">Opción C — Compilar en la imagen hardened en tiempo de provisioning y luego eliminar el compilador</h3>
+<p><strong>Descartado definitivamente.</strong> El compilador estuvo presente en el sistema
+en algún momento. Logs, caché de paquetes y artefactos intermedios pueden
+persistir. La restricción debe ser estructural, no temporal.</p>
+<hr />
+<h2 id="7-deuda-tecnica-generada">7. Deuda técnica generada</h2>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Descripción</th>
+<th>Target</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>DEBT-BUILD-PIPELINE-001</td>
+<td>Builder VM separada (Opción A)</td>
+<td>post-FEDER</td>
+</tr>
+<tr>
+<td>DEBT-PROD-METRICS-001</td>
+<td>Completar tabla de métricas §5</td>
+<td>DAY 131-135</td>
+</tr>
+<tr>
+<td>DEBT-PROD-COMPAT-BASELINE-001</td>
+<td>Documentar decisión x86-64 baseline en HARDWARE-REQUIREMENTS.md</td>
+<td>DAY 131</td>
+</tr>
+<tr>
+<td>DEBT-PROD-DEBUG-SYMBOLS-001</td>
+<td>Símbolos de debug separados para forense hospitalario</td>
+<td>v1.1</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="8-consecuencias">8. Consecuencias</h2>
+<p><strong>Positivas:</strong>
+- Imagen de producción sin compilador — restricción estructural, no configurable
+- Reutilización de infraestructura existente (VM de dev)
+- Métricas publicables: reducción de superficie de ataque cuantificada
+- Viable para deadline FEDER (1 agosto 2026 go/no-go)
+- Sin cambios en el código del pipeline aRGus
+- CHECK-PROD-NO-COMPILER + CHECK-PROD-CHECKSEC como gates CI verificables</p>
+<p><strong>Negativas / Riesgos:</strong>
+- La VM de dev es confianza implícita en el build ("trusted build environment
+  assumption") — documentado explícitamente, no ocultado
+- Cross-compilation para ARM64 desde x86 puede requerir <code>aarch64-linux-gnu-g++</code>
+  en la VM de dev
+- <code>dist/</code> no debe commitearse — <code>.gitignore</code> obligatorio</p>
+<hr />
+<h2 id="9-tests-requeridos">9. Tests requeridos</h2>
+<table>
+<thead>
+<tr>
+<th>Test</th>
+<th>Descripción</th>
+<th>Gate</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>CHECK-PROD-NO-COMPILER</td>
+<td>gcc/clang/cmake ausentes + dpkg verify</td>
+<td>BLOQUEANTE</td>
+</tr>
+<tr>
+<td>CHECK-PROD-CHECKSEC</td>
+<td>PIE + RELRO full + NX en todos los binarios</td>
+<td>BLOQUEANTE</td>
+</tr>
+<tr>
+<td>CHECK-PROD-SHA256</td>
+<td>Checksums verificados antes de instalación</td>
+<td>BLOQUEANTE</td>
+</tr>
+<tr>
+<td>CHECK-PROD-PIPELINE-6/6</td>
+<td>Pipeline 6/6 RUNNING en imagen hardened</td>
+<td>BLOQUEANTE</td>
+</tr>
+<tr>
+<td>CHECK-PROD-APPARMOR</td>
+<td>AppArmor 6/6 enforce, 0 denials</td>
+<td>BLOQUEANTE</td>
+</tr>
+<tr>
+<td>CHECK-PROD-SIGN</td>
+<td>TEST-INTEG-SIGN 7/7 en hardened VM</td>
+<td>BLOQUEANTE</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="10-decisiones-del-consejo-de-sabios-day-130-88">10. Decisiones del Consejo de Sabios — DAY 130 (8/8)</h2>
+<table>
+<thead>
+<tr>
+<th>Pregunta</th>
+<th>Decisión</th>
+<th>Votos</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>P1: Opción B para FEDER</td>
+<td>APROBADA</td>
+<td>8/8</td>
+</tr>
+<tr>
+<td>P2: Axioma BSR publicable</td>
+<td>APROBADO con matización supply chain</td>
+<td>8/8</td>
+</tr>
+<tr>
+<td>P3: Flags de compilación</td>
+<td>APROBADOS con enmiendas (ver sección 4.1)</td>
+<td>8/8</td>
+</tr>
+<tr>
+<td>P4: <code>-march=x86-64</code> baseline</td>
+<td>APROBADO como default</td>
+<td>5/8</td>
+</tr>
+<tr>
+<td>P4: <code>-march=x86-64-v2</code> opt-in</td>
+<td>APROBADO como target adicional</td>
+<td>8/8</td>
+</tr>
+</tbody>
+</table>
+<p>Ver acta completa: <code>docs/consejo/CONSEJO-ADR039-DAY130.md</code></p>
+<hr />
+<p><em>Via Appia Quality — La seguridad no se instala. Se diseña.</em>
+<em>DAY 130 — 25 Abril 2026 — Aprobado Consejo de Sabios 8/8</em></p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.top", "search.highlight"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

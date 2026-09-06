@@ -1,0 +1,1253 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source embedded-ML NDR for hospitals and schools">
+      
+      
+        <meta name="author" content="Alonso Isidoro Roman">
+      
+      
+        <link rel="canonical" href="https://alonsoir.github.io/argus/council/CONSEJO%20DE%20SABIOS%20%E2%80%94%20DAY%20160-respuesta-mistral/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>CONSEJO DE SABIOS — DAY 160 respuesta mistral - ML Defender (aRGus NDR)</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#q1-deb-o-vagrant-box" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-header__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ML Defender (aRGus NDR)
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              CONSEJO DE SABIOS — DAY 160 respuesta mistral
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../README.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/BACKLOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Backlog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Security Model
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-tabs__link">
+          
+  
+  
+  ADRs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/contracts/Protobuf contracts.md" class="md-tabs__link">
+          
+  
+  
+  Contracts
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-nav__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ML Defender (aRGus NDR)
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../README.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/BACKLOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADRs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ADRs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013 Seed Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-021-deployment-topology-seed-families.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-021 Topology SSOT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-022-threat-model-opcion2-descartada.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-022 Threat Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Protobuf contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protobuf
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/JSON contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JSON
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Rag security commands.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#q1-deb-o-vagrant-box" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🔧 Q1 — ¿.deb o Vagrant box?
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#q2-valores-naive-en-json-contrato-hardcoded-o-generados" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ⚙️ Q2 — Valores naive en JSON contrato: ¿hardcoded o generados?
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#q3-token-enterprise-en-cicd-jenkins-credentials-o-fichero" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🔐 Q3 — Token enterprise en CI/CD: ¿Jenkins Credentials o fichero?
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#q4-debt-wire-protocol-test-001-y-debt-e2e-live-delta-001-antes-o-despues-del-pipeline" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ⚠️ Q4 — ¿DEBT-WIRE-PROTOCOL-TEST-001 y DEBT-E2E-LIVE-DELTA-001 antes o después del pipeline?
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#-" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ---
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="---">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#q5-vault-dev-mode-en-cicd-aceptable-para-feder" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🏭 Q5 — Vault dev mode en CI/CD: ¿aceptable para FEDER?
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#-_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ---
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="---">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#resumen-de-acciones-para-day-161" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        📌 Resumen de Acciones para DAY 161
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#-_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ---
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="---">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#ejemplo-de-jenkinsfile-para-day-161" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🛠 Ejemplo de Jenkinsfile para DAY 161
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#-_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ---
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="---">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#recomendaciones-adicionales" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ⚡ Recomendaciones Adicionales
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#-_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ---
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+  <h1>CONSEJO DE SABIOS — DAY 160 respuesta mistral</h1>
+
+<p><strong>Consejo de Sabios — Respuestas para DAY 161</strong>
+<em>(Enfoque práctico: priorizar </em><em>entrega FEDER</em><em> sin comprometer seguridad o calidad)</em></p>
+<hr />
+<hr />
+<h3 id="q1-deb-o-vagrant-box">🔧 <strong>Q1 — ¿<code>.deb</code> o Vagrant box?</strong></h3>
+<p><strong>✅ Respuesta: <code>.deb</code> + Vagrant box (pero priorizar <code>.deb</code> para FEDER).</strong>
+- <strong><code>.deb</code>:</strong>
+  - <strong>Ventaja:</strong> Estándar para hardware físico (RPi5, N100). Permite actualizaciones incrementales (<code>apt upgrade</code>), gestión de dependencias, y es <strong>requisito para producción</strong>.
+  - <strong>Cómo:</strong> Usar <code>dpkg-deb</code> o <code>cpack</code> en el pipeline para empaquetar binarios + configuración. Ejemplo:
+    <code>groovy
+    stage('Build .deb') {
+      steps {
+        sh 'make package-deb'  // Genera libvault_provider_0.9.4_arm64.deb / x86_64.deb
+      }
+    }</code>
+- <strong>Vagrant box:</strong>
+  - <strong>Ventaja:</strong> Validación rápida en entornos de desarrollo. Útil para <strong>testing del pipeline</strong> antes de deploy a hardware.
+  - <strong>Cómo:</strong> Usar <code>vagrant package</code> para exportar la box tras provisionar. <strong>No es bloqueante para FEDER</strong>, pero sí para validación interna.
+- <strong>Acción DAY 161:</strong>
+  - <strong>Pipeline:</strong> Generar <strong>ambos</strong> (<code>.deb</code> para producción, Vagrant box para testing).
+  - <strong>Prioridad:</strong> Si el tiempo apremia, <strong>solo <code>.deb</code></strong> (la box se puede generar después).</p>
+<hr />
+<hr />
+<h3 id="q2-valores-naive-en-json-contrato-hardcoded-o-generados">⚙️ <strong>Q2 — Valores naive en JSON contrato: ¿hardcoded o generados?</strong></h3>
+<p><strong>✅ Respuesta: Hardcoded para DAY 161, pero con </strong>script de detección en BACKLOG<strong>.</strong>
+- <strong>Razón:</strong>
+  - El objetivo de DAY 161 es <strong>validar el pipeline</strong>, no optimizar rendimiento.
+  - Los valores naive (ej: <code>HWM=1000</code>, <code>IO_threads=2</code>, <code>batch_size=64</code>) funcionan en <strong>RPi5/N100</strong> para el demo.
+  - <strong>Riesgo:</strong> Hardcodear valores subóptimos puede causar fallos en hardware con menos recursos, pero es <strong>aceptable para FEDER</strong> (gate mínimo).
+- <strong>Implementación:</strong>
+  - <strong>DAY 161:</strong> Hardcodear valores en <code>config/contract.json</code> (ej: <code>"zmq": {"hwm": 1000, "io_threads": 2}</code>).
+  - <strong>Post-FEDER:</strong> Crear script en <strong>Python/Bash</strong> que:
+    1. Detecte CPUs (<code>nproc</code>) y RAM (<code>free -m</code>).
+    2. Calcule valores mínimos seguros (ej: <code>io_threads = min(4, cpu_count)</code>).
+    3. Genere el JSON dinámicamente en el pipeline.
+  - <strong>Issue:</strong> Vincular a <strong>BACKLOG-ZMQ-TUNING-001</strong> (prioridad P1 post-FEDER).</p>
+<hr />
+<hr />
+<h3 id="q3-token-enterprise-en-cicd-jenkins-credentials-o-fichero">🔐 <strong>Q3 — Token enterprise en CI/CD: ¿Jenkins Credentials o fichero?</strong></h3>
+<p><strong>✅ Respuesta: </strong>Jenkins Credentials Store<strong> (tipo <em>Secret Text</em>) + <code>withCredentials</code>.</strong>
+- <strong>Razón:</strong>
+  - <strong>Seguridad:</strong>
+    - Jenkins Credentials Store <strong>cifra</strong> el token en disco (usando <code>JENKINS_HOME/secrets/</code>).
+    - <code>withCredentials</code> inyecta el token <strong>en memoria</strong> (no en logs ni filesystem).
+    - Permite <strong>rotación</strong> sin cambiar el pipeline (solo actualizar el credential).
+  - <strong>Alternativa (menos segura):</strong> Fichero en la VM (ej: <code>/tmp/vault_token</code>) → <strong>Riesgo:</strong> Persiste en disco, visible en logs si se usa <code>cat</code>.
+- <strong>Implementación en Jenkinsfile:</strong>
+  <code>groovy
+  pipeline {
+    agent any
+    stages {
+      stage('Test Enterprise Plugin') {
+        steps {
+          withCredentials([string(credentialsId: 'VAULT_ENTERPRISE_TOKEN', variable: 'VAULT_TOKEN')]) {
+            sh '''
+              export VAULT_TOKEN=$VAULT_TOKEN
+              make test-enterprise-plugin
+            '''
+          }
+        }
+      }
+    }
+  }</code>
+- <strong>Recomendación adicional:</strong>
+  - <strong>Vault Agent:</strong> Para producción, usar <strong>AppRole</strong> o <strong>Kubernetes Auth</strong> (evitar tokens estáticos).
+  - <strong>TTL:</strong> Configurar en Vault un <strong>TTL corto</strong> (ej: 1h) para el token usado en CI/CD.</p>
+<hr />
+<hr />
+<h3 id="q4-debt-wire-protocol-test-001-y-debt-e2e-live-delta-001-antes-o-despues-del-pipeline">⚠️ <strong>Q4 — ¿DEBT-WIRE-PROTOCOL-TEST-001 y DEBT-E2E-LIVE-DELTA-001 antes o después del pipeline?</strong></h3>
+<p><strong>✅ Respuesta: </strong>ANTES. El pipeline <strong>debe incluir estos tests como gates obligatorios</strong>.<strong>
+- </strong>Razón:<strong>
+  - </strong>"Casa sin cimientos"<strong>: Un pipeline que no valida el </strong>wire protocol<strong> (comunicación entre componentes) o el </strong>E2E live delta<strong> (flujo de datos real) </strong>no garantiza calidad<strong>.
+  - </strong>FEDER:<strong> El gate requiere </strong>estabilidad<strong>, y estos tests son </strong>críticos<strong> para ello.
+- </strong>Acción DAY 161:<strong>
+  1. </strong>Priorizar<strong> cerrar </strong>DEBT-WIRE-PROTOCOL-TEST-001<strong> y </strong>DEBT-E2E-LIVE-DELTA-001<strong> </strong>antes<strong> de construir el pipeline.
+  2. </strong>Incluirlos en el pipeline<strong> como etapas </strong>bloqueantes<strong>:
+     <code>groovy
+     stage('Wire Protocol Tests') {
+       steps { sh 'make test-wire-protocol' }
+     }
+     stage('E2E Live Delta Tests') {
+       steps { sh 'make test-e2e-live-delta' }
+     }</code>
+  3. </strong>Si no se cierran a tiempo:<strong> </strong>No proceder con DAY 161**. Replanificar.</p>
+<hr />
+<h2 id="-">---</h2>
+<h3 id="q5-vault-dev-mode-en-cicd-aceptable-para-feder">🏭 <strong>Q5 — Vault dev mode en CI/CD: ¿aceptable para FEDER?</strong></h3>
+<p><strong>❌ Respuesta: </strong>NO. Vault dev mode <strong>no es aceptable para FEDER</strong>.<strong>
+- </strong>Problemas con dev mode:<strong>
+  - </strong>In-memory:<strong> Los secretos </strong>desaparecen<strong> al reiniciar Vault.
+  - </strong>No HA:<strong> No soporta </strong>unseal automático<strong> (requiere manual <code>vault operator unseal</code>).
+  - </strong>Seguridad:<strong> Token root </strong>estático<strong> (<code>root</code> por defecto), sin auditoría.
+- </strong>Solución para FEDER:<strong>
+  - </strong>Requisito mínimo:<strong> Vault en modo </strong>producción<strong> con:
+    - </strong>Storage backend:<strong> <code>file</code> (para demo) o <code>raft</code> (para HA).
+    - </strong>Unseal keys:<strong> Generar y almacenar en </strong>HSM o ficheros cifrados<strong> (ej: <code>vault operator seal</code> + <code>vault operator unseal</code>).
+    - </strong>Políticas:<strong> Token con </strong>TTL<strong> y permisos mínimos (ej: solo lectura de <code>secret/argus/crypto</code>).
+  - </strong>Cuándo:<strong> </strong>DEBT-JENKINS-PROD-001 debe resolverse ANTES de BACKLOG-FEDER-001<strong>.
+    - </strong>DAY 161:<strong> Usar </strong>dev mode para desarrollo del pipeline<strong> (aceptable temporalmente).
+    - </strong>Post-DAY 161:<strong> Crear </strong>DEBT-JENKINS-PROD-002<strong> para migrar a modo producción.
+- </strong>Implicación:<strong>
+  - </strong>BACKLOG-FEDER-001<strong> depende de </strong>DEBT-JENKINS-PROD-001<strong> → </strong>Bloqueante**.</p>
+<hr />
+<h2 id="-_1">---</h2>
+<hr />
+<h3 id="resumen-de-acciones-para-day-161">📌 <strong>Resumen de Acciones para DAY 161</strong></h3>
+<table>
+<thead>
+<tr>
+<th>Decisión</th>
+<th>Acción Concreta</th>
+<th>Prioridad</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Q1</strong></td>
+<td>Generar <code>.deb</code> (obligatorio) + Vagrant box (opcional)</td>
+<td><strong>P0</strong></td>
+</tr>
+<tr>
+<td><strong>Q2</strong></td>
+<td>Hardcodear valores naive en JSON contrato</td>
+<td><strong>P0</strong></td>
+</tr>
+<tr>
+<td><strong>Q3</strong></td>
+<td>Usar <strong>Jenkins Credentials Store</strong> + <code>withCredentials</code></td>
+<td><strong>P0</strong></td>
+</tr>
+<tr>
+<td><strong>Q4</strong></td>
+<td><strong>Cerrar DEBT-WIRE-PROTOCOL-TEST-001 y DEBT-E2E-LIVE-DELTA-001 ANTES del pipeline</strong></td>
+<td><strong>P0 (bloqueante)</strong></td>
+</tr>
+<tr>
+<td><strong>Q5</strong></td>
+<td>Usar Vault dev mode en DAY 161, pero <strong>DEBT-JENKINS-PROD-001 es bloqueante para FEDER</strong></td>
+<td><strong>P0 (post-DAY 161)</strong></td>
+</tr>
+</tbody>
+</table>
+<h2 id="-_2">---</h2>
+<h3 id="ejemplo-de-jenkinsfile-para-day-161">🛠 <strong>Ejemplo de Jenkinsfile para DAY 161</strong></h3>
+<pre><code class="language-groovy">pipeline {
+  agent any
+  environment {
+    VAULT_ADDR = 'http://127.0.0.1:8200'
+  }
+  stages {
+    stage('Checkout') {
+      steps { checkout scm }
+    }
+    stage('Bootstrap') {
+      steps { sh 'make bootstrap' }
+    }
+    // ⚠️ Gates obligatorios (Q4)
+    stage('Critical Tests') {
+      parallel {
+        stage('Wire Protocol') { steps { sh 'make test-wire-protocol' } }
+        stage('E2E Live Delta') { steps { sh 'make test-e2e-live-delta' } }
+        stage('All Tests') { steps { sh 'make test-all' } }
+      }
+    }
+    // 🔐 Token seguro (Q3)
+    stage('Enterprise Plugin Tests') {
+      steps {
+        withCredentials([string(credentialsId: 'VAULT_ENTERPRISE_TOKEN', variable: 'VAULT_TOKEN')]) {
+          sh 'export VAULT_TOKEN=$VAULT_TOKEN &amp;&amp; make test-enterprise-plugin'
+        }
+      }
+    }
+    // 📦 Artefactos (Q1)
+    stage('Build .deb') {
+      steps { sh 'make package-deb' }
+    }
+    stage('Build Vagrant Box') {
+      steps { sh 'make vagrant-box' }
+    }
+    // 🚀 Deploy a VM de test
+    stage('Deploy to Vagrant Test') {
+      steps {
+        sh 'vagrant up test-vm --provision'
+      }
+    }
+  }
+  post {
+    always {
+      sh 'make vault-dev-stop'  // Limpieza
+    }
+  }
+}
+</code></pre>
+<h2 id="-_3">---</h2>
+<h3 id="recomendaciones-adicionales">⚡ <strong>Recomendaciones Adicionales</strong></h3>
+<ol>
+<li><strong>Seguridad en CI/CD:</strong></li>
+<li><strong>Vault Policy:</strong> Crear una política <strong>mínima</strong> para el pipeline (ej: solo <code>read</code> en <code>secret/argus/crypto</code>).</li>
+<li><strong>Jenkins Agents:</strong> Usar <strong>Docker agents</strong> (aislamiento) en lugar de nodos bare-metal.</li>
+<li>
+<p><strong>Audit Logs:</strong> Habilitar logs en Vault (<code>audit file file_path=/var/log/vault-audit.log</code>).</p>
+</li>
+<li>
+<p><strong>Hardware Destino (RPi5/N100):</strong></p>
+</li>
+<li><strong><code>.deb</code>:</strong> Asegurar que el paquete <strong>no dependa de Java</strong> (el plugin es C++).</li>
+<li>
+<p><strong>Arquitecturas:</strong> Generar <strong>multi-arch</strong> (ARM64 para RPi5, x86_64 para N100) en el pipeline:
+    <code>groovy
+    stage('Build Multi-Arch .deb') {
+      steps {
+        sh 'make package-deb ARCH=arm64'
+        sh 'make package-deb ARCH=x86_64'
+      }
+    }</code></p>
+</li>
+<li>
+<p><strong>Validación FEDER:</strong></p>
+</li>
+<li><strong>Prueba de humo:</strong> Desplegar el <code>.deb</code> en una <strong>RPi5 real</strong> (no solo Vagrant) antes del gate.</li>
+<li>
+<p><strong>Documentación:</strong> Incluir un <code>README.deploy</code> con pasos para instalar el <code>.deb</code> y configurar Vault en producción.</p>
+</li>
+<li>
+<p><strong>Deudas Técnicas:</strong></p>
+</li>
+<li><strong>BACKLOG-ZMQ-TUNING-001:</strong> Priorizar <strong>inmediatamente después de FEDER</strong>.</li>
+<li><strong>DEBT-JENKINS-PROD-001:</strong> <strong>Bloqueante para FEDER</strong> → Asignar recursos <strong>YA</strong>.</li>
+</ol>
+<h2 id="-_4">---</h2>
+<p><strong>🎯 Conclusión:</strong>
+<strong>DAY 161 puede avanzar con:</strong>
+✅ Pipeline que genera <code>.deb</code> + Vagrant box.
+✅ Valores naive hardcodeados.
+✅ Token en Jenkins Credentials.
+✅ Tests críticos (wire protocol + E2E) <strong>como pre-requisito</strong>.
+⚠️ <strong>Vault dev mode es temporal</strong> → <strong>DEBT-JENKINS-PROD-001 debe resolverse antes de FEDER</strong>.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.top", "search.highlight"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

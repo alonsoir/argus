@@ -1,0 +1,2023 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source embedded-ML NDR for hospitals and schools">
+      
+      
+        <meta name="author" content="Alonso Isidoro Roman">
+      
+      
+        <link rel="canonical" href="https://alonsoir.github.io/argus/debt/Deuda%20T%C3%A9cnica%20DAY%20125/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>aRGus NDR — Deuda Técnica DAY 125 - ML Defender (aRGus NDR)</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#argus-ndr-deuda-tecnica-day-125" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-header__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ML Defender (aRGus NDR)
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              aRGus NDR — Deuda Técnica DAY 125
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../README.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/BACKLOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Backlog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Security Model
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-tabs__link">
+          
+  
+  
+  ADRs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/contracts/Protobuf contracts.md" class="md-tabs__link">
+          
+  
+  
+  Contracts
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-nav__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ML Defender (aRGus NDR)
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../README.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/BACKLOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADRs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ADRs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013 Seed Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-021-deployment-topology-seed-families.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-021 Topology SSOT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-022-threat-model-opcion2-descartada.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-022 Threat Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Protobuf contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protobuf
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/JSON contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JSON
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Rag security commands.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#documentacion-formal-para-test-driven-hardening-tdh" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Documentación formal para Test-Driven Hardening (TDH)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#indice" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Índice
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#debt-integer-overflow-test-001" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DEBT-INTEGER-OVERFLOW-TEST-001
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="DEBT-INTEGER-OVERFLOW-TEST-001">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#descripcion-del-problema" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Descripción del problema
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#por-que-importa-en-infraestructura-critica" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Por qué importa en infraestructura crítica
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#como-demostrar-que-el-problema-existe-red" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cómo demostrar que el problema existe (RED)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#plan-tdh" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Plan TDH
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#debt-safe-path-test-relative-001" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DEBT-SAFE-PATH-TEST-RELATIVE-001
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="DEBT-SAFE-PATH-TEST-RELATIVE-001">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#descripcion-del-problema_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Descripción del problema
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#por-que-importa-en-infraestructura-critica_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Por qué importa en infraestructura crítica
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#como-demostrar-que-el-problema-existe-red_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cómo demostrar que el problema existe (RED)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#plan-tdh_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Plan TDH
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#debt-safe-path-test-production-001" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DEBT-SAFE-PATH-TEST-PRODUCTION-001
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="DEBT-SAFE-PATH-TEST-PRODUCTION-001">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#descripcion-del-problema_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Descripción del problema
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#por-que-importa-en-infraestructura-critica_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Por qué importa en infraestructura crítica
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#como-demostrar-que-el-problema-existe" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cómo demostrar que el problema existe
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#plan-tdh-3-sub-tests-uno-por-componente" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Plan TDH — 3 sub-tests, uno por componente
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Plan TDH — 3 sub-tests, uno por componente">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#sub-test-a-seed-client" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Sub-test A: seed-client
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#sub-test-b-firewall-acl-agent" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Sub-test B: firewall-acl-agent
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#sub-test-c-rag-ingester" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Sub-test C: rag-ingester
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#debt-snyk-web-verification-001" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DEBT-SNYK-WEB-VERIFICATION-001
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="DEBT-SNYK-WEB-VERIFICATION-001">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#descripcion-del-problema_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Descripción del problema
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#como-demostrar-que-el-problema-existe_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cómo demostrar que el problema existe
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#plan-tdh_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Plan TDH
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#debt-crypto-transport-ctest-001" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DEBT-CRYPTO-TRANSPORT-CTEST-001
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="DEBT-CRYPTO-TRANSPORT-CTEST-001">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#descripcion-del-problema_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Descripción del problema
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#como-demostrar-que-el-problema-existe_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cómo demostrar que el problema existe
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#plan-tdh_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Plan TDH
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#debt-dev-prod-symlink-001" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DEBT-DEV-PROD-SYMLINK-001
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="DEBT-DEV-PROD-SYMLINK-001">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#descripcion-del-problema_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Descripción del problema
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#leccion-tdh-aprendida" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Lección TDH aprendida
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#plan-tdh_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Plan TDH
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#debt-provision-portability-001" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DEBT-PROVISION-PORTABILITY-001
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="DEBT-PROVISION-PORTABILITY-001">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#descripcion-del-problema_6" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Descripción del problema
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#plan-tdh_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Plan TDH
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#debt-pentester-loop-001" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DEBT-PENTESTER-LOOP-001
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="DEBT-PENTESTER-LOOP-001">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#descripcion-del-problema_7" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Descripción del problema
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#condicion-de-cierre-cuando-llegue-el-momento" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Condición de cierre (cuando llegue el momento)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#resumen-ejecutivo-day-125" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Resumen ejecutivo DAY 125
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="argus-ndr-deuda-tecnica-day-125">aRGus NDR — Deuda Técnica DAY 125</h1>
+<h2 id="documentacion-formal-para-test-driven-hardening-tdh">Documentación formal para Test-Driven Hardening (TDH)</h2>
+<p><strong>Proyecto:</strong> aRGus NDR (ML Defender)<br />
+<strong>Repositorio:</strong> https://github.com/alonsoir/argus<br />
+<strong>Tag activo:</strong> <code>v0.5.1-hardened</code><br />
+<strong>Fecha:</strong> DAY 125 (2026-04-22)<br />
+<strong>Autor:</strong> Alonso Isidoro Román<br />
+<strong>Metodología:</strong> Test-Driven Hardening (TDH)</p>
+<blockquote>
+<p><strong>Regla de oro TDH (Consejo 7/7, DAY 124):</strong><br />
+<em>"Un fix sin test de demostración es una promesa sin firma."</em> — Qwen<br />
+<em>"Un escudo sin tests es un escudo de papel."</em> — Kimi</p>
+</blockquote>
+<hr />
+<h2 id="indice">Índice</h2>
+<ol>
+<li><a href="#debt-integer-overflow-test-001">DEBT-INTEGER-OVERFLOW-TEST-001</a> 🔴 Bloqueante</li>
+<li><a href="#debt-safe-path-test-relative-001">DEBT-SAFE-PATH-TEST-RELATIVE-001</a> 🔴 Bloqueante</li>
+<li><a href="#debt-safe-path-test-production-001">DEBT-SAFE-PATH-TEST-PRODUCTION-001</a> 🔴 Bloqueante</li>
+<li><a href="#debt-snyk-web-verification-001">DEBT-SNYK-WEB-VERIFICATION-001</a> 🟡 Bloqueante</li>
+<li><a href="#debt-crypto-transport-ctest-001">DEBT-CRYPTO-TRANSPORT-CTEST-001</a> 🟡 Bloqueante</li>
+<li><a href="#debt-dev-prod-symlink-001">DEBT-DEV-PROD-SYMLINK-001</a> 🟢 No bloqueante</li>
+<li><a href="#debt-provision-portability-001">DEBT-PROVISION-PORTABILITY-001</a> 🟢 No bloqueante</li>
+<li><a href="#debt-pentester-loop-001">DEBT-PENTESTER-LOOP-001</a> ⏳ Post-deuda</li>
+</ol>
+<hr />
+<h2 id="debt-integer-overflow-test-001">DEBT-INTEGER-OVERFLOW-TEST-001</h2>
+<table>
+<thead>
+<tr>
+<th>Campo</th>
+<th>Valor</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>ID</strong></td>
+<td>DEBT-INTEGER-OVERFLOW-TEST-001</td>
+</tr>
+<tr>
+<td><strong>Severidad</strong></td>
+<td>🔴 Alta — Bloqueante</td>
+</tr>
+<tr>
+<td><strong>Origen</strong></td>
+<td>DAY 124 — ADR-037 (Snyk hardening, fix F17)</td>
+</tr>
+<tr>
+<td><strong>Componente</strong></td>
+<td><code>ml-detector/src/zmq_handler.cpp</code></td>
+</tr>
+<tr>
+<td><strong>Estado</strong></td>
+<td>Fix existe. Test de demostración: NO existe.</td>
+</tr>
+<tr>
+<td><strong>Target</strong></td>
+<td>DAY 125</td>
+</tr>
+</tbody>
+</table>
+<h3 id="descripcion-del-problema">Descripción del problema</h3>
+<p>Durante el análisis Snyk de DAY 124 (ADR-037), se identificó un integer overflow en el cálculo de métricas de memoria en <code>zmq_handler.cpp</code>. El cálculo original usaba un tipo entero de 32 bits (<code>int</code>) para acumular bytes de payload. Con valores de payload superiores a <code>INT_MAX</code> (2.147.483.647 bytes), el resultado wrappea silenciosamente a negativo, produciendo comportamiento indefinido (UB en C++).</p>
+<p>El fix consiste en un cast explícito a <code>int64_t</code> (F17). El fix <strong>está en producción desde DAY 124</strong>, pero no existe ningún test que:
+1. Demuestre que el código antiguo falla con valores extremos (RED).
+2. Demuestre que el código nuevo produce resultados correctos (GREEN).</p>
+<h3 id="por-que-importa-en-infraestructura-critica">Por qué importa en infraestructura crítica</h3>
+<p>Un overflow silencioso en métricas de memoria puede:
+- Enmascarar degradación del sistema (métricas negativas interpretadas como "todo bien").
+- Producir UB en operaciones aritméticas posteriores.
+- En un NDR para hospitales, métricas corruptas son una vulnerabilidad de disponibilidad encubierta.</p>
+<h3 id="como-demostrar-que-el-problema-existe-red">Cómo demostrar que el problema existe (RED)</h3>
+<p>Crear una función pura extraída del cálculo original con tipo <code>int</code>:</p>
+<pre><code class="language-cpp">// Código ANTIGUO (a recrear en test para demostración)
+int compute_memory_mb_legacy(int bytes) {
+    return bytes / (1024 * 1024);  // overflow si bytes &gt; INT_MAX
+}
+</code></pre>
+<p>Ejecutar con <code>bytes = 2147483648</code> (INT_MAX + 1):
+- Resultado esperado correcto: <code>2048</code> MB
+- Resultado con tipo <code>int</code>: negativo o incorrecto (UB)</p>
+<h3 id="plan-tdh">Plan TDH</h3>
+<p><strong>PASO 1 — Extraer función pura testeable</strong></p>
+<p>En <code>ml-detector/src/zmq_handler.cpp</code>, extraer el cálculo a función libre:</p>
+<pre><code class="language-cpp">// Función pura, testeable de forma aislada
+inline int64_t compute_memory_mb(int64_t bytes) {
+    return bytes / (1024LL * 1024LL);
+}
+</code></pre>
+<p><strong>PASO 2 — Crear test RED (tipo antiguo)</strong></p>
+<pre><code class="language-cpp">// test_integer_overflow.cpp
+TEST(IntegerOverflow, LegacyIntOverflowsAtLargeValues) {
+    int legacy_result = static_cast&lt;int&gt;(2147483648LL) / (1024 * 1024);
+    // Con int: resultado es negativo o incorrecto
+    EXPECT_LT(legacy_result, 0);  // Demuestra el problema
+}
+</code></pre>
+<p><strong>PASO 3 — Crear test GREEN (fix aplicado)</strong></p>
+<pre><code class="language-cpp">TEST(IntegerOverflow, FixedInt64HandlesLargeValues) {
+    EXPECT_EQ(compute_memory_mb(2147483648LL), 2048LL);
+    EXPECT_EQ(compute_memory_mb(0LL), 0LL);
+    EXPECT_EQ(compute_memory_mb(1024LL * 1024LL), 1LL);
+}
+</code></pre>
+<p><strong>PASO 4 — Property test ligero</strong></p>
+<pre><code class="language-cpp">TEST(IntegerOverflow, NeverNegativeForPositiveInput) {
+    std::vector&lt;int64_t&gt; values = {
+        0LL, 1LL, 1024LL, 1024LL*1024LL,
+        2147483648LL,           // INT_MAX + 1
+        static_cast&lt;int64_t&gt;(LLONG_MAX / 1024)
+    };
+    for (auto v : values) {
+        EXPECT_GE(compute_memory_mb(v), 0LL) &lt;&lt; &quot;Overflow for value: &quot; &lt;&lt; v;
+    }
+}
+</code></pre>
+<p><strong>Gate de cierre:</strong> 3–5 tests PASSED · Sin dependencias nuevas · <code>make test-all</code> verde.</p>
+<hr />
+<h2 id="debt-safe-path-test-relative-001">DEBT-SAFE-PATH-TEST-RELATIVE-001</h2>
+<table>
+<thead>
+<tr>
+<th>Campo</th>
+<th>Valor</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>ID</strong></td>
+<td>DEBT-SAFE-PATH-TEST-RELATIVE-001</td>
+</tr>
+<tr>
+<td><strong>Severidad</strong></td>
+<td>🔴 Alta — Bloqueante</td>
+</tr>
+<tr>
+<td><strong>Origen</strong></td>
+<td>DAY 124 — ADR-037 (safe_path, 9 acceptance tests)</td>
+</tr>
+<tr>
+<td><strong>Componente</strong></td>
+<td><code>contrib/safe-path/</code></td>
+</tr>
+<tr>
+<td><strong>Estado</strong></td>
+<td>Librería implementada. Test explícito de ruta relativa <code>../</code>: NO existe nombrado.</td>
+</tr>
+<tr>
+<td><strong>Target</strong></td>
+<td>DAY 125</td>
+</tr>
+</tbody>
+</table>
+<h3 id="descripcion-del-problema_1">Descripción del problema</h3>
+<p>En DAY 124 se creó <code>contrib/safe-path/</code>, librería header-only C++20 con 9 acceptance tests RED→GREEN. Los tests cubren symlinks y rutas fuera de prefijo absoluto. Sin embargo, <strong>no existe un test named y explícito</strong> que demuestre que una ruta relativa con traversal (<code>../</code>) es bloqueada antes de cualquier llamada a <code>open()</code>.</p>
+<p>Sin ese test, no hay garantía de regresión si alguien modifica la lógica de normalización de rutas en el futuro.</p>
+<h3 id="por-que-importa-en-infraestructura-critica_1">Por qué importa en infraestructura crítica</h3>
+<p>Path traversal con rutas relativas es uno de los vectores de ataque más comunes en sistemas de ficheros (CWE-22). Un atacante con control parcial sobre el argumento de configuración podría intentar:</p>
+<pre><code>../../../../etc/passwd
+../../../etc/shadow
+../../keys/other_component.seed
+</code></pre>
+<p>La librería debe rechazar esto con <code>SECURITY VIOLATION</code> <strong>antes</strong> de abrir el fichero. Sin test, no hay contrato firmado.</p>
+<h3 id="como-demostrar-que-el-problema-existe-red_1">Cómo demostrar que el problema existe (RED)</h3>
+<p>Demostrar que el sistema operativo por sí solo NO protege:</p>
+<pre><code class="language-cpp">// Sin safe_path: el OS acepta rutas relativas
+int fd = open(&quot;../etc/passwd&quot;, O_RDONLY);
+EXPECT_GE(fd, 0);  // El OS lo abre sin problema — esto es el peligro
+if (fd &gt;= 0) close(fd);
+</code></pre>
+<p>Esto es el RED: demuestra que sin la librería, el ataque funciona.</p>
+<h3 id="plan-tdh_1">Plan TDH</h3>
+<p><strong>PASO 1 — Crear <code>contrib/safe-path/tests/test_safe_path_relative.cpp</code></strong></p>
+<pre><code class="language-cpp">#include &quot;safe_path.hpp&quot;
+#include &lt;gtest/gtest.h&gt;
+#include &lt;stdexcept&gt;
+#include &lt;fcntl.h&gt;
+#include &lt;unistd.h&gt;
+
+// RED: Sin safe_path, el OS acepta rutas relativas con traversal
+TEST(SafePathRelative, OsAllowsTraversalWithoutProtection) {
+    int fd = open(&quot;../etc/passwd&quot;, O_RDONLY);
+    // Si existe el fichero, fd &gt;= 0 — el OS no protege
+    // Este test documenta el peligro, no lo consideramos fallo del test
+    if (fd &gt;= 0) {
+        close(fd);
+        SUCCEED() &lt;&lt; &quot;OS allows traversal — safe_path protection is necessary&quot;;
+    } else {
+        SUCCEED() &lt;&lt; &quot;File not accessible but OS did not throw — safe_path still needed&quot;;
+    }
+}
+
+// GREEN: Con safe_path, ruta relativa con traversal lanza SECURITY VIOLATION
+TEST(SafePathRelative, RejectsRelativeTraversal) {
+    EXPECT_THROW(
+        safe_path::resolve(&quot;../etc/passwd&quot;, &quot;/etc/argus&quot;),
+        std::runtime_error
+    );
+}
+
+// GREEN: El mensaje de error contiene SECURITY VIOLATION
+TEST(SafePathRelative, ErrorMessageContainsSecurityViolation) {
+    try {
+        safe_path::resolve(&quot;../etc/passwd&quot;, &quot;/etc/argus&quot;);
+        FAIL() &lt;&lt; &quot;Expected runtime_error&quot;;
+    } catch (const std::runtime_error&amp; e) {
+        EXPECT_NE(std::string(e.what()).find(&quot;SECURITY VIOLATION&quot;), std::string::npos);
+    }
+}
+
+// GREEN: Ruta legítima dentro del prefijo no lanza excepción
+TEST(SafePathRelative, AcceptsLegitimatePathUnderPrefix) {
+    EXPECT_NO_THROW(
+        safe_path::resolve(&quot;/etc/argus/config.json&quot;, &quot;/etc/argus&quot;)
+    );
+}
+
+// GREEN: Variantes de traversal también bloqueadas
+TEST(SafePathRelative, RejectsMultipleTraversalLevels) {
+    EXPECT_THROW(safe_path::resolve(&quot;../../etc/shadow&quot;, &quot;/etc/argus&quot;), std::runtime_error);
+    EXPECT_THROW(safe_path::resolve(&quot;../../../root/.ssh/id_rsa&quot;, &quot;/etc/argus&quot;), std::runtime_error);
+}
+</code></pre>
+<p><strong>PASO 2 — Registrar en CMakeLists.txt de safe-path</strong></p>
+<pre><code class="language-cmake">add_executable(test_safe_path_relative tests/test_safe_path_relative.cpp)
+target_link_libraries(test_safe_path_relative PRIVATE safe_path GTest::gtest_main)
+add_test(NAME test_safe_path_relative COMMAND test_safe_path_relative)
+</code></pre>
+<p><strong>Gate de cierre:</strong> 5 tests PASSED · Registrados en CTest · <code>make test-all</code> verde.</p>
+<hr />
+<h2 id="debt-safe-path-test-production-001">DEBT-SAFE-PATH-TEST-PRODUCTION-001</h2>
+<table>
+<thead>
+<tr>
+<th>Campo</th>
+<th>Valor</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>ID</strong></td>
+<td>DEBT-SAFE-PATH-TEST-PRODUCTION-001</td>
+</tr>
+<tr>
+<td><strong>Severidad</strong></td>
+<td>🔴 Alta — Bloqueante</td>
+</tr>
+<tr>
+<td><strong>Origen</strong></td>
+<td>DAY 124 — ADR-037 (integración safe_path en 3 componentes)</td>
+</tr>
+<tr>
+<td><strong>Componentes</strong></td>
+<td><code>libs/seed-client/</code>, <code>firewall-acl-agent/</code>, <code>rag-ingester/</code></td>
+</tr>
+<tr>
+<td><strong>Estado</strong></td>
+<td>Integración en producción. Tests de integración por componente: NO existen.</td>
+</tr>
+<tr>
+<td><strong>Target</strong></td>
+<td>DAY 125</td>
+</tr>
+</tbody>
+</table>
+<h3 id="descripcion-del-problema_2">Descripción del problema</h3>
+<p>ADR-037 integró <code>safe_path</code> en tres componentes de producción: <code>seed-client</code>, <code>firewall-acl-agent</code> y <code>rag-ingester</code>. El merge pasó <code>make test-all</code> en verde. Sin embargo, <strong>ningún test existente ejerce el path traversal en el contexto real de cada componente</strong>.</p>
+<p>La diferencia crítica:
+- Los tests de <code>contrib/safe-path/</code> validan la <strong>librería en aislamiento</strong>.
+- Los tests de producción deben validar que la <strong>integración concreta</strong> (prefijo correcto, función llamada en el sitio correcto, path canonicalizado antes de pasarlo) también funciona.</p>
+<p>La librería puede ser correcta y la integración puede estar rota. Sin test por componente, el fix es una promesa, no una garantía.</p>
+<h3 id="por-que-importa-en-infraestructura-critica_2">Por qué importa en infraestructura crítica</h3>
+<p>Cada componente tiene su propio prefijo de rutas legítimas:
+- <code>seed-client</code>: <code>keys_dir_</code> (dinámico, configurado en runtime)
+- <code>firewall-acl-agent</code>: prefijo de configuración canonicalizado
+- <code>rag-ingester</code>: directorio de configuración del componente</p>
+<p>Un error de integración (prefijo hardcodeado incorrecto, función llamada con los argumentos invertidos, path no canonicalizado antes de pasar a <code>resolve()</code>) no sería detectado por los tests de la librería.</p>
+<h3 id="como-demostrar-que-el-problema-existe">Cómo demostrar que el problema existe</h3>
+<p>Para cada componente: escribir el test que llama a la función de carga real con un path malicioso. <strong>Si el test ya pasa verde</strong>, la integración está correcta y el test queda como documentación de regresión. <strong>Si el test falla en rojo</strong>, encontramos un gap real — esto es el hallazgo valioso.</p>
+<h3 id="plan-tdh-3-sub-tests-uno-por-componente">Plan TDH — 3 sub-tests, uno por componente</h3>
+<hr />
+<h4 id="sub-test-a-seed-client">Sub-test A: seed-client</h4>
+<p><strong>Archivo:</strong> <code>libs/seed-client/tests/test_seed_client_traversal.cpp</code></p>
+<pre><code class="language-cpp">#include &quot;seed_client.hpp&quot;
+#include &lt;gtest/gtest.h&gt;
+
+TEST(SeedClientSecurity, RejectsTraversalOutsideKeysDir) {
+    // keys_dir_ apunta a /tmp/test_keys en el test
+    SeedClient client(&quot;/tmp/test_keys&quot;);
+
+    // RED: path con traversal fuera de keys_dir
+    EXPECT_THROW(
+        client.load_seed(&quot;../../../etc/shadow&quot;),
+        std::runtime_error
+    ) &lt;&lt; &quot;seed-client debe rechazar traversal fuera de keys_dir_&quot;;
+}
+
+TEST(SeedClientSecurity, AcceptsLegitimatePathInsideKeysDir) {
+    // GREEN: path legítimo dentro de keys_dir
+    // (El fichero puede no existir, pero no debe lanzar SECURITY VIOLATION)
+    SeedClient client(&quot;/tmp/test_keys&quot;);
+
+    EXPECT_NO_THROW(
+        // Debe lanzar file_not_found, NO security_violation
+        [&amp;]() {
+            try {
+                client.load_seed(&quot;/tmp/test_keys/component.seed&quot;);
+            } catch (const std::runtime_error&amp; e) {
+                std::string msg(e.what());
+                EXPECT_EQ(msg.find(&quot;SECURITY VIOLATION&quot;), std::string::npos)
+                    &lt;&lt; &quot;No debe lanzar SECURITY VIOLATION para ruta legítima&quot;;
+            }
+        }()
+    );
+}
+</code></pre>
+<hr />
+<h4 id="sub-test-b-firewall-acl-agent">Sub-test B: firewall-acl-agent</h4>
+<p><strong>Archivo:</strong> <code>firewall-acl-agent/tests/test_config_traversal.cpp</code></p>
+<pre><code class="language-cpp">#include &quot;config_loader.hpp&quot;
+#include &lt;gtest/gtest.h&gt;
+
+TEST(FirewallConfigSecurity, RejectsTraversalInConfigPath) {
+    ConfigLoader loader(&quot;/etc/argus/firewall&quot;);
+
+    EXPECT_THROW(
+        loader.load(&quot;../../../etc/passwd&quot;),
+        std::runtime_error
+    ) &lt;&lt; &quot;config_loader debe rechazar traversal fuera del prefijo&quot;;
+}
+
+TEST(FirewallConfigSecurity, AcceptsLegitimateConfigPath) {
+    ConfigLoader loader(&quot;/etc/argus/firewall&quot;);
+
+    // Debe fallar por fichero no encontrado, NO por SECURITY VIOLATION
+    try {
+        loader.load(&quot;/etc/argus/firewall/rules.json&quot;);
+    } catch (const std::runtime_error&amp; e) {
+        EXPECT_EQ(std::string(e.what()).find(&quot;SECURITY VIOLATION&quot;), std::string::npos)
+            &lt;&lt; &quot;No debe lanzar SECURITY VIOLATION para ruta dentro del prefijo&quot;;
+    }
+}
+</code></pre>
+<hr />
+<h4 id="sub-test-c-rag-ingester">Sub-test C: rag-ingester</h4>
+<p><strong>Archivo:</strong> Añadir casos a <code>rag-ingester/tests/test_config_parser.cpp</code></p>
+<pre><code class="language-cpp">// Añadir al test suite existente:
+
+TEST(RagIngesterConfigSecurity, RejectsTraversalInConfigPath) {
+    ConfigParser parser(&quot;/etc/argus/rag-ingester&quot;);
+
+    EXPECT_THROW(
+        parser.parse(&quot;../etc/passwd&quot;),
+        std::runtime_error
+    ) &lt;&lt; &quot;config_parser debe rechazar traversal&quot;;
+}
+
+TEST(RagIngesterConfigSecurity, AcceptsLegitimateConfigPath) {
+    ConfigParser parser(&quot;/etc/argus/rag-ingester&quot;);
+
+    try {
+        parser.parse(&quot;/etc/argus/rag-ingester/config.json&quot;);
+    } catch (const std::runtime_error&amp; e) {
+        EXPECT_EQ(std::string(e.what()).find(&quot;SECURITY VIOLATION&quot;), std::string::npos);
+    }
+}
+</code></pre>
+<p><strong>Gate de cierre:</strong> 6 tests PASSED (2 por componente) · <code>make test-all</code> verde.</p>
+<hr />
+<h2 id="debt-snyk-web-verification-001">DEBT-SNYK-WEB-VERIFICATION-001</h2>
+<table>
+<thead>
+<tr>
+<th>Campo</th>
+<th>Valor</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>ID</strong></td>
+<td>DEBT-SNYK-WEB-VERIFICATION-001</td>
+</tr>
+<tr>
+<td><strong>Severidad</strong></td>
+<td>🟡 Media — Bloqueante</td>
+</tr>
+<tr>
+<td><strong>Origen</strong></td>
+<td>DAY 118 — análisis Snyk C++, 23 vulnerabilidades medium</td>
+</tr>
+<tr>
+<td><strong>Componente</strong></td>
+<td>Global (todos los componentes C++)</td>
+</tr>
+<tr>
+<td><strong>Estado</strong></td>
+<td>Fixes implementados en ADR-037. Verificación en panel Snyk: NO realizada.</td>
+</tr>
+<tr>
+<td><strong>Target</strong></td>
+<td>DAY 126</td>
+</tr>
+</tbody>
+</table>
+<h3 id="descripcion-del-problema_3">Descripción del problema</h3>
+<p>Snyk identificó 23 vulnerabilidades de severidad media en el codebase C++ de aRGus en DAY 118. ADR-037 (DAY 124) implementó los fixes: <code>safe_path</code> para path traversal, <code>validate_chain_name()</code> para command injection, y <code>int64_t</code> cast para integer overflow.</p>
+<p>Sin embargo, <strong>no se ha verificado en el panel web de Snyk</strong> que las 23 vulnerabilidades aparezcan como cerradas. Es posible que:
+- Algunas vulnerabilidades requieran un re-scan explícito.
+- Algún fix no haya sido reconocido por Snyk (firma de código diferente a la esperada).
+- Haya vulnerabilidades residuales no cubiertas por ADR-037.</p>
+<h3 id="como-demostrar-que-el-problema-existe_1">Cómo demostrar que el problema existe</h3>
+<p>Acceder al panel Snyk del repositorio <code>alonsoir/argus</code>. Si el contador de vulnerabilidades medium sigue en &gt;0, el problema existe y requiere análisis adicional.</p>
+<h3 id="plan-tdh_2">Plan TDH</h3>
+<ol>
+<li>Acceder a https://app.snyk.io → proyecto <code>alonsoir/argus</code></li>
+<li>Forzar re-scan si necesario</li>
+<li>Verificar contador de vulnerabilidades medium</li>
+<li>Para cada vulnerabilidad residual: documentar en <code>docs/KNOWN-ISSUES.md</code> o crear DEBT nueva</li>
+<li><strong>Gate de cierre:</strong> Panel Snyk muestra 0 vulnerabilidades medium abiertas, O cada residual documentada con justificación de aceptación de riesgo firmada por el Consejo.</li>
+</ol>
+<hr />
+<h2 id="debt-crypto-transport-ctest-001">DEBT-CRYPTO-TRANSPORT-CTEST-001</h2>
+<table>
+<thead>
+<tr>
+<th>Campo</th>
+<th>Valor</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>ID</strong></td>
+<td>DEBT-CRYPTO-TRANSPORT-CTEST-001</td>
+</tr>
+<tr>
+<td><strong>Severidad</strong></td>
+<td>🟡 Media — Bloqueante</td>
+</tr>
+<tr>
+<td><strong>Origen</strong></td>
+<td>DAY 97 — creación de <code>crypto-transport</code>. Tests existen pero no integrados en CTest.</td>
+</tr>
+<tr>
+<td><strong>Componente</strong></td>
+<td><code>crypto-transport/</code></td>
+</tr>
+<tr>
+<td><strong>Estado</strong></td>
+<td>Tests existen. Integración en <code>make test-all</code>: ROTA o incompleta.</td>
+</tr>
+<tr>
+<td><strong>Target</strong></td>
+<td>DAY 126–127</td>
+</tr>
+</tbody>
+</table>
+<h3 id="descripcion-del-problema_4">Descripción del problema</h3>
+<p><code>crypto-transport</code> es la librería criptográfica central del proyecto (HKDF-SHA256 + ChaCha20-Poly1305 + nonces monotónicos). Tiene tests unitarios, pero están <strong>fuera del flujo CTest</strong> que alimenta <code>make test-all</code>. Esto significa que cambios que rompan la criptografía pueden pasar desapercibidos en el ciclo normal de desarrollo.</p>
+<h3 id="como-demostrar-que-el-problema-existe_2">Cómo demostrar que el problema existe</h3>
+<pre><code class="language-bash">vagrant ssh defender -c &quot;cd /vagrant/crypto-transport/build &amp;&amp; ctest -V 2&gt;&amp;1 | tail -50&quot;
+</code></pre>
+<p>Si el output muestra errores de linking, crashes, o el Makefile usa <code>|| echo</code> para suprimir fallos, el problema existe.</p>
+<h3 id="plan-tdh_3">Plan TDH</h3>
+<ol>
+<li><strong>Diagnóstico:</strong> ejecutar CTest con <code>-V</code> y clasificar el fallo (linking / runtime / aserción lógica)</li>
+<li><strong>Fix según causa:</strong><ul>
+<li>Linking → revisar <code>target_link_libraries</code> en <code>CMakeLists.txt</code></li>
+<li>Runtime → analizar test específico fallido</li>
+<li><code>|| echo</code> en Makefile → eliminar el supresor, hacer que el fallo sea visible</li>
+</ul>
+</li>
+<li><strong>Gate de cierre:</strong> <code>test_crypto_transport</code> PASSED · <code>test_integ_contexts</code> PASSED · Sin <code>|| echo</code> en Makefile.</li>
+</ol>
+<hr />
+<h2 id="debt-dev-prod-symlink-001">DEBT-DEV-PROD-SYMLINK-001</h2>
+<table>
+<thead>
+<tr>
+<th>Campo</th>
+<th>Valor</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>ID</strong></td>
+<td>DEBT-DEV-PROD-SYMLINK-001</td>
+</tr>
+<tr>
+<td><strong>Severidad</strong></td>
+<td>🟢 Baja — No bloqueante</td>
+</tr>
+<tr>
+<td><strong>Origen</strong></td>
+<td>DAY 124 — rag-ingester falló en build de producción, no en dev</td>
+</tr>
+<tr>
+<td><strong>Componente</strong></td>
+<td>Global (asimetría dev/prod)</td>
+</tr>
+<tr>
+<td><strong>Estado</strong></td>
+<td>Causa raíz documentada. Fix estructural: pendiente.</td>
+</tr>
+<tr>
+<td><strong>Target</strong></td>
+<td>DAY 127</td>
+</tr>
+</tbody>
+</table>
+<h3 id="descripcion-del-problema_5">Descripción del problema</h3>
+<p>En DAY 124, <code>rag-ingester</code> con <code>safe_path</code> integrado falló en el build de producción pero no en dev. La causa raíz fue una asimetría en symlinks entre los dos entornos. Este tipo de divergencia entre dev y prod es una fuente sistémica de bugs silenciosos.</p>
+<h3 id="leccion-tdh-aprendida">Lección TDH aprendida</h3>
+<blockquote>
+<p>Cualquier componente que pase en dev y falle en prod tiene una divergencia de entorno no documentada. Esa divergencia es deuda técnica, independientemente de que el fix puntual funcione.</p>
+</blockquote>
+<h3 id="plan-tdh_4">Plan TDH</h3>
+<ol>
+<li>Auditar diferencias de symlinks entre <code>vagrant/dev/</code> y <code>vagrant/hardened-x86/</code></li>
+<li>Documentar en <code>docs/ENVIRONMENT.md</code> las diferencias aceptadas y las que deben eliminarse</li>
+<li>Añadir check en <code>make bootstrap</code> que detecte asimetrías críticas</li>
+<li><strong>Gate de cierre:</strong> <code>make bootstrap</code> en entorno de producción produce el mismo resultado que en dev para los 6 componentes.</li>
+</ol>
+<hr />
+<h2 id="debt-provision-portability-001">DEBT-PROVISION-PORTABILITY-001</h2>
+<table>
+<thead>
+<tr>
+<th>Campo</th>
+<th>Valor</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>ID</strong></td>
+<td>DEBT-PROVISION-PORTABILITY-001</td>
+</tr>
+<tr>
+<td><strong>Severidad</strong></td>
+<td>🟢 Baja — No bloqueante</td>
+</tr>
+<tr>
+<td><strong>Origen</strong></td>
+<td>Acumulado desde DAY 95 — <code>provision.sh</code> escrito para un único entorno</td>
+</tr>
+<tr>
+<td><strong>Componente</strong></td>
+<td><code>tools/provision.sh</code></td>
+</tr>
+<tr>
+<td><strong>Estado</strong></td>
+<td>Funciona en entorno actual. Portabilidad a hardened-x86/ARM64: no verificada.</td>
+</tr>
+<tr>
+<td><strong>Target</strong></td>
+<td>DAY 128</td>
+</tr>
+</tbody>
+</table>
+<h3 id="descripcion-del-problema_6">Descripción del problema</h3>
+<p><code>provision.sh</code> contiene rutas hardcodeadas que asumen el entorno de desarrollo específico de Extremadura. Cuando se inicien las variantes de producción (<code>aRGus-production</code>) y las imágenes hardened (ADR-029), el script fallará silenciosamente o con errores crípticos.</p>
+<h3 id="plan-tdh_5">Plan TDH</h3>
+<ol>
+<li>Identificar todas las rutas hardcodeadas en <code>provision.sh</code></li>
+<li>Parametrizar vía variables de entorno con defaults seguros</li>
+<li>Añadir validación al inicio del script: si variable crítica no definida, error explícito</li>
+<li>Probar en entorno limpio (<code>vagrant destroy &amp;&amp; vagrant up</code>)</li>
+<li><strong>Gate de cierre:</strong> <code>TEST-PROVISION-1</code> verde en entorno hardened-x86.</li>
+</ol>
+<hr />
+<h2 id="debt-pentester-loop-001">DEBT-PENTESTER-LOOP-001</h2>
+<table>
+<thead>
+<tr>
+<th>Campo</th>
+<th>Valor</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>ID</strong></td>
+<td>DEBT-PENTESTER-LOOP-001</td>
+</tr>
+<tr>
+<td><strong>Severidad</strong></td>
+<td>⏳ Post-deuda — No bloqueante hoy</td>
+</tr>
+<tr>
+<td><strong>Origen</strong></td>
+<td>Visión ADR-026 + Consejo DAY 122</td>
+</tr>
+<tr>
+<td><strong>Componente</strong></td>
+<td>Pipeline completo + XGBoost + Ed25519</td>
+</tr>
+<tr>
+<td><strong>Estado</strong></td>
+<td>Diseño completo. Implementación: NO iniciada.</td>
+</tr>
+<tr>
+<td><strong>Condición de inicio:</strong></td>
+<td>Las 7 deudas anteriores cerradas.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="descripcion-del-problema_7">Descripción del problema</h3>
+<p>ACRL (Adversarial Continuous Retraining Loop): un loop automatizado donde un pentester simulado (Caldera) genera ataques reales, eBPF captura el tráfico, XGBoost detecta o falla, y el resultado alimenta reentrenamiento, firma Ed25519, y hot-swap del modelo en producción — sin reiniciar el pipeline.</p>
+<p>Este es el componente que convierte aRGus de un detector estático a un <strong>escudo que aprende de su propia sombra</strong>.</p>
+<h3 id="condicion-de-cierre-cuando-llegue-el-momento">Condición de cierre (cuando llegue el momento)</h3>
+<ul>
+<li>Caldera genera ataque → XGBoost produce score ATTACK &gt; 0.5</li>
+<li>Modelo reentrenado con nuevos datos → F1 ≥ 0.9985 en holdout CIC-IDS-2017</li>
+<li>Modelo firmado con Ed25519 activo</li>
+<li>Hot-swap sin downtime del pipeline</li>
+<li><code>make test-all</code> verde tras el swap</li>
+</ul>
+<hr />
+<h2 id="resumen-ejecutivo-day-125">Resumen ejecutivo DAY 125</h2>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Severidad</th>
+<th>Componente</th>
+<th>Tests a crear</th>
+<th>Target</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>DEBT-INTEGER-OVERFLOW-TEST-001</td>
+<td>🔴</td>
+<td>ml-detector</td>
+<td>3–5 (unit + property)</td>
+<td>DAY 125</td>
+</tr>
+<tr>
+<td>DEBT-SAFE-PATH-TEST-RELATIVE-001</td>
+<td>🔴</td>
+<td>contrib/safe-path</td>
+<td>5</td>
+<td>DAY 125</td>
+</tr>
+<tr>
+<td>DEBT-SAFE-PATH-TEST-PRODUCTION-001</td>
+<td>🔴</td>
+<td>seed-client, firewall, rag</td>
+<td>6 (2×3)</td>
+<td>DAY 125</td>
+</tr>
+<tr>
+<td>DEBT-SNYK-WEB-VERIFICATION-001</td>
+<td>🟡</td>
+<td>global</td>
+<td>0 (verificación)</td>
+<td>DAY 126</td>
+</tr>
+<tr>
+<td>DEBT-CRYPTO-TRANSPORT-CTEST-001</td>
+<td>🟡</td>
+<td>crypto-transport</td>
+<td>diagnóstico → fix</td>
+<td>DAY 126–127</td>
+</tr>
+<tr>
+<td>DEBT-DEV-PROD-SYMLINK-001</td>
+<td>🟢</td>
+<td>global</td>
+<td>check en bootstrap</td>
+<td>DAY 127</td>
+</tr>
+<tr>
+<td>DEBT-PROVISION-PORTABILITY-001</td>
+<td>🟢</td>
+<td>provision.sh</td>
+<td>TEST-PROVISION-1</td>
+<td>DAY 128</td>
+</tr>
+<tr>
+<td>DEBT-PENTESTER-LOOP-001</td>
+<td>⏳</td>
+<td>pipeline completo</td>
+<td>ACRL completo</td>
+<td>post-deuda</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Tests nuevos en DAY 125: ~14 tests</strong><br />
+<strong>Condición de merge a producción:</strong> deudas 🔴 y 🟡 cerradas + DEBT-PENTESTER-LOOP-001 completo.</p>
+<hr />
+<p><em>"Via Appia Quality — Un escudo que aprende de su propia sombra."</em><br />
+<em>aRGus NDR — DAY 125 — 2026-04-22</em></p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.top", "search.highlight"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

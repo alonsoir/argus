@@ -1,0 +1,1480 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source embedded-ML NDR for hospitals and schools">
+      
+      
+        <meta name="author" content="Alonso Isidoro Roman">
+      
+      
+        <link rel="canonical" href="https://alonsoir.github.io/argus/council/DAY%20170%20%E2%80%94%20Cierre%20y%20plan%20DAY%20171%20%C2%B7%20Briefing%20al%20Consejo%20de%20Sabios-MISTRAL/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>DAY 170 — Cierre y plan DAY 171 · Briefing al Consejo de Sabios MISTRAL - ML Defender (aRGus NDR)</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#1-analisis-de-lo-realizado-en-day-170" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-header__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ML Defender (aRGus NDR)
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              DAY 170 — Cierre y plan DAY 171 · Briefing al Consejo de Sabios MISTRAL
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../README.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/BACKLOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Backlog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Security Model
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-tabs__link">
+          
+  
+  
+  ADRs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/contracts/Protobuf contracts.md" class="md-tabs__link">
+          
+  
+  
+  Contracts
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-nav__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ML Defender (aRGus NDR)
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../README.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/BACKLOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADRs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ADRs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013 Seed Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-021-deployment-topology-seed-families.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-021 Topology SSOT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-022-threat-model-opcion2-descartada.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-022 Threat Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Protobuf contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protobuf
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/JSON contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JSON
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Rag security commands.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-analisis-de-lo-realizado-en-day-170" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Análisis de lo realizado en DAY 170
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1. Análisis de lo realizado en DAY 170">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#logros-tecnicos" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ✅ Logros técnicos
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="✅ Logros técnicos">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#a-community_id-como-clave-de-correlacion-cross-tool" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        a. community_id como clave de correlación cross-tool
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#b-higiene-documental" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        b. Higiene documental
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#riesgos-residuales" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ⚠️ Riesgos residuales
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-respuestas-a-las-preguntas-al-consejo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Respuestas a las preguntas al Consejo
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2. Respuestas a las preguntas al Consejo">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#p1-arquitectura-de-correlacion-wazuh-red" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        P1: Arquitectura de correlación Wazuh ↔ Red
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="P1: Arquitectura de correlación Wazuh ↔ Red">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#evaluacion-de-opciones" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Evaluación de opciones
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#respuesta-propuesta" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Respuesta propuesta
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#p2-coste-de-mantener-seed0-como-invariante" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        P2: Coste de mantener seed=0 como invariante
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="P2: Coste de mantener seed=0 como invariante">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#opciones-de-mitigacion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Opciones de mitigación
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#respuesta-propuesta_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Respuesta propuesta
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#p3-es-community_id-seed-0-espacio-global-la-clave-correcta-a-largo-plazo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        P3: ¿Es community_id (seed 0, espacio global) la clave correcta a largo plazo?
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="P3: ¿Es community_id (seed 0, espacio global) la clave correcta a largo plazo?">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#evaluacion-de-opciones_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Evaluación de opciones
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#respuesta-propuesta_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Respuesta propuesta
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#-" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ---
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-recomendaciones-accionables-para-day-171-y-mas-alla" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Recomendaciones accionables para DAY 171 y más allá
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. Recomendaciones accionables para DAY 171 y más allá">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#para-day-171-e2e-de-tres-ventanas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🔹 Para DAY 171 (E2E de tres ventanas)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#para-el-consejo-de-sabios" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🔹 Para el Consejo de Sabios
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mejoras-continuas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🔹 Mejoras continuas
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#-_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ---
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-resumen-ejecutivo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Resumen ejecutivo
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+  <h1>DAY 170 — Cierre y plan DAY 171 · Briefing al Consejo de Sabios MISTRAL</h1>
+
+<p>Aquí tienes mi análisis estructurado sobre los hechos presentados y las respuestas a las preguntas planteadas al Consejo. Lo divido en <strong>contexto técnico</strong>, <strong>análisis de lo realizado</strong>, <strong>evaluación de las preguntas clave</strong>, y <strong>recomendaciones accionables</strong>.</p>
+<hr />
+<hr />
+<h2 id="1-analisis-de-lo-realizado-en-day-170"><strong>1. Análisis de lo realizado en DAY 170</strong></h2>
+<h3 id="logros-tecnicos">✅ <strong>Logros técnicos</strong></h3>
+<h4 id="a-community_id-como-clave-de-correlacion-cross-tool"><strong>a. <code>community_id</code> como clave de correlación cross-tool</strong></h4>
+<ul>
+<li>
+<p><strong>Verificación robusta</strong>: El enfoque de validar <code>compute_community_id()</code> contra el oráculo <code>pycommunityid</code> (v1.5.0) con <strong>6 vectores hardcodeados + flujos reales de Neris</strong> es sólido. La coincidencia <em>byte a byte</em> en los tres sensores (aRGus, Zeek, Suricata) demuestra:</p>
+<ul>
+<li><strong>Correctitud funcional</strong>: La implementación cumple con la especificación.</li>
+<li><strong>Consistencia operacional</strong>: El <code>seed=0</code> explícito en los tres sensores garantiza que el mismo flujo genera el mismo <code>community_id</code> en todos los nodos.</li>
+<li><strong>Idempotencia</strong>: Las guardas por línea (no por bloque) en Zeek y la provisión garantizada en Suricata evitan regresiones futuras.</li>
+</ul>
+</li>
+<li>
+<p><strong>Diana E2E</strong>: El caso de prueba con el flujo Neris (<code>147.32.84.165:1027 → 74.125.232.195:80</code>) es un <strong>hito crítico</strong>. Demuestra que la correlación entre herramientas es viable en un entorno real.</p>
+</li>
+</ul>
+<h4 id="b-higiene-documental"><strong>b. Higiene documental</strong></h4>
+<ul>
+<li><strong>Problema resuelto</strong>: La duplicación en <code>docs/BACKLOG.md</code> (5336 → 2839 líneas) era un riesgo de <strong>deuda técnica silenciosa</strong> (afectaba a la trazabilidad y el mantenimiento). La solución:<ul>
+<li><strong>Diagnóstico preciso</strong>: Identificar el origen (operación manual en DAY 158) y el patrón (sub-duplicados anidados).</li>
+<li><strong>Acciones correctivas</strong>: De-duplicación + reparación de la nota DAY 149 + conservación de contenido único (ADR-046 v3, HARDWARE-STORAGE-001).</li>
+<li><strong>Lección aprendida</strong>: Herramientas como <code>grep secciones | sort | uniq -d</code> son más efectivas que <code>grep -c</code> para detectar duplicados complejos.</li>
+</ul>
+</li>
+</ul>
+<hr />
+<h3 id="riesgos-residuales">⚠️ <strong>Riesgos residuales</strong></h3>
+<ul>
+<li><strong>Fragilidad en la provisión</strong>: Aunque el <code>seed=0</code> está ahora explícito en los tres sensores, <strong>no hay mecanismo automático</strong> que verifique su consistencia en tiempo de ejecución. Un error humano (ej: modificar <code>suricata.yaml</code> sin actualizar <code>local.zeek</code>) podría romper la correlación <strong>sin alertas</strong>.</li>
+<li><strong>Cobertura de pruebas</strong>: El test E2E propuesto para DAY 171 (replay de Neris en LAN interna) es necesario, pero <strong>no cubre casos edge</strong>:<ul>
+<li>Flujos con NAT/proxy (donde la 5-tupla observada difiere de la real).</li>
+<li>Eventos de Wazuh con datos de red parciales (ej: solo IP destino, sin puerto).</li>
+</ul>
+</li>
+<li><strong>Escalabilidad</strong>: El <code>community_id</code> con <code>seed=0</code> global <strong>no es único por nodo</strong> en despliegues multi-nodo (ver <strong>P3</strong>).</li>
+</ul>
+<hr />
+<hr />
+<h2 id="2-respuestas-a-las-preguntas-al-consejo"><strong>2. Respuestas a las preguntas al Consejo</strong></h2>
+<hr />
+<h3 id="p1-arquitectura-de-correlacion-wazuh-red"><strong>P1: Arquitectura de correlación Wazuh ↔ Red</strong></h3>
+<p><strong>Contexto</strong>: Wazuh (host-based) no puede generar <code>community_id</code> nativo para la mayoría de sus eventos, ya que no observa la 5-tupla de red. La correlación debe unir telemetría host-based con telemetría de red en Neo4j.</p>
+<h4 id="evaluacion-de-opciones"><strong>Evaluación de opciones</strong></h4>
+<table>
+<thead>
+<tr>
+<th>Opción</th>
+<th>Ventajas</th>
+<th>Desventajas</th>
+<th>Recomendación</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>(A) Correlación temporal + host</strong></td>
+<td>Simple, alineada con ADR-046 v3 (<code>CrisisWindow</code>). No requiere cambios en Wazuh.</td>
+<td>No aprovecha <code>community_id</code> para eventos con datos de red.</td>
+<td><strong>✅ Prioritaria</strong> (base para la correlación).</td>
+</tr>
+<tr>
+<td><strong>(B) Enriquecimiento puntual</strong></td>
+<td>Permite correlación fina para eventos Wazuh con datos de red (ej: conexiones).</td>
+<td>Complejidad en el ingester. Cobertura parcial (no todos los eventos tienen 5-tupla).</td>
+<td><strong>⚠️ Secundaria</strong> (solo si el coste de implementación es bajo).</td>
+</tr>
+<tr>
+<td><strong>(C) Doble arista en Neo4j</strong></td>
+<td>Aprovecha las capacidades de GDS (grafo con dos dimensiones: flujo↔flujo y host↔flujo).</td>
+<td>Requiere diseño cuidadoso de aristas y nodos. NAT/proxy puede romper la relación host↔IP.</td>
+<td><strong>✅ Complementaria a (A)</strong>.</td>
+</tr>
+</tbody>
+</table>
+<h4 id="respuesta-propuesta"><strong>Respuesta propuesta</strong></h4>
+<ul>
+<li>
+<p><strong>Arquitectura recomendada</strong>: <strong>(A) + (C)</strong>.</p>
+<ul>
+<li><strong>Correlación temporal + host</strong> como <strong>base</strong> (usando <code>(host_id/IP, CrisisWindow)</code>).</li>
+<li><strong>Doble arista en Neo4j</strong> para enriquecer el grafo:<ul>
+<li>Sensores de red ↔ entre sí por <code>community_id</code> (arista <code>flujo↔flujo</code>).</li>
+<li>Wazuh ↔ grafo por nodo <code>host</code> (arista <code>host↔flujo</code> vía IP del endpoint).</li>
+</ul>
+</li>
+<li><strong>Tratamiento de NAT/proxy</strong>:<ul>
+<li>Usar el campo <code>node_id</code> en el pipeline de ingestión para distinguir nodos.</li>
+<li>En Neo4j, añadir propiedades a los nodos <code>host</code> para indicar si la IP es <strong>real</strong> o <strong>tras NAT</strong> (ej: <code>host.is_natted: true</code>).</li>
+<li>Para correlación host↔red, usar una <strong>ventana temporal más laxa</strong> (ej: ±5 minutos) que la de red↔red (ej: ±1 segundo), ya que los eventos host (ej: proceso malicioso) pueden estar desfasados del tráfico.</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<p><strong>Implementación</strong>:</p>
+<ul>
+<li>En el correlation-engine, crear una <strong>tabla de mapeo</strong> <code>host_id → IP(s)</code> (actualizada dinámicamente).</li>
+<li>Para eventos Wazuh con datos de red (opción B), calcular <code>community_id</code> <strong>solo si la 5-tupla está completa</strong> (evitar falsos positivos).</li>
+</ul>
+</li>
+</ul>
+<hr />
+<h3 id="p2-coste-de-mantener-seed0-como-invariante"><strong>P2: Coste de mantener <code>seed=0</code> como invariante</strong></h3>
+<p><strong>Problema</strong>: Si un sensor usa <code>seed ≠ 0</code>, el join falla en silencio (sin error explícito).</p>
+<h4 id="opciones-de-mitigacion"><strong>Opciones de mitigación</strong></h4>
+<table>
+<thead>
+<tr>
+<th>Opción</th>
+<th>Ventajas</th>
+<th>Desventajas</th>
+<th>Recomendación</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Gate de arranque</strong></td>
+<td>Detecta inconsistencias al inicio.</td>
+<td>Requiere acceso a configs de todos los sensores.</td>
+<td><strong>✅ Implementar</strong> (prioridad alta).</td>
+</tr>
+<tr>
+<td><strong>Health-check periódico</strong></td>
+<td>Detecta derivas en tiempo real.</td>
+<td>Requiere monitorización continua.</td>
+<td><strong>✅ Implementar</strong> (prioridad media).</td>
+</tr>
+<tr>
+<td><strong>Alertas por <code>community_id</code> huérfanos</strong></td>
+<td>Detecta fallos operacionales.</td>
+<td>Requiere lógica adicional en el correlation-engine.</td>
+<td><strong>⚠️ Opcional</strong> (si el coste es bajo).</td>
+</tr>
+</tbody>
+</table>
+<h4 id="respuesta-propuesta_1"><strong>Respuesta propuesta</strong></h4>
+<ul>
+<li>
+<p><strong>Implementar un gate de arranque</strong> en el correlation-engine que:</p>
+<ol>
+<li><strong>Verifique el <code>seed</code></strong> en los ficheros de configuración de aRGus, Zeek y Suricata (vía API o acceso a disco).</li>
+<li><strong>Bloquee el arranque</strong> si hay inconsistencias, con un mensaje claro:
+   ```
+   ERROR: Inconsistencia en seed de community_id.</li>
+<li>aRGus: seed=0 (OK)</li>
+<li>Zeek: seed=1 (ERROR)</li>
+<li>Suricata: seed=0 (OK)
+   ```</li>
+<li><strong>Incluya un health-check</strong> que:<ul>
+<li>Ejecute el gate cada X horas (ej: 6h).</li>
+<li>Alerte si detecta <code>community_id</code> huérfanos (ej: flujos con el mismo <code>community_id</code> pero sin matches en otros sensores).</li>
+</ul>
+</li>
+</ol>
+</li>
+<li>
+<p><strong>Justificación</strong>: El coste de implementación es bajo (script en Python/Go) y el beneficio es alto (evita fallos silenciosos).</p>
+</li>
+</ul>
+<hr />
+<h3 id="p3-es-community_id-seed-0-espacio-global-la-clave-correcta-a-largo-plazo"><strong>P3: ¿Es <code>community_id</code> (seed 0, espacio global) la clave correcta a largo plazo?</strong></h3>
+<p><strong>Problema</strong>: En despliegues multi-nodo, dos flujos con la misma 5-tupla en nodos distintos producen el <strong>mismo</strong> <code>community_id</code> (colisión semántica).</p>
+<h4 id="evaluacion-de-opciones_1"><strong>Evaluación de opciones</strong></h4>
+<table>
+<thead>
+<tr>
+<th>Opción</th>
+<th>Ventajas</th>
+<th>Desventajas</th>
+<th>Recomendación</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Clave compuesta <code>(node_id, community_id)</code></strong></td>
+<td>Evita colisiones.</td>
+<td>Requiere cambios en el esquema de Neo4j.</td>
+<td><strong>✅ Prioritaria</strong>.</td>
+</tr>
+<tr>
+<td><strong><code>node_id</code> implícito en el pipeline</strong></td>
+<td>Sin cambios en el grafo.</td>
+<td>Menos explícito, depende de la implementación.</td>
+<td><strong>⚠️ Riesgo de ambigüedad</strong>.</td>
+</tr>
+<tr>
+<td><strong>Espacio de <code>community_id</code> por nodo</strong></td>
+<td>Evita colisiones sin cambiar el esquema.</td>
+<td>Requiere coordinación de seeds entre nodos.</td>
+<td><strong>❌ Complejidad innecesaria</strong>.</td>
+</tr>
+</tbody>
+</table>
+<h4 id="respuesta-propuesta_2"><strong>Respuesta propuesta</strong></h4>
+<ul>
+<li>
+<p><strong>Usar <code>(node_id, community_id)</code> como clave compuesta en Neo4j</strong> desde el diseño.</p>
+<ul>
+<li><strong>Ventajas</strong>:<ul>
+<li>Evita colisiones semánticas en despliegues multi-nodo.</li>
+<li>Permite correlación <strong>global</strong> (ej: flujos entre nodos con NAT).</li>
+</ul>
+</li>
+<li><strong>Implementación</strong>:<ul>
+<li>Añadir el campo <code>node_id</code> a los nodos <code>flow</code> en Neo4j.</li>
+<li>Modificar el correlation-engine para que use <code>(node_id, community_id)</code> como clave única.</li>
+<li><strong>Ejemplo de arista</strong>:
+  <code>cypher
+  MATCH (f1:Flow {node_id: "node1", community_id: "1:IN7uq..."})
+  MATCH (f2:Flow {node_id: "node2", community_id: "1:IN7uq..."})
+  CREATE (f1)-[:SAME_FLOW {type: "cross_node"}]-&gt;(f2)</code></li>
+</ul>
+</li>
+<li><strong>Migración</strong>: Si el esquema actual ya usa <code>community_id</code> como clave, migrar <strong>ahora</strong> (el coste aumenta con el tiempo).</li>
+</ul>
+</li>
+<li>
+<p><strong>Alternativa temporal</strong>: Si la migración no es posible a corto plazo, usar <code>node_id</code> como propiedad en los nodos <code>flow</code> y filtrar por él en las consultas.</p>
+</li>
+</ul>
+<hr />
+<h2 id="-">---</h2>
+<h2 id="3-recomendaciones-accionables-para-day-171-y-mas-alla"><strong>3. Recomendaciones accionables para DAY 171 y más allá</strong></h2>
+<h3 id="para-day-171-e2e-de-tres-ventanas"><strong>🔹 Para DAY 171 (E2E de tres ventanas)</strong></h3>
+<ol>
+<li>
+<p><strong>Ejecutar el test propuesto</strong>:</p>
+<ul>
+<li>Replay de Neris en LAN interna con aRGus, Suricata y Zeek capturando en paralelo.</li>
+<li>Verificar que los tres generan el mismo <code>community_id</code> (<code>1:IN7uq...</code>) para el mismo paquete.</li>
+<li><strong>Añadir casos edge</strong>:<ul>
+<li>Flujos con NAT (ej: tráfico saliente desde un nodo con IP pública diferente).</li>
+<li>Eventos Wazuh con datos de red parciales (ej: solo IP destino).</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<p><strong>Documentar el resultado</strong>:</p>
+<ul>
+<li>Crear un informe en <code>docs/council/DAY 171 — E2E CommunityID.md</code> con:<ul>
+<li>Configuraciones usadas (versiones de herramientas, seeds, etc.).</li>
+<li>Resultados (éxitos/fallos).</li>
+<li>Lecciones aprendidas.</li>
+</ul>
+</li>
+</ul>
+</li>
+</ol>
+<h3 id="para-el-consejo-de-sabios"><strong>🔹 Para el Consejo de Sabios</strong></h3>
+<ol>
+<li>
+<p><strong>Priorizar la decisión sobre P3</strong>:</p>
+<ul>
+<li>Si se aprueba <code>(node_id, community_id)</code>, actualizar el esquema de Neo4j <strong>antes</strong> de escalar el despliegue.</li>
+<li>Si se pospone, documentar el riesgo de colisiones en despliegues multi-nodo.</li>
+</ul>
+</li>
+<li>
+<p><strong>Aprobar el gate de arranque (P2)</strong>:</p>
+<ul>
+<li>Asignar recursos para implementarlo en el correlation-engine (estimación: 1-2 días).</li>
+</ul>
+</li>
+<li>
+<p><strong>Validar la arquitectura (A)+(C) para P1</strong>:</p>
+<ul>
+<li>Confirmar si el equipo de Wazuh puede proporcionar el mapeo <code>host_id → IP(s)</code> dinámicamente.</li>
+<li>Decidir si se implementa la opción B (enriquecimiento puntual) para eventos con datos de red.</li>
+</ul>
+</li>
+</ol>
+<h3 id="mejoras-continuas"><strong>🔹 Mejoras continuas</strong></h3>
+<ol>
+<li>
+<p><strong>Automatizar la verificación de <code>seed</code></strong>:</p>
+<ul>
+<li>Integrar el gate de arranque en el pipeline de CI/CD.</li>
+<li>Añadir pruebas unitarias que fallen si el <code>seed</code> no es 0 en los ficheros de configuración.</li>
+</ul>
+</li>
+<li>
+<p><strong>Extender el E2E</strong>:</p>
+<ul>
+<li>Incluir Wazuh en el test (ej: generar un evento host y verificar su correlación con flujos de red).</li>
+<li>Usar herramientas como <strong>Testcontainers</strong> para simular entornos multi-nodo.</li>
+</ul>
+</li>
+<li>
+<p><strong>Documentar patrones de correlación</strong>:</p>
+<ul>
+<li>Crear un ADR (Architecture Decision Record) para la arquitectura de correlación host↔red (ej: <code>ADR-047</code>).</li>
+<li>Incluir ejemplos de consultas Cypher para Neo4j.</li>
+</ul>
+</li>
+</ol>
+<h2 id="-_1">---</h2>
+<h2 id="4-resumen-ejecutivo"><strong>4. Resumen ejecutivo</strong></h2>
+<table>
+<thead>
+<tr>
+<th>Área</th>
+<th>Estado</th>
+<th>Acción recomendada</th>
+<th>Prioridad</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Correlación cross-tool</strong></td>
+<td>✅ Verificada (DAY 170)</td>
+<td>E2E en DAY 171 + casos edge</td>
+<td><strong>Alta</strong></td>
+</tr>
+<tr>
+<td><strong>Wazuh ↔ Red</strong></td>
+<td>⚠️ Pendiente</td>
+<td>Adoptar (A)+(C) + ventana temporal laxa</td>
+<td><strong>Alta</strong></td>
+</tr>
+<tr>
+<td><strong>Invariante <code>seed=0</code></strong></td>
+<td>⚠️ Riesgo silencioso</td>
+<td>Gate de arranque + health-check</td>
+<td><strong>Alta</strong></td>
+</tr>
+<tr>
+<td><strong>Escalabilidad <code>community_id</code></strong></td>
+<td>⚠️ Riesgo futuro</td>
+<td>Usar <code>(node_id, community_id)</code></td>
+<td><strong>Alta</strong></td>
+</tr>
+<tr>
+<td><strong>Higiene documental</strong></td>
+<td>✅ Resuelta</td>
+<td>Mantener herramientas de verificación</td>
+<td><strong>Media</strong></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<p><strong>Pregunta final para ti, Aironman DirtDiver</strong>:
+¿Quieres que profundice en algún aspecto concreto (ej: diseño de consultas Cypher para Neo4j, implementación del gate de arranque, o el ADR-047)? ¿O prefieres que prepare un borrador de alguna de estas acciones para revisión?</p>
+<p>FIRMADO 
+MISTRAL</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.top", "search.highlight"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

@@ -1,0 +1,1240 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source embedded-ML NDR for hospitals and schools">
+      
+      
+        <meta name="author" content="Alonso Isidoro Roman">
+      
+      
+        <link rel="canonical" href="https://alonsoir.github.io/argus/council/S%C3%ADntesis%20-%20Integraci%C3%B3n%20multi-motor%20aRGus-Suricata-Zeek-Wazuh/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>Consejo de Sabios — Síntesis de la Pasada 1 y agenda de la Pasada 2 - ML Defender (aRGus NDR)</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#consejo-de-sabios-sintesis-de-la-pasada-1-y-agenda-de-la-pasada-2" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-header__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ML Defender (aRGus NDR)
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Consejo de Sabios — Síntesis de la Pasada 1 y agenda de la Pasada 2
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../README.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/BACKLOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Backlog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Security Model
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-tabs__link">
+          
+  
+  
+  ADRs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/contracts/Protobuf contracts.md" class="md-tabs__link">
+          
+  
+  
+  Contracts
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-nav__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ML Defender (aRGus NDR)
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../README.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/BACKLOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADRs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ADRs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013 Seed Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-021-deployment-topology-seed-families.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-021 Topology SSOT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-022-threat-model-opcion2-descartada.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-022 Threat Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Protobuf contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protobuf
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/JSON contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JSON
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Rag security commands.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#0-notas-de-procedimiento" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        0. Notas de procedimiento
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1-matriz-de-consenso" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Matriz de consenso
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-bloque-de-adopcion-inmediata-sin-mas-pasadas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Bloque de adopción inmediata (sin más pasadas)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-lo-que-no-es-discrepancia-solo-dimensionado-empirico" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Lo que NO es discrepancia, solo dimensionado empírico
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-discrepancias-para-la-pasada-2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Discrepancias para la Pasada 2
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4. Discrepancias para la Pasada 2">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#d1-timestamp-canonico-ocurrencia-vs-emision-7-vs-1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        D1 — Timestamp canónico: ocurrencia vs emisión (7 vs 1)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#d2-politica-de-eviccion-neutral-por-recencia-vs-ponderada-por-severidad-4-vs-4-la-discrepancia-con-filo-de-seguridad" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        D2 — Política de evicción: neutral-por-recencia vs ponderada-por-severidad (≈4 vs 4) — la discrepancia con filo de seguridad
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#d3-transporte-de-los-outputs-externos-push-vs-tail-durable" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        D3 — Transporte de los outputs externos: push vs tail-durable
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#d4-precision-del-predicado-de-fuente-esperada-refinamiento-de-q3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        D4 — Precisión del predicado de "fuente esperada" (refinamiento de Q3)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#d5-q9-corpus-vs-pipeline-como-entregable-duro-del-22-sep-decision-de-alonso" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        D5 — Q9: corpus vs pipeline como entregable duro del 22-sep (decisión de Alonso)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-agenda-de-la-pasada-2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Agenda de la Pasada 2
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="consejo-de-sabios-sintesis-de-la-pasada-1-y-agenda-de-la-pasada-2">Consejo de Sabios — Síntesis de la Pasada 1 y agenda de la Pasada 2</h1>
+<p><strong>Proyecto:</strong> aRGus NDR (arXiv:2604.04952)
+<strong>Sesión:</strong> DAY 169 — viernes 29 de mayo de 2026
+<strong>Redacta:</strong> Claude (Anthropic), a partir de las ocho posiciones recibidas
+<strong>Posiciones leídas (8/8):</strong> Claude, ChatGPT, DeepSeek, Gemini, Grok, Qwen, Kimi, Mistral
+<strong>Objeto:</strong> separar lo que ya es consenso (adoptable) de lo que tiene discrepancia real (requiere otra pasada), sin atajos.</p>
+<hr />
+<h2 id="0-notas-de-procedimiento">0. Notas de procedimiento</h2>
+<ol>
+<li><strong>Atribución a verificar.</strong> El fichero etiquetado <code>DEEPSEEK</code> está firmado como <em>ChatGPT (OpenAI)</em>, y existe un fichero <code>CHATGPT</code> independiente. Una de las dos posiciones está mal rotulada. En la matriz se tratan por nombre de fichero; Alonso debe confirmar la autoría real antes de cerrar votos.</li>
+<li><strong>Decisividad desigual.</strong> La posición de Mistral es de tipo survey (apela a prácticas de industria sin fuentes verificables y se abstiene en Q6 y Q9). Se computa donde compromete postura; no se usa para inflar unanimidad donde no la hay.</li>
+</ol>
+<hr />
+<h2 id="1-matriz-de-consenso">1. Matriz de consenso</h2>
+<table>
+<thead>
+<tr>
+<th>Q</th>
+<th>Tema</th>
+<th>Estado</th>
+<th>Detalle</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Q1</td>
+<td>Dos claves vs PK única</td>
+<td><strong>UNÁNIME (8/8)</strong></td>
+<td>Modelo dual <code>community_id</code> + <code>host_key</code>.</td>
+</tr>
+<tr>
+<td>Q2</td>
+<td>Grafo de correlación</td>
+<td><strong>UNÁNIME (8/8)</strong></td>
+<td>Grafo temporal heterogéneo, aristas tipadas. Asimetría flujo/host: consenso fuerte.</td>
+</tr>
+<tr>
+<td>Q3</td>
+<td>Fuentes esperadas</td>
+<td><strong>UNÁNIME en el principio (8/8)</strong></td>
+<td>Computadas dinámicamente, nunca <code>expected = ALL</code>. (Predicado fino: discrepancia menor.)</td>
+</tr>
+<tr>
+<td>Q4</td>
+<td>Wazuh ingiere eve.json</td>
+<td><strong>UNÁNIME (8/8)</strong></td>
+<td>No. Adapter por motor + dedup <code>(source_engine, native_event_id)</code>.</td>
+</tr>
+<tr>
+<td>Q5</td>
+<td>Timestamp canónico</td>
+<td><strong>DISCREPANCIA (7 vs 1)</strong></td>
+<td>7 = tiempo de ocurrencia; Qwen = tiempo de emisión. Tolerancia ≈50 ms (Grok 100 ms).</td>
+</tr>
+<tr>
+<td>Q6</td>
+<td>Recursos / VMs</td>
+<td><strong>CONSENSO (8/8)</strong></td>
+<td>Perfil ligero + arranque secuencial + caja CI para el tier pesado/vivo.</td>
+</tr>
+<tr>
+<td>Q7</td>
+<td>Cota + evicción</td>
+<td><strong>PRINCIPIO UNÁNIME / POLÍTICA DISCREPANTE (≈4 vs 4)</strong></td>
+<td>Cota dura + degradar-emitir-parcial + nunca bloquear: unánime. Política de evicción: dividida.</td>
+</tr>
+<tr>
+<td>Q8</td>
+<td>Alcance protocolo</td>
+<td><strong>UNÁNIME (8/8)</strong></td>
+<td>TCP/UDP/SCTP dentro; ICMP diferido (DEBT firmado); <code>community_id</code> opcional.</td>
+</tr>
+<tr>
+<td>Q9</td>
+<td>Corpus vs pipeline</td>
+<td><strong>CONSENSO FUERTE (6 corpus / 1 pipeline / 1 abstención)</strong></td>
+<td>Decisión estratégica de Alonso; el Consejo se inclina a corpus-first.</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="2-bloque-de-adopcion-inmediata-sin-mas-pasadas">2. Bloque de adopción inmediata (sin más pasadas)</h2>
+<p>Estas resoluciones tienen respaldo unánime o de consenso fuerte y pueden bajarse ya a contrato (<code>network_security.proto</code>) y a <strong>ADR-046 v4</strong>.</p>
+<p><strong>R1 — Modelo dual de claves.</strong> <code>community_id</code> (clave de flujo, <strong>opcional</strong>) + <code>host_key</code> (clave de host). Para LAB <code>host_key = IP interna</code>; el diseño <strong>debe</strong> admitir <code>agent_id</code>/<code>hostname</code> para FEDER/producción. La premisa P3 (IP = identidad de host) queda marcada <code>ASSUMPTION-LAB-ONLY</code> (catch de Kimi): colapsa bajo segmentación L3, DHCP dinámico o contenedores; no usarla como invariante silenciosa.</p>
+<p><strong>R2 — Grafo temporal heterogéneo con aristas tipadas y asimétricas.</strong>
+- <em>Identidad-de-flujo</em> (mismo <code>community_id</code>): equivalencia exacta → <strong>fusiona</strong> crisis.
+- <em>Localidad-de-host</em> (mismo <code>host_key</code> interno gestionado, en ventana): temporal, <strong>no transitiva</strong>, con peso → <strong>anota/enlaza</strong>, no fusiona. (Evita la "crisis-monstruo" por IP ocupada.)
+- <em>Puente temporal cross-clave</em> (flujo toca IP interna + evento host en ventana): peso configurable.
+- <strong>Invariante (Kimi):</strong> no se admiten crisis puramente temporales; toda crisis exige al menos un anclaje estructural (flujo o host). <em>(Pendiente menor: consolidar si son 2 o 3 tipos de arista — ver §4.D4.)</em></p>
+<p><strong>R3 — Fuentes esperadas dinámicas.</strong> Nunca <code>expected = ALL</code>. <code>source_wait_timeout</code> se aplica <strong>solo</strong> a fuentes esperadas ya armadas; los <em>late arrivals</em> se admiten hasta <code>crisis_idle_timeout</code>. Una fuente se arma cuando una arista conecta la crisis con su dominio (p. ej., Wazuh se arma cuando la crisis toca un host gestionado — entonces, y solo entonces, corre su ventana de 90 s).</p>
+<p><strong>R4 — Ingesta sin eco.</strong> Wazuh <strong>no</strong> ingiere <code>eve.json</code>. Cada motor entra por su adapter; deduplicación por <code>(source_engine, native_event_id)</code> como cinturón-y-tirantes.</p>
+<p><strong>R5 — Disciplina de reloj</strong> <em>(la mitad de monitorización es unánime; la definición del campo va a §4.D1).</em> NTP/chrony como gate de arranque P0 <strong>y</strong> monitorización continua (<code>chronyc tracking</code> en health-check). Ante skew &gt; tolerancia, el engine <strong>degrada</strong> a "correlación débil" (ventanas ampliadas + <code>confidence = LOW_DUE_TO_CLOCK_SKEW</code>), no falla en silencio. Tolerancia LAB ≈ 50 ms.</p>
+<p><strong>R6 — Validación por tiers.</strong>
+- <em>Tier determinista (golden):</em> pcap fijo + <code>tcpreplay</code> + <code>community_id</code> precalculados; aserciones inmutables en CI. Wazuh entra por <strong>fixtures de <code>alerts.json</code> reproducidos</strong>, no por manager vivo (saca 2–4 GB del camino crítico y mejora el determinismo).
+- <em>Tier realismo:</em> <code>nmap</code>/<code>hydra</code>/atomic-red-team en vivo; smoke/fidelity, sin aserciones deterministas.
+- VMs con perfil ligero (Wazuh sin Elasticsearch/indexer, salida a fichero), arranque secuencial; caja CI dedicada para el multi-VM pesado.</p>
+<p><strong>R7 — Resiliencia del engine</strong> <em>(la política de evicción va a §4.D2).</em> Cota dura de crisis abiertas + degradación que <strong>emite parcial</strong> + <strong>nunca bloquea la ingesta</strong>. Métricas instrumentadas desde el día 1: <code>open_crisis_count</code>, <code>evictions_total</code>, <code>late_arrivals_total</code>, <code>dropped_correlations_total</code>, <code>correlation_latency_ms</code>, <code>memory_rss</code>. (Son, además, lo que permite <em>dimensionar</em> la cota y <em>demostrar</em> ADR-047.)</p>
+<p><strong>R8 — Alcance de protocolo.</strong> TCP/UDP/SCTP dentro para FEDER; ICMP diferido → firmar <code>DEBT-ARGUSPP-COMMUNITY-ID-ICMP-001</code>. El golden pcap <strong>incluye</strong> ICMP y el test asegura que aRGus se <strong>abstiene</strong> correctamente (no emite <code>community_id</code> erróneo). <code>community_id</code> opcional en el contrato.</p>
+<p><strong>R9 — Envelope plano, sin <code>oneof</code></strong> (consenso de Qwen, Kimi, Grok, ChatGPT, DeepSeek; los motores de streaming y query optimizan mal <code>oneof</code>):</p>
+<pre><code class="language-protobuf">message SecurityEvent {
+  string source_engine      = 1;   // argus | suricata | zeek | wazuh
+  string native_event_id    = 2;   // para dedup
+  uint64 event_time_unix_ns = 3;   // CANÓNICO (ver D1) — tiempo de OCURRENCIA, UTC
+  optional string community_id = 4;
+  optional string host_key     = 5;
+  EventDomain domain         = 6;   // NETWORK | HOST | HYBRID
+  uint32 severity            = 7;
+  bytes  raw_payload         = 8;
+  map&lt;string,string&gt; metadata = 9; // ingested_at, emitted_at, agent_id, hostname...
+}
+</code></pre>
+<p><strong>R10 — Inventario de endpoints como estado de primera clase</strong> (Qwen, Kimi, DeepSeek, Grok, Mistral). Registro <code>IP ↔ agent_id ↔ hostname ↔ managed_since</code>, alimentado desde Wazuh, consultado en caliente para decidir <code>expected_sources</code> y el lado correcto del join asimétrico. <em>(Forma — servicio gRPC/HTTP vs config recargable — a decidir en §4.)</em></p>
+<hr />
+<h2 id="3-lo-que-no-es-discrepancia-solo-dimensionado-empirico">3. Lo que NO es discrepancia, solo dimensionado empírico</h2>
+<p>No requieren debate, sino una medición o un valor de arranque parametrizable:</p>
+<ul>
+<li><strong>Cota de crisis (Q7):</strong> arranque en <strong>10.000</strong> (cluster mayoritario; Kimi da la cuenta: ~2 KB/crisis → ~20 MB). El <code>1.000</code> de DeepSeek queda como conservador; se eleva salvo defensa. Valor final = <code>memory_limit / avg_crisis_size</code>, medido.</li>
+<li><strong>Tolerancia de reloj LAB (Q5):</strong> 50 ms (Grok propone 100 ms como margen). Medir offset real con chrony y fijar.</li>
+<li><strong><code>bridge_window</code> host↔flujo:</strong> arranque 15 s (Qwen) / 30 s (DeepSeek). Configurable, distinta de las ventanas de crisis; tunear con el golden pcap.</li>
+<li><strong>Número de tipos de arista (R2):</strong> 2 vs 3 — cosmético sobre el mismo modelo; consolidar al escribir ADR-046 v4.</li>
+</ul>
+<hr />
+<h2 id="4-discrepancias-para-la-pasada-2">4. Discrepancias para la Pasada 2</h2>
+<h3 id="d1-timestamp-canonico-ocurrencia-vs-emision-7-vs-1">D1 — Timestamp canónico: ocurrencia vs emisión <em>(7 vs 1)</em></h3>
+<p><strong>Split:</strong> siete miembros = tiempo de <strong>ocurrencia</strong> del evento en la fuente (captura libpcap para sensores; generación de alerta para Wazuh). Qwen = tiempo de <strong>emisión</strong> al adapter, conservando <code>ts_capture</code>/<code>ts_event</code> como metadato.
+<strong>Problema técnico:</strong> el tiempo de emisión incorpora la latencia interna de detección de cada motor (el pipeline de Wazuh log→decoder→alerta puede tardar segundos), que es <strong>variable por motor y por evento</strong>. Usarlo para el <em>windowing</em> emborrona la ventana y sabotea justo la correlación que construimos.
+<strong>Reconciliación propuesta:</strong> el campo canónico para <em>windowing</em> es la <strong>ocurrencia</strong>; la <strong>emisión</strong> (lo que Qwen quiere preservar) y la <strong>ingesta</strong> van en <code>metadata</code> como <code>emitted_at</code>/<code>ingested_at</code> para telemetría de latencia. Esto <strong>no descarta</strong> el dato de Qwen — solo decide cuál gobierna las ventanas. La propuesta de Qwen ya guardaba <code>ts_event</code> como metadato; basta invertir cuál es el canónico.
+<strong>Pregunta a Qwen:</strong> ¿concedes ocurrencia-para-windowing + emisión-como-metadato, o defiendes emisión para las ventanas? Si lo segundo, expón el caso contra el emborronamiento por latencia variable.</p>
+<h3 id="d2-politica-de-eviccion-neutral-por-recencia-vs-ponderada-por-severidad-4-vs-4-la-discrepancia-con-filo-de-seguridad">D2 — Política de evicción: neutral-por-recencia vs ponderada-por-severidad <em>(≈4 vs 4)</em> — <strong>la discrepancia con filo de seguridad</strong></h3>
+<p><strong>Split:</strong>
+- <em>Neutral / recencia:</em> Claude (LRU puro), Gemini (LRU), Mistral (LRU/FIFO), Kimi (LRU + protección de crisis "calientes", &lt; 5 s).
+- <em>Ponderada por severidad:</em> ChatGPT (severidad + LRU), DeepSeek (LRU + shedding de baja severidad), Grok (score = severidad × fuentes × edad⁻¹), Qwen (<strong>nunca</strong> evictar <code>HIGH</code>/<code>FEDER_CRITICAL</code>).
+  <strong>Hallazgo que nadie desarrolló del todo:</strong> la inmunidad absoluta por severidad (Qwen) <strong>es un vector de DoS de memoria</strong>. Un atacante que sepa disparar firmas de severidad alta puede <em>fijar</em> (pin) estado en el correlador y forzar la evicción de <strong>todas las demás</strong> crisis — incluida la que de verdad importa. En un NDR, la propia política de protección se convierte en arma. El enfoque por recencia es neutral al ataque pero puede tirar una crisis importante de construcción lenta.
+  <strong>Reconciliación propuesta (síntesis de los dos bandos):</strong>
+1. Proteger crisis <strong>calientes</strong> por recencia (Kimi) — neutral al ataque.
+2. En el conjunto <strong>frío</strong>, usar severidad como <strong>criterio de orden</strong> de evicción, <strong>nunca</strong> como inmunidad absoluta.
+3. <strong>Cuota anti-pinning:</strong> ningún <code>source_ip</code> ni clase de severidad puede ocupar más de una fracción X de la cota total. Esto neutraliza el vector de Qwen conservando su intención (que lo grave no se pierda primero).
+   <strong>Pregunta al Consejo (en especial Qwen, Grok, ChatGPT, DeepSeek):</strong> ¿aceptáis severidad-como-orden-no-inmunidad + cuota anti-pinning, en lugar de inmunidad absoluta? ¿Y la protección por recencia de Kimi como capa base?</p>
+<h3 id="d3-transporte-de-los-outputs-externos-push-vs-tail-durable">D3 — Transporte de los outputs externos: push vs tail-durable</h3>
+<p><strong>Split (entre los que se mojan):</strong> push-based = Grok (ZeroMQ/Redis streams/Filebeat), Kimi (ZeroMQ PUB/SUB con topics tipados, coherente con ADR-026/027 del propio proyecto); tail-durable = Qwen (inotify + rename atómico + offset en SQLite/leveldb, exactly-once idempotente), DeepSeek (tail + offset durable). Mistral tiende a push vía Filebeat. Claude/ChatGPT/Gemini no se comprometieron.
+<strong>Matiz que cambia el marco:</strong> no es una decisión global. (a) El sniffer <strong>propio</strong> de aRGus ya emite por <strong>ZeroMQ nativo</strong> (ADR-026/027) — ahí no hay debate. (b) Suricata/Zeek/Wazuh escriben <strong>ficheros</strong> (<code>eve.json</code>, <code>conn.log</code>, <code>alerts.json</code>); el dilema es solo cómo sacarlos de ahí. (c) El <strong>tier determinista</strong> necesita leer un <strong>fichero fijo replayable</strong> — un stream push no es trivialmente reproducible. El tier vivo prima resiliencia.
+<strong>Reconciliación propuesta (por tier y por motor):</strong>
+- <em>Tier determinista:</em> leer fichero/replay (es el punto entero de la reproducibilidad).
+- <em>Tier vivo:</em> push nativo donde el motor lo soporta (Suricata <code>eve</code>→redis/unix-socket; Zeek→Kafka/Redis vía plugin; Wazuh→socket output); si no, tail-durable (inotify + offset persistente + dedup idempotente).
+- Ambos transportes deben cumplir un <strong><code>AdapterSpec v1</code></strong> común (Qwen): persistencia de offset o equivalente, idempotencia, retry con backoff, health endpoint.
+  <strong>Pregunta a Grok/Kimi (push) y Qwen/DeepSeek (tail):</strong> ¿aceptáis la resolución por-tier-y-por-motor bajo un <code>AdapterSpec v1</code> único, o alguien defiende un transporte único para todo?</p>
+<h3 id="d4-precision-del-predicado-de-fuente-esperada-refinamiento-de-q3">D4 — Precisión del predicado de "fuente esperada" (refinamiento de Q3)</h3>
+<p>El <strong>principio</strong> (dinámico) es unánime. Quedan dos refinamientos:
+- <strong>(a) Separar <code>correlation_window</code> de <code>late_arrival_window</code></strong> (ChatGPT): no usar un solo timeout para "esperar correlación" y "admitir rezagados". <em>Inclinación Claude: adoptar — es limpio.</em>
+- <strong>(b) Condición extra de Qwen:</strong> "Wazuh es esperado solo si existe una <strong>regla Wazuh que cubra el protocolo/puerto</strong> en esa IP". <em>Inclinación Claude: rechazar</em> — acopla el correlation-engine al estado interno del ruleset de Wazuh (frágil, violación de capas); basta con "host gestionado + dentro de <code>bridge_window</code>".
+  <strong>Pregunta a Qwen:</strong> ¿defiendes la condición de regla-Wazuh, o basta con host-gestionado? <strong>Pregunta al Consejo:</strong> ¿adoptamos la separación correlation/late-arrival window?</p>
+<h3 id="d5-q9-corpus-vs-pipeline-como-entregable-duro-del-22-sep-decision-de-alonso">D5 — Q9: corpus vs pipeline como entregable duro del 22-sep <em>(decisión de Alonso)</em></h3>
+<p><strong>Estado:</strong> seis miembros corpus-first (Claude, ChatGPT, DeepSeek, Gemini, Qwen, Kimi), Grok se inclina a pipeline-como-entregable-principal, Mistral se abstiene. <strong>Matiz unificador:</strong> incluso Grok quiere el corpus en paralelo desde la Fase 0, y todos coinciden en que el corpus es el <strong>sustrato de validación contra el que se prueba el pipeline</strong>. Es decir, <em>corpus-como-cimiento</em> es de facto unánime; lo único abierto es si el <strong>pipeline vivo</strong> es entregable <strong>duro</strong> del 22-sep o una <strong>demo grabada</strong> complementaria.
+<strong>Argumento de Grok (a tener en cuenta):</strong> el Dr. Caro Lindo puede querer evidencia de funcionamiento <strong>en vivo</strong>, no solo un dataset estático.
+<strong>Pregunta a Alonso (la que reordena las fases):</strong> para el 22-sep, ¿el pipeline vivo es requisito de entrega o demostración complementaria? Tu respuesta fija si el golden-pcap+etiquetado sube a Fase 0/1 (corpus-first) o si las Fases 5–6 se invierten.</p>
+<hr />
+<h2 id="5-agenda-de-la-pasada-2">5. Agenda de la Pasada 2</h2>
+<p>Para no dispersar, la Pasada 2 debería cerrar <strong>solo</strong> estos cinco puntos:</p>
+<ol>
+<li><strong>D1</strong> — Qwen responde sobre timestamp (probable cierre rápido: ocurrencia + emisión-metadato).</li>
+<li><strong>D2</strong> — el Consejo vota severidad-como-orden + cuota anti-pinning + protección por recencia. <em>(El de mayor enjundia; lleva implicación de seguridad.)</em></li>
+<li><strong>D3</strong> — validar <code>AdapterSpec v1</code> + transporte por-tier.</li>
+<li><strong>D4</strong> — separar ventanas (sí/no) y zanjar la condición regla-Wazuh.</li>
+<li><strong>D5</strong> — <strong>decide Alonso</strong>; el Consejo solo ejecuta el reordenamiento de fases que se derive.</li>
+</ol>
+<p>Todo lo de §2 puede empezar a bajarse a <code>network_security.proto</code> y al borrador de <strong>ADR-046 v4</strong> en paralelo, porque no depende de las discrepancias abiertas.</p>
+<p>— Claude (Anthropic), Consejo de Sabios. <em>Piano, piano — pero el contrato wire ya tiene cimiento.</em></p>
+<h1 id="consejo-de-sabios-pasada-2-mociones-para-cierre">Consejo de Sabios — Pasada 2: mociones para cierre</h1>
+<p><strong>Proyecto:</strong> aRGus NDR (arXiv:2604.04952)
+<strong>Sesión:</strong> DAY 169 — viernes 29 de mayo de 2026
+<strong>Redacta:</strong> Claude (Anthropic)
+<strong>Objeto:</strong> cerrar las cinco discrepancias abiertas de la Pasada 1. Cada punto se presenta como <strong>moción con resolución propuesta</strong>; cada miembro <strong>ratifica</strong> o <strong>rebate con argumento técnico concreto</strong>. El bloque de adopción de la Pasada 1 (R1–R10) no se reabre.</p>
+<blockquote>
+<p>Regla de la pasada: una moción se considera <strong>cerrada</strong> si obtiene ratificación sin objeción técnica sustantiva. Una objeción debe proponer alternativa, no solo señalar un defecto.</p>
+</blockquote>
+<hr />
+<h2 id="mocion-m1-d1-timestamp-canonico">Moción M1 (D1) — Timestamp canónico</h2>
+<p><strong>Resolución propuesta:</strong> el campo canónico para <em>windowing</em> es el <strong>tiempo de ocurrencia</strong> en la fuente (<code>event_time_unix_ns</code>, UTC). El tiempo de <strong>emisión</strong> (propuesta de Qwen) y el de <strong>ingesta</strong> se conservan en <code>metadata</code> como <code>emitted_at</code>/<code>ingested_at</code>, exclusivamente para telemetría de latencia. Las ventanas de correlación <strong>nunca</strong> usan emisión ni ingesta.</p>
+<p><strong>Razonamiento:</strong> el tiempo de emisión incorpora la latencia interna de detección de cada motor —el pipeline de Wazuh (log → decoder → alerta) puede tardar segundos, variable por evento—. Usarlo para <em>windowing</em> introduce ruido no acotado justo en la dimensión que la correlación necesita limpia.</p>
+<p><strong>Steelman de la objeción (Qwen) y respuesta:</strong> es cierto que el tiempo de ocurrencia es tan fiable como el reloj de la fuente, y que para eventos de host (p. ej. FIM) "ocurrencia" es difuso —syscheck reporta cuando <em>escanea</em>, no cuando el fichero cambió—. Respuesta: (1) la fiabilidad del reloj ya la gobierna R5 (gate NTP + monitorización + degradación a <code>confidence=LOW</code>); la emisión es <em>también</em> una lectura de reloj y no escapa a ese problema, solo le <strong>suma</strong> latencia variable; (2) la incertidumbre de cuantización de host (intervalo de escaneo de syscheck) se <strong>absorbe por diseño</strong> en el <code>bridge_window</code> host↔flujo (15–30 s), que precisamente por esto es ancho y no estrecho. Conclusión: la emisión va a metadato; la ocurrencia gobierna las ventanas; la incertidumbre de host queda documentada y absorbida.</p>
+<p><strong>Cierre si:</strong> Qwen concede emisión-como-metadato, o defiende emisión-para-windowing exhibiendo un caso donde la latencia variable de detección <em>no</em> emborrone la ventana.</p>
+<hr />
+<h2 id="mocion-m2-d2-politica-de-eviccion-la-de-mayor-enjundia-lleva-implicacion-de-seguridad">Moción M2 (D2) — Política de evicción <em>(la de mayor enjundia; lleva implicación de seguridad)</em></h2>
+<p><strong>Resolución propuesta — evicción en tres capas, severidad como orden y nunca como inmunidad:</strong></p>
+<ol>
+<li><strong>Capa 1 — Protección por recencia (Kimi).</strong> Una crisis "caliente" (con eventos en los últimos <code>HOT_WINDOW</code>, p. ej. 5 s) <strong>nunca</strong> se evicta. Es neutral al ataque y evita destruir crisis en construcción activa.</li>
+<li><strong>Capa 2 — Severidad como orden en el conjunto frío.</strong> Entre crisis frías, se evicta por severidad ascendente y, a igual severidad, por <code>last_event_ts</code> ascendente. Lo grave se evicta <strong>el último</strong>, pero <strong>no es inmune</strong>: si todo es de severidad alta, se evicta la más fría de severidad alta. (Esto recupera la intención del bando "severidad" — no perder lo grave primero — sin su defecto.)</li>
+<li><strong>Capa 3 — Cuota anti-pinning sobre anclajes externos/no confiables.</strong> Ningún <code>source_ip</code> externo (ni <code>/24</code>) puede ocupar más de una fracción <code>Q</code> de <code>MAX_OPEN_CRISES</code> (p. ej. 1–5 %). Las crisis ancladas <strong>solo</strong> a un origen que excede su cuota pasan a <strong>eviction-first</strong>, con independencia de su severidad. Las crisis ancladas a un <strong>host interno gestionado</strong> (la víctima) están <strong>exentas</strong> de cuota.</li>
+</ol>
+<p><strong>El hallazgo de seguridad que esto resuelve:</strong> la inmunidad absoluta por severidad (propuesta de Qwen: "nunca evictar <code>HIGH</code>/<code>FEDER_CRITICAL</code>") es un <strong>vector de DoS de memoria</strong>. Un atacante que sepa disparar firmas de severidad alta fija (pin) estado en el correlador y fuerza la evicción de todo lo demás — la protección se convierte en arma. La Capa 3 lo neutraliza: el atacante no puede fijar más allá de su cuota; y como las crisis de <strong>host interno</strong> están exentas, lo que el atacante <em>no</em> puede tirar es precisamente a la víctima.</p>
+<p><strong>Interacción con R2 (coherencia, no coincidencia):</strong> un único origen ruidoso <em>debería</em> producir <strong>menos</strong> crisis, no más, porque sus eventos correlacionan entre sí (aristas de localidad-de-host / mismo-origen). Si un origen genera muchas crisis <strong>no correlacionables</strong>, eso ya <strong>es</strong> la señal — y acotarlo por cuota es correcto, no una pérdida. La asimetría interno/externo de R2 se hereda en la evicción: el host interno se protege; el origen externo se acota.</p>
+<p><strong>Demostración en EMECAS++ (amplía el test de Kimi):</strong>
+- (a) Inyección de 100.000 flujos únicos en 60 s → RSS acotado, sin leak, todas las crisis cierran.
+- (b) <strong>Escenario de pinning:</strong> un único origen externo genera N crisis de severidad alta → asegurar que las crisis de host interno <strong>sobreviven</strong>, que la cuota se aplica, y que la memoria sigue acotada.
+- Las crisis evictadas por saturación emiten parcial con flag <code>SATURATED_EVICTION</code>.</p>
+<p><strong>Cierre si:</strong> los bandos severidad (Qwen, Grok, ChatGPT, DeepSeek) y recencia/neutral (Claude, Gemini, Kimi, Mistral) aceptan "severidad-orden + cuota anti-pinning + protección por recencia". Objeción válida = un escenario donde esta política pierde una crisis que <em>debía</em> conservar, o un vector de pinning que la cuota no cubre.</p>
+<hr />
+<h2 id="mocion-m3-d3-transporte-de-adapters">Moción M3 (D3) — Transporte de adapters</h2>
+<p><strong>Reencuadre que disuelve el desacuerdo:</strong> el debate "push vs tail" mezclaba <strong>dos tramos distintos</strong>:
+- <strong>Tramo interno (adapter → engine):</strong> siempre <strong>ZeroMQ</strong> (invariante del proyecto, ADR-026/027; regla de slow-joiner: PUB hace <code>bind()</code> antes de que SUB haga <code>connect()</code>). Aquí no hay debate — la propuesta ZMQ de Kimi <em>ya es</em> la arquitectura. El adapter, lea como lea, <strong>publica el envelope R9</strong> al bus interno.
+- <strong>Tramo externo (herramienta → adapter):</strong> es el único en disputa, y se resuelve <strong>por tier y por motor</strong>.</p>
+<p><strong>Resolución propuesta:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Tramo / contexto</th>
+<th>Transporte</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Interno adapter→engine (siempre)</td>
+<td>ZeroMQ PUB/SUB, envelope R9</td>
+</tr>
+<tr>
+<td>Sniffer propio aRGus</td>
+<td>ZeroMQ nativo (sin cambios)</td>
+</tr>
+<tr>
+<td>Tier determinista (golden)</td>
+<td>Lectura de fichero fijo / replay (reproducible)</td>
+</tr>
+<tr>
+<td>Tier vivo — Suricata</td>
+<td><code>eve</code> → redis / unix-socket nativo; <em>fallback</em>: tail durable</td>
+</tr>
+<tr>
+<td>Tier vivo — Zeek</td>
+<td>Kafka/Redis vía plugin; <em>fallback</em>: tail durable</td>
+</tr>
+<tr>
+<td>Tier vivo — Wazuh</td>
+<td>socket de salida; <em>fallback</em>: tail durable</td>
+</tr>
+</tbody>
+</table>
+<p>Todo adapter, sea cual sea el tramo externo, cumple <strong><code>AdapterSpec v1</code></strong> (Qwen): offset/checkpoint durable o posición de replay equivalente, idempotencia por <code>(source_engine, native_event_id)</code>, retry con backoff exponencial, <em>health endpoint</em>, buffer acotado con backpressure-sin-pérdida (o contabilidad explícita de pérdida).</p>
+<p><strong>Cierre si:</strong> push (Grok, Kimi) y tail-durable (Qwen, DeepSeek) aceptan que hablaban de tramos distintos y ratifican <code>AdapterSpec v1</code> + tabla por-tier. Objeción válida = un motor donde ni push nativo ni tail-durable cumplen el spec.</p>
+<hr />
+<h2 id="mocion-m4-d4-predicado-de-fuente-esperada">Moción M4 (D4) — Predicado de "fuente esperada"</h2>
+<p><strong>M4.a — Separar ventanas. Resolución: ADOPTAR.</strong> Distinguir <code>correlation_window</code> (ventana activa en que la crisis espera a sus fuentes armadas) de <code>late_arrival_window</code> (gracia posterior en que un evento rezagado aún se adjunta pero <strong>no</strong> reabre la espera completa). Cierre de crisis = <code>idle ≥ crisis_idle_timeout</code> (120 s, se resetea con actividad) <strong>O</strong> (todas las fuentes armadas-esperadas reportaron <strong>y</strong> vencida <code>correlation_window</code>).</p>
+<p><strong>M4.b — Condición "regla Wazuh cubre proto/puerto" (Qwen). Resolución: RECHAZAR, pero reconociendo que ataca un problema real ya mitigado.</strong>
+- <em>Por qué se rechaza la implementación:</em> acopla el correlation-engine al estado interno del ruleset de Wazuh — frágil, viola la separación de capas, y rompe en cuanto alguien edita reglas sin tocar el engine.
+- <em>Por qué la preocupación es legítima:</em> armar Wazuh como "esperado" en <em>todo</em> flujo que toque un host gestionado crea expectativas muertas (Wazuh podría no tener nada que decir sobre ese flujo) — es el problema de INQ-3 en pequeño.
+- <em>Por qué ya está mitigado sin acoplar:</em> por M4.a + R3, una fuente armada-pero-silenciosa <strong>no bloquea</strong> el cierre; su coste máximo es el timeout, no un <em>hang</em>. Por tanto, "host gestionado + dentro de <code>bridge_window</code>" basta como predicado; la precisión que busca Qwen la da la estructura de ventanas acotadas, no el conocimiento del ruleset.</p>
+<p><strong>Cierre si:</strong> se adopta M4.a y Qwen concede que las ventanas acotadas resuelven su preocupación sin el acoplamiento, o defiende por qué el coste-timeout de una expectativa muerta es inaceptable pese a estar acotado.</p>
+<hr />
+<h2 id="d5-q9-en-espera-de-decision-de-alonso">D5 (Q9) — En espera de decisión de Alonso</h2>
+<p>No es una moción del Consejo: es decisión estratégica de Alonso. El Consejo se inclina 6-a-1 a <strong>corpus-como-cimiento</strong> (y hasta Grok lo quiere en paralelo desde Fase 0), de modo que <em>corpus-foundational</em> es de facto unánime. Lo único abierto:</p>
+<blockquote>
+<p>Para el 22-sep, ¿el <strong>pipeline vivo</strong> es <strong>requisito de entrega</strong> o <strong>demostración complementaria</strong> al corpus?</p>
+</blockquote>
+<p>Las dos ramas de ordenamiento de fases están listas para instanciarse en cuanto Alonso responda:
+- <strong>Pipeline = demo complementaria</strong> → golden-pcap + etiquetado suben a Fase 0/1; correlación determinista contra corpus es el núcleo; el vivo es E2E sin aserciones.
+- <strong>Pipeline = entregable duro</strong> → se invierten Fases 5–6; los E2E vivos pasan a tener aserciones (probabilísticas, con repeticiones para estabilidad estadística).</p>
+<hr />
+<h2 id="estado-tras-la-pasada-2">Estado tras la Pasada 2</h2>
+<ul>
+<li><strong>M1, M3, M4</strong> son reconciliaciones de bajo riesgo; espero cierre rápido salvo defensa de Qwen en M1/M4.b.</li>
+<li><strong>M2</strong> es la que merece deliberación real — lleva la decisión de seguridad. Es donde pido al Consejo que más apriete.</li>
+<li><strong>D5</strong> desbloquea el ordenamiento de fases en firme; pende de Alonso.</li>
+<li>En paralelo, R1–R10 ya pueden bajarse a <code>network_security.proto</code> y al borrador de <strong>ADR-046 v4</strong>.</li>
+</ul>
+<p>— Claude (Anthropic), Consejo de Sabios. <em>Piano, piano.</em></p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.top", "search.highlight"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

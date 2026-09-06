@@ -1,0 +1,1089 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source embedded-ML NDR for hospitals and schools">
+      
+      
+        <meta name="author" content="Alonso Isidoro Roman">
+      
+      
+        <link rel="canonical" href="https://alonsoir.github.io/argus/council/Prompt%20para%20el%20Consejo%20de%20Sabios%20%E2%80%94%20ADR-045%20CryptoEpoch%20Coordination-respuesta-kimi/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>Dictamen del Consejo — ADR-045 CryptoEpoch Coordination - ML Defender (aRGus NDR)</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#dictamen-del-consejo-adr-045-cryptoepoch-coordination" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-header__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ML Defender (aRGus NDR)
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Dictamen del Consejo — ADR-045 CryptoEpoch Coordination
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../README.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/BACKLOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Backlog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Security Model
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-tabs__link">
+          
+  
+  
+  ADRs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/contracts/Protobuf contracts.md" class="md-tabs__link">
+          
+  
+  
+  Contracts
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-nav__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ML Defender (aRGus NDR)
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../README.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/BACKLOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADRs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ADRs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013 Seed Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-021-deployment-topology-seed-families.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-021 Topology SSOT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-022-threat-model-opcion2-descartada.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-022 Threat Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Protobuf contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protobuf
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/JSON contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JSON
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Rag security commands.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-es-suficiente-not_before-en-etcd-o-se-necesita-ack-explicito-por-componente" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. ¿Es suficiente not_before en etcd o se necesita ack explícito por componente?
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-grace-period-de-30s-para-6-componentes-en-mismo-nodo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. ¿Grace period de 30s para 6 componentes en mismo nodo?
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-quien-debe-ser-el-unico-escritor-de-arguscryptoepoch" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. ¿Quién debe ser el único escritor de /argus/crypto/epoch?
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-deteccion-y-recuperacion-de-split-brain-en-transicion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. ¿Detección y recuperación de split-brain en transición?
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-ventana-dual-key-zmq-sin-cambios-en-wire-protocol" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. ¿Ventana dual-key ZMQ sin cambios en wire protocol?
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#resumen-ejecutivo-para-el-pi" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Resumen ejecutivo para el PI
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="dictamen-del-consejo-adr-045-cryptoepoch-coordination">Dictamen del Consejo — ADR-045 CryptoEpoch Coordination</h1>
+<p>He analizado la propuesta v1 en el contexto de aRGus NDR (C++20, ZeroMQ, infraestructura crítica). A continuación, mi dictamen técnico punto por punto, con argumentos concretos y disidencias donde considero que la propuesta actual es insuficiente.</p>
+<hr />
+<h2 id="1-es-suficiente-not_before-en-etcd-o-se-necesita-ack-explicito-por-componente">1. ¿Es suficiente <code>not_before</code> en etcd o se necesita ack explícito por componente?</h2>
+<p><strong>Disidencia fuerte: <code>not_before</code> solo es insuficiente para infraestructura crítica.</strong></p>
+<p><strong>Argumentos técnicos:</strong></p>
+<ul>
+<li>
+<p><strong>Best-effort no es aceptable en split-brain criptográfico.</strong> Si un componente (ej. el ML detector en un nodo saturado) no procesa el watch de etcd a tiempo, o si hay un GC pause en el proceso C++, el <code>not_before</code> expira y el componente entra en época N+1 sin haber recargado el provider. El resultado es un canal ZMQ muerto que solo se detecta por timeout de heartbeat — demasiado tarde para una rotación programada.</p>
+</li>
+<li>
+<p><strong>El problema es asimétrico:</strong> el firewall puede rotar en T+grace, pero el sniffer puede estar en T+grace+50ms. Durante esos 50ms, todos los paquetes del sniffer al firewall se descartan por MAC/encryption mismatch. En infraestructura crítica, eso es pérdida de telemetría activa.</p>
+</li>
+<li>
+<p><strong>Contra-argumento (que rechazo):</strong> "Pero etcd watch es eventualmente consistente y el reloj está sincronizado." Falso en la práctica: <code>std::chrono</code> en C++20 no garantiza sincronización de relojes de pared entre procesos del mismo nodo (aunque estén sincronizados vía NTP, hay jitter de kernel scheduling).</p>
+</li>
+</ul>
+<p><strong>Propuesta alternativa:</strong></p>
+<pre><code>etcd:
+  /argus/crypto/epoch/target        → { epoch_id, seed_hash, not_before, deadline }
+  /argus/crypto/epoch/ack/&lt;comp_id&gt; → { epoch_id, timestamp, status: READY|FAILED }
+
+Flujo:
+  1. Escritor publica target
+  2. Cada componente, tras reload() exitoso, escribe ack con status=READY
+  3. Si en T=deadline no hay 6/6 acks → rotación abortada, epoch_target se marca ABORTED
+  4. Solo si 6/6 READY → escritor publica /argus/crypto/epoch/current = target
+</code></pre>
+<p>Esto es un <strong>2PC simplificado</strong> (fase de prepare + commit), no un 2PC distribuido completo. No requiere transaction manager externo porque el commit es unilateral del escritor basado en conteo de acks.</p>
+<hr />
+<h2 id="2-grace-period-de-30s-para-6-componentes-en-mismo-nodo">2. ¿Grace period de 30s para 6 componentes en mismo nodo?</h2>
+<p><strong>Parcialmente de acuerdo, pero con matiz crítico: debe ser configurable por <em>rol funcional</em>, no por instancia.</strong></p>
+<p><strong>Argumentos técnicos:</strong></p>
+<ul>
+<li>
+<p><strong>30s es excesivo para 6 componentes colocados.</strong> Si todos están en el mismo nodo (o incluso en VMs Vagrant del mismo host), el reload de <code>CryptoProviderHandle</code> vía RCU es microsegundos (atomic swap de <code>shared_ptr</code>). El tiempo dominante es el network round-trip a Vault (si se usa <code>VaultProvider</code>) o la re-derivación HKDF-SHA256 (si es <code>SeedFileProvider</code>). Ni uno ni otro justifica 30s para 6 procesos.</p>
+</li>
+<li>
+<p><strong>El grace period realmente necesario no es para el reload, es para la ventana dual-key (FASE 3).</strong> Necesitas tiempo suficiente para que todos los sockets ZMQ hayan drenado los mensajes en vuelo cifrados con época N antes de que el receptor deje de aceptarlos.</p>
+</li>
+<li>
+<p><strong>Configuración por rol:</strong> El ML detector puede tener buffers de inferencia de 5s; el firewall puede tener state tables que requieren 10s para estabilizar. Un grace period único de 30s penaliza al detector innecesariamente.</p>
+</li>
+</ul>
+<p><strong>Recomendación:</strong></p>
+<pre><code class="language-cpp">struct EpochTransitionConfig {
+    std::chrono::seconds grace_period{5};      // default: 5s, no 30s
+    std::chrono::seconds dual_key_window{2}; // FASE 3 overlap
+    std::chrono::seconds ack_timeout{3};       // para el 2PC simplificado
+};
+</code></pre>
+<p>Para un despliegue enterprise crítico, 5s de grace + 2s de dual-key son suficientes si los componentes están en el mismo datacenter/nodo. 30s solo es razonable si hay componentes remotos con latencia &gt;100ms — que no parece ser el caso según el contexto (Vagrant VMs locales).</p>
+<hr />
+<h2 id="3-quien-debe-ser-el-unico-escritor-de-arguscryptoepoch">3. ¿Quién debe ser el único escritor de <code>/argus/crypto/epoch</code>?</h2>
+<p><strong>Disidencia: Ni etcd-server ni Jenkins. Debe ser un </strong>CryptoEpochManager<strong> dedicado, co-ubicado con etcd pero como proceso separado con lease TTL.</strong></p>
+<p><strong>Argumentos técnicos:</strong></p>
+<ul>
+<li>
+<p><strong>etcd-server como escritor:</strong> Violación de separación de responsabilidades. etcd es almacenamiento de configuración/consenso; no debe contener lógica de negocio criptográfica (generación de seeds, derivación HKDF, cálculo de hashes). Además, si etcd-server se reinicia, pierdes el estado de transición a medio camino.</p>
+</li>
+<li>
+<p><strong>Jenkins/Vault agent externo:</strong> Introduce un actor fuera del runtime del sistema. Si el agente pierde conectividad durante una rotación, no hay forma de abortar o consultar estado desde los componentes C++ sin salirse del trust boundary.</p>
+</li>
+<li>
+<p><strong>La solución correcta:</strong> Un proceso <code>argus-epoch-manager</code> (o integrado en <code>etcd-server</code> como sidecar) que:</p>
+<ol>
+<li>Tiene un <strong>lease etcd TTL</strong> (ej. 10s) — si muere, el lease expira y la clave <code>/argus/crypto/epoch/target</code> se autodestruye (mechanismo de safety).</li>
+<li>Es el único con permisos de escritura en <code>/argus/crypto/epoch/*</code> (ACLs de etcd con mTLS + CN=<code>argus-epoch-manager</code>).</li>
+<li>Expone una API interna (gRPC/Unix socket) para que el operador humano o Jenkins <em>dispare</em> la rotación, pero el manager ejecuta el protocolo.</li>
+</ol>
+</li>
+</ul>
+<p><strong>Patrón:</strong> Single writer con lease + TTL. Esto evita split-brain del escritor mismo.</p>
+<hr />
+<h2 id="4-deteccion-y-recuperacion-de-split-brain-en-transicion">4. ¿Detección y recuperación de split-brain en transición?</h2>
+<p><strong>Disidencia fuerte: La state machine de autonomy existente es insuficiente. Se requiere estado nuevo <code>EPOCH_TRANSITION</code> + sub-estados.</strong></p>
+<p><strong>Argumentos técnicos:</strong></p>
+<ul>
+<li>
+<p><strong>Autonomy actual (asumo):</strong> Probablemente tiene estados como <code>HEALTHY</code>, <code>DEGRADED</code>, <code>ISOLATED</code>, <code>AUTONOMOUS</code>. Ninguno de estos modela la semántica de "estoy intentando rotar criptográficamente pero no lo he conseguido".</p>
+</li>
+<li>
+<p><strong>El problema concreto:</strong> Si un componente falla en <code>reload()</code> (ej. Vault está temporalmente unavailable), ¿qué hace? Con el mecanismo best-effort actual, simplemente no rota y entra en split-brain. La state machine de autonomy detectará "canal ZMQ muerto" eventualmente, pero eso es un síntoma, no una causa accionable.</p>
+</li>
+<li>
+<p><strong>Propuesta de state machine extendida:</strong></p>
+</li>
+</ul>
+<pre><code>HEALTHY
+  └─&gt; EPOCH_TRANSITION_PREPARE   (recibió target, intentando reload)
+        ├─&gt; EPOCH_TRANSITION_READY    (reload OK, ack enviado)
+        └─&gt; EPOCH_TRANSITION_FAILED   (reload falló, reintentando)
+              └─&gt; AUTONOMOUS_EPOCH_STALE  (máximo reintentos agotados,
+                                           operar con época N hasta intervención)
+</code></pre>
+<ul>
+<li><strong>Recuperación:</strong> Si un componente entra en <code>AUTONOMOUS_EPOCH_STALE</code>, debe:<ol>
+<li>Seguir operando con época N (no morir).</li>
+<li>Intentar re-sincronización periódica (cada 30s) leyendo <code>/argus/crypto/epoch/current</code>.</li>
+<li>Si logra sincronizarse, transicionar a <code>HEALTHY</code> automáticamente (self-healing).</li>
+<li>Alertar vía telemetry (no solo log local).</li>
+</ol>
+</li>
+</ul>
+<p><strong>Esto es crítico:</strong> En infraestructura crítica, un componente que no puede rotar no debe morir; debe operar en modo degradado con la época anterior hasta que un operador o el sistema lo resuelva.</p>
+<hr />
+<h2 id="5-ventana-dual-key-zmq-sin-cambios-en-wire-protocol">5. ¿Ventana dual-key ZMQ sin cambios en wire protocol?</h2>
+<p><strong>Disidencia: No es implementable de forma segura sin añadir <code>epoch_id</code> al header binario.</strong></p>
+<p><strong>Argumentos técnicos:</strong></p>
+<ul>
+<li>
+<p><strong>El wire actual:</strong> <code>LZ4 + LE uint32_t</code>. Asumo que el <code>uint32_t</code> es el length del payload comprimido. No hay campo para discriminar la época criptográfica.</p>
+</li>
+<li>
+<p><strong>¿Por qué no basta con "aceptar N y N+1 durante grace"?</strong> Porque el receptor no sabe qué clave probar primero. Si intenta descifrar con N+1 y falla, luego con N — eso es un oracle de timing (side-channel) y además es O(n) con n=épocas activas. Con 6 componentes y rotaciones frecuentes, esto escala mal.</p>
+</li>
+<li>
+<p><strong>¿Por qué no usar un "magic byte" implícito?</strong> El ciphertext de época N vs N+1, si usas AEAD (ChaCha20-Poly1305 o AES-GCM), fallará en la verificación de MAC. Eso es indistinguible de un ataque de bit-flipping. No puedes usar "fallo de MAC" como señal de "prueba la otra época" en producción — eso viola la semántica criptográfica de authenticate-then-decrypt.</p>
+</li>
+<li>
+<p><strong>La solución mínima viable:</strong>
+  <code>Header binario actual:  [LE uint32_t: payload_len]
+  Header binario ADR-045: [LE uint32_t: payload_len][LE uint16_t: epoch_id][2 bytes reserved]</code></p>
+<ul>
+<li><code>epoch_id</code> es un <code>uint16_t</code> (suficiente para 65k épocas; si rotas cada 24h, duras 179 años).</li>
+<li>Los 2 bytes reservados permiten extensión futura sin romper compatibilidad.</li>
+<li><strong>Backward compatibility:</strong> Si <code>epoch_id == 0</code>, se asume "legacy, usar época actual" durante un periodo de migración.</li>
+</ul>
+</li>
+<li>
+<p><strong>Implementación en ZMQ:</strong> El header va en el ZMQ message frame, antes del payload LZ4. No requiere cambios en el framing ZMQ (multipart o single-part), solo en el parseo del primer frame.</p>
+</li>
+</ul>
+<hr />
+<h2 id="resumen-ejecutivo-para-el-pi">Resumen ejecutivo para el PI</h2>
+<table>
+<thead>
+<tr>
+<th>Punto</th>
+<th>Posición del Consejo</th>
+<th>Riesgo si se ignora</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1. Coordinación</td>
+<td><strong>Rechazar best-effort.</strong> Usar 2PC simplificado con acks en etcd.</td>
+<td>Split-brain silencioso, pérdida de telemetría.</td>
+</tr>
+<tr>
+<td>2. Grace period</td>
+<td><strong>5s default</strong>, configurable por rol funcional.</td>
+<td>Latencia artificial innecesaria en detector ML.</td>
+</tr>
+<tr>
+<td>3. Escritor</td>
+<td><strong>Proceso dedicado <code>epoch-manager</code></strong> con lease TTL, no Jenkins ni etcd-server.</td>
+<td>Escritor fantasma, rotaciones huérfanas, race conditions.</td>
+</tr>
+<tr>
+<td>4. Recuperación</td>
+<td><strong>Nuevo estado <code>EPOCH_TRANSITION</code></strong> + <code>AUTONOMOUS_EPOCH_STALE</code>.</td>
+<td>Componente muerto en rotación = outage.</td>
+</tr>
+<tr>
+<td>5. Wire protocol</td>
+<td><strong>Añadir <code>epoch_id</code> uint16_t al header binario.</strong></td>
+<td>Oracle de timing, complejidad O(n) en descifrado, imposibilidad de debug.</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Recomendación de bloqueo:</strong> No proceder a FASE 2 hasta que ADR-045 v2 incorpore los 5 puntos anteriores. La FASE 1 (RCU handle) es sólida y puede permanecer en producción con rotación manual hasta entonces.</p>
+<hr />
+<p>¿Necesitas que profundice en algún punto concretamente, o que bosqueje la interfaz C++ del <code>CryptoEpochManager</code>?</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.top", "search.highlight"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

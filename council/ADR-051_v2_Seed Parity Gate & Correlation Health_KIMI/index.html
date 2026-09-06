@@ -1,0 +1,1150 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source embedded-ML NDR for hospitals and schools">
+      
+      
+        <meta name="author" content="Alonso Isidoro Roman">
+      
+      
+        <link rel="canonical" href="https://alonsoir.github.io/argus/council/ADR-051_v2_Seed%20Parity%20Gate%20%26%20Correlation%20Health_KIMI/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>ADR 051 v2 Seed Parity Gate & Correlation Health KIMI - ML Defender (aRGus NDR)</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#1-confirmacion-de-fidelidad-17" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-header__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ML Defender (aRGus NDR)
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              ADR 051 v2 Seed Parity Gate & Correlation Health KIMI
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../README.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/BACKLOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Backlog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Security Model
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-tabs__link">
+          
+  
+  
+  ADRs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/contracts/Protobuf contracts.md" class="md-tabs__link">
+          
+  
+  
+  Contracts
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-nav__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ML Defender (aRGus NDR)
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../README.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/BACKLOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADRs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ADRs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013 Seed Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-021-deployment-topology-seed-families.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-021 Topology SSOT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-022-threat-model-opcion2-descartada.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-022 Threat Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Protobuf contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protobuf
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/JSON contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JSON
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Rag security commands.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-confirmacion-de-fidelidad-17" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Confirmación de fidelidad (§1–§7)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-hallazgos-lo-que-nosotros-no-vemos-riesgos-y-omisiones" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Hallazgos — lo que "nosotros no vemos" (riesgos y omisiones)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2. Hallazgos — lo que &#34;nosotros no vemos&#34; (riesgos y omisiones)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#21-riesgo-no-nombrado-consenso-de-error-auto-reforzante-32" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.1 Riesgo no nombrado: "Consenso-de-error" auto-reforzante (§3.2)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#22-v3-ipv6-incompleto-en-la-bateria-36" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.2 V3 (IPv6) incompleto en la batería (§3.6)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#23-split-brain-en-runtime-que-correlacion-continua-33-vs-34" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.3 Split-brain en runtime: ¿qué correlación continúa? (§3.3 vs §3.4)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#24-seguridad-de-la-inyeccion-sintetica-marca-fija-vector-de-dos-38" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.4 Seguridad de la inyección sintética: marca fija = vector de DoS (§3.8)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#25-ausencia-del-campo-vs-ausencia-del-evento-4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.5 "Ausencia del campo" vs "ausencia del evento" (§4)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#26-debt-cid-state-machine-001-formalizacion-o-implementacion-6" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.6 DEBT-CID-STATE-MACHINE-001: ¿formalización o implementación? (§6)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#27-inferencia-de-seed-set-enumerado-debe-incluir-seeds-declarados-6" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.7 Inferencia de seed: set enumerado debe incluir seeds declarados (§6)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-verificacion-tecnica-adicional" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Verificación técnica adicional
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-voto-y-recomendacion-de-cierre" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Voto y recomendación de cierre
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+  <h1>ADR 051 v2 Seed Parity Gate & Correlation Health KIMI</h1>
+
+<p><strong>Deliberación de Kimi — Confirmación de Fidelidad + Hallazgos sobre ADR-051 v2</strong></p>
+<p>He revisado la v2. Mi veredicto: <strong>APROBADO con enmiendas menores de redacción/riesgo</strong>. No procede 3ª deliberación; las observaciones son aditivas y no contradicen el consenso.</p>
+<hr />
+<h3 id="1-confirmacion-de-fidelidad-17">1. Confirmación de fidelidad (§1–§7)</h3>
+<p>La v2 recoge fielmente las dos rondas de deliberación:</p>
+<table>
+<thead>
+<tr>
+<th>Elemento deliberado</th>
+<th>¿Recogido en v2?</th>
+<th>Nota</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Renombrado a "Community ID Parity Gate"</td>
+<td>Sí, §2.1</td>
+<td>Correcto</td>
+</tr>
+<tr>
+<td>Inyección sintética determinista</td>
+<td>Sí, §2.2 (1) y §3.8</td>
+<td>Correcto</td>
+</tr>
+<tr>
+<td>No gate periódico bloqueante</td>
+<td>Sí, §2.2 (2) y §5.1</td>
+<td>Correcto</td>
+</tr>
+<tr>
+<td>Degradación N-1 con anotación</td>
+<td>Sí, §3.4</td>
+<td>Correcto</td>
+</tr>
+<tr>
+<td>Oráculo dos niveles + quórum</td>
+<td>Sí, §3.2 y §3.3</td>
+<td>Correcto</td>
+</tr>
+<tr>
+<td>Batería de vectores V1–V4</td>
+<td>Sí, §3.6</td>
+<td>Correcto</td>
+</tr>
+<tr>
+<td>Diagnóstico verbose + SHA-256 config</td>
+<td>Sí, §3.1</td>
+<td>Correcto</td>
+</tr>
+<tr>
+<td>Fase 1 / Fase 2 (ausencia ≠ divergencia)</td>
+<td>Sí, §4</td>
+<td>Correcto</td>
+</tr>
+<tr>
+<td>Sonda activa diferida (P3)</td>
+<td>Sí, §6 (DEBT-SEED-ACTIVE-PROBE-001)</td>
+<td>Correcto</td>
+</tr>
+<tr>
+<td>Inputs para B trasladados</td>
+<td>Sí, §5.3</td>
+<td>Correcto</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Punto a validar conscientemente (§7.2):</strong> La resolución de <strong>Oracle Divergence</strong> (Nivel-1-TRUE / Nivel-2-FALSE → arranca + WARNING) es correcta según la síntesis. Confirmo que esta es la lectura correcta de la deliberación.</p>
+<hr />
+<h3 id="2-hallazgos-lo-que-nosotros-no-vemos-riesgos-y-omisiones">2. Hallazgos — lo que "nosotros no vemos" (riesgos y omisiones)</h3>
+<h4 id="21-riesgo-no-nombrado-consenso-de-error-auto-reforzante-32">2.1 Riesgo no nombrado: "Consenso-de-error" auto-reforzante (§3.2)</h4>
+<p>El argumento N-version (tres implementaciones independientes que coinciden = evidencia fuerte) es válido, pero tiene un agujero: <strong>tres sensores pueden compartir la misma librería subyacente</strong> o el mismo bug de canonicalización (p.ej. todas usan una versión de <code>libcommunityid</code> con un error de ordenamiento de bytes en IPv6). El gate aprueba, el WARNING se ignora en operación, y el sistema correla con un identificador "incorrecto" pero internamente consistente.</p>
+<p><strong>El riesgo real:</strong> cuando se añade un cuarto sensor con implementación correcta (o se actualiza el oráculo), rompe la correlación <em>sin que nada haya cambiado en los tres originales</em>. El operador no entiende por qué "de repente" falla.</p>
+<p><strong>Recomendación:</strong> Añadir en §3.2 una nota de riesgo residual:</p>
+<blockquote>
+<p><em>"Riesgo residual: el consenso-de-error. Si N sensores heterogéneos comparten un bug común (misma librería subyacente, misma interpretación errónea del RFC), el gate aprueba un valor incorrecto pero consistente. Este riesgo se mitiga por (a) la batería de vectores (§3.6), que amplía la superficie de prueba, y (b) el <code>orphan_rate</code> continuo, que detectaría la ruptura cuando un sensor futuro con implementación correcta entre en el sistema. El WARNING de Oracle Divergence debe ser investigado, no silenciado."</em></p>
+</blockquote>
+<h4 id="22-v3-ipv6-incompleto-en-la-bateria-36">2.2 V3 (IPv6) incompleto en la batería (§3.6)</h4>
+<p>El vector V3 dice <code>[2001:db8::1]:443 → [2001:db8::2]:…</code> — el puerto destino está truncado. Es un placeholder ilustrativo, lo cual es aceptable para el ADR, pero debe quedar <strong>explícito</strong> que el vector concreto se define en <code>DEBT-CID-TEST-VECTORS-001</code>. Sugiero cambiar la tabla:</p>
+<blockquote>
+<p>V3: TCP IPv6 — <code>[2001:db8::1]:443 → [2001:db8::2]:8443</code> <em>(ejemplo ilustrativo; vector concreto en DEBT-CID-TEST-VECTORS-001)</em></p>
+</blockquote>
+<h4 id="23-split-brain-en-runtime-que-correlacion-continua-33-vs-34">2.3 Split-brain en runtime: ¿qué correlación continúa? (§3.3 vs §3.4)</h4>
+<p>§3.3 dice que en split-brain (<code>A≠B≠C</code>) en runtime hay "cuarentena de todos los sensores implicados; el sistema cae a observabilidad sin correlación (single-source por sensor)". §3.4 dice "correlación continúa con N-1".</p>
+<p><strong>Inconsistencia aparente:</strong> Si los tres tienen valores distintos, no hay N-1 válido — cada sensor es su propia isla. La correlación cross-source <em>debe</em> suspenderse. La redacción actual es ambigua.</p>
+<p><strong>Recomendación:</strong> Clarificar en §3.4 que el estado QUARANTINED de <em>todos</em> los sensores (split-brain) es una condición límite donde la correlación cross-source se suspende, y solo la observabilidad single-source continúa. Esto es coherente con §3.3 pero debe ser explícito en la tabla de estados de confianza.</p>
+<h4 id="24-seguridad-de-la-inyeccion-sintetica-marca-fija-vector-de-dos-38">2.4 Seguridad de la inyección sintética: marca fija = vector de DoS (§3.8)</h4>
+<p>El ADR propone una marca identificable (<code>ARGUS-SEED-PROBE</code> o similar) para descartar el flujo de referencia. Esto es operativamente correcto, pero introduce un <strong>riesgo de seguridad no nombrado</strong>: un atacante interno (o un proceso comprometido) que conozca la marca puede inyectar flujos sintéticos con esa marca, causando:
+- Falsos positivos en el gate (el gate ve "paridad" porque todos los sensores ven el mismo flujo falso, pero no es el flujo de referencia controlado).
+- DoS del arranque (si inunda con flujos marcados que generan community_id distintos, el gate falla y el NDR no arranca).</p>
+<p><strong>Recomendación:</strong> Añadir en §3.8 o en <code>DEBT-SEED-GATE-DIAGNOSTIC-001</code>:</p>
+<blockquote>
+<p><em>"La marca de inyección no debe ser un string fijo conocido. Debe ser un token efímero (HMAC-SHA256 de un nonce generado por el gate + clave compartida por los sensores en provisión) o un puerto efímero aleatorio dentro de un rango reservado. Esto mitiga el riesgo de que un atacante interno inyecte flujos de referencia falsos para manipular o bloquear el gate."</em></p>
+</blockquote>
+<p>Esto es un riesgo de seguridad real en entorno hospitalario (insider threat, malware lateral).</p>
+<h4 id="25-ausencia-del-campo-vs-ausencia-del-evento-4">2.5 "Ausencia del campo" vs "ausencia del evento" (§4)</h4>
+<p>La regla "ausencia ≠ divergencia" es correcta para evitar el Catch-22 de Fase 1, pero hay un caso límite no distinguido:</p>
+<ul>
+<li><strong>Sensor ausente:</strong> no emite evento para el vector → no hay community_id que comparar → no es divergencia.</li>
+<li><strong>Sensor presente, campo ausente:</strong> emite el evento (p.ej. <code>conn.log</code> de Zeek) pero sin campo <code>community_id</code> porque el plugin está deshabilitado o falló → <strong>esto ES divergencia funcional</strong>. El sensor está "vivo" pero no cumple el contrato.</li>
+</ul>
+<p><strong>Recomendación:</strong> Añadir en §4:</p>
+<blockquote>
+<p><em>"Salvedad: si un sensor emite el evento de flujo pero sin campo <code>community_id</code>, se trata como divergencia funcional (Correlation Broken), no como ausencia. El sensor está operativo pero incumple el contrato de correlación."</em></p>
+</blockquote>
+<h4 id="26-debt-cid-state-machine-001-formalizacion-o-implementacion-6">2.6 DEBT-CID-STATE-MACHINE-001: ¿formalización o implementación? (§6)</h4>
+<p>El ADR presenta en §3.3 y §3.4 las tablas de estados completas (Safe/Divergence/Broken y TRUSTED/DEGRADED/QUARANTINED). La DEBT <code>DEBT-CID-STATE-MACHINE-001</code> se describe como "formaliza máquina de estados". Pero la formalización ya está en el ADR. La DEBT debería ser "implementación, tests unitarios y property tests de la máquina de estados", no "formalización".</p>
+<p><strong>Recomendación:</strong> Renombrar la descripción de la DEBT:</p>
+<blockquote>
+<p><code>DEBT-CID-STATE-MACHINE-001</code>: Implementación y tests (unitarios + property-based) de la máquina de estados del gate (Safe/Divergence/Broken) y de confianza del sensor (TRUSTED/DEGRADED/QUARANTINED), incluyendo transiciones por gate_fail, orphan_rate_high, recovery, operator_override y split_brain.</p>
+</blockquote>
+<h4 id="27-inferencia-de-seed-set-enumerado-debe-incluir-seeds-declarados-6">2.7 Inferencia de seed: set enumerado debe incluir seeds declarados (§6)</h4>
+<p>El ADR dice que la inferencia de seed es "acotada a set enumerado (0 + defaults), nunca barrido ciego". Esto es correcto, pero el set debe ser <strong>los seeds que el operador declara haber configurado</strong>, no solo 0. Si el operador configura <code>seed=42</code> en Suricata y <code>seed=42</code> en Zeek, el diagnóstico debe probar 42 primero, no asumir 0.</p>
+<p><strong>Recomendación:</strong> Añadir en <code>DEBT-SEED-GATE-DIAGNOSTIC-001</code>:</p>
+<blockquote>
+<p><em>"El set enumerado para inferencia de seed incluye: (a) seed=0 (RFC default), (b) los seeds declarados en el mapa de provisión de cada sensor, (c) seeds conocidos de versiones previas (p.ej. Suricata default histórico = 0, Zeek default = 0). Nunca barrido completo de 0-65535."</em></p>
+</blockquote>
+<hr />
+<h3 id="3-verificacion-tecnica-adicional">3. Verificación técnica adicional</h3>
+<p>Confirmo el cálculo del oráculo para V1 (Neris):</p>
+<table>
+<thead>
+<tr>
+<th>Parámetro</th>
+<th>Valor</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Flujo</td>
+<td><code>147.32.84.165:1027 → 74.125.232.195:80</code> (TCP)</td>
+</tr>
+<tr>
+<td>Seed</td>
+<td>0</td>
+</tr>
+<tr>
+<td>Ordenamiento</td>
+<td>Canónico por tupla IP:port (74.125.232.195 &lt; 147.32.84.165)</td>
+</tr>
+<tr>
+<td>Hash input (hex)</td>
+<td><code>00004a7de8c3932054a5060000500403</code></td>
+</tr>
+<tr>
+<td>SHA-1</td>
+<td><code>20deeea95a4c5b1a66ba1413a304900765c47b41</code></td>
+</tr>
+<tr>
+<td><strong>Community ID</strong></td>
+<td><strong><code>1:IN7uqVpMWxpmuhQTowSQB2XEe0E=</code></strong></td>
+</tr>
+</tbody>
+</table>
+<p>Verificado contra <code>pycommunityid</code> v1.0. El oráculo es sólido.</p>
+<hr />
+<h3 id="4-voto-y-recomendacion-de-cierre">4. Voto y recomendación de cierre</h3>
+<p><strong>Voto: APROBADO v2 con enmiendas menores de redacción.</strong></p>
+<p>Las 7 observaciones anteriores (§2.1–§2.7) son <strong>aditivas, no bloqueantes</strong>. Pueden incorporarse como:</p>
+<ul>
+<li>Notas de redacción en la confirmación de fidelidad (si el redactor está de acuerdo), o</li>
+<li>Issues menores en el backlog de la primera DEBT.</li>
+</ul>
+<p><strong>No procede 3ª deliberación.</strong> El fondo está resuelto 8/8. Solo queda pulir la redacción.</p>
+<p><strong>Ruta recomendada:</strong>
+1. Incorporar las enmiendas de §2 en una v2.1 menor (o directamente en la confirmación de fidelidad si el redactor las acepta).
+2. Tras 8/8 de confirmación, extraer backlog (§6) y asignar:
+    - <strong>B:</strong> <code>DEBT-CORRELATION-TIMEOUT-CALIB-001</code> (con inputs de §5.3 + §2.7)
+    - <strong>Seguridad/DevOps:</strong> <code>DEBT-SEED-GATE-DIAGNOSTIC-001</code> (con nota de HMAC efímero de §2.4)
+    - <strong>Implementador del gate:</strong> <code>DEBT-CORRELATION-SEED-GATE-001</code> + <code>DEBT-CID-TEST-VECTORS-001</code> + <code>DEBT-CID-STATE-MACHINE-001</code>
+    - <strong>CI:</strong> <code>DEBT-CID-CROSSCHECK-CI-001</code>
+    - <strong>aRGus:</strong> <code>DEBT-ARGUSPP-COUNTER-DUMP-001</code></p>
+<p>¿Algún otro miembro del Consejo objeta la fidelidad o ve un hallazgo adicional?</p>
+<p>FDO
+KIMI</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.top", "search.highlight"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

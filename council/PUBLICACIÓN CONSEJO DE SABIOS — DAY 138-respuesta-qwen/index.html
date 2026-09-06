@@ -1,0 +1,1439 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source embedded-ML NDR for hospitals and schools">
+      
+      
+        <meta name="author" content="Alonso Isidoro Roman">
+      
+      
+        <link rel="canonical" href="https://alonsoir.github.io/argus/council/PUBLICACI%C3%93N%20CONSEJO%20DE%20SABIOS%20%E2%80%94%20DAY%20138-respuesta-qwen/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>🏛️ CONSEJO DE SABIOS — REVISIÓN DAY 138 - ML Defender (aRGus NDR)</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#consejo-de-sabios-revision-day-138" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-header__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ML Defender (aRGus NDR)
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              🏛️ CONSEJO DE SABIOS — REVISIÓN DAY 138
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../README.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/BACKLOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Backlog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Security Model
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-tabs__link">
+          
+  
+  
+  ADRs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/contracts/Protobuf contracts.md" class="md-tabs__link">
+          
+  
+  
+  Contracts
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-nav__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ML Defender (aRGus NDR)
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../README.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/BACKLOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADRs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ADRs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013 Seed Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-021-deployment-topology-seed-families.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-021 Topology SSOT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-022-threat-model-opcion2-descartada.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-022 Threat Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Protobuf contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protobuf
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/JSON contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JSON
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Rag security commands.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#veredicto-ejecutivo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🎯 Veredicto Ejecutivo
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#respuestas-a-preguntas-formato-cientifico" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ❓ Respuestas a Preguntas — Formato Científico
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="❓ Respuestas a Preguntas — Formato Científico">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#q1-lifetime-de-pcapcallbackdata-riesgo-o-garantia-suficiente" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Q1 — Lifetime de PcapCallbackData: ¿riesgo o garantía suficiente?
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#q2-wire-format-dontwait-vs-backpressure-para-monohilo-variant-b" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Q2 — Wire format: dontwait vs backpressure para monohilo Variant B
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#q3-sniffer-libpcapjson-campos-a-preservar-vs-eliminar" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Q3 — sniffer-libpcap.json: campos a preservar vs eliminar
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#q4-test-e2e-estrategia-sin-trafico-real-en-dev-vm" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Q4 — Test e2e: estrategia sin tráfico real en dev VM
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#q5-debt-irp-nftables-001-atomicidad-de-argus-network-isolate" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Q5 — DEBT-IRP-NFTABLES-001: atomicidad de argus-network-isolate
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#q6-debt-compiler-warnings-cleanup-001-prioridad-odr" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Q6 — DEBT-COMPILER-WARNINGS-CLEANUP-001: prioridad ODR
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#q7-threading-model-reutilizacion-de-arquitectura-para-sel4-a-largo-plazo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Q7 — Threading model: reutilización de arquitectura para seL4 a largo plazo
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#checklist-de-acciones-inmediatas-day-139" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        📋 Checklist de Acciones Inmediatas (DAY 139)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#palabras-finales" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🏁 Palabras Finales
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="consejo-de-sabios-revision-day-138">🏛️ CONSEJO DE SABIOS — REVISIÓN DAY 138</h1>
+<p><em>Feedback basado en ingeniería de sistemas distribuidos, metodología científica y rigor técnico para aRGus NDR</em></p>
+<hr />
+<h2 id="veredicto-ejecutivo">🎯 Veredicto Ejecutivo</h2>
+<p><strong>EJECUCIÓN TÉCNICA EJEMPLAR. ARCHITECTURA DE BACKENDS LIMPIA Y VERIFICABLE.</strong></p>
+<p>El cierre de <code>DEBT-CAPTURE-BACKEND-ISP-001</code> con una interfaz mínima de 5 métodos puros, y la implementación completa del pipeline <code>pcap_dispatch → ZeroMQ</code> con wire format idéntico a Variant A, demuestran madurez arquitectónica. Los 8 tests PASSED y la estrategia de callback sin <code>friend</code> son decisiones sólidas.</p>
+<blockquote>
+<p><em>"La simplicidad verificable es la sofisticación máxima en sistemas de seguridad."</em></p>
+</blockquote>
+<hr />
+<h2 id="respuestas-a-preguntas-formato-cientifico">❓ Respuestas a Preguntas — Formato Científico</h2>
+<h3 id="q1-lifetime-de-pcapcallbackdata-riesgo-o-garantia-suficiente">Q1 — Lifetime de <code>PcapCallbackData</code>: ¿riesgo o garantía suficiente?</h3>
+<p><strong>Recomendación concreta:</strong> <strong>LA GARANTÍA ACTUAL ES SUFICIENTE PARA VARIANTE B MONOHILO, PERO AÑADIR GUARD ATÓMICO PARA FUTURO-PROOFING.</strong></p>
+<p><strong>Justificación técnica:</strong>
+- <code>pcap_dispatch()</code> es <strong>síncrono y bloqueante</strong>: no retorna hasta completar el loop o timeout.
+- Mientras <code>pcap_dispatch</code> ejecuta, la instancia de <code>PcapBackend</code> está garantizada en stack/heap.
+- El struct <code>PcapCallbackData</code> es miembro de la instancia → lifetime acoplado.</p>
+<p><strong>Riesgo residual (bajo pero no cero):</strong>
+- Si <code>close()</code> se llama desde señal (SIGINT) mientras <code>pcap_dispatch</code> corre, podría haber race en <code>ctx</code>.
+- <code>void* ctx</code> podría ser dangling si el contexto externo se destruye antes del callback.</p>
+<p><strong>Mitigación mínima viable (sin overhead significativo):</strong></p>
+<pre><code class="language-cpp">// pcap_backend.hpp
+class PcapBackend : public CaptureBackend {
+private:
+    std::atomic&lt;bool&gt; alive_{true};  // Nuevo: guard de lifetime
+
+public:
+    void close() override {
+        alive_.store(false, std::memory_order_release);
+        if (handle_) pcap_close(handle_);
+        handle_ = nullptr;
+    }
+
+private:
+    // Callback estático
+    static void pcap_packet_handler(u_char* user, const pcap_pkthdr* h, const u_char* bytes) {
+        auto* data = reinterpret_cast&lt;PcapCallbackData*&gt;(user);
+        // Guard: si backend ya cerró, abortar callback silenciosamente
+        auto* backend = static_cast&lt;PcapBackend*&gt;(data-&gt;ctx);
+        if (!backend-&gt;alive_.load(std::memory_order_acquire)) {
+            return;  // Safe no-op
+        }
+        data-&gt;cb(h, bytes, data-&gt;ctx);  // Delegar a callback registrado
+    }
+};
+</code></pre>
+<p><strong>Test de demostración:</strong></p>
+<pre><code class="language-cpp">TEST(PcapBackend, CallbackSafeAfterClose) {
+    PcapBackend backend;
+    bool callback_called = false;
+
+    backend.open(&quot;eth0&quot;, 
+        [&amp;callback_called](auto, auto, auto) { callback_called = true; },
+        &amp;backend);
+
+    // Simular close desde &quot;otra fuente&quot; (señal, etc.)
+    backend.close();
+
+    // Callback debería ser no-op, no crash
+    // (pcap_dispatch no se ejecuta aquí, pero el guard se prueba unitariamente)
+    EXPECT_FALSE(callback_called);  // Guard previno ejecución
+}
+</code></pre>
+<p><strong>Riesgo si se ignora:</strong> Bajo para monohilo actual, pero podría manifestarse si Variant B evoluciona a modelo híbrido o si se integra con señal handling complejo.</p>
+<hr />
+<h3 id="q2-wire-format-dontwait-vs-backpressure-para-monohilo-variant-b">Q2 — Wire format: <code>dontwait</code> vs backpressure para monohilo Variant B</h3>
+<p><strong>Recomendación concreta:</strong> <strong>IMPLEMENTAR BACKPRESSURE SIMPLE CON RETRY LIMITADO + MÉTRICA DE DESCARTES.</strong></p>
+<p><strong>Justificación técnica:</strong>
+- Variant A (multihilo): thread sender absorbe picos; <code>dontwait</code> es razonable.
+- Variant B (monohilo): mismo thread captura → procesa → envía; si ZMQ HWM=1000 se llena, descartar silenciosamente crea <strong>lagunas de detección no monitorizadas</strong>.
+- En infraestructura crítica, "silencio" ≠ "todo bien".</p>
+<p><strong>Implementación recomendada:</strong></p>
+<pre><code class="language-cpp">// main_libpcap.cpp — envío con backpressure simple
+constexpr int MAX_SEND_RETRIES = 3;
+constexpr std::chrono::milliseconds RETRY_DELAY{2};  // 2ms
+
+int send_with_backpressure(zmq::socket_t&amp; sock, zmq::message_t&amp; msg, int&amp; send_failures) {
+    for (int attempt = 0; attempt &lt; MAX_SEND_RETRIES; ++attempt) {
+        if (sock.send(msg, zmq::send_flags::dontwait)) {
+            return 0;  // Éxito
+        }
+        if (attempt &lt; MAX_SEND_RETRIES - 1) {
+            std::this_thread::sleep_for(RETRY_DELAY);  // Backoff fijo simple
+        }
+    }
+    // Descarte final: registrar métrica
+    send_failures++;
+    // Opcional: log cada N descartes para evitar spam
+    if (send_failures % 100 == 0) {
+        logger.warn(&quot;ZMQ send failures: {}&quot;, send_failures);
+    }
+    return -1;  // Descartado tras retries
+}
+</code></pre>
+<p><strong>Métrica expuesta para monitorización:</strong></p>
+<pre><code class="language-cpp">// En NetworkSecurityEvent o métricas separadas
+struct CaptureMetrics {
+    uint64_t packets_captured;
+    uint64_t packets_sent;
+    uint64_t send_failures;  // Nuevo: descartes por backpressure
+    // ... otros campos
+};
+</code></pre>
+<p><strong>Riesgo si se ignora:</strong> Durante picos de tráfico, Variant B podría descartar paquetes sin alerta, creando ventanas ciegas de detección no documentadas.</p>
+<hr />
+<h3 id="q3-sniffer-libpcapjson-campos-a-preservar-vs-eliminar">Q3 — <code>sniffer-libpcap.json</code>: campos a preservar vs eliminar</h3>
+<p><strong>Recomendación concreta:</strong> <strong>ELIMINAR TODOS LOS CAMPOS DE CONCURRENCIA; PRESERVAR CONFIGURACIÓN DE CAPTURA, RED Y CRIPTO.</strong></p>
+<table>
+<thead>
+<tr>
+<th>Campo de Variant A</th>
+<th>Acción para Variant B</th>
+<th>Justificación</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>zmq_sender_threads</code></td>
+<td>❌ Eliminar</td>
+<td>Monohilo por diseño libpcap</td>
+</tr>
+<tr>
+<td><code>io_thread_pools</code></td>
+<td>❌ Eliminar</td>
+<td>Sin thread pools en Variant B</td>
+</tr>
+<tr>
+<td><code>ring_buffer.*</code></td>
+<td>❌ Eliminar</td>
+<td>No aplica a libpcap (sin ringbuf kernel)</td>
+</tr>
+<tr>
+<td><code>threading.*</code></td>
+<td>❌ Eliminar</td>
+<td>Bloque completo irrelevante</td>
+</tr>
+<tr>
+<td><code>capture.interface</code></td>
+<td>✅ Preservar</td>
+<td>Configuración esencial de captura</td>
+</tr>
+<tr>
+<td><code>capture.filter.bpf</code></td>
+<td>✅ Preservar</td>
+<td>Filtro BPF para reducir carga userspace</td>
+</tr>
+<tr>
+<td><code>capture.snaplen</code></td>
+<td>✅ Preservar</td>
+<td>Control de memoria por paquete</td>
+</tr>
+<tr>
+<td><code>capture.promiscuous</code></td>
+<td>✅ Preservar</td>
+<td>Modo de captura configurable</td>
+</tr>
+<tr>
+<td><code>output_socket.address/port</code></td>
+<td>✅ Preservar</td>
+<td>Endpoint ZeroMQ</td>
+</tr>
+<tr>
+<td><code>output_socket.linger_ms</code></td>
+<td>✅ Preservar</td>
+<td>Shutdown limpio</td>
+</tr>
+<tr>
+<td><code>crypto.enabled</code></td>
+<td>✅ Preservar</td>
+<td>Toggle de cifrado (debug vs prod)</td>
+</tr>
+<tr>
+<td><code>crypto.seed_path</code></td>
+<td>✅ Preservar</td>
+<td>Ruta de seed (ya validada por <code>safe_path</code>)</td>
+</tr>
+<tr>
+<td><code>logging.level</code></td>
+<td>✅ Preservar</td>
+<td>Debug operacional</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Campo adicional recomendado para Variant B:</strong></p>
+<pre><code class="language-json">{
+  &quot;capture.batch_size&quot;: 64,
+  &quot;capture.timeout_ms&quot;: 100,
+  &quot;backpressure.retry_max&quot;: 3,
+  &quot;backpressure.retry_delay_ms&quot;: 2
+}
+</code></pre>
+<p>Estos parámetros permiten afinar el trade-off throughput/latencia en monohilo sin exponer complejidad de threading.</p>
+<p><strong>Documentación obligatoria en <code>sniffer-libpcap.json</code>:</strong></p>
+<pre><code class="language-json">{
+  &quot;_comment_variant_b&quot;: &quot;Variant B (libpcap) es monohilo por diseño. Los campos de concurrencia de Variant A están hardcodeados y no son configurables. Ver docs/VARIANT-B-DESIGN.md para detalles.&quot;
+}
+</code></pre>
+<hr />
+<h3 id="q4-test-e2e-estrategia-sin-trafico-real-en-dev-vm">Q4 — Test e2e: estrategia sin tráfico real en dev VM</h3>
+<p><strong>Recomendación concreta:</strong> <strong>ENFOQUE HÍBRIDO: <code>pcap_open_dead()</code> para unit tests + <code>tcpreplay</code> opcional para integración.</strong></p>
+<p><strong>Justificación técnica:</strong>
+- <code>pcap_open_dead()</code> + inyección manual: <strong>determinista, sin root, rápido</strong> → ideal para CI/ctest.
+- <code>tcpreplay</code> sobre interfaz real: <strong>realista, pero requiere root y configuración de red</strong> → ideal para validación manual pre-release.</p>
+<p><strong>Implementación recomendada:</strong></p>
+<pre><code class="language-cpp">// tests/test_pcap_e2e.cpp
+TEST(PcapE2E, ParseAndSerializeWithFakeHandle) {
+    // Crear handle &quot;muerto&quot; para testing sin captura real
+    pcap_t* fake_handle = pcap_open_dead(DLT_EN10MB, SNAPLEN);
+    ASSERT_NE(fake_handle, nullptr);
+
+    // Construir paquete TCP sintético (Ethernet + IP + TCP + payload)
+    std::vector&lt;uint8_t&gt; pkt = build_synthetic_tcp_packet(...);
+
+    // Simular pcap_pkthdr
+    pcap_pkthdr hdr{
+        .ts = {1234567890, 0},
+        .caplen = static_cast&lt;bpf_u_int32&gt;(pkt.size()),
+        .len = static_cast&lt;bpf_u_int32&gt;(pkt.size())
+    };
+
+    // Callback que captura el NetworkSecurityEvent generado
+    NetworkSecurityEvent captured_event;
+    auto cb = [&amp;captured_event](const pcap_pkthdr*, const uint8_t* bytes, void* ctx) {
+        auto* event_ptr = static_cast&lt;NetworkSecurityEvent*&gt;(ctx);
+        *event_ptr = parse_packet_to_event(bytes, hdr.caplen);  // Función bajo test
+    };
+
+    // Ejecutar parser &quot;como si&quot; viniera de pcap_dispatch
+    cb(&amp;hdr, pkt.data(), &amp;captured_event);
+
+    // Validar: evento tiene campos esperados
+    EXPECT_EQ(captured_event.protocol(), Protocol::TCP);
+    EXPECT_GT(captured_event.timestamp_ns(), 0);
+
+    pcap_close(fake_handle);
+}
+</code></pre>
+<p><strong>Para integración opcional (no en CI automático):</strong></p>
+<pre><code class="language-bash"># scripts/test-variant-b-integration.sh (ejecución manual)
+#!/bin/bash
+# Requiere: sudo, interfaz eth1 disponible, tcpreplay instalado
+
+# 1. Arrancar sniffer-libpcap en background
+./build-debug/sniffer-libpcap --config config/sniffer-libpcap.json &amp;
+PID=$!
+
+# 2. Inyectar tráfico de prueba con tcpreplay
+sudo tcpreplay --intf1=eth1 --pps=1000 data/ctu13-neris-sample.pcap --duration=10
+
+# 3. Verificar que ml-detector recibió eventos
+timeout 15 tail -f /var/log/argus/ml-detector.log | grep &quot;NetworkSecurityEvent&quot;
+
+# 4. Limpiar
+kill $PID 2&gt;/dev/null || true
+</code></pre>
+<p><strong>Riesgo si se ignora:</strong> Tests puramente sintéticos (<code>pcap_open_dead</code>) no validan el path completo de captura real; tests puramente con <code>tcpreplay</code> son frágiles en CI. El híbrido equilibra velocidad y cobertura.</p>
+<hr />
+<h3 id="q5-debt-irp-nftables-001-atomicidad-de-argus-network-isolate">Q5 — <code>DEBT-IRP-NFTABLES-001</code>: atomicidad de <code>argus-network-isolate</code></h3>
+<p><strong>Recomendación concreta:</strong> <strong>USAR <code>nft -f</code> CON FICHERO DE REGLAS COMPLETO + VERIFICACIÓN POST-APLICACIÓN + FALLBACK A MODO SEGURO.</strong></p>
+<p><strong>Justificación técnica:</strong>
+- <code>nft -f rules.nft</code> aplica transaccionalmente: o todas las reglas se instalan o ninguna.
+- Si el proceso muere durante la aplicación, nftables rollback automático (diseño del subsistema).
+- Verificación post-aplicación garantiza que el estado esperado coincide con el real.</p>
+<p><strong>Implementación recomendada:</strong></p>
+<pre><code class="language-bash">#!/bin/bash
+# argus-network-isolate — versión atómica con fallback
+
+RULES_FILE=&quot;/tmp/argus-isolation-$$&quot;
+trap 'rm -f &quot;$RULES_FILE&quot;' EXIT
+
+# Generar reglas completas en fichero temporal
+cat &gt; &quot;$RULES_FILE&quot; &lt;&lt;'EOF'
+table inet argus-isolation {
+    chain input {
+        type filter hook input priority -10; policy drop;
+        iif &quot;lo&quot; accept
+        # Permitir solo gestión esencial (IPMI, consola) si está disponible
+        # tcp dport 623 accept  # IPMI ejemplo
+    }
+    chain forward {
+        type filter hook forward priority -10; policy drop;
+    }
+    chain output {
+        type filter hook output priority -10; policy drop;
+        oif &quot;lo&quot; accept
+    }
+}
+EOF
+
+# Aplicar transaccionalmente: todo o nada
+if ! nft -f &quot;$RULES_FILE&quot; 2&gt;/dev/null; then
+    logger -p auth.crit &quot;ARGUS IRP: nftables isolation failed — entering safe mode&quot;
+    # Fallback: intentar ip link down como último recurso
+    ip link set eth0 down 2&gt;/dev/null || true
+    ip link set eth1 down 2&gt;/dev/null || true
+    exit 1
+fi
+
+# Verificación post-aplicación: confirmar que reglas están activas
+if ! nft list table inet argus-isolation 2&gt;/dev/null | grep -q &quot;policy drop&quot;; then
+    logger -p auth.crit &quot;ARGUS IRP: isolation rules not active — fallback to ip link&quot;
+    ip link set eth0 down 2&gt;/dev/null || true
+    ip link set eth1 down 2&gt;/dev/null || true
+    exit 1
+fi
+
+logger -p auth.crit &quot;ARGUS IRP: network isolation active via nftables&quot;
+exit 0
+</code></pre>
+<p><strong>Gestión de rollback si proceso muere a mitad:</strong>
+- nftables maneja rollback automático a nivel de kernel.
+- Si el script muere antes de <code>nft -f</code>, no hay cambios aplicados → estado previo preservado.
+- Si muere después de <code>nft -f</code> pero antes de verificación, la verificación en próximo boot detecta inconsistencia.</p>
+<p><strong>Test de demostración:</strong></p>
+<pre><code class="language-bash"># tests/test_irp_nftables_atomicity.sh
+make test-irp-isolation-atomic
+# 1. Ejecutar argus-network-isolate
+# 2. Verificar: tabla argus-isolation existe con policy drop
+# 3. Simular fallo a mitad: matar proceso durante aplicación (difícil, pero posible con signal)
+# 4. Verificar: o reglas completas aplicadas, o ninguna (no estado parcial)
+# 5. Verificar: fallback a ip link funciona si nftables no disponible
+</code></pre>
+<hr />
+<h3 id="q6-debt-compiler-warnings-cleanup-001-prioridad-odr">Q6 — <code>DEBT-COMPILER-WARNINGS-CLEANUP-001</code>: prioridad ODR</h3>
+<p><strong>Recomendación concreta:</strong> <strong>SÍ, ODR ES PRIORIDAD ABSOLUTA Y BLOQUEANTE PARA EL RESTO.</strong></p>
+<p><strong>Justificación técnica:</strong>
+- <strong>ODR violations = comportamiento indefinido en C++20</strong>: el estándar no garantiza qué definición se usa cuando hay múltiples definiciones de la misma clase en diferentes translation units.
+- <strong>Manifestación silenciosa</strong>: corrupción de memoria, vtable inconsistente, crashes no reproducibles — exactamente lo que no quieres en un sistema de seguridad.
+- <strong>Protobuf + múltiples TUs</strong>: común en proyectos con código generado; si <code>InternalNode</code> se define en un <code>.proto</code> y se incluye en múltiples <code>.cpp</code> sin <code>inline</code> o ODR-safe, el linker no lo detecta.</p>
+<p><strong>Diagnóstico y fix típico para ODR con Protobuf:</strong></p>
+<pre><code class="language-cpp">// PROBLEMA: definición de clase en header incluido en múltiples TUs
+// traffic_node.h
+class TrafficNode {  // Definición completa
+public:
+    void process();
+};
+
+// SOLUCIÓN 1: mover implementación a .cpp (si no es template)
+// traffic_node.h
+class TrafficNode;  // Forward declaration
+// traffic_node.cpp
+class TrafficNode { /* definición completa */ };
+
+// SOLUCIÓN 2: usar `inline` para clases pequeñas (C++17+)
+inline class TrafficNode {  // Inline permite múltiples definiciones idénticas
+public:
+    void process();
+};
+
+// SOLUCIÓN 3: para Protobuf, asegurar que el código generado se compila una vez
+// CMakeLists.txt
+add_library(protobuf_objects OBJECT
+    ${PROTOBUF_GENERATED_SRCS}  # Compilar una vez, linkear como objeto
+)
+target_link_libraries(ml-detector PRIVATE protobuf_objects)
+</code></pre>
+<p><strong>Herramientas de detección:</strong></p>
+<pre><code class="language-bash"># Usar -Wodr (GCC) o -Wundefined-internal (Clang) para detectar ODR
+CMAKE_CXX_FLAGS=&quot;-Wodr -Wundefined-internal&quot;
+
+# O usar linker con -Wl,--warn-common para warnings de símbolos múltiples
+</code></pre>
+<p><strong>Riesgo si se ignora:</strong> Un ODR violation podría causar que <code>InternalNode::process()</code> en un TU use una definición de vtable diferente a otro TU, llevando a llamadas a funciones incorrectas o corrupción de estado — fallo catastrófico no reproducible en testing.</p>
+<p><strong>Plan de acción mínimo:</strong>
+1. Identificar clases con ODR warnings: <code>InternalNode</code>, <code>TrafficNode</code>.
+2. Aplicar solución 1 o 2 según complejidad.
+3. Re-ejecutar build con <code>-Wodr</code> para confirmar resolución.
+4. Solo entonces proceder con otras warnings (signed/unsigned, OpenSSL deprecations).</p>
+<hr />
+<h3 id="q7-threading-model-reutilizacion-de-arquitectura-para-sel4-a-largo-plazo">Q7 — Threading model: reutilización de arquitectura para seL4 a largo plazo</h3>
+<p><strong>Recomendación concreta:</strong> <strong>NO DISEÑAR PARA seL4 AHORA; PERO MANTENER LA INTERFAZ <code>CaptureBackend</code> COMO PUNTO DE ACOPLAMIENTO MÍNIMO.</strong></p>
+<p><strong>Justificación técnica:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Capa de aRGus</th>
+<th>Reutilizable en seL4</th>
+<th>Requiere reescritura</th>
+<th>Comentario</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>CaptureBackend</code> (interfaz)</td>
+<td>✅ Sí</td>
+<td>—</td>
+<td>Interfaz abstracta es portable; solo la implementación cambia</td>
+</tr>
+<tr>
+<td><code>PcapBackend</code> / <code>EbpfBackend</code></td>
+<td>❌ No</td>
+<td>✅ Completo</td>
+<td>Dependen de Linux syscalls, kernel APIs</td>
+</tr>
+<tr>
+<td>Packet parsing (ETH/IP/TCP)</td>
+<td>✅ Sí</td>
+<td>—</td>
+<td>Lógica pura de protocolo, independiente de SO</td>
+</tr>
+<tr>
+<td><code>NetworkSecurityEvent</code> proto</td>
+<td>✅ Sí</td>
+<td>—</td>
+<td>Serialización protobuf es portable</td>
+</tr>
+<tr>
+<td><code>CryptoTransport</code></td>
+<td>⚠️ Parcial</td>
+<td>✅ Adaptación</td>
+<td>HKDF/ChaCha20 son portables; ZMQ requiere reemplazo</td>
+</tr>
+<tr>
+<td>ZeroMQ transport</td>
+<td>❌ No</td>
+<td>✅ Completo</td>
+<td>seL4 no tiene sockets POSIX; usar IPC nativo</td>
+</tr>
+<tr>
+<td>Threading/async model</td>
+<td>❌ No</td>
+<td>✅ Completo</td>
+<td>seL4 usa capacidades + IPC síncrono, no std::thread</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Principio de diseño recomendado:</strong></p>
+<pre><code>Mantener la interfaz `CaptureBackend` estable y mínima.
+Documentar explícitamente: &quot;Esta interfaz es el punto de acoplamiento
+para backends de captura; implementaciones concretas pueden depender
+de APIs específicas de SO (Linux eBPF, libpcap, seL4 IPC, etc.)&quot;.
+</code></pre>
+<p><strong>Por qué NO diseñar para seL4 ahora:</strong>
+1. <strong>Complejidad prematura</strong>: Añadir abstracciones para un modelo de ejecución que no se usará en 2+ años diluye el foco en FEDER.
+2. <strong>seL4 es un paradigma diferente</strong>: No es "Linux con más seguridad"; es un microkernel con modelo de capacidades que invalida muchas asunciones POSIX.
+3. <strong>Coste de mantenimiento</strong>: Cada capa de abstracción "future-proof" añade superficie de testing y documentación.</p>
+<p><strong>Qué SÍ hacer ahora para facilitar un futuro port:</strong>
+- Mantener <code>CaptureBackend</code> como interfaz pura, sin métodos Linux-específicos.
+- Aislar dependencias de SO en archivos <code>.cpp</code> concretos, no en headers compartidos.
+- Documentar en <code>docs/PORTABILITY.md</code>: "Puntos de acoplamiento para ports a otros kernels".</p>
+<p><strong>Riesgo si se ignora</strong>: Diseñar para seL4 ahora añadiría complejidad innecesaria para FEDER; no diseñar para portabilidad en absoluto haría un futuro port más costoso. El equilibrio es mantener la interfaz mínima y documentar los límites.</p>
+<hr />
+<h2 id="checklist-de-acciones-inmediatas-day-139">📋 Checklist de Acciones Inmediatas (DAY 139)</h2>
+<pre><code class="language-markdown">- [ ] Añadir guard atómico `alive_` en `PcapBackend` para lifetime safety (Q1)
+- [ ] Implementar backpressure simple con retry + métrica de descartes (Q2)
+- [ ] Definir `sniffer-libpcap.json` con campos preservados/eliminados + comentario variant-specific (Q3)
+- [ ] Implementar test e2e híbrido: `pcap_open_dead()` para CI + `tcpreplay` opcional manual (Q4)
+- [ ] Implementar `argus-network-isolate` con nftables transaccional + verificación + fallback (Q5)
+- [ ] Priorizar fix de ODR violations antes de otras compiler warnings (Q6)
+- [ ] Documentar puntos de acoplamiento para seL4 en `docs/PORTABILITY.md` sin añadir complejidad actual (Q7)
+- [ ] Ejecutar EMECAS al inicio de DAY 139 como regla permanente
+</code></pre>
+<hr />
+<h2 id="palabras-finales">🏁 Palabras Finales</h2>
+<p>Alonso:</p>
+<p>DAY 138 representa un hito de madurez arquitectónica: la capacidad de refactorizar una interfaz crítica (<code>CaptureBackend</code>) sin romper variantes existentes, y de implementar un backend alternativo (<code>PcapBackend</code>) con wire format idéntico, demuestra dominio de los principios de diseño de software en sistemas de seguridad.</p>
+<p>Las siete preguntas que planteáis reflejan una mentalidad preventiva: no solo <em>"¿funciona hoy?"</em>, sino <em>"¿resistirá mañana bajo adversidad, escalabilidad y evolución arquitectónica?"</em>.</p>
+<blockquote>
+<p><em>"La excelencia en ingeniería de seguridad no es la ausencia de decisiones difíciles. Es la disciplina de tomarlas con evidencia, documentarlas con honestidad y verificarlas con rigor."</em></p>
+</blockquote>
+<p>Proceded con DAY 139. El Consejo revisará la implementación de backpressure, la atomicidad de nftables, y el fix de ODR con el mismo rigor adversarial con el que evaluamos cada línea de este pipeline.</p>
+<p><em>Via Appia Quality · Un escudo que aprende de su propia sombra.</em></p>
+<p><strong>— Consejo de Sabios, DAY 138</strong> 🏛️</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.top", "search.highlight"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

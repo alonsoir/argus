@@ -1,0 +1,1115 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source embedded-ML NDR for hospitals and schools">
+      
+      
+        <meta name="author" content="Alonso Isidoro Roman">
+      
+      
+        <link rel="canonical" href="https://alonsoir.github.io/argus/council/S%C3%ADntesis%20-%20SEGUNDA%20PASADA%20-%20Integraci%C3%B3n%20multi-motor%20aRGus-Suricata-Zeek-Wazuh/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>Consejo de Sabios — Cierre de la Pasada 2, contenido firme de ADR-046 v4, y Pasada 3 (residual) - ML Defender (aRGus NDR)</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#consejo-de-sabios-cierre-de-la-pasada-2-contenido-firme-de-adr-046-v4-y-pasada-3-residual" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-header__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ML Defender (aRGus NDR)
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Consejo de Sabios — Cierre de la Pasada 2, contenido firme de ADR-046 v4, y Pasada 3 (residual)
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../README.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/BACKLOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Backlog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Security Model
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-tabs__link">
+          
+  
+  
+  ADRs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/contracts/Protobuf contracts.md" class="md-tabs__link">
+          
+  
+  
+  Contracts
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-nav__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ML Defender (aRGus NDR)
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../README.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/BACKLOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADRs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ADRs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013 Seed Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-021-deployment-topology-seed-families.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-021 Topology SSOT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-022-threat-model-opcion2-descartada.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-022 Threat Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Protobuf contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protobuf
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/JSON contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JSON
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Rag security commands.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#a-resultado-de-la-pasada-2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        A. Resultado de la Pasada 2
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#b-contenido-firme-para-el-borrador-de-adr-046-v4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        B. Contenido firme para el borrador de ADR-046 v4
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#c-pasada-3-cuatro-micro-mociones-residuales" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        C. Pasada 3 — cuatro micro-mociones residuales
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="C. Pasada 3 — cuatro micro-mociones residuales">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#p31-emitted_atingested_at-como-campos-de-primera-clase-o-en-metadata" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        P3.1 — ¿emitted_at/ingested_at como campos de primera clase o en metadata?
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#p32-orden-de-eviccion-en-el-conjunto-frio-tiers-discretos-vs-score-continuo-pesa" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        P3.2 — Orden de evicción en el conjunto frío: tiers discretos vs score continuo (pesa)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#p33-granularidad-de-la-cuota-anti-pinning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        P3.3 — Granularidad de la cuota anti-pinning
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#p34-semantica-del-rezagado-re-emision-actualizada-vs-anexo-enlazado-inmutable-pesa-afecta-al-corpus" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        P3.4 — Semántica del rezagado: re-emisión actualizada vs anexo enlazado inmutable (pesa — afecta al corpus)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#d-d5-estado" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        D. D5 — estado
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#e-dos-avisos-sobre-la-posicion-de-mistral-para-no-contaminar-el-registro" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        E. Dos avisos sobre la posición de Mistral (para no contaminar el registro)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#f-que-necesito" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        F. Qué necesito
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="consejo-de-sabios-cierre-de-la-pasada-2-contenido-firme-de-adr-046-v4-y-pasada-3-residual">Consejo de Sabios — Cierre de la Pasada 2, contenido firme de ADR-046 v4, y Pasada 3 (residual)</h1>
+<p><strong>Proyecto:</strong> aRGus NDR (arXiv:2604.04952)
+<strong>Sesión:</strong> DAY 169 — viernes 29 de mayo de 2026
+<strong>Redacta:</strong> Claude (Anthropic), sobre las ocho posiciones de la Pasada 2
+<strong>Objeto:</strong> (A) declarar el resultado de M1–M4; (B) fijar el contenido firme que entra en ADR-046 v4; (C) abrir una Pasada 3 mínima con las cuatro micro-bifurcaciones que aún no están cerradas entre los miembros; (D) estado de D5.</p>
+<hr />
+<h2 id="a-resultado-de-la-pasada-2">A. Resultado de la Pasada 2</h2>
+<table>
+<thead>
+<tr>
+<th>Moción</th>
+<th>Resultado</th>
+<th>Notas</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>M1 — Timestamp de ocurrencia</td>
+<td><strong>RATIFICADA 8/8</strong></td>
+<td>Qwen <strong>concede</strong> (era el disidente).</td>
+</tr>
+<tr>
+<td>M2 — Evicción en tres capas</td>
+<td><strong>RATIFICADA 8/8</strong></td>
+<td>Hallazgo de pinning validado por todos, incl. Qwen, que originó la idea de inmunidad y reconoce que es vector DoS. Refinamientos abajo.</td>
+</tr>
+<tr>
+<td>M3 — Transporte por tramos + AdapterSpec v1</td>
+<td><strong>RATIFICADA 8/8</strong></td>
+<td>Falso dilema disuelto unánimemente.</td>
+</tr>
+<tr>
+<td>M4.a — Separar ventanas</td>
+<td><strong>RATIFICADA 8/8</strong></td>
+<td>—</td>
+</tr>
+<tr>
+<td>M4.b — Rechazar acoplamiento al ruleset Wazuh</td>
+<td><strong>RATIFICADA 8/8</strong></td>
+<td>Qwen <strong>concede</strong> el rechazo, con tradeoff a documentar.</td>
+</tr>
+<tr>
+<td>D5 — Corpus vs pipeline</td>
+<td><strong>Consejo convergido 8/8</strong></td>
+<td>Grok se mueve a corpus-cimiento + pipeline-demo. Pendiente solo tu ratificación.</td>
+</tr>
+</tbody>
+</table>
+<p>No hay objeción de fondo viva contra ninguna moción. Lo que queda son refinamientos (fusionables) y cuatro micro-bifurcaciones (Pasada 3).</p>
+<hr />
+<h2 id="b-contenido-firme-para-el-borrador-de-adr-046-v4">B. Contenido firme para el borrador de ADR-046 v4</h2>
+<p>Esto es lo que ya puede escribirse sin riesgo de rework estructural. Los puntos marcados <code>⟶P3.x</code> quedan con un hueco a rellenar por la Pasada 3.</p>
+<p><strong>B1 — Modelo dual de claves (R1).</strong> <code>community_id</code> (flujo, opcional) + <code>host_key</code> (host). <code>host_key = IP</code> intra-LAB; el diseño admite <code>agent_id</code>/<code>hostname</code> para FEDER/producción. P3 (IP = identidad de host) marcada <code>ASSUMPTION-LAB-ONLY</code> — colapsa bajo segmentación L3 / DHCP / contenedores.</p>
+<p><strong>B2 — Grafo temporal heterogéneo, aristas tipadas y asimétricas (R2).</strong>
+- <em>Identidad-de-flujo</em> (mismo <code>community_id</code>): equivalencia → <strong>fusiona</strong>.
+- <em>Localidad-de-host</em> (mismo <code>host_key</code> interno gestionado, en ventana): no transitiva, con peso → <strong>anota/enlaza</strong>.
+- <em>Puente temporal cross-clave</em>: peso configurable.
+- <strong>Invariante:</strong> no hay crisis puramente temporales; toda crisis exige ≥1 anclaje estructural.</p>
+<p><strong>B3 — Timestamp canónico (M1).</strong> <code>event_time_unix_ns</code> = <strong>tiempo de ocurrencia</strong>, UTC, gobierna el <em>windowing</em>. Tabla de semántica por motor (a congelar en ADR + AdapterSpec):</p>
+<table>
+<thead>
+<tr>
+<th>Motor</th>
+<th><code>event_time_unix_ns</code></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>aRGus / Suricata / Zeek</td>
+<td>timestamp de captura del paquete (Suricata <code>eve.timestamp</code>, Zeek <code>ts</code> = inicio de conexión)</td>
+</tr>
+<tr>
+<td>Wazuh (alerta de red)</td>
+<td><code>timestamp</code> del evento fuente; fallback <code>alert.timestamp</code></td>
+</tr>
+<tr>
+<td>Wazuh (FIM/syscheck/rootcheck)</td>
+<td><code>alert.timestamp</code> (momento de <strong>detección</strong>, no de cambio); <code>scan_time</code> y <code>file_mtime</code> → <code>metadata</code></td>
+</tr>
+</tbody>
+</table>
+<p>Disciplina de reloj (R5): gate NTP + monitorización continua + degradación a <code>confidence=LOW</code> ante skew &gt; 50 ms (LAB). <code>bridge_window</code> 15–30 s absorbe la cuantización de host. <code>⟶P3.1</code> (sitio de <code>emitted_at</code>/<code>ingested_at</code>).</p>
+<p><strong>B4 — Fuentes esperadas dinámicas + ventanas separadas (R3 + M4.a).</strong> Nunca <code>expected = ALL</code>. Armado dinámico: una fuente se arma cuando una arista conecta la crisis con su dominio. Wazuh se arma <strong>solo</strong> si la crisis toca un host gestionado (predicado = <code>host gestionado + dentro de bridge_window</code>, <strong>no</strong> cobertura de ruleset — M4.b). Tres ventanas distintas:
+- <code>correlation_window</code>: espera activa de fuentes armadas.
+- <code>late_arrival_window</code>: gracia para rezagados; <strong>no</strong> reabre la espera.
+- <code>crisis_idle_timeout</code> = 120 s: cierre por inactividad (se resetea con actividad).
+  Cierre = (todas las armadas reportaron y vencida <code>correlation_window</code>) <strong>O</strong> <code>idle ≥ 120 s</code>.
+  <strong>Tradeoff M4.b a documentar verbatim</strong> (texto de Qwen): el predicado evita acoplamiento al ruleset a cambio de posibles expectativas muertas cuyo coste está acotado por <code>correlation_window</code>; si en producción se observa ruido, se podrá añadir un filtro opcional basado en <strong>metadatos de regla</strong> (no en el ruleset vivo) — post-FEDER.</p>
+<p><strong>B5 — Política de evicción en tres capas (M2).</strong>
+- <em>Capa 1 — recencia.</em> Crisis "caliente" (actividad en <code>HOT_WINDOW</code>, arranque 5 s) no se evicta. <strong>Refinamiento (DeepSeek):</strong> el estado caliente se refresca con <strong>actividad estructural</strong> (nuevas aristas), no con goteo de baja severidad, para que no se mantenga viva artificialmente. <code>HOT_WINDOW</code> puede extenderse por severidad (p. ej. 10 s para <code>FEDER_CRITICAL</code>), nunca a inmunidad.
+- <em>Capa 2 — severidad como orden, nunca inmunidad.</em> <code>⟶P3.2</code> (tiers discretos vs score ponderado).
+- <em>Capa 3 — cuota anti-pinning.</em> Por origen externo. <code>Q</code> configurable: 0.05 (LAB), 0.02 (FEDER). <strong>Alcance honesto:</strong> la cuota frena el pinning <em>concentrado</em>; el flood <em>distribuido</em> lo absorbe el <strong>cap global</strong> (la cuota no es anti-flood total). <code>⟶P3.3</code> (granularidad de la cuota).
+- <em>Exención de host interno (la víctima):</em> exenta de cuota externa y de evicción-por-severidad, <strong>pero</strong> sujeta a (i) <strong>sub-cap por host interno</strong> generoso (anti spoofing de IP interna — Claude) y (ii) <code>crisis_idle_timeout</code> extendido (~300 s — Qwen), para que una víctima comprometida-pero-silenciosa no fije memoria indefinidamente.
+- <em>Invariantes:</em> nunca bloquear ingesta; las evictadas emiten parcial con flag.
+- <em>Telemetría (fusión de ChatGPT + Qwen + Grok):</em> enum <code>eviction_reason</code> / <code>SaturationReason</code> = <code>{HOT_PROTECTED, SEVERITY_ORDER, QUOTA_EXCEEDED, GLOBAL_CAP, IDLE_TIMEOUT}</code> + métricas <code>open_crisis_count</code>, <code>evicted_by_anti_pin_quota</code>, <code>memory_rss</code>, <code>dedup_drops</code>.
+- <em>Memoria (Gemini):</em> pre-asignación en chunks, sin fragmentación.
+- <em>EMECAS++:</em> (a) 100k flujos únicos/60 s → RSS acotado, sin leak; (b) pinning concentrado → host interno sobrevive, cuota aplicada; (c) <strong>escenario mixto (DeepSeek)</strong> → fondo normal + pinning externo + incidente real sobre host interno simultáneos → el incidente real nunca se evicta.</p>
+<p><strong>B6 — Horizonte de reordenamiento del engine (consecuencia de M1+M3, sin objeción).</strong> Como las ventanas se rigen por <strong>ocurrencia</strong> pero los eventos <strong>llegan</strong> en orden de arribo, el engine necesita un buffer de reorden acotado y <strong>no puede finalizar</strong> una crisis hasta <code>ahora − latencia_de_la_fuente_armada_más_lenta</code>. La fuente más lenta (Wazuh, 90 s) fija el <strong>horizonte de reorden de todo el engine</strong>. Esto es la <strong>razón</strong> documentada de por qué <code>crisis_idle_timeout</code> (120 s) &gt; espera Wazuh (90 s): horizonte de reorden + margen, no coincidencia.</p>
+<p><strong>B7 — Inmutabilidad de crisis emitidas.</strong> <code>⟶P3.4</code> (re-emisión actualizada vs anexo enlazado inmutable).</p>
+<p><strong>B8 — AdapterSpec v1 (M3) — documento independiente referenciado por el ADR.</strong>
+- <em>Garantías (ChatGPT):</em> at-least-once + idempotencia por <code>(source_engine, native_event_id)</code>; <strong>NO</strong> exactly-once (costoso, innecesario, ya mitigado por dedup) — declararlo explícito para evitar bugs filosóficos.
+- <em>Checkpoint monotónico (Kimi, DeepSeek):</em> offset de fichero (tail) / offset de topic (Kafka/Redis) / sequence number en envelope con XPUB/XSUB (ZMQ interno). El engine puede pedir "reanuda desde checkpoint X".
+- <em><code>native_event_id</code> determinista para el golden pcap (Qwen):</em> derivado de offset-en-pcap + índice de evento → reproducibilidad bit a bit.
+- <em>Resiliencia (Qwen):</em> retry backoff exponencial (max 10, inicial 100 ms); buffer acotado, <code>on_overflow = log_and_drop_with_metric</code>, nunca bloquear; health endpoint + métricas.
+- <em>Transporte:</em> interno <strong>siempre ZeroMQ</strong> (slow-joiner: PUB <code>bind()</code> antes de SUB <code>connect()</code>); externo <strong>por tier y por motor</strong> (determinista = fichero/replay; vivo = push nativo donde el motor lo soporte, fallback tail-durable). <strong>Congelado</strong> por motor y entorno: nada de fallback silencioso en runtime, o el tier vivo deja de ser reproducible entre runs. El camino push vivo <strong>no es replayable → libre de aserciones por construcción</strong>.</p>
+<p><strong>B9 — Envelope R9 (plano, sin <code>oneof</code>).</strong> Con la decisión de B3/<code>⟶P3.1</code> sobre los campos de tiempo.</p>
+<p><strong>B10 — Inventario de endpoints, estado de primera clase (R10).</strong> <code>IP ↔ agent_id ↔ hostname ↔ managed_since</code>, alimentado desde Wazuh, consultado en caliente para armado de fuentes y para el lado correcto del join asimétrico.</p>
+<p><strong>B11 — Deudas registradas.</strong>
+- <code>DEBT-ARGUSPP-COMMUNITY-ID-ICMP-001</code> (ya firmada, Pasada 1).
+- <code>DEBT-ARGUSPP-CLOCK-ADVERSARIAL-001</code> (Claude, post-FEDER): el gate NTP cubre deriva honesta, no un host comprometido que <strong>miente</strong> sobre su reloj para evadir correlación temporal. Mitigación futura: sellar eventos de host en el <strong>manager de Wazuh</strong> (bajo nuestro control), no en el agente.
+- Extensión futura no acoplada (DeepSeek/Qwen, post-FEDER): heartbeat asíncrono de Wazuh ("no tengo nada para esta IP en esta ventana") o filtro por metadatos de regla, como optimización de expectativas muertas.</p>
+<hr />
+<h2 id="c-pasada-3-cuatro-micro-mociones-residuales">C. Pasada 3 — cuatro micro-mociones residuales</h2>
+<p>Solo estas cuatro impiden declarar "nada abierto entre nosotros". Dos son casi formalidades (P3.1, P3.3); dos pesan sobre el corpus (P3.2, P3.4).</p>
+<h3 id="p31-emitted_atingested_at-como-campos-de-primera-clase-o-en-metadata">P3.1 — ¿<code>emitted_at</code>/<code>ingested_at</code> como campos de primera clase o en <code>metadata</code>?</h3>
+<p><strong>Split:</strong> ChatGPT propone tres <code>uint64</code> explícitos en el envelope (<code>event_time</code>, <code>emitted_time</code>, <code>ingested_time</code>) por telemetría binaria reproducible, histogramas de latencia, sin parsing textual. R9/Qwen los pusieron en el mapa <code>metadata</code>.
+<strong>Recomendación Claude:</strong> <strong>campos de primera clase.</strong> Coste = dos <code>uint64</code>; beneficio = métricas de latencia tipadas y reproducibles. El mapa <code>metadata</code> queda para lo realmente variable (<code>scan_time</code>, <code>file_mtime</code>, <code>agent_id</code>, <code>hostname</code>).
+<strong>Cierre:</strong> ratificar campos de primera clase, o defender el mapa.</p>
+<h3 id="p32-orden-de-eviccion-en-el-conjunto-frio-tiers-discretos-vs-score-continuo-pesa">P3.2 — Orden de evicción en el conjunto frío: tiers discretos vs score continuo <em>(pesa)</em></h3>
+<p><strong>Split:</strong> tiers discretos (<code>LOW→MEDIUM→HIGH→FEDER_CRITICAL</code>, LRU dentro de cada tier) = DeepSeek, Claude, implícito ChatGPT. Score ponderado continuo (<code>severidad × fuentes × 1/edad</code>) = Mistral (y Grok en Pasada 1, no reiterado en Pasada 2).
+<strong>Recomendación Claude:</strong> <strong>tiers discretos.</strong> Razones: (a) auditabilidad — el enum <code>eviction_reason</code> mapea a tiers, no a un número; (b) la propiedad anti-pinning es <strong>demostrable</strong> sobre tiers, opaca sobre un score; (c) el factor <code>fuentes</code> del score es en sí una superficie de ataque (inflar fuentes sube el score); (d) Via Appia/KISS — un score multiplicativo de tres factores esconde comportamiento emergente.
+<strong>Cierre:</strong> ratificar tiers, o que Mistral/Grok defiendan el score con una propiedad anti-pinning demostrable.</p>
+<h3 id="p33-granularidad-de-la-cuota-anti-pinning">P3.3 — Granularidad de la cuota anti-pinning</h3>
+<p><strong>Split:</strong> por IP externa individual (Kimi) / + por <code>community_id</code> (Mistral, DeepSeek-futuro) / + por <code>/24</code> (mención Claude).
+<strong>Recomendación Claude:</strong> <strong>por IP externa individual</strong> como cuota FEDER; el <strong>cap global</strong> cubre el flood multi-IP/distribuido. <code>community_id</code> y <code>/24</code> son redundantes para FEDER (los flujos de una misma IP ya cuentan bajo su cuota; el <code>/24</code> arriesga agrupar orígenes legítimos) → registrarlos como <em>tuning</em> post-FEDER.
+<strong>Cierre:</strong> ratificar por-IP-individual + cap global, o defender una granularidad adicional necesaria <em>para FEDER</em>.</p>
+<h3 id="p34-semantica-del-rezagado-re-emision-actualizada-vs-anexo-enlazado-inmutable-pesa-afecta-al-corpus">P3.4 — Semántica del rezagado: re-emisión actualizada vs anexo enlazado inmutable <em>(pesa — afecta al corpus)</em></h3>
+<p><strong>Split:</strong> Claude propone crisis <strong>inmutable</strong> tras emisión; el rezagado dentro de <code>late_arrival_window</code> crea un <strong>registro enlazado nuevo</strong> (delta) que referencia el <code>crisis_id</code> previo, sin mutar el original. Kimi habló de "actualización/reenvío", que podría leerse como mutación.
+<strong>Recomendación Claude:</strong> <strong>append-only, crisis inmutable.</strong> El estado de una crisis <strong>no</strong> debe depender de cuándo la mires — eso envenena el ground-truth y rompe la reproducibilidad del corpus. El "reenvío" se implementa como <strong>delta inmutable enlazado</strong>, no como edición in situ. Encaja con el marco "event-graph lifecycle / replay determinism" que ChatGPT pidió hacer explícito.
+<strong>Cierre:</strong> ratificar append-only + delta enlazado, o que Kimi precise si su "actualización" es mutación y por qué sería compatible con el corpus.</p>
+<hr />
+<h2 id="d-d5-estado">D. D5 — estado</h2>
+<p>El Consejo está <strong>8/8 a favor de corpus-como-cimiento + pipeline vivo como demostración complementaria</strong> (Grok incluido tras moverse en la Pasada 2; Kimi formuló el compromiso explícito para Grok; Mistral lo llama "híbrido" con la misma forma). No hay disidencia.</p>
+<p>Lo único que falta es tu ratificación de la forma exacta: <strong>corpus = entregable duro y evaluable; pipeline vivo = demostración complementaria (grabada o en vivo en el acto), con aserciones de correctitud solo contra el corpus.</strong> Tu respuesta fija el ordenamiento de fases en firme.</p>
+<hr />
+<h2 id="e-dos-avisos-sobre-la-posicion-de-mistral-para-no-contaminar-el-registro">E. Dos avisos sobre la posición de Mistral (para no contaminar el registro)</h2>
+<ol>
+<li><strong>Cita probablemente inventada.</strong> Mistral aduce un caso "FireEye M-Trends 2021" en que un SYN flood contra un SIEM con inmunidad-por-severidad habría bloqueado la detección de un APT. No he podido verificarlo y tiene trazas de atribución fabricada. <strong>No debe entrar en el ADR como precedente factual.</strong> El argumento de seguridad del pinning se sostiene solo, sin necesidad de ese caso.</li>
+<li><strong>Inconsistencia interna en M4.b.</strong> Mistral ratifica el rechazo del acoplamiento al ruleset, pero su "Escenario 1" de prueba dice que Wazuh se arma "solo si hay regla para el puerto" — que es exactamente el acoplamiento rechazado. Ese escenario de test debe descartarse para que no se cuele en el diseño de EMECAS++.</li>
+</ol>
+<hr />
+<h2 id="f-que-necesito">F. Qué necesito</h2>
+<ul>
+<li><strong>De Alonso:</strong> ratificación de D5 (forma exacta arriba). Es lo único que bloquea fijar el orden de fases.</li>
+<li><strong>Del Consejo:</strong> cierre de P3.1–P3.4 (espero cierre rápido salvo defensa en P3.2/P3.4).</li>
+</ul>
+<p>Cuando P3 cierre y tengamos tu voto en D5, redacto el <strong>borrador completo de ADR-046 v4</strong> con B1–B11 y el <code>AdapterSpec v1</code> como documento aparte. No antes: escribir el ADR con cuatro huecos abiertos sería un atajo.</p>
+<p>— Claude (Anthropic), Consejo de Sabios. <em>Piano, piano.</em></p>
+<p>Alonso:</p>
+<p>Mi opinión fundada es que quiero poder mostrar que el pipeline funcional produce un dataset despues de ejecutar el MITRE ATTACK más bestia posible, porque incluso así, la naturaleza de estos ataques es impredecible, pero siendo todo lo duros e impredecibles posibles, demostramos nuestras intenciones finale para con el pipeline. Queremos parar ataques realistas, mientras generamos telemetría que nos servirá para demostrar que el entrenamiento distribuido federado es una posibilidad técnica que a lo mejor necesita refinamiento en algún punto. Puede que no mostremos el mejor algoritmo que generen dichos datasets, pero debemos mostrar al menos  potencialidad y esperanza basada en argumentos científicos. Yo confío en que los datasets que salgan después de ataques MITRE serán prometedores, porque van a ser variados, etiquetados, y reproducibles. No se si en mi portatil MacBookPro i9 32 GB va a caber todo el pipeline funcionando. Parece que si es posible, incluyendo lo necesario para ejecutar la demo real, con la VM Vagrant que contiene el pipeline(aRGus, Suricata, Zeek, Wazuh!) más el servidor (código basado en NEO4j para crear el grafo, código que recoge la telemetría distribuida, generador de datasets en formato csv/parquet, generador de plugins ensemble con esos datasets). Si vemos que no cabe todo, corriendo a la vez, podemos adoptar varias estrategias, desde apagar las VM que no necesitemos cuando por ejemplo server esté trabajando, o al reves, apagar server cuando defender/client estén trabajando. Server trabaja de modo asíncrono, esperando a que le llegue telemetría. Si esa aproximación no nos vale, y os veo venir porque el tema del correlacion_id está fijado a una ventana temporal con servidores NTP, entonces, llegaríamos a la siguiente fase, usar hardware externo como Raspberry y N100 para distribuir la carga. Ya lo teníamos en el BACKLOG previsto, y si esta es una necesidad impuesta por las leyes de la física, se asumen y compro el hardware con mi poquísimo dinero. Capici?</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.top", "search.highlight"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

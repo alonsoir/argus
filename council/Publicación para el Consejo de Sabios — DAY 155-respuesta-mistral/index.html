@@ -1,0 +1,1711 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source embedded-ML NDR for hospitals and schools">
+      
+      
+        <meta name="author" content="Alonso Isidoro Roman">
+      
+      
+        <link rel="canonical" href="https://alonsoir.github.io/argus/council/Publicaci%C3%B3n%20para%20el%20Consejo%20de%20Sabios%20%E2%80%94%20DAY%20155-respuesta-mistral/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>Publicación para el Consejo de Sabios — DAY 155 respuesta mistral - ML Defender (aRGus NDR)</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#resumen-ejecutivo" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-header__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ML Defender (aRGus NDR)
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Publicación para el Consejo de Sabios — DAY 155 respuesta mistral
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../README.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/BACKLOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Backlog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Security Model
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-tabs__link">
+          
+  
+  
+  ADRs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/contracts/Protobuf contracts.md" class="md-tabs__link">
+          
+  
+  
+  Contracts
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-nav__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ML Defender (aRGus NDR)
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../README.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/BACKLOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADRs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ADRs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013 Seed Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-021-deployment-topology-seed-families.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-021 Topology SSOT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-022-threat-model-opcion2-descartada.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-022 Threat Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Protobuf contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protobuf
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/JSON contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JSON
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Rag security commands.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#resumen-ejecutivo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        📜 Resumen Ejecutivo
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#respuestas-detalladas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🔍 Respuestas Detalladas
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🔍 Respuestas Detalladas">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#q1-proceso-propietario-de-cryptoautonomystatemachine" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Q1 — Proceso Propietario de CryptoAutonomyStateMachine
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Q1 — Proceso Propietario de CryptoAutonomyStateMachine">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#analisis" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Análisis:
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#razones-para-etcd-server" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Razones para etcd-server:
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#implementacion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Implementación:
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#q2-endpoint-pubsub-en-produccion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Q2 — Endpoint Pub/Sub en Producción
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Q2 — Endpoint Pub/Sub en Producción">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#analisis_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Análisis:
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#solucion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Solución:
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#seguridad" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Seguridad:
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#q3-reconcile_interval_sec-en-autonomysubscriber" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Q3 — reconcile_interval_sec en AutonomySubscriber
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Q3 — reconcile_interval_sec en AutonomySubscriber">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#analisis_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Análisis:
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#implementacion_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Implementación:
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#q4-estructura-de-carpetas-para-codigo-enterprise" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Q4 — Estructura de Carpetas para Código Enterprise
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Q4 — Estructura de Carpetas para Código Enterprise">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#analisis_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Análisis:
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#estructura-propuesta" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Estructura Propuesta:
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cambios-en-cmakeliststxt-raiz" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cambios en CMakeLists.txt Raíz:
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ventajas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Ventajas:
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#q5-benchmarks-sinteticos-en-virtualbox" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Q5 — Benchmarks Sintéticos en VirtualBox
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Q5 — Benchmarks Sintéticos en VirtualBox">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#analisis_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Análisis:
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#recomendaciones" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Recomendaciones:
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#-" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ---
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#plan-de-accion-para-day-156" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        📌 Plan de Acción para DAY 156
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#-_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ---
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#riesgos-y-mitigaciones" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ⚠ Riesgos y Mitigaciones
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#-_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ---
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#recomendaciones-adicionales" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        💡 Recomendaciones Adicionales
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#-_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ---
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#conclusion-final" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        📝 Conclusión Final
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+  <h1>Publicación para el Consejo de Sabios — DAY 155 respuesta mistral</h1>
+
+<p><strong>Dictamen del Consejo de Sabios — DAY 155 (aRGus NDR)</strong>
+<em>17 de mayo de 2026 | Respuesta unificada y estratégica</em></p>
+<hr />
+<hr />
+<h2 id="resumen-ejecutivo"><strong>📜 Resumen Ejecutivo</strong></h2>
+<p><strong>Decisiones clave para DAY 156:</strong>
+1. <strong>Q1:</strong> <strong>Opción A (<code>etcd-server</code>)</strong> como proceso propietario de <code>CryptoAutonomyStateMachine</code>.
+2. <strong>Q2:</strong> <strong>Mantener <code>ipc://</code> para edge nodes</strong> (mismo host), pero <strong>soportar <code>tcp://</code> para topologías distribuidas</strong> (configurable).
+3. <strong>Q3:</strong> <strong><code>reconcile_interval_sec</code> configurable desde <code>firewall.json</code></strong> (default 90s). El reconciliador <strong>reaplica el último estado conocido</strong> (sin consultar Vault/etcd).
+4. <strong>Q4:</strong> <strong>Estructura <code>enterprise/</code> en raíz</strong> (no <code>common/enterprise/</code> ni <code>plugins/</code>). Anticipar cambios en <code>CMakeLists.txt</code> para condicionalidad.
+5. <strong>Q5:</strong> <strong>Hacer benchmarks sintéticos en VirtualBox</strong> (línea base), pero <strong>marcar claramente como "no representativos de producción"</strong>.</p>
+<hr />
+<p><strong>Prioridad DAY 156 confirmada:</strong>
+1. <strong>P0:</strong> Integrar <code>CryptoAutonomyStateMachine</code> en <code>etcd-server</code> (Q1).
+2. <strong>P1:</strong> <code>DEBT-AUTONOMY-STATE-PERSISTENCE-001</code> (estado en <code>/run/argus/crypto-autonomy-state.json</code>).
+3. <strong>P1:</strong> <code>DEBT-BOOTSTRAP-STATUS-SIGNATURE-001</code> (firma Ed25519 en bootstrap).
+4. <strong>P2:</strong> <code>DEBT-CRYPTO-AUTONOMY-001</code> (máquina de estados completa).</p>
+<hr />
+<hr />
+<hr />
+<h2 id="respuestas-detalladas"><strong>🔍 Respuestas Detalladas</strong></h2>
+<hr />
+<h3 id="q1-proceso-propietario-de-cryptoautonomystatemachine"><strong>Q1 — Proceso Propietario de <code>CryptoAutonomyStateMachine</code></strong></h3>
+<p><strong>✅ Opción A: <code>etcd-server</code> es el proceso correcto.</strong></p>
+<h4 id="analisis"><strong>Análisis:</strong></h4>
+<table>
+<thead>
+<tr>
+<th>Opción</th>
+<th>Ventajas</th>
+<th>Desventajas</th>
+<th>Veredicto</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>A: <code>etcd-server</code></strong></td>
+<td>✅ Ya conoce el estado de Vault (health-checks). ✅ Centralizado (un solo publisher). ✅ Arranca primero (bootstrap).</td>
+<td>⚠ Añade responsabilidad a <code>etcd-server</code>.</td>
+<td><strong>✅ Recomendado</strong></td>
+</tr>
+<tr>
+<td><strong>B: <code>argus-crypto-daemon</code></strong></td>
+<td>✅ Separación de responsabilidades.</td>
+<td>❌ Nuevo proceso (complejidad adicional).</td>
+<td>❌ No recomendado</td>
+</tr>
+<tr>
+<td><strong>C: <code>sniffer</code></strong></td>
+<td>✅ Primer componente en arrancar.</td>
+<td>❌ <code>sniffer</code> no tiene contexto de Vault.</td>
+<td>❌ No recomendado</td>
+</tr>
+<tr>
+<td><strong>D: Múltiples publishers</strong></td>
+<td>✅ Redundancia.</td>
+<td>❌ <strong>Inconsistencia</strong> (varios publishers pueden desincronizarse).</td>
+<td>❌ No recomendado</td>
+</tr>
+</tbody>
+</table>
+<h4 id="razones-para-etcd-server"><strong>Razones para <code>etcd-server</code>:</strong></h4>
+<ol>
+<li><strong>Contexto de Vault:</strong><ul>
+<li><code>etcd-server</code> <strong>ya interactúa con Vault</strong> (para su propia configuración).</li>
+<li><strong>Conoce el estado de salud de Vault</strong> (via health-checks).</li>
+</ul>
+</li>
+<li><strong>Centralización:</strong><ul>
+<li><strong>Un solo publisher</strong> evita inconsistencias (ej: dos componentes publicando estados distintos).</li>
+</ul>
+</li>
+<li><strong>Orden de arranque:</strong><ul>
+<li><code>etcd-server</code> <strong>arranca primero</strong> (bootstrap), por lo que puede publicar el estado inicial.</li>
+</ul>
+</li>
+<li><strong>Alta disponibilidad:</strong><ul>
+<li>Si <code>etcd-server</code> falla, <strong>el cluster etcd puede elegir un nuevo líder</strong> que asuma el rol de publisher.</li>
+</ul>
+</li>
+</ol>
+<h4 id="implementacion"><strong>Implementación:</strong></h4>
+<ol>
+<li>
+<p><strong>En <code>etcd-server/main.cpp</code>:</strong>
+   ```cpp
+   int main() {
+       // 1. Inicializar CryptoAutonomyStateMachine
+       auto state_machine = std::make_shared<CryptoAutonomyStateMachine>();
+       auto publisher = std::make_shared<AutonomyPublisher>("ipc:///run/argus/autonomy.sock");
+       state_machine-&gt;set_transition_callback(<a href="const AutonomyState&amp; state">publisher</a> {
+           publisher-&gt;publish(state);
+       });</p>
+<p>// 2. Inicializar VaultClient (si ARGUS_VAULT_ENABLED)
+   #ifdef ARGUS_VAULT_ENABLED
+       auto vault_client = std::make_shared<VaultClient>(...);
+       state_machine-&gt;set_vault_health_check(<a href="">vault_client</a> {
+           return vault_client-&gt;is_healthy();
+       });
+   #endif</p>
+<p>// 3. Iniciar etcd-server
+   g_server-&gt;start();
+   }
+   <code>``
+2. **Asegurar que</code>etcd-server<code>publique el estado inicial:**
+- Al arrancar,</code>state_machine-&gt;transition_to(State::NORMAL)` (si Vault está saludable).</p>
+</li>
+</ol>
+<hr />
+<p><strong>Veredicto:</strong>
+<strong>✅ <code>etcd-server</code> como proceso propietario (Opción A).</strong></p>
+<hr />
+<hr />
+<h3 id="q2-endpoint-pubsub-en-produccion"><strong>Q2 — Endpoint Pub/Sub en Producción</strong></h3>
+<p><strong>✅ Mantener <code>ipc://</code> para edge nodes, pero soportar <code>tcp://</code> para topologías distribuidas.</strong></p>
+<h4 id="analisis_1"><strong>Análisis:</strong></h4>
+<ul>
+<li><strong>Edge Node (Hospital):</strong><ul>
+<li><strong><code>firewall-acl-agent</code> y <code>etcd-server</code> corren en el mismo host.</strong></li>
+<li><strong><code>ipc://</code> es óptimo</strong> (baja latencia, sin overhead de red).</li>
+</ul>
+</li>
+<li><strong>Servidor Central (Cluster):</strong><ul>
+<li><strong>Varios componentes pueden correr en hosts distintos.</strong></li>
+<li><strong><code>tcp://</code> es necesario</strong> (ej: <code>tcp://central-server:5556</code>).</li>
+</ul>
+</li>
+</ul>
+<h4 id="solucion"><strong>Solución:</strong></h4>
+<ul>
+<li><strong>Configurable desde <code>firewall.json</code>:</strong>
+  <code>json
+  {
+    "autonomy": {
+      "zmq_endpoint": "ipc:///run/argus/autonomy.sock"  // Default para edge
+    }
+  }</code></li>
+<li><strong>En producción (cluster):</strong>
+  <code>json
+  {
+    "autonomy": {
+      "zmq_endpoint": "tcp://central-server:5556"
+    }
+  }</code></li>
+<li><strong>Lógica en <code>AutonomyPublisher</code> y <code>AutonomySubscriber</code>:</strong>
+  ```cpp
+  // En AutonomyPublisher (etcd-server)
+  std::string endpoint = config["autonomy"]["zmq_endpoint"];
+  publisher.bind(endpoint);  // ipc:// o tcp://</li>
+</ul>
+<p>// En AutonomySubscriber (firewall-acl-agent)
+  std::string endpoint = config["autonomy"]["zmq_endpoint"];
+  subscriber.connect(endpoint);
+  ```</p>
+<h4 id="seguridad"><strong>Seguridad:</strong></h4>
+<ul>
+<li><strong>Para <code>tcp://</code>:</strong><ul>
+<li><strong>Cifrar el tráfico ZMQ</strong> con <code>ZMQ_CURVE</code> (Curve25519):
+  <code>cpp
+  // Configurar claves en publisher/subscriber
+  socket.setsockopt(ZMQ_CURVE_SERVER, 1);
+  socket.setsockopt(ZMQ_CURVE_SECRETKEY, secret_key.c_str());
+  socket.setsockopt(ZMQ_CURVE_PUBLICKEY, public_key.c_str());</code></li>
+<li><strong>Restringir acceso</strong> a la IP del servidor central.</li>
+</ul>
+</li>
+</ul>
+<hr />
+<p><strong>Veredicto:</strong>
+<strong>✅ <code>ipc://</code> para edge nodes, <code>tcp://</code> para clusters.</strong>
+<strong>Configurable desde <code>firewall.json</code>.</strong></p>
+<hr />
+<hr />
+<h3 id="q3-reconcile_interval_sec-en-autonomysubscriber"><strong>Q3 — <code>reconcile_interval_sec</code> en <code>AutonomySubscriber</code></strong></h3>
+<p><strong>✅ Configurable desde <code>firewall.json</code> (default 90s). Reaplica el último estado conocido.</strong></p>
+<h4 id="analisis_2"><strong>Análisis:</strong></h4>
+<ul>
+<li><strong>Propósito del reconciliador:</strong><ul>
+<li><strong>Safety net</strong> para el caso en que el evento ZMQ se pierda (ej: <code>firewall-acl-agent</code> arranca después de que <code>etcd-server</code> publique el estado).</li>
+</ul>
+</li>
+<li><strong>¿Consultar a Vault/etcd?</strong><ul>
+<li><strong>No.</strong> El reconciliador <strong>no debe depender de servicios externos</strong> (Vault/etcd podrían estar caídos).</li>
+<li><strong>Reaplicar el último estado conocido</strong> (almacenado en memoria o en <code>/run/argus/crypto-autonomy-state.json</code>).</li>
+</ul>
+</li>
+<li><strong>Intervalo:</strong><ul>
+<li><strong>90s es razonable</strong> para un hospital (equilibrio entre detección rápida y overhead).</li>
+<li><strong>Configurable</strong> para permitir ajustes por instalación.</li>
+</ul>
+</li>
+</ul>
+<h4 id="implementacion_1"><strong>Implementación:</strong></h4>
+<ol>
+<li><strong>En <code>firewall.json</code>:</strong>
+   <code>json
+   {
+     "autonomy": {
+       "reconcile_interval_sec": 90
+     }
+   }</code></li>
+<li><strong>En <code>AutonomySubscriber</code>:</strong>
+   ```cpp
+   AutonomySubscriber::AutonomySubscriber(const Config&amp; config)
+       : m_reconcile_interval(std::chrono::seconds(config.autonomy.reconcile_interval_sec)) {
+       // ...
+   }</li>
+</ol>
+<p>void AutonomySubscriber::start_reconciliator() {
+       std::thread(<a href="">this</a> {
+           while (true) {
+               std::this_thread::sleep_for(m_reconcile_interval);
+               if (m_last_state) {
+                   apply_state(*m_last_state);  // Reaplica último estado conocido
+               }
+           }
+       }).detach();
+   }
+   ```</p>
+<hr />
+<p><strong>Veredicto:</strong>
+<strong>✅ Configurable desde <code>firewall.json</code> (default 90s).</strong>
+<strong>Reaplica el último estado conocido (sin consultar Vault/etcd).</strong></p>
+<hr />
+<hr />
+<h3 id="q4-estructura-de-carpetas-para-codigo-enterprise"><strong>Q4 — Estructura de Carpetas para Código Enterprise</strong></h3>
+<p><strong>✅ <code>enterprise/</code> en raíz del proyecto.</strong></p>
+<h4 id="analisis_3"><strong>Análisis:</strong></h4>
+<table>
+<thead>
+<tr>
+<th>Opción</th>
+<th>Ventajas</th>
+<th>Desventajas</th>
+<th>Veredicto</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong><code>enterprise/</code></strong></td>
+<td>✅ Claro y explícito. ✅ Fácil de excluir de builds community.</td>
+<td>⚠ Requiere ajustes en <code>CMakeLists.txt</code>.</td>
+<td><strong>✅ Recomendado</strong></td>
+</tr>
+<tr>
+<td><strong><code>plugins/enterprise/</code></strong></td>
+<td>✅ Alinea con el modelo de plugins.</td>
+<td>❌ <code>VaultClient</code> no es un plugin (es infraestructura).</td>
+<td>❌ No recomendado</td>
+</tr>
+<tr>
+<td><strong><code>common/enterprise/</code></strong></td>
+<td>✅ Mantiene código relacionado.</td>
+<td>❌ Mezcla código core con enterprise.</td>
+<td>❌ No recomendado</td>
+</tr>
+</tbody>
+</table>
+<h4 id="estructura-propuesta"><strong>Estructura Propuesta:</strong></h4>
+<pre><code>argus/
+├── common/               # Código core (open-source)
+│   ├── crypto_autonomy.h
+│   ├── autonomy_publisher.h
+│   └── ...
+├── enterprise/           # Código enterprise (cerrado)
+│   ├── vault_client/
+│   │   ├── vault_client.h
+│   │   └── vault_client.cpp
+│   ├── VaultProvider/
+│   │   ├── vault_provider.h
+│   │   └── vault_provider.cpp
+│   └── CMakeLists.txt     # Build condicional (ARGUS_VAULT_ENABLED)
+├── firewall-acl-agent/   # Componente (usa common/ o enterprise/)
+├── etcd-server/          # Componente (usa common/ o enterprise/)
+└── CMakeLists.txt        # Raíz (incluye enterprise/ si ARGUS_VAULT_ENABLED=ON)
+</code></pre>
+<h4 id="cambios-en-cmakeliststxt-raiz"><strong>Cambios en <code>CMakeLists.txt</code> Raíz:</strong></h4>
+<pre><code class="language-cmake"># Incluir enterprise/ solo si ARGUS_VAULT_ENABLED=ON
+if(ARGUS_VAULT_ENABLED)
+    add_subdirectory(enterprise)
+endif()
+</code></pre>
+<h4 id="ventajas"><strong>Ventajas:</strong></h4>
+<ul>
+<li><strong>Separación clara</strong> entre código open-source (<code>common/</code>) y enterprise (<code>enterprise/</code>).</li>
+<li><strong>Fácil de excluir</strong> en builds community (solo desactivar <code>ARGUS_VAULT_ENABLED</code>).</li>
+<li><strong>No afecta</strong> a la estructura existente de componentes (<code>firewall-acl-agent/</code>, <code>etcd-server/</code>, etc.).</li>
+</ul>
+<hr />
+<p><strong>Veredicto:</strong>
+<strong>✅ <code>enterprise/</code> en raíz.</strong>
+<strong>Anticipar cambios en <code>CMakeLists.txt</code> para condicionalidad.</strong></p>
+<hr />
+<hr />
+<h3 id="q5-benchmarks-sinteticos-en-virtualbox"><strong>Q5 — Benchmarks Sintéticos en VirtualBox</strong></h3>
+<p><strong>✅ Hacer benchmarks sintéticos en VirtualBox, pero marcar como "no representativos".</strong></p>
+<h4 id="analisis_4"><strong>Análisis:</strong></h4>
+<table>
+<thead>
+<tr>
+<th>Opción</th>
+<th>Ventajas</th>
+<th>Desventajas</th>
+<th>Veredicto</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Benchmarks en VirtualBox</strong></td>
+<td>✅ Rápido de ejecutar. ✅ Línea base para desarrollo.</td>
+<td>❌ Números <strong>no representativos</strong> (VirtualBox no refleja hardware real).</td>
+<td>✅ <strong>Recomendado</strong></td>
+</tr>
+<tr>
+<td><strong>Esperar a hardware físico</strong></td>
+<td>✅ Números precisos.</td>
+<td>❌ Retrasa el desarrollo.</td>
+<td>❌ No recomendado</td>
+</tr>
+</tbody>
+</table>
+<h4 id="recomendaciones"><strong>Recomendaciones:</strong></h4>
+<ol>
+<li>
+<p><strong>Ejecutar benchmarks sintéticos:</strong></p>
+<ul>
+<li><strong>Herramienta:</strong> Usar <code>zmq_perf</code> (incluida con ZeroMQ) o un script personalizado.</li>
+<li><strong>Métricas:</strong><ul>
+<li><strong>Latencia</strong> (tiempo entre <code>send</code> y <code>recv</code>).</li>
+<li><strong>Throughput</strong> (mensajes/segundo).</li>
+<li><strong>Pérdida de mensajes</strong> (con diferentes <code>HWM</code>).</li>
+</ul>
+</li>
+<li><strong>Configuración:</strong><ul>
+<li><strong>VirtualBox:</strong> 4 vCPUs, 8GB RAM, red en modo "bridged".</li>
+<li><strong>Carga:</strong> Simular tráfico de <code>sniffer</code> → <code>ml-detector</code> (ej: 10K msg/s).</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<p><strong>Documentar limitaciones:</strong></p>
+<ul>
+<li><strong>En el paper/readme:</strong><blockquote>
+<p><em>"Los benchmarks sintéticos en VirtualBox proporcionan una línea base para desarrollo, pero </em><em>no son representativos del rendimiento en hardware físico</em><em>. Los resultados en producción pueden variar significativamente debido a factores como la latencia de red, el rendimiento del disco, y la optimización del kernel."</em></p>
+</blockquote>
+</li>
+</ul>
+</li>
+<li>
+<p><strong>Ejemplo de script de benchmark:</strong>
+   ```bash
+   # Benchmark de latencia (1000 mensajes de 1KB)
+   zmq_perf local_lat tcp://127.0.0.1:5556 1000 1024</p>
+</li>
+</ol>
+<p># Benchmark de throughput (10K mensajes de 1KB)
+   zmq_perf remote_thr tcp://127.0.0.1:5556 10000 1024
+   ```</p>
+<ol>
+<li><strong>Hardware físico (FEDER):</strong><ul>
+<li><strong>Priorizar</strong> una vez disponible (para números reales).</li>
+</ul>
+</li>
+</ol>
+<hr />
+<p><strong>Veredicto:</strong>
+<strong>✅ Hacer benchmarks sintéticos en VirtualBox.</strong>
+<strong>Marcar claramente como "no representativos de producción".</strong></p>
+<hr />
+<h2 id="-">---</h2>
+<h2 id="plan-de-accion-para-day-156"><strong>📌 Plan de Acción para DAY 156</strong></h2>
+<table>
+<thead>
+<tr>
+<th>Prioridad</th>
+<th>Tarea</th>
+<th>Detalles</th>
+<th>Tiempo Estimado</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>P0</strong></td>
+<td>Integrar <code>CryptoAutonomyStateMachine</code> en <code>etcd-server</code></td>
+<td>Opción A (Q1).</td>
+<td>3-4h</td>
+</tr>
+<tr>
+<td><strong>P1</strong></td>
+<td><code>DEBT-AUTONOMY-STATE-PERSISTENCE-001</code></td>
+<td>Estado en <code>/run/argus/crypto-autonomy-state.json</code>.</td>
+<td>2h</td>
+</tr>
+<tr>
+<td><strong>P1</strong></td>
+<td><code>DEBT-BOOTSTRAP-STATUS-SIGNATURE-001</code></td>
+<td>Firma Ed25519 en bootstrap status.</td>
+<td>2h</td>
+</tr>
+<tr>
+<td><strong>P2</strong></td>
+<td><code>DEBT-CRYPTO-AUTONOMY-001</code></td>
+<td>Máquina de estados completa.</td>
+<td>2h</td>
+</tr>
+<tr>
+<td><strong>P2</strong></td>
+<td>Benchmarks sintéticos en VirtualBox</td>
+<td><code>BACKLOG-BENCHMARK-CAPACITY-001</code>.</td>
+<td>2h</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<p><strong>Orden recomendado:</strong>
+1. <strong>Mañana (4h):</strong>
+    - <strong>P0:</strong> Integrar <code>CryptoAutonomyStateMachine</code> en <code>etcd-server</code>.
+2. <strong>Tarde (4h):</strong>
+    - <strong>P1:</strong> <code>DEBT-AUTONOMY-STATE-PERSISTENCE-001</code> + <code>DEBT-BOOTSTRAP-STATUS-SIGNATURE-001</code>.
+3. <strong>Si hay tiempo:</strong>
+    - <strong>P2:</strong> Benchmarks sintéticos.</p>
+<hr />
+<h2 id="-_1">---</h2>
+<h2 id="riesgos-y-mitigaciones"><strong>⚠ Riesgos y Mitigaciones</strong></h2>
+<table>
+<thead>
+<tr>
+<th>Riesgo</th>
+<th>Mitigación</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong><code>etcd-server</code> sobrecargado</strong></td>
+<td>Monitorear CPU/memoria tras integración.</td>
+</tr>
+<tr>
+<td><strong>Inconsistencia en estado de autonomía</strong></td>
+<td>Usar <strong>un solo publisher</strong> (<code>etcd-server</code>).</td>
+</tr>
+<tr>
+<td><strong>Benchmarks engañosos</strong></td>
+<td><strong>Marcar como "no representativos"</strong> en documentación.</td>
+</tr>
+<tr>
+<td><strong>Problemas de compilación con <code>enterprise/</code></strong></td>
+<td>Probar builds con <code>ARGUS_VAULT_ENABLED=ON/OFF</code>.</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="-_2">---</h2>
+<h2 id="recomendaciones-adicionales"><strong>💡 Recomendaciones Adicionales</strong></h2>
+<ol>
+<li>
+<p><strong>Testing de Integración:</strong></p>
+<ul>
+<li><strong>Probar escenario de corte WAN:</strong>
+  <code>bash
+  # Simular corte WAN en VM
+  sudo iptables -A INPUT -i eth0 -j DROP
+  # Verificar que el firewall entra en AUTONOMOUS
+  tail -f /var/log/argus/firewall.log</code></li>
+<li><strong>Probar revocación explícita:</strong>
+  <code>bash
+  # Enviar evento de revocación manualmente
+  echo '{"state": "REVOKED"}' | zmq_pub -b tcp://localhost:5556 argus.crypto.autonomy</code></li>
+</ul>
+</li>
+<li>
+<p><strong>Documentación:</strong></p>
+<ul>
+<li><strong>Añadir diagrama de arquitectura</strong> en <code>ADR-045</code>:
+  <code>mermaid
+  graph TD
+      A[etcd-server] --&gt;|pub| B[ipc:///run/argus/autonomy.sock]
+      B --&gt; C[firewall-acl-agent]
+      C --&gt; D[apply_default_deny]</code></li>
+<li><strong>Actualizar <code>README.md</code></strong> con ejemplos de configuración ZMQ y autonomía.</li>
+</ul>
+</li>
+<li>
+<p><strong>Seguridad:</strong></p>
+<ul>
+<li><strong>Cifrar tráfico ZMQ en producción</strong> (usar <code>ZMQ_CURVE</code>).</li>
+<li><strong>Restringir permisos</strong> en <code>/run/argus/autonomy.sock</code> (solo usuario <code>argus</code>).</li>
+</ul>
+</li>
+<li>
+<p><strong>Benchmarking:</strong></p>
+<ul>
+<li><strong>Comparar resultados</strong> entre <code>ipc://</code> y <code>tcp://</code> (latencia, throughput).</li>
+<li><strong>Documentar hardware</strong> usado en VirtualBox (vCPUs, RAM, SO).</li>
+</ul>
+</li>
+</ol>
+<h2 id="-_3">---</h2>
+<h2 id="conclusion-final"><strong>📝 Conclusión Final</strong></h2>
+<p><strong>Decisiones clave para DAY 156:</strong>
+1. <strong>✅ <code>etcd-server</code> como proceso propietario de <code>CryptoAutonomyStateMachine</code> (Q1).</strong>
+2. <strong>✅ <code>ipc://</code> para edge nodes, <code>tcp://</code> para clusters (Q2).</strong>
+3. <strong>✅ <code>reconcile_interval_sec</code> configurable (default 90s), reaplica último estado conocido (Q3).</strong>
+4. <strong>✅ Estructura <code>enterprise/</code> en raíz (Q4).</strong>
+5. <strong>✅ Benchmarks sintéticos en VirtualBox (marcados como no representativos) (Q5).</strong></p>
+<p><strong>Para el Consejo:</strong>
+¿Estáis de acuerdo con este plan? <strong>Sí</strong>, es el enfoque más robusto para <strong>cerrar las deudas P0/P1 antes del deadline FEDER</strong> y garantizar que el sistema <strong>proteja infraestructuras críticas incluso sin conectividad</strong>. <strong>La autonomía edge es la prioridad absoluta.</strong></p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.top", "search.highlight"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

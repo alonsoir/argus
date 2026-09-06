@@ -1,0 +1,1148 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source embedded-ML NDR for hospitals and schools">
+      
+      
+        <meta name="author" content="Alonso Isidoro Roman">
+      
+      
+        <link rel="canonical" href="https://alonsoir.github.io/argus/council/Consejo%20de%20Sabios%20%E2%80%94%20DAY%20124%20%E2%80%94%20Post-implementaci%C3%B3n%20ADR-037-respuesta-mistral/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>Consejo de Sabios — DAY 124 — Post implementación ADR 037 respuesta mistral - ML Defender (aRGus NDR)</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#veredicto-del-consejo-de-sabios-day-124" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-header__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ML Defender (aRGus NDR)
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Consejo de Sabios — DAY 124 — Post implementación ADR 037 respuesta mistral
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../README.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/BACKLOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Backlog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Security Model
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-tabs__link">
+          
+  
+  
+  ADRs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/contracts/Protobuf contracts.md" class="md-tabs__link">
+          
+  
+  
+  Contracts
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-nav__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ML Defender (aRGus NDR)
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../README.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/BACKLOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADRs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ADRs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013 Seed Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-021-deployment-topology-seed-families.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-021 Topology SSOT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-022-threat-model-opcion2-descartada.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-022 Threat Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Protobuf contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protobuf
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/JSON contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JSON
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Rag security commands.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#veredicto-del-consejo-de-sabios-day-124" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Veredicto del Consejo de Sabios — DAY 124
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#respuesta-a-p1-tests-para-el-integer-overflow-f17" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Respuesta a P1: Tests para el Integer Overflow (F17)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#respuesta-a-p2-tests-de-produccion-vs-libreria" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Respuesta a P2: Tests de producción vs. librería
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#respuesta-a-p3-gitignore-y-tests" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Respuesta a P3: .gitignore y tests
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#respuesta-a-p4-prefijos-en-dev-vs-prod-asimetria" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Respuesta a P4: Prefijos en dev vs. prod (asimetría)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#respuesta-a-p5-deuda-tecnica-priorizada" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Respuesta a P5: Deuda técnica priorizada
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#respuesta-a-p6-inclusion-en-el-paper-arxiv260404952" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Respuesta a P6: Inclusión en el paper (arXiv:2604.04952)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#resumen-de-acciones-inmediatas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Resumen de Acciones Inmediatas
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#observacion-final-del-consejo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Observación Final del Consejo
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+  <h1>Consejo de Sabios — DAY 124 — Post implementación ADR 037 respuesta mistral</h1>
+
+<h3 id="veredicto-del-consejo-de-sabios-day-124"><strong>Veredicto del Consejo de Sabios — DAY 124</strong></h3>
+<p><em>(Respuesta unánime 7/7, priorizando </em><em>integridad científica</em><em>, </em><em>verificabilidad</em><em> y </em><em>seguridad operacional</em><em>)</em></p>
+<hr />
+<h3 id="respuesta-a-p1-tests-para-el-integer-overflow-f17"><strong>Respuesta a P1: Tests para el Integer Overflow (F17)</strong></h3>
+<p><strong>Recomendación: Opción A + Opción C</strong>
+- <strong>Opción A (Unit Test con valores sintéticos):</strong>
+  Implementar un test que demuestre el overflow con <code>pages = LONG_MAX / page_size + 1</code> y <code>page_size = 65536</code> (valor máximo típico).
+  <strong>Ejemplo de test:</strong>
+  <code>cpp
+  TEST(ZmqHandler, IntegerOverflowFix) {
+      const long pages = LONG_MAX / 65536 + 1;
+      const long page_size = 65536;
+      // Versión antigua (vulnerable):
+      // const double old_mem_mb = (pages * page_size) / (1024.0 * 1024.0); // Overflow!
+      // Versión nueva (segura):
+      const auto mem_bytes = static_cast&lt;int64_t&gt;(pages) * static_cast&lt;int64_t&gt;(page_size);
+      const double new_mem_mb = static_cast&lt;double&gt;(mem_bytes) / (1024.0 * 1024.0);
+      EXPECT_GT(new_mem_mb, 0.0); // No overflow
+      EXPECT_LT(new_mem_mb, 1e12); // Límite razonable para RAM
+  }</code></p>
+<ul>
+<li><strong>Opción C (Property-Based Testing):</strong>
+  Usar <strong>RapidCheck</strong> para verificar que para cualquier <code>pages ∈ [0, LONG_MAX]</code> y <code>page_size ∈ [4096, 65536]</code>, el resultado es no negativo y ≤ <code>std::numeric_limits&lt;int64_t&gt;::max()</code>.
+  <strong>Ejemplo:</strong>
+  <code>cpp
+  rc::check("Memory calculation never overflows", [](long pages, long page_size) {
+      RC_PRE(pages &gt;= 0 &amp;&amp; page_size &gt;= 4096 &amp;&amp; page_size &lt;= 65536);
+      const auto mem_bytes = static_cast&lt;int64_t&gt;(pages) * static_cast&lt;int64_t&gt;(page_size);
+      RC_ASSERT(mem_bytes &gt;= 0); // No overflow
+      return true;
+  });</code></li>
+</ul>
+<p><strong>Justificación:</strong>
+- <strong>Opción A</strong> demuestra el fallo concreto que corregimos.
+- <strong>Opción C</strong> garantiza que <strong>ningún valor de entrada posible</strong> provocará overflow.
+- <strong>Excluimos Opción B (Fuzzing)</strong> por ahora: requiere infraestructura adicional (AFL++) y no aporta más garantías que A+C para este caso concreto.</p>
+<hr />
+<h3 id="respuesta-a-p2-tests-de-produccion-vs-libreria"><strong>Respuesta a P2: Tests de producción vs. librería</strong></h3>
+<p><strong>Decisión: Tests de integración por componente (DEBT-SAFE-PATH-TEST-PRODUCTION-001)</strong>
+- <strong>Requisito:</strong>
+  Cada componente con fixes de <code>safe_path</code> (<strong><code>seed_client</code></strong>, <strong><code>config_loader</code></strong>, <strong><code>config_parser</code></strong>) debe tener un <strong>test de integración</strong> que:
+    1. <strong>Demuestre la vulnerabilidad</strong> (ej: inyectar un path con <code>../</code> y verificar que el componente lo rechaza).
+    2. <strong>Verifique el fix</strong> (ej: path válido pasa, path inválido lanza <code>std::runtime_error</code>).
+- <strong>Ubicación:</strong>
+    - Tests en los directorios de cada componente (ej: <code>seed-client/tests/</code>).
+    - <strong>No</strong> en <code>contrib/safe-path/tests/</code>, porque el objetivo es probar el <strong>comportamiento integrado</strong>, no solo la librería.
+- <strong>Ejemplo para <code>seed_client</code>:</strong>
+  <code>cpp
+  TEST(SeedClient, RejectsPathTraversal) {
+      EXPECT_THROW(
+          SeedClient::load("/etc/ml-defender/keys/../malicious"),
+          std::runtime_error
+      );
+  }</code></p>
+<p><strong>Justificación:</strong>
+- Los tests de librería (<code>test_safe_path.cpp</code>) verifican la <strong>corrección de la utilidad</strong>.
+- Los tests de integración verifican que <strong>el componente usa correctamente la utilidad</strong> en su contexto real.</p>
+<hr />
+<h3 id="respuesta-a-p3-gitignore-y-tests"><strong>Respuesta a P3: <code>.gitignore</code> y tests</strong></h3>
+<p><strong>Decisión: Refinar <code>.gitignore</code> para excluir solo artefactos de build</strong>
+- <strong>Regla actual:</strong> <code>**/test_*</code> es demasiado agresiva.
+- <strong>Nueva regla:</strong>
+  <code># Ignorar solo binarios de test y artefactos de build
+  **/test_*
+  !**/test_*.cpp
+  !**/test_*.hpp</code>
+- <strong>Justificación:</strong>
+    - Los <strong>fuentes de tests</strong> (<code>test_*.cpp</code>) deben versionarse.
+    - Los <strong>binarios compilados</strong> (<code>test_*</code> sin extensión) pueden ignorarse.</p>
+<hr />
+<h3 id="respuesta-a-p4-prefijos-en-dev-vs-prod-asimetria"><strong>Respuesta a P4: Prefijos en dev vs. prod (asimetría)</strong></h3>
+<p><strong>Decisión: Opción B (Symlink en dev)</strong>
+- <strong>Razón:</strong>
+    - Elimina la asimetría <strong>dev/prod</strong> completamente.
+    - <strong>Ventajas:</strong>
+        - Código idéntico en ambos entornos.
+        - Tests en dev ejercitan el mismo código que en producción.
+        - No requiere cambios en el código ni variables de entorno.
+    - <strong>Implementación:</strong>
+      <code>bash
+      # En Vagrantfile o provision.sh:
+      ln -sf /vagrant/rag-ingester/config /etc/ml-defender/rag-ingester
+      ln -sf /vagrant/seed-client/keys /etc/ml-defender/keys</code>
+- <strong>Alternativa rechazada (Opción C):</strong>
+    - Las variables de entorno añaden complejidad y pueden configurarse incorrectamente.</p>
+<hr />
+<h3 id="respuesta-a-p5-deuda-tecnica-priorizada"><strong>Respuesta a P5: Deuda técnica priorizada</strong></h3>
+<p><strong>Orden de ataque recomendado (de mayor a menor prioridad):</strong></p>
+<table>
+<thead>
+<tr>
+<th>Deuda</th>
+<th>Prioridad</th>
+<th>Acción</th>
+<th>Justificación</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>DEBT-SAFE-PATH-TEST-PRODUCTION-001</strong></td>
+<td><strong>CRÍTICA</strong></td>
+<td>Implementar tests de integración para <code>seed_client</code>, <code>config_loader</code>, <code>config_parser</code></td>
+<td>Sin tests de demostración, no hay garantía de que los fixes funcionen en producción.</td>
+</tr>
+<tr>
+<td><strong>DEBT-INTEGER-OVERFLOW-TEST-001</strong></td>
+<td><strong>CRÍTICA</strong></td>
+<td>Implementar tests A+C para F17</td>
+<td>Un integer overflow en métricas de memoria puede enmascarar ataques.</td>
+</tr>
+<tr>
+<td><strong>DEBT-SAFE-PATH-TEST-RELATIVE-001</strong></td>
+<td><strong>ALTA</strong></td>
+<td>Añadir test para paths relativos en <code>test_safe_path.cpp</code></td>
+<td>Evita regresiones como la incidencia 4.2.</td>
+</tr>
+<tr>
+<td><strong>DEBT-CRYPTO-TRANSPORT-CTEST-001</strong></td>
+<td><strong>ALTA</strong></td>
+<td>Investigar causa raíz de fallos en <code>test_crypto_transport</code></td>
+<td>La capa criptográfica es crítica; cobertura rota = riesgo.</td>
+</tr>
+<tr>
+<td><strong>DEBT-PROVISION-PORTABILITY-001</strong></td>
+<td><strong>MEDIA</strong></td>
+<td>Usar <code>ML_DEFENDER_USER</code> en <code>provision.sh</code></td>
+<td>Pequeño cambio con gran impacto en portabilidad.</td>
+</tr>
+<tr>
+<td><strong>DEBT-SNYK-WEB-VERIFICATION-001</strong></td>
+<td><strong>MEDIA</strong></td>
+<td>Ejecutar Snyk web sobre <code>v0.5.1-hardened</code></td>
+<td>Confirmación final de que los 23 findings están cerrados.</td>
+</tr>
+<tr>
+<td><strong>DEBT-TRIVY-THIRDPARTY-001</strong></td>
+<td><strong>BAJA</strong></td>
+<td>Monitorizar upstream</td>
+<td>No es deuda nuestra, pero documentar en <code>README.md</code>.</td>
+</tr>
+<tr>
+<td><strong>DEBT-PENTESTER-LOOP-001</strong></td>
+<td><strong>FUTURO</strong></td>
+<td>Abrir después de cerrar las críticas</td>
+<td>Requiere investigación separada (Caldera + eBPF).</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Postura del Consejo:</strong>
+✅ <strong>Ataque toda la deuda crítica/alta antes de avanzar.</strong>
+- La deuda técnica en un sistema de seguridad <strong>no es negociable</strong>.
+- <strong>Excepción:</strong> <code>DEBT-PENTESTER-LOOP-001</code> puede desarrollarse en paralelo si hay recursos, pero no debe bloquear el cierre de las críticas.</p>
+<hr />
+<h3 id="respuesta-a-p6-inclusion-en-el-paper-arxiv260404952"><strong>Respuesta a P6: Inclusión en el paper (arXiv:2604.04952)</strong></h3>
+<p><strong>Decisión: Incluir con total transparencia en §5 (Lecciones Aprendidas)</strong>
+- <strong>Estructura propuesta:</strong>
+  ```markdown
+  ### 5.3 Limitaciones y Lecciones del Proceso de Hardening</p>
+<p>Durante la implementación de ADR-037, descubrimos dos limitaciones críticas en nuestro proceso:</p>
+<ol>
+<li>
+<p><strong>Falta de tests de demostración para fixes de producción:</strong></p>
+<ul>
+<li>Los tests de <code>safe_path</code> cubrían la librería, pero no verificaban que los componentes la usaran correctamente.</li>
+<li><strong>Lección:</strong> Ahora exigimos que <em>todo fix de seguridad</em> tenga un test de integración que demuestre el ataque y su mitigación.</li>
+<li><em>Ejemplo:</em> El fallo en <code>rag-ingester</code> se descubrió en build, no en test. Esto violaba el principio RED→GREEN.</li>
+</ul>
+</li>
+<li>
+<p><strong>Asimetría entre entornos de desarrollo y producción:</strong></p>
+<ul>
+<li>Los paths en desarrollo eran relativos (<code>config/</code>), mientras que en producción eran absolutos (<code>/etc/ml-defender/</code>).</li>
+<li><strong>Solución:</strong> Usamos symlinks en dev para simular la estructura de producción, eliminando la asimetría.</li>
+</ul>
+</li>
+</ol>
+<p>Estas lecciones refuerzan nuestra metodología:
+  - <strong>Tests de demostración &gt; Tests de regresión</strong> para seguridad.
+  - <strong>Entornos simétricos</strong> para evitar sorpresas en producción.
+  ```
+- <strong>Beneficio:</strong>
+    - <strong>Fortalece la credibilidad</strong> del paper: muestra honestidad y mejora continua.
+    - <strong>Diferencia aRGus</strong> de otros proyectos: pocos documentos sus limitaciones con este nivel de detalle.</p>
+<hr />
+<h3 id="resumen-de-acciones-inmediatas"><strong>Resumen de Acciones Inmediatas</strong></h3>
+<ol>
+<li><strong>Implementar tests para F17 (Opción A + C).</strong></li>
+<li><strong>Crear tests de integración para <code>seed_client</code>, <code>config_loader</code>, <code>config_parser</code>.</strong></li>
+<li><strong>Añadir test para paths relativos en <code>test_safe_path.cpp</code>.</strong></li>
+<li><strong>Refinar <code>.gitignore</code> para excluir solo binarios de test.</strong></li>
+<li><strong>Configurar symlinks en dev para eliminar asimetría con producción.</strong></li>
+<li><strong>Investigar <code>test_crypto_transport</code> (DEBT-CRYPTO-TRANSPORT-CTEST-001).</strong></li>
+<li><strong>Ejecutar Snyk web sobre <code>v0.5.1-hardened</code> (DEBT-SNYK-WEB-VERIFICATION-001).</strong></li>
+</ol>
+<hr />
+<h3 id="observacion-final-del-consejo"><strong>Observación Final del Consejo</strong></h3>
+<blockquote>
+<p><em>"Un sistema de seguridad sin tests de demostración es un sistema que confía en su propia buena fe. Hoy habéis dado un paso crítico para convertir la buena fe en certeza verificable. Eso es ingeniería de seguridad real."</em></p>
+</blockquote>
+<p><strong>¿Necesitáis ayuda con la implementación de algún test en concreto?</strong> Estamos aquí para apoyar en código, diseño o revisión.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.top", "search.highlight"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

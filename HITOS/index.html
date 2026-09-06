@@ -1,0 +1,1494 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source embedded-ML NDR for hospitals and schools">
+      
+      
+        <meta name="author" content="Alonso Isidoro Roman">
+      
+      
+        <link rel="canonical" href="https://alonsoir.github.io/argus/HITOS/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>aRGus NDR — Registro histórico (HITOS) - ML Defender (aRGus NDR)</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#argus-ndr-registro-historico-hitos" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="ML Defender (aRGus NDR)" class="md-header__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ML Defender (aRGus NDR)
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              aRGus NDR — Registro histórico (HITOS)
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../README.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../docs/ARCHITECTURE.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../docs/BACKLOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Backlog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../docs/SECURITY_MODEL.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Security Model
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../docs/adr/ADR-013 seed distribution component authentication.md" class="md-tabs__link">
+          
+  
+  
+  ADRs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../docs/contracts/Protobuf contracts.md" class="md-tabs__link">
+          
+  
+  
+  Contracts
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="ML Defender (aRGus NDR)" class="md-nav__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ML Defender (aRGus NDR)
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../README.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/ARCHITECTURE.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/BACKLOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/SECURITY_MODEL.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADRs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ADRs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/adr/ADR-013 seed distribution component authentication.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013 Seed Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/adr/ADR-021-deployment-topology-seed-families.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-021 Topology SSOT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/adr/ADR-022-threat-model-opcion2-descartada.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-022 Threat Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/contracts/Protobuf contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protobuf
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/contracts/JSON contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JSON
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/contracts/Rag security commands.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#hitos-day-201-204-eslabon-0-cerrado-33-emecas-circuito-bronce-kuzu" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Hitos DAY 201-204 — Eslabon 0 CERRADO (3/3) + emecas+++ (circuito bronce-&gt;Kuzu)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#hitos-day-195-forense-del-detector-de-ransomware-spec-de-laboratorio" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Hitos DAY 195 — Forense del detector de ransomware + spec de laboratorio
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#estado-de-proyecto-snapshot-day-211-historico" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Estado de proyecto — snapshot DAY 211 (histórico)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#hitos-day-191-h-2-nucleo-2-cerrado-h-2-completa-cwe-93-ipset-comment-injection" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Hitos DAY 191 — H-2 NÚCLEO 2 CERRADO · H-2 COMPLETA (CWE-93 ipset comment injection)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#hitos-day-188-190-auditoria-de-deuda-de-seguridad-del-firewall" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Hitos DAY 188-190 — Auditoría de deuda de seguridad del firewall
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#hitos-day-184-flushflushresult-batch-transaccional-consejo-del-banco-de-tortura" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Hitos DAY 184 — flush()→FlushResult + batch transaccional + Consejo del banco de tortura
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#hitos-day-182-smoke-b1-d1d2-resueltas-por-medicion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Hitos DAY 182 — Smoke B1: D1+D2 resueltas por medición
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#hitos-day-177-contrato-bronce-correlation_v1-en-forma-final-injectors-sellados-e2e" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Hitos DAY 177 — Contrato bronce correlation_v1 en forma final + injectors sellados E2E
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#hitos-day-175-zona-bronce-correlation_v1-cableada-y-verificada-e2e" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Hitos DAY 175 — Zona bronce correlation_v1 CABLEADA y verificada E2E
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#hitos-day-173-adr-051-v22-adr-052-v32-ratificadas-consejo-88" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Hitos DAY 173 — ADR-051 v2.2 + ADR-052 v3.2 RATIFICADAS (Consejo 8/8)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#hitos-day-171-cross-check-e2e-community_id-paridad-operacional-demostrada" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Hitos DAY 171 — Cross-check E2E community_id: paridad OPERACIONAL demostrada
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#hitos-day-170-community_id-cross-sensor-sellado" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Hitos DAY 170 — community_id cross-sensor sellado
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#hitos-day-168-169-multi-vm-dia-de-arquitectura" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Hitos DAY 168-169 — multi-VM + día de arquitectura
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#hitos-day-163-167-crypto-lifecycle-enterprise" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Hitos DAY 163-167 — crypto lifecycle enterprise
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#hitos-day-154-160-vaultclient-autonomia-firewall-enterprise-plugin" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Hitos DAY 154-160 — VaultClient, autonomía firewall, enterprise plugin
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#hitos-day-149-151-parquet-vault-icryptoprovider" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Hitos DAY 149-151 — Parquet, Vault, ICryptoProvider
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#hitos-day-143-148-irp-variant-ab-experimentos-comparativos" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Hitos DAY 143-148 — IRP, Variant A/B, experimentos comparativos
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#tres-variantes-del-pipeline-historico" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Tres variantes del pipeline (histórico)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#metricas-validadas-snapshot-historico-day-145-148" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Métricas validadas (snapshot histórico DAY 145-148)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Métricas validadas (snapshot histórico DAY 145-148)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#security-hardening-capabilities-historico" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Security hardening — capabilities (histórico)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#milestones-historico-day-111-204" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Milestones (histórico DAY 111-204)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#consejo-de-sabios-multi-model-peer-review" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Consejo de Sabios — Multi-Model Peer Review
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="argus-ndr-registro-historico-hitos">aRGus NDR — Registro histórico (HITOS)</h1>
+<blockquote>
+<p><strong>Qué es este fichero.</strong> El diario de ingeniería día a día del proyecto, rescatado del
+README cuando este se reescribió como puerta al paper (DAY 253). <strong>No es el estado actual
+del pipeline.</strong></p>
+<p>Las cifras aquí reflejan el entendimiento de <em>cada día</em>; muchas fueron matizadas o corregidas
+después. En particular: el <strong>F1 = 0.9985</strong> que aparece repetido abajo se ancló más tarde al
+<strong>subconjunto conductual de 646 flujos</strong> de CTU-13 Neris, y el cuadro operativo honesto es el
+<strong>sesgo por-lente</strong> (Zeek 99.9% / Suricata 1.5% / aRGus lente gruesa con el ML ciego y el
+fast-path llevando la detección) — ver el paper (arXiv:2604.04952) y el README actual. Léase
+como historia, no como aserción vigente.</p>
+</blockquote>
+<hr />
+<h2 id="hitos-day-201-204-eslabon-0-cerrado-33-emecas-circuito-bronce-kuzu">Hitos DAY 201-204 — Eslabon 0 CERRADO (3/3) + emecas+++ (circuito bronce-&gt;Kuzu)</h2>
+<ul>
+<li><strong>Eslabon 0 completo.</strong> DAY 201-202 cierran <code>DEBT-CONFIG-BRONZE-HARDCODE-001</code> (writer+reader
+  derivan <code>bronze_root</code>/<code>base_dir</code> de JSON). DAY 203 cierra <code>DEBT-CIRCUIT-BRONZE-ROTATION-FOLLOW-001</code>:
+  bronce segmentado con escritura atomica <code>.tmp</code>-&gt;rename + <code>BronzeDirWatcher</code> (inotify puro,
+  <code>IN_MOVED_TO</code>) en el reader — verificado en EMECAS++ real, cero fallos de rename bajo carga.</li>
+<li><strong><code>DEBT-CORRELATION-ROUNDTRIP-ORPHANED-001</code> CERRADA por medicion (DAY 204).</strong> La causa raiz no
+  era la sospechada (add_test ausente) sino cache de CMake sin reconfigurar + <code>Stats::current_file</code>
+  devolviendo el <code>.tmp</code> en curso en vez del path final post-rename. Fix: campo nuevo
+  <code>Stats::current_final_path</code>. 4/4 PASSED contra el bronce segmentado real.</li>
+<li><strong><code>emecas+++</code> — circuito completo bronce-&gt;Kuzu (ADR-058 §1), DAY 204.</strong> <code>process_segment</code>
+  extraida de <code>main.cpp</code> a funcion compartida (<code>segment_processor.{hpp,cpp}</code>) — mismo codigo en
+  produccion y en el test nuevo, cero reimplementacion. <code>test_bronze_to_kuzu_circuit.cpp</code>: circuito
+  completo en un proceso, FS puro — <code>CorrelationWriter</code> real -&gt; bronce -&gt; <code>process_segment</code> real -&gt;
+  <code>KuzuGraphSink</code> real -&gt; <code>MATCH</code> en Kuzu, mas el caso adverso (HMAC roto nunca llega al grafo).
+  Target <code>emecas+++</code> en el Makefile (alias de <code>emecas++</code> por ahora, hueco formado para Eslabon 1).
+  EMECAS++ completo ejecutado en <code>main</code> tras el merge — pipeline 6/6 RUNNING confirmado.</li>
+</ul>
+<h2 id="hitos-day-195-forense-del-detector-de-ransomware-spec-de-laboratorio">Hitos DAY 195 — Forense del detector de ransomware + spec de laboratorio</h2>
+<ul>
+<li><strong>DEBT-RANSOMWARE-MODEL-DESYNC-001 DIRIMIDA por medición.</strong> <code>5bbddd11</code> reentrenó pero de forma estructuralmente equivalente a un reescalado: <code>feature[]</code> y <code>children_left[]</code> idénticos en los 100 árboles entre <code>830b0ec0</code> y <code>5bbddd11</code>, solo cambian los thresholds (MinMaxScaler afín monótona, <code>random_state=42</code> intacto). <strong>Un único modelo.</strong> <code>feature_importances</code> válidos para el desplegado; el veto de <code>model_info</code> en el paper se estrecha a <em>rendimiento</em>, no a importancias. Acción pendiente: regenerar header desde el JSON canónico de <code>5bbddd11</code> (tras verificar la escala de features en producción).</li>
+<li><strong>DEBT-RANSOMWARE-ML-HEAD-INERT-001 abierta (P1, pre-producción).</strong> La cabeza ML de ransomware es no funcional en red por SEMANTICS-001 (feature[1] = varianza long. paquete/1e5 vs entropía Shannon de fichero). El sistema detecta vía <code>fast</code> path; <code>ml</code> deprimido (~0.14). Bloquea fiarse de plugins ensemble. Reentreno diferido a post-circuito, contra ground truth de red.</li>
+<li><strong>LAB-RANSOMWARE-FIRETEST-SPEC creada</strong> — <code>docs/experiments/LAB-RANSOMWARE-FIRETEST-SPEC.md</code>. Diseño de laboratorio para detonar ransomware real y medir detección. H1 registrada con fecha. E1 (detección, víctimas x86) y E2 (port ARM64, ejecutable ya) separados. Ejecución pendiente de hardware.</li>
+<li><strong>Decisión Alonso DAY 195:</strong> terminar el circuito completo (adapters/LZ/Arrow medallion/Kuzu/grafo) asumiendo la inferencia ML rota/incompleta. El reentreno es posterior, con microscopio afinado. "Es mejor saberlo que ignorarlo."</li>
+</ul>
+<h2 id="estado-de-proyecto-snapshot-day-211-historico">Estado de proyecto — snapshot DAY 211 (histórico)</h2>
+<table>
+<thead>
+<tr>
+<th>Campo</th>
+<th>Valor</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>DAY</td>
+<td>211</td>
+</tr>
+<tr>
+<td>Tag</td>
+<td>v1.0.0-day191</td>
+</tr>
+<tr>
+<td>Branch</td>
+<td>docs/day211-verdict-debts</td>
+</tr>
+<tr>
+<td>EMECAS++ OSS</td>
+<td>verde — test-all + test-e2e-synthetic-full + test-e2e-synthetic-firewall</td>
+</tr>
+<tr>
+<td>EMECAS++ Enterprise</td>
+<td>VERDE — 3 actos + Jenkins gate (DAY 167)</td>
+</tr>
+<tr>
+<td>Pipeline</td>
+<td>6/6 RUNNING</td>
+</tr>
+<tr>
+<td>H-1 Cypher</td>
+<td>mitigada (prepared statements ADR-057, path ejecutado Kuzu)</td>
+</tr>
+<tr>
+<td>H-2 ipset (NÚCLEO 1+3)</td>
+<td>DAY 189 (<code>0db706c8</code>) — set_name validado + shell eliminado</td>
+</tr>
+<tr>
+<td>H-2 comment (NÚCLEO 2)</td>
+<td>DAY 191 — <code>comment</code> rechaza <code>\n</code>/<code>"</code>/<code>\</code> fail-fast. CWE-93. <strong>H-2 COMPLETA</strong></td>
+</tr>
+<tr>
+<td>CWE-78 autonomy.whitelist_cidrs</td>
+<td>DAY 190 — <code>parse_autonomy</code> valida CIDR fail-fast</td>
+</tr>
+<tr>
+<td>Consejo de Sabios</td>
+<td>8/8 — Claude, Grok, ChatGPT, DeepSeek, Qwen, Gemini, Kimi, Mistral</td>
+</tr>
+<tr>
+<td>Arquitectura</td>
+<td>ADR-046 v4 · ADR-052 v3.2 · ADR-051 v2.2 · ADR-055 v1 · ADR-057 v2</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>Nota DAY 187 — B4 cerrada: árbitro <code>build_row</code> BORRADO (Camino A).</strong> <code>write_record</code> pasa
+por <code>to_correlation_v1_row</code> + <code>serialize</code> (notario único P3). <code>build_row</code>, <code>compute_hmac</code>,
+<code>fmt_double</code>, <code>csv_string</code> y <code>test_correlation_v1_oracle</code> RETIRADOS. Validación: fuzz
+diferencial contra el oráculo vivo <strong>240.810 runs / 61s, cero divergencias</strong> (pre-borrado) +
+<code>test_correlation_roundtrip</code> verde + golden recongelado <code>WRITTEN=24 SKIPPED=1 REJECTED=2
+mismatches=0</code> + grep de cierre <code>build_row|compute_hmac</code> = 0 + EMECAS++ 3 actos verdes.
+<code>DEBT-CORRELATION-V1-EXTRACT-B4-REWIRE-001</code> CERRADA.</p>
+<p><strong>Nota DAY 185 — claim honesto de la extracción <code>libcorrelation_v1</code>:</strong> Extracción de la capa de
+serialización del contrato <code>correlation_v1</code> a librería compartida, <strong>verificada byte-idéntica</strong>
+contra el oráculo <code>build_row</code> sobre <strong>27 vectores enumerados y bajo locale classic</strong>. Salvedades:
+equivalencia general acotada por enumeración (no probada); golden en classic; <code>\n</code> embebido rompe
+readers <code>getline</code> (DEBT-BRONZE-EMBEDDED-NEWLINE-001); guard de enum desconocido diferido; identidad
+cross-productor cubre cols 0-17, col 18 (HMAC) depende de política de claves.</p>
+</blockquote>
+<h2 id="hitos-day-191-h-2-nucleo-2-cerrado-h-2-completa-cwe-93-ipset-comment-injection">Hitos DAY 191 — H-2 NÚCLEO 2 CERRADO · H-2 COMPLETA (CWE-93 ipset comment injection)</h2>
+<ul>
+<li><strong>H-2 NÚCLEO 2 CERRADO Y PROBADO</strong> — campo <code>comment</code> de <code>IPSetWrapper::add_batch</code>. Inyección <strong>CWE-93</strong> (newline/quote) DEMOSTRADA sobre Debian 12 Bookworm <strong>ipset v7.17</strong>: el payload cierra el token con <code>"</code> y abre línea nueva con <code>\n</code> → inyectó la entrada en el set. La línea inyectada puede ser <code>flush</code>/<code>destroy</code> → vaciar la blocklist entera con un comentario.<ul>
+<li><strong>Mitigación (allowlist fail-fast):</strong> <code>include/firewall/comment_validator.hpp</code> — <code>is_valid_comment()</code> rechaza control chars, <code>"</code> y <code>\</code>, longitud ≤255. Cableado en <code>add_batch</code> → <code>IPSetErrorCode::INVALID_COMMENT</code>.</li>
+<li><strong>Lección transversal:</strong> la indulgencia del parser de <code>ipset</code> DIFIERE entre versiones → la defensa vive en la frontera C++, nunca delegada en <code>ipset</code>.</li>
+<li><strong>Tests:</strong> 6 GTest <code>CommentValidator.*</code> + canario e2e <code>IPSetWrapperTest.CommentInjectionRejected</code>. <strong>79/79 sin root</strong> (73→79); canario <strong>7/7 con sudo</strong>. <strong>H-2 COMPLETA</strong> (NÚCLEO 1+2+3).</li>
+</ul>
+</li>
+</ul>
+<h2 id="hitos-day-188-190-auditoria-de-deuda-de-seguridad-del-firewall">Hitos DAY 188-190 — Auditoría de deuda de seguridad del firewall</h2>
+<ul>
+<li><strong>H-2 NÚCLEO 1+3 CERRADO (DAY 189, <code>0db706c8</code>)</strong> — <code>set_name</code> validado + shell eliminado, <code>safe_exec</code>, 0 focos de shell.</li>
+<li><strong>CWE-78 autonomy.whitelist_cidrs CERRADO Y PROBADO (DAY 190, <code>68ab3eb9</code>)</strong> — <code>parse_autonomy</code> valida cada CIDR (<code>throw</code> fail-fast). <code>is_valid_ip_cidr</code> extraído a <code>firewall/ip_cidr_validator.hpp</code>.<ul>
+<li><strong>Tests:</strong> 4 GTest de inyección + 1 standalone (29 asserts). <strong>73/73</strong>, cero regresión.</li>
+<li><strong>system() interino:</strong> silenciado con <code>nosemgrep</code> PEGADO al <code>return</code> → <code>DEBT-AUTONOMY-REACTOR-SAFEEXEC-002</code>.</li>
+</ul>
+</li>
+<li><strong>EMECAS++ 3 actos verde · PR #103 → main <code>395ee014</code>.</strong></li>
+</ul>
+<h2 id="hitos-day-184-flushflushresult-batch-transaccional-consejo-del-banco-de-tortura">Hitos DAY 184 — flush()→FlushResult + batch transaccional + Consejo del banco de tortura</h2>
+<ul>
+<li><strong><code>IGraphSink::flush()</code> deja de devolver <code>void</code> → <code>FlushResult</code></strong> (<code>{bool ok; uint64_t rows_flushed; uint64_t rows_pending; explicit operator bool}</code>). <code>[[nodiscard]]</code> sobre el TIPO → ningún sink puede descartar en silencio el fallo de durabilidad bajo <code>-Werror</code>. <code>main.cpp</code>: flush fallido → <code>EXIT_FAILURE</code>. Commit <code>4e221ede</code>.</li>
+<li><strong><code>KuzuGraphSink</code> cableado en batch.</strong> <code>flush()</code> ejecuta el batch en UNA transacción: <code>BEGIN</code>/loop <code>execute(prepared)</code>/<code>COMMIT</code>; <code>ROLLBACK</code> + buffer retenido en fallo. <strong>Cierra H-1 en el path EJECUTADO de Kuzu.</strong> Commit <code>112b9df1</code>.</li>
+<li><strong>VERIFY-3 — test de agrupación transaccional.</strong> COMMIT → 2 nodos durables; ROLLBACK → 0. 6/6 verde.</li>
+<li><strong>API Kuzu 0.11.3 verificada contra el header vendorizado</strong> (NO de memoria): control de transacción por string <code>query("BEGIN"/"COMMIT"/"ROLLBACK")</code>; <code>execute(PreparedStatement*, ...)</code> variádico; <code>common::Value</code> sin ctor desde <code>string_view</code> (materializar a <code>std::string</code>); el header documenta el SIGSEGV de DAY 183.</li>
+<li><strong>Consejo de Sabios (8/8)</strong> — 5 decisiones (medir-primero, Opción B, extraer librería, injector-a-fichero, HMAC=correctitud) aprobadas con condiciones de validez.</li>
+</ul>
+<h2 id="hitos-day-182-smoke-b1-d1d2-resueltas-por-medicion">Hitos DAY 182 — Smoke B1: D1+D2 resueltas por medición</h2>
+<ul>
+<li><strong>D1 — un grafo vs N grafos → UN GRAFO.</strong> run3 (4 writers) midió 373.000 rechazos por la única write-tx, +37% throughput, lectura p99 ×11.37. Multi-writer no escala.</li>
+<li><strong>D2 — Kuzu stock vs fork Vela → KUZU STOCK.</strong> El cuello era el overhead por-<code>query()</code>. <strong>UNWIND batch (1 query = N upserts) da ×55–61.</strong> Vela solo añade writers paralelos = lo que run3 probó que no escala.</li>
+<li><strong>Descomposición:</strong> <code>coste(n)=P+S+n·E</code> → E≈88 µs/fila (MERGE irreducible), P+S≈5.93 ms (fijo, amortizable).</li>
+<li><strong>Corrección honesta (ninguno de los otros 7 modelos la cazó):</strong> el <code>unordered_map::at</code> al reabrir tras crash fue auto-infligido (borrar <code>.kuzu</code> dejando <code>.wal</code> huérfano), NO prueba de recuperación rota.</li>
+<li><strong>Fase 0 del grafo verde (EMECAS DAY 182):</strong> <code>ingested_at</code> + <code>temporal_anomaly</code> + <code>build_cypher(ingested_at_ns)</code>. NO production-readiness — distinción explícita en ADR-057 §7.</li>
+<li><strong><code>correlation-engine</code> y <code>graph-engine</code> separados</strong> por Apache Iceberg.</li>
+</ul>
+<h2 id="hitos-day-177-contrato-bronce-correlation_v1-en-forma-final-injectors-sellados-e2e">Hitos DAY 177 — Contrato bronce <code>correlation_v1</code> en forma final + injectors sellados E2E</h2>
+<ul>
+<li><strong>(B) col 17 <code>authoritative_source</code> → string simbólico.</strong> <code>DetectorSource_Name()</code> en el writer. Round-trip verde + bronce real con <code>150 DETECTOR_SOURCE_ML_PRIORITY</code> + <code>9 DETECTOR_SOURCE_DIVERGENCE</code>.</li>
+<li><strong>node_id sintético — DEBT-INJECTOR-NODEID-001 CERRADA (P0).</strong> <code>flow_uid</code> ya no degenera.</li>
+<li><strong>Proto benigno correlacionable.</strong> El injector ponía <code>protocol_number=rand[1,255]</code> → ~99% no-TCP/UDP → <code>compute_community_id() nullopt</code> → bronce a 0 filas. Fix: coin flip <code>use_tcp</code> gobierna number+name. community_id 0%→100%.</li>
+<li><strong>DEBT-INJECTOR-ROWGAP-001 REENCUADRADA:</strong> el <code>send(dontwait)</code> reproduce la entrega no-garantizada de ZMQ PUSH; INSTRUMENTAR (diff de conjuntos), no re-arquitecturar (ADR-055 §0).</li>
+<li><strong>ADR-055 v1 RATIFICADA (DAY 178)</strong> — Inyectores Sintéticos: fidelidad, determinismo, entrega.</li>
+</ul>
+<h2 id="hitos-day-175-zona-bronce-correlation_v1-cableada-y-verificada-e2e">Hitos DAY 175 — Zona bronce <code>correlation_v1</code> CABLEADA y verificada E2E</h2>
+<ul>
+<li>Cadena completa con datos reales: sniffer eBPF → community_id → ZMQ → ml-detector → bronce → <code>parse_and_verify</code>. <strong>3.712 filas reales</strong>, todas con community_id, una validada con la clave de PRODUCCIÓN de etcd.</li>
+<li><strong>Lección (DEBT-BRONZE-KEY-PROVISIONING-001):</strong> la clave HMAC del bronce es la de etcd <code>/secrets/&lt;componente&gt;</code>, no <code>seed.hex</code>.</li>
+<li><strong>REGLA PERMANENTE:</strong> construir siempre vía <code>make &lt;target&gt;</code> (corre <code>proto</code>, aplica <code>-Werror</code>), nunca <code>cmake</code> directo.</li>
+<li><strong>INVARIANTE:</strong> community_id es el punto de unión con Suricata/Zeek — TODAS las variantes del sniffer deben poblarlo.</li>
+</ul>
+<h2 id="hitos-day-173-adr-051-v22-adr-052-v32-ratificadas-consejo-88">Hitos DAY 173 — ADR-051 v2.2 + ADR-052 v3.2 RATIFICADAS (Consejo 8/8)</h2>
+<ul>
+<li><strong>ADR-051 v2.2</strong> — Community ID Parity Gate &amp; Correlation Health. <strong>Oracle Divergence:</strong> si los sensores coinciden entre sí pero no con <code>pycommunityid</code>, arranca con WARNING crítico, NO fail-closed (N-version); fail-closed reservado a disparidad ENTRE sensores.</li>
+<li><strong>ADR-052 v3.2</strong> — Multi-node Flow Identity &amp; Host↔Net Correlation. §0: <em>"El grafo no es el producto. El producto es el corpus."</em> <code>flow_uid = base64(BLAKE2b(node_id ‖ community_id ‖ flow_start_window [‖ seq_in_window]))</code>; <code>node_id</code> = string legible declarado en inventario firmado; <code>community_id</code> = clave de correlación, nunca identidad.</li>
+<li><strong>ADR-053 stub abierto</strong> — JA3/JA4, cadena TLS profunda, anomalía de ruta L3/BGP.</li>
+</ul>
+<h2 id="hitos-day-171-cross-check-e2e-community_id-paridad-operacional-demostrada">Hitos DAY 171 — Cross-check E2E community_id: paridad OPERACIONAL demostrada</h2>
+<ul>
+<li>El cliente <code>.50</code> replaya el flujo Neris por <code>eth1</code>; aRGus + Suricata + Zeek capturan en paralelo (promiscuo) el MISMO paquete y los tres convergen STRING A STRING a <code>1:IN7uqVpMWxpmuhQTowSQB2XEe0E=</code>.</li>
+<li><strong>aRGus surfacea community_id observable</strong> — <code>sniffer/src/flow/community_id_log.{hpp,cpp}</code>, gateado por <code>ARGUS_CID_CROSSCHECK=1</code> (OFF por defecto, coste nulo en hot path).</li>
+<li><strong>Nota algoritmo:</strong> <code>community_id</code> usa SHA1 (Corelight), no HMAC-SHA256.</li>
+</ul>
+<h2 id="hitos-day-170-community_id-cross-sensor-sellado">Hitos DAY 170 — community_id cross-sensor sellado</h2>
+<ul>
+<li>aRGus (nativo, 8/8 vs oráculo pycommunityid v1.5.0, campo protobuf field 18), Zeek 8.2.0 (<code>@load community-id-logging</code> + <code>seed=0</code>) y Suricata 7.0.10 (<code>community-id:yes</code> + <code>seed:0</code>). Diana E2E <code>1:IN7uqVpMWxpmuhQTowSQB2XEe0E=</code>.</li>
+<li><strong>DEBT-DOCS-BACKLOG-DEDUP-001 CERRADA</strong> — <code>docs/BACKLOG.md</code> corrupto desde DAY 158 (append manual). 5336→2839 líneas.</li>
+</ul>
+<h2 id="hitos-day-168-169-multi-vm-dia-de-arquitectura">Hitos DAY 168-169 — multi-VM + día de arquitectura</h2>
+<ul>
+<li><strong>Vagrantfile multi-VM</strong> — Suricata 7.0.10 + Zeek 8.2.0 + Wazuh 4.x + client en <code>ml_defender_gateway_lan</code> (192.168.100.0/24). 50.248 reglas ET Open. Merge a main <code>21642e87</code>.</li>
+<li><strong>3 reglas permanentes nuevas</strong> — nunca <code>set -e</code> en provisions; DNS fix <code>chattr +i</code> SIEMPRE tras chrony; nunca heredoc <code>cat &lt;&lt; 'EOF'</code> anidado en <code>&lt;&lt;-SHELL</code> (usar <code>printf</code>).</li>
+<li><strong>ADR-046 v4</strong> aprobado (Multi-Source Pipeline). <strong>AdapterSpec v1</strong> cerrado.</li>
+</ul>
+<h2 id="hitos-day-163-167-crypto-lifecycle-enterprise">Hitos DAY 163-167 — crypto lifecycle enterprise</h2>
+<ul>
+<li><strong>DAY 167:</strong> DEBT-ARGUSPP-NTP-001 CERRADA (P0, chrony en todos los nodos). correlation-engine scaffold (ADR-048 F2). Jenkins gate. Merge <code>7b45feca</code>.</li>
+<li><strong>DAY 166:</strong> EMECAS++ 3 actos verdes · merge enterprise a main · Zero downtime demostrado · <strong>Tag v1.0.0-day166</strong>.</li>
+<li><strong>DAY 165:</strong> FASE 3 wire header <code>[uint32_t size][uint16_t epoch_id][2B reserved][LZ4+encrypted]</code>. 13/13 tests.</li>
+<li><strong>DAY 164:</strong> <code>HttpEtcdRegistrar</code> REST real + <code>CryptoEpochCoordinator</code>. 10/10 tests.</li>
+<li><strong>DAY 163:</strong> Modelo B vendor.key efímero por <code>vagrant up</code>. <code>CryptoProviderHandle</code> RCU (<code>std::atomic&lt;shared_ptr&gt;</code>). ADR-045 v2 (Consejo 8/8).</li>
+</ul>
+<h2 id="hitos-day-154-160-vaultclient-autonomia-firewall-enterprise-plugin">Hitos DAY 154-160 — VaultClient, autonomía firewall, enterprise plugin</h2>
+<ul>
+<li><strong>DAY 160:</strong> libvault_provider.so 6/6. Jenkins 2.555.2 + Vault v2.0.1. ADR-048 Dataset Production Roadmap.</li>
+<li><strong>DAY 157:</strong> 4 deudas cerradas (autonomy state persistence firmada Ed25519, bootstrap-status firmado, keypair lifecycle prod, crypto reconciliation + staleness guard). EMECAS VERDE.</li>
+<li><strong>DAY 156:</strong> DEBT-AUTONOMY-CRYPTO-INTEGRATION-001. Fix ZMQ slow joiner (bind antes de connect — regla permanente PUB/SUB). EMECAS VERDE 50/50.</li>
+<li><strong>DAY 155:</strong> cadena <code>argus-autonomy</code> selectiva (lo→ESTABLISHED→CIDRs→DROP→INPUT), whitelist JSON obligatoria. EMECAS HARDENED. Tag <code>v0.9.0-day155</code>.</li>
+<li><strong>DAY 154:</strong> ADR-045 VaultClient decomposition (<code>ICryptoDeriver</code>/<code>IEtcdRegistrar</code>). <code>FirewallAutonomyReactor</code>. Tag <code>v0.8.0-adr045</code>.</li>
+</ul>
+<h2 id="hitos-day-149-151-parquet-vault-icryptoprovider">Hitos DAY 149-151 — Parquet, Vault, ICryptoProvider</h2>
+<ul>
+<li><strong>DAY 151:</strong> ICryptoProvider (<code>SeedFileProvider</code> + <code>VaultProvider</code> + factoría), <code>#ifdef ARGUS_VAULT_ENABLED</code> confinado. etcd-server STEP 0. ADR-045 aprobado. Tag <code>v0.8.0-day151</code>.</li>
+<li><strong>DAY 149:</strong> Schema Arrow v1.0 (ml_detector_events 15 fields + firewall_acl_events 7 fields), 207.122 filas / 53 días, ratio 11-12×. Vault dev mode + K_pseudo prototipo (evidencia GDPR). Ansible+Jinja2 CI/CD. ADR-044. Tag <code>v0.7.2-day149</code>.</li>
+</ul>
+<h2 id="hitos-day-143-148-irp-variant-ab-experimentos-comparativos">Hitos DAY 143-148 — IRP, Variant A/B, experimentos comparativos</h2>
+<ul>
+<li><strong>DAY 148:</strong> Suricata offline irrefutable (<code>suricata -r neris.pcap</code>, 50.010 reglas ET Open, 323.154 paquetes, <strong>0 firmas ET disparadas</strong>). §8.13/§8.14 paper. arXiv replace v19→v23. Tag <code>v0.7.1-day148</code>.</li>
+<li><strong>DAY 147:</strong> Experimento tres paradigmas — Suricata F1=0.000 (TP=0), Zeek F1=0.042 (Prec=1.000, 14 TP <code>SSL::Invalid_Server_Cert</code>), aRGus F1=0.9985 (TP=646). <code>weird.log</code>: Zeek observa IRC/HTTP beaconing/SMB lateral/spam sin alertar. Distinción observabilidad vs detección. Paper v21/v22.</li>
+<li><strong>DAY 146:</strong> Experimento Suricata 6.0.10 vs aRGus (CTU-13 Neris, mismas condiciones): Suricata 0 alertas (ET Open no cubre Neris 2011) vs aRGus F1=0.9985. Paper v20 §8.13.</li>
+<li><strong>DAY 145:</strong> ADR-029 Variant A vs B x86 — libpcap ~2× eBPF en VirtualBox virtio (artefacto SKB mode). Bootstrap múltiple. Paper v19. <strong>Failed packets (2.630):</strong> artefacto fijo del pcap CTU-13 Neris (frames jumbo &gt; MTU 1500 VirtualBox, <code>errno=90 EMSGSIZE</code>), conteo idéntico en los 6 runs — no son errores del pipeline.</li>
+<li><strong>DAY 143-144:</strong> IRP completo (config → fork()+execv() → AppArmor 7/7 enforce → 12/12 tests). SA_NOCLDWAIT. Gate ODR production superado.</li>
+</ul>
+<hr />
+<h2 id="tres-variantes-del-pipeline-historico">Tres variantes del pipeline (histórico)</h2>
+<table>
+<thead>
+<tr>
+<th>Variante</th>
+<th>Estado (DAY 211)</th>
+<th>Descripción</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>aRGus-dev</strong></td>
+<td>Activa (<code>main</code>)</td>
+<td>x86-debug, imagen Vagrant completa. Investigación y desarrollo diario.</td>
+</tr>
+<tr>
+<td><strong>aRGus-production</strong></td>
+<td>En construcción</td>
+<td>x86-apparmor + arm64-apparmor. AppArmor enforce, cap_bpf, Falco, noexec.</td>
+</tr>
+<tr>
+<td><strong>aRGus-seL4</strong></td>
+<td>Research track post-FEDER</td>
+<td>Kernel seL4, libpcap. Reescritura completa. Branch independiente.</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="metricas-validadas-snapshot-historico-day-145-148">Métricas validadas (snapshot histórico DAY 145-148)</h2>
+<blockquote>
+<p>Cifras de la época clasificador-céntrica. El <strong>F1 = 0.9985 es sobre el subconjunto conductual
+de 646 flujos</strong>; el cuadro operativo honesto es el sesgo por-lente del paper v25 y del README actual.</p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th>Metric</th>
+<th>Value</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>F1-score (CTU-13 Neris, subset 646)</td>
+<td>0.9985</td>
+<td>Stable across 4 replay runs</td>
+</tr>
+<tr>
+<td>Precision</td>
+<td>0.9969</td>
+<td></td>
+</tr>
+<tr>
+<td>Recall (subset 646)</td>
+<td>1.0000</td>
+<td></td>
+</tr>
+<tr>
+<td>Suricata 6.0.10 F1 (CTU-13 Neris)</td>
+<td>0.000</td>
+<td>0 alerts — ET Open retired for 2011 threats</td>
+</tr>
+<tr>
+<td>Zeek 8.1.2 F1 (CTU-13 Neris, default)</td>
+<td>0.042</td>
+<td>Precision=1.000, 14 TP (SSL::Invalid_Server_Cert)</td>
+</tr>
+<tr>
+<td>XGBoost Precision (CIC-IDS-2017 val)</td>
+<td>0.9945</td>
+<td>In-distribution, threshold=0.8211</td>
+</tr>
+<tr>
+<td>XGBoost Wednesday OOD</td>
+<td>Documented impossibility</td>
+<td>Structural covariate shift — §8 paper</td>
+</tr>
+<tr>
+<td>Inference latency (XGBoost)</td>
+<td>1.986 µs/sample</td>
+<td>Gate &lt;2µs</td>
+</tr>
+<tr>
+<td>Inference latency (RF)</td>
+<td>0.24–1.06 µs</td>
+<td>Per-class, embedded C++20</td>
+</tr>
+<tr>
+<td>Throughput ceiling (virtualized)</td>
+<td>~33–38 Mbps</td>
+<td>VirtualBox NIC limit, not pipeline</td>
+</tr>
+<tr>
+<td>Stress test</td>
+<td>2,374,845 packets — 0 drops</td>
+<td>100 Mbps requested, loop=3</td>
+</tr>
+<tr>
+<td>RAM (full pipeline)</td>
+<td>~1.28 GB</td>
+<td>Stable under load</td>
+</tr>
+<tr>
+<td>BSR — Dev VM</td>
+<td>719 pkgs / 5.9 GB</td>
+<td>gcc, g++, clang, cmake present</td>
+</tr>
+<tr>
+<td>BSR — Hardened VM</td>
+<td>304 pkgs / 1.3 GB</td>
+<td>NONE (check-prod-no-compiler: OK)</td>
+</tr>
+<tr>
+<td>AppArmor profiles</td>
+<td>6/6 enforce</td>
+<td>cap_bpf (Linux ≥5.8), no cap_sys_admin</td>
+</tr>
+<tr>
+<td>Falco rules</td>
+<td>11 aRGus-specific</td>
+<td>modern_ebpf driver</td>
+</tr>
+</tbody>
+</table>
+<h3 id="security-hardening-capabilities-historico">Security hardening — capabilities (histórico)</h3>
+<table>
+<thead>
+<tr>
+<th>Component</th>
+<th>Capabilities</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>sniffer</td>
+<td><code>cap_net_admin,cap_net_raw,cap_bpf,cap_ipc_lock</code></td>
+</tr>
+<tr>
+<td>firewall-acl-agent</td>
+<td><code>cap_net_admin</code></td>
+</tr>
+<tr>
+<td>etcd-server</td>
+<td><code>cap_ipc_lock</code> (+ LimitMEMLOCK=16M)</td>
+</tr>
+<tr>
+<td>argus-network-isolate</td>
+<td><code>cap_net_admin</code> (AppArmor enforce — DAY 143)</td>
+</tr>
+<tr>
+<td>ml-detector, rag-ingester, rag-security</td>
+<td>none</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="milestones-historico-day-111-204">Milestones (histórico DAY 111-204)</h2>
+<ul>
+<li>DAY 111: arXiv:2604.04952 PUBLICADO</li>
+<li>DAY 113: ADR-025 MERGED — v0.3.0-plugin-integrity</li>
+<li>DAY 118: PHASE 3 COMPLETADA — v0.4.0</li>
+<li>DAY 122: PHASE 4 COMPLETADA — v0.5.0-preproduction</li>
+<li>DAY 124: ADR-037 MERGED</li>
+<li>DAY 129: CWE-78 CERRADO — execv() sin shell</li>
+<li>DAY 130: REGLA EMECAS · libFuzzer 2.4M runs</li>
+<li>DAY 133: ADR-030 Variant A — cap_bpf · AppArmor 6/6 · Falco 10 reglas</li>
+<li>DAY 134: ADR-040 (8/8, 17 enmiendas) · ADR-041 FEDER HW Metrics (8/8)</li>
+<li>DAY 136: v0.9.3-day158-variant-a · merge main</li>
+<li>DAY 137-142: Variant B libpcap · ISP cerrado · 8/8 tests · IRP pasos 1-6</li>
+<li>DAY 143-145: IRP completo · Gate ODR · ADR-029 Variant A vs B · Paper v19</li>
+<li>DAY 146-148: Experimentos comparativos Suricata/Zeek · Paper v20-v23 · arXiv v3</li>
+<li>DAY 149-151: Parquet Arrow · Vault CI/CD · ADR-044 · ICryptoProvider</li>
+<li>DAY 154-157: VaultClient decomposition · autonomía firewall · 4 deudas crypto</li>
+<li>DAY 160-166: enterprise plugin · crypto lifecycle · EMECAS++ 3 actos · Tag v1.0.0-day166</li>
+<li>DAY 167-173: NTP · multi-VM Suricata/Zeek/Wazuh · community_id cross-sensor · ADR-051/052</li>
+<li>DAY 182-204: smoke Kuzu (un grafo, UNWIND ×55-61) · Fase 0 grafo · auditoría seguridad H-1/H-2 · Eslabon 0 · emecas+++</li>
+</ul>
+<hr />
+<h2 id="consejo-de-sabios-multi-model-peer-review">Consejo de Sabios — Multi-Model Peer Review</h2>
+<p><strong>Claude</strong> (Anthropic) · <strong>Grok</strong> (xAI) · <strong>ChatGPT</strong> (OpenAI) · <strong>DeepSeek</strong> · <strong>Qwen</strong> (Alibaba) · <strong>Gemini</strong> (Google) · <strong>Kimi</strong> (Moonshot) · <strong>Mistral</strong></p>
+<p>Metodología: desacuerdo estructurado. Documentado en §6 del preprint.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.tabs", "navigation.top", "search.highlight"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

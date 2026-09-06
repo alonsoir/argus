@@ -1,0 +1,887 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source embedded-ML NDR for hospitals and schools">
+      
+      
+        <meta name="author" content="Alonso Isidoro Roman">
+      
+      
+        <link rel="canonical" href="https://alonsoir.github.io/argus/council/Convocatoria%20Consejo%20de%20Sabios%20%E2%80%94%20ADR-037-respuesta-grok/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>Convocatoria Consejo de Sabios — ADR 037 respuesta grok - ML Defender (aRGus NDR)</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-header__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ML Defender (aRGus NDR)
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Convocatoria Consejo de Sabios — ADR 037 respuesta grok
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../README.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/BACKLOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Backlog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Security Model
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-tabs__link">
+          
+  
+  
+  ADRs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/contracts/Protobuf contracts.md" class="md-tabs__link">
+          
+  
+  
+  Contracts
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-nav__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ML Defender (aRGus NDR)
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../README.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/BACKLOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADRs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ADRs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013 Seed Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-021-deployment-topology-seed-families.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-021 Topology SSOT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-022-threat-model-opcion2-descartada.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-022 Threat Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Protobuf contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protobuf
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/JSON contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JSON
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Rag security commands.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+  <h1>Convocatoria Consejo de Sabios — ADR 037 respuesta grok</h1>
+
+<p><strong>MODELO: Grok (Consejo de Sabios — DAY 123)</strong></p>
+<p><strong>P1:</strong> ACEPTO <code>weakly_canonical</code> para los casos de escritura.<br />
+<code>weakly_canonical</code> es la elección correcta y más segura en este contexto. <code>canonical</code> fallaría legítimamente en paths de escritura a ficheros aún inexistentes (común en configs o seeds generadas en provisioning), forzando workarounds frágiles que aumentarían la superficie de ataque o complejidad. La implementación propuesta (<code>resolve</code> + <code>resolve_writable</code> con comprobación explícita del directorio padre) mitiga los riesgos de symlinks y <code>..</code> sin introducir TOCTOU innecesario en el flujo principal. Es consistente con recomendaciones estándar de sanitización en C++ para prevenir CWE-23 (path traversal). No propongo alternativa: esta es mínima, zero-dependencias y suficiente para la superficie actual.</p>
+<p><strong>P2:</strong> ACEPTO granularidad por componente.<br />
+Más granularidad = más restricción = menor superficie de ataque. Usar prefijos específicos (<code>/etc/ml-defender/keys/</code> para material criptográfico, <code>/etc/ml-defender/</code> para configs generales) es preferible a un prefijo único <code>/etc/ml-defender/</code>. La semilla ChaCha20 merece aislamiento extra; un traversal que escape a <code>/keys/</code> es mucho más crítico que a un config genérico. El coste de mantenimiento es bajo (unos pocos strings en llamadas a <code>resolve()</code>) y el beneficio en defensa en profundidad es alto, especialmente bajo AppArmor. Un prefijo único simplificaría, pero relajaría la política precisamente donde más importa.</p>
+<p><strong>P3:</strong> MISMO estándar para contrib/tools.<br />
+Aplica el mismo <code>safe_path::resolve()</code> (con prefijo <code>/shared/</code> o <code>/vagrant/</code> según entorno). Aunque contrib/tools no corran en producción ni bajo AppArmor, aplicar el estándar uniformemente:
+- Forma hábito defensivo en todo el equipo.
+- Evita bifurcación de políticas (“aquí sí, allá no”).
+- Simplifica code review y futuro refactoring (si una tool se promociona a producción).<br />
+  El riesgo operacional es bajo, pero el coste de aplicar el header-only es prácticamente cero. Documentad la diferencia de riesgo, pero no relajéis el enforcer.</p>
+<p><strong>P4:</strong> ACEPTO FP — no modificar código.<br />
+El análisis propio es correcto: <code>n</code> proviene de <code>read()</code> con buffer fijo de 4096 bytes, por lo que <code>ptr &lt; buf + n</code> nunca puede desbordar en la práctica (el puntero <code>ptr</code> avanza dentro del buffer acotado). Snyk no traza el origen de <code>n</code> hasta su bound real, generando un falso positivo clásico en análisis estático. No veo vector de ataque viable aquí (no hay input externo arbitrario que controle <code>n</code> más allá del tamaño del read). Documentad la justificación en el ADR (incluyendo el bound <code>BUF_SIZE</code>) y cerrad el finding sin cambio de código. Segunda pasada Snyk post-fix debe confirmar 0 findings reales en producción.</p>
+<p><strong>OBSERVACIONES ADICIONALES:</strong>
+- La solución <code>safe_path</code> es excelente: header-only, cero dependencias externas, rechazo explícito con mensaje claro, y <code>resolve_writable</code> añade capa extra para escritura. Refuerza el principio “superficie mínima es la superficie más segura”.
+- Añadid como regla permanente en code review: “Cualquier nuevo <code>std::ifstream</code>/<code>ofstream</code> con input no-constante debe pasar por <code>argus::safe_path::resolve()</code>”.
+- El fix del integer overflow (cast a <code>int64_t</code>) es correcto y suficiente.
+- Este ADR cierra limpiamente los 17 findings de Snyk sin inflar la superficie de ataque. Una vez mergeado, ADR-036 (Formal Verification Baseline) puede avanzar sin bloqueo.
+- Recomendación menor: en <code>resolve()</code>, normalizad también el <code>allowed_prefix</code> con <code>weakly_canonical</code> para consistencia (evita discrepancias de trailing slash).</p>
+<p>Veredicto global: <strong>APROBADO</strong>. Merge a <code>feature/adr037-snyk-hardening</code> autorizado una vez implementados los pasos 1-6 del plan y tests PASSED. Esto endurece el pipeline de forma pragmática y mantiene <strong>Via Appia Quality</strong>: seguro, mantenible y pequeño.</p>
+<p><em>Via Appia Quality — la superficie mínima es la superficie más segura.</em></p>
+<p>Consejo listo para el siguiente paso (ADR-036 o cierre de DEBT-PRECISION-GATE-001 residual). ¿Queréis ayuda revisando el <code>test_safe_path.cpp</code> o el párrafo de documentación de FPs en el ADR?</p>
+<p><strong>MODELO: Grok (Consejo de Sabios — DAY 123)</strong></p>
+<p><strong>P1:</strong> ACEPTO <code>weakly_canonical</code> para los casos de escritura.<br />
+<code>weakly_canonical</code> es la opción correcta y más práctica. <code>canonical</code> lanzaría excepción en paths de escritura a ficheros que aún no existen (caso común en generación de seeds, configs o outputs durante provisioning). La función <code>resolve_writable()</code> ya añade la comprobación explícita del directorio padre, lo que mitiga riesgos adicionales sin introducir TOCTOU innecesario en el flujo principal. Es consistente con el principio de minimización de superficie y resuelve el problema real de path traversal (CWE-23) sin complicaciones artificiales. No propongo alternativa: esta es limpia, zero-dependencias y suficiente.</p>
+<p><strong>P2:</strong> ACEPTO granularidad por componente.<br />
+La granularidad propuesta es correcta y preferible.
+- <code>/etc/ml-defender/keys/</code> para material criptográfico (seed ChaCha20) ofrece aislamiento extra donde más importa.
+- <code>/etc/ml-defender/</code> para configs generales es suficiente para el resto.</p>
+<p>Un prefijo único <code>/etc/ml-defender/</code> simplificaría el código, pero reduciría la defensa en profundidad precisamente en el punto más sensible (la seed). El coste de mantenimiento es mínimo (solo strings en las llamadas a <code>resolve()</code>), mientras que el beneficio en seguridad es tangible bajo AppArmor. Más restricción = mejor.</p>
+<p><strong>P3:</strong> MISMO estándar para contrib/tools.<br />
+Aplica el <strong>mismo estándar</strong> (<code>safe_path::resolve()</code> con prefijo <code>/shared/</code> o <code>/vagrant/</code>).<br />
+Aunque contrib y tools no corran en producción ni bajo AppArmor, aplicar la misma política:
+- Forma hábito defensivo en todo el equipo.
+- Evita bifurcación de reglas (“aquí enforzamos, allá no”).
+- Facilita futuras promociones de código de contrib a producción.<br />
+  El overhead es prácticamente nulo (header-only). Documentad la diferencia de riesgo operacional, pero no relajéis el enforcer.</p>
+<p><strong>P4:</strong> ACEPTO FP — no modificar código.<br />
+Acepto el veredicto de falso positivo en los findings inotify (F15/F16).<br />
+<code>n</code> proviene directamente de <code>read()</code> con un buffer fijo de <code>BUF_SIZE = 4096</code>, por lo que el puntero <code>ptr</code> nunca puede avanzar más allá del buffer asignado. Snyk no realiza el rastreo completo del valor de <code>n</code> hasta su bound real, generando un warning clásico de análisis estático. No identifico ningún vector de ataque viable que invalide este análisis (no hay input externo arbitrario capaz de controlar <code>n</code> más allá del tamaño devuelto por <code>read()</code>).</p>
+<p>Documentad la justificación en el ADR (incluyendo el bound explícito de <code>BUF_SIZE</code>) y cerrad el finding sin tocar el código. La segunda pasada de Snyk debe confirmar 0 findings reales en la superficie de producción.</p>
+<p><strong>OBSERVACIONES ADICIONALES:</strong>
+- La utilidad <code>safe_path</code> es una solución elegante y alineada con <strong>Via Appia Quality</strong>: header-only, cero dependencias externas, rechazo explícito con mensaje claro y <code>resolve_writable</code> como capa adicional. Rechazar correctamente las sugerencias de Snyk (librerías pesadas y fuera de contexto) fue la decisión correcta.
+- Añadid como regla permanente en el checklist de code review: “Cualquier nuevo uso de <code>std::ifstream</code> / <code>std::ofstream</code> con input no-constante en código de producción <strong>debe</strong> pasar por <code>argus::safe_path::resolve()</code> o <code>resolve_writable()</code> según corresponda.”
+- El fix del integer overflow con casts explícitos a <code>int64_t</code> es correcto y suficiente.
+- Una vez implementados los pasos 1-6 del plan y pasados los tests, este ADR puede mergearse sin bloqueos. ADR-036 (Formal Verification Baseline) queda desbloqueado.</p>
+<p><strong>Veredicto global:</strong> <strong>APROBADO</strong>.<br />
+Merge a <code>feature/adr037-snyk-hardening</code> autorizado una vez completado el plan de implementación y verificado que la segunda pasada de Snyk muestre 0 findings en código de producción.</p>
+<p>Esto endurece la superficie de ataque de forma pragmática, mantiene el pipeline pequeño y seguro, y protege realmente los entornos críticos (hospitales, escuelas, municipios) para los que se diseñó aRGus.</p>
+<p><em>Via Appia Quality — la superficie mínima es la superficie más segura.</em></p>
+<p>Consejo listo. ¿Quieres que revise el <code>test_safe_path.cpp</code> propuesto, ayude a redactar la documentación de los FPs en el ADR, o pasamos directamente al siguiente paso (ADR-036)?</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.top", "search.highlight"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

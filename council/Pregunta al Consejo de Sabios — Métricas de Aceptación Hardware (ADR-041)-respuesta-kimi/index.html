@@ -1,0 +1,1478 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source embedded-ML NDR for hospitals and schools">
+      
+      
+        <meta name="author" content="Alonso Isidoro Roman">
+      
+      
+        <link rel="canonical" href="https://alonsoir.github.io/argus/council/Pregunta%20al%20Consejo%20de%20Sabios%20%E2%80%94%20M%C3%A9tricas%20de%20Aceptaci%C3%B3n%20Hardware%20%28ADR-041%29-respuesta-kimi/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>Pregunta al Consejo de Sabios — Métricas de Aceptación Hardware (ADR 041) respuesta kimi - ML Defender (aRGus NDR)</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#kimi-respuesta-al-consejo-de-sabios-metricas-de-aceptacion-hardware-adr-029" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-header__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ML Defender (aRGus NDR)
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Pregunta al Consejo de Sabios — Métricas de Aceptación Hardware (ADR 041) respuesta kimi
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../README.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/BACKLOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Backlog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Security Model
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-tabs__link">
+          
+  
+  
+  ADRs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/contracts/Protobuf contracts.md" class="md-tabs__link">
+          
+  
+  
+  Contracts
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-nav__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ML Defender (aRGus NDR)
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../README.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/BACKLOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADRs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ADRs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013 Seed Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-021-deployment-topology-seed-families.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-021 Topology SSOT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-022-threat-model-opcion2-descartada.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-022 Threat Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Protobuf contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protobuf
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/JSON contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JSON
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Rag security commands.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#kimi-respuesta-al-consejo-de-sabios-metricas-de-aceptacion-hardware-adr-029" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Kimi — Respuesta al Consejo de Sabios — Métricas de Aceptación Hardware (ADR-029)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Kimi — Respuesta al Consejo de Sabios — Métricas de Aceptación Hardware (ADR-029)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#marco-metodologico-previo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Marco metodológico previo
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#p1-throughput-minimo-para-hospitalmunicipio" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        P1 — Throughput mínimo para hospital/municipio
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#p2-delta-variant-a-ebpfxdp-vs-variant-b-libpcap" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        P2 — Delta Variant A (eBPF/XDP) vs Variant B (libpcap)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#p3-armraspberry-pi-mismas-metricas-o-perfil-diferente" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        P3 — ARM/Raspberry Pi: ¿mismas métricas o perfil diferente?
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#p4-golden-set-como-metrica-hardware" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        P4 — Golden set como métrica hardware
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#p5-herramienta-de-generacion-de-carga-reproducible" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        P5 — Herramienta de generación de carga reproducible
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#p6-criterio-de-exito-para-feder-funciona-o-es-mejor-que-x" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        P6 — Criterio de éxito para FEDER: ¿funciona o es mejor que X?
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tabla-consolidada-de-metricas-de-aceptacion-adr-029" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Tabla consolidada de métricas de aceptación ADR-029
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#resumen-de-posiciones-kimi" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Resumen de posiciones — Kimi
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+  <h1>Pregunta al Consejo de Sabios — Métricas de Aceptación Hardware (ADR 041) respuesta kimi</h1>
+
+<h2 id="kimi-respuesta-al-consejo-de-sabios-metricas-de-aceptacion-hardware-adr-029">Kimi — Respuesta al Consejo de Sabios — Métricas de Aceptación Hardware (ADR-029)</h2>
+<p><em>Evaluación bajo criterios de reproducibilidad experimental, restricciones económicas institucionales y rigor metrológico.</em></p>
+<hr />
+<h3 id="marco-metodologico-previo">Marco metodológico previo</h3>
+<p>Antes de responder las 6 preguntas, establezco los principios que gobiernan esta evaluación:</p>
+<ol>
+<li><strong>La métrica debe ser observable y reproducible.</strong> Si dos laboratorios independientes no pueden obtener el mismo valor con el mismo procedimiento, no es una métrica de aceptación.</li>
+<li><strong>El baseline debe reflejar el peor caso operacional, no el caso promedio.</strong> Un hospital no acepta "funciona el 95% del tiempo".</li>
+<li><strong>La comparativa con alternativas comerciales es obligatoria para FEDER.</strong> Sin benchmark comparativo, la demo es una demostración técnica, no una propuesta de valor.</li>
+</ol>
+<hr />
+<h3 id="p1-throughput-minimo-para-hospitalmunicipio">P1 — Throughput mínimo para hospital/municipio</h3>
+<p><strong>Recomendación concreta:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Escenario</th>
+<th>Throughput mínimo</th>
+<th>Throughput objetivo FEDER</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Municipio pequeño (&lt;50 usuarios)</td>
+<td>100 Mbps</td>
+<td>500 Mbps</td>
+</tr>
+<tr>
+<td>Hospital general (100-500 usuarios)</td>
+<td>500 Mbps</td>
+<td>1 Gbps</td>
+</tr>
+<tr>
+<td>Hospital de referencia (&gt;500 usuarios, IoT médico)</td>
+<td>1 Gbps</td>
+<td>2.5 Gbps</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Justificación técnica:</strong></p>
+<p>Una NIC Gigabit Ethernet (Intel i210, ~25€) es commodity. El throughput de 1 Gbps no es una aspiración técnica, es el <strong>mínimo que un switch no administrado de 30€ soporta</strong>. Si aRGus no satura 1 Gbps, el cuello de botella es el software, no el hardware.</p>
+<p>El dato de referencia de Mercadona Tech (4.4M búsquedas/semana, p50=12ms) es un benchmark de <strong>aplicación</strong>, no de red. Las búsquedas son operaciones de alto nivel; el throughput de red subyacente puede ser mucho mayor. No es comparable directamente con NDR.</p>
+<p><strong>Riesgo identificado:</strong></p>
+<p>Si fijamos 100 Mbps como métrica de aceptación, un revisor o un hospital podría argumentar que cualquier solución de 2010 ya lo lograba. 1 Gbps es el umbral de credibilidad para una demo en 2026.</p>
+<p><strong>Test mínimo reproducible (Vagrant):</strong></p>
+<pre><code class="language-bash"># Requiere: dos interfaces de red en la VM (eth0 management, eth1 mirror/span)
+# Requiere: tcpreplay con pcap de CTU-13 o iperf3
+
+# 1. Preparar interfaz de test
+sudo ip link set eth1 up
+sudo ethtool -s eth1 speed 1000 duplex full autoneg off  # forzar 1Gbps
+
+# 2. Medir throughput máximo sin aRGus (baseline del sistema)
+iperf3 -s -B 192.168.56.2 &amp;  # servidor en VM
+iperf3 -c 192.168.56.2 -t 60 -P 10  # cliente desde host, 10 flujos paralelos
+# Registrar: [Mbps sender], [Mbps receiver], [Retr], [Cwnd]
+
+# 3. Medir throughput con aRGus pipeline 6/6 RUNNING
+# (sniffer en eth1, ml-detector, firewall, etc.)
+# Repetir iperf3. El delta debe ser &lt;5% del baseline.
+
+# 4. Medir packet loss con tcpreplay
+sudo tcpreplay -i eth1 -t -K /path/to/ctu-13-neris.pcap
+# -t: topspeed (lo más rápido posible)
+# -K: precache para evitar I/O bound
+# Observar: aRGus debe reportar 0% packet loss hasta 1 Gbps.
+# Si hay loss &gt;0.001%, registrar a qué throughput ocurrió.
+</code></pre>
+<p><strong>Criterio de éxito:</strong> <code>throughput_argus / throughput_baseline ≥ 0.95</code> a 1 Gbps durante 60 segundos, con <code>packet_loss ≤ 0.001%</code>.</p>
+<hr />
+<h3 id="p2-delta-variant-a-ebpfxdp-vs-variant-b-libpcap">P2 — Delta Variant A (eBPF/XDP) vs Variant B (libpcap)</h3>
+<p><strong>Recomendación concreta:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Métrica</th>
+<th>Valor esperado</th>
+<th>Publicable</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Delta throughput A vs B</td>
+<td>A ≥ 2× B a 1 Gbps</td>
+<td><strong>Sí</strong>, con condiciones</td>
+</tr>
+<tr>
+<td>Delta latencia A vs B</td>
+<td>A ≤ 0.5× B (p50)</td>
+<td><strong>Sí</strong></td>
+</tr>
+<tr>
+<td>Delta CPU A vs B</td>
+<td>A ≤ 0.3× B a misma carga</td>
+<td><strong>Sí</strong></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Justificación técnica:</strong></p>
+<p>XDP opera en el <strong>driver NIC</strong> (o generic XDP en el stack de red), antes de que el paquete llegue al kernel networking stack. libpcap opera en <strong>userspace</strong> vía <code>AF_PACKET</code> o <code>mmap</code> ring buffer, requiriendo al menos una copia de kernel a userspace y un context switch.</p>
+<p>La literatura académica (Hoiland-Jørgensen et al., "The eXpress Data Path", ACM CoNEXT 2018) reporta mejoras de 10-20× en throughput y reducciones de latencia de 5-10× para forwarding simple. Para NDR (que incluye ML inference), el delta se reduce pero debe mantenerse significativo (&gt;2×).</p>
+<p><strong>Condición de publicabilidad:</strong></p>
+<p>El delta <strong>solo es publicable</strong> si:
+1. Se mide con la <strong>misma carga de trabajo</strong> (mismo pcap, misma duración)
+2. Se mide en el <strong>mismo hardware</strong> (misma CPU, misma NIC)
+3. Se reporta el <strong>kernel exacto</strong> y la <strong>versión de libpcap</strong>
+4. Se incluye la <strong>varianza</strong> (desviación estándar de al menos 10 repeticiones)</p>
+<p>Sin estas condiciones, el delta es un <strong>dato anecdótico</strong>, no una contribución científica.</p>
+<p><strong>Riesgo identificado:</strong></p>
+<p>Si el delta es menor de 2×, los revisores pueden argumentar que la complejidad de XDP no justifica el beneficio. Si es mayor de 10×, debéis verificar que no hay un bug en la configuración de libpcap (por ejemplo, buffer size por defecto demasiado pequeño).</p>
+<p><strong>Test mínimo reproducible:</strong></p>
+<pre><code class="language-bash">#!/bin/bash
+# test_variant_delta.sh — ejecutar en hardware físico idéntico
+
+VARIANT=$1  # &quot;xdp&quot; o &quot;libpcap&quot;
+PCAP=&quot;ctu-13-neris-1Mpackets.pcap&quot;
+DURATION=300  # 5 minutos por repetición
+REPS=10
+
+for i in $(seq 1 $REPS); do
+    echo &quot;=== Repetición $i / $REPS ===&quot;
+
+    # Limpiar estado
+    sudo ip link set eth1 down &amp;&amp; sudo ip link set eth1 up
+
+    # Arrancar aRGus con la variante indicada
+    if [ &quot;$VARIANT&quot; = &quot;xdp&quot; ]; then
+        sudo ./argus-sniffer --mode=xdp --iface=eth1 &amp;
+    else
+        sudo ./argus-sniffer --mode=libpcap --iface=eth1 &amp;
+    fi
+    SNIFER_PID=$!
+
+    # Medir
+    tcpreplay -i eth1 -t -K --duration=$DURATION $PCAP 2&gt;&amp;1 | tee rep${i}_${VARIANT}.log
+
+    # Recolectar métricas del sniffer
+    cat /proc/$SNIFER_PID/status | grep -E &quot;VmRSS|voluntary_ctxt_switches|nonvoluntary_ctxt_switches&quot;
+
+    kill $SNIFER_PID
+    sleep 5  # enfriamiento entre repeticiones
+done
+
+# Post-procesado con Python/pandas: media, desviación estándar, intervalo de confianza 95%
+</code></pre>
+<hr />
+<h3 id="p3-armraspberry-pi-mismas-metricas-o-perfil-diferente">P3 — ARM/Raspberry Pi: ¿mismas métricas o perfil diferente?</h3>
+<p><strong>Recomendación concreta:</strong></p>
+<p><strong>Métricas diferentes con justificación explícita.</strong> ARM no es una versión "degradada" de x86; es una plataforma con un <strong>contrato de rendimiento diferente</strong> que debe documentarse.</p>
+<table>
+<thead>
+<tr>
+<th>Métrica</th>
+<th>x86 baseline</th>
+<th>ARM baseline</th>
+<th>Justificación del delta</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Throughput</td>
+<td>1 Gbps</td>
+<td>100 Mbps</td>
+<td>RPi4 USB3-to-Gigabit overhead + CPU Cortex-A72 limitado</td>
+</tr>
+<tr>
+<td>Latencia p50</td>
+<td>≤ 5 ms</td>
+<td>≤ 50 ms</td>
+<td>Menor caché L3, menor frecuencia, inferencia ML más lenta</td>
+</tr>
+<tr>
+<td>RAM headroom</td>
+<td>≥ 512 MB</td>
+<td>≥ 128 MB</td>
+<td>RPi4 tiene 4-8 GB; aRGus debe dejar margen para SO</td>
+</tr>
+<tr>
+<td>F1 golden set</td>
+<td>≥ 0.9985</td>
+<td>≥ 0.9985</td>
+<td><strong>Invariante.</strong> El modelo no cambia; el hardware no debe degradar la precisión.</td>
+</tr>
+<tr>
+<td>CPU idle</td>
+<td>≥ 30%</td>
+<td>≥ 10%</td>
+<td>Aceptable si el throughput objetivo se alcanza</td>
+</tr>
+<tr>
+<td>Tiempo arranque</td>
+<td>≤ 30 s</td>
+<td>≤ 120 s</td>
+<td>SD card vs NVMe</td>
+</tr>
+<tr>
+<td>Coste hardware</td>
+<td>~200€</td>
+<td>~75€</td>
+<td><strong>Métrica de aceptación económica</strong></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Justificación técnica:</strong></p>
+<p>El Raspberry Pi 4 tiene:
+- CPU: 4× Cortex-A72 @ 1.5 GHz (comparable a un Intel Atom, no a un Xeon)
+- RAM: LPDDR4 compartida con GPU
+- Red: Gigabit Ethernet sobre bus USB3 (throughput real ~300-400 Mbps, no 1 Gbps)
+- Almacenamiento: microSD (IOPS limitadas)</p>
+<p>Un throughput de 100 Mbps en RPi4 es <strong>físicamente razonable</strong> y <strong>económicamente valioso</strong>: un sensor NDR a 75€ que procesa 100 Mbps es competitivo contra soluciones enterprise de 5000€+.</p>
+<p><strong>Riesgo identificado:</strong></p>
+<p>Si se exige 1 Gbps en ARM, el proyecto falla antes de empezar. Si se exige 100 Mbps y no se documenta el porqué, los revisores pueden interpretar que el sistema no escala.</p>
+<p><strong>Test mínimo reproducible (RPi4):</strong></p>
+<pre><code class="language-bash"># En RPi4 con Raspberry Pi OS Lite (64-bit)
+# Nota: desactivar WiFi y Bluetooth para reducir interferencia
+
+# 1. Forzar CPU a performance governor
+echo performance | sudo tee /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor
+
+# 2. Medir throughput máximo de la interfaz (sin aRGus)
+iperf3 -c &lt;server&gt; -t 60
+# Esperado: 300-400 Mbps (límite del bus USB3)
+
+# 3. Medir throughput con aRGus Variant B (libpcap, XDP no disponible en RPi4)
+# Criterio: ≥ 100 Mbps con packet loss &lt; 0.01%
+</code></pre>
+<hr />
+<h3 id="p4-golden-set-como-metrica-hardware">P4 — Golden set como métrica hardware</h3>
+<p><strong>Recomendación concreta:</strong> <strong>Sí, obligatorio.</strong> El golden set (ADR-040) debe ejecutarse en cada plataforma hardware como parte del test de aceptación.</p>
+<p><strong>Justificación técnica:</strong></p>
+<p>La inferencia ML puede degradarse por:
+1. <strong>Diferencias de punto flotante:</strong> x86 usa SSE/AVX; ARM usa NEON. Los resultados de <code>float32</code> pueden diferir en el bit menos significativo, afectando thresholds.
+2. <strong>Diferencias de bibliotecas:</strong> ONNX Runtime en x86 vs ARM puede usar optimizaciones diferentes (OpenVINO vs ARM Compute Library).
+3. <strong>Diferencias de endianness:</strong> Aunque x86 y ARM64 son little-endian, el modelo serializado (ONNX, GGUF) debe verificarse.</p>
+<p><strong>Riesgo identificado:</strong></p>
+<p>Si el F1 en ARM es 0.9984 (vs 0.9985 en x86), ¿es aceptable? La diferencia de 0.0001 puede ser ruido estadístico o puede indicar un bug en la pipeline de inferencia. Necesitáis un <strong>intervalo de confianza</strong> para el F1.</p>
+<p><strong>Test mínimo reproducible:</strong></p>
+<pre><code class="language-bash"># test_golden_set_hardware.sh
+
+HARDWARE_ID=$(cat /sys/class/dmi/id/product_uuid 2&gt;/dev/null || cat /proc/cpuinfo | grep Serial | head -1)
+MODEL=&quot;xgboost_cicids2017_v2.onnx&quot;
+GOLDEN=&quot;ctu-13-neris-golden-labeled.csv&quot;
+
+./argus-ml-detector --model=$MODEL --input=$GOLDEN --output=predictions_${HARDWARE_ID}.csv
+
+python3 &lt;&lt; 'PYEOF'
+import pandas as pd
+from sklearn.metrics import f1_score, precision_score, recall_score
+
+df = pd.read_csv(f&quot;predictions_{HARDWARE_ID}.csv&quot;)
+f1 = f1_score(df.label, df.prediction)
+print(f&quot;F1={f1:.6f} on {HARDWARE_ID}&quot;)
+
+# Validar contra baseline x86
+baseline_f1 = 0.998500
+assert abs(f1 - baseline_f1) &lt; 0.000100, f&quot;F1 degradation: {f1} vs {baseline_f1}&quot;
+PYEOF
+</code></pre>
+<p><strong>Criterio de éxito:</strong> <code>|F1_hardware - F1_x86| &lt; 0.0001</code> (10× el epsilon de precisión float32).</p>
+<hr />
+<h3 id="p5-herramienta-de-generacion-de-carga-reproducible">P5 — Herramienta de generación de carga reproducible</h3>
+<p><strong>Recomendación concreta:</strong> <strong>Combinación: tcpreplay para tráfico realista + iperf3 para saturación controlada.</strong></p>
+<table>
+<thead>
+<tr>
+<th>Herramienta</th>
+<th>Uso</th>
+<th>Cuándo</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>tcpreplay</strong></td>
+<td>Reproducir tráfico real (CTU-13, CIC-IDS-2017)</td>
+<td>Validación de precisión ML, métricas de detección</td>
+</tr>
+<tr>
+<td><strong>iperf3</strong></td>
+<td>Saturación controlada, throughput máximo</td>
+<td>Validación de límites de rendimiento, packet loss</td>
+</tr>
+<tr>
+<td><strong>pktgen (kernel module)</strong></td>
+<td>Microbenchmarks de latencia a nivel de driver</td>
+<td>Solo si se necesita aislar el sniffer del resto del pipeline</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Justificación técnica:</strong></p>
+<p>tcpreplay reproduce <strong>distribuciones reales de paquetes</strong> (tamaños, protocolos, inter-arrival times), lo cual es esencial para validar que el modelo ML no se degrada con tráfico "real" vs tráfico sintético. iperf3 genera <strong>flujos TCP ideales</strong> que saturan el enlace, útil para encontrar el límite absoluto.</p>
+<p><strong>Riesgo identificado:</strong></p>
+<p>tcpreplay con <code>-t</code> (topspeed) puede enviar más rápido de lo que la NIC puede manejar, causando packet loss en el <strong>generador</strong>, no en aRGus. Esto produce falsos positivos. La solución es usar <code>--mbps=1000</code> para limitar a 1 Gbps explícitamente.</p>
+<p><strong>Test mínimo reproducible:</strong></p>
+<pre><code class="language-bash"># Generar pcap de referencia reproducible
+# (si no tenéis CTU-13 descargado, crear uno sintético con scapy)
+
+python3 &lt;&lt; 'PYEOF'
+from scapy.all import *
+
+# 1M paquetes TCP, distribución de tamaños realista
+pkts = []
+for i in range(1_000_000):
+    size = max(64, int(random.gauss(500, 200)))  # media 500B, σ=200
+    pkt = Ether()/IP(src=&quot;10.0.0.1&quot;, dst=&quot;10.0.0.2&quot;)/TCP()/(&quot;X&quot; * (size - 54))
+    pkts.append(pkt)
+
+wrpcap(&quot;synthetic-1M.pcap&quot;, pkts)
+PYEOF
+
+# Verificar reproducibilidad
+sha256sum synthetic-1M.pcap  # registrar en el paper
+
+# Ejecutar carga
+sudo tcpreplay -i eth1 --mbps=1000 --loop=10 synthetic-1M.pcap
+# --loop=10: 10M paquetes totales, ~5 minutos a 1 Gbps
+</code></pre>
+<hr />
+<h3 id="p6-criterio-de-exito-para-feder-funciona-o-es-mejor-que-x">P6 — Criterio de éxito para FEDER: ¿funciona o es mejor que X?</h3>
+<p><strong>Recomendación concreta:</strong> <strong>Ambos. "Funciona" es necesario pero no suficiente. El benchmark comparativo es obligatorio para FEDER.</strong></p>
+<p><strong>Justificación técnica:</strong></p>
+<p>FEDER es un programa de financiación. Los evaluadores no son ingenieros de red; son gestores que entienden <strong>coste-beneficio</strong>. Un sistema que "funciona" pero no demuestra ventaja económica no justifica la inversión.</p>
+<p><strong>Benchmark comparativo mínimo:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Solución</th>
+<th>Coste HW anual</th>
+<th>Coste licencia anual</th>
+<th>Throughput</th>
+<th>Latencia</th>
+<th>F1</th>
+<th>Observaciones</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>aRGus NDR (x86)</td>
+<td>200€ (amortizado 5 años)</td>
+<td>0€ (open source)</td>
+<td>1 Gbps</td>
+<td>5 ms</td>
+<td>0.9985</td>
+<td><strong>Sujeto de evaluación</strong></td>
+</tr>
+<tr>
+<td>aRGus NDR (ARM)</td>
+<td>75€ (amortizado 5 años)</td>
+<td>0€</td>
+<td>100 Mbps</td>
+<td>50 ms</td>
+<td>0.9985</td>
+<td><strong>Sujeto de evaluación</strong></td>
+</tr>
+<tr>
+<td>Suricata + Elastic</td>
+<td>2000€ (servidor)</td>
+<td>0€ (open source)</td>
+<td>10 Gbps</td>
+<td>10 ms</td>
+<td>~0.95</td>
+<td>Requiere tuning experto</td>
+</tr>
+<tr>
+<td>Darktrace</td>
+<td>15000€ (appliance)</td>
+<td>25000€/año</td>
+<td>1 Gbps</td>
+<td>1 ms</td>
+<td>~0.99</td>
+<td>Solución enterprise</td>
+</tr>
+<tr>
+<td>Cisco Secure Network Analytics</td>
+<td>8000€ (appliance)</td>
+<td>12000€/año</td>
+<td>10 Gbps</td>
+<td>5 ms</td>
+<td>~0.98</td>
+<td>Solución enterprise</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Riesgo identificado:</strong></p>
+<p>Si no tenéis acceso a Darktrace o Cisco para medir, no inventéis números. Usad <strong>datos publicados</strong> (whitepapers, datasheets) y documentad la fuente. La honestidad metodológica es más valiosa que una tabla completa.</p>
+<p><strong>Test mínimo reproducible (comparativa):</strong></p>
+<pre><code class="language-bash"># Instalar Suricata en la misma VM/hardware para comparación justa
+sudo apt-get install suricata
+sudo suricata -c /etc/suricata/suricata.yaml -i eth1 &amp;
+SURICATA_PID=$!
+
+# Ejecutar misma carga de CTU-13
+tcpreplay -i eth1 --mbps=1000 ctu-13-neris.pcap
+
+# Medir: CPU%, RAM, throughput reportado por Suricata, alertas generadas
+# Comparar con aRGus en las mismas condiciones
+</code></pre>
+<hr />
+<h3 id="tabla-consolidada-de-metricas-de-aceptacion-adr-029">Tabla consolidada de métricas de aceptación ADR-029</h3>
+<table>
+<thead>
+<tr>
+<th>Métrica</th>
+<th>x86</th>
+<th>ARM (RPi4/5)</th>
+<th>Método de medición</th>
+<th>Criterio éxito</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Throughput</td>
+<td>1 Gbps</td>
+<td>100 Mbps</td>
+<td>iperf3 + tcpreplay</td>
+<td>≥ 95% del baseline NIC, packet loss &lt; 0.001%</td>
+</tr>
+<tr>
+<td>Latencia p50</td>
+<td>≤ 5 ms</td>
+<td>≤ 50 ms</td>
+<td><code>bpftrace</code> o <code>tcpdump -tttt</code></td>
+<td>Medir tiempo entre paquete en eth1 y alerta en log</td>
+</tr>
+<tr>
+<td>RAM headroom</td>
+<td>≥ 512 MB</td>
+<td>≥ 128 MB</td>
+<td><code>free -m</code> post-arranque</td>
+<td>Disponible para SO y emergencias</td>
+</tr>
+<tr>
+<td>F1 golden set</td>
+<td>≥ 0.9985</td>
+<td>≥ 0.9985</td>
+<td>Inferencia sobre CTU-13 golden</td>
+<td><code>|F1_hw - F1_x86| &lt; 0.0001</code></td>
+</tr>
+<tr>
+<td>CPU idle (tráfico normal)</td>
+<td>≥ 30%</td>
+<td>≥ 10%</td>
+<td><code>mpstat 1 60</code></td>
+<td>Headroom para picos</td>
+</tr>
+<tr>
+<td>Tiempo arranque pipeline</td>
+<td>≤ 30 s</td>
+<td>≤ 120 s</td>
+<td><code>systemd-analyze</code></td>
+<td>Desde <code>vagrant up</code> hasta <code>6/6 RUNNING</code></td>
+</tr>
+<tr>
+<td>0 packet loss sostenido</td>
+<td>Sí</td>
+<td>Sí</td>
+<td>tcpreplay 5 min @ throughput objetivo</td>
+<td>Loss &lt; 0.001%</td>
+</tr>
+<tr>
+<td>Coste hardware</td>
+<td>~200€</td>
+<td>~75€</td>
+<td>Presupuesto</td>
+<td>Incluido en métrica de aceptación económica</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h3 id="resumen-de-posiciones-kimi">Resumen de posiciones — Kimi</h3>
+<table>
+<thead>
+<tr>
+<th>Pregunta</th>
+<th>Recomendación</th>
+<th>Justificación clave</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>P1</strong></td>
+<td>1 Gbps x86, 500 Mbps objetivo FEDER</td>
+<td>Umbral de credibilidad 2026; 1 Gbps es commodity</td>
+</tr>
+<tr>
+<td><strong>P2</strong></td>
+<td>Delta ≥2× publicable con varianza reportada</td>
+<td>XDP vs libpcap es contribución técnica válida si se mide rigurosamente</td>
+</tr>
+<tr>
+<td><strong>P3</strong></td>
+<td>Métricas diferentes con justificación explícita</td>
+<td>ARM no es x86 lento; es una plataforma con contrato de rendimiento diferente</td>
+</tr>
+<tr>
+<td><strong>P4</strong></td>
+<td>Golden set obligatorio en cada plataforma</td>
+<td>El hardware no debe degradar la precisión del modelo; float32 puede variar</td>
+</tr>
+<tr>
+<td><strong>P5</strong></td>
+<td>tcpreplay + iperf3 combinados</td>
+<td>Tráfico realista vs saturación controlada; complementarios, no excluyentes</td>
+</tr>
+<tr>
+<td><strong>P6</strong></td>
+<td>Benchmark comparativo obligatorio para FEDER</td>
+<td>La financiación requiere argumento de valor, no solo demostración técnica</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Moción:</strong> Propongo que el DAY 135 incluya la ejecución del <code>test_variant_delta.sh</code> en la VM de desarrollo (aunque sea con datos preliminares) para validar que el harness de medición funciona antes de comprar hardware físico. Un método de medición que no se ha probado no es reproducible.</p>
+<p>— <em>Kimi</em><br />
+<em>Via Appia Quality — La seguridad no se instala. Se diseña.</em></p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.top", "search.highlight"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

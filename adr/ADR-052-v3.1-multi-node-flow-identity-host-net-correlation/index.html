@@ -1,0 +1,1875 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source embedded-ML NDR for hospitals and schools">
+      
+      
+        <meta name="author" content="Alonso Isidoro Roman">
+      
+      
+        <link rel="canonical" href="https://alonsoir.github.io/argus/adr/ADR-052-v3.1-multi-node-flow-identity-host-net-correlation/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>ADR-052 — Multi-node Flow Identity & Host↔Net Correlation - ML Defender (aRGus NDR)</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#adr-052-multi-node-flow-identity-hostnet-correlation" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-header__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ML Defender (aRGus NDR)
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              ADR-052 — Multi-node Flow Identity &amp; Host↔Net Correlation
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../README.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/BACKLOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Backlog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Security Model
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-tabs__link">
+          
+  
+  
+  ADRs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/contracts/Protobuf contracts.md" class="md-tabs__link">
+          
+  
+  
+  Contracts
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-nav__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ML Defender (aRGus NDR)
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../README.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/BACKLOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADRs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ADRs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013 Seed Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-021-deployment-topology-seed-families.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-021 Topology SSOT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-022-threat-model-opcion2-descartada.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-022 Threat Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Protobuf contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protobuf
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/JSON contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JSON
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Rag security commands.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#cambios-v2-v3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cambios v2 → v3
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cambios-v3-v31-auto-revision-de-v3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cambios v3 → v3.1 (auto-revisión de v3)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#0-mision-primaria-principio-ordenador" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        0. Misión primaria (principio ordenador)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="0. Misión primaria (principio ordenador)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#01-metricas-de-calidad-del-corpus-n10" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        0.1 Métricas de calidad del corpus (N10)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1-estado" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Estado
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-contexto" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Contexto
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2. Contexto">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#21-el-community_id-no-es-identidad-de-nodo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.1 El community_id no es identidad de nodo
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#22-el-data-plane-es-hostil-no-solo-ruidoso" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.2 El data-plane es hostil, no solo ruidoso
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#23-por-que-hay-que-decidir-esto-antes-de-poblar-neo4j" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.3 Por qué hay que decidir esto ANTES de poblar Neo4j
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-decision" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Decisión
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. Decisión">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#31-identidad-de-nodo-flujo-flow_uid-p3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.1 Identidad de nodo-flujo: flow_uid (P3)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3.1 Identidad de nodo-flujo: flow_uid (P3)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#311-codificacion-canonica-y-funcion-de-hash-p0-bloqueante-de-esquema" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.1.1 Codificación canónica y función de hash (P0 — bloqueante de esquema)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#312-node_id-identidad-de-corpus-estable-p0-reescrito-en-v3-refinado-en-v31" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.1.2 node_id: identidad de corpus estable (P0 — reescrito en v3, refinado en v3.1)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#313-node_id-distingue-por-diseno-identidad-correlacion-cross-nodo-ratificado-88" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.1.3 node_id distingue por diseño: identidad ≠ correlación cross-nodo (RATIFICADO 8/8)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#314-flow_start_window-y-seq_in_window-resolucion-q6-n2-n3-arbitraje-6" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.1.4 flow_start_window y seq_in_window (resolución Q6 + N2 + N3 + arbitraje 6)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#32-correlacion-hostred-doble-arista-p1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.2 Correlación host↔red: doble arista (P1)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3.2 Correlación host↔red: doble arista (P1)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#321-resolucion-de-conflictos-nat-kimi-peso-de-muestra-n8-gemini" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.2.1 Resolución de conflictos NAT (Kimi) + peso de muestra (N8, Gemini)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#322-coincidencia-temporal-asimetrica-en-event-time-terminologia-corregida-n7" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.2.2 Coincidencia temporal asimétrica en event time (terminología corregida + N7)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#323-definicion-de-agent_id-n11-mistral" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.2.3 Definición de agent_id (N11, Mistral)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#33-modelo-de-amenaza-dos-vectores-opuestos" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.3 Modelo de amenaza: dos vectores opuestos
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#34-las-tres-lineas-de-defensa-arquitectonicas-no-del-hash" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.4 Las tres líneas de defensa (arquitectónicas, NO del hash)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3.4 Las tres líneas de defensa (arquitectónicas, NO del hash)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#341-limite-fundamental-de-la-deteccion-del-vector-a-kimi-generalizado-por-chatgpt" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.4.1 Límite fundamental de la detección del vector A (Kimi, generalizado por ChatGPT)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#35-el-community_id-no-es-un-control-de-seguridad-y-nunca-lo-sera" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.5 El community_id NO es un control de seguridad — y nunca lo será
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#36-marca-de-confianza-features-del-corpus-no-veredicto-opaco-resolucion-q3q4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.6 Marca de confianza: features del corpus, no veredicto opaco (resolución Q3/Q4)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#37-etiquetado-de-procedencia-la-integridad-de-la-etiqueta-es-el-producto-resolucion-q4q5-n4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.7 Etiquetado de procedencia: la integridad de la etiqueta ES el producto (resolución Q4/Q5 + N4)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#38-mapa-de-coberturavisibilidad-de-sensores-prerrequisito-resolucion-q2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.8 Mapa de cobertura/visibilidad de sensores (prerrequisito — resolución Q2)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#39-senal-arpndp-nodo-de-estado-de-primera-clase-resolucion-q2-1a-pasada" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.9 Señal ARP/NDP: nodo de estado de primera clase (resolución Q2 1ª pasada)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#310-rate-limit-de-cardinalidad-resolucion-q1-1a-pasada-n6" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.10 Rate-limit de cardinalidad (resolución Q1 1ª pasada + N6)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#311-senales-de-host-extendidas-anomalias-tcptls-vector-a-ampliado-decision-de-arbitro" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.11 Señales de host extendidas: anomalías TCP/TLS (vector A ampliado) — DECISIÓN DE ÁRBITRO
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-parametros-configurables-defaults-de-arranque" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Parámetros configurables (defaults de arranque)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-alternativas-consideradas-y-rechazadas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Alternativas consideradas y rechazadas
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-estado-de-las-preguntas-del-consejo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Estado de las preguntas del Consejo
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-consecuencias" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Consecuencias
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-validacion-emecas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. Validación (EMECAS++)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#9-deudas-y-diferidos" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9. Deudas y diferidos
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#10-referencias" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10. Referencias
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="adr-052-multi-node-flow-identity-hostnet-correlation">ADR-052 — Multi-node Flow Identity &amp; Host↔Net Correlation</h1>
+<table>
+<thead>
+<tr>
+<th>Campo</th>
+<th>Valor</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>ADR</strong></td>
+<td>052</td>
+</tr>
+<tr>
+<td><strong>Versión</strong></td>
+<td><strong>v3.1 (candidata a ratificación)</strong> — incorpora la 2ª pasada del Consejo (DAY 173), el arbitraje de Alonso y la auto-revisión de v3 (4 correcciones)</td>
+</tr>
+<tr>
+<td><strong>Fecha</strong></td>
+<td>DAY 173 (rev. v3.1)</td>
+</tr>
+<tr>
+<td><strong>Estado</strong></td>
+<td>CANDIDATA A RATIFICACIÓN — pendiente confirmación de fidelidad del Consejo (no se prevé 3ª deliberación completa)</td>
+</tr>
+<tr>
+<td><strong>Decisión final</strong></td>
+<td>Alonso</td>
+</tr>
+<tr>
+<td><strong>Deliberación</strong></td>
+<td>Consejo de Sabios (Claude, ChatGPT, DeepSeek, Gemini, Grok, Kimi, Mistral, Qwen) — 1ª y 2ª pasada cerradas</td>
+</tr>
+<tr>
+<td><strong>Recoge</strong></td>
+<td>P3 (identidad de flujo multi-nodo) + P1 (correlación host↔red) del Consejo DAY 170</td>
+</tr>
+<tr>
+<td><strong>Depende de / relaciona</strong></td>
+<td>ADR-046 v4 (modelo dual de claves, grafo temporal, inventario de endpoints), ADR-051 (<code>orphan_rate</code>), ADR-050 (sesión MITRE — ground truth), ADR-048 (etcd HA / Raft — soporte del WAL de etiquetado), ADR-040 (ML Retraining Contract — IPW/walk-forward/golden set), ADR-027 (identidad criptográfica del sensor)</td>
+</tr>
+<tr>
+<td><strong>Ratifica</strong></td>
+<td>DEBT-NEO4J-FLOW-KEY-001 (P0 esquema, constraint Neo4j 5.x antes de poblar el grafo)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="cambios-v2-v3">Cambios v2 → v3</h3>
+<ol>
+<li><strong>§3.1.2 reescrito (N1):</strong> <code>node_id</code> es identidad de corpus <strong>estable y declarada</strong>, desacoplada de la clave efímera del sensor. Corrige el conflicto con el ciclo <code>vagrant destroy+up</code> de EMECAS++.</li>
+<li><strong>§3.1.4 (N2):</strong> <code>seq_in_window</code> se computa en el sensor y se <strong>transporta en el evento</strong>; no se recomputa offline.</li>
+<li><strong>§3.1.4 (N3, voto Kimi):</strong> <code>sensor_native_flow_id</code> es <strong>propiedad de trazabilidad, NUNCA componente del <code>flow_uid</code></strong>.</li>
+<li><strong>§3.7 (N4):</strong> el no-repudio del etiquetado vive en un <strong>WAL externo append-only con hash-chain</strong> (soportado por el plano etcd HA / ADR-048); Neo4j es <strong>vista materializada</strong>.</li>
+<li><strong>§3.1.1 (N5, arbitraje):</strong> la función de hash es <strong>la que provea la versión congelada de libsodium del pipeline</strong>, idéntica en todo el pipeline. Cero drift entre versiones de libsodium.</li>
+<li><strong>§3.10 (N6):</strong> cardinalidad <strong>exacta</strong> para la etiqueta <code>rate_limited</code>; estructuras probabilísticas (HLL) solo para observabilidad.</li>
+<li><strong>§3.2.2 (N7):</strong> ventanas host↔red en <strong>event time</strong> con watermark.</li>
+<li><strong>§3.1.4 / pruebas (arbitraje 6):</strong> <code>flow_start_window</code> calibrado <strong>por protocolo</strong> (TCP/UDP por separado) con tests dedicados.</li>
+<li><strong>§3.11 NUEVA (arbitraje 7 — ANULACIÓN DE ÁRBITRO):</strong> las señales de host TCP/TLS (vector A ampliado) <strong>entran en ADR-052</strong>, en contra de la mayoría 6/8 del Consejo que pedía diferirlas a ADR-053. Decisión explícita de Alonso, con alcance delimitado.</li>
+<li><strong>§3.8 (Q2):</strong> modelo de datos del mapa de cobertura: tabla/cache declarada, versionada, fuente = orquestador, validación por beacons.</li>
+<li><strong>§3.6 (Q4):</strong> <code>trust_tier</code> enum en el grafo + derivadas de confianza computadas en el pipeline ML (no en Neo4j), normalizadas por <code>expected_witnesses</code>. <em>(Refinado en v3.1 — ver C3.)</em></li>
+<li><strong>§0.1 NUEVA (N10):</strong> métricas de calidad del corpus. <strong>§3.2 (N11):</strong> definición de <code>agent_id</code>. <strong>§7 (N12):</strong> almacenamiento por niveles. <strong>§9 (N9):</strong> deuda <code>FlowObservation</code> vs <code>FlowIdentity</code>.</li>
+<li>Q1 (§3.1.3) y Q5 (provenance ortogonal) <strong>ratificadas en el cuerpo</strong>.</li>
+</ol>
+<h3 id="cambios-v3-v31-auto-revision-de-v3">Cambios v3 → v3.1 (auto-revisión de v3)</h3>
+<ul>
+<li><strong>C1 (§3.1.2):</strong> eliminado <code>deployment_epoch</code> del <code>node_id</code> — reintroducía, en miniatura, el footgun de N1 (componente mutable en la identidad de corpus). <code>node_id</code> = identificador declarado, <strong>legible</strong>, en el inventario firmado. Continuidad de rol = mismo <code>node_id</code>; sensor nuevo = nuevo identificador.</li>
+<li><strong>C2 (§3.11):</strong> la señal de mismatch TLS deja de presentarse como ligera: presupone un <em>cert-expectation store</em> (infraestructura). Se acota a <strong>destinos gestionados con expectativa de certificado declarada</strong> y se abre deuda propia. Las anomalías TCP (RST/seqnum) sí son ligeras y entran sin reservas.</li>
+<li><strong>C3 (§3.6):</strong> separadas dos cantidades que v3 conflató bajo "score IPW": (a) <strong>confianza por corroboración</strong> (sube con testigos — <em>feature</em>) y (b) <strong>peso de de-duplicación</strong> (baja con testigos — para el <em>sampler</em> de entrenamiento). El modelo de propensión IPW real lo posee ADR-040; ADR-052 expone primitivas, no "el peso IPW".</li>
+<li><strong>C4 (§3.7):</strong> especificada la hash-chain del WAL (entrada_i incluye <code>H(entrada_{i-1})</code>) y la verificación periódica de la cadena; el test distingue manipulación del WAL (cadena) de manipulación de Neo4j (divergencia).</li>
+</ul>
+<hr />
+<h2 id="0-mision-primaria-principio-ordenador">0. Misión primaria (principio ordenador)</h2>
+<blockquote>
+<p><strong>El grafo no es el producto. El producto es el corpus.</strong></p>
+</blockquote>
+<p>aRGus existe para producir, validar y firmar <strong>modelos ensemble en formato plugin</strong> que hayan demostrado —con honestidad científica— ser mejores que sus predecesores. El grafo de correlación que define este ADR es <strong>el aparato que fabrica el corpus de entrenamiento enriquecido</strong> del que salen esos modelos. La correlación en vivo es un beneficio secundario; la razón de ser del grafo es el dataset.</p>
+<p><strong>Invariante de proyecto (permanente):</strong></p>
+<blockquote>
+<p><em>El grafo de aRGus es, antes que nada, un corpus de entrenamiento que además hace correlación en vivo. Cuando ambos fines chocan, ganan la </em><em>retención</em><em> y la </em><em>integridad de la etiqueta</em><em>. No se borra evidencia; se etiqueta con procedencia. El atacante es ground truth, no ruido a limpiar.</em></p>
+</blockquote>
+<p>Esto se alinea con dos decisiones ya tomadas y las explica retroactivamente:</p>
+<ol>
+<li><strong>El marco de los tres paradigmas</strong> (CTU-13 Neris: Suricata F1=0.000, Zeek F1=0.042, aRGus F1=0.9985). Suricata, Zeek y Wazuh <strong>no pueden ser activadores primarios</strong> contra el firewall —ni por capacidad de detección demostrada, ni por soberanía digital (ENS/NIS2/GDPR). Esa acción se delega en aRGus. El grafo los reconvierte: dejan de ser <strong>gatillos</strong> y pasan a ser <strong>testigos, oráculos de etiquetado y corroboradores</strong> —<strong>maestros del modelo de aRGus.</strong> Ése es el sentido último del <code>community_id</code> como clave de correlación cross-tool.</li>
+<li><strong>El bucle adversarial (ACRL/Caldera) y el sesgo de los datasets académicos</strong> (covariate shift, documentado en el paper). Un corpus production-grade necesita capturar al atacante real y retenerlo etiquetado.</li>
+</ol>
+<p><strong>El ciclo de vida del corpus y la disciplina de desarrollo son mundos distintos.</strong> El <code>vagrant destroy+up</code> de EMECAS++ es un <strong>instrumento de calidad de la fase de construcción</strong>, no una operación de producción. En producción, <strong>Neo4j NO se destruye jamás</strong>: contiene la inmunidad aprendida, que es <strong>secreto industrial adquirido</strong>; su pérdida sería catastrófica. Por tanto producción exige mantenimiento y <strong>copias de seguridad que garanticen que esa información global nunca se pueda perder</strong>. Esta distinción tiene una consecuencia directa de diseño (§3.1.2): la identidad de corpus debe <strong>sobrevivir a los ciclos <code>destroy+up</code> de EMECAS++ durante el desarrollo</strong> —un corpus capturado hoy debe seguir siendo reproducible y enlazable tras un rebuild de mañana—, lo que prohíbe anclar la identidad de flujo a cualquier estado efímero que el ciclo de desarrollo regenere (como el keypair del sensor).</p>
+<p><strong>Consecuencia de diseño que recorre todo el ADR.</strong> Cada decisión de esquema se juzga contra: <em>¿mejora la calidad, la trazabilidad o la reproducibilidad del corpus?</em> En particular: la integridad de la etiqueta (§3.7) es el producto; la marca de confianza (§3.6) son features/pesos IPW (ADR-040); el mapa de cobertura (§3.8) es prerrequisito de la honestidad estadística; la identidad de flujo (§3.1) debe ser <strong>reproducible offline</strong> desde el pcap archivado.</p>
+<h3 id="01-metricas-de-calidad-del-corpus-n10">0.1 Métricas de calidad del corpus (N10)</h3>
+<p>Para que §0 sea medible y no una intención, el corpus se evalúa con KPIs (objetivos LAB de arranque, revisables):</p>
+<table>
+<thead>
+<tr>
+<th>KPI</th>
+<th>Objetivo inicial</th>
+<th>Por qué</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>% flujos con <code>provenance_ground_truth</code> validado contra manifiesto MITRE</td>
+<td>&gt; 90 % en escenarios MITRE</td>
+<td>Honestidad de la etiqueta.</td>
+</tr>
+<tr>
+<td>% flujos con <code>witness_count ≥ 2</code> (en segmentos de cobertura solapada)</td>
+<td>&gt; 70 % donde la cobertura lo permite</td>
+<td>Corroboración cross-sensor; medido <strong>relativo a la cobertura esperada</strong> (§3.8), nunca absoluto.</td>
+</tr>
+<tr>
+<td>Tiempo de reconstrucción de un <code>flow_uid</code> desde pcap archivado</td>
+<td>&lt; 1 s</td>
+<td>Reproducibilidad offline.</td>
+</tr>
+<tr>
+<td>Cobertura de técnicas MITRE ATT&amp;CK representadas</td>
+<td>crecer por sesión (ADR-050)</td>
+<td>Validez externa del modelo.</td>
+</tr>
+<tr>
+<td>Balance de clases benigno/malicioso</td>
+<td>documentado por dataset</td>
+<td>Evitar sesgo de entrenamiento.</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="1-estado">1. Estado</h2>
+<p>CANDIDATA A RATIFICACIÓN. Formaliza dos decisiones de ADR-046 v4, subordinadas a §0: la identidad de nodo-flujo (<code>flow_uid</code>, P3) y la defensa arquitectónica contra un data-plane hostil (modelo de amenaza DAY 171), incluida la correlación host↔red (P1).</p>
+<blockquote>
+<p><strong>Delimitación con ADR-046 v4 (anti-duplicación).</strong> ADR-052 NO redefine el modelo dual de claves (§3.1 de ADR-046), el grafo temporal con aristas tipadas (§3.2), el inventario de endpoints (§3.9) ni la cuota anti-pinning fail-closed (§3.5). ADR-052 <em>consume</em> esas decisiones y añade: (a) la identidad de nodo <code>flow_uid</code>, (b) el modelo de amenaza, (c) la lente del corpus (§0). Donde haya solape, ADR-046 v4 es la fuente.</p>
+</blockquote>
+<hr />
+<h2 id="2-contexto">2. Contexto</h2>
+<h3 id="21-el-community_id-no-es-identidad-de-nodo">2.1 El community_id no es identidad de nodo</h3>
+<p><code>community_id</code> es clave de <strong>correlación</strong>: sensores honestos que ven el mismo paquete coinciden (validado DAY 171, diana <code>1:IN7uqVpMWxpmuhQTowSQB2XEe0E=</code>). Como identidad de nodo es insuficiente por reciclaje temporal de 5-tupla (dos flujos legítimos no relacionados producen el mismo <code>community_id</code>; como identidad se fundirían → corrupción de estructura <strong>y del corpus</strong>) y por el mundo multi-nodo (NAT/rangos solapados → misma 5-tupla en sensores distintos). Conclusión: <code>community_id</code> es <strong>propiedad indexada</strong>, nunca identidad.</p>
+<h3 id="22-el-data-plane-es-hostil-no-solo-ruidoso">2.2 El data-plane es hostil, no solo ruidoso</h3>
+<p>ADR-046 v4 modela latencia/reorden/pérdida. ADR-052 añade <strong>adversario activo con capacidad de modificar paquetes en runtime</strong> (bettercap, scapy, nfqueue, eBPF/tc). Todo lo observado puede ser una mentira fabricada; el <code>community_id</code> —función pura de la 5-tupla— hereda esa hostilidad (<em>garbage in, garbage hashed</em>). Para el corpus, la procedencia de cada muestra debe ser trazable.</p>
+<h3 id="23-por-que-hay-que-decidir-esto-antes-de-poblar-neo4j">2.3 Por qué hay que decidir esto ANTES de poblar Neo4j</h3>
+<p>El esquema de identidad (constraint, propiedades obligatorias, codificación del hash) es doloroso de retrofitear con datos en producción y gratis con el grafo vacío. Un corpus construido sobre un esquema defectuoso está envenenado desde el origen. ADR-052 ratifica el esquema para desbloquear DEBT-NEO4J-FLOW-KEY-001.</p>
+<hr />
+<h2 id="3-decision">3. Decisión</h2>
+<h3 id="31-identidad-de-nodo-flujo-flow_uid-p3">3.1 Identidad de nodo-flujo: <code>flow_uid</code> (P3)</h3>
+<pre><code>flow_uid = H( node_id ‖ community_id ‖ flow_start_window [‖ seq_in_window] )
+</code></pre>
+<ul>
+<li><strong><code>community_id</code></strong> — propiedad indexada (correlación + verificable). NUNCA identidad.</li>
+<li><strong><code>node_id</code></strong> — identidad de corpus estable del sensor (§3.1.2). Obligatorio.</li>
+<li><strong><code>flow_start_window</code></strong> — componente temporal de <strong>inicio inmutable</strong> (§3.1.4).</li>
+<li><strong><code>seq_in_window</code></strong> — contador anti-colisión UDP, transportado en el evento (§3.1.4).</li>
+</ul>
+<p><strong>Propiedades obligatorias en el grafo:</strong> <code>node_id</code> en <code>:NetworkFlow</code>, <code>:Alert</code>, <code>:TelemetryEvent</code>. Constraint compuesto nativo Neo4j 5.x sobre la identidad de nodo-flujo.</p>
+<p><strong>Triple justificación del <code>flow_uid</code>:</strong> (1) unicidad de nodo en mundo multi-nodo con reciclaje temporal; (2) defensa anti-inyección (un flujo sin sensor de borde trazable = anomalía); (3) integridad del corpus: una muestra por instancia de flujo real, <strong>reproducible offline</strong> desde el pcap archivado.</p>
+<h4 id="311-codificacion-canonica-y-funcion-de-hash-p0-bloqueante-de-esquema">3.1.1 Codificación canónica y función de hash (P0 — bloqueante de esquema)</h4>
+<blockquote>
+<p><em>Resuelve el hueco detectado por el Consejo (Kimi) y el arbitraje de Alonso sobre la función de hash (N5).</em></p>
+</blockquote>
+<pre><code>flow_uid = base64( H(
+    utf8(node_id)            ‖ 0x00 ‖
+    utf8(community_id)       ‖ 0x00 ‖
+    uint64_be(flow_start_window)
+    [‖ 0x00 ‖ uint32_be(seq_in_window)]
+) )
+</code></pre>
+<p><strong>Función de hash <code>H</code> — invariante de proyecto (N5):</strong></p>
+<blockquote>
+<p>La función de hash es <strong>la que provea la versión congelada de libsodium del pipeline</strong>, y debe ser <strong>idéntica en todo el pipeline</strong> (sensor C++ y correlation-engine Python). <strong>No se permite drift entre versiones de libsodium.</strong> No se introduce ninguna dependencia de hash fuera de esa libsodium.</p>
+</blockquote>
+<p>En la versión actual del proyecto (libsodium 1.0.19) esto es <strong>BLAKE2b vía <code>crypto_generichash</code></strong> (nativo, rápido, sin dependencia nueva). El invariante se enuncia anclado a "lo que da <em>esta</em> libsodium" y no a un algoritmo por nombre, para que sobreviva a un futuro cambio de versión —siempre que el cambio sea simultáneo en todo el pipeline. <em>(Nota: SHA3-256 se descartó porque no lo provee la libsodium congelada; y el argumento de length-extension no aplica, ya que el <code>flow_uid</code> no es un control de seguridad — §3.5.)</em></p>
+<ul>
+<li><strong>Delimitador <code>0x00</code></strong> entre campos: evita <em>prefix collision</em>.</li>
+<li><strong><code>base64</code></strong> para <code>STRING</code> Neo4j sin caracteres de control.</li>
+<li><strong>Test de paridad cross-implementación obligatorio</strong> (EMECAS++): C++ y Python producen <code>flow_uid</code> idéntico sobre el mismo vector <strong>Y enlazan la misma versión de libsodium</strong> (el test verifica ambas cosas). El <code>seq_in_window</code> es <strong>input del vector de paridad</strong> (Python lo recibe del evento, no lo computa — §3.1.4), para que el test no asuma que ambas implementaciones lo derivan. Mismo patrón que la paridad <code>pycommunityid</code>.</li>
+</ul>
+<h4 id="312-node_id-identidad-de-corpus-estable-p0-reescrito-en-v3-refinado-en-v31">3.1.2 <code>node_id</code>: identidad de corpus estable (P0 — reescrito en v3, refinado en v3.1)</h4>
+<blockquote>
+<p><em>Corrige el conflicto detectado: <code>node_id = SHA256(public_key)</code> se rompía contra la regla permanente "el keypair se regenera en cada <code>vagrant destroy+up</code>" → los <code>flow_uid</code> cambiarían en cada rebuild de EMECAS++ → un corpus capturado durante el desarrollo dejaría de ser reproducible y enlazable (viola §0). v3.1 elimina además el <code>deployment_epoch</code>, que reintroducía el mismo footgun en miniatura (un componente mutable en la identidad de corpus).</em></p>
+</blockquote>
+<p>Se separan <strong>dos identidades del sensor que v2 conflató</strong>:</p>
+<ul>
+<li>
+<p><strong>Identidad de corpus (<code>node_id</code>) — estable, declarada, legible, persistente.</strong> Es el <strong>identificador declarado del sensor</strong> (un string canónico legible, p. ej. <code>argus-sensor-gw-lan-01</code>), fijado en el <strong>manifiesto del orquestador</strong> (Vagrant/Ansible) y registrado en el <strong>inventario de endpoints firmado</strong> (ADR-046 §3.9). Sobrevive a los ciclos <code>destroy+up</code> de EMECAS++ y a la vida en producción. <strong>No se deriva de ningún estado efímero ni se hashea</strong> —se usa legible para que el grafo sea auditable en forense del corpus (no es secreto; hashearlo solo añadiría opacidad).
+  <code>node_id = "argus-sensor-gw-lan-01"   # string canónico declarado, validado contra el inventario</code>
+  <strong>Sin <code>deployment_epoch</code></strong> (decisión v3.1): si se reemplaza hardware con el mismo rol, <em>se quiere</em> continuidad → mismo <code>node_id</code>; si se despliega un sensor genuinamente nuevo → nuevo <code>declared_sensor_id</code>. La continuidad gana (§0). Si en el futuro se necesitara marcar generaciones de despliegue a propósito, esa marca deberá vivir en el inventario firmado con la misma protección que el <code>node_id</code> (cambio = operación de inventario revisada, jamás automática), nunca como un entero mutable suelto en el hash.</p>
+</li>
+<li>
+<p><strong>Identidad de autenticación (keypair del sensor) — puede rotar.</strong> La clave del sensor (Ed25519/Noise, ADR-027) <strong>firma los eventos de flujo</strong> para autenticidad de origen, y puede regenerarse en cada <code>destroy+up</code> sin afectar al <code>node_id</code> ni al <code>flow_uid</code>. La firma es una propiedad del evento, no un componente de la identidad de corpus.</p>
+</li>
+</ul>
+<p><strong>Aclaración de alcance (Kimi):</strong> <code>flow_uid</code> es prueba de <strong>autenticidad de origen</strong>, NO de <strong>honestidad de contenido</strong>. Un sensor comprometido con <code>node_id</code> válido puede emitir <code>community_id</code> fabricados; eso lo detecta <code>orphan_rate</code> (§3.6, ADR-051) <em>a posteriori</em>, interpretado contra la cobertura esperada (§3.8). Suficiencia = tríada: (1) <code>flow_uid</code> bien formado, (2) <code>node_id</code> en inventario con evento firmado por clave válida, (3) <code>community_id</code> corroborado o dentro del <code>orphan_rate</code> tolerable.</p>
+<h4 id="313-node_id-distingue-por-diseno-identidad-correlacion-cross-nodo-ratificado-88">3.1.3 <code>node_id</code> distingue por diseño: identidad ≠ correlación cross-nodo (RATIFICADO 8/8)</h4>
+<p>Como <code>node_id</code> está <strong>dentro del hash</strong>, dos sensores que observan el mismo flujo físico producen <strong><code>flow_uid</code> distinto por diseño</strong>. <strong>No deben coincidir en identidad</strong>; se relacionan por la arista <code>FLOW_IDENTITY</code> vía <code>community_id</code> (§3.2). Por tanto:</p>
+<ul>
+<li>La "fragmentación de un flujo legítimo en múltiples nodos" <strong>no es un fallo: es el modelo intencionado.</strong> Cada observación de cada sensor es una muestra de entrenamiento distinta y legítima (enriquece el corpus).</li>
+<li>El skew de reloj amenaza <strong>únicamente el <em>match</em> de correlación</strong> (la arista), <strong>nunca la identidad</strong> (el nodo). La defensa contra el skew vive en la tolerancia de correlación (§3.2.2).</li>
+</ul>
+<p>Esto descarta el <code>session_counter</code> estatal (resolvería un problema que el diseño no tiene, a costa de introducir estado y romper la reproducibilidad offline). <strong>Ratificado por unanimidad en la 2ª pasada.</strong> Test EMECAS++: dos sensores ven el mismo flujo → <code>flow_uid</code> distintos + arista <code>FLOW_IDENTITY</code> correcta.</p>
+<h4 id="314-flow_start_window-y-seq_in_window-resolucion-q6-n2-n3-arbitraje-6">3.1.4 <code>flow_start_window</code> y <code>seq_in_window</code> (resolución Q6 + N2 + N3 + arbitraje 6)</h4>
+<p><strong>CrisisWindow queda descartada</strong> como componente de identidad (variable, dependiente de contenido → rompe determinismo cross-sensor y reproducibilidad).</p>
+<ol>
+<li><strong><code>flow_start_window = floor(flow_start_epoch / N)</code></strong> — bucket fijo alineado a epoch, <strong>determinista, computable localmente, reproducible offline</strong>.</li>
+<li><strong>Timestamp de <em>inicio</em>, inmutable.</strong> Los flujos de larga duración (SSH, VPN, C2) NO fragmentan su identidad: se extienden con aristas de duración (ADR-046 §3.2):
+   <code>cypher
+   (:NetworkFlow {flow_uid:"abc", flow_start_window:T0})-[:CONTINUES]-&gt;(... referencia el mismo flow_uid ...)</code></li>
+<li><strong><code>seq_in_window</code> — transportado, no recomputado (N2).</strong> Contador monótono por <code>(node_id, community_id)</code> dentro del bucket, que resuelve el reúso instantáneo de puerto UDP. <strong>Se computa en el sensor en el orden de la primera observación del flujo y se transporta como campo del evento serializado (Protobuf).</strong> NO se recomputa en el correlation-engine ni en la reconstrucción offline. Esto hace el <code>flow_uid</code> reproducible <strong>dado el evento</strong>, inmune a reordenado de NIC, drops de ring buffer o diferencias de tcpreplay. El sensor persiste el contador para recuperación tras crash (deuda de implementación).</li>
+<li><strong><code>sensor_native_flow_id</code> — propiedad de trazabilidad, NUNCA componente del hash (N3, voto Kimi).</strong> El <code>flow_id</code> (uint64) de Suricata y el <code>uid</code> (string) de Zeek se guardan como <strong>propiedad obligatoria</strong> del nodo para trazabilidad y dedup interno de la herramienta, pero <strong>el <code>flow_uid</code> mantiene su fórmula canónica tool-independiente</strong>. Motivo: Suricata reinicia <code>flow_id</code> (colisión con históricos) y normalizar <code>uint64</code> con <code>string</code> en el hash es ambiguo. Así el esquema se unifica venga el flujo de Suricata, Zeek o del sniffer propio.</li>
+<li><strong>Calibración por protocolo (arbitraje 6).</strong> <code>N</code> se calibra <strong>por protocolo separado</strong> (TCP y UDP reciclan de forma distinta; un único <code>N</code> es un error) midiendo sobre golden pcap la distribución del intervalo de reúso de 5-tupla intra-nodo y fijando <code>N</code> bajo un percentil bajo. Se crean <strong>tests dedicados</strong> para hallar esos valores. Default LAB de arranque: <strong>60 s</strong> (TIME-WAIT TCP típico), explícitamente provisional hasta que los tests den el número por protocolo.</li>
+</ol>
+<p><strong>El gate NTP/chrony (DEBT-ARGUSPP-NTP-001, cerrada DAY 167) es load-bearing:</strong> la ventana viable solo existe si <code>skew ≪ N ≪ intervalo_reúso</code>.</p>
+<h3 id="32-correlacion-hostred-doble-arista-p1">3.2 Correlación host↔red: doble arista (P1)</h3>
+<p>Dos aristas de naturaleza distinta sobre el grafo temporal de ADR-046 §3.2:</p>
+<ul>
+<li><strong>Arista flujo↔flujo</strong> — por <code>community_id</code>. Determinista (<code>FLOW_IDENTITY</code> de ADR-046).</li>
+<li><strong>Arista host↔flujo</strong> — por <code>agent_id</code> <strong>canónico</strong> (§3.2.3, nunca IP cruda) + <strong>coincidencia temporal asimétrica</strong> (§3.2.2). El evento de host se une al endpoint interno/gestionado (la víctima), no al atacante (join asimétrico).</li>
+</ul>
+<p><strong>Valor para el corpus (§0):</strong> un flujo anclado a un evento de host (Wazuh) es una <strong>muestra estrictamente más rica</strong>. P1 es lo que pone el <em>enriquecido</em> en "dataset enriquecido".</p>
+<p><strong>NAT — menú de mecanismos con anotación obligatoria</strong>, en orden de confianza: (1) translation node con logs NAT; (2) <code>agent_id</code>/hostname canónico; (3) (proceso, puerto_local, timestamp); (4) fallback temporal degradado. <strong>Invariante:</strong> SIEMPRE se anota método + confianza en grafo y log. <strong>Nunca fallo silencioso.</strong></p>
+<h4 id="321-resolucion-de-conflictos-nat-kimi-peso-de-muestra-n8-gemini">3.2.1 Resolución de conflictos NAT (Kimi) + peso de muestra (N8, Gemini)</h4>
+<p>Si dos mecanismos producen respuestas inconsistentes: <strong>consenso por mayoría ponderada por confianza</strong>. Si los de mayor confianza (1, 2) discrepan → <code>CONFLICT_NAT</code>, elevado a análisis humano/ML, <strong>sin fallback silencioso al mecanismo 4</strong>. Para el corpus, un <code>CONFLICT_NAT</code> debe recibir <strong>peso de muestra nulo o penalizado</strong> en el entrenamiento (ADR-040) para no meter ruido en las fronteras de decisión del modelo. <em>(El peso lo aplica ADR-040; ADR-052 solo aporta la primitiva <code>nat_resolution_method = CONFLICT_NAT</code> — coherente con §3.6.)</em></p>
+<h4 id="322-coincidencia-temporal-asimetrica-en-event-time-terminologia-corregida-n7">3.2.2 Coincidencia temporal asimétrica en event time (terminología corregida + N7)</h4>
+<p>No es "causal-bidireccional" (la causalidad real —Lamport/vectoriales— es cara y frágil). Es <strong>coincidencia temporal asimétrica</strong> sobre <strong>event time</strong> (timestamps de los eventos originales), NO processing time: Wazuh puede bufferizar logs minutos. El correlation-engine mantiene una <strong>ventana de retención con watermark</strong> (estándar en stream processing) esperando eventos de host atrasados. Las ventanas asimétricas (defaults §4) —Red→Host ~5 s, Host→Red ~30 s— son <strong>tolerancia de skew de reloj</strong>, no latencia de ingest.</p>
+<h4 id="323-definicion-de-agent_id-n11-mistral">3.2.3 Definición de <code>agent_id</code> (N11, Mistral)</h4>
+<p><code>agent_id</code> canónico, estable bajo DHCP/contenedores:</p>
+<pre><code>agent_id = base64( H( utf8(hostname) ‖ 0x00 ‖ utf8(domain) ‖ 0x00 ‖ utf8(os_uuid) ) )
+</code></pre>
+<p>con <code>os_uuid</code> = <code>/etc/machine-id</code> en Linux. Bajo DHCP, la clave del puente host↔flujo es <code>agent_id</code> (+ MAC si aplica), nunca la IP cruda.</p>
+<h3 id="33-modelo-de-amenaza-dos-vectores-opuestos">3.3 Modelo de amenaza: dos vectores opuestos</h3>
+<table>
+<thead>
+<tr>
+<th>Vector</th>
+<th>Capa</th>
+<th>Efecto sobre community_id</th>
+<th>Detectable por</th>
+<th>MITRE</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>A — MITM</strong> (ARP spoof L2; <strong>y rogue gateway/DNS/BGP en L3; hijack en L4; mismatch en L7</strong>)</td>
+<td>L2 (MAC) / <strong>L3-L7</strong></td>
+<td><strong>CIEGO</strong> en L2 (mismo flujo → mismo hash)</td>
+<td>Host plane: ARP/NDP (L2) <strong>+ anomalías TCP/TLS (L3-L7), §3.11</strong></td>
+<td><strong>T1557</strong></td>
+</tr>
+<tr>
+<td><strong>B — Inyección/reescritura</strong> (scapy, nfqueue, eBPF/tc)</td>
+<td>L3/L4</td>
+<td><strong>CAMBIA</strong> — atacante fabrica community_id</td>
+<td>flow_uid + node_id + ventana temporal</td>
+<td><strong>T1565 / T1090</strong></td>
+</tr>
+</tbody>
+</table>
+<p>El community_id es <strong>ciego al vector A</strong> y <strong>manipulable en el vector B</strong>. Ninguna defensa vive en el hash. <strong>El vector A no es solo L2:</strong> rogue gateway, DNS poisoning o BGP hijack hacen MITM sin tocar la MAC → la señal de host debe ir más allá de ARP/NDP (§3.11).</p>
+<h3 id="34-las-tres-lineas-de-defensa-arquitectonicas-no-del-hash">3.4 Las tres líneas de defensa (arquitectónicas, NO del hash)</h3>
+<ol>
+<li><strong><code>flow_uid</code> ancla a nodo + ventana</strong> — anti-inyección (vector B). Requiere el mapa de cobertura (§3.8).</li>
+<li><strong>Correlación host↔red</strong> — único detector del MITM sigiloso (vector A): ARP/NDP en L2 (§3.9) <strong>+ anomalías TCP/TLS en L3-L7 (§3.11)</strong>. La detección vive <strong>en el cruce</strong>.</li>
+<li><strong>community_id como dato no confiable</strong> — entra en <code>orphan_rate</code> (§3.6, ADR-051), interpretado contra la cobertura esperada (§3.8), nunca en absoluto.</li>
+</ol>
+<h4 id="341-limite-fundamental-de-la-deteccion-del-vector-a-kimi-generalizado-por-chatgpt">3.4.1 Límite fundamental de la detección del vector A (Kimi, generalizado por ChatGPT)</h4>
+<p>El host plane detecta el vector A <strong>solo bajo el supuesto de host sano</strong>. Si el atacante tiene root en el endpoint, <strong>toda la telemetría de host miente</strong> —no solo ARP/NDP, también osquery, Wazuh, eBPF local y la tabla ARP—; el host plane pierde su independencia observacional por completo. Para host comprometido se requiere una <strong>fuente out-of-band</strong> (switch con port-security/DHCP snooping/Dynamic ARP Inspection, SPAN/TAP, o Canary Host). <strong>Sin fuente externa, el vector A con host comprometido es indetectable por diseño</strong> — límite de la observabilidad, documentado honestamente ("escudo, nunca espada": no prometemos lo que no podemos detectar). La fuente out-of-band <strong>no elimina</strong> el problema, <strong>reubica</strong> la confianza al elemento menos comprometible (DEBT, §9).</p>
+<h3 id="35-el-community_id-no-es-un-control-de-seguridad-y-nunca-lo-sera">3.5 El community_id NO es un control de seguridad — y nunca lo será</h3>
+<p>Función pura y honesta de la 5-tupla. Vector A: hashea fielmente IPs/puertos intactos → mismo ID. Vector B: hashea fielmente la 5-tupla falsa → ID nuevo controlado por el atacante. La integridad del hash ≠ integridad del contenido. La defensa es <strong>arquitectónica, no criptográfica-de-flujo.</strong> <em>(Esto es además por qué la elección de <code>H</code> en §3.1.1 es de higiene/disciplina de stack, no de seguridad.)</em></p>
+<h3 id="36-marca-de-confianza-features-del-corpus-no-veredicto-opaco-resolucion-q3q4">3.6 Marca de confianza: features del corpus, no veredicto opaco (resolución Q3/Q4)</h3>
+<p><strong>Guardar señales primitivas, derivar el tier como vista.</strong> NO un <code>float</code> opaco congelado al ingestar. Primitivas obligatorias en el nodo-flujo: <code>witness_count</code>/<code>corroboration_count</code>, <code>is_host_plane_anchored</code> (bool), <code>nat_resolution_method</code> (enum <code>LOG</code>/<code>AGENT_ID</code>/<code>PROC_PORT</code>/<code>TEMPORAL_FALLBACK</code>/<code>CONFLICT_NAT</code>) + <code>nat_confidence</code>, enlace a <code>orphan_rate</code> (ADR-051).</p>
+<p><strong>Dos cantidades distintas derivadas de las primitivas, segregadas por capa y por propósito (Q4, refinado en v3.1):</strong></p>
+<ul>
+<li><strong><code>trust_tier</code></strong> (enum <code>CORROBORATED</code>/<code>SINGLE_SENSOR</code>/<code>ORPHAN</code>/<code>CONFLICT_NAT</code>) — vista en el grafo para queries/UI/threat-hunt.</li>
+<li><strong>Confianza por corroboración</strong> — una <em>feature</em> del corpus, computada en el pipeline ML (ADR-040), <strong>NO congelada en Neo4j</strong>:
+  <code>corroboration_confidence = min( 1.0, corroboration_count / expected_witnesses )</code>
+  con <code>expected_witnesses</code> del mapa de cobertura (§3.8). <strong>Sube</strong> con los testigos. Si un segmento tiene 1 sensor, <code>expected_witnesses = 1</code> → <code>SINGLE_SENSOR</code> da confianza 1.0 (<strong>no se penaliza la cobertura única por diseño</strong>).</li>
+<li><strong>Peso de de-duplicación</strong> — una cantidad <strong>distinta y de signo opuesto</strong>, para el <em>sampler</em> de entrenamiento: cuando varios sensores observan el mismo flujo físico, son muestras correlacionadas de un único evento; su peso por muestra debe <strong>bajar</strong> con <code>witness_count</code>, o el modelo triple-cuenta y sobre-aprende los segmentos bien cubiertos (covariate shift por la puerta de atrás).</li>
+</ul>
+<blockquote>
+<p><strong>Aclaración de honestidad (v3.1):</strong> ninguna de estas dos cantidades es "el peso IPW". El modelo de propensión (1/P(observado)) lo posee y lo computa <strong>ADR-040</strong>; ADR-052 expone las <strong>primitivas crudas</strong> (<code>witness_count</code>, <code>is_host_plane_anchored</code>, <code>nat_resolution_method</code>+<code>nat_confidence</code>, <code>orphan_rate</code>) y estas dos derivadas, que ADR-040 consume. La confianza-por-corroboración (sube) y el peso-de-de-duplicación (baja) derivan ambas de <code>witness_count</code> pero en direcciones opuestas y para fines distintos: confundirlas —como hacía v3 al llamar "score IPW" a la primera— era un error de categoría. <strong>Ambas atan §3.6 a §3.8: ninguna es computable sin el mapa de cobertura.</strong></p>
+</blockquote>
+<p><strong>Objeción incorporada (Claude + DeepSeek):</strong> "visto por 1 sensor" NO es sospechoso por sí mismo — es lo normal en cobertura no solapada. <code>SINGLE_SENSOR</code>/<code>orphan_rate</code> solo significan algo <em>relativo a la cobertura esperada</em> (§3.8).</p>
+<h3 id="37-etiquetado-de-procedencia-la-integridad-de-la-etiqueta-es-el-producto-resolucion-q4q5-n4">3.7 Etiquetado de procedencia: la integridad de la etiqueta ES el producto (resolución Q4/Q5 + N4)</h3>
+<p><strong>Dos campos ortogonales que NUNCA se colapsan:</strong>
+- <strong><code>provenance_suspected</code></strong> — sospecha de runtime (heurística: <code>community_id</code> huérfano relativo a cobertura, <code>node_id</code> sin sensor de borde trazable, re-binding ARP correlado, anomalía TCP/TLS), con la evidencia que la disparó.
+- <strong><code>provenance_ground_truth</code></strong> — verdad de escenario, del <strong>manifiesto MITRE</strong> (ADR-050), NO del detector.</p>
+<p>Si se funden, se valida el detector contra su propia salida (circular) y la misión —demostrar que el modelo es mejor— se vuelve irrealizable. <strong>El delta entre ambos campos ES la métrica honesta de precision/recall.</strong></p>
+<p><strong>Eje separado del enum congelado (RATIFICADO 8/8, Q5):</strong> <code>provenance</code> es eje distinto de DROP/CONFIG/POLICY/BUG/UNKNOWN de <code>acceptance_criteria.md</code>. NO se mete <code>INJECTED</code> en ese enum (error de categoría + descongelaría el artefacto).</p>
+<p><strong>No-repudio del etiquetado: WAL externo con hash-chain (N4, especificado en v3.1).</strong> La garantía append-only <strong>no puede vivir en Neo4j</strong> (mutable; un motor comprometido borra aristas). El etiquetado se escribe primero en un <strong>WAL externo append-only con hash-chain</strong> —responsabilidad del <strong>componente de log inmutable, soportado por el plano etcd HA (ADR-048, Raft nativo)</strong> o un servicio dedicado que Alonso designe—; <strong>Neo4j es vista materializada, no fuente de verdad del etiquetado.</strong> El ADR define la <em>interfaz</em> (el etiquetado habla con el componente WAL), no el binding concreto.</p>
+<p><strong>Estructura de la cadena (v3.1):</strong> cada entrada del WAL incluye <code>prev_hash = H(entrada_{i-1})</code> (misma <code>H</code> de §3.1.1), de modo que alterar o borrar una entrada rompe la cadena de todas las posteriores. Una <strong>verificación periódica de la cadena</strong> (job programado + al arranque) recorre el WAL y valida la continuidad de <code>prev_hash</code>. Esto da <strong>dos detecciones independientes</strong>: (a) manipulación del <strong>WAL</strong> → la verificación de la cadena la detecta; (b) manipulación de <strong>Neo4j</strong> → la divergencia grafo↔WAL la detecta (el grafo debe contener exactamente las entradas del WAL). En el grafo, el tag se refleja como arista append-only que referencia su offset en el WAL:</p>
+<pre><code class="language-cypher">(:NetworkFlow)-[:TAGGED_AS {method:'MITRE_GROUND_TRUTH', source:'ADR-050-SESSION-N',
+                            timestamp:t, wal_offset:N, analyst:'auto'}]-&gt;(:Tag {label:'INJECTED'})
+</code></pre>
+<p><strong>Uso dual:</strong> producción/online filtra por defecto (<code>WHERE NOT n:SuspiciousFlow</code>); construcción de corpus y threat-hunt MITRE incluyen explícitamente. La retención (§0) hace posible el segundo.</p>
+<h3 id="38-mapa-de-coberturavisibilidad-de-sensores-prerrequisito-resolucion-q2">3.8 Mapa de cobertura/visibilidad de sensores (prerrequisito — resolución Q2)</h3>
+<p>Modelo explícito de <strong>qué sensor puede observar qué segmento</strong> (VLAN/subred/interfaz). Sin él, <code>orphan_rate</code>, <code>SINGLE_SENSOR</code> y las derivadas de confianza/de-duplicación (§3.6) son ruido, y el covariate shift vuelve a morder.</p>
+<p><strong>Modelo de datos (Q2 + N):</strong>
+- <strong>Forma:</strong> tabla/mapa de adyacencia declarativa <code>node_id → {segmentos}</code>, con <strong>lookup rápido en el correlation-engine (cache Redis/etcd)</strong>. <strong>NUNCA <code>MATCH</code> en Neo4j por paquete</strong> (colapsaría el throughput). Representación en grafo, si se desea, solo para visualización.
+- <strong>Declarado, no auto-descubierto:</strong> bajo data-plane hostil, auto-descubrir la cobertura es circular (el atacante podría falsearla para esconder su inyección). <strong>Fuente de verdad = orquestador (Vagrant/Ansible)</strong>, derivada del inventario de endpoints (ADR-046 §3.9).
+- <strong>Versionado y timestampeado:</strong> los pesos IPW dependen del mapa; si la cobertura cambia a mitad de captura sin versión, los pesos se computan contra topología equivocada. <strong>El mapa es, él mismo, ground truth que se archiva junto al corpus.</strong>
+- <strong>Validación runtime:</strong> beacons/heartbeats verifican que la cobertura real coincide con la declarada (cable desconectado, NIC caída).</p>
+<h3 id="39-senal-arpndp-nodo-de-estado-de-primera-clase-resolucion-q2-1a-pasada">3.9 Señal ARP/NDP: nodo de estado de primera clase (resolución Q2 1ª pasada)</h3>
+<p>Primera clase, <strong>estado de binding, no volcado de paquetes</strong> (un nodo por paquete ARP inundaría el grafo — irónico dado §3.10). Nodo <code>:IpMacBinding</code> (estado actual IP↔MAC) con <code>valid_from</code>/<code>valid_to</code> y <code>previous_mac</code>; el <strong>re-binding (cambio de MAC para una IP) es la señal</strong> del vector A en L2. Encaja con el inventario de endpoints (ADR-046 §3.9). <code>DEBT-ARGUSPP-ARP-MONITOR-001</code> emite <strong>eventos de cambio de estado</strong>, no logs crudos. Sujeto al límite de §3.4.1.</p>
+<h3 id="310-rate-limit-de-cardinalidad-resolucion-q1-1a-pasada-n6">3.10 Rate-limit de cardinalidad (resolución Q1 1ª pasada + N6)</h3>
+<p><strong>Enforcement primario en el correlation-engine, antes de Neo4j.</strong> Neo4j nunca es el rate-limiter primario; a lo sumo backstop. Métrica: <strong>cardinalidad de <code>community_id</code> distintos por ventana por <code>node_id</code></strong>, umbral <strong>adaptativo sobre baseline por nodo/rol</strong>.</p>
+<p><strong>Cardinalidad exacta para la etiqueta (N6).</strong> La decisión de marcar <code>rate_limited</code> —que entra al corpus— se computa con <strong>cardinalidad exacta</strong> en el motor (docenas de sensores, ventana pequeña → contador exacto en memoria factible y preferible). Las estructuras probabilísticas (HyperLogLog) tienen ~2 % de error y Count-Min Sketch estima frecuencia, no cardinalidad de elementos nuevos: <strong>solo se usan para observabilidad/dashboards, jamás para la etiqueta del corpus.</strong></p>
+<p><strong>Nunca se descarta evidencia (§0):</strong> superar el cap marca (<code>rate_limited:true</code>) y/o colapsa en meta-nodo de primera clase (<code>:GraphFloodingAnomaly</code>/<code>:HighCardinalityFlowCluster</code> con muestra de <code>flow_uid</code>). El flooding <em>es</em> el ataque: que salte el cap es una detección y una muestra de corpus.</p>
+<p><strong>Backpressure en el sensor:</strong> autolímite grueso = <strong>backpressure de IPC, no control de seguridad</strong> (un sensor comprometido no respeta su propio límite). El control real vive en el motor.</p>
+<h3 id="311-senales-de-host-extendidas-anomalias-tcptls-vector-a-ampliado-decision-de-arbitro">3.11 Señales de host extendidas: anomalías TCP/TLS (vector A ampliado) — <strong>DECISIÓN DE ÁRBITRO</strong></h3>
+<blockquote>
+<p><strong>ANULACIÓN DE ÁRBITRO.</strong> La mayoría del Consejo (6/8) recomendó <strong>diferir</strong> estas señales a ADR-053, manteniendo solo el gancho conceptual. Alonso <strong>anula esa recomendación</strong> y las incorpora a ADR-052. Justificación: el vector A <strong>no es solo L2</strong> (rogue gateway, DNS poisoning, BGP hijack, TCP hijack no tocan la MAC); dejar la señal TCP/TLS fuera dejaría la detección del <strong>vector A ampliado sin ground truth en el mismo ADR que define el modelo de amenaza</strong> (§3.3). El threat model y su detección deben viajar juntos. Se asume conscientemente el coste de mayor alcance de este ADR, con la sección delimitada para que no se desborde.</p>
+</blockquote>
+<p><strong>Alcance delimitado (qué entra ahora).</strong> Las señales NO tienen el mismo coste; v3.1 las separa explícitamente:</p>
+<p><strong>(a) Anomalías TCP — ligeras, entran sin reservas.</strong> Contadores del kernel / osquery directo, sin infraestructura nueva. Modeladas como nodo <code>:HostAnomaly</code> enlazado al <code>agent_id</code> y correlacionado con flujos en su ventana temporal (§3.2.2):</p>
+<table>
+<thead>
+<tr>
+<th>Señal</th>
+<th>Capa</th>
+<th>Indica</th>
+<th>Fuente</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>RST TCP inesperados</td>
+<td>L4</td>
+<td>inyección/hijack en conexión</td>
+<td>osquery / contador kernel</td>
+</tr>
+<tr>
+<td>Saltos anómalos de <code>seq_num</code></td>
+<td>L4</td>
+<td>inyección en medio de conexión</td>
+<td>host stack</td>
+</tr>
+</tbody>
+</table>
+<p><strong>(b) Mismatch de certificado TLS — NO es ligera; presupone infraestructura (corrección v3.1).</strong> "Certificado esperado ≠ presentado" requiere que exista un <em>esperado</em>: un <strong>cert-expectation store</strong> (pinning/expectativa de certificado por destino). Para destinos salientes arbitrarios eso es un problema de infraestructura completo —exactamente el rabbit-hole que el Consejo temía al pedir diferir TCP/TLS. Por tanto:
+- En v3.1 la señal TLS se <strong>acota a destinos gestionados con expectativa de certificado declarada</strong> (los endpoints internos/gestionados del inventario, donde el <code>esperado</code> es conocido y mantenible).
+- Para destinos arbitrarios, queda <strong>fuera de alcance</strong> hasta que exista el store, recogido como deuda propia <code>DEBT-CERT-EXPECTATION-STORE-001</code> (§9).
+- No se presenta como un contador barato: su coste de infraestructura se reconoce explícitamente, en honestidad con §0 y para que un revisor FEDER no encuentre el hueco ("¿cómo sabéis cuál es el certificado esperado?").</p>
+<table>
+<thead>
+<tr>
+<th>Señal</th>
+<th>Capa</th>
+<th>Indica</th>
+<th>Fuente</th>
+<th>Condición</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Mismatch de certificado TLS</td>
+<td>L7</td>
+<td>MITM con interceptación TLS / proxy</td>
+<td>osquery + cert-expectation store</td>
+<td><strong>solo destinos gestionados con expectativa declarada</strong></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Qué se reserva (NO entra, va a ADR-053 o backlog):</strong> fingerprinting JA3/JA4, análisis profundo de cadena TLS, mismatch TLS para destinos arbitrarios (depende del store), detección de anomalías de ruta L3 (traceroute/BGP).</p>
+<p><strong>Conexión con el corpus:</strong> estas señales alimentan <code>provenance_suspected</code> (§3.7) y son features de host plane para el modelo. Sujetas al límite de §3.4.1 (host comprometido → también mienten).</p>
+<hr />
+<h2 id="4-parametros-configurables-defaults-de-arranque">4. Parámetros configurables (defaults de arranque)</h2>
+<table>
+<thead>
+<tr>
+<th>Parámetro</th>
+<th>Default LAB</th>
+<th>Nota</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>flow_start_window</code> (N)</td>
+<td><strong>60 s, por protocolo</strong></td>
+<td>Provisional; calibrar TCP/UDP por separado (§3.1.4 pto 5).</td>
+</tr>
+<tr>
+<td><code>seq_in_window</code></td>
+<td>activo, transportado</td>
+<td>§3.1.4 pto 3.</td>
+</tr>
+<tr>
+<td><code>host_bridge_window</code> Red→Host</td>
+<td><strong>5 s</strong> (tolerancia de skew, event time)</td>
+<td>§3.2.2.</td>
+</tr>
+<tr>
+<td><code>host_bridge_window</code> Host→Red</td>
+<td><strong>30 s</strong> (tolerancia de skew, event time)</td>
+<td>§3.2.2; ventana de retención/watermark mayor.</td>
+</tr>
+<tr>
+<td><code>nat_confidence_floor</code></td>
+<td>por mecanismo, calibrado</td>
+<td>Contra escenarios NAT/MITRE etiquetados, no pcap benigno. Conflicto → <code>CONFLICT_NAT</code>.</td>
+</tr>
+<tr>
+<td><code>max_new_cid_per_window_per_node</code></td>
+<td>adaptativo, baseline por nodo/rol</td>
+<td>Cardinalidad exacta (§3.10).</td>
+</tr>
+<tr>
+<td><code>orphan_rate</code> umbral</td>
+<td>relativo a cobertura</td>
+<td>§3.8, nunca absoluto.</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="5-alternativas-consideradas-y-rechazadas">5. Alternativas consideradas y rechazadas</h2>
+<table>
+<thead>
+<tr>
+<th>Alternativa</th>
+<th>Por qué se rechazó</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>community_id</code> como identidad de nodo</td>
+<td>Reciclaje y multi-nodo funden flujos → corrupción de estructura y corpus.</td>
+</tr>
+<tr>
+<td><code>(node_id, community_id)</code> sin componente temporal</td>
+<td>La 5-tupla se recicla intra-nodo (objeción DeepSeek).</td>
+</tr>
+<tr>
+<td><code>community_id</code> como control de seguridad</td>
+<td>Función pura: ciego al vector A, manipulable en el B.</td>
+</tr>
+<tr>
+<td>HMAC con secreto en el hash</td>
+<td>No resuelve vector A y rompe paridad cross-sensor con Suricata/Zeek (SHA1 estándar).</td>
+</tr>
+<tr>
+<td><strong><code>node_id = SHA256(public_key)</code></strong> (v2)</td>
+<td>El keypair se regenera en cada <code>destroy+up</code> de EMECAS++ → <code>flow_uid</code> inestable → corpus no reproducible (§0). Reemplazado por identidad de corpus declarada (§3.1.2).</td>
+</tr>
+<tr>
+<td><strong>SHA3-256</strong> (v2)</td>
+<td>No lo provee la libsodium congelada del pipeline → dependencia nueva y riesgo de drift entre versiones; length-extension no aplica (§3.5). Reemplazado por la función de la libsodium del proyecto (§3.1.1).</td>
+</tr>
+<tr>
+<td><code>session_counter</code> estatal en el motor (Gemini)</td>
+<td>Resuelve un problema que el diseño no tiene (§3.1.3); introduce estado y rompe reproducibilidad offline.</td>
+</tr>
+<tr>
+<td><code>sensor_native_flow_id</code> como componente del hash</td>
+<td>Suricata reinicia <code>flow_id</code>; normalización uint64/string ambigua (§3.1.4 pto 4, voto Kimi).</td>
+</tr>
+<tr>
+<td>Append-only solo en Neo4j</td>
+<td>Neo4j es mutable; el no-repudio exige WAL externo (§3.7).</td>
+</tr>
+<tr>
+<td>HLL/CMS para la etiqueta <code>rate_limited</code></td>
+<td>Error ~2 % / estiman frecuencia, no cardinalidad; el corpus exige exactitud (§3.10).</td>
+</tr>
+<tr>
+<td>CrisisWindow como componente de identidad</td>
+<td>Variable y dependiente de contenido → rompe determinismo y reproducibilidad.</td>
+</tr>
+<tr>
+<td>IP cruda como clave del puente host↔red</td>
+<td>Colapsa bajo NAT/DHCP/contenedores; usar <code>agent_id</code> (§3.2.3).</td>
+</tr>
+<tr>
+<td>Borrar flujos inyectados</td>
+<td>Destruye la validez externa del corpus (§0). Se etiqueta.</td>
+</tr>
+<tr>
+<td><strong>Diferir TCP/TLS a ADR-053</strong> (mayoría Consejo)</td>
+<td>Anulado por árbitro: el vector A ampliado debe tener detección en el mismo ADR que su threat model (§3.11).</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="6-estado-de-las-preguntas-del-consejo">6. Estado de las preguntas del Consejo</h2>
+<p><strong>1ª pasada (Q1–Q7):</strong> resueltas en §3 (v2). <strong>2ª pasada:</strong> Q1 (§3.1.3) y Q5 (§3.7) <strong>ratificadas 8/8 e incorporadas al cuerpo</strong>; Q2 (§3.8), Q3 (§3.1.4 pto 5 / §4), Q4 (§3.6) resueltas; Q6 (§3.4.1 + DEBT) documentada; Q7 <strong>resuelta por arbitraje en contra de la mayoría</strong> (§3.11).</p>
+<p><strong>Para la confirmación de fidelidad (no deliberación nueva):</strong> ¿refleja la v3 fielmente el consenso de la 2ª pasada y deja claras las dos anulaciones de árbitro (función de hash anclada a libsodium §3.1.1; TCP/TLS dentro del ADR §3.11)?</p>
+<hr />
+<h2 id="7-consecuencias">7. Consecuencias</h2>
+<p><strong>Positivas.</strong> Identidad de nodo-flujo robusta, estable entre rebuilds de EMECAS++ y <strong>reproducible offline</strong>. Defensa MITM/inyección explícita y arquitectónica, ahora cubriendo el vector A ampliado (L2–L7) con su ground truth en el mismo ADR. Confianza como features primitivas para ADR-040. Etiquetado con no-repudio real (WAL con hash-chain). Suricata/Zeek/Wazuh reconvertidos en maestros del modelo. Desbloquea DEBT-NEO4J-FLOW-KEY-001.</p>
+<p><strong>Negativas / coste.</strong> <code>node_id</code> declarado en inventario firmado como nueva disciplina. WAL externo de etiquetado como nuevo componente. Mapa de cobertura versionado como prerrequisito. Señales TCP/TLS amplían el alcance del ADR (asumido conscientemente, §3.11); la señal TLS arrastra además un <em>cert-expectation store</em> (§3.11b / deuda). Cardinalidad exacta y resolución de conflictos NAT como mecanismos nuevos. Calibración por protocolo.</p>
+<p><strong>Riesgos.</strong> (1) Sin host plane (ARP/NDP + TCP/TLS), el vector A queda indetectable; sin fuente out-of-band, indetectable con host comprometido (§3.4.1). (2) <code>N</code> mal calibrado. (3) Sin mapa de cobertura, <code>orphan_rate</code> y las derivadas de confianza/de-duplicación son ruido — riesgo directo sobre la misión. (4) Fallback NAT degradado sin umbral claro.</p>
+<p><strong>Almacenamiento por niveles (N12).</strong> La retención de §0 hace crecer el grafo; se resuelve con <strong>storage por niveles</strong> (grafo caliente + archivo frío en data lake/Parquet/grafo histórico), <strong>NUNCA con borrado</strong>. En producción, el grafo y su WAL son secreto industrial: copias de seguridad obligatorias, destrucción prohibida (§0).</p>
+<hr />
+<h2 id="8-validacion-emecas">8. Validación (EMECAS++)</h2>
+<p>Sobre golden pcap (tier determinista, ADR-046 §7):</p>
+<ul>
+<li><strong>Paridad de <code>flow_uid</code>:</strong> C++ y Python producen <code>flow_uid</code> idéntico <strong>y enlazan la misma versión de libsodium</strong> (§3.1.1). <em>(Bloqueante.)</em></li>
+<li><strong>Estabilidad del <code>node_id</code>:</strong> <code>flow_uid</code> idéntico antes y después de un <code>vagrant destroy+up</code> (el keypair rota, el <code>node_id</code> declarado no) (§3.1.2). <em>(Test de cierre de N1.)</em></li>
+<li><strong>Unicidad de <code>flow_uid</code>:</strong> misma 5-tupla en nodos distintos → distinto (por diseño); reciclada en el tiempo en el mismo nodo → distinto.</li>
+<li><strong>No-colisión UDP:</strong> ráfaga UDP con reúso inmediato de puerto → <code>seq_in_window</code> transportado evita colisión; reconstrucción offline desde el evento reproduce el <code>flow_uid</code> (§3.1.4).</li>
+<li><strong>Constraint Neo4j:</strong> nodo-flujo sin <code>node_id</code> → rechazado (DLQ).</li>
+<li><strong>Anti-inyección (vector B):</strong> 5-tuplas fabricadas → ancladas al <code>node_id</code> que las vio; flujo sin sensor de borde trazable <em>según el mapa de cobertura</em> → <code>provenance_suspected</code>.</li>
+<li><strong>MITM L2 (vector A):</strong> ARP spoof → la red NO levanta señal (control negativo); el cruce host↔red detecta el re-binding (§3.9). Sin señal ARP, el test documenta la ceguera (§3.4.1).</li>
+<li><strong>MITM L3-L7 (vector A ampliado):</strong> inyección TCP / mismatch TLS simulados → <code>:HostAnomaly</code> correlado dispara <code>provenance_suspected</code> (§3.11).</li>
+<li><strong>NAT con anotación y conflicto:</strong> método+confianza anotados; conflicto → <code>CONFLICT_NAT</code> (peso de muestra penalizado en ADR-040), sin fallback silencioso.</li>
+<li><strong>No-repudio del etiquetado:</strong> (a) borrar/alterar una entrada del WAL → la verificación de la hash-chain lo detecta (<code>prev_hash</code> roto); (b) borrar una arista <code>:TAGGED_AS</code> en Neo4j → la divergencia grafo↔WAL lo detecta (§3.7).</li>
+<li><strong>TLS gestionado:</strong> mismatch de cert simulado contra un destino <strong>con expectativa declarada</strong> → <code>:HostAnomaly</code> dispara <code>provenance_suspected</code>; destino sin expectativa → la señal no se emite (fuera de alcance, §3.11b).</li>
+<li><strong>Etiquetado de procedencia:</strong> flujo inyectado MITRE → <code>provenance_ground_truth</code> (manifiesto) Y, si el detector lo pilla, <code>provenance_suspected</code>; se mide el delta. No excluido.</li>
+<li><strong><code>orphan_rate</code> con sensor comprometido simulado:</strong> anómalo <em>relativo a su cobertura esperada</em> (§3.8).</li>
+<li><strong>Escala:</strong> 1M flujos → constraint y rate-limit exacto se sostienen.</li>
+</ul>
+<hr />
+<h2 id="9-deudas-y-diferidos">9. Deudas y diferidos</h2>
+<table>
+<thead>
+<tr>
+<th>DEBT</th>
+<th>Prio</th>
+<th>Estado</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>DEBT-NEO4J-FLOW-KEY-001</code></td>
+<td>P0</td>
+<td><strong>Ratificada.</strong> Se cierra al aplicar §3.1.1 + constraint + <code>node_id</code> obligatorio.</td>
+</tr>
+<tr>
+<td><code>DEBT-FLOWUID-CANONICAL-ENCODING-001</code></td>
+<td>P0</td>
+<td>Codificación + función de libsodium congelada + test de paridad (incl. misma versión libsodium) + caso dos-sensores.</td>
+</tr>
+<tr>
+<td><code>DEBT-NODEID-CRYPTO-IDENTITY-001</code></td>
+<td>P0</td>
+<td><strong>Reescrita (N1 + v3.1):</strong> <code>node_id</code> = identificador declarado, legible, en inventario firmado; sin <code>deployment_epoch</code>; clave efímera firma, no es el <code>node_id</code>.</td>
+</tr>
+<tr>
+<td><code>DEBT-SENSOR-COVERAGE-MAP-001</code></td>
+<td>P1</td>
+<td>Tabla/cache declarada, versionada; fuente = orquestador; validación = beacons (§3.8).</td>
+</tr>
+<tr>
+<td><code>DEBT-LABEL-WAL-001</code> (NUEVA)</td>
+<td>P1</td>
+<td>WAL externo append-only con hash-chain (<code>prev_hash</code> encadenado) + verificación periódica de la cadena; soporte etcd HA / ADR-048; Neo4j vista materializada (§3.7).</td>
+</tr>
+<tr>
+<td><code>DEBT-ARGUSPP-ARP-MONITOR-001</code></td>
+<td>P1</td>
+<td>Eventos de cambio de estado <code>:IpMacBinding</code> (§3.9).</td>
+</tr>
+<tr>
+<td><code>DEBT-ARGUSPP-HOST-TCP-001</code> (NUEVA)</td>
+<td>P1</td>
+<td>Anomalías TCP ligeras (RST/seqnum) → <code>:HostAnomaly</code> (§3.11a). <em>(Dentro de ADR-052 por arbitraje.)</em></td>
+</tr>
+<tr>
+<td><code>DEBT-CERT-EXPECTATION-STORE-001</code> (NUEVA)</td>
+<td>P2</td>
+<td><em>cert-expectation store</em> (pinning por destino) que habilita el mismatch TLS; sin él, la señal TLS solo aplica a destinos gestionados con expectativa declarada (§3.11b).</td>
+</tr>
+<tr>
+<td><code>DEBT-SEQWINDOW-PERSIST-001</code> (NUEVA)</td>
+<td>P2</td>
+<td>Persistencia/recuperación post-crash del contador <code>seq_in_window</code> en el sensor (§3.1.4).</td>
+</tr>
+<tr>
+<td><code>DEBT-ARGUSPP-OOB-MITM-001</code> (NUEVA)</td>
+<td>P2/P3</td>
+<td>Fuente out-of-band (port-security/SPAN/Canary) en el switch FEDER (§3.4.1).</td>
+</tr>
+<tr>
+<td><code>DEBT-CORPUS-QUALITY-METRICS-001</code> (NUEVA)</td>
+<td>P2</td>
+<td>KPIs de §0.1.</td>
+</tr>
+<tr>
+<td><code>DEBT-ARCH-FLOW-OBSERVATION-001</code> (NUEVA)</td>
+<td>P3</td>
+<td>Documentar <code>FlowObservation</code> vs <code>FlowIdentity</code>: <code>flow_uid</code> identifica la <em>observación</em>, no el <em>flujo lógico</em>; evitar que se reutilice como identidad global de sesión (N9, GPT).</td>
+</tr>
+<tr>
+<td>ADR-053 (diferido)</td>
+<td>—</td>
+<td>JA3/JA4, cadena TLS profunda, mismatch TLS para destinos arbitrarios, anomalía de ruta L3 (§3.11).</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="10-referencias">10. Referencias</h2>
+<ul>
+<li>§0 — misión primaria: tres paradigmas (CTU-13), ACRL/Caldera, covariate shift (paper arXiv:2604.04952), ADR-040 (IPW/walk-forward/golden set).</li>
+<li>ADR-046 v4 (modelo dual de claves, grafo temporal, inventario de endpoints, cuota anti-pinning).</li>
+<li>ADR-051 (<code>orphan_rate</code>). ADR-050 (sesión MITRE, ground truth). ADR-048 (etcd HA / Raft — soporte del WAL). ADR-027 (identidad criptográfica del sensor).</li>
+<li><code>corelight/community-id-spec</code>; oráculo <code>pycommunityid</code>. libsodium 1.0.19 (función de hash del pipeline).</li>
+<li>Nota de amenaza DAY 171 (MITM e inyección en runtime). MITRE ATT&amp;CK T1557, T1565, T1090.</li>
+<li>Consejo de Sabios DAY 170 (P1, P3), DAY 173 (1ª y 2ª pasada, 8/8).</li>
+<li>bettercap, scapy, nfqueue/libnetfilter_queue, eBPF/tc — adversarios contemplados.</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.top", "search.highlight"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>
