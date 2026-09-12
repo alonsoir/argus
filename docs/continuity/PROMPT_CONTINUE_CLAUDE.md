@@ -1,86 +1,83 @@
-# CONTINUIDAD DAY264 — Grieta B MEDIDA de punta a punta (definición serve + acople ransomware). Siguiente: CONSTRUIR el análogo offline sobre CICDDoS2019 y comparar distribuciones.
+# CONTINUIDAD DAY267 — Camino 2 CERRADO (cabeza A reentrenada + artefacto persistido). Mañana: (1) resolver el fork de CÓMO computar las 9 features sobre Neris para el Camino 1 (especificidad de A), empezando por VERIFICAR si CICFlowMeter está en el host; (2) medir esa especificidad; (3) según el número, decidir cableado C++ y regla de handshake Syn.
 
 ## Estado (verificar al retomar)
-Sesión DAY263+ fue PURA MEDICIÓN (arqueología por código y validación de dataset): CERO
-commits de producción, cero código nuevo. main PROTEGIDA (PR only), sin cambios. Rama
-`fase2/sniffer-reindex-ddos` sigue describiendo trabajo fantasma (grieta A) — renombrar
-(`git branch -m`) o anotar en el cuerpo del PR antes de mergear. Los hallazgos de esta
-sesión están en dos docs (pendientes de committear en rama → PR): `grieta-b-source-ip-
-dispersion.md` y la nota DAY261-263 añadida a `reparacion-cabeza-ddos.md`. Dataset ya en
-disco: `ml-training/datasets/CICDDoS2019/` (01-12 = 11 CSV ~22 GB / 50 063 112 filas;
-03-11 = 7 CSV ~8.7 GB / 20 364 525 filas), validado fila-a-fila contra CIC.
+- **Camino 2 (reentreno Python) CERRADO.** Artefacto en `ml-training/scripts/ddos_detection/artifacts_ddos_A/`:
+  `ddos_head_A.pkl` + `feature_names.json` (**contrato del cableado C++**, 9 features, orden fijo) + `metadata.json`.
+- Herramienta nueva UNTRACKED: `retrain_ddos_head_A.py` (124 líneas, hermano de v2). Importa el core de
+  `train_ddos_head.py` y `RF23_SERVED`/`EXCLUDE_MEASURED` de v2. Deriva A por intersección (no teclea).
+- `main` PROTEGIDA sin tocar. Cero producción escrita. Siguen untracked: `train_ddos_head_v2.py` (DAY265) + los 7 del DAY264.
 
-## HECHO DAY263 (medición, no código de producción)
-GRIETA B = `source_ip_dispersion` — definición operacional del lado serve CERRADA:
-- `ml_defender_features.cpp:64-73`. Fórmula `min(log2(uniq+1)/log2(ev+2), 1.0)`;
-  `ev==0`→`0.0f`; `!aggregator_`→`MISSING_FEATURE_SENTINEL(-9999)`.
-- Ventana 30 s SLIDING global (sin clave de agrupación).
-- El estadístico cuenta `src_ip ∪ dst_ip` en un solo set (`time_window_aggregator.cpp:60-61`)
-  — NO solo origen, pese al nombre. (Trampa cazada: no construir el offline sobre Source IP a secas.)
-- `add_event` = solo `push_back` al ring buffer, SIN filtro whitelist/DNS. Cap
-  `max_events=10000` (ambos lados). Bajo flood el cap MUERDE → ventana efectiva = últimos
-  10000 eventos, no 30 s de reloj.
-  ACOPLE ESTRUCTURAL (hallazgo fuerte): la feature DDoS NO tiene ventana propia. Lee de un
-  `TimeWindowAggregator` que POSEE el processor de RANSOMWARE, inyectado lazy en
-  `ring_consumer.cpp:819` (`set_aggregator(ransomware_processor_->get_aggregator())`, misma
-  instancia, sin copia, incondicional al tráfico ransomware). El ÚNICO `add_event` del repo
-  está en la ruta ransomware. → source_ip_dispersion solo lleva señal viva si la ruta
-  ransomware está construida y alimentando. Mismo patrón "decisiones razonables por
-  separado, incoherentes juntas" de grieta A, ahora en el CABLEADO. Generaliza: ~12 features
-  DDoS leen del mismo aggregator.
-  GRANULARIDAD: aggregator ALIMENTADO por PAQUETE (`ring_consumer.cpp:621` =
-  `ransomware_processor_->process_packet`; `tw_event.bytes = event.packet_len`); feature
-  LEÍDA por flujo (`process_event_features`→`get_flow_stats_copy`→`populate_ml_defender_features`).
-  DATASET CICDDoS2019 validado: 88 cols CICFlowMeter-V3, mismo hash cabecera `46e0bdae` en
-  los 18. Timestamp formato ÚNICO `AAAA-DD-MM HH:MM:SS.ffffff` (día-mes, año 2018).
-  `Infinity` confinado a cols 22-23. Cols necesarias presentes (Source IP=3, Dest IP=5,
-  Timestamp=8, Flow ID=2).
+## HECHOS DAY266 (medición — no re-litigar)
+- **Neris NO tiene DDoS.** Censo de `capture20110810.binetflow` (2.824.636 flujos): Background 2.753.288 /
+  Normal 30.387 / Botnet 40.961. Los From-Botnet = C&C+SPAM+click-fraud+scan. → sustrato de RECALL de A =
+  CICDDoS2019; Neris = banco de ESPECIFICIDAD/FPR contra tráfico real + banco del FP de la regla Syn
+  (105.438 `Background-TCP-Attempt` = conexión rota real).
+- **Baseline reproduce byte-idéntico el DAY265** (v2): reflexión 0,9999 · Portmap 0,9972 · UDPLag 0,9204 ·
+  Syn 0,5713 · macro 0,9269. Ancla firme.
+- **"Reentrenar A con labels reales" YA estaba medido = el 0,9269.** El PENDIENTE 1 no sube recall; sustituye
+  la cabeza vieja (Betas+geo+syn_ack_ratio+sintético-9) por A limpia. Reentreno confirma perfil (umbral 0,5):
+  reflexión 0,9999 · Portmap 0,9973 · UDPLag 0,9254 · **Syn 0,5766** · FP benigno CIC 0,0878. FIEL, no mejor.
+- **Especificidad de la cabeza DDoS VIEJA sobre Neris = 0 FP** (oro `argus-20260804-080140.parquet`, 1369 flujos,
+  .165 domina). `ml_detector_score` máx 0,3949, media 0,097, **0 flujos > 0,5**. La cabeza DDoS NO alucina.
+- **El 69 % "MALICIOUS" del oro NO es DDoS**: es el fast-path de ransomware (`RANSOMWARE_FAST_DETECTION` en los
+    945) con `fast_detector_score` **constante 0,750** → huele a hardcode. DEUDA nueva medida.
+- **El oro NO persiste features**, solo el veredicto → obliga a recomputar para el Camino 1. DEUDA de diseño.
 
 ## PENDIENTE (en orden)
-1. CONSTRUIR el análogo offline (script nuevo en `ml-training/scripts/ddos_detection/`,
-   untracked hasta que pase). Por cada flujo a `t` (Timestamp de fin): ventana global
-   `[t-30s, t] ∩ últimos 10000 eventos`, `Source IP ∪ Destination IP` en un set (uniq),
-   `event_count` = eventos en ventana, aplicar `min(log2(uniq+1)/log2(ev+2), 1)`.
-    - Serve cuenta por PAQUETE → expandir cada fila a `Total Fwd + Bwd Packets`, o declarar
-      sesgo acotado (decidir por medición, no por corazonada).
-    - Parser de fecha EXPLÍCITO: `pd.to_datetime(col, format='%Y-%d-%m %H:%M:%S.%f')`
-      (pandas por defecto invierte día-mes).
-    - Empezar por el CSV más pequeño (`03-11/Portmap.csv`, 75 MB) para iterar barato.
-2. COMPARAR distribuciones offline vs serve (KS o histogramas+percentiles). El número
-   decide la horquilla: (a) replicar la ventana offline / (b) sacarla del contrato como
-   geo — pero geo NO la comía el modelo y esta SÍ / (c) reformular como función del flujo
-   — casi muerta por construcción (dispersión necesita un conjunto). Fork vivo = (a) vs
-   (b). Consejo de Sabios + paper.
-3. Etiquetar la asimetría al llevarlo al Consejo/paper: cada CSV es un ataque casi puro →
-   el offline es "ventana dentro de un ataque puro", no "producción mezclada". Válido para
-   comparar la FORMA, no el régimen.
-4. Paso grande (después): CICDDoS2019 por las 9, demostrar POR MEDICIÓN que cada feature
-   mide lo mismo en train y serve, sobre raíl sano.
+1. **Fork del Camino 1 — cómo computar las 9 sobre `datasets/ctu13/botnet-capture-20110810-neris.pcap`.**
+   PRIMER comando (cabeza fresca): `which cicflowmeter; find / -iname 'CICFlowMeter*.jar' 2>/dev/null | head`.
+    - Registros (jul): CICFlowMeter NO está en VM (las VMs candidatas no existían); es tool Java de HOST
+      (`ahlashkari/CICFlowMeter`); sus columnas casan LITERALMENTE con `feature_names` (espacios incluidos).
+    - Si está → **S1** (transferencia pura, misma herramienta que el entreno): jar → CSV → cargar las 9 por
+      nombre → puntuar con `artifacts_ddos_A/ddos_head_A.pkl` → FPR (todo positivo = FP, Neris no tiene DDoS).
+    - Si NO está → decidir (descansado, con dato): instalar CICFlowMeter (una tarde + validar versión) vs
+      desarrollar que el extractor de aRGus persista features (S2, despliegue real, más caro). NO decidir a horas malas.
+2. **Medir la especificidad de A sobre Neris** con la vía elegida. HECHO = número (FP de A sobre Neris),
+   persistiendo el vector de 9 + score en un CSV propio (parche local a la deuda del oro).
+3. **Cableado C++ de la cabeza A** (PENDIENTE 2): el contrato es `feature_names.json`. El extractor level1 ya
+   emite las 9; confirmar orden/nombres contra el JSON (compilador = árbitro). Solo vale la pena si (2) sale bien.
+4. **Regla de handshake Syn** (PENDIENTE 3): `syn_count alto ∧ connection_established==false ∧ ack_count bajo`.
+   Medir recall/FPR sobre CTU/mitre-start; su FP predicho = los 105 k `Background-TCP-Attempt` de Neris. El
+   sniffer YA cuenta bien (no es un fix, es un veredicto nuevo que consume `connection_established`).
 
-## SOSPECHADO (sin medir)
-- Residual de granularidad: confirmar que `process_packet` se llama 1×/paquete en el mismo
-  dispatch (`ring_consumer.cpp` 615-645). Solo importa si el factor paquetes/flujo pesa.
-- level1: su propia grieta P0 (features[14] `Init_Win_bytes_forward=0.0f` hardcodeado; no
-  está en el protobuf `NetworkFeatures`). CICDDoS2019 col 74 lo trae → medible cuando le
-  toque a level1. NO prerequisito de la cabeza DDoS.
-
-## Aviso honesto (paper, no sobre-vender)
-Raíl sano ≠ detector útil. Contrato sano = necesario, no suficiente. El método de la tenaza
-GENERALIZA: grieta A refutada por medición vale tanto como un bug encontrado; hoy se
-cazaron además dos fantasmas (filtro de whitelist inexistente, y "feature muerta a 0.0f
-siempre" refutada). Y se destapó un acople real que sin medir no salía.
-
-## Deudas nuevas (BACKLOG, correlacionar con la tarea que las ejecuta)
-- `ml_defender_features.cpp.bak.day79` TRACKEADO ensucia `git grep` → `git rm`.
-- Dos formas de contar IPs conviven en `TimeWindowAggregator` (global src∪dst en cpp:60-61
-  vs selectiva `count_unique_ips` cpp:445, solo-destino con flag true). No mezclar.
-- (Diseño, no bug) Acople DDoS↔ransomware vía aggregator compartido: documentar como
-  dependencia conocida; decidir si se quiere aggregator propio para la cabeza DDoS.
+## DEUDAS (BACKLOG — anotar, no perseguir hoy)
+- `fast_detector_score` constante 0,750 → 69 % de Neris MALICIOUS. Familia `DEBT-RANSOMWARE-ML-HEAD-INERT-001`
+  (P0), ahora con número. Verificar en `main` si es la cabeza ML o rama del fast-path.
+- El oro persiste veredicto pero no el vector servido (propuesto `DEBT-GOLD-FEATURES-NOT-PERSISTED-001`,
+  verificar contra BACKLOG). Rediseño grande. Arreglarlo = decisiones del clasificador auditables (Vía Appia).
+- Untracked a decidir rama/PR: `retrain_ddos_head_A.py` + `artifacts_ddos_A/` + los del DAY264/265.
 
 ## Invariantes
-main PROTEGIDA (PR only). Un commit una idea. `add` explícito por fichero. `git grep` o
-fichero concreto — NUNCA `grep -rn` desde raíz. No encadenar salidas grandes en un bloque.
-Manivela en la VM, push desde el HOST. Compilador/ctest = árbitro. Revert → recompilar.
-vboxsf: sha host↔VM antes de compilar. sed BSD peligroso: contar el match o editar con
-Python. Para grieta B específicamente: evento=paquete, cap 10000, src∪dst (no src),
-parser de fecha `%Y-%d-%m` explícito, Infinity en cols 22-23.
+`main` protegida (PR only). Un commit una idea. `add` explícito. `git grep`/fichero concreto — NUNCA `grep -rn`
+desde raíz. No encadenar salidas grandes. Manivela en VM / push desde HOST. Compilador/ctest = árbitro. El
+sniffer cuenta flags BIEN. FPR de despliegue de `operating_point.py`, no del harness. Verificar SEMÁNTICA del
+conteo, no solo no-cero.
+
+---
+
+## PROMPT DE CONTINUIDAD DAY267 (pegar al arrancar)
+
+> Retomas aRGus (arXiv:2604.04952) en DAY267. Ayer (DAY266) CERRÉ el Camino 2: la cabeza DDoS **A**
+> reentrenada sobre CIC con labels reales, artefacto persistido en
+> `ml-training/scripts/ddos_detection/artifacts_ddos_A/` (`ddos_head_A.pkl` + `feature_names.json` = el
+> CONTRATO de 9 features para el cableado C++ + `metadata.json`). El script es `retrain_ddos_head_A.py`
+> (hermano de v2, importa el core, deriva A por intersección; untracked). El perfil es FIEL al baseline
+> (reflexión 0,9999, Portmap 0,997, **Syn sigue roto ~0,58**, FP benigno CIC 0,088): no sube recall, es
+> higiene + artefacto.
+>
+> HECHOS de ayer, no re-litigar: (a) **Neris NO tiene DDoS** (censo del binetflow: es C&C+spam+click-fraud
+> +scan) → Neris es banco de ESPECIFICIDAD, no de recall; (b) la cabeza DDoS **vieja** es **específica**
+> sobre Neris (0 FP, ml_score máx 0,39 sobre 1369 flujos); (c) el 69 % "MALICIOUS" del oro es el **fast-path
+> de ransomware con score CONSTANTE 0,750** (deuda, no es DDoS); (d) el oro NO persiste features (deuda de
+> diseño; por eso hay que recomputar).
+>
+> Trabajo de hoy, en orden: (1) resolver CÓMO computar las 9 features sobre
+> `datasets/ctu13/botnet-capture-20110810-neris.pcap` para medir la especificidad de la cabeza A. PRIMER
+> comando: `which cicflowmeter; find / -iname 'CICFlowMeter*.jar' 2>/dev/null | head` — los registros dicen
+> que NO está en VM (es tool Java de host, `ahlashkari/CICFlowMeter`, columnas literales = `feature_names`).
+> Si está → S1 (jar→CSV→puntuar con el .pkl→FPR, todo positivo=FP). Si no → decidir instalar vs desarrollar
+> que el extractor persista features (NO a horas malas). (2) medir especificidad de A. (3) según el número:
+> cableado C++ (contrato = feature_names.json, level1 ya emite las 9, compilador árbitro) y regla de handshake
+> Syn (FP sobre los 105 k `Background-TCP-Attempt` de Neris). Invariantes: main protegida (PR only), un commit
+> una idea, `git grep`/fichero concreto nunca `grep -rn` desde raíz, manivela en VM / push desde HOST, no
+> encadenar salidas grandes.
