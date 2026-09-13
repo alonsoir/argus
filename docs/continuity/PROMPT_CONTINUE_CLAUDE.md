@@ -1,83 +1,96 @@
-# CONTINUIDAD DAY267 — Camino 2 CERRADO (cabeza A reentrenada + artefacto persistido). Mañana: (1) resolver el fork de CÓMO computar las 9 features sobre Neris para el Camino 1 (especificidad de A), empezando por VERIFICAR si CICFlowMeter está en el host; (2) medir esa especificidad; (3) según el número, decidir cableado C++ y regla de handshake Syn.
+# CONTINUIDAD DAY268 — Fork CICFlowMeter RESUELTO por medición. A = reemplazo de la cabeza DDoS zombi. Mañana: activar el volcado de features (palanca VERBOSE en el Makefile) → correr Neris → sacar el FPR de A. Despacito y con buena letra.
 
-## Estado (verificar al retomar)
-- **Camino 2 (reentreno Python) CERRADO.** Artefacto en `ml-training/scripts/ddos_detection/artifacts_ddos_A/`:
-  `ddos_head_A.pkl` + `feature_names.json` (**contrato del cableado C++**, 9 features, orden fijo) + `metadata.json`.
-- Herramienta nueva UNTRACKED: `retrain_ddos_head_A.py` (124 líneas, hermano de v2). Importa el core de
-  `train_ddos_head.py` y `RF23_SERVED`/`EXCLUDE_MEASURED` de v2. Deriva A por intersección (no teclea).
-- `main` PROTEGIDA sin tocar. Cero producción escrita. Siguen untracked: `train_ddos_head_v2.py` (DAY265) + los 7 del DAY264.
+## Decisión de rumbo (firme)
+Jubilar la cabeza DDoS vieja; **A la reemplaza** (no es experimento paralelo: A ES el
+arreglo — labels reales de CICDDoS2019 + features vivas, frente a la vieja con
+`source_ip_dispersion` hardcodeada). Orden: (1) medir FPR de A sobre Neris ANTES de
+cablear; (2) si el número es bueno, cablear A (PENDIENTE 3); si es malo, averiguar por
+qué. Luego cubrir las tres opciones (A sola / A+regla Syn / cabeza nueva con flags) para
+comparar y medir en condiciones.
 
-## HECHOS DAY266 (medición — no re-litigar)
-- **Neris NO tiene DDoS.** Censo de `capture20110810.binetflow` (2.824.636 flujos): Background 2.753.288 /
-  Normal 30.387 / Botnet 40.961. Los From-Botnet = C&C+SPAM+click-fraud+scan. → sustrato de RECALL de A =
-  CICDDoS2019; Neris = banco de ESPECIFICIDAD/FPR contra tráfico real + banco del FP de la regla Syn
-  (105.438 `Background-TCP-Attempt` = conexión rota real).
-- **Baseline reproduce byte-idéntico el DAY265** (v2): reflexión 0,9999 · Portmap 0,9972 · UDPLag 0,9204 ·
-  Syn 0,5713 · macro 0,9269. Ancla firme.
-- **"Reentrenar A con labels reales" YA estaba medido = el 0,9269.** El PENDIENTE 1 no sube recall; sustituye
-  la cabeza vieja (Betas+geo+syn_ack_ratio+sintético-9) por A limpia. Reentreno confirma perfil (umbral 0,5):
-  reflexión 0,9999 · Portmap 0,9973 · UDPLag 0,9254 · **Syn 0,5766** · FP benigno CIC 0,0878. FIEL, no mejor.
-- **Especificidad de la cabeza DDoS VIEJA sobre Neris = 0 FP** (oro `argus-20260804-080140.parquet`, 1369 flujos,
-  .165 domina). `ml_detector_score` máx 0,3949, media 0,097, **0 flujos > 0,5**. La cabeza DDoS NO alucina.
-- **El 69 % "MALICIOUS" del oro NO es DDoS**: es el fast-path de ransomware (`RANSOMWARE_FAST_DETECTION` en los
-    945) con `fast_detector_score` **constante 0,750** → huele a hardcode. DEUDA nueva medida.
-- **El oro NO persiste features**, solo el veredicto → obliga a recomputar para el Camino 1. DEUDA de diseño.
+## HECHOS DAY267 (medidos, no re-litigar)
+- **CICFlowMeter NO está** (host ni VM): `find ~ /opt /usr/local` + `mdfind` vacíos;
+  `git grep -Ein 'cic.?flow'` solo da docs/site/scripts que leen columnas CIC, nunca
+  invocan la herramienta; Vagrantfile limpio. aRGus nunca ejecutó CICFlowMeter. → **S1
+  descartado** (mediría proxy en régimen no-vivo; el port pip sería un 3er régimen).
+  **Vía = S2** (features del extractor C++ real).
+- **Las 9 de A** (`artifacts_ddos_A/feature_names.json`) son **todas volumétricas de
+  bytes/longitud, cero flags** → gotcha SYN descartado (SYN Flag Count no está en A; y
+  CICFlowMeter-V3 lo puebla a 0, day264).
+- **Las 9 salen del vector level1 de 23**: `ml-detector/src/feature_extractor.cpp::extract_level1_features`,
+  `LEVEL1_FEATURE_NAMES` L11-33, nombres LIMPIOS sin espacio = casan con feature_names.json.
+  Mapa A→índice level1: Total Fwd Bytes=9, Total Bwd=18, Fwd Pkt Len Max=2, Bwd Pkt Len
+  Max=7, Bwd Pkt Len Mean=19, Pkt Len Mean=17, Avg Fwd Seg Size=3, Subflow Fwd Bytes=1,
+  Subflow Bwd Bytes=12. Cómputo presente para las 9 (subflow L100/L134). El vector se
+  **devuelve** (L192), NO se escribe a disco aquí.
+- **A tiene 2 pares ALIAS** (contrato con duplicados): A#0 "Total Length of Fwd Packets"
+  ≡ A#7 "Subflow Fwd Bytes" (ambos `total_forward_bytes`); A#1 ≡ A#8 (`total_backward_bytes`).
+  Medido **INOCUO**: medianas del train idénticas (1438/1438, 0/0 en metadata.json) → en
+  CICDDoS2019 eran la misma columna → train y serve colapsan igual, no hay skew. Matiz
+  paper: A = "9 columnas, 7 señales independientes".
+- **String mismatch = FANTASMA para A**: LEVEL1_FEATURE_NAMES limpio, feature_names.json
+  limpio. Los nombres con-espacio son de `level1_attack_detector_metadata.json` (otro
+  linaje, fuera de la ruta de A).
+- **El oro NO persiste features** (confirmado: `logs/lab/argus-20260804-080140.parquet`,
+  22 cols, solo identidad+veredicto+hmac, cero features). DAY266 ratificado.
+  `DEBT-GOLD-FEATURES-NOT-PERSISTED-001` real: clasificador no auditable.
+- **La cabeza DDoS VIEJA está ZOMBI**: `extract_level2_ddos_features` L240 →
+  `source_ip_dispersion = normalize(1.0f,...)` **constante hardcodeada** (la única feature
+  que el bosque viejo comía = grieta B, muerta). Explica los "0 FP sobre Neris" de DAY266:
+  no era específica, era muda. NO era señal de que funcionara.
+- **El log-debug del extractor NO sale hoy**: binario debug-*compiled* (`build-debug`,
+  `-DDEBUG`, PROFILE?=debug) PERO spdlog corre en **info** (`ml_detector_config.json` L363
+  `"level":"INFO"`; Makefile no pasa `--verbose`, grep vacío; main.cpp L222:
+  `verbose ? debug : config.level`). El volcado de 23 features (L185-189) está gated a
+  runtime-debug → dormido. Log de julio: solo warnings, cero `[debug] Feature[`.
+- **BUG confirmado (Alonso)**: `ml-detector-start` L664 arranca con `cd .../build-debug`
+  HARDCODEADO (ignora PROFILE) y SIN palanca de nivel → arranque mudo; el nivel solo es
+  controlable por el JSON sellado, contra "el Makefile es la verdad".
 
-## PENDIENTE (en orden)
-1. **Fork del Camino 1 — cómo computar las 9 sobre `datasets/ctu13/botnet-capture-20110810-neris.pcap`.**
-   PRIMER comando (cabeza fresca): `which cicflowmeter; find / -iname 'CICFlowMeter*.jar' 2>/dev/null | head`.
-    - Registros (jul): CICFlowMeter NO está en VM (las VMs candidatas no existían); es tool Java de HOST
-      (`ahlashkari/CICFlowMeter`); sus columnas casan LITERALMENTE con `feature_names` (espacios incluidos).
-    - Si está → **S1** (transferencia pura, misma herramienta que el entreno): jar → CSV → cargar las 9 por
-      nombre → puntuar con `artifacts_ddos_A/ddos_head_A.pkl` → FPR (todo positivo = FP, Neris no tiene DDoS).
-    - Si NO está → decidir (descansado, con dato): instalar CICFlowMeter (una tarde + validar versión) vs
-      desarrollar que el extractor de aRGus persista features (S2, despliegue real, más caro). NO decidir a horas malas.
-2. **Medir la especificidad de A sobre Neris** con la vía elegida. HECHO = número (FP de A sobre Neris),
-   persistiendo el vector de 9 + score en un CSV propio (parche local a la deuda del oro).
-3. **Cableado C++ de la cabeza A** (PENDIENTE 2): el contrato es `feature_names.json`. El extractor level1 ya
-   emite las 9; confirmar orden/nombres contra el JSON (compilador = árbitro). Solo vale la pena si (2) sale bien.
-4. **Regla de handshake Syn** (PENDIENTE 3): `syn_count alto ∧ connection_established==false ∧ ack_count bajo`.
-   Medir recall/FPR sobre CTU/mitre-start; su FP predicho = los 105 k `Background-TCP-Attempt` de Neris. El
-   sniffer YA cuenta bien (no es un fix, es un veredicto nuevo que consume `connection_established`).
+## SOSPECHADO (medir antes de creer)
+- El FPR de A sobre Neris caerá sobre todo en **flujos fwd-pesados sin backward** (medianas
+  bwd de A todas =0 → A trata "sin vuelta" como firma de ataque; Neris real tiene backward).
+  Los flujos con `Fwd IAT Min = 3.00e+10` (centinela de flujo de 1 paquete, visto en
+  warnings) son los sospechosos nº1 de FP.
+- El C++ de A puede ser **selección** (7 índices del vector de 23), no construcción — a
+  confirmar al cablear.
 
-## DEUDAS (BACKLOG — anotar, no perseguir hoy)
-- `fast_detector_score` constante 0,750 → 69 % de Neris MALICIOUS. Familia `DEBT-RANSOMWARE-ML-HEAD-INERT-001`
-  (P0), ahora con número. Verificar en `main` si es la cabeza ML o rama del fast-path.
-- El oro persiste veredicto pero no el vector servido (propuesto `DEBT-GOLD-FEATURES-NOT-PERSISTED-001`,
-  verificar contra BACKLOG). Rediseño grande. Arreglarlo = decisiones del clasificador auditables (Vía Appia).
-- Untracked a decidir rama/PR: `retrain_ddos_head_A.py` + `artifacts_ddos_A/` + los del DAY264/265.
+## BACKLOG afloradas DAY267 (anotar, NO perseguir)
+- Familia de features corruptas del extractor: `Fwd IAT Min = 3.00e+10` (centinela 8h),
+  `Init_Win_bytes_forward = 0.0f` hardcodeado (L153 TODO), `act_data_pkt_fwd` = aproximación,
+    + `source_ip_dispersion` constante. Patrón forense (material del paper).
+- **TRES cosas llamadas "cabeza DDoS"**: (a) `extract_level2_ddos_features` C++ zombi,
+  (b) `xgboost_ddos.ubj` firmado en `production/level2/ddos/` (Makefile L497), (c) bloque
+  `level2` del config (L166). + A sin cablear. Mapear config→modelo→cabeza ANTES de cablear
+  A: hay que saber cuál jubila A.
+- **Umbral de despliegue DDoS = 0.7**, no 0.5 (config L149 `level2_ddos: 0.7`). A se midió a
+  0.5. → medir FPR a AMBOS umbrales.
+
+## PENDIENTE DAY268 (en orden, despacito)
+1. **Palanca VERBOSE en el Makefile** (arregla el bug del arranque mudo + habilita el
+   volcado). Cambio aditivo a `ml-detector-start` (y hermanos por simetría): `VERBOSE ?=` +
+   `$(if $(VERBOSE),--verbose,)` en el arranque; de paso `build-debug` hardcodeado →
+   `build-$(PROFILE)`. Commit propio:
+   *"feat(makefile): palanca VERBOSE + build-$(PROFILE) en *-start (cierra arranque mudo del log)"*.
+   Ver bloque Makefile L661-665.
+2. **Correr Neris con volcado**: `make ml-detector-start VERBOSE=1` + pipeline arriba +
+   rotar log julio + `make test-replay-neris`.
+3. **Capturar formato**: `grep -m 5 '\[debug\].*Feature\[' logs/lab/ml-detector.log` →
+   decidir clave de agrupación bloque-features↔flujo (5-tupla de línea "Flow:" = robusto;
+   orden secuencial = frágil).
+4. **Script FPR** (Python, offline sobre el log): parsear 23 features/flujo → seleccionar
+   los 7 índices distintos → reconstruir vector de 9 en orden de A (duplicar alias) →
+   cargar `ddos_head_A.pkl` → `predict_proba` → contar > umbral. **FPR a 0.5 Y 0.7**.
+   Marcar cuántos FP son flujos degenerados del IAT centinela. Neris no tiene DDoS → todo
+   positivo = FP (mide ESPECIFICIDAD; el recall vive en CIC: floods 0.99, Syn 0.58).
 
 ## Invariantes
-`main` protegida (PR only). Un commit una idea. `add` explícito. `git grep`/fichero concreto — NUNCA `grep -rn`
-desde raíz. No encadenar salidas grandes. Manivela en VM / push desde HOST. Compilador/ctest = árbitro. El
-sniffer cuenta flags BIEN. FPR de despliegue de `operating_point.py`, no del harness. Verificar SEMÁNTICA del
-conteo, no solo no-cero.
+`main` protegida (PR only). **El Makefile es la verdad** — nivel de log por el Makefile,
+NUNCA editar el JSON sellado a mano (muere en destroy→up). `git grep` / fichero concreto,
+nunca `grep -rn` desde raíz. No encadenar salidas grandes. Compilador/medición = árbitro.
+HECHO ≠ SOSPECHADO.
 
----
-
-## PROMPT DE CONTINUIDAD DAY267 (pegar al arrancar)
-
-> Retomas aRGus (arXiv:2604.04952) en DAY267. Ayer (DAY266) CERRÉ el Camino 2: la cabeza DDoS **A**
-> reentrenada sobre CIC con labels reales, artefacto persistido en
-> `ml-training/scripts/ddos_detection/artifacts_ddos_A/` (`ddos_head_A.pkl` + `feature_names.json` = el
-> CONTRATO de 9 features para el cableado C++ + `metadata.json`). El script es `retrain_ddos_head_A.py`
-> (hermano de v2, importa el core, deriva A por intersección; untracked). El perfil es FIEL al baseline
-> (reflexión 0,9999, Portmap 0,997, **Syn sigue roto ~0,58**, FP benigno CIC 0,088): no sube recall, es
-> higiene + artefacto.
->
-> HECHOS de ayer, no re-litigar: (a) **Neris NO tiene DDoS** (censo del binetflow: es C&C+spam+click-fraud
-> +scan) → Neris es banco de ESPECIFICIDAD, no de recall; (b) la cabeza DDoS **vieja** es **específica**
-> sobre Neris (0 FP, ml_score máx 0,39 sobre 1369 flujos); (c) el 69 % "MALICIOUS" del oro es el **fast-path
-> de ransomware con score CONSTANTE 0,750** (deuda, no es DDoS); (d) el oro NO persiste features (deuda de
-> diseño; por eso hay que recomputar).
->
-> Trabajo de hoy, en orden: (1) resolver CÓMO computar las 9 features sobre
-> `datasets/ctu13/botnet-capture-20110810-neris.pcap` para medir la especificidad de la cabeza A. PRIMER
-> comando: `which cicflowmeter; find / -iname 'CICFlowMeter*.jar' 2>/dev/null | head` — los registros dicen
-> que NO está en VM (es tool Java de host, `ahlashkari/CICFlowMeter`, columnas literales = `feature_names`).
-> Si está → S1 (jar→CSV→puntuar con el .pkl→FPR, todo positivo=FP). Si no → decidir instalar vs desarrollar
-> que el extractor persista features (NO a horas malas). (2) medir especificidad de A. (3) según el número:
-> cableado C++ (contrato = feature_names.json, level1 ya emite las 9, compilador árbitro) y regla de handshake
-> Syn (FP sobre los 105 k `Background-TCP-Attempt` de Neris). Invariantes: main protegida (PR only), un commit
-> una idea, `git grep`/fichero concreto nunca `grep -rn` desde raíz, manivela en VM / push desde HOST, no
-> encadenar salidas grandes.
+> Nota de repo: el checkout local se llama `test-zeromq-docker` (nombre fósil del arranque:
+> la idea original era portar upgraded-happiness Python/Docker a C++20/Docker; se pivotó a
+> Vagrant/VMs al medir que Docker no convive con procesos root). Remoto =
+> github.com/alonsoir/argus. Mismo repo; las rutas de este prompt son relativas a su raíz.
