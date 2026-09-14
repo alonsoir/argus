@@ -124,7 +124,7 @@ CMAKE_FLAGS_ASAN := -DCMAKE_BUILD_TYPE=RelWithDebInfo \
 # Default profile (can be overridden: make PROFILE=tsan all)
 PROFILE ?= debug
 CMAKE_FLAGS := $(CMAKE_FLAGS_$(shell echo $(PROFILE) | tr a-z A-Z))
-
+VERBOSE ?=
 # ============================================================================
 # COMPONENT BUILD DIRECTORIES (Profile-specific)
 # ============================================================================
@@ -659,11 +659,7 @@ sniffer: proto etcd-client-build plugin-loader-build
 	@echo "✅ Sniffer built ($(PROFILE))"
 
 ml-detector-start:
-	@echo "🚀 Starting ML Detector (Tricapa Persistente)..."
-	@vagrant ssh -c "tmux kill-session -t ml-detector 2>/dev/null || true"
-	@vagrant ssh -c "tmux new-session -d -s ml-detector 'mkdir -p /vagrant/logs/lab && cd /vagrant/ml-detector/build-debug && export LD_LIBRARY_PATH=/usr/local/lib:$$LD_LIBRARY_PATH && sudo env LD_LIBRARY_PATH=/usr/local/lib ./ml-detector >> /vagrant/logs/lab/ml-detector.log 2>&1'"
-	@sleep 3
-
+		@vagrant ssh -c "tmux new-session -d -s ml-detector 'mkdir -p /vagrant/logs/lab && cd $(ML_DETECTOR_BUILD_DIR) && export LD_LIBRARY_PATH=/usr/local/lib:$$LD_LIBRARY_PATH && sudo env LD_LIBRARY_PATH=/usr/local/lib ./ml-detector $(if $(VERBOSE),--verbose,) >> /vagrant/logs/lab/ml-detector.log 2>&1'"
 ml-detector: proto etcd-client-build plugin-loader-build correlation-v1-build
 	@echo ""
 	@echo "╔════════════════════════════════════════════════════════════╗"
@@ -722,10 +718,7 @@ FIREWALL_BIN := ./firewall-acl-agent
 FIREWALL_CFG := /etc/ml-defender/firewall-acl-agent/firewall.json
 
 firewall-start:
-	@echo "🚀 Starting Firewall ACL (SUDO + TMUX)..."
-	@vagrant ssh -c "tmux kill-session -t firewall 2>/dev/null || true"
-	@vagrant ssh -c "tmux new-session -d -s firewall 'mkdir -p /vagrant/logs/lab && cd $(FIREWALL_DIR)/build-debug && sudo env LD_LIBRARY_PATH=/usr/local/lib $(FIREWALL_BIN) -c $(FIREWALL_CFG) >> /vagrant/logs/lab/firewall-agent.log 2>&1'"
-	@sleep 2
+		@vagrant ssh -c "tmux new-session -d -s firewall 'mkdir -p /vagrant/logs/lab && cd $(FIREWALL_BUILD_DIR) && sudo env LD_LIBRARY_PATH=/usr/local/lib $(FIREWALL_BIN) -c $(FIREWALL_CFG) >> /vagrant/logs/lab/firewall-agent.log 2>&1'"
 
 firewall: proto seed-client-build etcd-client-build plugin-loader-build
 	@echo ""
@@ -897,7 +890,7 @@ pipeline-start: test-provision-1 etcd-server-start
 	@sleep 5
 	@$(MAKE) rag-ingester-start
 	@sleep 3
-	@$(MAKE) ml-detector-start
+	@$(MAKE) ml-detector-start VERBOSE=$(VERBOSE)
 	@$(MAKE) firewall-start
 	@sleep 2
 	@$(MAKE) sniffer-start
