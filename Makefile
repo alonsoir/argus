@@ -3154,7 +3154,7 @@ wazuh-adapter-rebuild: wazuh-adapter-clean wazuh-adapter-build
 # DEBT-HOST-DOMAIN-EMECAS-INTEGRATION-001 (mitad build+unit).
 .PHONY: host-engine-build host-engine-test host-engine-clean host-engine-rebuild dataset-export dataset-export-b
 .PHONY: dataset-export-c dataset-export-all ctu-start fetch-neris bias-report fetch-neris-labels neris-pcap-5tuples
-.PHONY: bias-denominator-true autopsy-67
+.PHONY: bias-denominator-true autopsy-67 ddos-gate-start
 
 host-engine-build:
 	@echo "╔════════════════════════════════════════════════════════════╗"
@@ -3185,6 +3185,9 @@ dataset-export-all: dataset-export-c dataset-export dataset-export-b
 
 ctu-start:  ## 2o traffic driver: replay Neris (CTU-13 sc.1) -> grafo cross-sensor (requiere pipeline-start + pcap)
 	@bash scripts/ctu_start.sh
+
+ddos-gate-start:  ## Mide la compuerta level1->level2 con un flood DDoS real (requiere pipeline-start VERBOSE=1)
+	@bash scripts/ddos_gate_start.sh
 
 fetch-neris:  ## descarga+verifica el pcap Neris (~56MB) a datasets/ctu13/ si falta
 	@vagrant ssh client -c "bash /vagrant/scripts/fetch_neris.sh"

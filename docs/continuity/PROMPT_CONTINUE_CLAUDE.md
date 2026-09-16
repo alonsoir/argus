@@ -1,111 +1,125 @@
-# CONTINUIDAD DAY270 — La compuerta level1 es el hallazgo del día. Mañana: medir la compuerta con tráfico DDoS REAL (CICDDoS2019) ANTES de decidir Path A/Path B de Fase 2. El "FPR 0.7% sobre Neris" está DESCARTADO (era ficción: puntuaba flujos que en producción no llegan a A).
+# CONTINUIDAD DAY271 — El veredicto de DAY270 está MEDIDO: level1 clasifica el flood DDoS real como BENIGN (13567 BENIGN / 1 ATTACK, recall≈0). La cascada mata el recall DDoS. Mañana: medir B (¿la cabeza DDoS aislada también dice benigno?) abriendo la compuerta a la fuerza, y con ese dato decidir el rediseño paralelo-fusión + unidad agregada.
 
-## EL HALLAZGO (medido, no re-litigar)
-**El detector DDoS desplegado (level2) solo corre si level1 clasificó ATTACK.**
-Guard exacto — `ml-detector/src/zmq_handler.cpp:549`:
-```cpp
-if (label_l1 == 1 && confidence_l1 >= config_.ml.thresholds.level1_attack) {
-    ... // Level 2: DDoS aquí dentro (línea ~558)
-}
+## EL VEREDICTO (medido, no re-litigar)
+Sometido a un flood UDP real de CICDDoS2019 a través del pipeline íntegro (sniffer→extractor→level1),
+**level1 clasificó 13567 flujos del flood como BENIGN y 1 como ATTACK** → recall ≈ 0.007%. Ceguera casi total.
+
+Traza real de la decisión (el vocabulario del log — mis contadores `Running Level 2 DDoS`/`DDoS: class=1`
+de DAY270 eran cadenas FANTASMA, no existen):
 ```
-`DDoSDetector::predict` (`ddos_detector.cpp:11`) es cálculo puro, SIN filtro. Toda la
-compuerta vive en el llamador. → La fiabilidad de CUALQUIER cabeza DDoS está acotada
-por el enrutado de level1. **La P0 de la misión es la coordinación level1→level2, no A en aislado.**
+🤖 Level 1: label=0 (BENIGN), confidence=0.8999
+[DUAL-SCORE] fast=0.0000, ml=0.1001, final=0.1001, source=DETECTOR_SOURCE_ML_PRIORITY
+```
+Reparto correcto con: `grep 'Level 1:' <log> | grep -oE 'label=[01] \((BENIGN|ATTACK)\)' | sort | uniq -c`
 
-### Medición de la compuerta (replay Neris, HECHO)
-- Replay: `Actual: 320524 packets in 61.05s, 5.79 Mbps, 19135 flows, Failed 2630 (~0.8%)`.
-- 11208 bloques `Feature Extraction:` en el log.
-- **Solo 6 pasaron la compuerta**: `grep -c 'Running Level 2 DDoS'` = 6.
-- **A marcó 0 como DDoS**: `grep -c 'DDoS: class=1'` = 0.
-- FPR desplegado sobre Neris = **0/6** → N ridículo, NO es medición de especificidad.
-  Mide la SELECTIVIDAD de level1 ante botnet no-DDoS: ~99.95% despachado BENIGN antes de A.
+### Mecanismo (hallazgo arquitectónico, material de paper)
+- El flood son flujos de **1 paquete** (`1 fwd, 0 bwd`, ~482 bytes, UDP puerto alto). A nivel de flujo aislado
+  es indistinguible de un datagrama UDP legítimo: todas las features Std/Var/IAT/Bwd colapsan a 0.
+- **La firma DDoS NO vive en el flujo, vive en el AGREGADO** (miles de flujos, misma víctima, alta tasa).
+  level1 clasifica flujo-a-flujo → estructuralmente ciego. No es peso mal entrenado; es **desajuste entre la
+  unidad de decisión (flujo) y la unidad del ataque (conjunto)**.
+- El 1 ATTACK de 13568 era idéntico al resto (1 fwd, 482 bytes): ruido de frontera, sin señal que perseguir.
 
-## DOS MODELOS DISTINTOS (crítico, no confundir)
-- **(a) ddos_head_A.pkl** = candidato OFFLINE. RandomForestClassifier (cargar con
-  `joblib`, NO pickle plano). 9 features CICFlowMeter = subconjunto del vector level1-23.
-  En `ml-training/scripts/ddos_detection/artifacts_ddos_A/`. **NO cableado al pipeline.**
-- **(b) detector DESPLEGADO** = `ddos_trees_inline.hpp` synthetic-9 (syn_ack_ratio,
-  packet_symmetry, source_ip_dispersion, ...). Es el que gobierna la compuerta 6/0.
-- El eval de hoy fue del candidato (a); la compuerta es del desplegado (b).
-- **PENDIENTE**: aclarar cómo (a) se relaciona con el fork Path A/Path B de Fase 2.
+## DECISIÓN DE ARQUITECTURA — ya no está abierta
+DAY269 dejó el fork cascada-veto vs paralelo-fusión ATADO a este número. El número llegó:
+**level1 BLOQUEA los DDoS reales → la cascada mata recall → el paralelo-fusión pasa a NECESARIO, no opcional.**
+(ver [[reparacion-cabeza-ddos]] y la política de respuesta graduada/reversible de DAY269).
 
-## ddos_head_A — metadata (el artefacto es árbitro)
-- La teoría de DAY267 de "2 pares alias (A#0≡A#7, A#1≡A#8)" queda **REFUTADA**: son 9
-  features independientes, sin duplicar. `feature_names.json` = `metadata.json["features"]`.
-- 9 features: Total Length of Fwd/Bwd Packets, Fwd/Bwd Packet Length Max,
-  Bwd Packet Length Mean, Packet Length Mean, Avg Fwd Segment Size, Subflow Fwd/Bwd Bytes.
-- classes_=[0,1] (columna positiva = 1), `sep_min=0.6`, train_rows 2.6M,
-  `fp_benign_cic=0.0878` (8.8% ref benigno CIC), recall Syn=0.577 (débil → ancla la
-  vieja pendiente A+regla Syn), `median_impute` con TODO lo bwd = 0.0.
-- Eval offline sobre el log (todos los bloques, sin compuerta): FP@0.5=23.7%, @0.6=1.1%,
-  @0.7=0.7% sobre 2291 flujos 1-paquete de .165. Acantilado 0.5→0.6 (×20). **DESCARTADO
-  como número de producción** — la compuerta deja pasar casi nada a la cabeza.
+Corrección al modelo mental de Alonso (DAY270, con el HECHO delante): el cuello **NO es "las cabezas
+interfieren entre sí"**. El flujo ni siquiera LLEGA a la cabeza DDoS — muere en `Level 1: BENIGN` y la
+compuerta `zmq_handler.cpp:549` no se abre. El problema es (1) la compuerta level1 con poder de veto +
+(2) la unidad-flujo. Separar cabezas es correcto pero INSUFICIENTE: ninguna cabeza que mire UN flujo
+detecta el DDoS. La vía DDoS necesita **unidad de decisión AGREGADA (ventana por víctima)** y que
+**level1 NO vetee**.
 
-## CORRECCIONES DE HECHO (arrastran desde DAY268 — corregir donde aparezcan)
-- **Myth grep**: `grep 'bwd, [1-9]'` cuenta el TOTAL, no el bwd (casa "bwd, <total>").
-  El **"7756 bidireccional abundante" de DAY268 es FALSO**. Conteo real bwd≥1
-  (`grep -cE ' [1-9][0-9]* bwd,'`) = **0**. Neris llega ENTERO unidireccional (1 paquete)
-  o vacío (broadcast .255 / multicast 224.0.0.22). El artefacto MTU de VirtualBox degrada el C&C.
-- **Higiene de logs**: `make logs-lab-clean` MUEVE el fichero → rompe el fd del proceso
-  vivo (sigue escribiendo al inodo ya movido a archive/, mezclando ambiente+replay). Con
-  el pipeline ARRIBA, rotar con `truncate -s 0` en sitio (conserva el inodo O_APPEND).
-  logs-lab-clean = solo rotación en frío. Backlog: target `logs-lab-truncate`.
-- Ambiente separable de Neris por IP: Neris = 147.32.x (principal .84.165); ambiente =
-  192.168.100.x + DNS/NTP públicos.
+## PENDIENTE DAY271 (en orden, despacito) — MEDIR B ANTES DE REDISEÑAR
+La discrepancia a dirimir con un número: Alonso apuesta "la cabeza DDoS funciona bien sola, las otras
+interfieren"; Claude apuesta "la cabeza DDoS con unidad-flujo tampoco puede, el problema es la agregación".
+**B lo dirime.**
 
-## PENDIENTE DAY270 (en orden, despacito) — MEDIR LA COMPUERTA CON DDoS REAL
-Objetivo: ¿deja pasar level1 los DDoS reales hasta A, o los bloquea igual que a Neris?
-El número decide si Fase 2 (la cabeza) es la batalla, o si la P0 es level1.
+1. **Abrir la compuerta a la fuerza (cambio mínimo, reversible).** En `ml-detector/src/zmq_handler.cpp`
+   alrededor de la línea 549, el guard exacto:
+   ```cpp
+   if (label_l1 == 1 && confidence_l1 >= config_.ml.thresholds.level1_attack) { ... level2 DDoS ... }
+   ```
+   Cortocircuitar con un flag debug `force_all_heads` para que level2 DDoS corra SIEMPRE, sea cual sea
+   el veredicto de level1. NO reescribir arquitectura; solo abrir la compuerta para observar.
+   INVARIANTE: flag por Makefile, NUNCA JSON a mano (muere en destroy→up).
+   ANTES de tocar: `sed -n '540,575p' ml-detector/src/zmq_handler.cpp` (ver el if completo y qué llama dentro).
 
-1. **RESOLVER PRIMERO — ¿hay PCAP de CICDDoS2019?** (bloqueante del método)
-    - El replay Neris usa `tcpreplay` sobre un PCAP. CICDDoS2019 descargado son **CSVs
-      CICFlowMeter** (`ml-training/datasets/CICDDoS2019/`, ~22GB train + ~8.7GB test), NO
-      PCAP confirmado. `tcpreplay` necesita paquetes, no CSV.
-    - Comprobar si CIC provee PCAP del día y si cabe/interesa bajarlo:
-      `ls -la ml-training/datasets/CICDDoS2019/` y buscar `.pcap`.
-    - **Bifurcación de método**:
-        - **(A) Con PCAP** → ctu-start customizado (clonar `ctu-start`/`test-replay-neris`,
-          apuntar al PCAP DDoS). Mide la compuerta COMPLETA (sniffer→extractor→level1→level2),
-          incluida la feature viva `source_ip_dispersion` que depende del aggregator de
-          ransomware (ver [[grieta-b-source-ip-dispersion]]). Es la medición fiel.
-        - **(B) Solo CSV** → eval OFFLINE de level1 sobre las features del CSV: ¿level1
-          marca ATTACK los floods? Mide el enrutado de level1 pero NO la ruta viva (el
-          extractor serve, source_ip_dispersion con su acople). Más barato, menos fiel.
-          CAVEAT obligado: no reproduce la ventana del aggregator.
-    - Decidir A vs B según exista PCAP. Empezar por A si es viable.
+2. **Correr el flood a 100pps con la compuerta abierta** (ver artefacto y método abajo). Ahora la cabeza
+   DDoS SÍ se ejecuta sobre cada flujo del flood.
 
-2. **Preparar el driver** (si A): hermano de `mitre-start`/`ctu-start`. Reusar el patrón
-   ya documentado en [[ctu-start]]. Rotar log con `truncate -s 0` (NO logs-lab-clean)
-   inmediatamente antes del replay. `make pipeline-start VERBOSE=1` y confirmar
-   `--verbose` por pgrep.
+3. **Medir B: ¿qué dice `DDoSDetector::predict` (ddos_detector.cpp:11) sobre los flujos de 1 paquete?**
+    - Predicción de Claude a contrastar: también BENIGN → confirmaría que el problema es unidad de agregación,
+      no la cabeza. Fija esta expectativa ANTES de correr, o malinterpretarás el resultado como "la cabeza
+      tampoco sirve" cuando la lectura correcta es "la cabeza sobre unidad-flujo no sirve, necesita agregada".
+    - Si la cabeza DDoS SÍ marca estos flujos como ataque → gana Alonso (la interferencia entre cabezas era
+      real), y el diagnóstico cambia. Ese sería un hallazgo CONTRA la hipótesis de Claude — lo que queremos.
 
-3. **Medir la compuerta sobre DDoS real** (mismos contadores que hoy):
-    - `grep -c 'Running Level 2 DDoS'`  → cuántos floods pasaron level1.
-    - `grep -c 'DDoS: class=1'`         → cuántos marcó el detector desplegado.
-    - Filtrar por IPs de ataque del ground-truth CICDDoS2019 (columna Label / Source IP).
-    - **Lectura**: si pasan MUCHOS → la compuerta funciona, Fase 2 (la cabeza) importa.
-      Si level1 los BLOQUEA → la P0 es level1, y Fase 2 esperaría a arreglar level1
-      (recuerda su propia P0: `Init_Win_bytes_forward` hardcodeado a 0.0f en serve).
+4. **Con B medido, decidir la forma del rediseño:**
+    - Si la cabeza necesita unidad AGREGADA (apuesta Claude): el trabajo es construir la ventana por víctima
+      que la alimente (recordar: `source_ip_dispersion` ya es feature de ventana 30s desde el TimeWindowAggregator
+      del processor de ransomware, ver [[grieta-b-source-ip-dispersion]]).
+    - Si la cabeza ya discrimina por flujo (apuesta Alonso): el trabajo es solo quitar el veto de level1.
+    - Probablemente ambos, pero el orden importa y B lo fija.
 
-4. **Con la compuerta medida sobre DDoS real: decidir Path A/Path B de Fase 2.**
-   (ver [[grieta-b-source-ip-dispersion]] "Giro a FASE 2"): Path A = reconstruir las 9
-   features aRGus offline y entrenar sobre ellas; Path B = entrenar sobre features nativas
-   CICFlowMeter del extractor BASE. Argumento medido que empuja a B: source_ip_dispersion
-   degenera bajo flood (cap 10000 muerde). Fork vivo, pendiente de este dato de compuerta.
+5. **Backlog de cabezas (Alonso, no perseguir aún):** revisar level1 (ataque global) e INTERNO. Deudas
+   estructurales conocidas: `num_features()` hardcodeado a 10 en detectores Traffic e Internal (DDoS ya a 9);
+   level1 arrastra su P0 = `Init_Win_bytes_forward` hardcodeado a 0.0f en serve (visto vivo en el flood:
+   Feature[14]=0; OJO es UDP sin ventana TCP, así que 0 podría ser legítimo aquí — ambiguo, resolver mirando
+   el código de serve antes de afirmar bug).
+
+## MÉTODO DE REPLAY (ya resuelto DAY270 — reusar, no re-descubrir)
+5 supuestos ocultos del harness Neris, todos medidos y superados:
+1. Los chunks del PCAP CICDDoS2019 son por TAMAÑO (tcpdump rota a 191MB), no por ataque. El reloj interno
+   NO cuadra con el CSV → identificar el ataque por CONTENIDO (`tshark -z io,phs`, `-z endpoints,ip`), no por hora.
+2. DLT: cosmético (el warning de tcpreplay `unsupported DLT Ethernet 0x1` es ruido; ambos pcap son Ethernet).
+3. El sniffer XDP en **eth1 es HOST-BASED** (solo tráfico destinado al host). El canal bueno es **eth2 GATEWAY
+   (defender, 192.168.100.1)** que captura tránsito. Config en sniffer.json (host_interface eth1 mode1,
+   gateway_interface eth2 mode2).
+4. Reescribir IP+MAC del flood a la topología del lab. Corre EN el guest client (tiene tcprewrite; el Mac no):
+   ```
+   vagrant ssh client -c "tcprewrite \
+     --infile=/vagrant/datasets/cicddos2019/_0125_50k.pcap \
+     --outfile=/vagrant/datasets/cicddos2019/_0125_50k_lab.pcap \
+     --dstipmap=0.0.0.0/0:192.168.100.1 --srcipmap=0.0.0.0/0:192.168.100.50 \
+     --enet-smac=<MAC client eth1> --enet-dmac=<MAC defender eth2> --fixcsum"
+   ```
+   (MACs DAY270: client eth1 = 08:00:27:07:8c:2f ; defender eth2 = 08:00:27:6f:63:da — reconfirmar, cambian en destroy→up)
+5. El ring buffer XDP→consumer se SATURA por pps: a 1000pps captura ~14%, a **100pps ~95%**. Medir con
+   `bpftool map dump name stats` (delta antes/después del replay). **Replicar SIEMPRE a `--pps=100`.**
+   El filtro de puertos del sniffer NO fue causa (default_action=capture, included_ports=[], excluded_ports=[22]).
+
+### Artefacto listo y receta de corrida limpia
+- PCAP reescrito: `datasets/cicddos2019/_0125_50k_lab.pcap` (50k pkts, src 192.168.100.50 → dst 192.168.100.1, UDP).
+- Log del ml-detector: `defender:/vagrant/logs/lab/ml-detector.log`. ml-detector corre en `defender`.
+- Arranque con verbose (imprescindible o no hay trazas de decisión): `make pipeline-stop && make pipeline-start VERBOSE=1`
+  (VERBOSE en MAYÚSCULAS; confirmar `pgrep -af ml-detector` termina en `--verbose`; confirmar que un
+  `grep -c 'Feature Extraction' <log>` sube con tráfico de ambiente antes de replicar).
+- Receta:
+  ```
+  vagrant ssh defender -c "truncate -s 0 /vagrant/logs/lab/ml-detector.log"   # rotación in situ (fd O_APPEND vivo), NUNCA logs-lab-clean
+  vagrant ssh client   -c "sudo tcpreplay -i eth1 --pps=100 /vagrant/datasets/cicddos2019/_0125_50k_lab.pcap"  # ~8 min
+  vagrant ssh defender -c "grep 'Level 1:' /vagrant/logs/lab/ml-detector.log | grep -oE 'label=[01] \((BENIGN|ATTACK)\)' | sort | uniq -c"
+  ```
+- Ground-truth (clock-independiente): flood = src 192.168.100.50 → dst 192.168.100.1 (tras reescritura).
 
 ## INVARIANTES
-`main` protegida (PR only). Rama de trabajo actual = `docs/ml-heads-grieta-b`. El Makefile
-es la verdad (nivel de log por Makefile, nunca JSON a mano — muere en destroy→up).
-`git grep` / fichero concreto, NUNCA `grep -rn` desde raíz. NO encadenar salidas grandes.
-Rotar el log ANTES de cada replay que vaya a medir (con truncate si el pipeline está vivo).
-Compilador/medición = árbitro. HECHO ≠ SOSPECHADO. El grep orienta; el parser/artefacto mide.
+`main` protegida (PR only). Rama de trabajo = `docs/ml-heads-grieta-b`. El Makefile es la verdad (nivel de
+log y flags por Makefile, NUNCA JSON a mano — muere en destroy→up). `git grep`/fichero concreto, NUNCA
+`grep -rn` desde raíz. NO encadenar salidas grandes. Rotar el log con `truncate -s 0` ANTES de cada replay
+que vaya a medir (pipeline vivo). El compilador/parser/mapa es el árbitro. HECHO ≠ SOSPECHADO.
 
 ## BACKLOG (anotar, NO perseguir)
-- `fpr_neris_A.py` sin commitear (untracked en raíz del repo). Decidir ubicación
-  (¿ml-training/scripts/ddos_detection/tools/?) al trackearlo.
-- `GenerateDDOSCPPForest.py` footgun L277 (ya cerrado en diag/ml-heads, commit 9090cedb —
-  NO en docs/ml-heads-grieta-b; ojo si hay que portar).
-- El eval de hoy usó `predict_proba(X)` con array pelado → UserWarning "X does not have
-  valid feature names". Correcto por orden posicional, pero para paper: pasar DataFrame
-  con nombres. Cosmético.
+- `_0125_50k_lab.pcap` colapsa la dispersión de origen a 1 (src único). Para estresar `source_ip_dispersion`
+  (grieta B) haría falta mapear a un RANGO de orígenes, no a uno. Otro experimento.
+- Deuda de método para el paper: el ring consumer pierde el 86% de un flood a 1000pps → el throughput del
+  consumer, no el modelo, acota la detección DDoS. Línea de i+d real (¿un solo hilo? ¿parseo por evento caro?
+  ¿ring pequeño?).
+- Herramientas sin commitear: `fpr_neris_A.py` (parser+buckets+eval candidato), `ddos_gate_start.sh`/target
+  `ddos-gate-start` (driver de medición de compuerta; sus contadores GATE/FLAG apuntan a cadenas fantasma,
+  arreglar con el vocabulario real `Level 1: label=...` antes de trackear).
+- `ddos_head_A` (candidato offline) sigue sin cablear al pipeline; su relación con el fork Path A/Path B de
+  Fase 2 sigue pendiente de aclarar. Recall Syn 0.577 (débil) — NO es "la cabeza funciona bien sola" sin medir.
 - Warning GPG apt HashiCorp (`NO_PUBKEY FC9CA96ACA026560`) en provisión — no bloquea.
