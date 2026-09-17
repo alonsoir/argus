@@ -125,6 +125,7 @@ CMAKE_FLAGS_ASAN := -DCMAKE_BUILD_TYPE=RelWithDebInfo \
 PROFILE ?= debug
 CMAKE_FLAGS := $(CMAKE_FLAGS_$(shell echo $(PROFILE) | tr a-z A-Z))
 VERBOSE ?=
+FORCE_ALL_HEADS ?=
 # ============================================================================
 # COMPONENT BUILD DIRECTORIES (Profile-specific)
 # ============================================================================
@@ -659,7 +660,7 @@ sniffer: proto etcd-client-build plugin-loader-build
 	@echo "✅ Sniffer built ($(PROFILE))"
 
 ml-detector-start:
-		@vagrant ssh -c "tmux new-session -d -s ml-detector 'mkdir -p /vagrant/logs/lab && cd $(ML_DETECTOR_BUILD_DIR) && export LD_LIBRARY_PATH=/usr/local/lib:$$LD_LIBRARY_PATH && sudo env LD_LIBRARY_PATH=/usr/local/lib ./ml-detector $(if $(VERBOSE),--verbose,) >> /vagrant/logs/lab/ml-detector.log 2>&1'"
+	@vagrant ssh -c "tmux new-session -d -s ml-detector 'mkdir -p /vagrant/logs/lab && cd $(ML_DETECTOR_BUILD_DIR) && export LD_LIBRARY_PATH=/usr/local/lib:$$LD_LIBRARY_PATH && sudo env LD_LIBRARY_PATH=/usr/local/lib ./ml-detector $(if $(VERBOSE),--verbose,) $(if $(FORCE_ALL_HEADS),--force-all-heads,) >> /vagrant/logs/lab/ml-detector.log 2>&1'"
 ml-detector: proto etcd-client-build plugin-loader-build correlation-v1-build
 	@echo ""
 	@echo "╔════════════════════════════════════════════════════════════╗"
@@ -890,7 +891,7 @@ pipeline-start: test-provision-1 etcd-server-start
 	@sleep 5
 	@$(MAKE) rag-ingester-start
 	@sleep 3
-	@$(MAKE) ml-detector-start VERBOSE=$(VERBOSE)
+	@$(MAKE) ml-detector-start VERBOSE=$(VERBOSE) FORCE_ALL_HEADS=$(FORCE_ALL_HEADS)
 	@$(MAKE) firewall-start
 	@sleep 2
 	@$(MAKE) sniffer-start

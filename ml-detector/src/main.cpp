@@ -54,6 +54,7 @@ void print_usage(const char* program_name) {
     std::cout << "OPTIONS:\n";
     std::cout << "  --config <path>    Path to configuration file (default: ../config/ml_detector_config.json)\n";
     std::cout << "  --verbose          Enable verbose logging (DEBUG level)\n";
+    std::cout << "  --force-all-heads  [DEBUG] run all L2 heads regardless of level1\n";
     std::cout << "  --help             Show this help message\n";
     std::cout << "  --version          Show version information\n";
     std::cout << "\n";
@@ -80,6 +81,7 @@ int main(int argc, char* argv[]) {
     // Parse command line arguments
     std::string config_path = "../config/ml_detector_config.json";
     bool verbose = false;
+    bool force_all_heads = false;
 
     for (int i = 1; i < argc; ++i) {
         std::string arg = argv[i];
@@ -105,6 +107,9 @@ int main(int argc, char* argv[]) {
         }
         else if (arg == "--verbose") {
             verbose = true;
+        }
+        else if (arg == "--force-all-heads") {
+            force_all_heads = true;
         }
         else {
             std::cerr << "Unknown argument: " << arg << "\n";
@@ -478,6 +483,7 @@ int main(int argc, char* argv[]) {
             hmac_key_hex       // Day 63: CSV HMAC key
         );
 
+        zmq_handler.set_force_all_heads(force_all_heads);   // DEBUG DAY271
         zmq_handler.start();
         // ADR-012 PHASE 2d — conectar plugin_loader_ al ZMQHandler (Consejo DAY 111)
         zmq_handler.set_plugin_loader(&plugin_loader_);

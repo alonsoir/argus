@@ -334,3 +334,16 @@ if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/integration/capture_golden.cpp")
     ml_link_spdlog(capture_golden)
     message(STATUS "✅ capture_golden registered (DAY 185 B2, standalone)")
 endif()
+
+# ── test_l2_gate — DAY271, predicado puro de la compuerta L2 (grieta B) ──────
+# NO GTest, has its own main(). Solo depende de l2_gate.hpp (sin dependencias):
+# ni detectores, ni proto, ni threads. Registrado en ctest (pass/fail limpio).
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/unit/test_l2_gate.cpp")
+    add_executable(test_l2_gate
+            unit/test_l2_gate.cpp
+    )
+    target_include_directories(test_l2_gate PRIVATE
+            ${CMAKE_CURRENT_SOURCE_DIR}/../include
+    )
+    add_test(NAME test_l2_gate COMMAND test_l2_gate)
+endif()
