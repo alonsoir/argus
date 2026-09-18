@@ -572,8 +572,8 @@ void ZMQHandler::process_event(const std::string& message) {
                             if (ddos_features_vec.size() != 9) {
                                 throw std::runtime_error("Invalid DDoS feature count");
                             }
-                            logger_->debug("   DDoS Features: syn_ack={:.3f}, entropy={:.3f}, amp={:.3f}, disp={:.3f}",
-                                          ddos_features_vec[0], ddos_features_vec[4], ddos_features_vec[5], ddos_features_vec[2]);
+                            logger_->debug("   DDoS Features: syn_ack={:.3f}, entropy={:.3f}, amp={:.3f}, disp={:.3f}, symmetry={:.3f}, protocol={:.3f}, completion={:.3f}, escalation={:.3f}, saturation={:.3f}",
+                                          ddos_features_vec[0], ddos_features_vec[4], ddos_features_vec[5], ddos_features_vec[2], ddos_features_vec[1], ddos_features_vec[3], ddos_features_vec[6], ddos_features_vec[7], ddos_features_vec[8]);
                         } catch (const std::exception& e) {
                             logger_->error("❌ DDoS feature extraction failed: {}", e.what());
                             std::lock_guard<std::mutex> lock(stats_mutex_);
