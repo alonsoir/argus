@@ -1187,6 +1187,22 @@ test-libs:
 	@echo "Testing plugin-integ-test..."
 	@$(MAKE) plugin-integ-test
 
+# ============================================================================
+# DDOS-KAGG-D273:MAKE  Agregador DDoS en-kernel (DAY 273)
+#   sniffer-ddos-agg-test      parte pura (ctest, sin root). La corre tambien test-components.
+#   sniffer-ddos-agg-bpf-test  BPF_PROG_TEST_RUN contra el sniffer.bpf.o real:
+#                              requiere root y kernel con BPF; NO entra en test-all.
+# ============================================================================
+.PHONY: sniffer-ddos-agg-test sniffer-ddos-agg-bpf-test
+
+sniffer-ddos-agg-test:
+	@echo "🧪 test_ddos_kernel_agg (parte pura, sin root)..."
+	@vagrant ssh -c "cd $(SNIFFER_BUILD_DIR) && cmake . > /dev/null && cmake --build . --target test_ddos_kernel_agg && ctest -R test_ddos_kernel_agg --output-on-failure"
+
+sniffer-ddos-agg-bpf-test:
+	@echo "🧪 test_ddos_kernel_agg --bpf (requiere root y kernel con BPF)..."
+	@vagrant ssh -c "cd $(SNIFFER_BUILD_DIR) && cmake . > /dev/null && cmake --build . --target bpf_program && cmake --build . --target test_ddos_kernel_agg && sudo ./test_ddos_kernel_agg --bpf ./sniffer.bpf.o"
+
 test-components: correlation-engine-test
 	@echo ""
 	@echo "╔════════════════════════════════════════════════════════════╗"

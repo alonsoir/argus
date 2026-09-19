@@ -32,6 +32,9 @@ struct __sk_buff;
 #define BPF_MAP_TYPE_ARRAY 2
 #define BPF_MAP_TYPE_HASH 1
 #define BPF_ANY 0
+/* [DDOS-KAGG-D273:DEFS] agregador DDoS en-kernel */
+#define BPF_NOEXIST 1
+#define BPF_MAP_TYPE_LRU_HASH 9
 
 // TCP flags
 #define TCP_FLAG_FIN 0x01
@@ -148,6 +151,29 @@ struct {
     __type(value, __u64);
 } stats SEC(".maps");
 
+/* [DDOS-KAGG-D273:MAP] Agregador DDoS en-kernel: contadores MONOTONOS por victima.
+ * Clave = dst_ip + protocolo. Userspace lee cada T s; delta = ventana tumbling.
+ * dst_ip en orden numerico (a.b.c.d = a<<24|b<<16|c<<8|d), IDENTICO a
+ * event->dst_ip: userspace debe interpretarlo igual que ya interpreta ese campo
+ * (ver DEBT-SNIFFER-IP-BYTE-ORDER-001).
+ * proto es __u32 (no __u8) a proposito: sin padding en la clave, el verificador
+ * exige que todos los bytes de la clave en pila esten inicializados.
+ * LRU: el desalojo de una victima fria es benigno (no esta bajo flood). */
+struct ddos_key {
+    __u32 dst_ip;
+    __u32 proto;
+};
+struct ddos_val {
+    __u64 pkts;
+    __u64 bytes;
+};
+struct {
+    __uint(type, BPF_MAP_TYPE_LRU_HASH);
+    __uint(max_entries, 65536);
+    __type(key, struct ddos_key);
+    __type(value, struct ddos_val);
+} ddos_victims SEC(".maps");
+
 // 🔥 FILTER LOGIC: Decide if port should be captured
 // Returns: 1 = capture, 0 = drop
 static __always_inline int should_capture_port(__u16 port) {
@@ -219,6 +245,32 @@ int xdp_sniffer_enhanced(struct xdp_md *ctx) {
     // Verify IPv4
     if ((ip[0] >> 4) != 4)
         return XDP_PASS;
+
+    /* [DDOS-KAGG-D273:COUNT] Conteo por victima ANTES del reserve: independiente del ring,
+     * asi no hereda la perdida que queremos medir. Cuenta todo IPv4 de una
+     * interfaz activa, incluidos puertos que should_capture_port() descartaria
+     * mas abajo (el filtro por puerto es del camino ring, no de este). */
+    {
+        struct ddos_key dk = {
+            .dst_ip = ((__u32)ip[16] << 24) | ((__u32)ip[17] << 16) |
+                      ((__u32)ip[18] << 8)  |  (__u32)ip[19],
+            .proto  = ip[9],
+        };
+        __u64 wlen = (__u64)(data_end - data);
+        struct ddos_val *dv = bpf_map_lookup_elem(&ddos_victims, &dk);
+        if (!dv) {
+            /* Primera vez que se ve la victima. NOEXIST + re-lookup: si otra CPU
+             * inserto a la vez, el update falla con EEXIST y el re-lookup coge
+             * la entrada ganadora; no se pierde ningun conteo. */
+            struct ddos_val nv = { .pkts = 0, .bytes = 0 };
+            bpf_map_update_elem(&ddos_victims, &dk, &nv, BPF_NOEXIST);
+            dv = bpf_map_lookup_elem(&ddos_victims, &dk);
+        }
+        if (dv) {
+            __sync_fetch_and_add(&dv->pkts, 1);
+            __sync_fetch_and_add(&dv->bytes, wlen);
+        }
+    }
 
     // Reserve ring buffer space
     struct simple_event *event = bpf_ringbuf_reserve(&events, sizeof(*event), 0);
