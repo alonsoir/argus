@@ -1,85 +1,100 @@
-# CONTINUIDAD DAY273 — Agregador DDoS en el kernel eBPF (pre-ring). El confound de la cola de DAY272 quedó RESUELTO: el decaimiento era PÉRDIDA DE RING userspace, no la feature. Hoy se cerraron paso 1+2, se fijó el diseño del agregador en-kernel y se midió el punto de integración exacto en `sniffer.bpf.c`. Mañana: escribir el patcher del eBPF + tests. Rama `docs/ml-heads-grieta-b`.
+# CONTINUIDAD DAY273 → DAY274 — agregador DDoS por víctima en el kernel (eBPF/XDP)
 
-## LO MEDIDO Y CERRADO (no re-litigar)
+Rama de trabajo: `docs/ml-heads-grieta-b`. Principios: "medir, no votar" · Via Appia Quality.
+Sole developer: Alonso. C++20, flags `-std=c++20 -Wall -Wextra -Wpedantic -Werror`.
 
-### Paso 1 — discriminador (CERRADO)
-De las 9 features DDoS, bajo flood sobre el flood limpio: **`escalation` (traffic_escalation_rate) VARÍA y DOMINA** → la cabeza esencialmente umbraliza `escalation` (`class ≈ umbral(escalation)`, corte ~0.005). Cuadra con su importancia 0.33 en el RF post-geo (DAY255). `entropy` varía pero sucia (a 0.000 hay 58 DDOS mezclados con 78 NORMAL). `symmetry` binaria (0/1). `protocol`, `completion`, `disp` CLAVADAS; `saturation` casi.
-**CORRECCIÓN a DAY272:** lo muerto es el eje **ESPACIAL** (`source_ip_dispersion`, porque `_lab.pcap` colapsa origen a 1 IP → cap satura). El eje **TEMPORAL** (`escalation`) está VIVO y mandando. La cabeza SÍ usa agregación; el eje que funciona en este flood es el del tiempo, no el del origen.
+## 1. Estado en una frase
 
-### Paso 2 — recall limpio (CERRADO)
-**149/193 = 0.772** sobre el flood (`plm=482`) en el snapshot congelado `/tmp/detector-day272.log`. Endurecer por puerto NO cambió nada (todo puerto alto; el puerto resultó proxy del tiempo, no discriminador — cada puerto salió 100% de una clase por el orden de envío del pcap). Onset DETECTADO (warmup REFUTADO: primer tramo temporal ya 95.8% DDOS). Los fallos se concentran en la COLA (último tercio 54→46→36% DDOS).
+El contador por víctima dentro del kernel está construido, verificado en el kernel real 6.1 y medido E2E
+a 100 pps: cuenta exacto y no pierde nada entre el contador y el ring. **NO detecta ataques todavía**:
+es la capa de medición sobre la que se ajustará la fórmula de `escalation` (Paso 4).
 
-### Confound de la cola — RESUELTO (artefacto 0, `profile_flood_pcap.py`)
-La tasa real del flood es **PLANA**: 100 pps exactos a la víctima durante los 500s enteros, cero decaimiento (medido sobre el pcap SIN ring: 49999 pkts, 1 víctima real 192.168.100.1/UDP, 482B = 99%). El detector, en cambio, solo vio 151.7s truncados y decayendo. Las dos cosas juntas ⟹ **(b) PÉRDIDA DE RING userspace bajo carga CONFIRMADA; (a) la feature decae REFUTADA.** El "decaimiento de escalation" era artefacto del ring, no de la feature.
+## 2. Decisiones fijas (no reabrir)
 
-### Material de paper (nuevo)
-> El decaimiento aparente de una feature agregada en la cola de un flood es artefacto de la pérdida del ring buffer userspace bajo carga, no de la feature. La tasa real es constante; el detector solo ve una fracción truncada. Agregar en XDP —antes del ring— recupera la señal sin pérdida, y la ganancia crece con la severidad del ataque.
+- (a) Clave = `dst_ip + protocolo`; mapa `LRU_HASH` de 65536 entradas.
+- (b) El kernel cuenta de forma monótona por víctima. Userspace lee cada T segundos y
+  `delta = ventana tumbling`. Sin lógica de ventana, reset, float ni división en el kernel.
+- (c) Se cuentan paquetes Y bytes.
 
-### Marcador de apuestas (medir, no votar)
-Claude perdió DOS: `escalation`-clavada → falsa; warmup → falso. Alonso ganó: "la cabeza funciona sobre agregación (temporal)". La P0 del pipeline queda diagnosticada con dato duro: **el ring userspace es el techo de detección**, no el modelo.
+## 3. Qué existe (evidencia)
 
-## DECISIONES DE ARQUITECTURA FIJADAS (a/b/c) — agregador en-kernel
-- **(a) Clave** = `dst_ip + protocol`. KISS. Cada víctima nueva = entrada nueva. Mapa `LRU_HASH`, `max_entries=65536` (~6MB). La memoria NO es la restricción (memcg en 6.1, NO `RLIMIT_MEMLOCK` desde 5.11); la restricción real es el desalojo LRU, benigno (una víctima fría no está bajo flood). Complicar la clave solo si un test lo exige.
-- **(b) Semántica** = el kernel cuenta MONÓTONO por víctima; userspace lee cada T segundos y el **delta** = ventana tumbling. Cero lógica de ventana en kernel, cero reset, cero float, cero división. **EWMA-por-shift** (`val -= val>>k; val += muestra`) queda como RETADOR para la iteración offline.
-- **(c) Qué se cuenta** = paquetes + bytes por víctima. Exacto (enteros), barato (dos `add`). Dispersión/unique-IPs APLAZADAS (caras en kernel, muertas en flood de origen único).
+Mapa `ddos_victims`: key `{u32 dst_ip; u32 proto}` (8 B), value `{u64 pkts; u64 bytes}` (16 B), max 65536.
+`dst_ip` es el valor numérico `a<<24|b<<16|c<<8|d` (192.168.100.1 = 3232261121 = 0xC0A86401).
+El bloque de conteo va tras el chequeo IPv4 y antes de `bpf_ringbuf_reserve`. Altas nuevas con
+`bpf_map_update_elem(..., BPF_NOEXIST)` + nueva búsqueda; contadores con `__sync_fetch_and_add`.
 
-## TOOLKIT eBPF VERIFICADO (defender, kernel 6.1.0-53-amd64, Debian bookworm)
-- `percpu_hash`, `lru_hash`, `lru_percpu_hash` disponibles. `bpf_loop` y `bpf_ktime_get_ns` presentes. BTF `/sys/kernel/btf/vmlinux` existe (4.3MB) → **CO-RE viable**.
-- `BPF_SDIV` (división con signo, ISA v4) NO garantizada en 6.1 (es 6.6+). El diseño EWMA-por-shift NO divide → esquivado por diseño, no por suerte.
+Ficheros en el commit de la rama:
+- `sniffer/src/kernel/sniffer.bpf.c` (parche `patch_ddos_kernel_agg.py`, marcadores `DDOS-KAGG-D273:*`)
+- `sniffer/include/ddos_kernel_agg.hpp` — `sniffer::DdosKernelAggregator` (header-only, `poll()`, `compute_delta` puro,
+  lectura por `bpf_map_lookup_batch`)
+- `sniffer/tests/test_ddos_kernel_agg.cpp` — tests puros + modo `--bpf <obj>` con `BPF_PROG_TEST_RUN`
+- `sniffer/CMakeLists.txt` y `Makefile` (parche `patch_ddos_build_wiring.py` v2)
 
-## CONTRATO DEL AGREGADOR ACTUAL (medido, `sniffer/include/time_window_aggregator.hpp`)
-- El **cap-10000 es `max_events`** del constructor = tamaño del ALMACÉN de eventos (`vector<TimeWindowEvent>`, 1 evento/paquete). Flood > 10000 eventos/ventana → almacén lleno → `event_count` clavado a 10000 → fórmula log constante. La muerte de DAY272 con nombre y línea.
-- `escalation` NO se calcula en este header; se deriva aguas abajo en el extractor DDoS del ml-detector. Como NO la portamos (diseño de cero), no hace falta tocarla ahora.
-- **Insight**: el fallo no es el número 10000, es **CONTAR POR EVENTO**. Contar POR VÍCTIMA (clave=víctima) mata el cap por construcción: el flood martillea 1 contador (`u32/u64`), no llena un almacén de 10000.
+Verificado:
+- El verificador de 6.1 acepta el programa; el `.bpf.o` recompilado contiene el mapa; el sniffer en ejecución lo tiene
+  (`lru_hash`, key 8, value 16, max 65536).
+- `make sniffer-ddos-agg-test` (ctest, sin root, entra en `make test-components`): Passed bajo `-Werror`.
+- `make sniffer-ddos-agg-bpf-test` (root): OK; ventana de 5000 paquetes → `d_pkts=5000 d_bytes=2410000`.
 
-## PUNTO DE INTEGRACIÓN eBPF — MEDIDO (`sniffer/src/kernel/sniffer.bpf.c`)
-- **UN solo** programa XDP propio: `xdp_sniffer_enhanced` (`SEC("xdp")`, L194). Loader = `sniffer/src/userspace/ebpf_loader.cpp`. NO hay que encadenar/xdp-dispatcher → se **extiende el programa existente**.
-- Guard de bounds L213 `if (ip_start + 20 > data_end) return XDP_PASS;` YA cubre los 20B de IP → `daddr` (`ip[16..19]`) dentro de bounds. Sin guard nuevo.
-- Nombres verbatim: `data`, `data_end` (L195-196), `ip` (`__u8*`, L216), `packet_len = data_end - data` (L240).
-- L233-236 YA extraen `event->dst_ip`, `event->src_ip`, `event->protocol`, `event->packet_len` **en HOST order** (shifts). El contador REUSA esos campos. **OJO byte order**: host order, hereda `DEBT-SNIFFER-IP-BYTE-ORDER-001`; userspace DEBE leer la clave en host order (mismo orden los dos lados = no repetir aquella batalla).
-- **DECISIÓN ABIERTA (la central del ejercicio):** contar ANTES o DESPUÉS del `bpf_ringbuf_reserve` (L223). Después = solo cuenta lo que reservó ring → contamina con la pérdida que queremos evitar. **ANTES, con variables locales = conteo independiente del ring = el objetivo.** Recomendación firme: ANTES.
+## 4. Medición E2E (DAY273) — números
 
-### Boceto del contador (revisado, cuadra con el fichero real; NO aplicado)
-```c
-/* define junto a L31-33 */
-#define BPF_MAP_TYPE_LRU_HASH 9
+Replay de `datasets/cicddos2019/_0125_50k_lab.pcap` a `--pps=100` (499.99 s, 50000 paquetes, 23 999 270 B)
+desde la VM `client` hacia la `defender` (XDP generic en eth1 y eth2, kernel 6.1.0-53, Debian bookworm).
 
-/* mapa junto a `stats` ~L149.
-   OJO: dst_ip en HOST order (hereda shifts L234). Userspace lee host order. */
-struct ddos_key { __u32 dst_ip; __u8 proto; };
-struct ddos_val { __u64 pkts; __u64 bytes; };
-struct {
-    __uint(type, BPF_MAP_TYPE_LRU_HASH);
-    __uint(max_entries, 65536);
-    __type(key, struct ddos_key);
-    __type(value, struct ddos_val);
-} ddos_victims SEC(".maps");
+| Magnitud | Valor |
+|---|---|
+| Víctima 192.168.100.1/UDP, delta | +49 997 pkts, +23 998 186 B |
+| Víctima 192.168.100.1/ICMP, delta (clave nueva) | +2 pkts, +1 020 B |
+| Total víctima | 49 999 pkts, 23 999 206 B |
+| Enviado por tcpreplay | 50 000 pkts, 23 999 270 B |
+| No contado | 1 paquete, 64 B (hipótesis: trama no IPv4; SIN VERIFICAR) |
+| Delta `stats[0]` (eventos al ring) | 50 599 |
+| Suma de deltas de todo el mapa | 50 599 (A−B = 0: sin pérdida kernel→ring a 100 pps) |
+| Prueba corta (500 pkts) | 500 pkts y 239 848 B, idénticos a lo enviado |
+| Detector: líneas de flujo UDP a la víctima | 790 (flujos, NO paquetes; pcap 766 + 17 de la prueba corta) |
 
-/* bloque de conteo — versión ANTES-DEL-RESERVE con locales (recomendada):
-   extraer dst_ip/proto/len a locales tras el guard L213-216 y contar aquí,
-   ANTES del bpf_ringbuf_reserve de L223, para no heredar la pérdida del ring. */
-struct ddos_key dk = {};
-dk.dst_ip = (ip[16]<<24)|(ip[17]<<16)|(ip[18]<<8)|ip[19];  /* host order */
-dk.proto  = ip[9];
-__u64 wlen = (__u64)(data_end - data);
-struct ddos_val *dv = bpf_map_lookup_elem(&ddos_victims, &dk);
-if (dv) { __sync_fetch_and_add(&dv->pkts, 1); __sync_fetch_and_add(&dv->bytes, wlen); }
-else { struct ddos_val nv = { .pkts = 1, .bytes = wlen }; bpf_map_update_elem(&ddos_victims, &dk, &nv, BPF_ANY); }
-```
+## 5. Trampas de entorno (leer antes de ejecutar nada)
 
-## PENDIENTE DAY273 (en orden, ACORDADO)
-1. **Script Python que MODIFICA `sniffer.bpf.c`** (patcher estilo `patch_force_all_heads.py`: idempotente, atómico, **--dry/--apply/--check**, verifica que compila, NO commitea). Inserta: el `#define`, el `struct`+mapa `ddos_victims`, y el bloque de conteo **ANTES del reserve con locales**.
-2. **`ebpf_loader.cpp`**: exponer el mapa `ddos_victims` a userspace por nombre, leerlo cada T.
-3. **Tests de INTEGRACIÓN + E2E** (como hasta ahora): flood por el pipeline → verificar que el conteo en-kernel == ~50000 SIN pérdida, contra el 77% que dejó pasar el ring. Este es el criterio de HECHO del ejercicio.
-4. **Harness de fitting de fórmulas** de `escalation` sobre los conteos LIMPIOS (tumbling vs EWMA-por-shift), elegir la que mejor separe. SOLO entonces decidir qué baja al kernel como punto fijo.
+- `make`, `patch_*.py` y `git` corren en el **Mac**. `readelf`, `bpftool` (necesita `sudo`), `pgrep`, `tcpreplay` y
+  `g++` con libbpf corren en las **VMs**. En la VM no existe `vagrant`; el Mac no tiene eBPF ni libbpf.
+- El replay se lanza desde la VM **`client`** (`vagrant ssh client`). Lanzarlo desde `defender` da A=0: los paquetes
+  salen por TX y nunca pasan por el hook XDP de RX. (Error real cometido en DAY273.)
+- El XDP está en **eth1 y eth2**. Al comparar contadores de interfaz mirar las dos (el tráfico del cliente entra por eth2).
+- `BPF_PROG_TEST_RUN` sin contexto entrega los paquetes como recibidos por `lo` (ifindex 1): hay que poblar
+  `iface_configs[if_nametoindex("lo")]` y `filter_settings` (default 0 = DROP), o el programa sale sin contar.
+- El sniffer carga `sniffer.bpf.o` por ruta relativa (cwd `/vagrant/sniffer/build-debug`); el binario no lo embebe.
+- `cmake --build --target <nuevo>` no reconfigura: las recetas ejecutan `cmake .` antes.
+- `LIBBPF_OPTS` usa extensiones GNU y falla con `-Wpedantic -Werror` en C++: struct explícito.
+- Un `grep "192.168.100.1"` casa también con `.10`/`.11`/`.12`. Usar regex anclada.
+- Snapshot ANTES/DESPUÉS con un solo comando (`/tmp/snap.sh`: fecha, `ip -s link` eth1/eth2, `bpftool -j map dump`
+  de `stats` y `ddos_victims`) para evitar desfases entre mapas.
+- Preferencias de trabajo: `git grep`, nunca `grep -rn` en la raíz; comandos de salida grande por separado o a fichero;
+  los ficheros generados por Claude los ejecuta Alonso en su VM.
 
-## FICHEROS DE HOY (pendientes de commitear a `docs/ml-heads-grieta-b`)
-- `zmq_handler.cpp` — log de 9 features DDoS. **APLICADO, compila, SIN commitear.** Patcher: `patch_log_all_features.py`.
-- `join_flood_escalation.py` (v1), `_v2.py`, `_v3.py` — parsers de análisis (untracked).
-- `profile_flood_pcap.py` — profiler sin pérdida del pcap (untracked; requiere `pip install dpkt`).
+## 6. Pendiente, en orden
 
-## INVARIANTES
-`main` protegida (PR only). Rama = `docs/ml-heads-grieta-b`. Flags por Makefile, NUNCA JSON a mano. `git grep`/fichero concreto, NUNCA `grep -rn` desde raíz. No encadenar salidas grandes. El compilador/verificador es el árbitro. HECHO ≠ SOSPECHADO.
+1. Verificar la hipótesis de la trama de 64 B: `tcpdump -nr datasets/cicddos2019/_0125_50k_lab.pcap not ip -c 5`
+   y contar ICMP del pcap. Cierra el cabo suelto antes de publicar.
+2. Aplicar `patch_ebpf_loader_ddos.py` (NO aplicado; solo verificado su `--dry`). Comprobar apply, idempotencia y
+   caminos de fallo. Requiere `sniffer/include/ddos_kernel_agg.hpp` presente.
+3. Hilo lector en el proceso del sniffer que llame a `poll()` cada T.
+4. Repetir el E2E a más pps: ahí A−B puede dejar de ser 0 y la confusión de DAY272 se hace visible. Probar también
+   la carrera multi-CPU de la inserción `BPF_NOEXIST` (solo un flood real la muestra).
+5. Paso 4: harness de ajuste de fórmula para `escalation` (tumbling vs EWMA por shift) sobre los conteos limpios.
+6. Restos en la rama: `join_flood_escalation*.py`, `profile_flood_pcap.py` (sin trackear).
 
-## MÉTODO DE REPLAY (reusar)
-`_0125_50k_lab.pcap` a `--pps=100` desde el guest client: `sudo tcpreplay --intf1=eth1 /vagrant/datasets/cicddos2019/_0125_50k_lab.pcap`. Rehacer `tcprewrite` SOLO si hubo `destroy→up` (las MACs cambian). `truncate -s 0 logs/lab/detector.log` con el pipeline VIVO (NUNCA `logs-lab-clean`, mueve el inodo). `make pipeline-start VERBOSE=1 FORCE_ALL_HEADS=1` fuerza la compuerta level1. Log del detector: `logs/lab/detector.log` (host) = `/vagrant/logs/lab/detector.log` (VM). Congelar a `/tmp` para análisis. Ring stats en el defender: `sudo bpftool map dump name stats`.
+## 7. Lo que NO está demostrado
+
+- Ninguna detección: no se ha medido cuántos ataques marca el detector con esta capa.
+- Comportamiento por encima de 100 pps y con el ring saturado.
+- Carrera multi-CPU en el alta de víctimas nuevas.
+- XDP en modo nativo (todo se ha medido en generic/SKB sobre VirtualBox).
+- Un solo pcap (un corte de CICDDoS2019).
+
+## 8. Prompt de arranque para la próxima sesión
+
+> Continuamos DAY274 de aRGus NDR (C++20, rama `docs/ml-heads-grieta-b`). Lee `CONTINUIDAD_DAY273_a_274.md`.
+> Estado: el agregador por víctima en kernel (`ddos_victims`, LRU_HASH 65536, key dst_ip+proto, contadores monótonos
+> pkts+bytes) está verificado y medido a 100 pps (49 999/50 000 paquetes IPv4 contados, A−B=0). No detecta nada aún.
+> Empieza por el punto 1 del pendiente (tcpdump de la trama no IPv4) y luego el punto 2 (aplicar el patcher del loader).
+> Reglas: comandos separados, `git grep`, los ficheros los ejecuto yo en la VM Vagrant, make/git en el Mac.
