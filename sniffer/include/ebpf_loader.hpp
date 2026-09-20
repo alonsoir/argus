@@ -42,6 +42,11 @@ public:
     int get_filter_settings_fd() const { return filter_settings_fd_; }
     int get_interface_configs_fd() const { return interface_configs_fd_; }
 
+    // [DDOS-KAGG-D273:LOADER-HPP-API] Agregador DDoS en-kernel (mapa `ddos_victims`).
+    // fd = -1 / max_entries = 0 si el .bpf.o cargado no lo trae (objeto anterior al parche).
+    int get_ddos_victims_fd() const { return ddos_victims_fd_; }
+    uint32_t get_ddos_victims_max_entries() const { return ddos_victims_max_entries_; }
+
     // Verificar si el programa está cargado y adjuntado
     bool is_loaded() const { return program_loaded_; }
     bool is_attached() const { return xdp_attached_; }
@@ -67,6 +72,11 @@ private:
     int included_ports_fd_ = -1;
     int filter_settings_fd_ = -1;
     int interface_configs_fd_ = -1;
+
+    // [DDOS-KAGG-D273:LOADER-HPP-MEM] Agregador DDoS en-kernel
+    struct bpf_map* ddos_victims_map_ = nullptr;
+    int ddos_victims_fd_ = -1;
+    uint32_t ddos_victims_max_entries_ = 0;
     bool program_loaded_;
     bool xdp_attached_;
     bool skb_attached_;

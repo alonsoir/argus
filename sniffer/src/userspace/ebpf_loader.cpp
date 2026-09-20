@@ -1,4 +1,5 @@
 #include "ebpf_loader.hpp"
+#include "ddos_kernel_agg.hpp"  // [DDOS-KAGG-D273:LOADER-CPP-INC] layout de ddos_key/ddos_val
 #include <iostream>
 #include <cstring>
 #include <unistd.h>
@@ -156,6 +157,31 @@ bool EbpfLoader::load_program(const std::string& bpf_obj_path) {
                   << interface_configs_fd_ << std::endl;
     } else {
         std::cout << "[INFO] iface_configs map not found (legacy single-interface mode)" << std::endl;
+    }
+
+    // [DDOS-KAGG-D273:LOADER-CPP-FIND] Agregador DDoS en-kernel. Opcional: un .bpf.o anterior al parche
+    // no lo trae. Si el layout no coincide con ddos_kernel_agg.hpp se desactiva en vez
+    // de leer basura.
+    ddos_victims_map_ = bpf_object__find_map_by_name(bpf_obj_, "ddos_victims");
+    if (ddos_victims_map_) {
+        if (bpf_map__key_size(ddos_victims_map_) != sizeof(DdosVictimKey) ||
+            bpf_map__value_size(ddos_victims_map_) != sizeof(DdosVictimVal)) {
+            std::cerr << "[WARNING] ddos_victims map layout mismatch (key="
+                      << bpf_map__key_size(ddos_victims_map_) << " val="
+                      << bpf_map__value_size(ddos_victims_map_) << ", expected "
+                      << sizeof(DdosVictimKey) << "/" << sizeof(DdosVictimVal)
+                      << "); in-kernel DDoS aggregator disabled" << std::endl;
+            ddos_victims_map_ = nullptr;
+        } else {
+            ddos_victims_fd_ = bpf_map__fd(ddos_victims_map_);
+            ddos_victims_max_entries_ = bpf_map__max_entries(ddos_victims_map_);
+            std::cout << "[INFO] Found ddos_victims map (in-kernel DDoS aggregator), FD: "
+                      << ddos_victims_fd_ << ", max_entries: " << ddos_victims_max_entries_
+                      << std::endl;
+        }
+    } else {
+        std::cout << "[INFO] ddos_victims map not found (eBPF object without in-kernel DDoS aggregator)"
+                  << std::endl;
     }
 
     program_loaded_ = true;
