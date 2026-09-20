@@ -91,6 +91,10 @@ bool strict_load_json_config(const std::string& config_path, StrictSnifferConfig
 
         // Kernel space
         config.kernel_space.ebpf_program = sniffer_config->kernel_space.ebpf_program;
+        // [DDOS-KREAD-D274:CFG-TYPES-CPP] lector del agregador DDoS en-kernel (DAY274)
+        config.kernel_space.ddos_kernel_agg_enabled = sniffer_config->kernel_space.ddos_kernel_agg_enabled;
+        config.kernel_space.ddos_kernel_agg_interval_ms = sniffer_config->kernel_space.ddos_kernel_agg_interval_ms;
+        config.kernel_space.ddos_kernel_agg_csv_path = sniffer_config->kernel_space.ddos_kernel_agg_csv_path;
         config.kernel_space.xdp_mode = sniffer_config->kernel_space.xdp_mode;
         config.kernel_space.ring_buffer_size = sniffer_config->kernel_space.ring_buffer_size;
         config.kernel_space.max_flows_in_kernel = sniffer_config->kernel_space.max_flows_in_kernel;

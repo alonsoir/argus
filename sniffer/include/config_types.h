@@ -150,6 +150,10 @@ struct StrictSnifferConfig {
     // Kernel space - TODOS REQUERIDOS
     struct {
         std::string ebpf_program;
+        // [DDOS-KREAD-D274:CFG-TYPES-H] lector del agregador DDoS en-kernel (DAY274)
+        bool ddos_kernel_agg_enabled = false;
+        int ddos_kernel_agg_interval_ms = 1000;
+        std::string ddos_kernel_agg_csv_path;
         std::string xdp_mode;
         int ring_buffer_size;
         int max_flows_in_kernel;
