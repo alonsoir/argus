@@ -1036,3 +1036,29 @@ if(NOT USE_LIBPCAP)
   add_test(NAME test_ddos_kernel_agg COMMAND test_ddos_kernel_agg)
   message(STATUS "🧪 Unit Test: test_ddos_kernel_agg configured (DAY 273 - agregador DDoS en-kernel, parte pura)")
 endif()
+
+# ============================================================================
+# DDOS-KREAD-D274:CMAKE  Hilo lector del agregador DDoS en-kernel (DAY 274)
+# Test sin kernel ni root: formato del CSV (funciones puras) y ciclo de vida del
+# hilo (start/stop, parada inmediata, cadencia) con fd = -1.
+# Solo Variant A (eBPF): la Variant B (libpcap) no tiene libbpf.
+# ============================================================================
+if(NOT USE_LIBPCAP)
+  find_package(Threads REQUIRED)
+  add_executable(test_ddos_kernel_reader
+          tests/test_ddos_kernel_reader.cpp
+  )
+  target_include_directories(test_ddos_kernel_reader PRIVATE
+          ${CMAKE_SOURCE_DIR}/include
+          ${LIBBPF_INCLUDE_DIRS}
+  )
+  if(LIBBPF_LIBRARY_DIRS)
+    target_link_directories(test_ddos_kernel_reader PRIVATE ${LIBBPF_LIBRARY_DIRS})
+  endif()
+  target_link_libraries(test_ddos_kernel_reader PRIVATE
+          ${LIBBPF_LIBRARIES}
+          Threads::Threads
+  )
+  add_test(NAME test_ddos_kernel_reader COMMAND test_ddos_kernel_reader)
+  message(STATUS "Unit Test: test_ddos_kernel_reader configured (DAY 274 - hilo lector DDoS + CSV, sin kernel)")
+endif()

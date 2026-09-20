@@ -1203,6 +1203,16 @@ sniffer-ddos-agg-bpf-test:
 	@echo "🧪 test_ddos_kernel_agg --bpf (requiere root y kernel con BPF)..."
 	@vagrant ssh -c "cd $(SNIFFER_BUILD_DIR) && cmake . > /dev/null && cmake --build . --target bpf_program && cmake --build . --target test_ddos_kernel_agg && sudo ./test_ddos_kernel_agg --bpf ./sniffer.bpf.o"
 
+# ============================================================================
+# DDOS-KREAD-D274:MAKE  Test del hilo lector DDoS (DAY 274): sin root, sin kernel.
+# Registrado con add_test en sniffer/CMakeLists.txt: entra en cualquier ctest general.
+# ============================================================================
+.PHONY: sniffer-ddos-reader-test
+
+sniffer-ddos-reader-test:
+	@echo "🧪 test_ddos_kernel_reader (hilo + CSV, sin root ni kernel)..."
+	@vagrant ssh -c "cd $(SNIFFER_BUILD_DIR) && cmake . > /dev/null && cmake --build . --target test_ddos_kernel_reader && ctest -R test_ddos_kernel_reader --output-on-failure"
+
 test-components: correlation-engine-test
 	@echo ""
 	@echo "╔════════════════════════════════════════════════════════════╗"
