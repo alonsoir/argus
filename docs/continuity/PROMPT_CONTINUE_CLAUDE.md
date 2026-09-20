@@ -1,100 +1,80 @@
-# CONTINUIDAD DAY273 → DAY274 — agregador DDoS por víctima en el kernel (eBPF/XDP)
+# CONTINUIDAD DAY274 → DAY275
 
-Rama de trabajo: `docs/ml-heads-grieta-b`. Principios: "medir, no votar" · Via Appia Quality.
-Sole developer: Alonso. C++20, flags `-std=c++20 -Wall -Wextra -Wpedantic -Werror`.
+Rama `docs/ml-heads-grieta-b`. Principios: "medir, no votar" / Via Appia Quality.
+Tema: agregador DDoS por víctima en el kernel (eBPF/XDP) y su lector en el sniffer.
 
-## 1. Estado en una frase
+## 1. Estado al cerrar DAY274
 
-El contador por víctima dentro del kernel está construido, verificado en el kernel real 6.1 y medido E2E
-a 100 pps: cuenta exacto y no pierde nada entre el contador y el ring. **NO detecta ataques todavía**:
-es la capa de medición sobre la que se ajustará la fórmula de `escalation` (Paso 4).
+Hecho y verificado:
 
-## 2. Decisiones fijas (no reabrir)
+- **Punto 1 (cerrado):** el frame que no cuenta el kernel es un PVST+ de Cisco (SNAP/802.3, 64 B, no IPv4). Está en la posición 1066 del pcap; los 2 ICMP en la 6730 y 6731 (posiciones reales del fichero, no los números `-#` de tcpdump con filtro). No existe un "paquete nº 1".
+- **Punto 2 (cerrado):** `patch_ebpf_loader_ddos.py` aplicado, commit `0e5fc58d`. El loader encuentra el mapa `ddos_victims` (FD 5, max 65536, layout 8 B/16 B comprobado).
+- **Punto 3 (hecho, sin commit del usuario aún salvo comprobación):** `patch_ddos_reader.py` crea `sniffer/include/ddos_kernel_reader.hpp` y `sniffer/tests/test_ddos_kernel_reader.cpp`, y toca `config_manager.*`, `config_types.*`, `main.cpp` y `sniffer/config/sniffer.json`. Compilado con `-Werror` (solo build-debug verificado), test unitario pasado, apagado limpio verificado con SIGINT (reader parado antes de borrar el loader).
+- **Cableado del test (hecho):** `patch_ddos_reader_wiring.py` añade el bloque CMake y el target `make sniffer-ddos-reader-test`. Pasa desde la VM (ctest) y desde el Mac.
+- **`snap_ddos.sh`** (commit `96052bd4`) y **`snap_delta.py`** (nuevo, calibrado al byte con la pareja `antes1070/despues1070`).
 
-- (a) Clave = `dst_ip + protocolo`; mapa `LRU_HASH` de 65536 entradas.
-- (b) El kernel cuenta de forma monótona por víctima. Userspace lee cada T segundos y
-  `delta = ventana tumbling`. Sin lógica de ventana, reset, float ni división en el kernel.
-- (c) Se cuentan paquetes Y bytes.
+Commits pendientes del usuario (comprobar con `git status --short`):
 
-## 3. Qué existe (evidencia)
+1. Lector: `patch_ddos_reader.py`, `ddos_kernel_reader.hpp`, `test_ddos_kernel_reader.cpp`, `config_manager.hpp`, `config_types.h`, `config_manager.cpp`, `config_types.cpp`, `main.cpp`, `sniffer.json`. El patcher salía como `AM`: hay que hacer `git add` otra vez.
+2. Cableado: `patch_ddos_reader_wiring.py`, `Makefile`, `sniffer/CMakeLists.txt`.
+3. `snap_delta.py` (renombrar antes si sigue con espacio final: `mv "snap_delta.py " snap_delta.py`).
 
-Mapa `ddos_victims`: key `{u32 dst_ip; u32 proto}` (8 B), value `{u64 pkts; u64 bytes}` (16 B), max 65536.
-`dst_ip` es el valor numérico `a<<24|b<<16|c<<8|d` (192.168.100.1 = 3232261121 = 0xC0A86401).
-El bloque de conteo va tras el chequeo IPv4 y antes de `bpf_ringbuf_reserve`. Altas nuevas con
-`bpf_map_update_elem(..., BPF_NOEXIST)` + nueva búsqueda; contadores con `__sync_fetch_and_add`.
+## 2. Evidencia medida en DAY274
 
-Ficheros en el commit de la rama:
-- `sniffer/src/kernel/sniffer.bpf.c` (parche `patch_ddos_kernel_agg.py`, marcadores `DDOS-KAGG-D273:*`)
-- `sniffer/include/ddos_kernel_agg.hpp` — `sniffer::DdosKernelAggregator` (header-only, `poll()`, `compute_delta` puro,
-  lectura por `bpf_map_lookup_batch`)
-- `sniffer/tests/test_ddos_kernel_agg.cpp` — tests puros + modo `--bpf <obj>` con `BPF_PROG_TEST_RUN`
-- `sniffer/CMakeLists.txt` y `Makefile` (parche `patch_ddos_build_wiring.py` v2)
+Todas las corridas: replay desde `client` (hostname `ml-client`, `--intf1=eth1`), XDP genérico (SKB) en eth1/eth2 de `defender`, pcap `_0125_50k_lab.pcap` (50.000 pkts / 23.999.270 B = 49.997 UDP + 2 ICMP + 1 PVST+).
 
-Verificado:
-- El verificador de 6.1 acepta el programa; el `.bpf.o` recompilado contiene el mapa; el sniffer en ejecución lo tiene
-  (`lru_hash`, key 8, value 16, max 65536).
-- `make sniffer-ddos-agg-test` (ctest, sin root, entra en `make test-components`): Passed bajo `-Werror`.
-- `make sniffer-ddos-agg-bpf-test` (root): OK; ventana de 5000 paquetes → `d_pkts=5000 d_bytes=2410000`.
+| Corrida | eth2 RX | mapa (suma) | `.1/17` (pkts / B) | `stats[0]` | A−B | cable − mapa |
+|---|---|---|---|---|---|---|
+| 1070 pkts (ritmo bajo) | +1100 | +1099 / 518.118 B | +1069 / 512.810 | +1099 | 0 | +2 pkts / +106 B |
+| 5000 pkts @ 100 pps (50 s) | +5064 | +5059 / 2.398.202 B | +4999 / 2.389.358 | +5059 | **0** | +9 / +465 B |
+| 5000 pkts @ 1000 pps (5 s) | +5031 | +5032 / 2.394.502 B | +4999 / 2.389.358 | **+2320** | **−2712** | +4 / +432 B |
+| pcap completo @ 1000 pps (ventana 326 s) | +46.595 | +46.602 / 22.235.868 B | +46.221 / 22.181.682 | **+4788** | **−41.814** | +19 / +1.347 B |
 
-## 4. Medición E2E (DAY273) — números
+- tcpreplay de las dos corridas de 5000: 5000 pkts / 2.389.422 B, `Failed packets: 0`, 0 reintentos. Enviado − contado en `.1/17` = 1 pkt / 64 B (el PVST+), en ambas.
+- Corrida completa: la suma del CSV con `ts_ms >= T0` coincide con el delta de `.1/17` (46.221 pkts / 22.181.682 B). El lector escribe exactamente lo que cuenta el kernel.
+- **Falta la línea `Actual:` de tcpreplay de la corrida completa**: no se guardó.
 
-Replay de `datasets/cicddos2019/_0125_50k_lab.pcap` a `--pps=100` (499.99 s, 50000 paquetes, 23 999 270 B)
-desde la VM `client` hacia la `defender` (XDP generic en eth1 y eth2, kernel 6.1.0-53, Debian bookworm).
+## 3. Hallazgos y decisiones
 
-| Magnitud | Valor |
-|---|---|
-| Víctima 192.168.100.1/UDP, delta | +49 997 pkts, +23 998 186 B |
-| Víctima 192.168.100.1/ICMP, delta (clave nueva) | +2 pkts, +1 020 B |
-| Total víctima | 49 999 pkts, 23 999 206 B |
-| Enviado por tcpreplay | 50 000 pkts, 23 999 270 B |
-| No contado | 1 paquete, 64 B (hipótesis: trama no IPv4; SIN VERIFICAR) |
-| Delta `stats[0]` (eventos al ring) | 50 599 |
-| Suma de deltas de todo el mapa | 50 599 (A−B = 0: sin pérdida kernel→ring a 100 pps) |
-| Prueba corta (500 pkts) | 500 pkts y 239 848 B, idénticos a lo enviado |
-| Detector: líneas de flujo UDP a la víctima | 790 (flujos, NO paquetes; pcap 766 + 17 de la prueba corta) |
+1. **A−B no es "pérdida del ring" a secas.** `stats[0]` se incrementa al final del camino (línea ~414 de `sniffer/src/kernel/sniffer.bpf.c`), después del `bpf_ringbuf_reserve` y de los filtros de puerto. Lo que no incrementa: `reserve` fallido (`return XDP_PASS` sin contador) y los seis `bpf_ringbuf_discard` (puerto origen/destino no capturable, cabecera L4 truncada). El mapa `ddos_victims` se cuenta antes del `reserve` (marcador `DDOS-KAGG-D273:COUNT`), independiente de ring y filtros.
+2. **En esta configuración A−B ≈ eventos que no llegan al ring por saturación.** `sniffer.json`: `excluded_ports: [22]`, `included_ports: []`, `default_action: capture`. Los descartes por filtro son despreciables. El test A/B con los mismos 5000 paquetes lo demuestra: A−B = 0 a 100 pps y −2712 a 1000 pps. Como el contenido es idéntico, la causa depende de la tasa; el único camino del código que depende de la tasa es el `reserve` fallido (ring lleno). Conclusión por eliminación de caminos de código; no se ha instrumentado el `reserve` fallido directamente.
+3. **El agregador en el kernel resiste lo que el ring no.** A 1000 pps el mapa contó 4999/4999 UDP y 2.389.358 B exactos mientras al ring llegaba el 46 % de los eventos (2320 de 5032; en la corrida larga solo el 10,3 %: 4788 de 46.602). El mapa no perdió nada.
+4. **Consecuencia abierta para aRGus (medida solo en este laboratorio):** en el build debug, con `FORCE_ALL_HEADS=1`, VirtualBox y XDP genérico, el camino ring → consumidor userspace → cabezas ML satura a 1000 pps y ve una fracción del tráfico. **Confirma lo ya medido en DAY270** (ring ~14 % a 1000 pps, ~95 % a 100 pps; aquí 46 % en ráfaga de 5 s y 10,3 % en la corrida larga; el filtro de puertos ya se había descartado entonces como causa). Novedad de DAY274: el contador del kernel no se ve afectado. No sabemos aún si el cuello es el tamaño del ring, el ritmo del consumidor o el build -O0.
+5. **Sobre el pcap:** unos 250 flujos de 200 paquetes; los primeros pares (src, dst) vistos tienen puerto origen 800–999 y destino alto aleatorio. Los primeros ~1070 paquetes pasan todos por el filtro.
+6. **Los 3.777 paquetes que faltan en la corrida completa siguen sin explicar.** eth2 recibió +46.595 y el pcap tiene 50.000. `missed` = 0 y `dropped` = +1 (el PVST+), así que la pérdida ocurre antes de la NIC de `defender` o tcpreplay no terminó. Las dos corridas de 5000 llegaron completas, luego a 1000 pps no hay pérdida sistemática en el envío. Hipótesis sin comprobar: envío interrumpido o incompleto.
+7. Otras decisiones vigentes: el lector nace desactivado en código y activado en `sniffer.json`; ventana tumbling en userspace = delta entre lecturas; usar `d_pkts / window_ms` (jitter ±5 %); la fila `window_ms=0` es el baseline (filtrar en el harness); el CSV es append con flush por ventana.
 
-## 5. Trampas de entorno (leer antes de ejecutar nada)
+## 4. Trampas de entorno
 
-- `make`, `patch_*.py` y `git` corren en el **Mac**. `readelf`, `bpftool` (necesita `sudo`), `pgrep`, `tcpreplay` y
-  `g++` con libbpf corren en las **VMs**. En la VM no existe `vagrant`; el Mac no tiene eBPF ni libbpf.
-- El replay se lanza desde la VM **`client`** (`vagrant ssh client`). Lanzarlo desde `defender` da A=0: los paquetes
-  salen por TX y nunca pasan por el hook XDP de RX. (Error real cometido en DAY273.)
-- El XDP está en **eth1 y eth2**. Al comparar contadores de interfaz mirar las dos (el tráfico del cliente entra por eth2).
-- `BPF_PROG_TEST_RUN` sin contexto entrega los paquetes como recibidos por `lo` (ifindex 1): hay que poblar
-  `iface_configs[if_nametoindex("lo")]` y `filter_settings` (default 0 = DROP), o el programa sale sin contar.
-- El sniffer carga `sniffer.bpf.o` por ruta relativa (cwd `/vagrant/sniffer/build-debug`); el binario no lo embebe.
-- `cmake --build --target <nuevo>` no reconfigura: las recetas ejecutan `cmake .` antes.
-- `LIBBPF_OPTS` usa extensiones GNU y falla con `-Wpedantic -Werror` en C++: struct explícito.
-- Un `grep "192.168.100.1"` casa también con `.10`/`.11`/`.12`. Usar regex anclada.
-- Snapshot ANTES/DESPUÉS con un solo comando (`/tmp/snap.sh`: fecha, `ip -s link` eth1/eth2, `bpftool -j map dump`
-  de `stats` y `ddos_victims`) para evitar desfases entre mapas.
-- Preferencias de trabajo: `git grep`, nunca `grep -rn` en la raíz; comandos de salida grande por separado o a fichero;
-  los ficheros generados por Claude los ejecuta Alonso en su VM.
+- Descargar ficheros puede dejar un espacio final en el nombre (`snap_delta.py `). Comprobar con `ls -l` antes de ejecutar en la VM.
+- `pgrep -a sniffer` vacío = sniffer caído. Comprobarlo antes de cada foto ANTES. Arranque: `make pipeline-start VERBOSE=1 FORCE_ALL_HEADS=1` (Mac).
+- `make pipeline-stop` mata el sniffer sin pasar por el cleanup (se pierden <1 s de cola; el CSV se vuelca por ventana). Parada limpia: `sudo kill -INT $(pgrep -x sniffer)`.
+- El log `/vagrant/logs/lab/sniffer.log` pesa ~80 MB (más de 1,78 M líneas): nunca `cat`, solo `grep | tail`.
+- El Mac no tiene libbpf: los patchers con compilación se ejecutan en la VM `defender`. Los patchers exigen `--dry`, `--apply` o `--check`; nunca commitean.
+- El build sniffer usa `-Werror` (`flags.make`); solo se ha verificado build-debug (-O0).
+- El replay se lanza solo desde `client`; el tráfico entra por eth2 de `defender`. bpftool y `snap_ddos.sh` necesitan `sudo`.
+- Comandos de uno en uno; salidas grandes a fichero; `git grep`, nunca `grep -rn` desde la raíz.
 
-## 6. Pendiente, en orden
+## 5. Procedimiento de medida (E2E con `snap_delta.py`)
 
-1. Verificar la hipótesis de la trama de 64 B: `tcpdump -nr datasets/cicddos2019/_0125_50k_lab.pcap not ip -c 5`
-   y contar ICMP del pcap. Cierra el cabo suelto antes de publicar.
-2. Aplicar `patch_ebpf_loader_ddos.py` (NO aplicado; solo verificado su `--dry`). Comprobar apply, idempotencia y
-   caminos de fallo. Requiere `sniffer/include/ddos_kernel_agg.hpp` presente.
-3. Hilo lector en el proceso del sniffer que llame a `poll()` cada T.
-4. Repetir el E2E a más pps: ahí A−B puede dejar de ser 0 y la confusión de DAY272 se hace visible. Probar también
-   la carrera multi-CPU de la inserción `BPF_NOEXIST` (solo un flood real la muestra).
-5. Paso 4: harness de ajuste de fórmula para `escalation` (tumbling vs EWMA por shift) sobre los conteos limpios.
-6. Restos en la rama: `join_flood_escalation*.py`, `profile_flood_pcap.py` (sin trackear).
+1. `defender`: `sudo bash /vagrant/snap_ddos.sh > ~/antes_X.txt`
+2. `client`: `sudo tcpreplay --pps=N [--limit=M] --intf1=eth1 /vagrant/datasets/cicddos2019/_0125_50k_lab.pcap 2>&1 | tee ~/tcpreplay_X.txt` (guardar la salida).
+3. `defender`: `sudo bash /vagrant/snap_ddos.sh > ~/despues_X.txt`
+4. `defender`: `python3 /vagrant/snap_delta.py ~/antes_X.txt ~/despues_X.txt --sent PKTS BYTES`
+5. Cruce con el CSV: `T0=$(head -1 ~/antes_X.txt | cut -d. -f1)000`, luego `awk -F, -v t0=$T0 '$2>=t0 && $4=="192.168.100.1" && $5==17 {p+=$6;b+=$7} END{print p+0,b+0}' /vagrant/logs/lab/ddos_windows.csv` (esperar un par de segundos tras la foto DESPUÉS).
 
-## 7. Lo que NO está demostrado
+## 6. Pendiente, en orden propuesto
 
-- Ninguna detección: no se ha medido cuántos ataques marca el detector con esta capa.
-- Comportamiento por encima de 100 pps y con el ring saturado.
-- Carrera multi-CPU en el alta de víctimas nuevas.
-- XDP en modo nativo (todo se ha medido en generic/SKB sobre VirtualBox).
-- Un solo pcap (un corte de CICDDoS2019).
+1. Comprobar `git status --short` y hacer los tres commits de la sección 1.
+2. **Repetir el pcap completo a 1000 pps guardando la salida de tcpreplay** para explicar los 3.777 paquetes. Esperado si todo va bien: `.1/17` = 49.997, ICMP = 2, no contado = 1 pkt / 64 B.
+3. **Cuantificar la pérdida del ring.** Antes de tocar el BPF, mirar la definición del mapa `stats` (sniffer.bpf.c ~línea 152, `max_entries`) y decidir cómo contar el `reserve` fallido por separado (otra clave de `stats` o mapa nuevo). Con eso, A−B se descompone en `reserve` fallido y descartes por filtro. Medir también el ritmo real del consumidor y el tamaño del ring.
+4. **Subir la tasa** (5000, 10000, `--topspeed`) para comprobar que el contador del kernel sigue exacto y ver hasta dónde llega eth2 sin `missed`/`dropped`. La carrera con varios CPU en los `BPF_NOEXIST` es difícil de reproducir con una sola cola en VirtualBox.
+5. **Paso 4:** harness para la fórmula de `escalation` (tumbling frente a EWMA por shift) sobre el CSV, con tasas `d_pkts/window_ms` y sin las filas `window_ms=0`.
+6. Actualizar los documentos de continuidad anteriores: punto 1 cerrado, puntos 2 y 3 hechos, los ficheros `join_flood_escalation*.py` y `profile_flood_pcap.py` ya no están sin trackear.
+7. Opcional: `make test-components > /tmp/test-components.log 2>&1` y `grep -n test_ddos_kernel_reader /tmp/test-components.log`, para confirmar que el test entra en la batería general.
 
-## 8. Prompt de arranque para la próxima sesión
+Sin probar todavía (arrastrado de DAY273): modo XDP nativo, ring saturado de forma controlada (ahora hay datos de que ya ocurre), pcap único, build release.
 
-> Continuamos DAY274 de aRGus NDR (C++20, rama `docs/ml-heads-grieta-b`). Lee `CONTINUIDAD_DAY273_a_274.md`.
-> Estado: el agregador por víctima en kernel (`ddos_victims`, LRU_HASH 65536, key dst_ip+proto, contadores monótonos
-> pkts+bytes) está verificado y medido a 100 pps (49 999/50 000 paquetes IPv4 contados, A−B=0). No detecta nada aún.
-> Empieza por el punto 1 del pendiente (tcpdump de la trama no IPv4) y luego el punto 2 (aplicar el patcher del loader).
-> Reglas: comandos separados, `git grep`, los ficheros los ejecuto yo en la VM Vagrant, make/git en el Mac.
+## 7. Prompt de arranque para DAY275
+
+> Continuamos aRGus NDR, rama `docs/ml-heads-grieta-b`, "medir, no votar". Lee `CONTINUIDAD_DAY274_a_275.md`. Reglas: comandos de uno en uno, `git grep` (nunca `grep -rn` desde la raíz), salidas grandes a fichero, los ficheros que generas los ejecuto yo en mi VM y los commits los hago yo. Empieza por el punto 2 de la sección 6: repetir el pcap completo a 1000 pps guardando la salida de tcpreplay, con `snap_delta.py`. Después, el punto 3: cuantificar la pérdida del ring separando `reserve` fallido de descartes por filtro. Respuestas en español y concisas.
