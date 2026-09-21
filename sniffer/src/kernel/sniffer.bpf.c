@@ -144,12 +144,30 @@ struct {
 } events SEC(".maps");
 
 // Statistics
+/* [RING-LOSS-D275:MAP] Claves de stats. Identidad medida en userspace:
+ *   ddos_victims(suma) = stats[STAT_EVENTS] + stats[STAT_RESERVE_FAIL]
+ *                        + stats[STAT_FILTER_DISCARD]
+ * STAT_EVENTS (0) conserva su significado y posicion historicos. */
+#define STAT_EVENTS          0
+#define STAT_RESERVE_FAIL    1
+#define STAT_FILTER_DISCARD  2
+#define STAT_MAX             3
+
 struct {
     __uint(type, BPF_MAP_TYPE_ARRAY);
-    __uint(max_entries, 1);
+    __uint(max_entries, STAT_MAX);
     __type(key, __u32);
     __type(value, __u64);
 } stats SEC(".maps");
+
+/* [RING-LOSS-D275:HELPER] Incremento atomico de stats[key]. En un ARRAY la
+ * clave siempre existe (key < max_entries); el NULL solo satisface al verificador. */
+static __always_inline void stat_inc(__u32 key)
+{
+    __u64 *c = bpf_map_lookup_elem(&stats, &key);
+    if (c)
+        __sync_fetch_and_add(c, 1);
+}
 
 /* [DDOS-KAGG-D273:MAP] Agregador DDoS en-kernel: contadores MONOTONOS por victima.
  * Clave = dst_ip + protocolo. Userspace lee cada T s; delta = ventana tumbling.
@@ -275,6 +293,7 @@ int xdp_sniffer_enhanced(struct xdp_md *ctx) {
     // Reserve ring buffer space
     struct simple_event *event = bpf_ringbuf_reserve(&events, sizeof(*event), 0);
     if (!event) {
+        stat_inc(STAT_RESERVE_FAIL); /* [RING-LOSS-D275:RESERVE] */
         return XDP_PASS;
     }
 
@@ -304,6 +323,7 @@ int xdp_sniffer_enhanced(struct xdp_md *ctx) {
         // ============ TCP ============
         if (l4_start + 4 > data_end) {
             bpf_ringbuf_discard(event, 0);
+            stat_inc(STAT_FILTER_DISCARD); /* [RING-LOSS-D275:DISCARD] */
             return XDP_PASS;
         }
 
@@ -316,12 +336,14 @@ int xdp_sniffer_enhanced(struct xdp_md *ctx) {
         // 🔥 APPLY FILTER - Check destination port
         if (!should_capture_port(event->dst_port)) {
             bpf_ringbuf_discard(event, 0);
+            stat_inc(STAT_FILTER_DISCARD); /* [RING-LOSS-D275:DISCARD] */
             return XDP_PASS;
         }
 
         // 🔥 APPLY FILTER - Check source port
         if (!should_capture_port(event->src_port)) {
             bpf_ringbuf_discard(event, 0);
+            stat_inc(STAT_FILTER_DISCARD); /* [RING-LOSS-D275:DISCARD] */
             return XDP_PASS;
         }
 
@@ -335,6 +357,7 @@ int xdp_sniffer_enhanced(struct xdp_md *ctx) {
         // ============ UDP ============
         if (l4_start + 4 > data_end) {
             bpf_ringbuf_discard(event, 0);
+            stat_inc(STAT_FILTER_DISCARD); /* [RING-LOSS-D275:DISCARD] */
             return XDP_PASS;
         }
 
@@ -347,12 +370,14 @@ int xdp_sniffer_enhanced(struct xdp_md *ctx) {
         // 🔥 APPLY FILTER - Check destination port
         if (!should_capture_port(event->dst_port)) {
             bpf_ringbuf_discard(event, 0);
+            stat_inc(STAT_FILTER_DISCARD); /* [RING-LOSS-D275:DISCARD] */
             return XDP_PASS;
         }
 
         // 🔥 APPLY FILTER - Check source port
         if (!should_capture_port(event->src_port)) {
             bpf_ringbuf_discard(event, 0);
+            stat_inc(STAT_FILTER_DISCARD); /* [RING-LOSS-D275:DISCARD] */
             return XDP_PASS;
         }
 
