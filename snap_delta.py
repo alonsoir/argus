@@ -113,6 +113,10 @@ def main():
     print("  total pkts %+d  bytes %+d" % (wire_pkts, wire_bytes))
 
     stats0 = b["stats"].get(0, 0) - a["stats"].get(0, 0)
+    # [RING-LOSS-D275:STATS] contadores nuevos del kernel (claves 1 y 2)
+    stats1 = b["stats"].get(1, 0) - a["stats"].get(1, 0)
+    stats2 = b["stats"].get(2, 0) - a["stats"].get(2, 0)
+    has_ring_counters = (1 in b["stats"]) and (2 in b["stats"]) and (1 in a["stats"]) and (2 in a["stats"])
     deltas = {}
     resets = 0
     for k, (bp, bb) in b["victims"].items():
@@ -131,6 +135,16 @@ def main():
     print("  mapa ddos_victims, suma deltas : %+d pkts  %+d B  (%d claves con delta)"
           % (sum_p, sum_b, sum(1 for p, x in deltas.values() if p or x)))
     print("  A - B (ring - mapa)            : %+d   (0 = sin perdida entre contador y ring)" % (stats0 - sum_p))
+    # [RING-LOSS-D275:PRINT] descomposicion exacta de A - B
+    if has_ring_counters:
+        print("  stats[1] reserve fallido (ring): %+d   (ring lleno)" % stats1)
+        print("  stats[2] descartes filtro/L4   : %+d   (puertos excluidos, cabecera L4 truncada)" % stats2)
+        print("  B - (A + s1 + s2)              : %+d   (0 = identidad exacta del kernel)"
+              % (sum_p - (stats0 + stats1 + stats2)))
+        if sum_p:
+            print("  llegado al ring (A / B)        : %.1f %%" % (100.0 * stats0 / sum_p))
+    else:
+        print("  AVISO: faltan stats[1]/stats[2] en algun snapshot (sniffer sin contadores de perdida)")
     print("  cable - mapa (no contado)      : %+d pkts  %+d B   (no IPv4, drops de la NIC...)"
           % (wire_pkts - sum_p, wire_bytes - sum_b))
     if resets or evicted:
