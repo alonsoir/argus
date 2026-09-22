@@ -30,6 +30,7 @@
 
 #include <algorithm>
 #include <sstream>
+#include <fstream>  // RECIDIVISM-D276: volcado de strike_states_ a disco
 
 namespace mldefender::firewall {
 
@@ -363,7 +364,10 @@ size_t BatchProcessor::flush_internal() {
     entries.reserve(batch_size);
 
     for (const auto& ip : pending_ips_) {
-        entries.push_back(IPSetEntry{ip});
+        // RECIDIVISM-D276: timeout variable por reincidencia en vez del fijo del set
+        uint32_t penalty = compute_penalty_timeout(ip);
+        std::string reason = "strikes=" + std::to_string(strike_states_[ip].strikes);
+        entries.push_back(IPSetEntry{ip, penalty, reason});
     }
 
     FIREWALL_LOG_DEBUG("Converted pending IPs to IPSetEntry vector",
@@ -680,6 +684,89 @@ void BatchProcessor::check_auto_isolate(const protobuf::Detection& detection) {
         "interface", irp_config_.isolate_interface);
 }
 
+
+// ── compute_penalty_timeout / dump_and_reset_strike_states — RECIDIVISM-D276 ──
+// Vive en firewall porque es la unica fuente de verdad del ipset; los
+// detectores (ultra-fast y ml-detector) solo mandan evidencia (Detection),
+// firewall decide la duracion real del castigo.
+uint32_t BatchProcessor::compute_penalty_timeout(const std::string& ip) {
+    if (!recidivism_config_.enabled) {
+        return 0;  // 0 = usa el timeout por defecto del set (sin escalado)
+    }
+
+    // Chequeo de overflow ANTES de tocar el mapa para esta IP: si hicieramos
+    // esto despues de state = strike_states_[ip], un clear() posterior
+    // invalidaria la referencia 'state' y seria UB escribir en ella.
+    if (strike_states_.size() >= recidivism_config_.max_tracked_ips &&
+        strike_states_.find(ip) == strike_states_.end()) {
+        dump_and_reset_strike_states();
+    }
+
+    auto now = std::chrono::steady_clock::now();
+    auto& state = strike_states_[ip];
+
+    if (state.strikes > 0 &&
+        (now - state.last_seen) > recidivism_config_.quiet_period_reset) {
+        FIREWALL_LOG_INFO("Recidivism counter reset by quiet period",
+            "ip", ip, "previous_strikes", state.strikes);
+        state.strikes = 0;
+    }
+
+    state.strikes++;
+    state.last_seen = now;
+
+    if (state.strikes >= recidivism_config_.permanent_after_strikes) {
+        FIREWALL_LOG_WARN("IP alcanza umbral de bloqueo permanente",
+            "ip", ip, "strikes", state.strikes);
+        return 0;  // permanente
+    }
+
+    size_t idx = std::min<size_t>(state.strikes - 1,
+        recidivism_config_.strike_durations_sec.size() - 1);
+    return recidivism_config_.strike_durations_sec[idx];
+}
+
+void BatchProcessor::dump_and_reset_strike_states() {
+    FIREWALL_LOG_ERROR("################################################");
+    FIREWALL_LOG_ERROR("### AVISO CRITICO: strike_states_ LLENO       ###");
+    FIREWALL_LOG_ERROR("### max_tracked_ips alcanzado (RECIDIVISM-D276)       ###");
+    FIREWALL_LOG_ERROR("################################################");
+    FIREWALL_LOG_ERROR("strike_states_ overflow",
+        "size", strike_states_.size(),
+        "max_tracked_ips", recidivism_config_.max_tracked_ips);
+
+    std::ofstream out(recidivism_config_.overflow_log_path, std::ios::app);
+    if (!out) {
+        FIREWALL_LOG_ERROR(
+            "No se pudo abrir overflow_log_path -- NO se resetea "
+            "strike_states_ para no perder las IPs (crecera en memoria "
+            "hasta que se resuelva el fichero)",
+            "path", recidivism_config_.overflow_log_path);
+        return;
+    }
+
+    auto now_t = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+    for (const auto& [ip, state] : strike_states_) {
+        auto age_s = std::chrono::duration_cast<std::chrono::seconds>(
+            std::chrono::steady_clock::now() - state.last_seen).count();
+        out << now_t << ",overflow_reset," << ip << ","
+            << state.strikes << "," << age_s << "\n";
+    }
+    out.flush();
+    if (!out) {
+        FIREWALL_LOG_ERROR(
+            "Fallo al escribir el volcado completo -- NO se resetea "
+            "strike_states_ para no perder evidencia",
+            "path", recidivism_config_.overflow_log_path);
+        return;
+    }
+
+    FIREWALL_LOG_INFO("strike_states_ volcado a disco antes del reset",
+        "entries_dumped", strike_states_.size(),
+        "path", recidivism_config_.overflow_log_path);
+
+    strike_states_.clear();
+}
 
 bool BatchProcessor::should_block(const protobuf::Detection& detection) const {
     // Check detection type

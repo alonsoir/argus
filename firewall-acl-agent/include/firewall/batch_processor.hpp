@@ -41,6 +41,33 @@
 namespace mldefender::firewall {
 
 //===----------------------------------------------------------------------===//
+// Recidivism escalation (RECIDIVISM-D276)
+//===----------------------------------------------------------------------===//
+
+/// Estado de reincidencia por IP
+struct StrikeState {
+    uint32_t strikes{0};
+    std::chrono::steady_clock::time_point last_seen;
+};
+
+/// Configuracion de escalado de castigo por reincidencia. Vive en firewall,
+/// no en los detectores: firewall es la unica fuente de verdad del ipset.
+struct RecidivismConfig {
+    bool enabled{true};
+    /// Duracion en segundos por nivel de reincidencia (indice 0 = 1a vez)
+    std::vector<uint32_t> strike_durations_sec{60, 300, 3600, 86400, 604800};
+    /// A partir de este numero de reincidencias, bloqueo permanente (timeout=0)
+    uint32_t permanent_after_strikes{6};
+    /// Si ha pasado mas de esto sin verla, se resetea el contador de esa IP
+    std::chrono::seconds quiet_period_reset{std::chrono::hours(72)};
+    /// Cota de memoria: IPs distintas trackeadas como maximo
+    size_t max_tracked_ips{100000};
+    /// Fichero donde se vuelca strike_states_ antes de resetear por overflow.
+    /// Si no se puede escribir, NO se resetea (no se pierde evidencia).
+    std::string overflow_log_path{"/vagrant/logs/lab/firewall_strike_overflow.log"};
+};
+
+//===----------------------------------------------------------------------===//
 // Configuration
 //===----------------------------------------------------------------------===//
 
@@ -213,6 +240,12 @@ public:
     bool should_auto_isolate(const protobuf::Detection& detection) const;
     void check_auto_isolate(const protobuf::Detection& detection);
 
+    void set_recidivism_config(const RecidivismConfig& cfg) { recidivism_config_ = cfg; }  // RECIDIVISM-D276
+    /// RECIDIVISM-D276: publico a proposito -- testeable sin IPSetWrapper real ni
+    /// kernel, igual que should_auto_isolate. Calcula el timeout a aplicar a
+    /// esta IP y actualiza su contador de reincidencia.
+    uint32_t compute_penalty_timeout(const std::string& ip);
+
     //===------------------------------------------------------------------===//
     // Metrics and Monitoring
     //===------------------------------------------------------------------===//
@@ -252,6 +285,8 @@ private:
     IPSetWrapper& ipset_;                    ///< IPSet wrapper
     BatchProcessorConfig config_;            ///< Configuration
     IrpConfig            irp_config_;         ///< ADR-042 auto-isolate config
+    RecidivismConfig recidivism_config_;                          ///< RECIDIVISM-D276
+    std::unordered_map<std::string, StrikeState> strike_states_;  ///< RECIDIVISM-D276, guardado por mutex_
     BatchProcessorMetrics metrics_;          ///< Performance metrics
 
     // Pending IPs accumulator
@@ -285,6 +320,12 @@ private:
 
     /// Trigger backpressure callback if needed
     void check_backpressure();
+
+    /// RECIDIVISM-D276: strike_states_ ha superado max_tracked_ips. Vuelca TODO
+    /// su contenido a recidivism_config_.overflow_log_path. Solo si el
+    /// volcado tiene exito se vacia strike_states_ -- si falla, se deja
+    /// crecer en memoria antes que perder evidencia en silencio.
+    void dump_and_reset_strike_states();
 };
 
 } // namespace mldefender::firewall

@@ -80,6 +80,18 @@ struct BatchProcessorConfigNew {
 };
 
 //===----------------------------------------------------------------------===//
+// Recidivism Configuration (RECIDIVISM-D276)
+//===----------------------------------------------------------------------===//
+struct RecidivismConfigNew {
+    bool enabled = true;
+    std::vector<int> strike_durations_sec = {60, 300, 3600, 86400, 604800};
+    int permanent_after_strikes = 6;
+    int quiet_period_reset_sec = 259200;
+    int max_tracked_ips = 100000;
+    std::string overflow_log_path = "/vagrant/logs/lab/firewall_strike_overflow.log";
+};
+
+//===----------------------------------------------------------------------===//
 // Validation Configuration
 //===----------------------------------------------------------------------===//
 struct ValidationConfig {
@@ -186,6 +198,7 @@ struct FirewallAgentConfig {
     std::map<std::string, IPSetConfigNew> ipsets;  // Multiple ipsets (blacklist, whitelist)
     IPTablesConfigNew iptables;
     BatchProcessorConfigNew batch_processor;
+    RecidivismConfigNew recidivism;   // RECIDIVISM-D276
     ValidationConfig validation;
     LoggingConfigNew logging;
     EtcdConfig etcd;
@@ -226,6 +239,7 @@ private:
     static std::map<std::string, IPSetConfigNew> parse_ipsets(const Json::Value& json);
     static IPTablesConfigNew parse_iptables(const Json::Value& json);
     static BatchProcessorConfigNew parse_batch_processor(const Json::Value& json);
+    static RecidivismConfigNew parse_recidivism(const Json::Value& json);  // RECIDIVISM-D276
     static ValidationConfig parse_validation(const Json::Value& json);
     static LoggingConfigNew parse_logging(const Json::Value& json);
     static EtcdConfig parse_etcd(const Json::Value& json);
@@ -240,6 +254,7 @@ private:
     static T get_optional(const Json::Value& json, const std::string& key, const T& default_value);
     
     static std::vector<std::string> parse_string_array(const Json::Value& array);
+    static std::vector<int> parse_int_array(const Json::Value& array);  // RECIDIVISM-D276
 
     static CsvBatchLoggerConfig parse_csv_batch_logger(const Json::Value& json);
 

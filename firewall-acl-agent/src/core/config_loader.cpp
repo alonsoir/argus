@@ -74,6 +74,17 @@ std::vector<std::string> ConfigLoader::parse_string_array(const Json::Value& arr
     return result;
 }
 
+// RECIDIVISM-D276
+std::vector<int> ConfigLoader::parse_int_array(const Json::Value& array) {
+    std::vector<int> result;
+    if (array.isArray()) {
+        for (const auto& item : array) {
+            result.push_back(item.asInt());
+        }
+    }
+    return result;
+}
+
 //===----------------------------------------------------------------------===//
 // Main Load Function
 //===----------------------------------------------------------------------===//
@@ -135,6 +146,11 @@ FirewallAgentConfig ConfigLoader::load_from_file(const std::string& config_path,
     
     if (root.isMember("batch_processor")) {
         config.batch_processor = parse_batch_processor(root["batch_processor"]);
+    }
+
+    // RECIDIVISM-D276: opcional -- si falta, usa los defaults de RecidivismConfigNew
+    if (root.isMember("recidivism")) {
+        config.recidivism = parse_recidivism(root["recidivism"]);
     }
     // ADR-042: cargar IRP config desde isolate.json (path fijo producción)
     config.irp = parse_irp("/etc/ml-defender/firewall-acl-agent/isolate.json");
@@ -308,6 +324,21 @@ BatchProcessorConfigNew ConfigLoader::parse_batch_processor(const Json::Value& j
     config.min_confidence = get_optional<float>(json, "min_confidence", 0.5f);
     config.enable_batching = get_optional<bool>(json, "enable_batching", true);
     config.flush_on_shutdown = get_optional<bool>(json, "flush_on_shutdown", true);
+    return config;
+}
+
+// RECIDIVISM-D276
+RecidivismConfigNew ConfigLoader::parse_recidivism(const Json::Value& json) {
+    RecidivismConfigNew config;
+    config.enabled = get_optional<bool>(json, "enabled", true);
+    if (json.isMember("strike_durations_sec")) {
+        config.strike_durations_sec = parse_int_array(json["strike_durations_sec"]);
+    }
+    config.permanent_after_strikes = get_optional<int>(json, "permanent_after_strikes", 6);
+    config.quiet_period_reset_sec = get_optional<int>(json, "quiet_period_reset_sec", 259200);
+    config.max_tracked_ips = get_optional<int>(json, "max_tracked_ips", 100000);
+    config.overflow_log_path = get_optional<std::string>(json, "overflow_log_path",
+        "/vagrant/logs/lab/firewall_strike_overflow.log");
     return config;
 }
 
