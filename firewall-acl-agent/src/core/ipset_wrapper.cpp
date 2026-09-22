@@ -337,10 +337,16 @@ IPSetResult<void> IPSetWrapper::add_batch(
     // Execute ipset restore (SINGLE SYSCALL for entire batch)
     if (m_dry_run) {
         std::cout << "[DRY-RUN] Would execute: " << kIpsetBin
-                  << " restore < " << tmpfile << std::endl;
+                  << " restore -exist < " << tmpfile << std::endl;
         return IPSetResult<void>();
     }
-    int ret = safe_exec_with_file_in({kIpsetBin, "restore"}, tmpfile);
+    // HOTFIX-IPSET-ADD-EXIST-001: sin -exist, ipset restore rechaza
+    // el add de una IP que ya es miembro del set (p.ej. reincidencia:
+    // la misma IP vuelve a aparecer antes de que expire su timeout
+    // previo). Con -exist, el add sobre un elemento existente
+    // ACTUALIZA su timeout/comment en vez de fallar. delete_batch()
+    // ya usaba -exist; add_batch() se equipara aqui.
+    int ret = safe_exec_with_file_in({kIpsetBin, "restore", "-exist"}, tmpfile);
     std::remove(tmpfile);
     if (ret != 0) {
         return IPSetResult<void>(IPSetError{
