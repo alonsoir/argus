@@ -1,4 +1,4 @@
-// test_recidivism_e2e.cpp — RECIDIVISM-D276
+// test_recidivism_e2e.cpp — RECIDIVISM-D276 + DAY277-NEVER-PERMANENT
 // Test de ACEPTACION: requiere root (manipula un ipset real del kernel).
 // No usa el ipset de produccion "blacklist" -- crea uno propio de prueba
 // y lo destruye al final, para no interferir con nada mas.
@@ -7,11 +7,12 @@
 //   1) BatchProcessor::flush() escribe de verdad en el ipset del kernel.
 //   2) El timeout de la entrada escala segun strike_durations_sec cuando
 //      la misma IP reincide en flushes sucesivos.
-//   3) Al superar permanent_after_strikes, la entrada queda sin timeout
-//      (bloqueo permanente).
+//   3) Al alcanzar max_penalty_after_strikes, la entrada lleva max_penalty_sec:
+//      NUNCA timeout 0 (= permanente). Decision DAY277.
+//   4) Con la reincidencia deshabilitada se aplica el timeout por defecto
+//      del set (regresion H4 de D276: antes quedaba permanente).
 //
-// Ejecucion (ver Makefile raiz): `make test-firewall-e2e` (usa
-// `sudo ... ctest -L "e2e"`), o directamente como root:
+// Ejecucion: `make test-firewall-e2e`, o como root:
 //   sudo ./firewall-acl-agent/build-debug/test_recidivism_e2e
 #include <gtest/gtest.h>
 #include "firewall/batch_processor.hpp"
@@ -31,9 +32,6 @@ using namespace mldefender::firewall;
 
 namespace {
 
-// Lanza un comando y devuelve su stdout. No usar con entrada no confiable
-// -- aqui el unico dato interpolado es TEST_SET_NAME, fijo y controlado
-// por este fichero.
 std::string shell(const std::string& cmd) {
     std::array<char, 256> buf{};
     std::string out;
@@ -46,9 +44,9 @@ std::string shell(const std::string& cmd) {
     return out;
 }
 
-// Busca "ip timeout N" en la salida de `ipset list` y devuelve N, o -1 si
-// la ip no aparece (por ejemplo, si quedo con timeout 0 == permanente,
-// `ipset list` no imprime "timeout" en absoluto para esa entrada).
+// Devuelve N de "ip timeout N" en `ipset list`, o -1 si no aparece.
+// (Medido DAY276: en un set con timeout, una entrada permanente se imprime
+// como "timeout 0", asi que 0 aqui significa PERMANENTE.)
 int extract_timeout(const std::string& ipset_list_output, const std::string& ip) {
     std::regex re(ip + R"(\s+timeout\s+(\d+))");
     std::smatch m;
@@ -63,6 +61,9 @@ bool entry_present(const std::string& ipset_list_output, const std::string& ip) 
 }
 
 constexpr const char* TEST_SET_NAME = "argus_test_recidivism_e2e";
+// DAY277: timeout por defecto del set de prueba != 0, para que ninguna
+// entrada pueda quedar permanente "por accidente" via el default del set.
+constexpr int TEST_SET_DEFAULT_TIMEOUT = 600;
 
 }  // namespace
 
@@ -73,43 +74,38 @@ protected:
             GTEST_SKIP() << "requiere root (manipula ipset real) -- "
                             "ejecutar via 'make test-firewall-e2e'";
         }
-        // -exist: no falla si ya existiera de una corrida anterior mal
-        // terminada. timeout 0 en la definicion del set = por defecto
-        // permanente; cada entrada individual lleva su propio timeout.
         shell(std::string("ipset destroy ") + TEST_SET_NAME + " 2>/dev/null");
         int rc = std::system(
             (std::string("ipset create ") + TEST_SET_NAME +
-             " hash:ip timeout 0 comment 2>&1").c_str());
+             " hash:ip timeout " + std::to_string(TEST_SET_DEFAULT_TIMEOUT) +
+             " comment 2>&1").c_str());
         ASSERT_EQ(rc, 0) << "no se pudo crear el ipset de prueba "
                           << TEST_SET_NAME
                           << " -- ¿ipset instalado? ¿de verdad estamos "
                              "corriendo como root?";
 
         ipset_ = std::make_unique<IPSetWrapper>();
-        // dry_run=false a proposito: este es el unico test del feature
-        // que debe tocar el kernel de verdad -- el unitario (dry_run) ya
-        // cubre la logica pura de compute_penalty_timeout.
         ipset_->set_dry_run(false);
 
         BatchProcessorConfig cfg;
-        cfg.batch_size_threshold = 1;   // flush inmediato, 1 ip por batch
+        cfg.batch_size_threshold = 1;
         cfg.max_pending_ips = 10;
         cfg.confidence_threshold = 0.0f;
         cfg.blacklist_ipset = TEST_SET_NAME;
         processor_ = std::make_unique<BatchProcessor>(*ipset_, cfg);
 
-        RecidivismConfig rcfg;
-        rcfg.enabled = true;
-        rcfg.strike_durations_sec = {5, 10, 20};
-        rcfg.permanent_after_strikes = 4;
-        rcfg.quiet_period_reset = std::chrono::hours(999);  // no interfiere
-        rcfg.max_tracked_ips = 1000;
-        rcfg.overflow_log_path = "/tmp/argus_test_recidivism_e2e_overflow.log";
-        processor_->set_recidivism_config(rcfg);
+        rcfg_.enabled = true;
+        rcfg_.strike_durations_sec = {5, 10, 20};
+        rcfg_.max_penalty_after_strikes = 4;
+        rcfg_.max_penalty_sec = 30;
+        rcfg_.quiet_period_reset = std::chrono::hours(999);
+        rcfg_.max_tracked_ips = 1000;
+        rcfg_.overflow_log_path = "/tmp/argus_test_recidivism_e2e_overflow.log";
+        processor_->set_recidivism_config(rcfg_);
     }
 
     void TearDown() override {
-        if (getuid() != 0) return;  // nada que limpiar si se hizo SKIP
+        if (getuid() != 0) return;
         processor_.reset();
         ipset_.reset();
         shell(std::string("ipset destroy ") + TEST_SET_NAME + " 2>/dev/null");
@@ -119,6 +115,7 @@ protected:
         return shell(std::string("ipset list ") + TEST_SET_NAME + " 2>&1");
     }
 
+    RecidivismConfig rcfg_;
     std::unique_ptr<IPSetWrapper> ipset_;
     std::unique_ptr<BatchProcessor> processor_;
 };
@@ -132,8 +129,6 @@ TEST_F(RecidivismE2ETest, FirstFlushAppliesFirstStrikeDuration) {
     ASSERT_TRUE(entry_present(listing, ip)) << listing;
     int timeout = extract_timeout(listing, ip);
     ASSERT_GT(timeout, 0);
-    // strike 1 = 5s de configuracion; damos margen porque el timeout ya
-    // esta contando hacia atras desde que se aplico.
     EXPECT_LE(timeout, 5);
     EXPECT_GE(timeout, 1);
 }
@@ -153,13 +148,11 @@ TEST_F(RecidivismE2ETest, RepeatedOffenderEscalatesRealTimeout) {
     int t2 = extract_timeout(after_strike2, ip);
     ASSERT_GT(t2, 0) << after_strike2;
 
-    // strike 2 (10s) debe ser un castigo mayor que strike 1 (5s), aun con
-    // el descuento normal del contador. Verificamos la escalada real en
-    // el kernel, no solo en la funcion pura (eso ya lo hace el unitario).
     EXPECT_GT(t2, t1);
 }
 
-TEST_F(RecidivismE2ETest, PermanentAfterThresholdHasNoTimeoutInKernel) {
+// DAY277: sustituye a PermanentAfterThresholdHasNoTimeoutInKernel.
+TEST_F(RecidivismE2ETest, CappedAfterThresholdNeverPermanentInKernel) {
     const std::string ip = "203.0.113.33";
 
     for (int i = 0; i < 4; ++i) {
@@ -169,9 +162,25 @@ TEST_F(RecidivismE2ETest, PermanentAfterThresholdHasNoTimeoutInKernel) {
 
     auto listing = list_set();
     ASSERT_TRUE(entry_present(listing, ip)) << listing;
-    // strike 4 == permanent_after_strikes: compute_penalty_timeout
-    // devuelve 0. En un set con soporte de timeout, ipset SI imprime
-    // "timeout 0" para esa entrada -- 0 es como el kernel representa
-    // "sin expiracion" (permanente), no la ausencia del campo.
-    EXPECT_EQ(extract_timeout(listing, ip), 0) << listing;
+    int t = extract_timeout(listing, ip);
+    EXPECT_GT(t, 0) << "timeout 0 en el kernel = PERMANENTE (prohibido DAY277)\n" << listing;
+    EXPECT_LE(t, 30) << listing;   // max_penalty_sec
+    EXPECT_GT(t, 20) << listing;   // por encima del ultimo escalon (20): es el tope, no el escalon
+}
+
+// DAY277 / H4: con la reincidencia deshabilitada, la entrada lleva el timeout
+// por defecto del set. Con el bug de D276 aparecia "timeout 0" (permanente).
+TEST_F(RecidivismE2ETest, DisabledUsesSetDefaultTimeoutNotPermanent) {
+    rcfg_.enabled = false;
+    processor_->set_recidivism_config(rcfg_);
+
+    const std::string ip = "203.0.113.44";
+    processor_->add_ip(ip);
+    processor_->flush();
+
+    auto listing = list_set();
+    ASSERT_TRUE(entry_present(listing, ip)) << listing;
+    int t = extract_timeout(listing, ip);
+    EXPECT_GT(t, 0) << "H4: enabled=false dejo la IP PERMANENTE\n" << listing;
+    EXPECT_LE(t, TEST_SET_DEFAULT_TIMEOUT) << listing;
 }

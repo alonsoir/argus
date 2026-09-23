@@ -113,7 +113,9 @@
     "_comment": "RECIDIVISM-D276 -- escalado de castigo por reincidencia, vive en firewall no en los detectores",
     "enabled": true,
     "strike_durations_sec": [60, 300, 3600, 86400, 604800],
-    "permanent_after_strikes": 6,
+    "max_penalty_after_strikes": 6,
+    "max_penalty_sec": 2073600,
+    "_comment_max_penalty": "DAY277: NUNCA permanente. 2073600 s = 24 dias; techo ipset medido 2147483 s. Drop permanente = accion manual del admin",
     "quiet_period_reset_sec": 259200,
     "max_tracked_ips": 100000,
     "overflow_log_path": "/vagrant/logs/lab/firewall_strike_overflow.log"

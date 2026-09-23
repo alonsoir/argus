@@ -293,7 +293,19 @@ IPSetResult<void> IPSetWrapper::add_batch(
         restore_input << "add " << set_name << " " << entry.ip;
 
         if (entry.timeout) {
-            restore_input << " timeout " << *entry.timeout;
+            // DAY277-NEVER-PERMANENT: 'timeout 0' = PERMANENTE en ipset, y un
+            // valor > kIpsetMaxTimeoutSec tumba el 'restore' entero. Cinturon:
+            // ningun camino automatico deja una IP bloqueada para siempre.
+            // El drop permanente es una accion MANUAL del admin, por otro camino.
+            uint32_t t = *entry.timeout;
+            if (t == 0 || t > kIpsetMaxTimeoutSec) {
+                std::cerr << "[WARN][ipset_wrapper] add_batch: timeout fuera de [1, "
+                          << kIpsetMaxTimeoutSec << "] (nunca permanente) ip=" << entry.ip
+                          << " requested=" << *entry.timeout
+                          << " applied=" << kIpsetMaxTimeoutSec << std::endl;
+                t = kIpsetMaxTimeoutSec;
+            }
+            restore_input << " timeout " << t;
         }
 
         if (entry.comment) {

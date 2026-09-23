@@ -500,7 +500,7 @@ POST /api/v1/whitelist/:ip        - Add to whitelist
 
 **Problem**: Some IPs return after timeout expires
 
-**Solution**: Track recidivism, auto-promote to permanent block
+**Solution**: Track recidivism, escalate up to a capped max penalty -- NEVER permanent (DAY277-NEVER-PERMANENT: botnet IPs are usually victims; permanent drop is a manual admin action). Implemented as RECIDIVISM-D276
 
 **Technical Design**:
 ```cpp

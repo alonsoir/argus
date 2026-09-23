@@ -85,7 +85,8 @@ struct BatchProcessorConfigNew {
 struct RecidivismConfigNew {
     bool enabled = true;
     std::vector<int> strike_durations_sec = {60, 300, 3600, 86400, 604800};
-    int permanent_after_strikes = 6;
+    int max_penalty_after_strikes = 6;   // DAY277-NEVER-PERMANENT (antes permanent_after_strikes)
+    int max_penalty_sec = 2073600;       // 24 dias; techo ipset medido 2147483
     int quiet_period_reset_sec = 259200;
     int max_tracked_ips = 100000;
     std::string overflow_log_path = "/vagrant/logs/lab/firewall_strike_overflow.log";

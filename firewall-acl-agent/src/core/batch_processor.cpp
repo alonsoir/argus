@@ -31,6 +31,7 @@
 #include <algorithm>
 #include <sstream>
 #include <fstream>  // RECIDIVISM-D276: volcado de strike_states_ a disco
+#include "firewall/ipset_wrapper.hpp"  // DAY277-NEVER-PERMANENT: kIpsetMaxTimeoutSec
 
 namespace mldefender::firewall {
 
@@ -364,10 +365,28 @@ size_t BatchProcessor::flush_internal() {
     entries.reserve(batch_size);
 
     for (const auto& ip : pending_ips_) {
-        // RECIDIVISM-D276: timeout variable por reincidencia en vez del fijo del set
-        uint32_t penalty = compute_penalty_timeout(ip);
-        std::string reason = "strikes=" + std::to_string(strike_states_[ip].strikes);
-        entries.push_back(IPSetEntry{ip, penalty, reason});
+        // RECIDIVISM-D276: timeout variable por reincidencia en vez del fijo del set.
+        // DAY277-NEVER-PERMANENT: nullopt (deshabilitado) -> IPSetEntry SIN
+        // timeout -> timeout por defecto del set, igual que antes de D276.
+        // DAY277-H6: un flush fallido conserva pending_ips_; sin esto cada
+        // reintento sumaba un strike (una sola deteccion podia llegar al maximo).
+        std::optional<uint32_t> penalty;
+        if (auto pit = pending_penalty_.find(ip); pit != pending_penalty_.end()) {
+            penalty = pit->second;
+        } else {
+            penalty = compute_penalty_timeout(ip);
+            pending_penalty_.emplace(ip, penalty);
+        }
+        IPSetEntry entry{ip};
+        entry.timeout = penalty;
+        if (penalty) {
+            // H2-D277: find() de solo lectura. operator[] insertaba {strikes=0}
+            // saltandose max_tracked_ips (mapa sin cota con enabled=false).
+            auto it = strike_states_.find(ip);
+            uint32_t strikes = (it != strike_states_.end()) ? it->second.strikes : 0;
+            entry.comment = "strikes=" + std::to_string(strikes);
+        }
+        entries.push_back(std::move(entry));
     }
 
     FIREWALL_LOG_DEBUG("Converted pending IPs to IPSetEntry vector",
@@ -433,6 +452,7 @@ size_t BatchProcessor::flush_internal() {
 
         // Clear pending set
         pending_ips_.clear();
+        pending_penalty_.clear();  // DAY277-H6
 
         // Update last flush time
         last_flush_ = flush_end;
@@ -689,9 +709,11 @@ void BatchProcessor::check_auto_isolate(const protobuf::Detection& detection) {
 // Vive en firewall porque es la unica fuente de verdad del ipset; los
 // detectores (ultra-fast y ml-detector) solo mandan evidencia (Detection),
 // firewall decide la duracion real del castigo.
-uint32_t BatchProcessor::compute_penalty_timeout(const std::string& ip) {
+std::optional<uint32_t> BatchProcessor::compute_penalty_timeout(const std::string& ip) {
     if (!recidivism_config_.enabled) {
-        return 0;  // 0 = usa el timeout por defecto del set (sin escalado)
+        // DAY277-NEVER-PERMANENT: antes devolvia 0, que add_batch() emitia
+        // como 'timeout 0' = PERMANENTE para toda IP. nullopt = timeout del set.
+        return std::nullopt;
     }
 
     // Chequeo de overflow ANTES de tocar el mapa para esta IP: si hicieramos
@@ -715,15 +737,73 @@ uint32_t BatchProcessor::compute_penalty_timeout(const std::string& ip) {
     state.strikes++;
     state.last_seen = now;
 
-    if (state.strikes >= recidivism_config_.permanent_after_strikes) {
-        FIREWALL_LOG_WARN("IP alcanza umbral de bloqueo permanente",
-            "ip", ip, "strikes", state.strikes);
-        return 0;  // permanente
+    if (state.strikes >= recidivism_config_.max_penalty_after_strikes) {
+        FIREWALL_LOG_WARN("IP alcanza el castigo maximo (nunca permanente)",
+            "ip", ip, "strikes", state.strikes,
+            "max_penalty_sec", recidivism_config_.max_penalty_sec);
+        return recidivism_config_.max_penalty_sec;
     }
 
+    // H5-D277: set_recidivism_config() garantiza escalera no vacia y sin 0;
+    // esta guarda cubre cualquier camino que se lo salte.
+    if (recidivism_config_.strike_durations_sec.empty()) {
+        return recidivism_config_.max_penalty_sec;
+    }
     size_t idx = std::min<size_t>(state.strikes - 1,
         recidivism_config_.strike_durations_sec.size() - 1);
-    return recidivism_config_.strike_durations_sec[idx];
+    return std::min(recidivism_config_.strike_durations_sec[idx],
+                    recidivism_config_.max_penalty_sec);
+}
+
+// DAY277-NEVER-PERMANENT: validacion + saneado de la config de reincidencia.
+// Politica: el sistema ARRANCA siempre; cada valor corregido deja un ERROR/WARN
+// visible en el log de arranque para que el admin lo vea.
+void BatchProcessor::set_recidivism_config(const RecidivismConfig& cfg) {
+    RecidivismConfig c = cfg;
+    constexpr uint32_t kDefaultMaxPenaltySec = 2073600;  // 24 dias
+
+    if (c.max_penalty_sec == 0 || c.max_penalty_sec > kIpsetMaxTimeoutSec) {
+        uint32_t fixed = (c.max_penalty_sec == 0)
+            ? std::min(kDefaultMaxPenaltySec, kIpsetMaxTimeoutSec)
+            : kIpsetMaxTimeoutSec;
+        FIREWALL_LOG_ERROR("recidivism.max_penalty_sec fuera de [1, techo ipset] -- se corrige",
+            "configured", c.max_penalty_sec,
+            "applied", fixed,
+            "kernel_max", kIpsetMaxTimeoutSec);
+        c.max_penalty_sec = fixed;
+    }
+
+    if (c.strike_durations_sec.empty()) {
+        FIREWALL_LOG_ERROR("recidivism.strike_durations_sec vacio -- se usa la escalera por defecto");
+        c.strike_durations_sec = RecidivismConfig{}.strike_durations_sec;
+    }
+
+    for (size_t i = 0; i < c.strike_durations_sec.size(); ++i) {
+        uint32_t& d = c.strike_durations_sec[i];
+        if (d == 0) {
+            FIREWALL_LOG_ERROR("recidivism.strike_durations_sec contiene 0 (= permanente en ipset) -- se sustituye por max_penalty_sec",
+                "index", i, "applied", c.max_penalty_sec);
+            d = c.max_penalty_sec;
+        } else if (d > c.max_penalty_sec) {
+            FIREWALL_LOG_WARN("recidivism.strike_durations_sec supera max_penalty_sec -- se recorta",
+                "index", i, "configured", d, "applied", c.max_penalty_sec);
+            d = c.max_penalty_sec;
+        }
+    }
+
+    if (c.max_penalty_after_strikes == 0) {
+        FIREWALL_LOG_WARN("recidivism.max_penalty_after_strikes=0: toda IP recibe max_penalty_sec desde el 1er strike");
+    }
+
+    FIREWALL_LOG_INFO("Recidivism config aplicada (nunca permanente)",
+        "enabled", c.enabled,
+        "steps", c.strike_durations_sec.size(),
+        "max_penalty_after_strikes", c.max_penalty_after_strikes,
+        "max_penalty_sec", c.max_penalty_sec,
+        "max_tracked_ips", c.max_tracked_ips);
+
+    std::lock_guard<std::mutex> lock(mutex_);
+    recidivism_config_ = std::move(c);
 }
 
 void BatchProcessor::dump_and_reset_strike_states() {

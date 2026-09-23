@@ -38,6 +38,8 @@
 #include <atomic>
 #include <functional>
 
+#include <optional>  // DAY277-NEVER-PERMANENT
+
 namespace mldefender::firewall {
 
 //===----------------------------------------------------------------------===//
@@ -56,8 +58,13 @@ struct RecidivismConfig {
     bool enabled{true};
     /// Duracion en segundos por nivel de reincidencia (indice 0 = 1a vez)
     std::vector<uint32_t> strike_durations_sec{60, 300, 3600, 86400, 604800};
-    /// A partir de este numero de reincidencias, bloqueo permanente (timeout=0)
-    uint32_t permanent_after_strikes{6};
+    /// A partir de este numero de reincidencias se aplica max_penalty_sec.
+    /// NUNCA bloqueo permanente (DAY277-NEVER-PERMANENT): las IPs de botnets
+    /// suelen ser victimas (equipos comprometidos, CGNAT compartido). El drop
+    /// permanente es una accion manual del admin, fuera de este camino.
+    uint32_t max_penalty_after_strikes{6};
+    /// Castigo maximo en segundos. Rango valido [1, kIpsetMaxTimeoutSec].
+    uint32_t max_penalty_sec{2073600};  // 24 dias
     /// Si ha pasado mas de esto sin verla, se resetea el contador de esa IP
     std::chrono::seconds quiet_period_reset{std::chrono::hours(72)};
     /// Cota de memoria: IPs distintas trackeadas como maximo
@@ -240,11 +247,19 @@ public:
     bool should_auto_isolate(const protobuf::Detection& detection) const;
     void check_auto_isolate(const protobuf::Detection& detection);
 
-    void set_recidivism_config(const RecidivismConfig& cfg) { recidivism_config_ = cfg; }  // RECIDIVISM-D276
+    /// RECIDIVISM-D276 + DAY277-NEVER-PERMANENT: valida y sanea la config
+    /// (ningun timeout puede ser 0 = permanente ni superar kIpsetMaxTimeoutSec;
+    /// escalera vacia -> escalera por defecto). Loguea cada correccion. Toma mutex_.
+    void set_recidivism_config(const RecidivismConfig& cfg);
     /// RECIDIVISM-D276: publico a proposito -- testeable sin IPSetWrapper real ni
     /// kernel, igual que should_auto_isolate. Calcula el timeout a aplicar a
     /// esta IP y actualiza su contador de reincidencia.
-    uint32_t compute_penalty_timeout(const std::string& ip);
+    /// DAY277-NEVER-PERMANENT: nullopt = reincidencia deshabilitada (se aplica
+    /// el timeout por defecto del set, comportamiento pre-D276). Con valor,
+    /// SIEMPRE en [1, max_penalty_sec]. Nunca 0.
+    /// Requiere mutex_ tomado (lo llama flush_internal); los tests unitarios
+    /// lo llaman sin concurrencia.
+    std::optional<uint32_t> compute_penalty_timeout(const std::string& ip);
 
     //===------------------------------------------------------------------===//
     // Metrics and Monitoring
@@ -291,6 +306,10 @@ private:
 
     // Pending IPs accumulator
     std::unordered_set<std::string> pending_ips_;  ///< IPs waiting to flush
+    /// DAY277-H6: penalty calculada UNA vez por IP pendiente; los reintentos de un
+    /// flush fallido la reutilizan (no suman strikes). Se vacia con pending_ips_.
+    /// Guardado por mutex_.
+    std::unordered_map<std::string, std::optional<uint32_t>> pending_penalty_;
     std::chrono::steady_clock::time_point last_flush_;  ///< Last flush timestamp
 
     // Thread safety

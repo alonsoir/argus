@@ -334,7 +334,11 @@ RecidivismConfigNew ConfigLoader::parse_recidivism(const Json::Value& json) {
     if (json.isMember("strike_durations_sec")) {
         config.strike_durations_sec = parse_int_array(json["strike_durations_sec"]);
     }
-    config.permanent_after_strikes = get_optional<int>(json, "permanent_after_strikes", 6);
+    // DAY277-NEVER-PERMANENT: clave renombrada (ya no existe bloqueo permanente).
+    // La antigua se acepta como fallback para no romper configs desplegadas.
+    config.max_penalty_after_strikes = get_optional<int>(json, "max_penalty_after_strikes",
+        get_optional<int>(json, "permanent_after_strikes", 6));
+    config.max_penalty_sec = get_optional<int>(json, "max_penalty_sec", 2073600);
     config.quiet_period_reset_sec = get_optional<int>(json, "quiet_period_reset_sec", 259200);
     config.max_tracked_ips = get_optional<int>(json, "max_tracked_ips", 100000);
     config.overflow_log_path = get_optional<std::string>(json, "overflow_log_path",

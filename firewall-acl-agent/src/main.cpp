@@ -659,11 +659,19 @@ int main(int argc, char** argv) {
     // tipos de chrono/uint32_t que compute_penalty_timeout necesita.
     RecidivismConfig recidivism_config;
     recidivism_config.enabled = config.recidivism.enabled;
-    recidivism_config.strike_durations_sec.assign(
-        config.recidivism.strike_durations_sec.begin(),
-        config.recidivism.strike_durations_sec.end());
-    recidivism_config.permanent_after_strikes =
-        static_cast<uint32_t>(config.recidivism.permanent_after_strikes);
+    // DAY277-NEVER-PERMANENT: un negativo en el JSON pasaba por static_cast a
+    // ~4.29e9 y tumbaba el 'ipset restore'. Ahora negativo -> 0 -> saneado con
+    // ERROR visible en set_recidivism_config().
+    recidivism_config.strike_durations_sec.clear();
+    for (int d : config.recidivism.strike_durations_sec) {
+        recidivism_config.strike_durations_sec.push_back(d < 0 ? 0u : static_cast<uint32_t>(d));
+    }
+    recidivism_config.max_penalty_after_strikes =
+        config.recidivism.max_penalty_after_strikes < 0 ? 0u
+            : static_cast<uint32_t>(config.recidivism.max_penalty_after_strikes);
+    recidivism_config.max_penalty_sec =
+        config.recidivism.max_penalty_sec < 0 ? 0u
+            : static_cast<uint32_t>(config.recidivism.max_penalty_sec);
     recidivism_config.quiet_period_reset =
         std::chrono::seconds(config.recidivism.quiet_period_reset_sec);
     recidivism_config.max_tracked_ips =
