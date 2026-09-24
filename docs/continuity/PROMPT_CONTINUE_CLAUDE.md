@@ -66,3 +66,27 @@ el fondo ANTES de meter la nota de la cabeza en final_score, o se bloquearán IP
 - Offsets: d278_fwlog_offset.txt (antes de pipeline-start), d278_fwlog_offset2.txt (antes de cic2)
 - Ventanas: cic1 02:17:30–02:25:50; cic2 03:12:49–03:21:09 (epoch 1790219569–1790220069)
 - NO usar logs-lab-clean (mueve los logs y rompe el fd del proceso vivo); para rotar, truncate -s 0.
+## 7. Estrategia acordada al cierre de DAY278 (Alonso + Claude)
+
+- Orden: primero cada cabeza por separado (arreglar sus problemas internos); DESPUÉS revisar el
+  algoritmo del ml-detector que produce clasificación + recomendación al firewall (fusión, L411).
+  La fusión se retrasa a propósito: meter hoy notas no calibradas en final_score cambiaría falsos
+  negativos por falsos positivos sobre el tráfico del propio lab.
+- Contrato que debe entregar cada cabeza antes de entrar en la fusión: (a) probabilidad calibrada,
+  (b) FP medido sobre tráfico de fondo, (c) recall medido con dataset etiquetado.
+- Level1 (ataque general) está mal afinada para DDoS: trabajo pendiente CUANDO se cierre la DDoS.
+  Matiz medido (DAY270): los flujos del flood son de 1 paquete UDP, indistinguibles uno a uno de
+  un datagrama legítimo ⇒ endurecer level1 no basta; la solución de fondo para DDoS es la unidad agregada.
+- El ~20 % de la cabeza DDoS NO es su techo: aún clasifica flujo a flujo. El agregador por víctima
+  del kernel (DAY274, ddos_victims → CSV) NO está conectado a la cabeza; source_ip_dispersion clavada
+  en 0.100; el 20 % sale de packet_size_entropy; modelo entrenado con datos sintéticos. La palanca
+  principal está sin probar. Alonso esperaba más detección de la cabeza DDoS.
+- Los scores de las cabezas no son "malos" en sí (la DDoS dio 88 % y acertaba): el bug es que se
+  ignoran al fijar final_score (L411). Dos problemas distintos.
+
+## 8. Plan de la cabeza DDoS (siguiente sesión)
+1. Recall limpio sobre 192.168.100.50 + FP sobre el tráfico de fondo (awk por IP de la sección 4).
+2. Leer el filtro del firewall (zmq_subscriber.cpp 540–630).
+3. Conectar el agregador del kernel a la cabeza DDoS.
+4. Volver a medir con cic2 (FORCE_ALL_HEADS=1).
+5. Decidir: seguir incidiendo en la DDoS o pasar EMECAS+++, mergear a main y empezar otra cabeza.
