@@ -1,188 +1,68 @@
-# Prompt de continuidad — aRGus NDR, DAY277 → DAY278
+# Prompt de continuidad — aRGus NDR, DAY278 → DAY279
 
-Sesión DAY277 cerrada. Hoy: revisión medida de RECIDIVISM-D276 (4 defectos corregidos, commit
-`ad01395d` en `docs/ml-heads-grieta-b`, ya en origin) + preflight completo del experimento
-end-to-end. Mañana: **ejecutar el experimento** siguiendo el guion de abajo, fase a fase.
+Reglas de trabajo: las mismas de DAY278 (medir, no votar; predicción escrita antes de medir;
+comandos separados o cada salida a su fichero; nunca `grep -rn` desde la raíz; los scripts los
+ejecuta Alonso en su VM; scripts como bloque `cat > f <<'EOF'`; si algo no da lo esperado, parar).
+Foco (Alonso, DAY278): validar la cabeza DDoS POR SEPARADO; las demás cabezas quedan fuera de foco.
 
-Reglas de trabajo (se mantienen):
-- Medir, no votar. Cada predicción se escribe ANTES de medir.
-- Comandos separados, o cada salida a su propio fichero. Nunca `grep -rn` desde la raíz: `git grep` o ruta concreta.
-- Los patchers/scripts los ejecuta Alonso en su VM Vagrant.
-- El botón de copiar del chat NO es fiable para ficheros: pasar scripts como bloque `cat > fichero <<'EOF'`.
-- Si un paso no da lo esperado: parar ahí, pegar la salida, no seguir a la siguiente fase.
+## 1. Medido en DAY278
 
----
-
-## 1. Qué se cerró en DAY277 (commit ad01395d)
-
-| ID | Defecto | Estado |
+| Corrida | Condición | Resultado |
 |---|---|---|
-| H4 | Regresión D276: `compute_penalty_timeout()` devolvía 0 para "deshabilitado" y "permanente"; `add_batch()` emitía `timeout 0` (optional con valor 0 es truthy) ⇒ con `enabled=false` **toda IP quedaba bloqueada para siempre** | Corregido: `std::optional<uint32_t>`, nullopt = timeout del set |
-| H2 | `strike_states_[ip]` (operator[]) en `flush_internal()` insertaba `{strikes=0}` saltándose `max_tracked_ips` | Corregido: `find()` de solo lectura |
-| H5 | `strike_durations_sec` vacío ⇒ `size()-1` da la vuelta ⇒ acceso fuera de rango | Corregido: guarda + saneado |
-| H6 | Flush fallido conserva `pending_ips_`; cada reintento volvía a sumar un strike ⇒ una sola detección podía llegar al máximo | Corregido: `pending_penalty_` (penalty una vez por IP pendiente, se vacía con `pending_ips_`) |
+| Neris (ctu-start) | pipeline normal | 1 IP en el set = 147.32.84.165 (el bot, TP). Cabeza DDoS: 3 veredictos, 3 class=0 (sin FP). Grafo: suricata 286 / zeek 11609 / argus 279, invariante 0, 122 corroborados |
+| cic1 (flood CICDDoS2019, 100 pps, 02:17:30–02:25:50) | compuerta level1 activa | level1 3592 BENIGN / 0 ATTACK; 3472 flujos de .50 vetados; cabeza DDoS 0 veredictos; .50 nunca llega al firewall; DROP 0. Reproduce DAY270 |
+| cic2 (mismo flood, 03:12:49–03:21:09) | FORCE_ALL_HEADS=1 | 2546 flujos de .50; cabeza DDoS 538 class=1 / 2328 class=0 (18,8 %; DAY272: 21,2 %), 530 "DDoS ATTACK". .50 NUNCA llega al firewall; DROP 0 |
 
-**Decisión de política (Alonso, DAY277): NUNCA bloqueo permanente automático.** Las IPs de botnets
-suelen ser víctimas (equipos comprometidos, CGNAT). `permanent_after_strikes` → `max_penalty_after_strikes`
-+ `max_penalty_sec` (2073600 s = 24 días). Clave antigua aceptada como fallback. Drop permanente = acción manual del admin.
+- **P2 CONFIRMADA (con Neris):** 147.32.84.165 recorre 60→300→3600→86400→604800→2073600 en ~2 min
+  de un único episodio; strikes sigue subiendo sin techo (7, 8, 9). Sin timeout 0 ni Batch flush failed (P4 ok).
+- **Firewall bloquea con threat_category=NORMAL:** Neris → 12179 eventos NORMAL + 3 ATTACK (todos .165);
+  el bloqueo de .165 fue por eventos NORMAL (conf 0.58–0.64).
 
-**Medido:** techo del kernel ipset v7.17 = **2147483 s**; por encima ipset **rechaza** (no recorta) y
-tumba el `restore` entero. `kIpsetMaxTimeoutSec` + validación en `set_recidivism_config()` (el sistema
-arranca siempre, cada corrección deja ERROR visible) + cinturón en `add_batch()`.
+## 2. Hallazgo principal (código leído, zmq_handler.cpp)
 
-**Concurrencia verificada:** todo acceso a `strike_states_`/`pending_penalty_` ocurre bajo `mutex_`
-(`flush()` → `flush_internal()`; `set_recidivism_config` toma el lock). `compute_penalty_timeout` sigue
-público por testabilidad (decisión: no renombrar a `_locked` mientras no haga falta).
+- L411: `final_score = max(fast, ml)` se calcula ANTES de nivel 2. De él salen `final_classification`
+  (L442) y `provenance.final_decision` DROP/ALLOW (L483).
+- La cabeza DDoS (L612) solo pone `threat_category="DDOS"`; NO toca final_score ⇒ su nota no influye
+  en la recomendación. Ejemplo en el log: DDoS 88,33 % → evento enviado → "✅ BENIGN, confidence=64.32%".
+- `send_enriched_event` (≈L851) se llama para TODOS los eventos: el ml-detector no filtra; el que
+  descarta es el firewall.
+- Con FORCE_ALL_HEADS todo evento sale con categoría "ATTACK" (L551).
+- Firewall: candidato a filtro `batch_processor.cpp:287` (confidence < min_confidence 0.5 &&
+  !block_low_confidence). Para .50: fast≈0, ml=1−0.90=0.10 ⇒ final 0.10.
+- Conclusión para el paper: quitar el veto de level1 no basta; la nota de cada cabeza tiene que entrar
+  en la fórmula que decide la recomendación. Alonso: decide el ml-detector, el firewall ejecuta.
 
-**Tests (sobre binarios recompilados):** unit 92/92, e2e 4/4 contra ipset real.
+## 3. Aviso antes de fusionar
+El primer class=1 de la ventana de cic2 (03:12:19) es ANTERIOR al replay ⇒ tráfico de fondo: la cabeza
+DDoS también dispara sobre el ambiente. Los 538/530 mezclan flood y fondo. Hay que medir el FP sobre
+el fondo ANTES de meter la nota de la cabeza en final_score, o se bloquearán IPs del propio lab.
 
-## 2. Deuda registrada / pendiente de registrar en BACKLOG
+## 4. Pendiente inmediato (lecturas sobre datos ya guardados)
+1. [defender] Veredictos DDoS por IP (recall limpio sobre .50 + FP sobre el fondo):
+   grep -E '^\[2026-09-24 03:(1[2-9]|2[01])' /vagrant/logs/lab/ml-detector.log | awk '/Flow: /{split($0,a,"Flow: "); split(a[2],b,":"); ip=b[1]} /DDoS: class=/{match($0,/class=[01]/); n[ip" class="substr($0,RSTART+6,1)]++} END{for(k in n) print n[k], k}' | sort -k2 > /tmp/d278_ddos_by_ip.txt; cat /tmp/d278_ddos_by_ip.txt
+   (ojo: si los hilos intercalan líneas, la atribución por "última línea Flow" no es exacta)
+2. [Mac] De dónde sale la `confidence` del firewall y qué filtra antes de "Processing threat event":
+   sed -n '540,630p' firewall-acl-agent/src/api/zmq_subscriber.cpp > /tmp/d278_fw_sub.txt; cat /tmp/d278_fw_sub.txt
+   Predicción: confidence = overall_threat_score (o ml_detector_score) + corte temprano silencioso.
+3. Con 1 y 2: diseñar la fusión en el ml-detector (nota de la cabeza DDoS → final_score →
+   clasificación/decisión), con test, medir FP de fondo y repetir cic2 esperando que .50 entre en el set.
 
-- **DEBT-RECIDIVISM-OVERFLOW-RETRY-001 (H3)** — si el volcado de overflow falla, se reintenta en cada IP
-  nueva bajo lock. Diseño acordado: (1) volcar `strike_states_` SIEMPRE en parada; (2) en arranque:
-  comprobar escritura de `overflow_log_path` (si falla: arrancar igual con aviso visible), generar informe
-  y "email" simulado = `.eml` con la lista adjunta en `outbox/` del pipeline + WARN, rotar el fichero ya
-  reportado; (3) en caliente, reintento con backoff, no por IP. **Patcher pendiente.**
-- **DEBT-MAKEFILE-TEST-STALE-BINARY-001** — `test-firewall(-e2e)` solo corren `ctest`, no compilan. Dieron
-  verde sobre binarios viejos. Siempre `make firewall-build` antes.
-- **DEBT-IPSET-COMMENT-FLAG-IMPLICIT-001** — la extensión `comment` del set depende de que el texto
-  descriptivo `"comment"` del JSON no esté vacío (`main.cpp:530`).
-- **DEBT-AUTONOMY-WHITELIST-BYPASSES-BLACKLIST-001 (H7)** — la cadena autónoma se engancha en INPUT pos 1
-  con ACCEPT para 10/8, 172.16/12, 192.168/16 antes de su DROP ⇒ en modo autónomo un host interno
-  comprometido (movimiento lateral) NO se bloquea. `whitelist_cidrs` no puede vaciarse (el loader lo rechaza).
-- **DEBT-DATASET-CIC-LAB-PROVENANCE-001** — no consta el comando `tcprewrite` que generó `_0125_50k_lab.pcap`.
-- Del DAY276: **DEBT-IPSET-ADD-EXIST-001** (auditoría de callers: hecha, solo `flush_internal` construye
-  `IPSetEntry`) y **DEBT-RING-CONSUMER-SATURATION-001** (redacción pendiente de revisar por Alonso:
-  "empeora con hardware real" es hipótesis, no medida).
-- Higiene: `ipset_wrapper.cpp.old` / `.hpp.old` versionados; `.orig*` sin versionar en el árbol.
+## 5. Deuda nueva (registrar en BACKLOG)
+- DEBT-ML-DETECTOR-L2-NOT-IN-FINAL-SCORE-001 — lo de la sección 2 (P0 de la vía DDoS).
+- DEBT-FIREWALL-BLOCKS-NORMAL-CATEGORY-001 — bloqueos con threat_category=NORMAL.
+- DEBT-RECIDIVISM-SAME-EPISODE-001 — P2: tope en ~2 min dentro de un episodio; strikes sin techo.
+  Propuesta: reincidencia = volver DESPUÉS de cumplir la condena.
+- DEBT-FIREWALL-IPTABLES-RULES-NOT-IDEMPOTENT-001 — cada reinicio duplica las reglas de INPUT
+  (tras cic2: posiciones 4–6 = copia de 1–3).
+- DEBT-FORCE-ALL-HEADS-MISLABELS-ATTACK-001 — L551.
+- Preflight corregido: el DROP vive en INPUT regla 2 (tras el ACCEPT de whitelist en pos 1);
+  ML_DEFENDER_TEST tiene 0 referencias.
+- Siguen abiertas las de DAY277: H3 overflow retry, stale binary, comment flag, autonomy whitelist (H7),
+  procedencia del _lab.pcap, higiene .old/.orig.
 
-## 3. Hechos del preflight (medidos)
-
-- Set de bloqueo: **`ml_defender_blacklist_test`** (hash:ip, timeout por defecto 3600, `max_elements 1000`,
-  con `comment`). Cadena iptables: **`ML_DEFENDER_TEST`**. Whitelist ipset: `ml_defender_whitelist`.
-- En el camino de bloqueo NO hay filtro de IPs privadas; `whitelist_cidrs` solo actúa en modo autónomo (H7).
-- Log del firewall: **`/vagrant/logs/lab/firewall-agent.log`**, abierto en `>>` (acumula corridas ⇒ usar offset).
-- Defender: `eth1` 192.168.56.20 (08:00:27:b1:57:70), `eth2` **192.168.100.1 (08:00:27:6f:63:da)**, ambas PROMISC.
-- Pcap del flood: **`/vagrant/datasets/cicddos2019/_0125_50k_lab.pcap`** — 50 000 paquetes UDP,
-  **origen único 192.168.100.50** → destino 192.168.100.1 / MAC de `eth2` de la defender ⇒ netfilter INPUT
-  lo procesa ⇒ los contadores del DROP miden el efecto real. Replay usado en DAY273: `--pps=100 --intf1=eth1`
-  desde `client` (~500 s).
-- 192.168.100.50 es probablemente la propia VM `client` ⇒ **Neris primero**, y `ipset flush` al acabar.
-- Neris (`test-replay-neris` / `ctu-start`) va con IPs originales (147.32.x), sin reescribir ⇒ como control
-  mide decisiones (qué entra al set), no el DROP. `ctu-start` además alimenta el grafo cross-sensor.
-- `tcpdump -r` sobre ficheros sin extensión `.pcap` da `Permission denied` (probable AppArmor); leer los `.pcap` sin sudo.
-- Script de instantáneas creado: **`/vagrant/scripts/d277_snap_blacklist.sh`** (CSV: `entry`, `set_size`, `ipt_rule`).
-
-## 4. Predicciones (escritas antes de medir)
-
-- **Neris (control):** pocas o ninguna IP en el set. Si se llena ⇒ falsos positivos ⇒ parar y analizar.
-- **P1:** 192.168.100.50 entra en el set en los primeros segundos del replay CICDDoS.
-- **P2 (hipótesis clave):** el sniffer (XDP) ve paquetes ANTES del DROP de netfilter ⇒ la IP bloqueada se
-  sigue detectando ⇒ cada flush exitoso vacía la cola y la siguiente detección es un strike nuevo ⇒
-  **`strikes` sube durante un único ataque continuo** hasta 6 (timeout ≈ 2073600) en segundos/minutos.
-  Si se confirma: decisión de semántica pendiente (propuesta: reincidencia = volver DESPUÉS de cumplir la condena).
-- **P3:** los paquetes de la regla `match-set ml_defender_blacklist_test` crecen durante el replay (DROP real).
-- **P4:** nunca aparece `timeout 0`.
-- **Grafo:** previsiblemente los bloqueos NO aparecen en el grafo (el firewall no lo alimenta) — sería hallazgo.
-
-## 5. Guion (comandos)
-
-### Fase 0 — build, tests, arranque
-[Mac]
-```bash
-git grep -n -E '^FIREWALL_(CFG|BIN|BUILD_DIR)\s*[:?]?=' -- Makefile
-```
-(¿`FIREWALL_CFG` es el `firewall.json` del repo o una copia en `/etc/ml-defender/...`? Si es copia, comprobar
-que lleva `max_penalty_after_strikes`/`max_penalty_sec`.)
-```bash
-make pipeline-build > /tmp/d278_build.txt 2>&1; tail -3 /tmp/d278_build.txt
-```
-```bash
-make emecas > /tmp/d278_emecas.txt 2>&1; tail -15 /tmp/d278_emecas.txt
-```
-[defender]
-```bash
-wc -l < /vagrant/logs/lab/firewall-agent.log > /vagrant/logs/lab/d278_fwlog_offset.txt
-```
-[Mac]
-```bash
-make pipeline-start VERBOSE=1
-```
-```bash
-make pipeline-status
-```
-[defender]
-```bash
-tail -n +$(( $(cat /vagrant/logs/lab/d278_fwlog_offset.txt) + 1 )) /vagrant/logs/lab/firewall-agent.log | grep -E 'Recidivism config|recidivism\.'
-```
-Esperado: EMECAS verde; todo RUNNING; una línea `Recidivism config aplicada (nunca permanente)` con
-`max_penalty_sec=2073600 steps=5 max_penalty_after_strikes=6`; ningún ERROR `recidivism.*`.
-
-### Fase 1 — punto de partida
-[defender]
-```bash
-sudo ipset list ml_defender_blacklist_test -t
-```
-```bash
-sudo iptables -L INPUT -n --line-numbers
-```
-```bash
-sudo iptables -Z ML_DEFENDER_TEST; sudo iptables -L ML_DEFENDER_TEST -v -n -x
-```
-Esperado: 0 entradas; Header con `timeout 3600` y `comment`; `ML_DEFENDER_TEST` enganchada en INPUT y
-SIN cadena de autonomía; regla `match-set ml_defender_blacklist_test` con contadores a 0.
-
-### Fase 2 — Neris (control + grafo)
-[defender, terminal aparte]
-```bash
-INTERVAL=5 /vagrant/scripts/d277_snap_blacklist.sh /vagrant/logs/lab/d278_snaps_neris.csv
-```
-[Mac]
-```bash
-make ctu-start > /tmp/d278_ctu.txt 2>&1; tail -20 /tmp/d278_ctu.txt
-```
-Ctrl-C en las instantáneas. [defender]
-```bash
-grep ',entry,' /vagrant/logs/lab/d278_snaps_neris.csv | cut -d, -f3 | sort -u > /tmp/d278_neris_ips.txt; wc -l < /tmp/d278_neris_ips.txt; head -20 /tmp/d278_neris_ips.txt
-```
-Limpieza:
-```bash
-sudo ipset flush ml_defender_blacklist_test; sudo iptables -Z ML_DEFENDER_TEST
-```
-
-### Fase 3 — flood CICDDoS2019
-[defender, terminal aparte]
-```bash
-INTERVAL=5 /vagrant/scripts/d277_snap_blacklist.sh /vagrant/logs/lab/d278_snaps_cic1.csv
-```
-[client] (~500 s)
-```bash
-sudo tcpreplay --pps=100 --intf1=eth1 --stats=30 /vagrant/datasets/cicddos2019/_0125_50k_lab.pcap
-```
-Ctrl-C en las instantáneas. [defender]
-```bash
-grep ',entry,' /vagrant/logs/lab/d278_snaps_cic1.csv | awk -F, '{print $1, $3, $4, $5}' | uniq -f3 > /tmp/d278_cic1_timeline.txt; cat /tmp/d278_cic1_timeline.txt
-```
-```bash
-grep 'match-set' /vagrant/logs/lab/d278_snaps_cic1.csv | tail -3
-```
-```bash
-tail -n +$(( $(cat /vagrant/logs/lab/d278_fwlog_offset.txt) + 1 )) /vagrant/logs/lab/firewall-agent.log | grep -c -E 'castigo maximo|Batch flush failed'
-```
-Contrastar P1–P4.
-
-### Fase 4 — reincidencia real (depende de P2)
-- P2 confirmada ⇒ la IP ya está en el tope; decidir semántica de reincidencia antes de medir nada más.
-- P2 refutada ⇒ esperar a que caduque la entrada, repetir fase 3 a `d278_snaps_cic2.csv`; la IP debe
-  volver con el SIGUIENTE escalón (no 60 s; `quiet_period_reset` = 72 h no ha pasado).
-
-### Fase 5 — grafo
-Mirar cómo consulta Kuzu `scripts/ctu_start.sh`, y contar filas por sensor (aRGus / Suricata / Zeek en la
-BD de red; Wazuh en su BD host propia). Comprobar si algún bloqueo aparece en el grafo (previsión: no).
-
-## 6. Después del experimento
-1. Patcher de H3 (volcado en parada + informe/`.eml` en arranque + backoff en caliente).
-2. Si P2 se confirma: decidir y aplicar la semántica de reincidencia, con test.
-3. Registrar formalmente en BACKLOG la deuda de la sección 2.
-4. Con datos del experimento: medir eficacia de la cabeza DDoS para actualizar el paper (arXiv:2604.04952)
-   con cifras honestas.
+## 6. Artefactos DAY278
+- /vagrant/scripts/d278_snap_blacklist.sh (CHAIN=INPUT por defecto, comment completo, packets por entrada)
+- CSV: d278_snaps_neris.csv, d278_snaps_cic1.csv (cic2 no llegó a grabarse)
+- Offsets: d278_fwlog_offset.txt (antes de pipeline-start), d278_fwlog_offset2.txt (antes de cic2)
+- Ventanas: cic1 02:17:30–02:25:50; cic2 03:12:49–03:21:09 (epoch 1790219569–1790220069)
+- NO usar logs-lab-clean (mueve los logs y rompe el fd del proceso vivo); para rotar, truncate -s 0.
