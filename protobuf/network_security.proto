@@ -566,6 +566,20 @@ message DetectionProvenance {
 // 🎯 MAIN EVENT MESSAGE - Estructura Principal Limpia
 // =====================================================================
 
+// [DDOS-VWIN-D279:PROTO-MSG] Agregado por victima contado en el kernel (mapa ddos_victims,
+// XDP), independiente del ring buffer: el contador es exacto aunque el ring pierda eventos.
+// Sin campo victim_window en el evento = lector apagado o sin ventana publicada.
+// Con campo y d_pkts = 0 = el lector funciona y esa victima no recibio nada en la ventana.
+message VictimWindow {
+  string victim_ip       = 1;  // = destination_ip del evento
+  uint32 protocol        = 2;  // IANA (17 = UDP)
+  uint64 d_pkts          = 3;  // paquetes a {victim_ip, protocol} en la ultima ventana cerrada
+  uint64 d_bytes         = 4;
+  uint64 window_ms       = 5;  // duracion real de esa ventana
+  uint64 window_seq      = 6;  // n de ventana del lector
+  uint64 snapshot_age_ms = 7;  // edad del snapshot al estampar el evento
+}
+
 message NetworkSecurityEvent {
   // 🔍 IDENTIFICACIÓN ÚNICA
   string event_id = 1;
@@ -615,6 +629,8 @@ message NetworkSecurityEvent {
   DecisionMetadata decision_metadata = 34;   // Metadatos para RAG e investigación
   // 🎯 ADR-002: Multi-Engine Provenance (Day 37 - January 2026)
   DetectionProvenance provenance = 35;  // Complete detection provenance trail
+  // [DDOS-VWIN-D279:PROTO-FIELD] ventana por victima del kernel (DAY279, opcion a)
+  VictimWindow victim_window = 36;
 }
 
 // =====================================================================

@@ -1213,6 +1213,12 @@ sniffer-ddos-reader-test:
 	@echo "🧪 test_ddos_kernel_reader (hilo + CSV, sin root ni kernel)..."
 	@vagrant ssh -c "cd $(SNIFFER_BUILD_DIR) && cmake . > /dev/null && cmake --build . --target test_ddos_kernel_reader && ctest -R test_ddos_kernel_reader --output-on-failure"
 
+.PHONY: sniffer-ddos-board-test
+# [DDOS-VWIN-D279:MAKE-TEST] tablero de ventanas por victima (snapshot + lookup, sin root ni kernel)
+sniffer-ddos-board-test:
+	@echo "🧪 test_ddos_victim_board (snapshot + lookup, sin root ni kernel)..."
+	@vagrant ssh -c "cd $(SNIFFER_BUILD_DIR) && cmake . > /dev/null && cmake --build . --target test_ddos_victim_board && ctest -R test_ddos_victim_board --output-on-failure"
+
 test-components: correlation-engine-test
 	@echo ""
 	@echo "╔════════════════════════════════════════════════════════════╗"

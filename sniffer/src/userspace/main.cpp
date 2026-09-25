@@ -182,6 +182,8 @@ StrictSnifferConfig g_config;
 // Punteros a componentes principales
 sniffer::EbpfLoader* ebpf_loader_ptr = nullptr;
 sniffer::DdosKernelReader* ddos_reader_ptr = nullptr;  // [DDOS-KREAD-D274:MAIN-PTR]
+// [DDOS-VWIN-D279:MAIN-BOARD] tablero compartido lector->consumer (vive mientras alguno lo tenga)
+std::shared_ptr<sniffer::DdosVictimBoard> g_ddos_victim_board = std::make_shared<sniffer::DdosVictimBoard>();
 sniffer::RingBufferConsumer* ring_consumer_ptr = nullptr;
 std::shared_ptr<sniffer::ThreadManager> thread_manager = nullptr;
 
@@ -722,6 +724,7 @@ if (encryption_seed.empty()) {
 
         ring_consumer_ptr = new sniffer::RingBufferConsumer(sniffer_config, fast_detector_config, encryption_seed);
         auto& ring_consumer = *ring_consumer_ptr;
+        ring_consumer.set_victim_board(g_ddos_victim_board);  // [DDOS-VWIN-D279:MAIN-RC]
 
         // Configure stats interval from monitoring config
         ring_consumer.set_stats_interval(g_config.monitoring.stats_interval_seconds);
@@ -763,14 +766,12 @@ if (encryption_seed.empty()) {
                 std::cerr << "[WARNING] ddos_kernel_agg_enabled=true pero el mapa ddos_victims no esta "
                              "disponible (objeto eBPF anterior al parche); lector DDoS desactivado"
                           << std::endl;
-            } else if (g_config.kernel_space.ddos_kernel_agg_csv_path.empty()) {
-                std::cerr << "[WARNING] ddos_kernel_agg_csv_path vacio; lector DDoS desactivado"
-                          << std::endl;
-            } else {
+            } else {  // [DDOS-VWIN-D279:MAIN-CSV-OPTIONAL] sin ruta CSV el lector sigue publicando al tablero
                 ddos_reader_ptr = new sniffer::DdosKernelReader(
                     ddos_fd, ebpf_loader_ptr->get_ddos_victims_max_entries(),
                     g_config.kernel_space.ddos_kernel_agg_interval_ms,
                     g_config.kernel_space.ddos_kernel_agg_csv_path);
+                ddos_reader_ptr->set_board(g_ddos_victim_board);  // [DDOS-VWIN-D279:MAIN-READER]
                 if (!ddos_reader_ptr->start()) {
                     std::cerr << "[WARNING] no se pudo arrancar el lector DDoS; sigo sin el"
                               << std::endl;

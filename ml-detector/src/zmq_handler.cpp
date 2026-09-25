@@ -438,6 +438,17 @@ void ZMQHandler::process_event(const std::string& message) {
                       protobuf::DetectorSource_Name(event.authoritative_source()),
                       score_divergence);
 
+        // [DDOS-VWIN-D279:ML-LOG] senal agregada por victima (kernel). SOLO observacion:
+        // no entra en ninguna cabeza ni en final_score (DAY279, paso 1 de la opcion a).
+        if (event.has_victim_window()) {
+            const auto& vw = event.victim_window();
+            logger_->info("[VICTIM-WINDOW] event={}, victim={}, proto={}, d_pkts={}, d_bytes={}, window_ms={}, seq={}, age_ms={}",
+                          event.event_id(), vw.victim_ip(), vw.protocol(), vw.d_pkts(), vw.d_bytes(),
+                          vw.window_ms(), vw.window_seq(), vw.snapshot_age_ms());
+        } else {
+            logger_->info("[VICTIM-WINDOW] event={}, absent", event.event_id());
+        }
+
         event.set_final_classification(
             final_score >= config_.scoring.malicious_threshold ? "MALICIOUS" : "BENIGN"
         );

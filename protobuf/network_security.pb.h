@@ -162,6 +162,9 @@ extern TricapaMLAnalysisDefaultTypeInternal _TricapaMLAnalysis_default_instance_
 class TricapaMLAnalysis_FeatureImportanceScoresEntry_DoNotUse;
 struct TricapaMLAnalysis_FeatureImportanceScoresEntry_DoNotUseDefaultTypeInternal;
 extern TricapaMLAnalysis_FeatureImportanceScoresEntry_DoNotUseDefaultTypeInternal _TricapaMLAnalysis_FeatureImportanceScoresEntry_DoNotUse_default_instance_;
+class VictimWindow;
+struct VictimWindowDefaultTypeInternal;
+extern VictimWindowDefaultTypeInternal _VictimWindow_default_instance_;
 }  // namespace protobuf
 PROTOBUF_NAMESPACE_OPEN
 template<> ::protobuf::DDoSFeatures* Arena::CreateMaybeMessage<::protobuf::DDoSFeatures>(Arena*);
@@ -201,6 +204,7 @@ template<> ::protobuf::TimeWindow* Arena::CreateMaybeMessage<::protobuf::TimeWin
 template<> ::protobuf::TrafficFeatures* Arena::CreateMaybeMessage<::protobuf::TrafficFeatures>(Arena*);
 template<> ::protobuf::TricapaMLAnalysis* Arena::CreateMaybeMessage<::protobuf::TricapaMLAnalysis>(Arena*);
 template<> ::protobuf::TricapaMLAnalysis_FeatureImportanceScoresEntry_DoNotUse* Arena::CreateMaybeMessage<::protobuf::TricapaMLAnalysis_FeatureImportanceScoresEntry_DoNotUse>(Arena*);
+template<> ::protobuf::VictimWindow* Arena::CreateMaybeMessage<::protobuf::VictimWindow>(Arena*);
 PROTOBUF_NAMESPACE_CLOSE
 namespace protobuf {
 
@@ -7746,6 +7750,225 @@ class DetectionProvenance final :
 };
 // -------------------------------------------------------------------
 
+class VictimWindow final :
+    public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:protobuf.VictimWindow) */ {
+ public:
+  inline VictimWindow() : VictimWindow(nullptr) {}
+  ~VictimWindow() override;
+  explicit PROTOBUF_CONSTEXPR VictimWindow(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
+
+  VictimWindow(const VictimWindow& from);
+  VictimWindow(VictimWindow&& from) noexcept
+    : VictimWindow() {
+    *this = ::std::move(from);
+  }
+
+  inline VictimWindow& operator=(const VictimWindow& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  inline VictimWindow& operator=(VictimWindow&& from) noexcept {
+    if (this == &from) return *this;
+    if (GetOwningArena() == from.GetOwningArena()
+  #ifdef PROTOBUF_FORCE_COPY_IN_MOVE
+        && GetOwningArena() != nullptr
+  #endif  // !PROTOBUF_FORCE_COPY_IN_MOVE
+    ) {
+      InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* descriptor() {
+    return GetDescriptor();
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* GetDescriptor() {
+    return default_instance().GetMetadata().descriptor;
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
+    return default_instance().GetMetadata().reflection;
+  }
+  static const VictimWindow& default_instance() {
+    return *internal_default_instance();
+  }
+  static inline const VictimWindow* internal_default_instance() {
+    return reinterpret_cast<const VictimWindow*>(
+               &_VictimWindow_default_instance_);
+  }
+  static constexpr int kIndexInFileMessages =
+    27;
+
+  friend void swap(VictimWindow& a, VictimWindow& b) {
+    a.Swap(&b);
+  }
+  inline void Swap(VictimWindow* other) {
+    if (other == this) return;
+  #ifdef PROTOBUF_FORCE_COPY_IN_SWAP
+    if (GetOwningArena() != nullptr &&
+        GetOwningArena() == other->GetOwningArena()) {
+   #else  // PROTOBUF_FORCE_COPY_IN_SWAP
+    if (GetOwningArena() == other->GetOwningArena()) {
+  #endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
+      InternalSwap(other);
+    } else {
+      ::PROTOBUF_NAMESPACE_ID::internal::GenericSwap(this, other);
+    }
+  }
+  void UnsafeArenaSwap(VictimWindow* other) {
+    if (other == this) return;
+    GOOGLE_DCHECK(GetOwningArena() == other->GetOwningArena());
+    InternalSwap(other);
+  }
+
+  // implements Message ----------------------------------------------
+
+  VictimWindow* New(::PROTOBUF_NAMESPACE_ID::Arena* arena = nullptr) const final {
+    return CreateMaybeMessage<VictimWindow>(arena);
+  }
+  using ::PROTOBUF_NAMESPACE_ID::Message::CopyFrom;
+  void CopyFrom(const VictimWindow& from);
+  using ::PROTOBUF_NAMESPACE_ID::Message::MergeFrom;
+  void MergeFrom( const VictimWindow& from) {
+    VictimWindow::MergeImpl(*this, from);
+  }
+  private:
+  static void MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg);
+  public:
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
+  bool IsInitialized() const final;
+
+  size_t ByteSizeLong() const final;
+  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
+  uint8_t* _InternalSerialize(
+      uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
+  int GetCachedSize() const final { return _impl_._cached_size_.Get(); }
+
+  private:
+  void SharedCtor(::PROTOBUF_NAMESPACE_ID::Arena* arena, bool is_message_owned);
+  void SharedDtor();
+  void SetCachedSize(int size) const final;
+  void InternalSwap(VictimWindow* other);
+
+  private:
+  friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
+  static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
+    return "protobuf.VictimWindow";
+  }
+  protected:
+  explicit VictimWindow(::PROTOBUF_NAMESPACE_ID::Arena* arena,
+                       bool is_message_owned = false);
+  public:
+
+  static const ClassData _class_data_;
+  const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*GetClassData() const final;
+
+  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  enum : int {
+    kVictimIpFieldNumber = 1,
+    kDPktsFieldNumber = 3,
+    kDBytesFieldNumber = 4,
+    kWindowMsFieldNumber = 5,
+    kWindowSeqFieldNumber = 6,
+    kSnapshotAgeMsFieldNumber = 7,
+    kProtocolFieldNumber = 2,
+  };
+  // string victim_ip = 1;
+  void clear_victim_ip();
+  const std::string& victim_ip() const;
+  template <typename ArgT0 = const std::string&, typename... ArgT>
+  void set_victim_ip(ArgT0&& arg0, ArgT... args);
+  std::string* mutable_victim_ip();
+  PROTOBUF_NODISCARD std::string* release_victim_ip();
+  void set_allocated_victim_ip(std::string* victim_ip);
+  private:
+  const std::string& _internal_victim_ip() const;
+  inline PROTOBUF_ALWAYS_INLINE void _internal_set_victim_ip(const std::string& value);
+  std::string* _internal_mutable_victim_ip();
+  public:
+
+  // uint64 d_pkts = 3;
+  void clear_d_pkts();
+  uint64_t d_pkts() const;
+  void set_d_pkts(uint64_t value);
+  private:
+  uint64_t _internal_d_pkts() const;
+  void _internal_set_d_pkts(uint64_t value);
+  public:
+
+  // uint64 d_bytes = 4;
+  void clear_d_bytes();
+  uint64_t d_bytes() const;
+  void set_d_bytes(uint64_t value);
+  private:
+  uint64_t _internal_d_bytes() const;
+  void _internal_set_d_bytes(uint64_t value);
+  public:
+
+  // uint64 window_ms = 5;
+  void clear_window_ms();
+  uint64_t window_ms() const;
+  void set_window_ms(uint64_t value);
+  private:
+  uint64_t _internal_window_ms() const;
+  void _internal_set_window_ms(uint64_t value);
+  public:
+
+  // uint64 window_seq = 6;
+  void clear_window_seq();
+  uint64_t window_seq() const;
+  void set_window_seq(uint64_t value);
+  private:
+  uint64_t _internal_window_seq() const;
+  void _internal_set_window_seq(uint64_t value);
+  public:
+
+  // uint64 snapshot_age_ms = 7;
+  void clear_snapshot_age_ms();
+  uint64_t snapshot_age_ms() const;
+  void set_snapshot_age_ms(uint64_t value);
+  private:
+  uint64_t _internal_snapshot_age_ms() const;
+  void _internal_set_snapshot_age_ms(uint64_t value);
+  public:
+
+  // uint32 protocol = 2;
+  void clear_protocol();
+  uint32_t protocol() const;
+  void set_protocol(uint32_t value);
+  private:
+  uint32_t _internal_protocol() const;
+  void _internal_set_protocol(uint32_t value);
+  public:
+
+  // @@protoc_insertion_point(class_scope:protobuf.VictimWindow)
+ private:
+  class _Internal;
+
+  template <typename T> friend class ::PROTOBUF_NAMESPACE_ID::Arena::InternalHelper;
+  typedef void InternalArenaConstructable_;
+  typedef void DestructorSkippable_;
+  struct Impl_ {
+    ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr victim_ip_;
+    uint64_t d_pkts_;
+    uint64_t d_bytes_;
+    uint64_t window_ms_;
+    uint64_t window_seq_;
+    uint64_t snapshot_age_ms_;
+    uint32_t protocol_;
+    mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
+  };
+  union { Impl_ _impl_; };
+  friend struct ::TableStruct_network_5fsecurity_2eproto;
+};
+// -------------------------------------------------------------------
+
 class NetworkSecurityEvent_CustomMetadataEntry_DoNotUse : public ::PROTOBUF_NAMESPACE_ID::internal::MapEntry<NetworkSecurityEvent_CustomMetadataEntry_DoNotUse, 
     std::string, std::string,
     ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::TYPE_STRING,
@@ -7822,7 +8045,7 @@ class NetworkSecurityEvent final :
                &_NetworkSecurityEvent_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    28;
+    29;
 
   friend void swap(NetworkSecurityEvent& a, NetworkSecurityEvent& b) {
     a.Swap(&b);
@@ -7921,6 +8144,7 @@ class NetworkSecurityEvent final :
     kHumanReviewFieldNumber = 12,
     kDecisionMetadataFieldNumber = 34,
     kProvenanceFieldNumber = 35,
+    kVictimWindowFieldNumber = 36,
     kOverallThreatScoreFieldNumber = 15,
     kSchemaVersionFieldNumber = 25,
     kAuthoritativeSourceFieldNumber = 31,
@@ -8321,6 +8545,24 @@ class NetworkSecurityEvent final :
       ::protobuf::DetectionProvenance* provenance);
   ::protobuf::DetectionProvenance* unsafe_arena_release_provenance();
 
+  // .protobuf.VictimWindow victim_window = 36;
+  bool has_victim_window() const;
+  private:
+  bool _internal_has_victim_window() const;
+  public:
+  void clear_victim_window();
+  const ::protobuf::VictimWindow& victim_window() const;
+  PROTOBUF_NODISCARD ::protobuf::VictimWindow* release_victim_window();
+  ::protobuf::VictimWindow* mutable_victim_window();
+  void set_allocated_victim_window(::protobuf::VictimWindow* victim_window);
+  private:
+  const ::protobuf::VictimWindow& _internal_victim_window() const;
+  ::protobuf::VictimWindow* _internal_mutable_victim_window();
+  public:
+  void unsafe_arena_set_allocated_victim_window(
+      ::protobuf::VictimWindow* victim_window);
+  ::protobuf::VictimWindow* unsafe_arena_release_victim_window();
+
   // double overall_threat_score = 15;
   void clear_overall_threat_score();
   double overall_threat_score() const;
@@ -8410,6 +8652,7 @@ class NetworkSecurityEvent final :
     ::protobuf::HumanInTheLoopReview* human_review_;
     ::protobuf::DecisionMetadata* decision_metadata_;
     ::protobuf::DetectionProvenance* provenance_;
+    ::protobuf::VictimWindow* victim_window_;
     double overall_threat_score_;
     uint32_t schema_version_;
     int authoritative_source_;
@@ -8471,7 +8714,7 @@ class EventBatch final :
                &_EventBatch_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    29;
+    30;
 
   friend void swap(EventBatch& a, EventBatch& b) {
     a.Swap(&b);
@@ -8785,7 +9028,7 @@ class SystemConfiguration final :
                &_SystemConfiguration_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    32;
+    33;
 
   friend void swap(SystemConfiguration& a, SystemConfiguration& b) {
     a.Swap(&b);
@@ -9139,7 +9382,7 @@ class RansomwareFeatures final :
                &_RansomwareFeatures_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    33;
+    34;
 
   friend void swap(RansomwareFeatures& a, RansomwareFeatures& b) {
     a.Swap(&b);
@@ -9496,7 +9739,7 @@ class DecisionMetadata final :
                &_DecisionMetadata_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    34;
+    35;
 
   friend void swap(DecisionMetadata& a, DecisionMetadata& b) {
     a.Swap(&b);
@@ -9744,7 +9987,7 @@ class Detection final :
                &_Detection_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    35;
+    36;
 
   friend void swap(Detection& a, Detection& b) {
     a.Swap(&b);
@@ -9973,7 +10216,7 @@ class DetectionBatch final :
                &_DetectionBatch_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    36;
+    37;
 
   friend void swap(DetectionBatch& a, DetectionBatch& b) {
     a.Swap(&b);
@@ -20895,6 +21138,180 @@ inline void DetectionProvenance::set_allocated_discrepancy_reason(std::string* d
 
 // -------------------------------------------------------------------
 
+// VictimWindow
+
+// string victim_ip = 1;
+inline void VictimWindow::clear_victim_ip() {
+  _impl_.victim_ip_.ClearToEmpty();
+}
+inline const std::string& VictimWindow::victim_ip() const {
+  // @@protoc_insertion_point(field_get:protobuf.VictimWindow.victim_ip)
+  return _internal_victim_ip();
+}
+template <typename ArgT0, typename... ArgT>
+inline PROTOBUF_ALWAYS_INLINE
+void VictimWindow::set_victim_ip(ArgT0&& arg0, ArgT... args) {
+ 
+ _impl_.victim_ip_.Set(static_cast<ArgT0 &&>(arg0), args..., GetArenaForAllocation());
+  // @@protoc_insertion_point(field_set:protobuf.VictimWindow.victim_ip)
+}
+inline std::string* VictimWindow::mutable_victim_ip() {
+  std::string* _s = _internal_mutable_victim_ip();
+  // @@protoc_insertion_point(field_mutable:protobuf.VictimWindow.victim_ip)
+  return _s;
+}
+inline const std::string& VictimWindow::_internal_victim_ip() const {
+  return _impl_.victim_ip_.Get();
+}
+inline void VictimWindow::_internal_set_victim_ip(const std::string& value) {
+  
+  _impl_.victim_ip_.Set(value, GetArenaForAllocation());
+}
+inline std::string* VictimWindow::_internal_mutable_victim_ip() {
+  
+  return _impl_.victim_ip_.Mutable(GetArenaForAllocation());
+}
+inline std::string* VictimWindow::release_victim_ip() {
+  // @@protoc_insertion_point(field_release:protobuf.VictimWindow.victim_ip)
+  return _impl_.victim_ip_.Release();
+}
+inline void VictimWindow::set_allocated_victim_ip(std::string* victim_ip) {
+  if (victim_ip != nullptr) {
+    
+  } else {
+    
+  }
+  _impl_.victim_ip_.SetAllocated(victim_ip, GetArenaForAllocation());
+#ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  if (_impl_.victim_ip_.IsDefault()) {
+    _impl_.victim_ip_.Set("", GetArenaForAllocation());
+  }
+#endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  // @@protoc_insertion_point(field_set_allocated:protobuf.VictimWindow.victim_ip)
+}
+
+// uint32 protocol = 2;
+inline void VictimWindow::clear_protocol() {
+  _impl_.protocol_ = 0u;
+}
+inline uint32_t VictimWindow::_internal_protocol() const {
+  return _impl_.protocol_;
+}
+inline uint32_t VictimWindow::protocol() const {
+  // @@protoc_insertion_point(field_get:protobuf.VictimWindow.protocol)
+  return _internal_protocol();
+}
+inline void VictimWindow::_internal_set_protocol(uint32_t value) {
+  
+  _impl_.protocol_ = value;
+}
+inline void VictimWindow::set_protocol(uint32_t value) {
+  _internal_set_protocol(value);
+  // @@protoc_insertion_point(field_set:protobuf.VictimWindow.protocol)
+}
+
+// uint64 d_pkts = 3;
+inline void VictimWindow::clear_d_pkts() {
+  _impl_.d_pkts_ = uint64_t{0u};
+}
+inline uint64_t VictimWindow::_internal_d_pkts() const {
+  return _impl_.d_pkts_;
+}
+inline uint64_t VictimWindow::d_pkts() const {
+  // @@protoc_insertion_point(field_get:protobuf.VictimWindow.d_pkts)
+  return _internal_d_pkts();
+}
+inline void VictimWindow::_internal_set_d_pkts(uint64_t value) {
+  
+  _impl_.d_pkts_ = value;
+}
+inline void VictimWindow::set_d_pkts(uint64_t value) {
+  _internal_set_d_pkts(value);
+  // @@protoc_insertion_point(field_set:protobuf.VictimWindow.d_pkts)
+}
+
+// uint64 d_bytes = 4;
+inline void VictimWindow::clear_d_bytes() {
+  _impl_.d_bytes_ = uint64_t{0u};
+}
+inline uint64_t VictimWindow::_internal_d_bytes() const {
+  return _impl_.d_bytes_;
+}
+inline uint64_t VictimWindow::d_bytes() const {
+  // @@protoc_insertion_point(field_get:protobuf.VictimWindow.d_bytes)
+  return _internal_d_bytes();
+}
+inline void VictimWindow::_internal_set_d_bytes(uint64_t value) {
+  
+  _impl_.d_bytes_ = value;
+}
+inline void VictimWindow::set_d_bytes(uint64_t value) {
+  _internal_set_d_bytes(value);
+  // @@protoc_insertion_point(field_set:protobuf.VictimWindow.d_bytes)
+}
+
+// uint64 window_ms = 5;
+inline void VictimWindow::clear_window_ms() {
+  _impl_.window_ms_ = uint64_t{0u};
+}
+inline uint64_t VictimWindow::_internal_window_ms() const {
+  return _impl_.window_ms_;
+}
+inline uint64_t VictimWindow::window_ms() const {
+  // @@protoc_insertion_point(field_get:protobuf.VictimWindow.window_ms)
+  return _internal_window_ms();
+}
+inline void VictimWindow::_internal_set_window_ms(uint64_t value) {
+  
+  _impl_.window_ms_ = value;
+}
+inline void VictimWindow::set_window_ms(uint64_t value) {
+  _internal_set_window_ms(value);
+  // @@protoc_insertion_point(field_set:protobuf.VictimWindow.window_ms)
+}
+
+// uint64 window_seq = 6;
+inline void VictimWindow::clear_window_seq() {
+  _impl_.window_seq_ = uint64_t{0u};
+}
+inline uint64_t VictimWindow::_internal_window_seq() const {
+  return _impl_.window_seq_;
+}
+inline uint64_t VictimWindow::window_seq() const {
+  // @@protoc_insertion_point(field_get:protobuf.VictimWindow.window_seq)
+  return _internal_window_seq();
+}
+inline void VictimWindow::_internal_set_window_seq(uint64_t value) {
+  
+  _impl_.window_seq_ = value;
+}
+inline void VictimWindow::set_window_seq(uint64_t value) {
+  _internal_set_window_seq(value);
+  // @@protoc_insertion_point(field_set:protobuf.VictimWindow.window_seq)
+}
+
+// uint64 snapshot_age_ms = 7;
+inline void VictimWindow::clear_snapshot_age_ms() {
+  _impl_.snapshot_age_ms_ = uint64_t{0u};
+}
+inline uint64_t VictimWindow::_internal_snapshot_age_ms() const {
+  return _impl_.snapshot_age_ms_;
+}
+inline uint64_t VictimWindow::snapshot_age_ms() const {
+  // @@protoc_insertion_point(field_get:protobuf.VictimWindow.snapshot_age_ms)
+  return _internal_snapshot_age_ms();
+}
+inline void VictimWindow::_internal_set_snapshot_age_ms(uint64_t value) {
+  
+  _impl_.snapshot_age_ms_ = value;
+}
+inline void VictimWindow::set_snapshot_age_ms(uint64_t value) {
+  _internal_set_snapshot_age_ms(value);
+  // @@protoc_insertion_point(field_set:protobuf.VictimWindow.snapshot_age_ms)
+}
+
+// -------------------------------------------------------------------
+
 // -------------------------------------------------------------------
 
 // NetworkSecurityEvent
@@ -22621,6 +23038,96 @@ inline void NetworkSecurityEvent::set_allocated_provenance(::protobuf::Detection
   }
   _impl_.provenance_ = provenance;
   // @@protoc_insertion_point(field_set_allocated:protobuf.NetworkSecurityEvent.provenance)
+}
+
+// .protobuf.VictimWindow victim_window = 36;
+inline bool NetworkSecurityEvent::_internal_has_victim_window() const {
+  return this != internal_default_instance() && _impl_.victim_window_ != nullptr;
+}
+inline bool NetworkSecurityEvent::has_victim_window() const {
+  return _internal_has_victim_window();
+}
+inline void NetworkSecurityEvent::clear_victim_window() {
+  if (GetArenaForAllocation() == nullptr && _impl_.victim_window_ != nullptr) {
+    delete _impl_.victim_window_;
+  }
+  _impl_.victim_window_ = nullptr;
+}
+inline const ::protobuf::VictimWindow& NetworkSecurityEvent::_internal_victim_window() const {
+  const ::protobuf::VictimWindow* p = _impl_.victim_window_;
+  return p != nullptr ? *p : reinterpret_cast<const ::protobuf::VictimWindow&>(
+      ::protobuf::_VictimWindow_default_instance_);
+}
+inline const ::protobuf::VictimWindow& NetworkSecurityEvent::victim_window() const {
+  // @@protoc_insertion_point(field_get:protobuf.NetworkSecurityEvent.victim_window)
+  return _internal_victim_window();
+}
+inline void NetworkSecurityEvent::unsafe_arena_set_allocated_victim_window(
+    ::protobuf::VictimWindow* victim_window) {
+  if (GetArenaForAllocation() == nullptr) {
+    delete reinterpret_cast<::PROTOBUF_NAMESPACE_ID::MessageLite*>(_impl_.victim_window_);
+  }
+  _impl_.victim_window_ = victim_window;
+  if (victim_window) {
+    
+  } else {
+    
+  }
+  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:protobuf.NetworkSecurityEvent.victim_window)
+}
+inline ::protobuf::VictimWindow* NetworkSecurityEvent::release_victim_window() {
+  
+  ::protobuf::VictimWindow* temp = _impl_.victim_window_;
+  _impl_.victim_window_ = nullptr;
+#ifdef PROTOBUF_FORCE_COPY_IN_RELEASE
+  auto* old =  reinterpret_cast<::PROTOBUF_NAMESPACE_ID::MessageLite*>(temp);
+  temp = ::PROTOBUF_NAMESPACE_ID::internal::DuplicateIfNonNull(temp);
+  if (GetArenaForAllocation() == nullptr) { delete old; }
+#else  // PROTOBUF_FORCE_COPY_IN_RELEASE
+  if (GetArenaForAllocation() != nullptr) {
+    temp = ::PROTOBUF_NAMESPACE_ID::internal::DuplicateIfNonNull(temp);
+  }
+#endif  // !PROTOBUF_FORCE_COPY_IN_RELEASE
+  return temp;
+}
+inline ::protobuf::VictimWindow* NetworkSecurityEvent::unsafe_arena_release_victim_window() {
+  // @@protoc_insertion_point(field_release:protobuf.NetworkSecurityEvent.victim_window)
+  
+  ::protobuf::VictimWindow* temp = _impl_.victim_window_;
+  _impl_.victim_window_ = nullptr;
+  return temp;
+}
+inline ::protobuf::VictimWindow* NetworkSecurityEvent::_internal_mutable_victim_window() {
+  
+  if (_impl_.victim_window_ == nullptr) {
+    auto* p = CreateMaybeMessage<::protobuf::VictimWindow>(GetArenaForAllocation());
+    _impl_.victim_window_ = p;
+  }
+  return _impl_.victim_window_;
+}
+inline ::protobuf::VictimWindow* NetworkSecurityEvent::mutable_victim_window() {
+  ::protobuf::VictimWindow* _msg = _internal_mutable_victim_window();
+  // @@protoc_insertion_point(field_mutable:protobuf.NetworkSecurityEvent.victim_window)
+  return _msg;
+}
+inline void NetworkSecurityEvent::set_allocated_victim_window(::protobuf::VictimWindow* victim_window) {
+  ::PROTOBUF_NAMESPACE_ID::Arena* message_arena = GetArenaForAllocation();
+  if (message_arena == nullptr) {
+    delete _impl_.victim_window_;
+  }
+  if (victim_window) {
+    ::PROTOBUF_NAMESPACE_ID::Arena* submessage_arena =
+        ::PROTOBUF_NAMESPACE_ID::Arena::InternalGetOwningArena(victim_window);
+    if (message_arena != submessage_arena) {
+      victim_window = ::PROTOBUF_NAMESPACE_ID::internal::GetOwnedMessage(
+          message_arena, victim_window, submessage_arena);
+    }
+    
+  } else {
+    
+  }
+  _impl_.victim_window_ = victim_window;
+  // @@protoc_insertion_point(field_set_allocated:protobuf.NetworkSecurityEvent.victim_window)
 }
 
 // -------------------------------------------------------------------
@@ -24497,6 +25004,8 @@ inline void DetectionBatch::set_allocated_batch_timestamp(::PROTOBUF_NAMESPACE_I
 #ifdef __GNUC__
   #pragma GCC diagnostic pop
 #endif  // __GNUC__
+// -------------------------------------------------------------------
+
 // -------------------------------------------------------------------
 
 // -------------------------------------------------------------------

@@ -29,6 +29,7 @@
 #pragma once
 
 #include "ddos_kernel_agg.hpp"
+#include "ddos_victim_board.hpp"  // [DDOS-VWIN-D279:READER-INC]
 
 #include <algorithm>
 #include <atomic>
@@ -119,11 +120,14 @@ public:
     int interval_ms() const { return interval_ms_; }
     const std::string& csv_path() const { return csv_path_; }
 
+    // [DDOS-VWIN-D279:SET-BOARD] tablero compartido con el RingBufferConsumer. Llamar ANTES de start().
+    void set_board(std::shared_ptr<DdosVictimBoard> board) { board_ = std::move(board); }
+
     // false si no hay ruta o no se puede abrir el CSV: el sniffer sigue sin el lector.
     bool start() {
         if (thread_.joinable()) return true;
-        if (csv_path_.empty()) return false;
-        if (!open_csv()) {
+        // [DDOS-VWIN-D279:CSV-OPTIONAL] el CSV es salida de laboratorio, no condicion de la senal
+        if (!csv_path_.empty() && !open_csv()) {
             out_.close();
             std::cerr << "[WARNING] DDoS kernel reader: no puedo abrir " << csv_path_ << std::endl;
             return false;
@@ -213,7 +217,9 @@ private:
             const uint64_t win = ++windows_;
             counter_resets_ += w->counter_resets;
             evicted_ += w->evicted;
-            if (w->victims.empty() || csv_failed_) return;
+            // [DDOS-VWIN-D279:PUBLISH] snapshot COMPLETO (sin tope CSV); la baseline (t_start_ns == 0) no es tasa
+            if (board_ && w->t_start_ns != 0) board_->publish_window(win, *w);
+            if (w->victims.empty() || csv_failed_ || csv_path_.empty()) return;
             const std::size_t n_rows = std::min(w->victims.size(), kDdosMaxRowsPerWindow);
             const uint64_t ts_ms = static_cast<uint64_t>(
                 std::chrono::duration_cast<std::chrono::milliseconds>(
@@ -238,6 +244,7 @@ private:
     DdosKernelAggregator agg_;
     int interval_ms_;
     std::string csv_path_;
+    std::shared_ptr<DdosVictimBoard> board_;  // [DDOS-VWIN-D279:BOARD-MEMBER]
     std::ofstream out_;
     std::mutex m_;
     std::condition_variable cv_;

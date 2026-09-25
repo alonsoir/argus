@@ -1061,4 +1061,21 @@ if(NOT USE_LIBPCAP)
   )
   add_test(NAME test_ddos_kernel_reader COMMAND test_ddos_kernel_reader)
   message(STATUS "Unit Test: test_ddos_kernel_reader configured (DAY 274 - hilo lector DDoS + CSV, sin kernel)")
+
+  add_executable(test_ddos_victim_board
+          tests/test_ddos_victim_board.cpp
+  )
+  target_include_directories(test_ddos_victim_board PRIVATE
+          ${CMAKE_SOURCE_DIR}/include
+          ${LIBBPF_INCLUDE_DIRS}
+  )
+  if(LIBBPF_LIBRARY_DIRS)
+    target_link_directories(test_ddos_victim_board PRIVATE ${LIBBPF_LIBRARY_DIRS})
+  endif()
+  target_link_libraries(test_ddos_victim_board PRIVATE
+          ${LIBBPF_LIBRARIES}
+          Threads::Threads
+  )
+  add_test(NAME test_ddos_victim_board COMMAND test_ddos_victim_board)
+  message(STATUS "Unit Test: test_ddos_victim_board configured (DAY 279 - tablero de ventanas por victima) [DDOS-VWIN-D279:CMAKE-TEST]")
 endif()
