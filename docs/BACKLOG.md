@@ -6347,7 +6347,18 @@ Todo cruce por `seq` de `[VICTIM-WINDOW]` o por la línea `Flow:`; nunca por hor
 - **DEBT-DDOS-HEAD-SCORES-FAST-ALERTS-001** — los fast-alert (vector vacío) pasan por la cabeza de
   flujo: 4 703 de 6 361 eventos del mini flood (74 %), todos `class=0`; con vector 0 un fast-alert
   sacó `ddos_prob = 0,4717` (a un paso del umbral).
-  PROPUESTA (pendiente de ratificar): no evaluar fast-alert con cabezas de flujo.
+  DECIDIDO DAY281 (Alonso): el fast-alert se CONSERVA en el sniffer (señal de capa 1 propia), pero
+  deja de evaluarse con cabezas de flujo y entra en la fusión como una puntuación más. Implementación
+  en la rama nueva (paso 4 del orden acordado en el prompt DAY282).
+
+### Orden acordado para la rama nueva (DAY281)
+
+1. Observabilidad: todas las puntuaciones por cabeza en el log del ml-detector.
+2. Contrato único de rasgos DDoS train/serve. Preferencia: calcularlos en el SNIFFER (ml-detector
+   sobrecargado), condicionada a un inventario medido de factibilidad. Sin MinMaxScaler.
+3. Reentrenar y medir importancias; decidir entonces qué rasgos sobran.
+4. Fast-alert fuera de las cabezas de flujo, como entrada propia a la fusión.
+5. Fusión y firewall obedeciendo `final_decision`.
 
 - **DEBT-ML-DETECTOR-EVENT-PER-PACKET-001** — ≈ 1 evento por paquete de ingreso en un único flujo TCP
   (121 eventos / ~120 KB; 3 005 / ~3 MB). Un flujo legítimo = miles de alarmas. Orden de magnitud
@@ -6385,3 +6396,34 @@ Todo cruce por `seq` de `[VICTIM-WINDOW]` o por la línea `Flow:`; nunca por hor
 Artefactos: `scripts/d281_hpp_thr.sh`, `d281_esc_bins.sh`, `d281_esc_bins_flow.sh`,
 `d281_tcp_sink.py`, `d281_tcp_upload.py`; logs `/vagrant/logs/lab/d281_*`,
 `d281_ml_detector_pre_upload.log` (log DAY280 completo: DNS + mini flood).
+- **DEBT-FAST-ALERT-MONOTONIC-TIMESTAMP-001 (P1)** — los eventos fast-alert llevan en `timestamp_utc_ns`
+  un reloj MONOTÓNICO (ns desde el arranque de la VM), no ns de época.
+  - Origen: `sniffer/src/userspace/ring_consumer.cpp:1245`,
+    `alert.set_event_id("fast-alert-" + std::to_string(event.timestamp))`; `event.timestamp` es el reloj
+    del kernel. Ej.: `fast-alert-2191819413719` = 2 192 s ≈ 36,5 min de uptime.
+  - MEDIDO DAY281 (`scripts/d281_fastalert_ts.sh`): 100 % de las filas fast-alert con hora no-época en los
+    29 CSV de eventos que tienen fast-alert, desde 2026-03-08 (6 680/6 680) hasta 2026-09-26 (5 522/5 522).
+    PREEXISTENTE: no lo introduce `docs/ml-heads-grieta-b`.
+  - Impacto: los fast-alert (74 % de los eventos del flood DAY280) quedan en 1970 en Parquet/grafo; roto
+    todo orden o cruce temporal que los incluya.
+  - Arreglo (rama aparte): hora de pared en la construcción del fast-alert (o convertir monotónico→época
+    con el offset de arranque), manteniendo el id único.
+
+- **DEBT-PARQUET-VALIDATOR-FIRST-ROW-ONLY-001** — `scripts/parquet/validate_roundtrip.py` solo comprueba
+  `timestamp_utc_ns[0]` de cada fichero. El fallo anterior pasó 6 meses sin detectarse porque ningún
+  fichero empezaba por un fast-alert (2026-09-24: 33 398 fast-alert de 33 601 filas, y pasó).
+  Arreglo: validar el mínimo de la columna (o todas las filas).
+
+- **DEBT-GATE-VALIDATES-LAB-LOGS-001** — `test-parquet` convierte y valida los CSV de laboratorio acumulados
+  en `/vagrant/logs` (desde febrero), que sobreviven a `vagrant destroy`: el resultado del gate depende del
+  histórico del lab, no de fixtures. Misma familia que DEBT-EMECAS-STALE-BUILD-CACHE-001.
+
+- **Cuarentena DAY281 (para desbloquear EMECAS+++):** movidos (no borrados) a
+  `/vagrant/logs/lab/quarantine_d281/`: `logs/ml-detector/events/2026-09-25.csv` y su
+  `2026-09-25.parquet`. Motivo: la 1.ª fila del CSV es un fast-alert (fallo preexistente, arriba).
+  Revertir cuando se cierre DEBT-FAST-ALERT-MONOTONIC-TIMESTAMP-001.
+
+- **Arreglado DAY281 en la rama:** `test_ddos_kernel_reader` esperaba que `start()` fallara con ruta CSV
+  vacía; `e2cac4b0` (DAY279, `[DDOS-VWIN-D279:CSV-OPTIONAL]`) hizo el CSV opcional a propósito y no
+  actualizó el test. Corregido el test (patcher `patch_kreader_test_csv_optional_d281.py`).
+  Lección: `e2cac4b0` cambió el comportamiento sin pasar el `ctest` del sniffer.

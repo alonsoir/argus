@@ -65,23 +65,53 @@ DEBT-DDOS-HEAD-SCALED-THRESHOLDS-RAW-INPUT-001 (P0), DEBT-DDOS-HEAD-CONSTANT-FEA
 DEBT-DDOS-DUAL-SERVE-DEFINITIONS-001, DEBT-DDOS-HEAD-MIXED-SCOPE-VECTOR-001,
 DEBT-DDOS-HEAD-SCORES-FAST-ALERTS-001, DEBT-ML-DETECTOR-EVENT-PER-PACKET-001.
 
-## 2. Siguiente sesión (orden propuesto)
+## 2. Orden ACORDADO (Alonso, DAY281)
 
-1. Estado de git (§0). Si el merge está hecho, abrir **rama nueva** para el rediseño de la cabeza DDoS
-   (los rediseños no van en `docs/ml-heads-grieta-b`).
-2. **Decisión de diseño antes de tocar código** (candidata a Consejo de Sabios): ¿cuál es LA definición
-   única de los 9 rasgos, compartida train/serve?
-  - ¿(a) la del sniffer (`ddos_embedded`, con aggregator) o (b) la del ml-detector (campos de flujo)?
-    Hoy existen las dos con el mismo nombre.
-  - Escalado: aplicar el scaler en serve, o exportar umbrales en unidades crudas. Nunca mezclar.
-  - Rasgos constantes (disp, protocol): definirlos de verdad o sacarlos del contrato (como geo).
-  - "Escalation" con sentido real: ¿desde la ventana por víctima del kernel, relativa a su línea base?
-    CUIDADO lección DAY255: cambiar la definición en serve sin reentrenar crea skew.
-  - Entrenamiento: sintético frente a CICDDoS2019 (Fase 2, Path A/B de memoria).
-3. Fast-alert: ratificar la propuesta de no evaluarlos con cabezas de flujo (74 % de eventos del flood).
-4. Opcional, confirma la tesis: FP sobre ambiente real, con la predicción escrita de que los FP son
-   flujos de caudal > ~13 KB/s (`d281_esc_bins_flow.sh` con regex por IP).
-5. Después de las cabezas: fusión (L411) y que el firewall obedezca `final_decision` (L583).
+Antes de nada: estado de git (§0). Si el merge está hecho, abrir **rama nueva** para el rediseño de
+la cabeza DDoS (los rediseños no van en `docs/ml-heads-grieta-b`).
+
+1. **Observabilidad**: que el ml-detector registre SIEMPRE la puntuación de cada cabeza por evento
+   (L1, DDoS, ransomware, traffic, internal, fast). Barato, independiente de lo demás y prerrequisito
+   para medir todo lo posterior y para la fusión. Relacionado: DEBT-ML-DETECTOR-VERDICT-LOG-IS-L1-001.
+
+2. **Contrato de la cabeza DDoS**: UNA sola definición de los rasgos, compartida train/serve.
+    - **Dónde se calculan: preferencia de Alonso = el SNIFFER** (el ml-detector ya está sobrecargado,
+      DEBT-ML-DETECTOR-LAG-UNDER-LOAD-001), **condicionada a que sea factible al 100 %** con lo que el
+      sniffer tiene. NO darlo por hecho. Primer paso = inventario MEDIDO, con predicción escrita antes:
+      qué hay disponible en el punto de extracción del sniffer (`FlowStatistics`: spkts/dpkts,
+      sbytes/dbytes, duración, `all_lengths`, IAT, flags; el `TimeWindowAggregator`; la ventana por
+      víctima del kernel `ddos_victims`) frente a lo que necesita cada rasgo.
+    - Ventaja si es el sniffer: el dataset de train se genera con EL MISMO código, replayando pcaps
+      (CICDDoS2019) por el sniffer y recogiendo `ddos_embedded` (método de replay DAY270 ya medido).
+      Sin reimplementar el extractor en Python ⇒ skew imposible por construcción.
+    - Consecuencia: el ml-detector deja de recalcular (`extract_level2_ddos_features`) y consume
+      `ddos_embedded` del proto. Se retira la definición duplicada (DEBT-DDOS-DUAL-SERVE-DEFINITIONS-001).
+    - Riesgos a medir: coste en el hot path del sniffer; ~1 evento por paquete
+      (DEBT-ML-DETECTOR-EVENT-PER-PACKET-001); acople con el aggregator de ransomware y su cap de
+      10 000 (grieta B).
+    - El sniffer produce un contrato de rasgos único y versionado; cada cabeza toma su subconjunto.
+      NO recortar el sniffer "a medida de esta cabeza": lo que no use DDoS puede servir a otra.
+    - **Sin scaler**: un bosque aleatorio es invariante a la escala. Entrenar sin MinMaxScaler y exportar
+      umbrales en crudo elimina DEBT-DDOS-HEAD-SCALED-THRESHOLDS-RAW-INPUT-001 de raíz.
+    - "Escalation" con sentido real (¿desde la ventana por víctima, relativa a su línea base?).
+      CUIDADO lección DAY255: cambiar la definición en serve sin reentrenar crea skew.
+    - Quitar 2-3 rasgos y reentrenar con el generador sintético NO basta: escalation seguiría
+      significando otra cosa en train. El arreglo es el contrato + dataset calculado por el extractor de serve.
+
+3. **Reentrenar y medir importancias**; SOLO entonces decidir qué rasgos sobran. Los constantes
+   (disp, protocol) casi seguro fuera; saturation NO se quita a priori (hoy está muerto por el
+   escalado; con definición coherente puede vivir).
+
+4. **Fast-alert**: NO quitarlo del sniffer (es la detección rápida de capa 1, señal propia; ya aparece
+   como `fast=` en el DUAL-SCORE). Dejar de enrutarlo por las cabezas de flujo (74 % de eventos del
+   flood con vector vacío) y que entre en la fusión como una puntuación más.
+
+5. **Fusión y firewall**: fórmula final con las puntuaciones de todas las cabezas (L411) y que el
+   firewall obedezca `final_decision` (L583). Va al final a propósito: dar pesos a una cabeza que hoy
+   es un umbral de caudal haría que la fórmula compense un defecto en vez de combinar señales.
+
+Opcional (confirma la tesis): FP sobre ambiente real, con la predicción escrita de que los FP son
+flujos de caudal > ~13 KB/s (`d281_esc_bins_flow.sh` con regex por IP).
 
 Siguen abiertas de DAY279-280: DEBT-FIREWALL-GATES-ON-LEVEL1-001 (P0),
 DEBT-ML-DETECTOR-VERDICT-LOG-IS-L1-001, DEBT-FAST-DETECTOR-REASON-MISMATCH-001,
