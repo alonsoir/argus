@@ -6297,3 +6297,91 @@ fixtures `test_csv_feature_extraction`, `test_rag_logger_artifact_save` y el `0.
 
 **Bloqueante:** deprecación del artefacto RAG (evento externo, sin ejecutar). Ortogonal a
 la cabeza DDoS — ni Fase 1 ni Fase 2. No tocar antes: geo sigue viva mientras exista col 83.
+
+## DAY281 — Cabeza DDoS: qué mide de verdad `traffic_escalation_rate`
+
+Punto 1 del plan DAY280 CERRADO (fórmula serve leída y verificada contra el log al decimal).
+Todo cruce por `seq` de `[VICTIM-WINDOW]` o por la línea `Flow:`; nunca por hora.
+
+### Nuevas (P0 de la cabeza DDoS)
+
+- **DEBT-DDOS-HEAD-ESCALATION-TRAIN-SERVE-SEMANTICS-001 (P0)** — misma etiqueta, otra magnitud.
+  - Train (`SyntheticDDOSGenerator.py:28,59,68,98`): "tasa de crecimiento" sintética.
+    Normal N(0,05; 0,02); ataque lognormal(1,2; 0,3) / (0,8; 0,3) / (0,6; 0,3) (medianas ≈ 3,3 / 2,2 / 1,8).
+  - Serve (`ml-detector/src/feature_extractor.cpp`, `extract_level2_ddos_features`, índice [7]):
+    `flow_bytes_per_second / 1e6`. Verificado: 46,314 pps × 482 B = 22 323 B/s → 0,0223 (log: 0,022).
+  - Es el rasgo de mayor importancia del bosque (0,33, DAY255). Mismo patrón que geo (DAY255), peor:
+    no es un centinela, es otra magnitud.
+
+- **DEBT-DDOS-HEAD-SCALED-THRESHOLDS-RAW-INPUT-001 (P0)** — `GenerateDDOSCPPForest.py`
+  (`normalize_thresholds`, L11-30, L269-270) pasa cada umbral por el `MinMaxScaler` de train; el
+  ml-detector compara esos umbrales con valores CRUDOS sin escalar. Afecta a los 9 rasgos.
+  - Rasgo 7 (escalation): 64 splits, 0,0038–0,0134, mediana 0,0059 ⇒ frontera efectiva en serve =
+    **3,8–13,4 KB/s de caudal por flujo**. `tree_1`: `escalation <= 0.0057` con hojas puras 0/1 = el
+    "solape ~0,006" de DAY280.
+  - Rasgo 8 (saturation): 37 splits, 0,166–0,471; serve ≈ 0,001 ⇒ siempre rama "normal" (muerto).
+  - `ddos_scaler.pkl` no está trackeado (solo en el sandbox de la manivela).
+  - Herramienta: `scripts/d281_hpp_thr.sh [IDX]`.
+
+- **DEBT-DDOS-HEAD-CONSTANT-FEATURES-001** — en el extractor del ml-detector:
+  `disp = normalize(1,0,10) = 0,1` (constante) y `protocol = (1.0 > 5) ? 1 : 0 = 0` (constante).
+  La cabeza trabaja con 7 rasgos efectivos. Los constantes NO son neutros: fijan la ruta
+  (`tree_0` raíz `protocol_anomaly_score <= 0,306` → siempre izquierda).
+
+- **DEBT-DDOS-DUAL-SERVE-DEFINITIONS-001** — dos definiciones serve de los 9 rasgos con el mismo nombre:
+  (a) sniffer `ddos_embedded` (`ml_defender_features.cpp:35-36`, fórmulas con aggregator), consumida
+  solo por el detector propio del sniffer (`ring_consumer.cpp:1480-1496`); (b) ml-detector
+  `extract_level2_ddos_features(nf)` desde campos genéricos de flujo, que es LO QUE COME EL BOSQUE
+  (`zmq_handler.cpp:581-605`, verificado: `Features{...}` se construye desde `ddos_features_vec`).
+  **CORRIGE conclusiones previas:**
+  - DAY261-263 "productor y consumidor leen por nombre del proto": falso para el consumidor ML.
+  - DAY272 "disp clavada en 0,100 por el cap de 10 000 del aggregator": es `normalize(1,0,10)` hardcodeado.
+  - Grieta B (`source_ip_dispersion` con `log2(uniq+1)/log2(ev+2)`) trabajó sobre la definición (a),
+    que la cabeza ML no consume.
+
+- **DEBT-DDOS-HEAD-MIXED-SCOPE-VECTOR-001** — dentro del MISMO vector conviven alcances:
+  escalation usa el flujo acumulado; saturation y symmetry usan `total_forward_packets` (=1).
+  Evento `12514083606146_51`: `Packets: 1`, `Duration 0,410 s`, `Flow Packets/s 46,31` (≈19 pkts),
+  `Fwd IAT Min 8,4 s`. Amplía DEBT-FLOW-COUNTS-SCOPE-MISMATCH-001.
+
+- **DEBT-DDOS-HEAD-SCORES-FAST-ALERTS-001** — los fast-alert (vector vacío) pasan por la cabeza de
+  flujo: 4 703 de 6 361 eventos del mini flood (74 %), todos `class=0`; con vector 0 un fast-alert
+  sacó `ddos_prob = 0,4717` (a un paso del umbral).
+  PROPUESTA (pendiente de ratificar): no evaluar fast-alert con cabezas de flujo.
+
+- **DEBT-ML-DETECTOR-EVENT-PER-PACKET-001** — ≈ 1 evento por paquete de ingreso en un único flujo TCP
+  (121 eventos / ~120 KB; 3 005 / ~3 MB). Un flujo legítimo = miles de alarmas. Orden de magnitud
+  (totales parciales).
+
+### Cambios de estado
+
+- DEBT-FAST-ALERT-EMPTY-FEATURES-001 → CONFIRMADA: fast-alert = `Packets: 0`, 23 rasgos L1 a 0,
+  rasgos DDoS a 0 (no NaN) → son los "4 653 todo a 0" de DAY280.
+- DEBT-DDOS-HEAD-UNIDIRECTIONAL-UDP-001 → REFORMULAR/CERRAR: el disparo es por caudal por flujo,
+  no por UDP unidireccional ni por "1 paquete".
+
+### Higiene (menor)
+
+- `extract_ddos_traffic_escalation_rate` del sniffer: nombre y comentario ("how quickly traffic volume
+  increases") no corresponden a la fórmula (`min(pps/1000, 1)`).
+- Comentarios "10 features" en `feature_extractor.cpp:222` y `contract_validator.cpp:80` (son 9).
+- `ml-detector/src/main.cpp:307`: `traffic_escalation_rate = 0.5f` (sin revisar; parece autotest).
+
+### Medidas DAY281 (por seq / por Flow)
+
+| Episodio | Resultado |
+|---|---|
+| Mini flood (seq 4814–4874) | FAST 4 703 → 0,000/c0. NORM: 0,000 37 c0; 0,001–0,003 128 c0; 0,004–0,013 317 c0 / 487 c1; ≥0,014 689 c1. **Recall NORM 70,9 %; sobre todos 18,5 %** |
+| DNS 200 clientes (seq 2127–2247) | 2 352 NORM → 0,000/c0 (0 FP) |
+| Subida TCP legítima client→defender:9000, 2 KB/s | 121 NORM → 0,001–0,003/c0 |
+| Subida TCP legítima client→defender:9000, 50 KB/s | 3 005 NORM → ≥0,014/**c1 (100 % FP)** |
+
+- El sink recibió 122 880 y 3 072 000 B completos: el firewall no bloqueó pese a 3 005 veredictos
+  DDoS (coherente con DEBT-FIREWALL-GATES-ON-LEVEL1-001).
+- Totales de la subida parciales (log aún creciendo); proporciones 100/100 sin tramo mezclado.
+- Frase honesta para el paper: "una subida TCP legítima de 50 KB/s es clasificada como DDoS en el 100 %
+  de sus eventos; la frontera efectiva de la cabeza es un caudal por flujo de ~4–13 KB/s".
+
+Artefactos: `scripts/d281_hpp_thr.sh`, `d281_esc_bins.sh`, `d281_esc_bins_flow.sh`,
+`d281_tcp_sink.py`, `d281_tcp_upload.py`; logs `/vagrant/logs/lab/d281_*`,
+`d281_ml_detector_pre_upload.log` (log DAY280 completo: DNS + mini flood).
