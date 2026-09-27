@@ -1,0 +1,967 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source embedded-ML NDR for hospitals and schools">
+      
+      
+        <meta name="author" content="Alonso Isidoro Roman">
+      
+      
+        <link rel="canonical" href="https://alonsoir.github.io/argus/council/ADR-043%20respuesta%20deepseek/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>ADR 043 respuesta deepseek - ML Defender (aRGus NDR)</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#puntos-resueltos-satisfactoriamente" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-header__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ML Defender (aRGus NDR)
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              ADR 043 respuesta deepseek
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../README.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/BACKLOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Backlog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Security Model
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-tabs__link">
+          
+  
+  
+  ADRs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/contracts/Protobuf contracts.md" class="md-tabs__link">
+          
+  
+  
+  Contracts
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-nav__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ML Defender (aRGus NDR)
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../README.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/BACKLOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADRs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ADRs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013 Seed Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-021-deployment-topology-seed-families.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-021 Topology SSOT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-022-threat-model-opcion2-descartada.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-022 Threat Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Protobuf contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protobuf
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/JSON contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JSON
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Rag security commands.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#puntos-resueltos-satisfactoriamente" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Puntos resueltos satisfactoriamente
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#recomendaciones-complementarias-no-bloqueantes-para-futuras-revisiones-o-ejecucion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Recomendaciones complementarias (no bloqueantes, para futuras revisiones o ejecución)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Recomendaciones complementarias (no bloqueantes, para futuras revisiones o ejecución)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-almacenamiento-de-los-lotes-crudos-como-fuente-de-verdad-event-sourcing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Almacenamiento de los lotes crudos como fuente de verdad (event sourcing)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-deteccion-proactiva-de-lotes-perdidos" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Detección proactiva de lotes perdidos
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-unica-emision-por-periodo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Única emisión por periodo
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-escalabilidad-de-la-ingesta-a-largo-plazo-advertencia" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Escalabilidad de la ingesta a largo plazo (advertencia)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#veredicto" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Veredicto
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+  <h1>ADR 043 respuesta deepseek</h1>
+
+<p>El Consejo de Sabios saluda a Alonso Isidoro Román y agradece la rápida iteración. La versión 3 del ADR-0043 es un salto cualitativo considerable. Se han abordado las principales preocupaciones de coherencia, identidad e idempotencia con soluciones elegantes y bien fundamentadas. El documento transmite ahora solidez y un pensamiento distribuido maduro.</p>
+<p>Procedo a desglosar mi dictamen:</p>
+<h2 id="puntos-resueltos-satisfactoriamente">Puntos resueltos satisfactoriamente</h2>
+<ul>
+<li><strong>Identidad estable de entidades (D2)</strong>. Usar la MAC como campo primario y la jerarquía <em>MAC → hostname → IP</em> es la decisión correcta para entornos gestionados de infraestructura crítica. El matiz de etiquetar los <em>fallbacks</em> a IP como <code>NetworkPresence</code> en lugar de <code>Host</code> es una muestra de rigor semántico que evitará dolores de cabeza analíticos. Bien resuelto.</li>
+<li><strong>Idempotencia (D4a, D5)</strong>. La clave de idempotencia basada en la propia firma del batch determinista, junto con el <code>MERGE</code> sobre el nodo <code>Batch</code>, es una solución impecable. Elimina cualquier ambigüedad sobre reintentos causados por conectividad intermitente. La verificación previa (<em>IF EXISTS... SKIP</em>) antes de tocar el grafo minimiza el trabajo inútil en el servidor central.</li>
+<li><strong>Ordenación temporal sin aristas (D5)</strong>. Eliminar la relación <code>PRECEDES</code> y utilizar la comparación lexicográfica del campo <code>period</code> (ISO 8601) es una simplificación valiente y técnicamente correcta. Reduce la complejidad del grafo, mejora el rendimiento y evita problemas de ordenación entre nodos de una misma instalación. La consulta de ejemplo es clara y demuestra que no se pierde funcionalidad.</li>
+<li><strong>Timestamps UTC (D4b, Restricciones)</strong>. La decisión taxativa de usar <em>epoch nanoseconds int64 UTC</em> sin timezone ni formato local es ejemplar para un sistema distribuido global. Evita ambigüedades y simplifica la lógica de comparación en todos los componentes.</li>
+<li><strong>Rotación de K_pseudo con <code>PREVIOUS_IDENTITY</code> (D3)</strong>. La introducción de una relación que vincule la identidad antigua con la nueva durante una rotación es una estrategia de migración perezosa muy apropiada. Evita reescribir históricos masivos y mantiene trazabilidad. La coordinación con el drenado de batches en vuelo está correctamente señalada como deuda pendiente.</li>
+<li><strong>Flujo de derecho al olvido (D8)</strong>. Incluir desde el diseño un comando firmado de borrado, con auditoría certificada, demuestra previsión regulatoria y técnica. Es la base correcta sobre la que construir la validación jurídica.</li>
+</ul>
+<h2 id="recomendaciones-complementarias-no-bloqueantes-para-futuras-revisiones-o-ejecucion">Recomendaciones complementarias (no bloqueantes, para futuras revisiones o ejecución)</h2>
+<p>Aunque el ADR está ya en un estado excelente para proceder, mi responsabilidad como <em>sabio</em> es señalar grietas que podrían manifestarse con escala o en escenarios de fallo prolongado. Las enumero para que se consideren en la fase de implementación o en un ADR de detalle.</p>
+<h3 id="1-almacenamiento-de-los-lotes-crudos-como-fuente-de-verdad-event-sourcing">1. Almacenamiento de los lotes crudos como fuente de verdad (event sourcing)</h3>
+<p>El batch mensual que llega al servidor central es un artefacto valiosísimo: inmutable, firmado y con todos los datos para reconstruir el estado del grafo Neo4j. Actualmente, el ADR asume que, si el ingestor falla, se reintenta desde el nodo (gracias a ZeroMQ). Pero ¿qué ocurre si el propio cluster Neo4j sufre un desastre y no hay backup, o si se necesita reprocesar meses de datos tras corregir un bug en la lógica de ingesta?</p>
+<p>Recomendaría <strong>exigir que el batch se persista en un almacenamiento de objetos duradero y barato</strong> (tipo MinIO, o incluso un volumen NFS) <strong>antes de invocar el pipeline de ingesta</strong>. Esto proporciona:
+- Una copia de seguridad cruda e inmutable de toda la memoria episódica enviada.
+- La capacidad de reconstruir el grafo desde cero sin depender de los nodos edge, que a los 30 días habrán rotado sus SQLite.
+- Una vía sencilla de auditoría y verificación independiente.</p>
+<p>Dado que los lotes son mensuales y tienen un tamaño acotado, el coste es mínimo y el beneficio en resiliencia es enorme. No es necesario un ADR completo, pero sí una línea en las decisiones: <em>"Los batches se escriben en almacenamiento duradero antes de su ingesta. Este almacenamiento es la fuente de verdad para disaster recovery del grafo Neo4j."</em></p>
+<h3 id="2-deteccion-proactiva-de-lotes-perdidos">2. Detección proactiva de lotes perdidos</h3>
+<p>La pregunta abierta <strong>OQ-1</strong> atañe a la conectividad intermitente; pero el problema más grave no es cómo se reintenta, sino cómo se detecta que un nodo <em>nunca</em> ha enviado su lote del mes. Con un horizonte de 30 días en SQLite, si un nodo queda aislado durante 31 días por una negligencia operativa, los datos se pierden para siempre sin que nadie lo sepa.</p>
+<p>El sistema debería incluir un <strong>cronómetro de expectativa de lote</strong> en el servidor central o en los observers etcd. Por ejemplo:
+- El servidor central sabe qué nodos existen y qué instalaciones. Para el día 5 del mes siguiente, si no se ha registrado un <code>Episode</code> para un <code>node_id</code> dado en el periodo anterior, se emite una alerta.
+- O bien, los propios nodos envían un pequeño heartbeat (apenas unos bytes) a través del mismo canal ZeroMQ cuando generan el lote, permitiendo monitorizar el extremo emisor.</p>
+<p>Esto no requiere una decisión arquitectónica compleja, pero sí incluir un ítem en la sección de deuda técnica u operativa para no depender únicamente de la buena voluntad de la red.</p>
+<h3 id="3-unica-emision-por-periodo">3. Única emisión por periodo</h3>
+<p>La clave de idempotencia garantiza que un mismo lote no se procese dos veces, pero no impide que un nodo, por error de configuración o reinicio inesperado, genere <em>dos lotes distintos</em> para el mismo mes (con contenido ligeramente diferente) y los envíe ambos. Sus firmas serán distintas, por lo que el servidor los consideraría dos meses distintos y crearía entidades duplicadas o inconsistentes.</p>
+<p>Conviene añadir una restricción: <strong>cada nodo emite exactamente un batch por periodo de facturación</strong>. Si se intenta ingerir un segundo batch distinto para el mismo <code>(node_id, period)</code>, el sistema debe rechazarlo con un error explícito (usando el nodo <code>Episode</code> como testigo). La lógica actual ya contiene <code>MERGE (e:Episode {period, node_id, installation})</code> — eso impide duplicar el episodio, pero no impide que el segundo lote intente añadir relaciones OBSERVED_IN adicionales desde entidades existentes. Haría falta un candado por periodo: <em>“si Episode ya existe y el batch entrante tiene distinta signature, rechazar con conflicto”</em>. Es un detalle de implementación, pero que protege la coherencia.</p>
+<h3 id="4-escalabilidad-de-la-ingesta-a-largo-plazo-advertencia">4. Escalabilidad de la ingesta a largo plazo (advertencia)</h3>
+<p>Controlado el volumen para el alcance FEDER. No obstante, si el sistema escala a cientos de instalaciones, la ingesta mensual concurrente de grandes lotes con múltiples <code>MERGE</code> individuales puede generar contención en el líder de Neo4j. La recomendación anterior de particionar por instalación (vía bases de datos virtuales en Neo4j 4.4+ o Aura) sigue siendo válida y encaja con la soberanía de datos: cada instalación podría tener su propia base de datos lógica, y los análisis cross-instalación se harían con consultas federadas o cubos OLAP. No es necesario ahora, pero una nota marginal ayudaría a los futuros mantenedores.</p>
+<h2 id="veredicto">Veredicto</h2>
+<p>La versión 3 es <strong>técnicamente consistente, jurídicamente prudente y operativamente clara</strong>. Las decisiones D2-D8 forman un núcleo sólido que resuelve los problemas distribuidos más espinosos (identidad, orden, idempotencia) sin sobrecargar el diseño. Las deudas y la pregunta abierta reflejan madurez en la gestión de riesgos.</p>
+<p><strong>Dictamen: Aprobado para pasar a la fase de implementación de los pasos 1-5, con la recomendación de incorporar el almacenamiento de batches crudos (punto 1) y la detección de omisión de lotes (punto 2) en el diseño detallado del pipeline de ingesta.</strong></p>
+<p>Quedo a disposición para el análisis de los esquemas Parquet cuando se validen contra los CSVs reales.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.top", "search.highlight"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

@@ -1,0 +1,1255 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source embedded-ML NDR for hospitals and schools">
+      
+      
+        <meta name="author" content="Alonso Isidoro Roman">
+      
+      
+        <link rel="canonical" href="https://alonsoir.github.io/argus/council/ADR-042-incident-response-recovery-protocol-respuesta-kimi-V2/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>ADR 042 incident response recovery protocol respuesta kimi V2 - ML Defender (aRGus NDR)</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#kimi-revision-adversarial-adr-042-v2" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-header__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ML Defender (aRGus NDR)
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              ADR 042 incident response recovery protocol respuesta kimi V2
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../README.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/BACKLOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Backlog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Security Model
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-tabs__link">
+          
+  
+  
+  ADRs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/contracts/Protobuf contracts.md" class="md-tabs__link">
+          
+  
+  
+  Contracts
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-nav__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ML Defender (aRGus NDR)
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../README.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/BACKLOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADRs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ADRs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013 Seed Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-021-deployment-topology-seed-families.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-021 Topology SSOT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-022-threat-model-opcion2-descartada.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-022 Threat Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Protobuf contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protobuf
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/JSON contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JSON
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Rag security commands.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#kimi-revision-adversarial-adr-042-v2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Kimi — Revisión Adversarial — ADR-042 v2
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#veredicto-global" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Veredicto Global
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#fallos-persistentes-v2-no-resuelve" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fallos Persistentes (v2 no resuelve)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Fallos Persistentes (v2 no resuelve)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#f1-ip-link-set-down-no-aisla-el-atacante-ya-esta-dentro" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        F1 — ip link set down no aísla: el atacante ya está dentro
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#f2-argus-standby-ping-sin-autenticacion-amplificacion-del-compromiso" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        F2 — argus-standby-ping sin autenticación: amplificación del compromiso
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#f3-rf-embedded-con-f1097-degradacion-inaceptable-no-cuantificada" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        F3 — RF embedded con F1=0.97: degradación inaceptable no cuantificada
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#mejoras-confirmadas-v1-v2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Mejoras Confirmadas (v1 → v2)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#nuevos-problemas-introducidos-en-v2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Nuevos Problemas Introducidos en v2
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Nuevos Problemas Introducidos en v2">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#n1-remainafterexityes-en-systemd-unit-comportamiento-no-determinista" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        N1 — RemainAfterExit=yes en systemd unit: comportamiento no determinista
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#n2-execstoppre-no-existe-en-systemd" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        N2 — ExecStopPre no existe en systemd
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#n3-systemctl-poweroff-en-execstoppost-requiere-privilegios" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        N3 — systemctl poweroff en ExecStopPost requiere privilegios
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#tests-de-cierre-revisados" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Tests de Cierre Revisados
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#conexion-con-el-paper" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Conexión con el Paper
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#resumen-de-posiciones-kimi" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Resumen de Posiciones — Kimi
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+  <h1>ADR 042 incident response recovery protocol respuesta kimi V2</h1>
+
+<h2 id="kimi-revision-adversarial-adr-042-v2">Kimi — Revisión Adversarial — ADR-042 v2</h2>
+<p><em>Evaluación crítica bajo criterios de resistencia a adversarios sofisticados, operabilidad 24/7 en hospitales sin personal de seguridad dedicado, y trazabilidad forense judicial.</em></p>
+<hr />
+<h2 id="veredicto-global">Veredicto Global</h2>
+<p><strong>ADR-042 v2 es una mejora sustancial sobre v1.</strong> Los 7 fallos graves identificados en la revisión anterior han sido corregidos o mitigados. Sin embargo, persisten <strong>3 fallos de diseño arquitectónico</strong> que hacen el protocolo inoperable en producción hospitalaria real sin modificaciones mayores. El ADR es <strong>aprobable como visión estratégica</strong>, pero <strong>no implementable tal cual</strong> para FEDER.</p>
+<hr />
+<h2 id="fallos-persistentes-v2-no-resuelve">Fallos Persistentes (v2 no resuelve)</h2>
+<h3 id="f1-ip-link-set-down-no-aisla-el-atacante-ya-esta-dentro">F1 — <code>ip link set down</code> no aísla: el atacante ya está dentro</h3>
+<p><strong>Problema:</strong> La Capa 2 propone <code>ip link set eth0 down</code> como aislamiento de red. Esto es <strong>ilusorio</strong> si el compromiso del OS es real. Un atacante con root en el sistema puede:</p>
+<ol>
+<li><strong>Reactivar la interfaz</strong> inmediatamente: <code>ip link set eth0 up</code> (el atacante corre como root, puede revertir la acción)</li>
+<li><strong>Usar interfaces no monitoreadas</strong>: <code>lo</code>, <code>docker0</code>, <code>virbr0</code>, interfaces de túnel creadas dinámicamente</li>
+<li><strong>Exfiltrar datos por side-channels</strong>: timing de LEDs, ultrasonido de ventiladores, o simplemente escribir a disco y esperar a que el admin monte el disco en otro sistema</li>
+</ol>
+<p><strong>Alternativa industrial:</strong> <strong>Hardware-level network kill switch</strong> o <strong>BMC/IPMI power control</strong> con credenciales separadas. Ejemplo: Dell iDRAC permite cortar alimentación de NIC independientemente del OS. En commodity hardware, <strong>unmanaged switch con port security</strong> que el admin desconecte físicamente.</p>
+<p><strong>Recomendación:</strong> Documentar explícitamente que <code>ip link set down</code> es <strong>best-effort</strong> y no constituye aislamiento efectivo contra un atacante con root. El aislamiento real requiere:</p>
+<pre><code class="language-bash"># Opción A: hardware-level (requiere switch administrado o BMC)
+# Opción B: eBPF/XDP drop-all en la NIC (el atacante necesitaría recompilar el programa eBPF)
+# Opción C: iptables drop-all en mangle/PREROUTING y mangle/POSTROUTING con reglas numeradas 1
+#           (el atacante necesitaría flush de iptables, detectable por Falco)
+
+# Implementación C (mejor que ip link down):
+iptables -t mangle -I PREROUTING 1 -j DROP
+iptables -t mangle -I POSTROUTING 1 -j DROP
+ip6tables -t mangle -I PREROUTING 1 -j DROP
+ip6tables -t mangle -I POSTROUTING 1 -j DROP
+# Esto dropa paquetes en kernel space, antes de que lleguen a userspace
+# El atacante necesitaría modificar iptables (detectado por Falco)
+# o modificar el kernel (requiere módulo, detectado por module load rules)
+</code></pre>
+<p><strong>Nota:</strong> Incluso iptables es reversible por root. La única defensa efectiva es <strong>hardware externo</strong> o <strong>hypersvisor-level isolation</strong> (si la VM corre en KVM, el host puede pausar la VM).</p>
+<hr />
+<h3 id="f2-argus-standby-ping-sin-autenticacion-amplificacion-del-compromiso">F2 — <code>argus-standby-ping</code> sin autenticación: amplificación del compromiso</h3>
+<p><strong>Problema:</strong> El script <code>argus-standby-ping --timeout=3</code> verifica disponibilidad pero <strong>no verifica integridad</strong>. Si el atacante ha comprometido el nodo principal, puede haber comprometido el standby previamente (por ejemplo, via etcd, ZeroMQ, o una vulnerabilidad compartida). El ping solo dice "el standby responde", no "el standby es íntegro".</p>
+<p><strong>Alternativa industrial:</strong> <strong>Quorum criptográfico</strong> antes de failover. Ejemplo: Consul raft requiere mayoría de nodos para elegir líder. Cada nodo debe demostrar integridad via hash de binarios firmado.</p>
+<p><strong>Recomendación:</strong> <code>argus-standby-ping</code> debe ser <code>argus-standby-attest</code> y requerir:</p>
+<pre><code class="language-bash">argus-standby-attest() {
+    # 1. Solicitar attestación criptográfica del standby
+    # 2. Verificar firma Ed25519 del standby sobre su propio hash de binarios
+    # 3. Comparar hash contra baseline conocido
+    # 4. Solo si coincide, considerar &quot;disponible e íntegro&quot;
+
+    # Implementación simplificada (sin TPM):
+    STANDBY_HASH=$(ssh standby /usr/local/bin/argus-self-hash)
+    EXPECTED_HASH=$(cat /var/lib/argus/standby-baseline.sha256)
+
+    if [ &quot;$STANDBY_HASH&quot; = &quot;$EXPECTED_HASH&quot; ]; then
+        echo &quot;STANDBY_ATTEST_OK&quot;
+        return 0
+    else
+        echo &quot;STANDBY_ATTEST_FAIL: hash mismatch&quot;
+        return 1
+    fi
+}
+</code></pre>
+<p><strong>Sin esto:</strong> El protocolo promueve un standby potencialmente comprometido, violando P4.</p>
+<hr />
+<h3 id="f3-rf-embedded-con-f1097-degradacion-inaceptable-no-cuantificada">F3 — RF embedded con F1=0.97: degradación inaceptable no cuantificada</h3>
+<p><strong>Problema:</strong> El ADR asume que RandomForest embedded tiene F1≈0.97 como fallback. <strong>Este número no está validado.</strong> Si RF embedded tiene F1=0.85 (plausible si fue entrenado con menos datos o features simplificadas), el "fallback" es una <strong>falsa sensación de seguridad</strong>.</p>
+<p><strong>Alternativa industrial:</strong> <strong>Graceful degradation con threshold de aceptación.</strong> Ejemplo: si el fallback no alcanza F1≥0.995, el sistema entra en modo "alert-only" (detecta pero no bloquea automáticamente) en lugar de "auto-remediate".</p>
+<p><strong>Recomendación:</strong> Antes de declarar RF embedded como fallback válido, ejecutar:</p>
+<pre><code class="language-bash"># test_rf_fallback.sh — gate obligatorio antes de merge de ADR-042
+./argus-ml-detector --mode=rf-embedded --test-golden-set
+# Salida esperada: F1, Recall, FPR, latency_p99
+
+# Criterio de aceptación para fallback:
+# F1 ≥ 0.995 (no 0.97)
+# Recall ≥ 0.999 (no puede perder ataques)
+# FPR ≤ 0.01% (tolerable para alert-only, no para auto-block)
+# Latencia p99 ≤ 10 ms (no puede saturar el pipeline)
+</code></pre>
+<p>Si RF embedded no alcanza estos umbrales, el fallback debe ser <strong>"alert-only mode"</strong> (sniffer detecta, admin decide) en lugar de <strong>"auto-block with degraded model"</strong>.</p>
+<hr />
+<h2 id="mejoras-confirmadas-v1-v2">Mejoras Confirmadas (v1 → v2)</h2>
+<table>
+<thead>
+<tr>
+<th>Fallo v1</th>
+<th>Corrección v2</th>
+<th>Estado</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Poweroff sin aislamiento</td>
+<td><code>ip link set down</code> + secuencia jerárquica</td>
+<td>✅ Corregido (aunque ver F1)</td>
+</tr>
+<tr>
+<td>Webhook best-effort silencioso</td>
+<td>Store-and-forward + cola persistente</td>
+<td>✅ Corregido</td>
+</tr>
+<tr>
+<td>Forensics en sistema comprometido</td>
+<td>initramfs read-only</td>
+<td>✅ Corregido</td>
+</tr>
+<tr>
+<td>Fallback sin métricas</td>
+<td>F1=0.97 documentado (ver F3)</td>
+<td>⚠️ Parcial</td>
+</tr>
+<tr>
+<td>GDPR SaaS externo</td>
+<td>On-premise obligatorio + PII redaction</td>
+<td>✅ Corregido</td>
+</tr>
+<tr>
+<td><code>make safe-mode</code> dependencia circular</td>
+<td>initramfs + GRUB entry</td>
+<td>✅ Corregido</td>
+</tr>
+<tr>
+<td>Auto-promote standby</td>
+<td>Verificación manual obligatoria</td>
+<td>✅ Corregido</td>
+</tr>
+<tr>
+<td>Reintegración automática</td>
+<td>Post-recovery check + quarantine 24h</td>
+<td>✅ Nuevo en v2</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="nuevos-problemas-introducidos-en-v2">Nuevos Problemas Introducidos en v2</h2>
+<h3 id="n1-remainafterexityes-en-systemd-unit-comportamiento-no-determinista">N1 — <code>RemainAfterExit=yes</code> en systemd unit: comportamiento no determinista</h3>
+<pre><code class="language-ini">[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/local/bin/argus-apt-integrity-check
+</code></pre>
+<p>Con <code>RemainAfterExit=yes</code>, el servicio se considera "activo" incluso después de que el script termine. Si el script falla (exit code ≠ 0), systemd ejecuta <code>FailureAction=poweroff</code>. Pero si el script tiene un bug y nunca termina (por ejemplo, <code>argus-standby-ping</code> cuelga), el servicio se queda en estado "activating" indefinidamente y <strong>nunca ejecuta el poweroff</strong>.</p>
+<p><strong>Recomendación:</strong> Añadir <code>TimeoutStartSec=30</code> y <code>TimeoutStopSec=10</code> para garantizar que el servicio siempre termina.</p>
+<h3 id="n2-execstoppre-no-existe-en-systemd">N2 — <code>ExecStopPre</code> no existe en systemd</h3>
+<p>El ADR usa <code>ExecStopPre</code> que <strong>no es una directiva válida</strong> de systemd. Las directivas correctas son <code>ExecStartPre</code> (antes de ExecStart) y <code>ExecStopPost</code> (después de ExecStop). No hay <code>ExecStopPre</code>.</p>
+<p><strong>Corrección:</strong></p>
+<pre><code class="language-ini">[Service]
+Type=oneshot
+ExecStart=/bin/true  # Placeholder para mantener el servicio &quot;activo&quot;
+ExecStartPre=/usr/bin/journalctl --flush
+ExecStartPre=/usr/bin/logger -p auth.crit &quot;ARGUS IRP-A: APT integrity violation&quot;
+ExecStartPre=/usr/local/bin/argus-irp-notify
+ExecStartPre=/usr/local/bin/argus-network-isolate
+ExecStopPost=/usr/bin/systemctl poweroff  # O mejor: FailureAction=poweroff
+
+# Anti-bootloop
+StartLimitIntervalSec=300
+StartLimitBurst=2
+</code></pre>
+<h3 id="n3-systemctl-poweroff-en-execstoppost-requiere-privilegios">N3 — <code>systemctl poweroff</code> en <code>ExecStopPost</code> requiere privilegios</h3>
+<p>Si el servicio corre como usuario <code>argus</code> (no root), <code>systemctl poweroff</code> fallará con <code>Interactive authentication required</code>. El ADR no especifica el usuario del servicio.</p>
+<p><strong>Recomendación:</strong> El servicio debe correr como root (porque modifica iptables y apaga el sistema), pero con <code>NoNewPrivileges=true</code> y <code>ProtectSystem=strict</code> para limitar la superficie de ataque.</p>
+<hr />
+<h2 id="tests-de-cierre-revisados">Tests de Cierre Revisados</h2>
+<p>Los tests propuestos en el ADR son correctos pero incompletos. Añadir:</p>
+<pre><code class="language-bash"># Test F1: Verificar que el atacante no puede reactivar la red
+make test-irp-network-isolate-resilience
+# Simular: atacante con root ejecuta `ip link set eth0 up`
+# Esperado: Falco detecta el intento, iptables mangle sigue drop-eando
+
+# Test F2: Verificar que standby comprometido no se promueve
+make test-irp-standby-compromised
+# Simular: standby tiene hash de binarios modificado
+# Esperado: argus-standby-attest falla, admin notificado, NO promote
+
+# Test F3: Verificar que RF fallback cumple mínimos
+make test-irp-rf-fallback-quality
+# Ejecutar golden set con RF embedded
+# Esperado: F1 ≥ 0.995, Recall ≥ 0.999, FPR ≤ 0.01%
+</code></pre>
+<hr />
+<h2 id="conexion-con-el-paper">Conexión con el Paper</h2>
+<p>El material de ADR-042 v2 es publicable en arXiv cs.CR con las siguientes condiciones:</p>
+<ol>
+<li><strong>Honestidad sobre limitaciones:</strong> Documentar que <code>ip link set down</code> es best-effort y que el aislamiento real requiere hardware externo o hypervisor.</li>
+<li><strong>Datos empíricos:</strong> Incluir resultados de <code>test-irp-rf-fallback-quality</code> con números reales.</li>
+<li><strong>Comparativa:</strong> Contrastar con soluciones enterprise (CrowdStrike Falcon, SentinelOne) que usan kernel-level isolation (no disponible en open source sin firmas de driver).</li>
+</ol>
+<hr />
+<h2 id="resumen-de-posiciones-kimi">Resumen de Posiciones — Kimi</h2>
+<table>
+<thead>
+<tr>
+<th>Aspecto</th>
+<th>Veredicto v2</th>
+<th>Acción requerida</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Arquitectura general</strong></td>
+<td>Aprobada como visión</td>
+<td>No implementable tal cual para FEDER</td>
+</tr>
+<tr>
+<td><strong>Aislamiento de red (F1)</strong></td>
+<td><code>ip link down</code> insuficiente</td>
+<td>Implementar iptables mangle DROP + documentar limitación</td>
+</tr>
+<tr>
+<td><strong>Attestación standby (F2)</strong></td>
+<td>Ping sin autenticación</td>
+<td>Reemplazar por <code>argus-standby-attest</code> con hash firmado</td>
+</tr>
+<tr>
+<td><strong>Calidad fallback (F3)</strong></td>
+<td>F1=0.97 no validado</td>
+<td>Ejecutar golden set con RF embedded antes de declarar fallback</td>
+</tr>
+<tr>
+<td><strong>systemd unit (N1-N3)</strong></td>
+<td>Errores técnicos</td>
+<td>Corregir <code>ExecStopPre</code> → <code>ExecStartPre</code>, añadir timeouts, especificar usuario root</td>
+</tr>
+<tr>
+<td><strong>Tests de cierre</strong></td>
+<td>Incompletos</td>
+<td>Añadir tests de resiliencia del aislamiento y calidad del fallback</td>
+</tr>
+<tr>
+<td><strong>GDPR</strong></td>
+<td>Correctamente resuelto</td>
+<td>Aprobar sin modificaciones</td>
+</tr>
+<tr>
+<td><strong>Reintegración (P6)</strong></td>
+<td>Correctamente diseñada</td>
+<td>Aprobar sin modificaciones</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Moción:</strong> Propongo que ADR-042 v2 se apruebe como <strong>documento de requisitos</strong> (no de implementación), y que se creen tres ramas de trabajo paralelas:
+1. <code>feature/irp-network-isolate</code> — implementar iptables mangle + tests de resiliencia
+2. <code>feature/irp-standby-attest</code> — implementar attestación criptográfica de standby
+3. <code>feature/irp-rf-fallback</code> — validar RF embedded contra golden set</p>
+<p>Ninguna de estas ramas se mergea a <code>main</code> hasta que los tres gates (F1, F2, F3) pasen.</p>
+<p>— <em>Kimi</em><br />
+<em>Via Appia Quality — La seguridad no se instala. Se diseña.</em></p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.top", "search.highlight"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

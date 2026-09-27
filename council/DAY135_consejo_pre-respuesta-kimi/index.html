@@ -1,0 +1,1337 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source embedded-ML NDR for hospitals and schools">
+      
+      
+        <meta name="author" content="Alonso Isidoro Roman">
+      
+      
+        <link rel="canonical" href="https://alonsoir.github.io/argus/council/DAY135_consejo_pre-respuesta-kimi/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>DAY135 consejo pre respuesta kimi - ML Defender (aRGus NDR)</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#kimi-respuesta-al-consejo-de-sabios-day-135" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-header__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ML Defender (aRGus NDR)
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              DAY135 consejo pre respuesta kimi
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../README.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/BACKLOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Backlog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Security Model
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-tabs__link">
+          
+  
+  
+  ADRs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/contracts/Protobuf contracts.md" class="md-tabs__link">
+          
+  
+  
+  Contracts
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-nav__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ML Defender (aRGus NDR)
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../README.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/BACKLOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADRs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ADRs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013 Seed Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-021-deployment-topology-seed-families.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-021 Topology SSOT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-022-threat-model-opcion2-descartada.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-022 Threat Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Protobuf contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protobuf
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/JSON contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JSON
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Rag security commands.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#kimi-respuesta-al-consejo-de-sabios-day-135" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Kimi — Respuesta al Consejo de Sabios — DAY 135
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Kimi — Respuesta al Consejo de Sabios — DAY 135">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#q1-failureactionreboot-en-argus-apt-integrityservice" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Q1 — FailureAction=reboot en argus-apt-integrity.service
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#q2-debt-seeds-secure-transfer-001" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Q2 — DEBT-SEEDS-SECURE-TRANSFER-001
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#q3-merge-de-featureadr030-variant-a-a-main" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Q3 — Merge de feature/adr030-variant-a a main
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#q4-hardened-redeploy-prod-deploy-seeds-en-el-flujo-diario" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Q4 — hardened-redeploy + prod-deploy-seeds en el flujo diario
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#q5-proximos-pasos-post-merge-day-136" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Q5 — Próximos pasos post-merge (DAY 136)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#resumen-de-posiciones-kimi" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Resumen de posiciones — Kimi
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+  <h1>DAY135 consejo pre respuesta kimi</h1>
+
+<h2 id="kimi-respuesta-al-consejo-de-sabios-day-135">Kimi — Respuesta al Consejo de Sabios — DAY 135</h2>
+<p><em>Evaluación bajo criterios de fail-closed operacional, criptografía de transferencia y priorización de entregables críticos.</em></p>
+<hr />
+<h3 id="q1-failureactionreboot-en-argus-apt-integrityservice">Q1 — <code>FailureAction=reboot</code> en <code>argus-apt-integrity.service</code></h3>
+<p><strong>Hipótesis:</strong> Un nodo cuya cadena de suministro de paquetes está comprometida no puede ser confiable para ninguna operación posterior, incluida la notificación de su propio compromiso.</p>
+<p><strong>Veredicto: APROBADA la filosofía fail-closed. MODIFICADA la implementación: 30 segundos son insuficientes para envío remoto; NO configurable vía etcd/JSON.</strong></p>
+<p><strong>Justificación técnica:</strong></p>
+<p>La decisión de <code>FailureAction=reboot</code> es arquitectónicamente correcta para un sistema de seguridad de red en entornos hospitalarios. Si <code>/etc/apt/sources.list</code> o sus hashes SHA-256 han sido modificados, el atacante ya tiene capacidad de persistencia a nivel de sistema operativo. Permitir que el nodo arranque y se una a la red aRGus (ZeroMQ, etcd) convierte un compromiso local en un compromiso de flota.</p>
+<p><strong>Análisis de los 30 segundos:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Evento</th>
+<th>Tiempo estimado</th>
+<th>¿Ocurre en 30s?</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>systemd</code> detecta fallo del servicio</td>
+<td>&lt; 1s</td>
+<td>Sí</td>
+</tr>
+<tr>
+<td><code>journald</code> escribe entrada persistente</td>
+<td>&lt; 2s</td>
+<td>Sí</td>
+</tr>
+<tr>
+<td>Envío de log vía rsyslog/syslog-ng a central</td>
+<td>5–30s (depende de red)</td>
+<td><strong>A veces no</strong></td>
+</tr>
+<tr>
+<td>Falco detecta la modificación y genera alerta</td>
+<td>1–5s</td>
+<td>Sí</td>
+</tr>
+<tr>
+<td>ZeroMQ pub del nodo a la red</td>
+<td>Variable</td>
+<td>No garantizado</td>
+</tr>
+</tbody>
+</table>
+<p>Los 30 segundos son suficientes para que <code>journald</code> persista el evento en disco (si <code>Storage=persistent</code> está configurado), pero <strong>no son suficientes</strong> para garantizar la entrega remota. La evidencia forense debe residir en el disco local, no depender de la red.</p>
+<p><strong>Configurabilidad vía etcd/JSON: RECHAZADA.</strong></p>
+<p>Si los apt sources están comprometidos, no se puede confiar en:
+- El daemon etcd (podría estar apuntando a un endpoint malicioso)
+- El parser JSON (podría haber sido modificado por el atacante)
+- El propio fichero de configuración (podría haber sido alterado)</p>
+<p>Hacer configurable el <code>FailureAction</code> vía etcd introduce una dependencia circular de confianza. La decisión de reboot debe ser <strong>hardcoded</strong> en la unit systemd o en un binario firmado en <code>/usr/local/bin/</code> protegido por AppArmor.</p>
+<p><strong>Modificación recomendada:</strong></p>
+<pre><code class="language-ini"># /etc/systemd/system/argus-apt-integrity.service
+[Unit]
+Description=Argus APT Sources Integrity Check
+After=network.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/argus-apt-integrity-check
+TimeoutStartSec=30
+# Hardcoded: no configurable externamente
+FailureAction=reboot
+
+# Protección contra loop de reboot infinito
+StartLimitIntervalSec=300
+StartLimitBurst=2
+
+[Install]
+WantedBy=multi-user.target
+</code></pre>
+<p><strong>Con <code>StartLimitIntervalSec=300</code> y <code>Burst=2</code>:</strong> Si el check falla dos veces en 5 minutos, systemd marca la unidad como failed y <strong>no reintenta más</strong>. Esto evita que un bug en el script de verificación convierta el nodo en un brick de reboot cíclico.</p>
+<p><strong>Riesgo identificado:</strong> Un falso positivo en el checksum (por ejemplo, una actualización legítima de seguridad de Debian que modifica <code>sources.list</code> durante el boot) provocaría un reboot inesperado. Mitigación: el script debe verificar contra un <strong>checksum conocido y versionado</strong> en el repo, no contra un checksum capturado dinámicamente. Si Debian actualiza sus sources, el admin debe actualizar el checksum versionado y redeploy.</p>
+<p><strong>Test reproducible:</strong></p>
+<pre><code class="language-bash"># Test de comportamiento ante compromiso simulado
+vagrant ssh hardened-x86 -c 'sudo bash -c &quot;
+    echo \&quot;deb http://evil.example.com/debian bookworm main\&quot; &gt; /etc/apt/sources.list
+    systemctl start argus-apt-integrity.service
+    sleep 5
+    # Verificar que el nodo ha iniciado reboot
+    # (en Vagrant esto se observa como desconexión de SSH)
+&quot;'
+
+# En el host, verificar que journald persistió el evento antes del reboot
+vagrant ssh hardened-x86 -c 'sudo journalctl -u argus-apt-integrity.service --no-pager'
+# Esperado: &quot;FAIL: APT sources hash mismatch&quot; seguido de &quot;Rebooting...&quot;
+</code></pre>
+<hr />
+<h3 id="q2-debt-seeds-secure-transfer-001">Q2 — DEBT-SEEDS-SECURE-TRANSFER-001</h3>
+<p><strong>Hipótesis:</strong> La transferencia de seeds entre entornos de confianza es el momento de máximo riesgo criptográfico. Eliminar la transferencia es preferible a asegurarla.</p>
+<p><strong>Veredicto: Opción C (generación local en hardened VM) es la arquitectónicamente correcta para el modelo P2P/federado. NO viola ADR-013.</strong></p>
+<p><strong>Análisis de opciones:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Opción</th>
+<th>Seguridad</th>
+<th>Complejidad</th>
+<th>Alineación con ADR-026/027</th>
+<th>Veredicto</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>A) SSH efímero</strong></td>
+<td>Media</td>
+<td>Baja</td>
+<td>Neutro</td>
+<td>Aceptable como fallback</td>
+</tr>
+<tr>
+<td><strong>B) Noise IK</strong></td>
+<td>Alta</td>
+<td>Alta</td>
+<td>Muy alta</td>
+<td>Correcta para transferencia obligatoria</td>
+</tr>
+<tr>
+<td><strong>C) Generación local</strong></td>
+<td><strong>Máxima</strong></td>
+<td><strong>Mínima</strong></td>
+<td><strong>Muy alta</strong></td>
+<td><strong>Recomendada</strong></td>
+</tr>
+<tr>
+<td><strong>D) TPM/SGX</strong></td>
+<td>Máxima</td>
+<td>Media</td>
+<td>Alta</td>
+<td>Ideal post-FEDER</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Justificación de Opción C:</strong></p>
+<p>En una arquitectura P2P (ADR-026/027), cada nodo es una identidad criptográfica independiente. No hay razón técnica para que el nodo A y el nodo B compartan el mismo seed. Cada nodo debe generar su propio seed a partir de entropía del kernel (<code>getrandom(2)</code>, <code>/dev/urandom</code>) durante el provisioning inicial.</p>
+<p><strong>¿Violación de ADR-013? No.</strong> ADR-013 establece:
+- Seeds a <code>0400 root:root</code>
+- Seeds solo en runtime, nunca en CMake ni logs
+- <code>mlock()</code> + <code>explicit_bzero()</code>
+- <code>resolve_seed()</code> verifica permisos estrictos</p>
+<p>Ninguna de estas reglas prohíbe la generación local. De hecho, la generación local <strong>satisface</strong> ADR-013 de forma más pura que la transferencia, porque elimina un vector de exposición (el canal de transferencia).</p>
+<p><strong>Secuencia de generación local propuesta:</strong></p>
+<pre><code class="language-bash"># /usr/local/bin/argus-seed-init — ejecutado una vez en provisioning
+# Firmado con Ed25519 del sistema (ADR-025)
+
+#!/bin/bash
+set -euo pipefail
+
+COMPONENT=$1
+SEED_DIR=&quot;/etc/ml-defender/${COMPONENT}&quot;
+SEED_FILE=&quot;${SEED_DIR}/seed.bin&quot;
+
+mkdir -p &quot;$SEED_DIR&quot;
+chmod 0750 &quot;$SEED_DIR&quot;
+
+# 32 bytes de entropía criptográfica del kernel
+head -c 32 /dev/urandom &gt; &quot;$SEED_FILE&quot;
+chmod 0400 &quot;$SEED_FILE&quot;
+chown root:root &quot;$SEED_FILE&quot;
+
+# Verificación inmediata
+if [ &quot;$(stat -c %a &quot;$SEED_FILE&quot;)&quot; != &quot;400&quot; ]; then
+    echo &quot;FAIL: Seed permissions incorrect&quot; &gt;&amp;2
+    rm -f &quot;$SEED_FILE&quot;
+    exit 1
+fi
+
+echo &quot;OK: Seed generated locally for ${COMPONENT}&quot;
+</code></pre>
+<p><strong>Cuándo usar Opción B (Noise IK):</strong> Si el modelo pre-P2P (etcd centralizado) requiere que todos los nodos compartan un seed común (por ejemplo, para derivar claves de cifrado de flota), entonces la transferencia es inevitable. En ese caso, Noise IK es la opción correcta. Pero ADR-026/027 apuntan a P2P, donde cada nodo tiene su propia identidad.</p>
+<p><strong>Riesgo identificado:</strong> Si la generación local ocurre en una VM clonada (misma entropía inicial por snapshot), los seeds podrían no ser únicos. Mitigación: asegurar que la VM hardened se provisiona desde cero (<code>vagrant destroy &amp;&amp; vagrant up</code>), no desde snapshot. En bare-metal, el TPM proporciona entropía única por dispositivo.</p>
+<p><strong>Recomendación para post-FEDER:</strong> Implementar Opción C como default. Documentar Opción B como fallback para escenarios pre-P2P o de recuperación de desastre donde un nodo debe restaurar su identidad previa desde backup cifrado.</p>
+<hr />
+<h3 id="q3-merge-de-featureadr030-variant-a-a-main">Q3 — Merge de <code>feature/adr030-variant-a</code> a <code>main</code></h3>
+<p><strong>Hipótesis:</strong> Un branch que pasa el gate pre-merge (<code>hardened-full</code> + <code>check-prod-all</code>) y no introduce regresiones en el EMECAS de desarrollo es candidato válido para merge.</p>
+<p><strong>Veredicto: APROBADO para merge. Sin bloqueantes técnicos ni arquitectónicos identificados.</strong></p>
+<p><strong>Justificación:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Criterio</th>
+<th>Estado</th>
+<th>Evaluación</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>EMECAS dev (destroy + up + bootstrap + test-all)</td>
+<td>✅ PASSED (04:00 DAY 135)</td>
+<td>Línea base limpia confirmada</td>
+</tr>
+<tr>
+<td>EMECAS hardened (<code>hardened-full</code>)</td>
+<td>✅ PASSED</td>
+<td>Reproducibilidad total desde cero</td>
+</tr>
+<tr>
+<td><code>check-prod-all</code> (5/5 gates)</td>
+<td>✅ PASSED</td>
+<td>BSR, AppArmor, capabilities, permissions, Falco</td>
+</tr>
+<tr>
+<td>Deudas pendientes</td>
+<td>No bloqueantes</td>
+<td>Compiler warnings (pre-existentes), secure transfer (post-FEDER), seeds deploy explícito (intencional)</td>
+</tr>
+<tr>
+<td>Conflicto con <code>main</code></td>
+<td>No reportado</td>
+<td>Asumido limpio</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Bloqueantes potenciales que NO existen:</strong>
+- No hay cambios en la interfaz pública del pipeline (API ZeroMQ, protobuf)
+- No hay cambios en el modelo ML (F1 invariante)
+- No hay introducción de nuevas dependencias de runtime en la dev VM
+- No hay modificación de <code>resolve_seed()</code> ni de las primitivas <code>safe_path</code></p>
+<p><strong>Condición de merge:</strong> Ejecutar EMECAS dev una vez más en <code>main</code> <strong>post-merge</strong> para confirmar que la integración no introduce efectos de borde. Esto no es un bloqueante previo, es una verificación posterior.</p>
+<p><strong>Riesgo identificado:</strong> El merge introduce ~15 commits nuevos en <code>main</code>. Si otro desarrollador tiene un branch paralelo basado en <code>main</code> antiguo, podría haber conflictos en el <code>Makefile</code> (nuevos targets de producción). Mitigación: comunicar el merge inmediatamente al equipo y recomendar <code>git rebase main</code> en branches activos.</p>
+<hr />
+<h3 id="q4-hardened-redeploy-prod-deploy-seeds-en-el-flujo-diario">Q4 — <code>hardened-redeploy</code> + <code>prod-deploy-seeds</code> en el flujo diario</h3>
+<p><strong>Hipótesis:</strong> La separación entre deploy de infraestructura y deploy de material criptográfico es una barrera de seguridad intencional que no debe eliminarse por conveniencia.</p>
+<p><strong>Veredicto: El flujo actual es CORRECTO. NO crear <code>hardened-full-with-seeds</code>.</strong></p>
+<p><strong>Justificación:</strong></p>
+<p>El deploy de seeds es una operación de <strong>alto privilegio</strong> que debe ser:
+1. <strong>Consciente:</strong> El operador debe saber que está desplegando material criptográfico
+2. <strong>Auditada:</strong> Debe quedar constancia de cuándo y qué seeds se desplegaron
+3. <strong>Reversible:</strong> Debe poder eliminarse sin afectar la infraestructura subyacente</p>
+<p>Si <code>hardened-full-with-seeds</code> existiera, un desarrollador podría ejecutarlo accidentalmente en un entorno de demostración, dejando seeds de producción (o de test) en una VM que luego se comparte. Esto viola el principio de <strong>separación de concerns</strong> y el BSR axiom (la VM de runtime no debe contener material de build, y viceversa).</p>
+<p><strong>Flujo correcto documentado:</strong></p>
+<pre><code class="language-bash"># Iteración rápida (desarrollo, múltiples veces al día)
+make hardened-redeploy        # Infraestructura + binarios
+make check-prod-all           # Verificación
+
+# Deploy de seeds (operación consciente, una vez por entorno)
+make prod-deploy-seeds        # Material criptográfico
+make check-prod-permissions   # Verificación de seeds
+
+# Validación total (release, gate pre-merge)
+make hardened-full            # Desde cero, sin seeds
+# + manual: make prod-deploy-seeds (si el entorno requiere operación)
+</code></pre>
+<p><strong>Riesgo identificado:</strong> La ausencia de <code>hardened-full-with-seeds</code> podría hacer que un operador olvide ejecutar <code>prod-deploy-seeds</code> después de <code>hardened-full</code>, dejando el sistema sin seeds y con componentes criptográficos fallando. Mitigación: <code>check-prod-all</code> debe incluir una verificación de que <strong>si</strong> el componente requiere criptografía (ej. <code>encryption_enabled=true</code>), <strong>entonces</strong> el seed existe. Durante EMECAS, los componentes no están habilitados, así que el check pasa. En operación, el check fallaría explícitamente.</p>
+<hr />
+<h3 id="q5-proximos-pasos-post-merge-day-136">Q5 — Próximos pasos post-merge (DAY 136)</h3>
+<p><strong>Hipótesis:</strong> La priorización post-merge debe maximizar el valor acumulado para FEDER mientras minimiza el riesgo de no entregar entregables tangibles.</p>
+<p><strong>Evaluación de opciones:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Opción</th>
+<th>Entregable</th>
+<th>Riesgo de no entrega</th>
+<th>Bloqueos</th>
+<th>Contribución al paper</th>
+<th>Veredicto</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>A) FEDER prep</strong></td>
+<td>Presentación</td>
+<td>Alto (prereqs no cumplidos)</td>
+<td>ADR-026 no merged, ADR-029 B no estable</td>
+<td>Media</td>
+<td>Prematuro</td>
+</tr>
+<tr>
+<td><strong>B) ADR-029 Variant B</strong></td>
+<td>Vagrantfile ARM64 + datos comparativos</td>
+<td>Bajo</td>
+<td>Ninguno (cross-compile o QEMU)</td>
+<td><strong>Alta</strong> (delta XDP/libpcap publicable)</td>
+<td><strong>Recomendada</strong></td>
+</tr>
+<tr>
+<td><strong>C) Compiler warnings</strong></td>
+<td>Código limpio</td>
+<td>Muy bajo</td>
+<td>Ninguno</td>
+<td>Baja</td>
+<td>Paralelizable</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Veredicto: Opción B — ADR-029 Variant B para DAY 136.</strong></p>
+<p><strong>Justificación:</strong></p>
+<ol>
+<li><strong>Contribución científica publicable:</strong> El delta de rendimiento entre eBPF/XDP (Variant A) y libpcap (Variant B) es un dato empírico que no existe en la literatura para NDR de código abierto en ARM. Proporciona contenido concreto para §5 del paper y para la narrativa FEDER: <em>"Protección de grado hospitalario desde x86 hasta ARM64"</em>.</li>
+<li><strong>Prerequisito de FEDER:</strong> La demo FEDER requiere ADR-029 Variants A/B estables. Sin Variant B, la presentación carece de la dimensión de portabilidad hardware, que es un pilar del argumento de coste (150€ vs 15.000€).</li>
+<li><strong>Scope acotado:</strong> Un Vagrantfile <code>hardened-arm64/</code> con cross-compilation desde la dev VM x86 es un entregable de 1-2 días. No requiere hardware ARM físico (QEMU user-mode o Vagrant con box ARM64).</li>
+<li><strong>Paralelismo:</strong> Opción C (compiler warnings) puede ejecutarse en una rama paralela <code>fix/debt-compiler-warnings-001</code> sin ocupar el ciclo diario del Consejo. No requiere toma de decisiones arquitectónicas.</li>
+</ol>
+<p><strong>Riesgo de Opción A (FEDER):</strong> Preparar una presentación sin ADR-026 merged y sin Variant B estable es construir sobre cimientos inexistentes. El riesgo de tener que reescribir la presentación es alto.</p>
+<p><strong>Plan DAY 136 propuesto:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Horario</th>
+<th>Tarea</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>05:00–08:00</td>
+<td>REGLA EMECAS dev + REGLA EMECAS hardened (confirmar main post-merge)</td>
+</tr>
+<tr>
+<td>08:30–12:00</td>
+<td><code>vagrant/hardened-arm64/Vagrantfile</code> — Debian ARM64, AppArmor, sin compilador</td>
+</tr>
+<tr>
+<td>12:00–14:00</td>
+<td>Cross-compilation: <code>make build-production-arm64</code> desde dev VM x86</td>
+</tr>
+<tr>
+<td>14:30–18:00</td>
+<td>Medición comparativa: throughput XDP (x86) vs libpcap (ARM64) con mismo pcap</td>
+</tr>
+<tr>
+<td>18:00–20:00</td>
+<td>Documentación: tabla de métricas para paper §5 + ADR-041 actualización</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Métricas mínimas a obtener:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Métrica</th>
+<th>x86 XDP</th>
+<th>ARM64 libpcap</th>
+<th>Delta</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Throughput máximo (Mbps)</td>
+<td>?</td>
+<td>?</td>
+<td>?</td>
+</tr>
+<tr>
+<td>Latencia p50 (ms)</td>
+<td>?</td>
+<td>?</td>
+<td>?</td>
+</tr>
+<tr>
+<td>CPU % a 100 Mbps</td>
+<td>?</td>
+<td>?</td>
+<td>?</td>
+</tr>
+<tr>
+<td>RAM RSS (MB)</td>
+<td>?</td>
+<td>?</td>
+<td>?</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h3 id="resumen-de-posiciones-kimi">Resumen de posiciones — Kimi</h3>
+<table>
+<thead>
+<tr>
+<th>Pregunta</th>
+<th>Veredicto</th>
+<th>Acción inmediata</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Q1</strong></td>
+<td><code>FailureAction=reboot</code> aprobado; 30s suficiente para journald local; <strong>NO configurable</strong> vía etcd/JSON</td>
+<td>Añadir <code>StartLimitIntervalSec=300</code> y <code>StartLimitBurst=2</code> a la unit</td>
+</tr>
+<tr>
+<td><strong>Q2</strong></td>
+<td><strong>Opción C</strong> (generación local) recomendada para P2P; no viola ADR-013</td>
+<td>Implementar <code>argus-seed-init</code> como binario firmado en provisioning</td>
+</tr>
+<tr>
+<td><strong>Q3</strong></td>
+<td><strong>Merge aprobado</strong> sin bloqueantes</td>
+<td>Ejecutar EMECAS dev post-merge como verificación</td>
+</tr>
+<tr>
+<td><strong>Q4</strong></td>
+<td><strong>NO</strong> a <code>hardened-full-with-seeds</code>; flujo actual correcto</td>
+<td>Documentar flujo de 3 pasos; añadir check condicional de seeds en operación</td>
+</tr>
+<tr>
+<td><strong>Q5</strong></td>
+<td><strong>Opción B</strong> (ADR-029 Variant B) para DAY 136</td>
+<td>Crear <code>vagrant/hardened-arm64/</code> + medición comparativa XDP/libpcap</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Moción:</strong> Propongo que el merge de <code>feature/adr030-variant-a</code> a <code>main</code> se ejecute inmediatamente tras esta sesión, seguido de un EMECAS dev de verificación. El DAY 136 debe comenzar con la creación de la infraestructura ARM64, no con la preparación de la presentación FEDER. Los datos comparativos de rendimiento son el insumo crítico que falta para que cualquier presentación sea creíble.</p>
+<p>— <em>Kimi</em><br />
+<em>Via Appia Quality — La seguridad no se instala. Se diseña.</em></p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.top", "search.highlight"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

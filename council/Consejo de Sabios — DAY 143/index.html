@@ -1,0 +1,1201 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source embedded-ML NDR for hospitals and schools">
+      
+      
+        <meta name="author" content="Alonso Isidoro Roman">
+      
+      
+        <link rel="canonical" href="https://alonsoir.github.io/argus/council/Consejo%20de%20Sabios%20%E2%80%94%20DAY%20143/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>aRGus NDR — Consejo de Sabios — DAY 143 - ML Defender (aRGus NDR)</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#argus-ndr-consejo-de-sabios-day-143" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-header__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ML Defender (aRGus NDR)
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              aRGus NDR — Consejo de Sabios — DAY 143
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../README.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/BACKLOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Backlog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Security Model
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-tabs__link">
+          
+  
+  
+  ADRs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/contracts/Protobuf contracts.md" class="md-tabs__link">
+          
+  
+  
+  Contracts
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-nav__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ML Defender (aRGus NDR)
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../README.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/BACKLOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADRs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ADRs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013 Seed Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-021-deployment-topology-seed-families.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-021 Topology SSOT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-022-threat-model-opcion2-descartada.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-022 Threat Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Protobuf contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protobuf
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/JSON contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JSON
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Rag security commands.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-lo-que-hemos-hecho-hoy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. LO QUE HEMOS HECHO HOY
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1. LO QUE HEMOS HECHO HOY">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#11-emecas-regresiones-detectadas-y-corregidas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.1 EMECAS — Regresiones detectadas y corregidas
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#12-debt-irp-nftables-001-sesion-33-cerrada" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.2 DEBT-IRP-NFTABLES-001 — Sesión 3/3 — CERRADA
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.2 DEBT-IRP-NFTABLES-001 — Sesión 3/3 — CERRADA">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#bloque-1-isolatejson-y-isolateconfig" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Bloque 1 — isolate.json y IsolateConfig
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bloque-2-logica-de-disparo-en-firewall-acl-agent" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Bloque 2 — Lógica de disparo en firewall-acl-agent
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bloque-3-apparmor-profile-argus-network-isolate" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Bloque 3 — AppArmor profile argus-network-isolate
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bloque-4-validacion-en-hardened-vm" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Bloque 4 — Validación en hardened VM
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#13-deudas-nuevas-registradas-day-143" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.3 Deudas nuevas registradas DAY 143
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-estado-del-repo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. ESTADO DEL REPO
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-lo-que-haremos-manana-day-144" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. LO QUE HAREMOS MAÑANA (DAY 144)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-preguntas-dificiles-para-el-consejo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. PREGUNTAS DIFÍCILES PARA EL CONSEJO
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4. PREGUNTAS DIFÍCILES PARA EL CONSEJO">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#p1-decision-de-forkexecv-sin-wait" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        P1 — Decisión de fork()+execv() sin wait()
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#p2-tolerancia-ieee-754-de-1e-6" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        P2 — Tolerancia IEEE 754 de 1e-6
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#p3-auto_isolate-true-por-defecto-en-hospitales" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        P3 — auto_isolate: true por defecto en hospitales
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#p4-apparmor-profile-demasiado-permisivo-con-tmp" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        P4 — AppArmor profile: ¿demasiado permisivo con /tmp?
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#p5-criterio-de-disparo-dos-senales-son-suficientes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        P5 — Criterio de disparo: ¿dos señales son suficientes?
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-deudas-abiertas-relevantes-referencia-rapida" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. DEUDAS ABIERTAS RELEVANTES (referencia rápida)
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="argus-ndr-consejo-de-sabios-day-143">aRGus NDR — Consejo de Sabios — DAY 143</h1>
+<p><strong>Fecha:</strong> Miércoles 6 de Mayo 2026 | <strong>Branch:</strong> <code>feature/variant-b-libpcap</code> | <strong>arXiv:</strong> 2604.04952</p>
+<hr />
+<h2 id="1-lo-que-hemos-hecho-hoy">1. LO QUE HEMOS HECHO HOY</h2>
+<h3 id="11-emecas-regresiones-detectadas-y-corregidas">1.1 EMECAS — Regresiones detectadas y corregidas</h3>
+<p>El protocolo <code>vagrant destroy -f &amp;&amp; vagrant up &amp;&amp; make bootstrap &amp;&amp; make test-all</code> detectó dos regresiones introducidas en DAY 142:</p>
+<p><strong>DEBT-BOOTSTRAP-ORDER-001 (nueva, resuelta)</strong>
+<code>check-system-deps</code> verificaba el binario <code>argus-network-isolate</code> antes de que <code>pipeline-build</code> lo compilara. El bootstrap fallaba en el paso [1/8]. Fix: separar la verificación en dos targets:
+- <code>check-system-deps</code> — paquetes APT únicamente
+- <code>check-build-artifacts</code> — binarios compilados, llamado tras <code>pipeline-build</code></p>
+<p><strong>Regresión firma PcapBackend::open() (nueva, resuelta)</strong>
+DEBT-VARIANT-B-BUFFER-SIZE-001 (DAY 142) añadió <code>int buffer_size</code> como segundo parámetro a <code>PcapBackend::open()</code>. Los tests de Variant B no se actualizaron en el mismo commit. Afectados: <code>test_pcap_backend_lifecycle.cpp</code>, <code>test_pcap_backend_poll_null.cpp</code>, <code>test_pcap_backend_error.cpp</code>, <code>test_pcap_backend_stress.cpp</code>, <code>test_pcap_backend_regression.cpp</code> — 6 call sites en 5 ficheros.</p>
+<p><strong>Lección registrada como regla permanente:</strong> cambio de firma de interfaz pública → actualizar todos los call sites en el mismo commit, sin excepción.</p>
+<p><strong>EMECAS final:</strong> verde. 9/9 Sniffer Variant B, 10/10 ML Detector, 8/8 RAG Ingester, 2/2 etcd-server, TEST-PROVISION-1 8/8, TEST-INVARIANT-SEED OK, plugin-integ SIGN 1-7 OK.</p>
+<hr />
+<h3 id="12-debt-irp-nftables-001-sesion-33-cerrada">1.2 DEBT-IRP-NFTABLES-001 — Sesión 3/3 — CERRADA</h3>
+<h4 id="bloque-1-isolatejson-y-isolateconfig">Bloque 1 — isolate.json y IsolateConfig</h4>
+<p>Añadidos tres campos al JSON de configuración del IRP:</p>
+<pre><code class="language-json">&quot;auto_isolate&quot;: true,
+&quot;threat_score_threshold&quot;: 0.95,
+&quot;auto_isolate_event_types&quot;: [&quot;ransomware&quot;, &quot;lateral_movement&quot;, &quot;c2_beacon&quot;],
+&quot;isolate_interface&quot;: &quot;eth1&quot;
+</code></pre>
+<p>Y campo correspondiente en <code>IsolateConfig::from_file()</code> con defaults seguros. Test <code>test_isolate_config</code>: 9 assertions, PASSED.</p>
+<p><strong>Decisión de diseño confirmada:</strong> <code>auto_isolate: true</code> por defecto — instalar y funcionar sin leer el manual. Un ventilador mecánico no puede quedar aislado por una señal única — mínimo dos condiciones AND.</p>
+<h4 id="bloque-2-logica-de-disparo-en-firewall-acl-agent">Bloque 2 — Lógica de disparo en firewall-acl-agent</h4>
+<p><strong>Diseño:</strong></p>
+<pre><code>config_loader → lee isolate.json → IrpConfig → BatchProcessorConfig
+add_detection() → check_auto_isolate() → should_auto_isolate() → fork()+execv()
+</code></pre>
+<p><strong>Mapeo DetectionType → string</strong> (DEBT-PROTO-DETECTION-TYPES-001 registrada):</p>
+<pre><code>DETECTION_RANSOMWARE       → &quot;ransomware&quot;
+DETECTION_INTERNAL_THREAT  → &quot;lateral_movement&quot;
+DETECTION_SUSPICIOUS_TRAFFIC → &quot;c2_beacon&quot;
+</code></pre>
+<p><strong><code>should_auto_isolate()</code></strong> — función pura, testeable sin fork(). Criterio: <code>score &gt;= threshold - 1e-6 AND event_type IN auto_isolate_event_types</code>.</p>
+<p><strong><code>check_auto_isolate()</code></strong> — orquestador: llama <code>should_auto_isolate()</code>, hace <code>fork()+execv()</code> a <code>argus-network-isolate isolate --interface &lt;iface&gt; --config &lt;path&gt;</code>. El padre no hace <code>wait()</code> — el pipeline no se bloquea. Si <code>execv()</code> falla, el hijo hace <code>_exit(127)</code>.</p>
+<p><strong>Bug IEEE 754 encontrado por los tests:</strong> <code>static_cast&lt;double&gt;(0.95f)</code> = <code>0.94999988...</code> &lt; <code>0.95</code>. El aislamiento nunca habría disparado exactamente en el umbral. Fix: tolerancia <code>1e-6</code> en la comparación. Esto es exactamente para lo que sirven los tests.</p>
+<p><strong>Tests:</strong>
+- <code>test_auto_isolate</code>: 12/12 PASSED (10 unitarios + 2 integración)
+- <code>IntegrationForkExecOnSyntheticEvent</code>: evento sintético score=0.97 RANSOMWARE → <code>fork()+execv(/bin/true)</code> → hijo termina exit 0 verificado via <code>waitpid()</code> en &lt; 2s
+- <code>IntegrationNoForkOnLowScore</code>: score=0.80 → sin fork en 200ms</p>
+<p><strong>TimestampUniqueness fix:</strong> test pre-existente frágil por timing de VM — sleep <code>10µs → 2ms</code>, umbral <code>50 → 20</code>. Corregido como deuda de calidad de tests.</p>
+<h4 id="bloque-3-apparmor-profile-argus-network-isolate">Bloque 3 — AppArmor profile argus-network-isolate</h4>
+<p>Creado <code>security/apparmor/argus.argus-network-isolate</code>:
+- <code>capability net_admin</code> — nftables únicamente
+- <code>network netlink raw</code>
+- <code>/usr/sbin/nft ix</code> — único binario invocable
+- <code>/usr/bin/systemd-run ix</code> — timer rollback automático
+- <code>/tmp/argus-{backup,isolate}-*.nft rw</code> — operación transaccional
+- <code>/var/log/argus/</code> rw — forense JSONL
+- Denies explícitos: shells, python, apt sources, /root, /home
+- Sintaxis validada: <code>apparmor_parser -p</code> ✅
+- <code>setup-apparmor.sh</code> actualizado a 7 componentes</p>
+<h4 id="bloque-4-validacion-en-hardened-vm">Bloque 4 — Validación en hardened VM</h4>
+<p><code>make hardened-setup-apparmor</code> instaló los 7 perfiles en enforce mode:</p>
+<pre><code>argus-etcd-server, argus-firewall-acl-agent, argus-ml-detector,
+argus-network-isolate, argus-rag-ingester, argus-rag-security, argus-sniffer
+</code></pre>
+<p>Todos en enforce mode. 40 perfiles totales en la VM.</p>
+<hr />
+<h3 id="13-deudas-nuevas-registradas-day-143">1.3 Deudas nuevas registradas DAY 143</h3>
+<p><strong>DEBT-PROTO-DETECTION-TYPES-001</strong> 🟢 Baja — post-fase-MITRE/CTF
+<code>DetectionType</code> enum solo modela 4 tipos. Cuando el pipeline enfrente MITRE ATT&amp;CK y CTFs, ampliar con los tipos reales observados. No antes — sin datos no hay diseño. Opción B (ampliar proto) descartada conscientemente hoy.</p>
+<hr />
+<h2 id="2-estado-del-repo">2. ESTADO DEL REPO</h2>
+<pre><code>Branch:  feature/variant-b-libpcap
+Commits: c6e3f4ab → 888bfcbd → f1ab0c79 → e08f394d → f00b1809 → 7716423b
+         (+ commits infraestructura EMECAS)
+EMECAS:  VERDE — 0 warnings propios, 0 errors
+Tests:   test_isolate_config 9/9 | test_auto_isolate 12/12 | Sniffer 9/9
+         ML Detector 10/10 | RAG Ingester 8/8 | etcd-server 2/2
+         TEST-PROVISION-1 8/8 | TEST-INVARIANT-SEED OK
+Hardened: AppArmor 7/7 enforce
+</code></pre>
+<hr />
+<h2 id="3-lo-que-haremos-manana-day-144">3. LO QUE HAREMOS MAÑANA (DAY 144)</h2>
+<p><strong>Opción A — Merge feature/variant-b-libpcap a main</strong>
+Prerrequisitos: EMECAS verde ✅, test-all verde ✅, AppArmor hardened ✅. Quedaría verificar <code>PROFILE=production all</code> (gate ODR) antes del merge.</p>
+<p><strong>Opción B — ADR-029 Benchmarking Variant A vs Variant B</strong>
+Medir el delta eBPF/XDP vs libpcap en throughput, latencia y CPU. Esto es la contribución científica publicable del paper.</p>
+<p><strong>Opción C — DEBT-ETCD-HA-QUORUM-001</strong>
+etcd-server single-node es bloqueante para producción hospitalaria. Diseño de quorum Raft.</p>
+<p><strong>Recomendación del founder:</strong> Opción A primero — el branch lleva 143 días y necesita llegar a main limpio. Luego Opción B que es la contribución científica del arXiv.</p>
+<hr />
+<h2 id="4-preguntas-dificiles-para-el-consejo">4. PREGUNTAS DIFÍCILES PARA EL CONSEJO</h2>
+<h3 id="p1-decision-de-forkexecv-sin-wait">P1 — Decisión de fork()+execv() sin wait()</h3>
+<p>El padre no recoge al hijo. En Linux, un proceso hijo sin <code>wait()</code> se convierte en zombie hasta que lo recoge <code>init</code>/<code>systemd</code>. En un pipeline de larga duración que dispara aislamiento repetidamente (ransomware persistente), ¿acumulamos zombies? ¿Debemos registrar los PIDs y hacer <code>waitpid(-1, WNOHANG)</code> periódicamente en el worker thread del BatchProcessor?</p>
+<h3 id="p2-tolerancia-ieee-754-de-1e-6">P2 — Tolerancia IEEE 754 de 1e-6</h3>
+<p>Elegimos <code>1e-6</code> para la comparación <code>float confidence vs double threshold</code>. Un <code>float</code> tiene ~7 dígitos de precisión. Para <code>confidence = 0.95f</code>, el error es <code>~1.2e-7</code>. Nuestra tolerancia de <code>1e-6</code> es conservadora pero correcta. Sin embargo: ¿debería el threshold en <code>IsolateConfig</code> ser <code>float</code> en vez de <code>double</code> para eliminar el problema de raíz? Tipos consistentes = sin tolerancias.</p>
+<h3 id="p3-auto_isolate-true-por-defecto-en-hospitales">P3 — <code>auto_isolate: true</code> por defecto en hospitales</h3>
+<p>La decisión fue: instalar y funcionar sin leer el manual. Pero en un hospital, un administrador que instala aRGus sin leer la documentación podría aislar accidentalmente un equipo médico crítico en el primer falso positivo. ¿Debería <code>auto_isolate</code> ser <code>false</code> por defecto y requerir habilitación explícita? ¿O mantenemos <code>true</code> y añadimos un gate de confirmación en el onboarding?</p>
+<h3 id="p4-apparmor-profile-demasiado-permisivo-con-tmp">P4 — AppArmor profile: ¿demasiado permisivo con /tmp?</h3>
+<p>El perfil permite <code>rw</code> en <code>/tmp/argus-backup-*.nft</code> y <code>/tmp/argus-isolate-*.nft</code>. Un atacante que comprometa <code>argus-network-isolate</code> podría escribir archivos arbitrarios en <code>/tmp</code> con nombres que coincidan con el glob. ¿Debería el perfil restringir a un directorio específico como <code>/var/lib/argus/irp/</code> con permisos más estrictos?</p>
+<h3 id="p5-criterio-de-disparo-dos-senales-son-suficientes">P5 — Criterio de disparo: ¿dos señales son suficientes?</h3>
+<p>Para FEDER: <code>score &gt;= 0.95 AND event_type IN [ransomware, lateral_movement, c2_beacon]</code>. En un entorno hospitalario real con monitores de quirófano en la intranet, ¿es suficiente con dos condiciones AND? ¿O necesitamos una tercera señal — por ejemplo, confirmación de un segundo sensor independiente o ausencia en whitelist de activos críticos? DEBT-IRP-MULTI-SIGNAL-001 registrada — ¿qué arquitectura de decisión recomendáis?</p>
+<hr />
+<h2 id="5-deudas-abiertas-relevantes-referencia-rapida">5. DEUDAS ABIERTAS RELEVANTES (referencia rápida)</h2>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Severidad</th>
+<th>Descripción</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>DEBT-ETCD-HA-QUORUM-001</td>
+<td>🔴 P0 post-FEDER</td>
+<td>etcd single-node — sin HA</td>
+</tr>
+<tr>
+<td>DEBT-MUTEX-ROBUST-001</td>
+<td>🟡 P1 post-FEDER</td>
+<td>Mutex sniffer via tmux — provisional</td>
+</tr>
+<tr>
+<td>DEBT-IRP-MULTI-SIGNAL-001</td>
+<td>🟡 P1 post-FEDER</td>
+<td>Criterio disparo multi-señal rico</td>
+</tr>
+<tr>
+<td>DEBT-PROTO-DETECTION-TYPES-001</td>
+<td>🟢 Baja</td>
+<td>Ampliar enum post-MITRE/CTF</td>
+</tr>
+<tr>
+<td>DEBT-IRP-LAST-KNOWN-GOOD-001</td>
+<td>🟢 Baja</td>
+<td>Rollback con estado persistente</td>
+</tr>
+<tr>
+<td>DEBT-COMPILER-WARNINGS-CLEANUP-001</td>
+<td>🟡 P1</td>
+<td>ODR violations = UB</td>
+</tr>
+<tr>
+<td>DEBT-CRYPTO-MATERIAL-STORAGE-001</td>
+<td>🟡 P1</td>
+<td>Vault para FEDER demo</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<p><em>aRGus NDR — Via Appia Quality — DAY 143 — 06/05/2026</em>
+<em>"Un falso positivo sobre un ventilador mecánico es inaceptable."</em></p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.top", "search.highlight"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

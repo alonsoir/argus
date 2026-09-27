@@ -1,0 +1,1141 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source embedded-ML NDR for hospitals and schools">
+      
+      
+        <meta name="author" content="Alonso Isidoro Roman">
+      
+      
+        <link rel="canonical" href="https://alonsoir.github.io/argus/council/Consejo%20de%20Sabios%20%E2%80%94%20DAY%20121%20%E2%80%94%20aRGus%20NDR-respuesta-deepseek/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>Consejo de Sabios — DAY 121 — aRGus NDR respuesta deepseek - ML Defender (aRGus NDR)</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#dictamen-del-consejo-de-sabios-day-121" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-header__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ML Defender (aRGus NDR)
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Consejo de Sabios — DAY 121 — aRGus NDR respuesta deepseek
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../README.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/BACKLOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Backlog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Security Model
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-tabs__link">
+          
+  
+  
+  ADRs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/contracts/Protobuf contracts.md" class="md-tabs__link">
+          
+  
+  
+  Contracts
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-nav__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ML Defender (aRGus NDR)
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../README.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/BACKLOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADRs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ADRs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013 Seed Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-021-deployment-topology-seed-families.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-021 Topology SSOT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-022-threat-model-opcion2-descartada.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-022 Threat Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Protobuf contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protobuf
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/JSON contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JSON
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Rag security commands.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#dictamen-del-consejo-de-sabios-day-121" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🏛️ Dictamen del Consejo de Sabios — DAY 121
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🏛️ Dictamen del Consejo de Sabios — DAY 121">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#lo-que-esta-bien-y-debe-continuar" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ✅ Lo que está bien (y debe continuar)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lo-que-esta-mal-o-es-insuficiente" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ❌ Lo que está mal o es insuficiente
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="❌ Lo que está mal o es insuficiente">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-el-test-de-integridad-del-modelo-xgboost-no-es-completo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. El test de integridad del modelo XGBoost no es completo
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-la-calibracion-del-threshold-no-puede-hacerse-sobre-el-mismo-test-set" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. La calibración del threshold no puede hacerse sobre el mismo test set
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#respuestas-a-las-preguntas-del-consejo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Respuestas a las preguntas del Consejo
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Respuestas a las preguntas del Consejo">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#q1-threshold-calibration-vs-re-entrenamiento-con-mas-datos" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Q1 — Threshold calibration vs re-entrenamiento con más datos
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#q2-representatividad-del-gap-precision-125-falsos-positivoshora" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Q2 — Representatividad del gap Precision: 125 falsos positivos/hora
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#q3-integridad-cientifica-del-paper-usar-wednesday-como-test-set" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Q3 — Integridad científica del paper: ¿usar Wednesday como test set?
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#q4-recuperar-el-rf-level1-para-la-tabla-comparativa" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Q4 — ¿Recuperar el RF level1 para la tabla comparativa?
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#resumen-de-acciones-obligatorias-para-day-122" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Resumen de acciones obligatorias para DAY 122
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#veredicto-final-del-consejo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Veredicto final del Consejo
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+  <h1>Consejo de Sabios — DAY 121 — aRGus NDR respuesta deepseek</h1>
+
+<h2 id="dictamen-del-consejo-de-sabios-day-121">🏛️ Dictamen del Consejo de Sabios — DAY 121</h2>
+<p><em>Hemos examinado el informe. El progreso es notable, pero la </em><em>Precision=0.9875</em><em> que bloquea el merge es un problema real, no administrativo. A continuación, nuestro análisis y respuestas, con la dureza que la situación exige.</em></p>
+<hr />
+<h3 id="lo-que-esta-bien-y-debe-continuar">✅ Lo que está bien (y debe continuar)</h3>
+<ol>
+<li>
+<p><strong>Bug de dependencia circular resuelto</strong> – La corrección en <code>provision.sh</code> (generar keypair antes de compilar plugin-loader) era crítica. La tercera validación de idempotencia da confianza.</p>
+</li>
+<li>
+<p><strong>DEBT-SEED-AUDIT-001</strong> – Buen uso de <code>mlock()</code> + <code>explicit_bzero()</code>. Es el estándar para secretos en memoria.</p>
+</li>
+<li>
+<p><strong>Test real de XGBoost con CIC-IDS-2017</strong> – Los scores para BENIGN (&lt;0.001) y ATTACK (&gt;0.999) son excelentes. La prevalidación con Python para evitar outliers fue una acción inteligente.</p>
+</li>
+<li>
+<p><strong>Modelos DDoS y Ransomware</strong> – Aunque sintéticos, la mejora de latencia (20x y 6x) es relevante. La tabla comparativa y la separación en §4.2 del paper son correctas.</p>
+</li>
+<li>
+<p><strong>Honestidad sobre la Precision baja</strong> – Abrir <code>DEBT-PRECISION-GATE-001</code> y bloquear el merge es lo profesional. No ocultar métricas malas.</p>
+</li>
+</ol>
+<hr />
+<h3 id="lo-que-esta-mal-o-es-insuficiente">❌ Lo que está mal o es insuficiente</h3>
+<h4 id="1-el-test-de-integridad-del-modelo-xgboost-no-es-completo">1. El test de integridad del modelo XGBoost no es completo</h4>
+<p>El test <code>TEST-INTEG-XGBOOST-1</code> ahora usa 3 BENIGN y 3 ATTACK reales. Pero <strong>no verifica que el modelo no esté sobreajustado a esos 6 puntos</strong>. Un modelo podría memorizarlos y fallar en otros. Exigimos:</p>
+<ul>
+<li><strong>Test con una muestra aleatoria de al menos 100 flows</strong> (50 benign, 50 attack) extraídos de un día diferente al de entrenamiento (ej: Wednesday). Esto debe ejecutarse en CI y fallar si alguna métrica baja del gate.</li>
+<li><strong>Código sugerido</strong> (a añadir en <code>tests/xgboost_integration_test.cpp</code>):
+  <code>cpp
+  TEST(XGBoostPlugin, RandomSampleFromWednesday) {
+      // Cargar CSV de Wednesday desde un fixture
+      // Para cada flow, predecir y comparar con etiqueta real
+      // Calcular Precision, Recall, F1 sobre la muestra
+      ASSERT_GE(precision, 0.99);
+  }</code></li>
+</ul>
+<h4 id="2-la-calibracion-del-threshold-no-puede-hacerse-sobre-el-mismo-test-set">2. La calibración del threshold no puede hacerse sobre el mismo test set</h4>
+<p>Esto es <strong>data snooping</strong> y arruina la validez científica. Si ajustas el threshold para que Precision≥0.99 sobre el conjunto de test actual, ese conjunto deja de ser independiente. El umbral debe calibrarse sobre un <strong>validation set</strong> (por ejemplo, tomar parte de Tuesday como validación, otra como test). O mejor: usar un día completamente distinto (Wednesday) para test.</p>
+<p><strong>Exigencia:</strong> Antes de cualquier ajuste, dividir los datos disponibles en:
+- Train: Tuesday-WorkingHours (sin solapamiento)
+- Validation: parte de Tuesday (ej: últimas 2 horas) o un día diferente
+- Test: Wednesday (nunca visto durante entrenamiento ni calibración)</p>
+<hr />
+<h3 id="respuestas-a-las-preguntas-del-consejo">Respuestas a las preguntas del Consejo</h3>
+<h4 id="q1-threshold-calibration-vs-re-entrenamiento-con-mas-datos">Q1 — Threshold calibration vs re-entrenamiento con más datos</h4>
+<p><strong>Respuesta:</strong> <strong>Ninguna de las dos sobre el mismo test set.</strong> El procedimiento correcto es:</p>
+<ol>
+<li><strong>Separar un validation set</strong> (ej: 20% de Tuesday, estratificado por clase).</li>
+<li><strong>Calibrar threshold</strong> sobre validation para maximizar Precision con Recall ≥ 0.95 (por ejemplo). Usar <code>sklearn.metrics.precision_recall_curve</code>.</li>
+<li><strong>Evaluar en un test set independiente</strong> (ej: Wednesday completo).</li>
+<li><strong>Si aún no alcanza Precision≥0.99</strong>, entonces <strong>re-entrenar con más datos</strong> (todos los días excepto Wednesday) y repetir la calibración.</li>
+</ol>
+<p><strong>Código de calibración (Python):</strong></p>
+<pre><code class="language-python">from sklearn.metrics import precision_recall_curve
+precisions, recalls, thresholds = precision_recall_curve(y_val, y_scores_val)
+# Encontrar threshold donde precision &gt;= 0.99 y recall máximo
+idx = np.where(precisions &gt;= 0.99)[0]
+best_threshold = thresholds[idx[np.argmax(recalls[idx])]]
+</code></pre>
+<p><strong>Riesgo de data snooping:</strong> Sí, si calibras sobre el mismo test set. Por eso necesitas validation set separado.</p>
+<p><strong>Veredicto:</strong> ✅ Rechazamos calibrar sobre el test actual. Exigimos validation set independiente.</p>
+<hr />
+<h4 id="q2-representatividad-del-gap-precision-125-falsos-positivoshora">Q2 — Representatividad del gap Precision: 125 falsos positivos/hora</h4>
+<p><strong>Análisis cuantitativo:</strong>
+- 10.000 flows/hora = 166 flows/minuto.
+- 125 falsos positivos/hora = ~2 falsos positivos/minuto.
+- En un hospital, cada falso positivo requiere investigación (un analista de seguridad revisa). 2 por minuto es insostenible. Si cada investigación lleva 1 minuto, se necesitarían 2 FTE solo para revisar falsos positivos.</p>
+<p><strong>¿Es inaceptable?</strong> Depende del contexto:
+- Si el hospital tiene un SOC con 10 analistas, podría ser manejable (pero costoso).
+- Si es un hospital pequeño sin personal de seguridad dedicado, es <strong>completamente inaceptable</strong>.</p>
+<p><strong>Argumento para gate más flexible:</strong> El paper podría mencionar que CIC-IDS-2017 es un dataset de laboratorio y que la precisión en producción real podría ser diferente. Pero <strong>el gate de 0.99 se estableció en ADR-026 por consenso</strong>, y cambiarlo ahora sería una traición a los principios de seguridad. El Consejo no acepta rebajar el gate.</p>
+<p><strong>Veredicto:</strong> ❌ No se flexibiliza el gate. Se resuelve el problema técnico (calibración, más datos, mejores features) o se descarta XGBoost para level1.</p>
+<hr />
+<h4 id="q3-integridad-cientifica-del-paper-usar-wednesday-como-test-set">Q3 — Integridad científica del paper: ¿usar Wednesday como test set?</h4>
+<p><strong>Respuesta:</strong> <strong>Sí, absolutamente.</strong> Entrenar con Tuesday y evaluar sobre Wednesday (o cualquier otro día) es la práctica estándar en detección de intrusiones para evitar fuga de temporales. El hecho de que hayas usado Tuesday para entrenar y también para test invalida las métricas reportadas.</p>
+<p><strong>Acción obligatoria:</strong>
+- Re-entrenar el modelo con Tuesday (sin Wednesday).
+- Evaluar en Wednesday completo.
+- Reportar en el paper las métricas sobre Wednesday (test set independiente).
+- Si la Precision baja aún más (posible), será un dato honesto. Podría argumentarse que la variabilidad entre días es real y que el modelo necesita más datos de entrenamiento.</p>
+<p><strong>Impacto en el merge:</strong> Si sobre Wednesday la Precision sigue siendo &lt;0.99, <strong>no se mergea</strong>. Se debe iterar (más datos, calibración, etc.) hasta cumplir el gate.</p>
+<p><strong>Veredicto:</strong> ✅ Exigimos test set independiente (Wednesday) antes de cualquier decisión de merge.</p>
+<hr />
+<h4 id="q4-recuperar-el-rf-level1-para-la-tabla-comparativa">Q4 — ¿Recuperar el RF level1 para la tabla comparativa?</h4>
+<p><strong>Respuesta:</strong> <strong>No.</strong> Invertir tiempo en recuperar un pickle perdido de un modelo que ya sabes que es más lento (12 µs vs 1.3 µs) y que tiene F1 similar no aporta valor científico significativo. La tabla comparativa puede mostrar:</p>
+<ul>
+<li><strong>RF (level1):</strong> No disponible para comparación directa; se asume rendimiento similar al reportado en trabajos previos (cita a algún paper). O simplemente omitirlo.</li>
+<li><strong>XGBoost (level1):</strong> Latencia 1.31 µs, F1=0.9989, Precision=0.9875 (en Tuesday). Y luego en Wednesday (cuando lo tengas) se actualiza.</li>
+</ul>
+<p><strong>Mejor aún:</strong> Entrenar un nuevo RF con los mismos datos de Tuesday y medir su latencia y F1. Eso es trivial (unas pocas líneas en Python) y daría una comparación justa. Pero si no quieres, la omisión es aceptable siempre que expliques que XGBoost fue elegido por latencia.</p>
+<p><strong>Veredicto:</strong> ✅ No recuperar el pickle. Si acaso, entrenar RF nuevo para la comparación. No bloquea el merge.</p>
+<hr />
+<h2 id="resumen-de-acciones-obligatorias-para-day-122">Resumen de acciones obligatorias para DAY 122</h2>
+<table>
+<thead>
+<tr>
+<th>Acción</th>
+<th>Prioridad</th>
+<th>Plazo</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1. Separar Tuesday en train/validation (80/20) y usar Wednesday como test</td>
+<td><strong>Crítica</strong></td>
+<td>DAY 122</td>
+</tr>
+<tr>
+<td>2. Calibrar threshold sobre validation set (no sobre test)</td>
+<td><strong>Crítica</strong></td>
+<td>DAY 122</td>
+</tr>
+<tr>
+<td>3. Evaluar XGBoost en Wednesday y reportar Precision, Recall, F1</td>
+<td><strong>Crítica</strong></td>
+<td>DAY 122</td>
+</tr>
+<tr>
+<td>4. Si Precision ≥ 0.99 en Wednesday → merge autorizado. Si no → re-entrenar con más días (Wednesday+Thursday+Friday) y repetir</td>
+<td><strong>Crítica</strong></td>
+<td>DAY 122-123</td>
+</tr>
+<tr>
+<td>5. Añadir test aleatorio de 100 flows de Wednesday en <code>plugin-integ-test</code></td>
+<td>Alta</td>
+<td>DAY 122</td>
+</tr>
+<tr>
+<td>6. Documentar la metodología de calibración y separación de datos en <code>docs/xgboost/validation.md</code></td>
+<td>Media</td>
+<td>DAY 122</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="veredicto-final-del-consejo">Veredicto final del Consejo</h2>
+<p>El trabajo de DAY 121 es sólido, pero el <strong>error metodológico de usar el mismo dataset para entrenar y evaluar</strong> invalida las métricas actuales. No se puede confiar en una Precision=0.9875 que no ha sido probada en datos no vistos.</p>
+<p><strong>Decisión:</strong><br />
+❌ <strong>No se acepta el merge de <code>feature/adr026-xgboost</code> a <code>main</code> hasta que se demuestre Precision ≥ 0.99 en un test set independiente (Wednesday).</strong></p>
+<p>Se autoriza a continuar con la investigación (threshold calibration, más datos, etc.) pero <strong>no se etiquetará como <code>v0.5.0</code> ni se desplegará en producción hasta cumplir el gate</strong>.</p>
+<p><em>La seguridad de los hospitales no admite atajos estadísticos.</em></p>
+<p>— <strong>Consejo de Sabios, DAY 121</strong></p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.top", "search.highlight"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

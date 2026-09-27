@@ -1,0 +1,1439 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source embedded-ML NDR for hospitals and schools">
+      
+      
+        <meta name="author" content="Alonso Isidoro Roman">
+      
+      
+        <link rel="canonical" href="https://alonsoir.github.io/argus/council/ADR-058-circuito-completo-aguas-abajo-respuesta-mistral-v2/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>ADR 058 circuito completo aguas abajo respuesta mistral v2 - ML Defender (aRGus NDR)</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#defectos-criticos-bloqueantes-para-el-cierre-del-medallon" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-header__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ML Defender (aRGus NDR)
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              ADR 058 circuito completo aguas abajo respuesta mistral v2
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../README.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/BACKLOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Backlog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Security Model
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-tabs__link">
+          
+  
+  
+  ADRs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/contracts/Protobuf contracts.md" class="md-tabs__link">
+          
+  
+  
+  Contracts
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-nav__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ML Defender (aRGus NDR)
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../README.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/BACKLOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADRs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ADRs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013 Seed Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-021-deployment-topology-seed-families.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-021 Topology SSOT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-022-threat-model-opcion2-descartada.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-022 Threat Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Protobuf contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protobuf
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/JSON contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JSON
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Rag security commands.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#defectos-criticos-bloqueantes-para-el-cierre-del-medallon" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🔴 Defectos Críticos (Bloqueantes para el Cierre del Medallón)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🔴 Defectos Críticos (Bloqueantes para el Cierre del Medallón)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-el-predicado-31-no-es-suficiente-para-garantizar-equivalencia-en-produccion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. El Predicado §3.1 NO es Suficiente para Garantizar Equivalencia en Producción
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-el-flujo-b-parquet-kuzu-no-existe-no-se-puede-validar-el-predicado" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. El Flujo B (Parquet → Kuzu) NO Existe: No se Puede Validar el Predicado
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-la-canonicalizacion-de-nan-y-00-no-esta-implementada-en-el-flujo-a" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. La Canonicalización de NaN y -0.0 NO Está Implementada en el Flujo A
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-la-precondicion-de-orden-determinista-en-el-flujo-b-no-esta-garantizada" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. La Precondición de Orden Determinista en el Flujo B NO Está Garantizada
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5-falta-de-definicion-del-mecanismo-de-verificacion-de-hmac" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Falta de Definición del Mecanismo de Verificación de HMAC
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#defectos-de-alto-riesgo-no-bloqueantes-pero-criticos-para-la-robustez" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🟡 Defectos de Alto Riesgo (No Bloqueantes, pero Críticos para la Robustez)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🟡 Defectos de Alto Riesgo (No Bloqueantes, pero Críticos para la Robustez)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#6-falta-de-plan-de-rollback-en-caso-de-fallo-del-test-31" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Falta de Plan de Rollback en Caso de Fallo del Test §3.1
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#7-falta-de-metricas-de-rendimiento-para-el-flujo-ab" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Falta de Métricas de Rendimiento para el Flujo A+B
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#8-falta-de-validacion-cross-language-del-flow_uid" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. Falta de Validación Cross-Language del flow_uid
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#9-la-deuda-debt-gold-integrity-hmac-001-p0-no-tiene-fecha-de-cierre" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9. La Deuda DEBT-GOLD-INTEGRITY-HMAC-001 (P0) NO Tiene Fecha de Cierre
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#10-falta-de-definicion-del-contrato-wazuh-hostred" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10. Falta de Definición del Contrato Wazuh (Host↔Red)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#-" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ---
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#oportunidades-de-mejora-no-bloqueantes-pero-recomendadas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🟢 Oportunidades de Mejora (No Bloqueantes, pero Recomendadas)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🟢 Oportunidades de Mejora (No Bloqueantes, pero Recomendadas)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#11-falta-de-documentacion-del-proceso-de-medicion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        11. Falta de Documentación del Proceso de Medición
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#12-falta-de-validacion-de-la-robustez-ante-colisiones-de-flow_uid" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        12. Falta de Validación de la Robustez ante Colisiones de flow_uid
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#-_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ---
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#-_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ---
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#recomendaciones-para-el-consejo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        📌 Recomendaciones para el Consejo
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="📌 Recomendaciones para el Consejo">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#ratificar-el-adr-v2-si" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ✅ Ratificar el ADR V2 SI:
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rechazar-el-adr-v2-si" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ❌ Rechazar el ADR V2 SI:
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#-_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ---
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#resumen-de-acciones-inmediatas-esta-semana" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        📝 Resumen de Acciones Inmediatas (Esta Semana)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#-_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ---
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#preguntas-criticas-para-el-consejo-a-resolver-antes-de-la-ratificacion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🔥 Preguntas Críticas para el Consejo (a resolver antes de la ratificación)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#-_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ---
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#conclusion-final-modo-adversario" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Conclusión Final (Modo Adversario)
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+  <h1>ADR 058 circuito completo aguas abajo respuesta mistral v2</h1>
+
+<p>Aironman DirtDiver, <strong>gracias por la V2</strong>. El equipo ha hecho un trabajo <strong>excelente</strong> al abordar la mayoría de las objeciones técnicas con mediciones concretas y ajustes precisos. Sin embargo, en modo adversario —y considerando que <strong>este pipeline podría salvar vidas en hospitales con recursos limitados</strong>— aún hay <strong>riesgos críticos ocultos, lagunas lógicas y dependencias no resueltas</strong> que podrían comprometer la <strong>robustez, determinismo y auditabilidad</strong> del sistema. Aquí va el análisis <strong>sin concesiones</strong>, organizado por gravedad y bloqueo para el cierre del medallón.</p>
+<hr />
+<hr />
+<hr />
+<h2 id="defectos-criticos-bloqueantes-para-el-cierre-del-medallon">🔴 <strong>Defectos Críticos (Bloqueantes para el Cierre del Medallón)</strong></h2>
+<p><em>Si no se resuelven, el Consejo </em><em>debe rechazar la ratificación</em><em>.</em></p>
+<hr />
+<h3 id="1-el-predicado-31-no-es-suficiente-para-garantizar-equivalencia-en-produccion">1. <strong>El Predicado §3.1 NO es Suficiente para Garantizar Equivalencia en Producción</strong></h3>
+<p><strong>Problema:</strong>
+El predicado ahora <strong>excluye <code>ingested_at</code> y <code>temporal_anomaly</code></strong> (correcto, son deterministas-de-ejecución), pero <strong>sigue sin cubrir</strong>:
+- <strong>Metadatos de Kuzu no modelados en <code>schema.cypher</code></strong>:
+    - ¿Se comparan los <strong>índices</strong>, <strong>restricciones de unicidad</strong> o <strong>propiedades del grafo</strong> (ej: <code>created_at</code>, <code>updated_at</code>)?
+    - ¿Cómo se garantiza que el <strong>orden de las aristas</strong> (ej: <code>ALERT_ABOUT</code>) es idéntico entre Camino 0 y Flujo A+B?
+        - <em>Ejemplo:</em> Si el Flujo B inserta aristas en un orden distinto (aunque el conjunto sea el mismo), <strong>el grafo resultante podría no ser equivalente</strong> para consultas que dependan del orden (ej: traversals en Kuzu).
+    - <strong>Falta de hash determinista del grafo completo</strong>:
+        - El predicado actual compara conjuntos (<code>set(flow_uid)</code>, <code>set(event_id)</code>), pero <strong>no garantiza que la estructura del grafo sea idéntica</strong> (ej: dos grafos pueden tener los mismos nodos y aristas, pero con propiedades ordenadas de forma distinta).
+        - <em>Solución mínima:</em> <strong>Añadir un hash determinista</strong> (ej: <code>SHA256</code> de todas las filas ordenadas por <code>flow_uid</code> + <code>event_id</code> + <code>arista_type</code>) como parte del predicado.</p>
+<p><strong>Acción bloqueante:</strong>
+- <strong>Ampliar el predicado</strong> para incluir:
+    - Comparación <strong>bit-exacta de todas las propiedades de aristas</strong> (incluyendo <code>method</code> y <code>confidence</code>).
+    - Un <strong>hash determinista del grafo completo</strong> (ej: <code>SHA256</code> de todas las filas ordenadas).
+    - <strong>Prueba explícita de que el orden de inserción es determinista</strong> (no solo asumirlo).</p>
+<hr />
+<h3 id="2-el-flujo-b-parquet-kuzu-no-existe-no-se-puede-validar-el-predicado">2. <strong>El Flujo B (Parquet → Kuzu) NO Existe: No se Puede Validar el Predicado</strong></h3>
+<p><strong>Problema:</strong>
+El ADR <strong>asume</strong> que el Flujo B (Parquet → Kuzu) será equivalente al Camino 0, pero:
+- <strong>No hay prototipo</strong> (se menciona explícitamente: <em>"el conector Parquet→Kuzu NO existe ni en prototipo"</em>).
+- <strong>No hay evidencia</strong> de que el conector Parquet→Kuzu:
+    - Preserve el <strong>orden determinista</strong> de inserción (requerido para el predicado §3.1).
+    - Maneje correctamente <strong><code>NaN</code> y <code>-0.0</code></strong> (canonicalización).
+    - No introduzca <strong>pérdidas de precisión</strong> en los <code>double</code> (ej: truncamiento a <code>float32</code>).
+- <strong>Riesgo:</strong> El test de equivalencia <strong>no puede ejecutarse</strong> hasta que el Flujo B exista. <strong>Sin validación, no hay garantía de que el predicado §3.1 se cumpla</strong>.</p>
+<p><strong>Acción bloqueante:</strong>
+- <strong>Implementar un prototipo mínimo del Flujo B</strong> (aunque sea en una rama temporal) <strong>antes del cierre del medallón</strong>.
+- <strong>Ejecutar el test §3.1 con datos reales</strong> (no sintéticos) para validar:
+    - Equivalencia de nodos, aristas y propiedades.
+    - Orden determinista de inserción.
+    - Canonicalización de <code>NaN</code> y <code>-0.0</code>.</p>
+<hr />
+<h3 id="3-la-canonicalizacion-de-nan-y-00-no-esta-implementada-en-el-flujo-a">3. <strong>La Canonicalización de <code>NaN</code> y <code>-0.0</code> NO Está Implementada en el Flujo A</strong></h3>
+<p><strong>Problema:</strong>
+El ADR define una <strong>regla canónica</strong> para <code>NaN</code> y <code>-0.0</code> (canonicalizar a <code>0x7ff8000000000000</code> y <code>+0.0</code> respectivamente), pero:
+- <strong>No se especifica dónde ni cómo se implementa esta canonicalización</strong> en el Flujo A (bronce → AVRO → Parquet).
+- <strong>No se adjunta código</strong> que demuestre que el converter AVRO→Parquet aplica esta regla.
+- <strong>Riesgo:</strong> Si el Flujo A no canonicaliza, el test §3.1 <strong>fallará falsamente</strong> (o pasará falsamente si ambos caminos tienen el mismo bug).</p>
+<p><strong>Acción bloqueante:</strong>
+- <strong>Adjuntar el código del converter Flujo A</strong> (especialmente la parte que maneja <code>double</code>).
+- <strong>Añadir un test unitario</strong> que verifique la canonicalización de <code>NaN</code> y <code>-0.0</code> en el Flujo A.</p>
+<hr />
+<h3 id="4-la-precondicion-de-orden-determinista-en-el-flujo-b-no-esta-garantizada">4. <strong>La Precondición de Orden Determinista en el Flujo B NO Está Garantizada</strong></h3>
+<p><strong>Problema:</strong>
+El ADR <strong>asume</strong> que el Flujo B inserta en orden determinista por <code>(flow_start_window, seq_in_window)</code>, pero:
+- <strong>No se especifica cómo se implementa este orden</strong> en el conector Parquet→Kuzu.
+- <strong>No se adjunta evidencia</strong> de que el Parquet generado por el Flujo A preserve el orden de las filas del bronce.
+- <strong>Riesgo:</strong> Si el Flujo B inserta en paralelo o en bulk, <strong>el orden podría variar</strong>, rompiendo la equivalencia ante colisiones de <code>flow_uid</code>.</p>
+<p><strong>Acción bloqueante:</strong>
+- <strong>Documentar explícitamente</strong> cómo se garantiza el orden determinista en el Flujo B.
+- <strong>Añadir un test</strong> que valide que el orden de inserción es idéntico entre Camino 0 y Flujo B.</p>
+<hr />
+<h3 id="5-falta-de-definicion-del-mecanismo-de-verificacion-de-hmac">5. <strong>Falta de Definición del Mecanismo de Verificación de HMAC</strong></h3>
+<p><strong>Problema:</strong>
+El ADR menciona que el <strong>HMAC-SHA256 por fila</strong> se verifica como integridad bronce↔oro, pero:
+- <strong>No se especifica cómo se verifica el HMAC</strong> (ej: ¿se compara el HMAC de cada fila entre el bronce y el oro? ¿O solo se asume que el converter no lo modifica?).
+- <strong>No se adjunta el código</strong> que implementa esta verificación.
+- <strong>No se define el alcance del HMAC</strong> (¿solo las columnas del ledger? ¿O todas las columnas del Parquet?).
+- <strong>Riesgo:</strong> Si el HMAC no se verifica correctamente, <strong>no hay garantía de integridad</strong> entre el bronce y el oro.</p>
+<p><strong>Acción bloqueante:</strong>
+- <strong>Definir el mecanismo de verificación de HMAC</strong> (ej: comparar el HMAC de cada fila del bronce con el del oro).
+- <strong>Adjuntar el código</strong> que implementa esta verificación.
+- <strong>Añadir un test</strong> que valide la integridad HMAC en el Flujo A.</p>
+<hr />
+<hr />
+<h2 id="defectos-de-alto-riesgo-no-bloqueantes-pero-criticos-para-la-robustez">🟡 <strong>Defectos de Alto Riesgo (No Bloqueantes, pero Críticos para la Robustez)</strong></h2>
+<p><em>Si no se resuelven, el Consejo </em><em>debe exigir su solución antes de la implementación</em><em>.</em></p>
+<hr />
+<h3 id="6-falta-de-plan-de-rollback-en-caso-de-fallo-del-test-31">6. <strong>Falta de Plan de Rollback en Caso de Fallo del Test §3.1</strong></h3>
+<p><strong>Problema:</strong>
+El ADR no define <strong>qué pasa si el test §3.1 falla</strong> después de implementar el Flujo A+B.
+- <strong>Riesgo:</strong> Si se detecta una divergencia, <strong>no hay procedimiento claro</strong> para revertir a Camino 0 o investigar la causa.</p>
+<p><strong>Acción recomendada:</strong>
+- <strong>Definir un plan de rollback</strong> (ej: mantener el Camino 0 como fallback hasta que el Flujo A+B pase el test en producción).
+- <strong>Documentar los pasos</strong> para investigar y corregir divergencias.</p>
+<hr />
+<h3 id="7-falta-de-metricas-de-rendimiento-para-el-flujo-ab">7. <strong>Falta de Métricas de Rendimiento para el Flujo A+B</strong></h3>
+<p><strong>Problema:</strong>
+El ADR se centra en <strong>correctitud</strong>, pero no menciona <strong>rendimiento</strong>:
+- ¿Cuál es el <strong>throughput esperado</strong> del Flujo A+B vs. Camino 0?
+- ¿Cómo se garantiza que el conector Parquet→Kuzu <strong>no es un cuello de botella</strong>?
+- <strong>Riesgo:</strong> El Flujo A+B podría ser <strong>demasiado lento</strong> para producción, bloqueando el cierre del medallón.</p>
+<p><strong>Acción recomendada:</strong>
+- <strong>Añadir métricas de rendimiento</strong> al plan (ej: "El Flujo A+B debe procesar al menos 10K filas/segundo en el dataset de referencia").
+- <strong>Validar el rendimiento</strong> con un prototipo del Flujo B.</p>
+<hr />
+<h3 id="8-falta-de-validacion-cross-language-del-flow_uid">8. <strong>Falta de Validación Cross-Language del <code>flow_uid</code></strong></h3>
+<p><strong>Problema:</strong>
+El ADR dice que el encoding de <code>flow_uid</code> es <strong>canónico y cross-language</strong> (V9), pero:
+- <strong>No se adjunta el código Python de referencia</strong> para verificar el encoding.
+- <strong>No se incluye un test automático</strong> que compare el <code>flow_uid</code> generado en C++ y Python para los mismos inputs.
+- <strong>Riesgo:</strong> Si el converter Flujo A (en Python) <strong>no reusa <code>encode_flow_input</code></strong>, podría introducir divergencias.</p>
+<p><strong>Acción recomendada:</strong>
+- <strong>Adjuntar el código Python de referencia</strong> para el encoding de <code>flow_uid</code>.
+- <strong>Añadir un test automático</strong> que compare el <code>flow_uid</code> generado en C++ y Python.</p>
+<hr />
+<h3 id="9-la-deuda-debt-gold-integrity-hmac-001-p0-no-tiene-fecha-de-cierre">9. <strong>La Deuda <code>DEBT-GOLD-INTEGRITY-HMAC-001</code> (P0) NO Tiene Fecha de Cierre</strong></h3>
+<p><strong>Problema:</strong>
+La deuda <strong><code>DEBT-GOLD-INTEGRITY-HMAC-001</code></strong> (P0) no tiene:
+- <strong>Responsable asignado</strong>.
+- <strong>Fecha límite</strong>.
+- <strong>Definición clara del mecanismo de HMAC</strong> (¿por fila? ¿por artefacto?).
+- <strong>Riesgo:</strong> Sin un plan claro, esta deuda <strong>podría quedarse abierta</strong>, comprometiendo la integridad del oro.</p>
+<p><strong>Acción recomendada:</strong>
+- <strong>Asignar responsable y fecha límite</strong> para <code>DEBT-GOLD-INTEGRITY-HMAC-001</code>.
+- <strong>Definir el mecanismo de HMAC</strong> (ej: HMAC por fila, usando la clave X, verificado en el paso Y).</p>
+<hr />
+<h3 id="10-falta-de-definicion-del-contrato-wazuh-hostred">10. <strong>Falta de Definición del Contrato Wazuh (Host↔Red)</strong></h3>
+<p><strong>Problema:</strong>
+El ADR menciona que el contrato Wazuh es <strong><code>DEBT-HOST-DOMAIN-CONTRACT-001</code> (P1)</strong>, pero:
+- <strong>No se adjunta el esquema</strong> del contrato (ej: campos, tipos, cómo se conecta al grafo).
+- <strong>No se define cómo se mapea <code>agent_id</code> a <code>node_id</code> o <code>community_id</code></strong>.
+- <strong>Riesgo:</strong> Sin el contrato definido, <strong>no se puede implementar el Eslabón 1</strong> (que depende de él).</p>
+<p><strong>Acción recomendada:</strong>
+- <strong>Definir el esquema del contrato Wazuh</strong> antes de cerrar el medallón.
+- <strong>Asegurar que el contrato es compatible</strong> con el grafo Kuzu.</p>
+<hr />
+<h2 id="-">---</h2>
+<hr />
+<h2 id="oportunidades-de-mejora-no-bloqueantes-pero-recomendadas">🟢 <strong>Oportunidades de Mejora (No Bloqueantes, pero Recomendadas)</strong></h2>
+<p><em>Mejoras que aumentarían la robustez y mantenibilidad del sistema.</em></p>
+<hr />
+<h3 id="11-falta-de-documentacion-del-proceso-de-medicion">11. <strong>Falta de Documentación del Proceso de Medición</strong></h3>
+<p><strong>Problema:</strong>
+El ADR menciona que todas las decisiones están <strong>trazadas a <code>fichero:línea</code></strong>, pero:
+- <strong>No se adjunta un log de las mediciones</strong> (ej: comandos usados, outputs, fechas).
+- <strong>No se define cómo se reprodujeron las verificaciones</strong> (ej: ¿con qué dataset? ¿en qué entorno?).
+- <strong>Riesgo:</strong> Sin reproducción, <strong>no hay garantía de que las mediciones sean válidas</strong> en otros entornos.</p>
+<p><strong>Acción recomendada:</strong>
+- <strong>Adjuntar un apéndice</strong> con:
+    - Comandos usados para las mediciones (ej: <code>grep</code>, <code>cat</code>, <code>sha256sum</code>).
+    - Datasets de prueba (o hashes de los mismos).
+    - Entorno de ejecución (ej: versión de Kuzu, librerías, SO).</p>
+<hr />
+<h3 id="12-falta-de-validacion-de-la-robustez-ante-colisiones-de-flow_uid">12. <strong>Falta de Validación de la Robustez ante Colisiones de <code>flow_uid</code></strong></h3>
+<p><strong>Problema:</strong>
+El ADR asume que el <strong>MERGE en Kuzu</strong> maneja colisiones de <code>flow_uid</code> de forma determinista, pero:
+- <strong>No se prueba con datos reales</strong> que contengan colisiones.
+- <strong>No se define cómo se detectan y reportan colisiones</strong> en producción.
+- <strong>Riesgo:</strong> Si hay colisiones no detectadas, <strong>se perderán flujos</strong> sin aviso.</p>
+<p><strong>Acción recomendada:</strong>
+- <strong>Añadir un test</strong> que simule colisiones de <code>flow_uid</code> y valide que ambos caminos (Camino 0 y Flujo A+B) <strong>pierden los mismos flujos</strong>.
+- <strong>Implementar un mecanismo de logging</strong> para detectar y reportar colisiones en producción.</p>
+<h2 id="-_1">---</h2>
+<h2 id="-_2">---</h2>
+<h2 id="recomendaciones-para-el-consejo">📌 <strong>Recomendaciones para el Consejo</strong></h2>
+<h3 id="ratificar-el-adr-v2-si">✅ <strong>Ratificar el ADR V2 SI:</strong></h3>
+<ol>
+<li><strong>Se implementa un prototipo del Flujo B (Parquet → Kuzu)</strong> y se valida con el test §3.1 en datos reales.</li>
+<li><strong>Se amplía el predicado §3.1</strong> para incluir:<ul>
+<li>Comparación <strong>bit-exacta de todas las propiedades de aristas</strong> (incluyendo <code>method</code> y <code>confidence</code>).</li>
+<li>Un <strong>hash determinista del grafo completo</strong> (ej: <code>SHA256</code> de todas las filas ordenadas).</li>
+<li><strong>Prueba explícita de que el orden de inserción es determinista</strong>.</li>
+</ul>
+</li>
+<li><strong>Se adjunta el código del converter Flujo A</strong> (especialmente el manejo de <code>double</code>, <code>NaN</code> y <code>-0.0</code>).</li>
+<li><strong>Se define el mecanismo de verificación de HMAC</strong> (alcance, código, tests).</li>
+<li><strong>Se asignan responsables y fechas límite</strong> para las deudas P0 (<code>DEBT-GOLD-INTEGRITY-HMAC-001</code>, <code>DEBT-CIRCUIT-BRONZE-ROTATION-FOLLOW-001</code>).</li>
+<li><strong>Se define el esquema del contrato Wazuh</strong> (Host↔Red).</li>
+</ol>
+<h3 id="rechazar-el-adr-v2-si">❌ <strong>Rechazar el ADR V2 SI:</strong></h3>
+<ul>
+<li>No se resuelven los puntos <strong>1-4</strong> arriba.</li>
+<li>No se aclara cómo se garantiza el <strong>orden determinista en el Flujo B</strong>.</li>
+<li>No se define el <strong>mecanismo de verificación de HMAC</strong>.</li>
+</ul>
+<h2 id="-_3">---</h2>
+<hr />
+<h2 id="resumen-de-acciones-inmediatas-esta-semana">📝 <strong>Resumen de Acciones Inmediatas (Esta Semana)</strong></h2>
+<table>
+<thead>
+<tr>
+<th><strong>Acción</strong></th>
+<th><strong>Responsable</strong></th>
+<th><strong>Prioridad</strong></th>
+<th><strong>Fecha Límite</strong></th>
+<th><strong>Estado</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Implementar prototipo del Flujo B (Parquet → Kuzu)</td>
+<td>Equipo Kuzu</td>
+<td><strong>P0</strong></td>
+<td>DAY 201</td>
+<td>❌ Pendiente</td>
+</tr>
+<tr>
+<td>Ampliar predicado §3.1 (hash del grafo, propiedades de aristas)</td>
+<td>Equipo Correlación</td>
+<td><strong>P0</strong></td>
+<td>DAY 201</td>
+<td>❌ Pendiente</td>
+</tr>
+<tr>
+<td>Adjuntar código del converter Flujo A (manejo de <code>double</code>, <code>NaN</code>, <code>-0.0</code>)</td>
+<td>Equipo Flujo A</td>
+<td><strong>P0</strong></td>
+<td>DAY 201</td>
+<td>❌ Pendiente</td>
+</tr>
+<tr>
+<td>Definir mecanismo de verificación de HMAC (alcance, código, tests)</td>
+<td>Equipo Integridad</td>
+<td><strong>P0</strong></td>
+<td>DAY 202</td>
+<td>❌ Pendiente</td>
+</tr>
+<tr>
+<td>Validar orden determinista en el Flujo B</td>
+<td>Equipo Kuzu</td>
+<td><strong>P0</strong></td>
+<td>DAY 202</td>
+<td>❌ Pendiente</td>
+</tr>
+<tr>
+<td>Asignar responsable y fecha para <code>DEBT-GOLD-INTEGRITY-HMAC-001</code></td>
+<td>Equipo DevOps</td>
+<td><strong>P0</strong></td>
+<td>DAY 202</td>
+<td>❌ Pendiente</td>
+</tr>
+<tr>
+<td>Definir esquema del contrato Wazuh</td>
+<td>Equipo Wazuh</td>
+<td><strong>P1</strong></td>
+<td>DAY 203</td>
+<td>❌ Pendiente</td>
+</tr>
+<tr>
+<td>Validar rendimiento del Flujo A+B</td>
+<td>Equipo Rendimiento</td>
+<td><strong>P1</strong></td>
+<td>DAY 203</td>
+<td>❌ Pendiente</td>
+</tr>
+</tbody>
+</table>
+<h2 id="-_4">---</h2>
+<hr />
+<h2 id="preguntas-criticas-para-el-consejo-a-resolver-antes-de-la-ratificacion">🔥 <strong>Preguntas Críticas para el Consejo (a resolver antes de la ratificación)</strong></h2>
+<ol>
+<li><strong>¿Cómo se garantiza que el Flujo B (Parquet → Kuzu) inserta en orden determinista?</strong> ¿Hay código o tests que lo demuestren?</li>
+<li><strong>¿Dónde está el código que implementa la canonicalización de <code>NaN</code> y <code>-0.0</code> en el Flujo A?</strong></li>
+<li><strong>¿Cómo se verifica el HMAC en el Flujo A?</strong> ¿Hay un test automático?</li>
+<li><strong>¿Qué pasa si el test §3.1 falla en producción?</strong> ¿Hay un plan de rollback?</li>
+<li><strong>¿Cuál es el throughput mínimo aceptable para el Flujo A+B?</strong> ¿Se ha validado?</li>
+<li><strong>¿Quién es el responsable de <code>DEBT-GOLD-INTEGRITY-HMAC-001</code> y cuándo se cerrará?</strong></li>
+<li><strong>¿Está definido el esquema del contrato Wazuh?</strong> ¿Cómo se mapea <code>agent_id</code> a <code>node_id</code>?</li>
+</ol>
+<h2 id="-_5">---</h2>
+<hr />
+<h2 id="conclusion-final-modo-adversario"><strong>Conclusión Final (Modo Adversario)</strong></h2>
+<p>El <strong>ADR V2 es un avance significativo</strong>, pero <strong>aún no está listo para ratificación</strong>. Los puntos críticos sin resolver (Flujo B no implementado, predicado incompleto, canonicalización no validada, HMAC no definido) <strong>podrían llevar a fallos silenciosos en producción</strong>, algo <strong>inaceptable en un sistema que salva vidas</strong>.</p>
+<p><strong>Recomendación:</strong>
+- <strong>Devolver el ADR al equipo</strong> para resolver los puntos <strong>1-5</strong> (Flujo B, predicado, canonicalización, HMAC, orden determinista) <strong>antes del DAY 202</strong>.
+- <strong>Ratificar condicionalmente</strong> solo si se comprometen a resolverlos en <strong>48 horas</strong> y se adjunta evidencia concreta (código, tests, logs de medición).
+- <strong>Exigir un plan de rollback</strong> en caso de fallo del test §3.1.</p>
+<hr />
+<p><strong>Aironman, ¿qué opinas? ¿Quieres que profundicemos en algún punto en concreto o ajustemos las prioridades?</strong> <em>(Recordemos: en un hospital con recursos limitados, un solo fallo en la correlación de alertas podría costar vidas).</em></p>
+<p>FDO</p>
+<p>MISTRAL</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.top", "search.highlight"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

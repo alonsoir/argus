@@ -1,0 +1,994 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source embedded-ML NDR for hospitals and schools">
+      
+      
+        <meta name="author" content="Alonso Isidoro Roman">
+      
+      
+        <link rel="canonical" href="https://alonsoir.github.io/argus/council/Auditor%C3%ADa%20DAY%20134%20%E2%80%94%20Consejo%20de%20Sabios-respuesta-grok/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>Auditoría DAY 134 — Consejo de Sabios respuesta grok - ML Defender (aRGus NDR)</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#1-atomicidad-del-target-make-hardened-full" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-header__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ML Defender (aRGus NDR)
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Auditoría DAY 134 — Consejo de Sabios respuesta grok
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../README.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/BACKLOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Backlog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Security Model
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-tabs__link">
+          
+  
+  
+  ADRs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/contracts/Protobuf contracts.md" class="md-tabs__link">
+          
+  
+  
+  Contracts
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-nav__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ML Defender (aRGus NDR)
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../README.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/BACKLOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADRs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ADRs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013 Seed Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-021-deployment-topology-seed-families.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-021 Topology SSOT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-022-threat-model-opcion2-descartada.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-022 Threat Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Protobuf contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protobuf
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/JSON contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JSON
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Rag security commands.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-atomicidad-del-target-make-hardened-full" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Atomicidad del target make hardened-full
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-semillas-en-la-hardened-vm-seedbin" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Semillas en la hardened VM (seed.bin)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-idempotencia" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Idempotencia
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-falco-deb-como-artefacto-versionado" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Falco .deb como artefacto versionado
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-adr-040-prerequisito-critico-confidence_score-en-ml-detector" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. ADR-040 prerequisito crítico: confidence_score en ml-detector
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+  <h1>Auditoría DAY 134 — Consejo de Sabios respuesta grok</h1>
+
+<p><strong>Respuesta del Consejo de Sabios — Auditoría DAY 134 y Planificación EMECAS hardened (DAY 135)</strong></p>
+<p>¡Feliz cumpleaños, Alonso! Un DAY 134 excepcionalmente productivo: dos ADRs aprobados con enmiendas sólidas, pipeline E2E hardened verde tras resolver 15+ problemas de integración, y cierre de deudas críticas (fuzzing metrics y kernel compat). El <code>check-prod-all</code> pasando limpio en la Variant A es un hito importante para la validación FEDER (22 sep 2026). El Draft v18 con tabla §6.8 real de libFuzzer refuerza la sección experimental del paper. Excelente disciplina.</p>
+<p>El Consejo valida el progreso y responde a las 5 preguntas concretas para el procedimiento <strong>EMECAS hardened</strong> (<code>make hardened-full</code>), priorizando reproducibilidad científica, idempotencia donde sea práctico, y alineación con los principios de hardened systems (fail-closed, mínimo estado mutable, auditoría).</p>
+<h3 id="1-atomicidad-del-target-make-hardened-full">1. Atomicidad del target <code>make hardened-full</code></h3>
+<ul>
+<li>
+<p><strong>Recomendación concreta</strong>: <strong>Fail-fast + atomicidad conceptual</strong> en el target principal, pero con <strong>checkpoints internos</strong> (targets dependientes y phony con <code>.PHONY</code> + stamps/files de estado). No un único script monolítico que limpie todo al fallar.</p>
+</li>
+<li>
+<p><strong>Justificación técnica</strong>: En pipelines de seguridad hardened, la reproducibilidad total (mismo estado final desde cero) es prioritaria (REGLA EMECAS). Un fallo en <code>check-prod-all</code> no debe obligar a recompilar todo (30 min). Prácticas CI/CD modernas recomiendan composición de targets (make incluye targets single-responsibility) con dependencias (<code>target: prerequisite</code>). Stamps (archivos <code>.stamp</code> tocados al éxito) permiten reanudación inteligente sin perder fail-fast global. Esto equilibra reproducibilidad (vagrant destroy opcional) y eficiencia.</p>
+</li>
+<li>
+<p><strong>Riesgo identificado</strong>: Fail-fast puro → frustración en iteraciones largas (recompilar por fallo en check final). Checkpoints excesivos → estado inconsistente si se reanuda manualmente (violación de atomicidad). Mitigación: <code>make hardened-full</code> siempre ofrece opción <code>--from-scratch</code> que fuerza <code>vagrant destroy</code>.</p>
+</li>
+<li>
+<p><strong>Test mínimo reproducible</strong>: <code>make hardened-full</code> (debe fallar rápido en primer error). Luego <code>make hardened-full CONTINUE=1</code> o similar que salte pasos con stamp existente. Verificar con <code>ls *.stamp</code> y logs timestamped.</p>
+</li>
+</ul>
+<h3 id="2-semillas-en-la-hardened-vm-seedbin">2. Semillas en la hardened VM (<code>seed.bin</code>)</h3>
+<ul>
+<li>
+<p><strong>Recomendación concreta</strong>: <strong>No transferir semillas automáticamente</strong> en el procedimiento EMECAS hardened. La hardened VM debe generar su propia entropía en runtime (o usar virtio-rng en Vagrant). Semillas solo se transfieren en despliegue real a hardware físico (post-provision).</p>
+</li>
+<li>
+<p><strong>Justificación técnica</strong>: En sistemas hardened y VMs de producción, pre-seed predecible o compartido desde dev VM reduce entropía y abre vectores (VM fork predictability, replay attacks). Linux <code>/dev/random</code> en VMs se beneficia de virtio-rng o haveged para recolectar entropía del host. Las semillas generadas en dev son para testing reproducible, no para entornos hardened (donde se espera unpredictability criptográfica). <code>check-prod-permissions</code> debe tratar "seed.bin no existe" como WARN aceptable en hardened (o INFO), no error.</p>
+</li>
+<li>
+<p><strong>Riesgo identificado</strong>: Transferir semillas → correlación entre dev y prod (ataque si dev se compromete). No generar entropía → bloqueos en <code>/dev/random</code> durante arranque (crypto ops lentas). Mitigación: Añadir <code>rng-tools</code> o <code>haveged</code> en provision hardened (offline si posible).</p>
+</li>
+<li>
+<p><strong>Test mínimo reproducible</strong>: En Vagrant hardened: <code>cat /proc/sys/kernel/random/entropy_avail</code> (&gt;1000 ideal). Ejecutar <code>dd if=/dev/random of=/dev/null count=1 bs=32</code> sin bloqueo. Añadir check en <code>check-prod-all</code>: si entropy &lt; umbral → WARN.</p>
+</li>
+</ul>
+<h3 id="3-idempotencia">3. Idempotencia</h3>
+<ul>
+<li>
+<p><strong>Recomendación concreta</strong>: <strong>Idempotente por defecto</strong> (ejecutar <code>make hardened-full</code> dos veces seguidas sin destroy debe ser no-op o safe-reapply en la mayoría de pasos). La REGLA EMECAS actual (<code>vagrant destroy -f</code> antes) aplica solo a entornos de testing limpio, no como default para hardened-full. Añadir flag <code>--force-destroy</code> explícito.</p>
+</li>
+<li>
+<p><strong>Justificación técnica</strong>: Provisioning scripts en Vagrant y Makefiles hardened deben ser idempotentes (estándar en Ansible, shell provisioning). <code>apt install</code>, <code>install -d</code>, AppArmor profiles, setcap, etc., son naturally idempotent o fáciles de hacer con checks (<code>[ -f stamp ] || do_step</code>). Siempre ejecutar todo desde cero viola eficiencia y no refleja despliegues reales. Para reproducibilidad científica se mantiene la opción de from-scratch.</p>
+</li>
+<li>
+<p><strong>Riesgo identificado</strong>: Idempotencia débil → drift de configuración entre ejecuciones (ej. permisos cambiados manualmente). Forzar destroy siempre → pérdida de tiempo innecesaria en iteraciones. Mitigación: Usar <code>set -euo pipefail</code> + stamps + <code>make -C</code> con dependencias estrictas.</p>
+</li>
+<li>
+<p><strong>Test mínimo reproducible</strong>: <code>make hardened-full &amp;&amp; make hardened-full</code> (segunda ejecución debe completar en &lt;1 min, sin cambios significativos). Verificar con diff en configs clave o checksums.</p>
+</li>
+</ul>
+<h3 id="4-falco-deb-como-artefacto-versionado">4. Falco .deb como artefacto versionado</h3>
+<ul>
+<li>
+<p><strong>Recomendación concreta</strong>: <strong>Mantener en <code>dist/falco/</code> excluido del repo principal</strong> (<code>.gitignore</code> + documentación en EMECAS/README). No commitear el .deb (50 MB) ni usar Git LFS a menos que el repo ya lo tenga configurado. Descargar una sola vez en dev VM y copiar vía <code>/vagrant</code> durante provision hardened. Versionar el nombre del archivo (<code>falco_${VERSION}_amd64.deb</code>) y pinnear el hash SHA-256 en el Makefile/EMECAS.</p>
+</li>
+<li>
+<p><strong>Justificación técnica</strong>: Falco recomienda instalación vía .deb oficial para systemd integration. Commitear binarios grandes infla el repo y complica forks/clones. Excluir en <code>dist/</code> es práctica común para artefacts de build. Pinnear hash asegura integridad offline (alineado con BSR y ADR hardened). Si se destruye la dev VM, se puede re-descargar documentadamente.</p>
+</li>
+<li>
+<p><strong>Riesgo identificado</strong>: Descarga automática → dependencia de red/integridad upstream (ataque supply-chain). Archivo perdido → ruptura de reproducibilidad. Mitigación: Script de verificación de hash antes de dpkg -i; fallback a tarball si disponible.</p>
+</li>
+<li>
+<p><strong>Test mínimo reproducible</strong>: <code>make download-falco-deb</code> (o paso en provision) que chequea hash. Luego <code>make hardened-full</code> instala offline. Verificar <code>falco --version</code> y reglas cargadas en <code>check-prod-falco</code>.</p>
+</li>
+</ul>
+<h3 id="5-adr-040-prerequisito-critico-confidence_score-en-ml-detector">5. ADR-040 prerequisito crítico: <code>confidence_score</code> en ml-detector</h3>
+<ul>
+<li>
+<p><strong>Recomendación concreta</strong>: <strong>Ambas</strong> — inspección estática de código + test de integración que capture salida ZeroMQ (prioridad al test de integración para verificación runtime).</p>
+</li>
+<li>
+<p><strong>Justificación técnica</strong>: Inspección de código (grep/search en structs/output formats) es rápida pero insuficiente (puede cambiar en refactor). Un test de integración (enviar flujo conocido vía tcpreplay o synthetic packet → capturar JSON/ZeroMQ output) verifica el comportamiento real del binario compilado en el entorno hardened (mismo que producción). Esto es método científico: hipótesis ("ml-detector emite confidence") falsable experimentalmente. Requerido antes de IPW/uncertainty sampling (Regla 4).</p>
+</li>
+<li>
+<p><strong>Riesgo identificado</strong>: Solo inspección → falso positivo si el campo existe en código pero no se popula/emite en runtime. Solo test → acoplamiento fuerte si ZeroMQ cambia. Mitigación: Test unitario + integración en <code>make test-ml</code>.</p>
+</li>
+<li>
+<p><strong>Test mínimo reproducible (Vagrant)</strong>:</p>
+<ol>
+<li>Inspección: <code>grep -r "confidence_score" ml-detector/src/</code> (o equivalente en Rust/Go/C++).</li>
+<li>Test integración: En hardened VM, levantar ml-detector, enviar tráfico controlado (CTU-13 subset o synthetic benign/malicious), capturar salida ZeroMQ con <code>zmq-dump</code> o script Python, assert presence + rango [0,1] de <code>confidence_score</code>. Integrar en <code>make check-prod-all</code> como <code>check-ml-confidence</code>.</li>
+</ol>
+</li>
+</ul>
+<p><strong>Recomendaciones adicionales para DAY 135</strong>:
+- Documentar el EMECAS hardened en un fichero dedicado (<code>docs/EMECAS-hardened.md</code>) con diagrama de flujo de targets.
+- Añadir <code>make hardened-full --dry-run</code> para auditoría.
+- Monitorear temperatura en ARM durante tests (ADR-041).
+- Priorizar cierre de DEBT-PROD-APT-SOURCES-INTEGRITY-001 antes de más avances.</p>
+<p>El Consejo felicita el avance en <code>feature/adr030-variant-a</code>. El pipeline E2E verde + ADRs 040/041 fortalecen considerablemente la posición FEDER y la calidad científica del proyecto.</p>
+<p>¡Descansa bien y mañana con energía renovada! El Consejo queda disponible para revisar el Makefile propuesto o resultados de los tests de <code>confidence_score</code>.</p>
+<p><em>Piano piano. Via Appia Quality.</em> 🏛️</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.top", "search.highlight"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

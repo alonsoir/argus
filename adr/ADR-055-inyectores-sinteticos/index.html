@@ -1,0 +1,1336 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source embedded-ML NDR for hospitals and schools">
+      
+      
+        <meta name="author" content="Alonso Isidoro Roman">
+      
+      
+        <link rel="canonical" href="https://alonsoir.github.io/argus/adr/ADR-055-inyectores-sinteticos/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>ADR-055 — Inyectores Sintéticos: Fidelidad al Componente, Determinismo de Bronce y Semántica de Entrega - ML Defender (aRGus NDR)</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#adr-055-inyectores-sinteticos-fidelidad-al-componente-determinismo-de-bronce-y-semantica-de-entrega" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-header__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ML Defender (aRGus NDR)
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              ADR-055 — Inyectores Sintéticos: Fidelidad al Componente, Determinismo de Bronce y Semántica de Entrega
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../README.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/BACKLOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Backlog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Security Model
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-tabs__link">
+          
+  
+  
+  ADRs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/contracts/Protobuf contracts.md" class="md-tabs__link">
+          
+  
+  
+  Contracts
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-nav__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ML Defender (aRGus NDR)
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../README.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/BACKLOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADRs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ADRs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013 Seed Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-021-deployment-topology-seed-families.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-021 Topology SSOT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-022-threat-model-opcion2-descartada.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-022 Threat Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Protobuf contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protobuf
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/JSON contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JSON
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Rag security commands.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#0-principio-ordenador-invariante-de-las-herramientas-de-tools" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        0. Principio ordenador (invariante de las herramientas de tools/)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1-estado" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Estado
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-contexto" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Contexto
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2. Contexto">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#21-el-camino-ab-y-el-orden-resuelto-por-medicion-no-por-voto" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.1 El camino A/B y el orden resuelto por medición (no por voto)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#22-tres-hallazgos-de-day-177" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.2 Tres hallazgos de DAY 177
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-decisiones" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Decisiones
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. Decisiones">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#31-node_id-sintetico-por-eje-de-modo-cierra-debt-injector-nodeid-001" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.1 node_id sintético por eje de modo (cierra DEBT-INJECTOR-NODEID-001)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#32-trafico-benigno-correlacionable-cobertura-del-camino-de-descarte-q2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.2 Tráfico benigno correlacionable + cobertura del camino de descarte (Q2)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#33-semantica-de-entrega-instrumentar-no-re-arquitecturar-q1-anulacion-de-arbitro" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.3 Semántica de entrega — INSTRUMENTAR, no re-arquitecturar (Q1) ⚠️ ANULACIÓN DE ÁRBITRO
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#34-col-17-authoritative_source-como-string-simbolico-referencia-ratificado" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.4 col 17 authoritative_source como string simbólico (referencia — ratificado)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#35-oracle-divergence-preservada-en-bronce-q5-aviso-sin-accion-hoy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.5 Oracle Divergence preservada en bronce (Q5 — aviso, sin acción hoy)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-alternativas-rechazadas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Alternativas rechazadas
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-estado-de-las-preguntas-del-consejo-1a-pasada" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Estado de las preguntas del Consejo (1ª pasada)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-consecuencias" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Consecuencias
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-validacion-emecas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Validación (EMECAS++)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-deudas-y-diferidos" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. Deudas y diferidos
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#9-referencias" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9. Referencias
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="adr-055-inyectores-sinteticos-fidelidad-al-componente-determinismo-de-bronce-y-semantica-de-entrega">ADR-055 — Inyectores Sintéticos: Fidelidad al Componente, Determinismo de Bronce y Semántica de Entrega</h1>
+<table>
+<thead>
+<tr>
+<th>Campo</th>
+<th>Valor</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>ADR</strong></td>
+<td>055</td>
+</tr>
+<tr>
+<td><strong>Versión</strong></td>
+<td><strong>v1 (ratificada DAY 178)</strong> — 1ª pasada del Consejo (DAY 177) + confirmación de fidelidad (DAY 178)</td>
+</tr>
+<tr>
+<td><strong>Fecha</strong></td>
+<td>DAY 177 (2026-06-07)</td>
+</tr>
+<tr>
+<td><strong>Estado</strong></td>
+<td><strong>RATIFICADA con enmiendas de fidelidad (DAY 178)</strong> — 8/8 confirman lo sustantivo. Enmiendas: DELIVERY-METRIC P2→P1; objeción formal de Kimi a la anulación de Q1 aceptada bajo protesta (condición P1 satisfecha); Q4 se mantiene 7/8 (Kimi sostiene 8/8, no verificable, decisión idéntica). Decisión final: Alonso.</td>
+</tr>
+<tr>
+<td><strong>Decisión final</strong></td>
+<td>Alonso</td>
+</tr>
+<tr>
+<td><strong>Deliberación</strong></td>
+<td>Consejo de Sabios (Claude, ChatGPT, DeepSeek, Gemini, Grok, Kimi, Mistral, Qwen) — 1ª pasada cerrada</td>
+</tr>
+<tr>
+<td><strong>Recoge</strong></td>
+<td>Decisiones de injectors / golden de DAY 176–177 (camino A/B), y el reencuadre de DEBT-INJECTOR-ROWGAP-001</td>
+</tr>
+<tr>
+<td><strong>Depende de / relaciona</strong></td>
+<td>ADR-052 (<code>flow_uid</code>, <code>node_id</code> como identidad de corpus declarada), ADR-051 (Oracle Divergence / N-version, <code>orphan_rate</code>), ADR-046 (<code>community_id</code> como P0 join key), ADR-054 <em>pendiente</em> (modelo de confianza bronce multi-nodo), cableado bronce DAY 175</td>
+</tr>
+<tr>
+<td><strong>Cierra</strong></td>
+<td>DEBT-INJECTOR-NODEID-001 (P0); DEBT-INJECTOR-ROWGAP-001 (reencuadrada y cerrada como característica)</td>
+</tr>
+<tr>
+<td><strong>Numeración</strong></td>
+<td>ADR-053 RESERVADO (JA3/JA4 + TLS + BGP); ADR-054 PENDIENTE (confianza bronce multi-nodo). ADR-055 = este.</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="0-principio-ordenador-invariante-de-las-herramientas-de-tools">0. Principio ordenador (invariante de las herramientas de <code>tools/</code>)</h2>
+<blockquote>
+<p><strong>Una herramienta de <code>tools/</code> es un suplantador fiel, no un simulador libre. Reproduce el comportamiento NÚCLEO del componente oficial que sustituye. No puede divergir de él por conveniencia de test.</strong></p>
+</blockquote>
+<p>Las herramientas de <code>tools/</code> (<code>synthetic_sniffer_injector</code> suplanta al sniffer; <code>synthetic_ml_output_injector</code> suplanta a ml-detector; etc.) existen para <strong>ejercitar al siguiente componente del pipeline con un contrato idéntico al de producción</strong>, de forma determinista y reproducible. Su valor histórico es doble:</p>
+<ol>
+<li><strong>Ejercitar</strong> un componente aislado sin levantar toda la cadena real.</li>
+<li><strong>Revelar</strong> discrepancias de contrato. Precedente: con <code>synthetic_ml_output_injector</code> se detectó que los mensajes protobuf llegaban con <strong>menos features de las diseñadas</strong> — un hallazgo real sobre el contrato, no un defecto de la herramienta.</li>
+</ol>
+<p><strong>Invariante de proyecto (permanente):</strong></p>
+<blockquote>
+<p><em>El suplantador sigue el comportamiento núcleo del componente oficial. Si el componente oficial cambia (transporte, contrato, semántica), su suplantador se actualiza con él — la propagación es </em><em>bidireccional</em><em>. Hacer el suplantador más fiable, más limpio o más "correcto" que el componente real lo invalida como espejo. Medir mejor lo que la herramienta recoge es </em><em>aditivo</em><em>: no altera el comportamiento, y de paso nos dice qué esperar del componente oficial.</em></p>
+</blockquote>
+<p>Consecuencia que recorre el ADR: ante cualquier decisión sobre una herramienta de <code>tools/</code>, la pregunta no es <em>"¿qué haría más robusta la herramienta?"</em> sino <em>"¿se comporta como el componente que suplanta?"</em>. La instrumentación de medida es la única adición que escapa a esa regla, porque no toca el comportamiento.</p>
+<hr />
+<h2 id="1-estado">1. Estado</h2>
+<p>BORRADOR v1. Formaliza las decisiones de injector/golden de DAY 176–177, subordinadas a §0. Cierra dos deudas (NODEID, ROWGAP). Una decisión (Q1, semántica de entrega) se resuelve por <strong>arbitraje de Alonso en contra del mecanismo que pedía la mayoría del Consejo</strong>, y se marca como tal para la confirmación de fidelidad.</p>
+<blockquote>
+<p><strong>Delimitación con ADR-054 (anti-duplicación).</strong> ADR-055 NO define el modelo de confianza del bronce (HMAC/Ed25519, validación cross-nodo) — eso es ADR-054. ADR-055 cubre el <strong>lado productor de test</strong> (injectors) y la <strong>disciplina del bronce determinista</strong>. El contrato <code>correlation_v1</code> en sí (cableado DAY 175) es referencia, no se redefine aquí.</p>
+</blockquote>
+<hr />
+<h2 id="2-contexto">2. Contexto</h2>
+<h3 id="21-el-camino-ab-y-el-orden-resuelto-por-medicion-no-por-voto">2.1 El camino A/B y el orden resuelto por medición (no por voto)</h3>
+<p>DAY 176 dejó dos batallas: (A) injectors poblando <code>community_id</code>, (B) col 17 <code>authoritative_source</code> → string simbólico. El orden B-vs-A se resolvió en DAY 177 <strong>midiendo</strong>, no votando (precedente "medir, no votar"): se inspeccionó cómo construye sus filas <code>test_correlation_roundtrip</code> y se confirmó que es <strong>injector-independiente</strong> (fabrica su propio <code>NetworkSecurityEvent</code> con valores literales). Por tanto B podía ir primero sin riesgo, y A se construiría después contra el contrato ya final. <strong>B antes que A.</strong></p>
+<h3 id="22-tres-hallazgos-de-day-177">2.2 Tres hallazgos de DAY 177</h3>
+<ol>
+<li><strong>node_id vacío (P0).</strong> El injector dejaba col 3 (<code>originating_node_id</code>) sin poblar → <code>flow_uid = hash(node_id ‖ community_id ‖ window)</code> degenerado (ADR-052).</li>
+<li><strong>Proto benigno no correlacionable.</strong> En modo benigno el injector ponía <code>protocol_number = rand_uint(1,255)</code>. <code>compute_community_id()</code> devuelve <code>nullopt</code> si <code>proto ∉ {TCP(6), UDP(17)}</code> (solo protocolos con puertos). Probabilidad de caer en {6,17} ≈ 0.78%. → <code>community_id</code> vacío → el hook <code>!community_id().empty()</code> descartaba → <strong>bronce a 0 filas</strong>, pese a que ml-detector procesó los 100 eventos (delta=100 en stats). Además, <code>protocol_number</code> (aleatorio) y <code>protocol_name</code> (TCP/UDP aleatorio) <strong>no concordaban entre sí</strong> (bug latente).</li>
+<li><strong>Semántica de entrega del injector.</strong> Con el proto arreglado, una corrida de 100 produjo <strong>102 filas, 102 <code>community_id</code> únicos, 2 <code>event_id</code> duplicados</strong> (<code>synthetic-8</code>, <code>synthetic-29</code>) con <code>community_id</code> distinto. El <code>publisher_.send(msg, zmq::send_flags::dontwait)</code> sin comprobar return no ofrece garantía <em>once-only</em>: el síntoma es <strong>bidireccional</strong> (a veces pierde — el "row-gap" original ~8/50 —, a veces reenvía). El sniffer real usa el mismo <code>dontwait</code>.</li>
+</ol>
+<hr />
+<h2 id="3-decisiones">3. Decisiones</h2>
+<h3 id="31-node_id-sintetico-por-eje-de-modo-cierra-debt-injector-nodeid-001">3.1 node_id sintético por eje de modo (cierra DEBT-INJECTOR-NODEID-001)</h3>
+<p>El injector puebla <code>originating_node_id</code> (col 3):</p>
+<ul>
+<li><strong>Isomorfo:</strong> <code>synth-node-00</code> — <strong>fijo</strong>. Modela UN punto de captura (un sensor) observando muchos flujos. La unicidad del <code>flow_uid</code> la aporta el <code>community_id</code> distinto por 5-tupla, no la variabilidad del node_id (coherente con ADR-052 §2.1: <code>community_id</code> es correlación, no identidad).</li>
+<li><strong>Mock:</strong> <code>synth:node:&lt;event_id&gt;</code> — auto-identificable; el correlation-engine lo descarta antes de Kuzu.</li>
+</ul>
+<p><em>Multi-nodo sintético (<code>--multi-node N</code>) se difiere a cuando lo necesite ADR-054.</em> <strong>Ratificación Consejo: 8/8.</strong></p>
+<h3 id="32-trafico-benigno-correlacionable-cobertura-del-camino-de-descarte-q2">3.2 Tráfico benigno correlacionable + cobertura del camino de descarte (Q2)</h3>
+<p><strong>Fix de fondo (no del síntoma):</strong> se corrige el injector irrealista, no se parchea el target E2E. Un único <code>use_tcp</code> gobierna número y nombre de protocolo:</p>
+<pre><code class="language-cpp">const bool use_tcp = is_attack ? true : (rand_uint(0, 1) == 1);
+nf-&gt;set_protocol_number(use_tcp ? 6 : 17);
+nf-&gt;set_protocol_name(use_tcp ? &quot;TCP&quot; : &quot;UDP&quot;);
+</code></pre>
+<p>Modo ataque intacto por construcción (<code>is_attack → use_tcp=true</code>). Resultado: <code>community_id</code> poblado del 0% al <strong>100%</strong> (159/159, formato Corelight <code>1:...=</code>).</p>
+<p><strong>Dos perillas (Consejo 8/8), con determinismo por semilla fija (refinamiento DeepSeek):</strong></p>
+<ul>
+<li><strong>Modo <code>deterministic</code> (default CI):</strong> 100% TCP/UDP coherente. Aserción: <code>count(escritos) == count(enviados correlacionables)</code>.</li>
+<li><strong>Modo <code>realistic</code> (suites profundas):</strong> fracción <strong>fija</strong> (~5%, p.ej. 5 ICMP sobre 100) de protocolos sin puertos, con <strong>semilla fija</strong> → mismos <code>event_id</code> no-correlacionables en cada corrida. Aserción explícita: esos <code>event_id</code> <strong>NO</strong> aparecen en bronce. Esto ejercita el <em>discard path</em> (<code>nullopt</code> → descarte) como <strong>test duro</strong>, no como fuzz best-effort.</li>
+</ul>
+<p>Fórmula de validación (Gemini): <code>{escritos en bronce} == {inyectados} \ {inyectados sin puertos}</code>.</p>
+<p>Implementación sugerida: env var / flag (<code>ARGUS_PROTO_MIX=deterministic|realistic</code>), default <code>deterministic</code>.</p>
+<h3 id="33-semantica-de-entrega-instrumentar-no-re-arquitecturar-q1-anulacion-de-arbitro">3.3 Semántica de entrega — INSTRUMENTAR, no re-arquitecturar (Q1) ⚠️ ANULACIÓN DE ÁRBITRO</h3>
+<p><strong>Decisión: el <code>send(dontwait)</code> se mantiene</strong> (fidelidad al sniffer real, §0). NO se adopta (a) reintento, NI (b) bloqueante con timeout, NI (c) cambio de patrón PUSH/PULL. Lo único que se añade es el <strong>instrumento de medida</strong>:</p>
+<ul>
+<li><strong>Métrica oficial: diff de conjuntos</strong> — <code>{event_id enviados}</code> (log del injector) vs <code>{event_id escritos}</code> (bronce). Separa pérdidas de reenvíos sin ambigüedad. Es el mismo gesto con el que se detectaron los gaps de features (medir lo recogido contra lo esperado).</li>
+<li>El comportamiento bidireccional de ZMQ PUSH se documenta como <strong>característica revelada</strong>, no como defecto a corregir.</li>
+</ul>
+<p><strong>DEBT-INJECTOR-ROWGAP-001 se reencuadra y se cierra como característica:</strong> no es "se pierden filas", es "el injector reproduce fielmente la semántica de entrega no-garantizada de ZMQ PUSH; se instrumenta para hacerla visible". Si el instrumento revelara en el futuro una pérdida que rompe el gate de CI de verdad (hoy el gate mide deltas de stats, dio 100 limpio — no está roto), <em>entonces</em> se reconsidera el mecanismo. <strong>Medir antes de arreglar.</strong></p>
+<blockquote>
+<p><strong>Nota de arbitraje (para confirmación de fidelidad).</strong> La 1ª pasada del Consejo NO alcanzó mayoría en el <em>mecanismo</em>: (a)+(d) → Grok, Mistral, Claude; (b) → Gemini, Qwen, Kimi; (a)+(b) → ChatGPT, DeepSeek. <strong>Consenso 8/8 únicamente en</strong>: rechazar (d) como solución única, rechazar (c) ahora, y adoptar la métrica de conjuntos. Alonso <strong>anula la adición de maquinaria de entrega (a/b)</strong> sobre el argumento de fidelidad de §0: el suplantador no debe ser más fiable que el sniffer que imita; si algún día se cambia el transporte del sniffer, se cambiará también el del injector (propagación bidireccional). Precedente de anulación: ADR-052 §3.11.</p>
+<p><strong>Aclaración de fidelidad (ChatGPT, DAY 178).</strong> El Consejo consensuó la <em>instrumentación</em> (métrica de conjuntos), NO el <em>mecanismo</em> de entrega. Mantener <code>send(dontwait)</code> es arbitraje exclusivo de Alonso, no respaldo del Consejo. "Decisión final" ≠ "consenso del Consejo" — se registra así para evitar reinterpretaciones históricas.</p>
+<p><strong>Objeción formal de Kimi (DAY 178), aceptada bajo protesta con condición satisfecha.</strong> Kimi objeta que §0 no basta para la anulación: el injector inyecta a velocidad de memoria mientras el sniffer real está limitado por la NIC, de modo que mantener <code>dontwait</code> expone un artefacto de saturación de HWM que el sniffer nunca alcanza en producción. Argumenta además que el modo <code>deterministic</code> no es realmente determinista sin la métrica (puede variar 100–102 filas). <strong>Resolución:</strong> la anulación se mantiene (§0 es invariante legítimo y 6/8 la aceptan), pero se satisface la condición de Kimi — <code>DEBT-INJECTOR-DELIVERY-METRIC-001</code> se eleva a <strong>P1</strong> (§8), avalado también por Mistral. Objeción convertida en acuerdo.</p>
+</blockquote>
+<h3 id="34-col-17-authoritative_source-como-string-simbolico-referencia-ratificado">3.4 col 17 <code>authoritative_source</code> como string simbólico (referencia — ratificado)</h3>
+<p>Decisión de contrato de bronce (writer/reader), sellada en DAY 177: <code>DetectorSource_Name()</code> en vez de <code>static_cast&lt;int&gt;</code>; reader almacena string; engine <strong>limpio de protobuf</strong> (decisión DAY-174 #5). <strong>Ratificación Consejo 8/8.</strong> Se referencia aquí porque ADR-055 registra su <strong>sello desde el injector</strong>: bronce real con <code>150 DETECTOR_SOURCE_ML_PRIORITY</code> + <code>9 DETECTOR_SOURCE_DIVERGENCE</code> (strings, no <code>"4"</code>).</p>
+<h3 id="35-oracle-divergence-preservada-en-bronce-q5-aviso-sin-accion-hoy">3.5 Oracle Divergence preservada en bronce (Q5 — aviso, sin acción hoy)</h3>
+<p>Que 9/159 filas lleven <code>DETECTOR_SOURCE_DIVERGENCE</code> (ADR-051) confirma que el bronce <strong>preserva</strong> la procedencia real, no un valor fijo — <strong>señal de éxito</strong>, no defecto. La interpretación gold se <strong>aplaza</strong> hasta cablear el consumidor. <strong>Directriz temprana (Gemini), registrada para el cargador gold:</strong> el atributo de divergencia <strong>NO debe aplanarse</strong> al entrar en Kuzu; tratar el registro con heurística de "voto de calidad" o bifurcar aristas. La trazabilidad de procedencia debe ser <strong>extremo a extremo</strong> (ChatGPT). Decisión efectiva → ADR-054 / lado consumidor.</p>
+<hr />
+<h2 id="4-alternativas-rechazadas">4. Alternativas rechazadas</h2>
+<table>
+<thead>
+<tr>
+<th>Alternativa</th>
+<th>Por qué se rechaza</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Parchear el target E2E para que inyecte <code>--attack</code> (Q2)</td>
+<td>Resuelve el síntoma, no la causa (injector benigno irrealista).</td>
+</tr>
+<tr>
+<td>(a)/(b)/(c) en la entrega del injector (Q1)</td>
+<td>Hace el suplantador más fiable que el sniffer → menos fiel (§0). Sobreingeniería para herramienta de test.</td>
+</tr>
+<tr>
+<td>(d) confiar solo en dedup por <code>flow_uid</code> sin medir</td>
+<td>Deja la pérdida/reenvío <strong>silenciosa</strong>. El instrumento (3.3) es obligatorio. Rechazo (d)-solo: 8/8.</td>
+</tr>
+<tr>
+<td>Un único modo de proto que mezcle determinismo y ruido sin semilla (Q2)</td>
+<td>Degrada ambos fines; el determinismo de CI exige semilla fija (DeepSeek).</td>
+</tr>
+<tr>
+<td>Abrir DEBT nuevo para el fix de proto (Q4)</td>
+<td>Era un bug de implementación corregido en el mismo ciclo, no deuda arquitectónica. 7/8 + Alonso.</td>
+</tr>
+<tr>
+<td>ADR separado para el reencuadre de ROWGAP (Q3)</td>
+<td>Es decisión de injector; pertenece a ADR-055. 8/8.</td>
+</tr>
+<tr>
+<td>node_id sintético variable por defecto</td>
+<td>Añade ruido innecesario; el injector modela UN sensor (§3.1).</td>
+</tr>
+<tr>
+<td>Aplanar / normalizar la divergencia en bronce (Q5)</td>
+<td>Destruye la procedencia, contra ADR-051 y §0.</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="5-estado-de-las-preguntas-del-consejo-1a-pasada">5. Estado de las preguntas del Consejo (1ª pasada)</h2>
+<table>
+<thead>
+<tr>
+<th>Q</th>
+<th>Tema</th>
+<th>Resolución</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Ratif.</td>
+<td>B/Opción 1, node_id, proto</td>
+<td><strong>8/8</strong> ratificadas (§3.1, §3.2, §3.4).</td>
+</tr>
+<tr>
+<td>Reencuadre</td>
+<td>ROWGAP → semántica de entrega</td>
+<td><strong>8/8</strong> avalado (§3.3).</td>
+</tr>
+<tr>
+<td>Q1</td>
+<td>Mecanismo de entrega</td>
+<td><strong>Sin mayoría</strong> (3/3/2). Consenso solo en métrica + rechazo de (c)/(d)-solo. <strong>Arbitraje Alonso → solo instrumento</strong> (§3.3). <em>Requiere confirmación de fidelidad.</em></td>
+</tr>
+<tr>
+<td>Q2</td>
+<td>Realismo vs cobertura</td>
+<td><strong>8/8</strong> dos perillas + semilla fija (§3.2).</td>
+</tr>
+<tr>
+<td>Q3</td>
+<td>¿ADR-055 absorbe?</td>
+<td><strong>8/8</strong> sí (§3.1–3.3, 3.5).</td>
+</tr>
+<tr>
+<td>Q4</td>
+<td>DEBT para proto</td>
+<td><strong>7/8</strong> no. Cierra como "completar A" (§3.2). <em>Nota de fidelidad (DAY 178): Kimi sostiene que el voto de Claude fue "no" desde el origen → 8/8; no verificable contra el acta original en esta pasada. La decisión (no abrir deuda) es idéntica en ambas lecturas, por lo que se mantiene 7/8 de forma conservadora.</em></td>
+</tr>
+<tr>
+<td>Q5</td>
+<td>Divergence en bronce</td>
+<td><strong>8/8</strong> preservar + aplazar + directriz "no aplanar" (§3.5).</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Para la confirmación de fidelidad (no deliberación nueva):</strong> ¿refleja esta v1 fielmente el consenso de la 1ª pasada, y deja clara la anulación de árbitro en Q1 (§3.3, solo instrumento sobre el argumento de fidelidad de §0)?</p>
+<hr />
+<h2 id="6-consecuencias">6. Consecuencias</h2>
+<p><strong>Positivas.</strong> Bronce determinista alcanzable en CI (modo <code>deterministic</code>) + cobertura dura del <em>discard path</em> (modo <code>realistic</code> con semilla). <code>flow_uid</code> ya no degenera (node_id poblado). Contrato col 17 auto-descriptivo sellado E2E. Métrica de entrega honesta (diff de conjuntos) que sirve a la vez de oráculo del comportamiento del sniffer real. Suplantadores fieles por invariante (§0).</p>
+<p><strong>Negativas / coste.</strong> Una bifurcación de modo más en el injector. La métrica de conjuntos es trabajo a implementar (no hecho hoy). Disciplina nueva: cualquier cambio de transporte/contrato en sniffer/ml-detector/firewall obliga a actualizar su suplantador (propagación bidireccional, §0).</p>
+<p><strong>Riesgos.</strong> (1) Si el instrumento de conjuntos no se implementa, la pérdida/reenvío vuelve a ser invisible. (2) <code>seq_in_window</code> (ADR-052 §3.1.4): el injector hoy no lo transporta; con <code>community_id</code> únicos no hubo colisión, pero una ráfaga con reúso de 5-tupla podría exponerlo — <strong>considerar, no resuelto aquí</strong>. (3) El modo <code>realistic</code> con semilla mal fijada reintroduce no-determinismo.</p>
+<hr />
+<h2 id="7-validacion-emecas">7. Validación (EMECAS++)</h2>
+<p>Sobre el pipeline sintético (<code>make pipeline-start</code> + <code>make test-e2e-synthetic-full</code>):</p>
+<ul>
+<li><strong>node_id poblado:</strong> col 3 == <code>synth-node-00</code> en modo isomorfo. <em>(Cierre de DEBT-INJECTOR-NODEID-001.)</em> — <strong>verificado DAY 177</strong> (102 filas <code>synth-node-00</code>).</li>
+<li><strong>community_id 100% en determinista:</strong> col 4 con formato <code>1:...=</code> para todo flujo TCP/UDP. — <strong>verificado DAY 177</strong> (159/159).</li>
+<li><strong>Discard path (modo realistic):</strong> los <code>event_id</code> ICMP de semilla fija NO aparecen en bronce; <code>count(escritos) == count(enviados) − count(ICMP)</code>. <em>(Pendiente: requiere modo <code>realistic</code> + métrica.)</em></li>
+<li><strong>col 17 simbólica E2E:</strong> bronce contiene nombres de enum (<code>DETECTOR_SOURCE_*</code>), nunca enteros. — <strong>verificado DAY 177</strong> (150 ML_PRIORITY + 9 DIVERGENCE).</li>
+<li><strong>Diff de conjuntos:</strong> <code>{enviados} \ {escritos}</code> reportado; pérdidas y reenvíos distinguibles. <em>(Pendiente: requiere instrumento.)</em></li>
+<li><strong>Fidelidad de transporte:</strong> el injector usa el mismo <code>send(dontwait)</code> que el sniffer; no se le añade garantía de entrega que el sniffer no tenga.</li>
+</ul>
+<hr />
+<h2 id="8-deudas-y-diferidos">8. Deudas y diferidos</h2>
+<table>
+<thead>
+<tr>
+<th>DEBT</th>
+<th>Prio</th>
+<th>Estado</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>DEBT-INJECTOR-NODEID-001</code></td>
+<td>P0</td>
+<td><strong>Cerrada</strong> (§3.1). Verificada E2E DAY 177.</td>
+</tr>
+<tr>
+<td><code>DEBT-INJECTOR-ROWGAP-001</code></td>
+<td>P1</td>
+<td><strong>Reencuadrada y cerrada como característica</strong> (§3.3). El comportamiento bidireccional de ZMQ PUSH es fiel al sniffer; se instrumenta, no se corrige.</td>
+</tr>
+<tr>
+<td><code>DEBT-INJECTOR-DELIVERY-METRIC-001</code> (NUEVA)</td>
+<td><strong>P1</strong></td>
+<td>Instrumento de diff de conjuntos <code>{enviados}</code> vs <code>{escritos}</code> en el E2E sintético. Trabajo aditivo, no toca comportamiento. <em>(Reemplaza el "fix" de ROWGAP.)</em> <strong>Elevada P2→P1 en DAY 178</strong> (objeción de fidelidad de Kimi avalada por Mistral): sin el instrumento, el modo <code>deterministic</code> no es determinista.</td>
+</tr>
+<tr>
+<td><code>DEBT-INJECTOR-PROTO-MIX-001</code> (NUEVA)</td>
+<td>P2</td>
+<td>Modo <code>realistic</code> con semilla fija + aserción de ausencia en bronce (§3.2).</td>
+</tr>
+<tr>
+<td>Fix de proto benigno (Q4)</td>
+<td>—</td>
+<td><strong>NO es deuda.</strong> Cerrado como "completar A". Comentario <code>DAY 177 (A)</code> en código + cita en el MR.</td>
+</tr>
+<tr>
+<td><code>DEBT-LIB-001</code> (extraer <code>libs/flow-identity/</code>)</td>
+<td>P1</td>
+<td><strong>NO deliberada en esta pasada</strong> — no estaba en la consulta. Dentro del ámbito de ADR-055 (lib); se trae a una pasada futura.</td>
+</tr>
+<tr>
+<td><code>DEBT-INJECTOR-SEQWINDOW-001</code> (propuesta)</td>
+<td>P3</td>
+<td>¿Transporta el injector <code>seq_in_window</code> (ADR-052 §3.1.4)? Hoy no; sin colisiones observadas. Considerar.</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="9-referencias">9. Referencias</h2>
+<ul>
+<li>ADR-052 (<code>flow_uid</code>, <code>node_id</code> como identidad de corpus declarada; precedente de anulación de árbitro §3.11).</li>
+<li>ADR-051 (Oracle Divergence / N-version reasoning; <code>orphan_rate</code>). ADR-046 (<code>community_id</code> como P0 join key). ADR-054 <em>pendiente</em> (confianza bronce multi-nodo).</li>
+<li>Cableado bronce DAY 175 (CorrelationWriter, contrato <code>correlation_v1</code>, hook punto único).</li>
+<li><code>corelight/community-id-spec</code>; <code>sniffer::flow::compute_community_id</code> (corte proto ∈ {6,17}).</li>
+<li>Consejo de Sabios DAY 177 (1ª pasada, 8 modelos): ratificaciones 8/8; Q1 split 3/3/2 + arbitraje; Q2/Q3/Q5 8/8; Q4 7/8 (ver nota de fidelidad §5).</li>
+<li>Precedente herramientas de <code>tools/</code>: detección de gaps de features vía <code>synthetic_ml_output_injector</code>.</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.top", "search.highlight"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

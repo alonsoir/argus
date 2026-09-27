@@ -1,0 +1,1259 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source embedded-ML NDR for hospitals and schools">
+      
+      
+        <meta name="author" content="Alonso Isidoro Roman">
+      
+      
+        <link rel="canonical" href="https://alonsoir.github.io/argus/council/ADR-055%20%E2%80%94%20Inyectores%20Sint%C3%A9ticos%3A%20Fidelidad%20al%20Componente%2C%20Determinismo%20de%20Bronce%20y%20Sem%C3%A1ntica%20de%20Entrega-kimi/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>ADR 055 — Inyectores Sintéticos: Fidelidad al Componente, Determinismo de Bronce y Semántica de Entrega kimi - ML Defender (aRGus NDR)</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#0-principio-ordenador-apoyo-con-matiz" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-header__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ML Defender (aRGus NDR)
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              ADR 055 — Inyectores Sintéticos: Fidelidad al Componente, Determinismo de Bronce y Semántica de Entrega kimi
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../README.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/BACKLOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Backlog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Security Model
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-tabs__link">
+          
+  
+  
+  ADRs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/contracts/Protobuf contracts.md" class="md-tabs__link">
+          
+  
+  
+  Contracts
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-nav__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ML Defender (aRGus NDR)
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../README.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/BACKLOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADRs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ADRs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013 Seed Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-021-deployment-topology-seed-families.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-021 Topology SSOT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-022-threat-model-opcion2-descartada.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-022 Threat Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Protobuf contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protobuf
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/JSON contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JSON
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Rag security commands.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#0-principio-ordenador-apoyo-con-matiz" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        §0. Principio ordenador — APOYO CON MATIZ
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#31-node_id-sintetico-ratifico-88" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        §3.1 node_id sintético — RATIFICO 8/8
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#32-dos-perillas-determinista-realista-ratifico-88-con-refinamiento" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        §3.2 Dos perillas (determinista / realista) — RATIFICO 8/8 CON REFINAMIENTO
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#33-semantica-de-entrega-objecion-formal-a-la-anulacion-de-arbitro" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        §3.3 Semántica de entrega — OBJECIÓN FORMAL A LA ANULACIÓN DE ÁRBITRO
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="§3.3 Semántica de entrega — OBJECIÓN FORMAL A LA ANULACIÓN DE ÁRBITRO">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#331-la-fidelidad-de-0-no-es-argumento-suficiente-aqui" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.3.1 La fidelidad de §0 no es argumento suficiente aquí
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#332-el-argumento-de-medir-antes-de-arreglar-es-circular" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.3.2 El argumento de "medir antes de arreglar" es circular
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#333-el-coste-de-b-es-trivial-el-coste-de-solo-instrumentar-es-alto" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.3.3 El coste de (b) es trivial; el coste de "solo instrumentar" es alto
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#334-el-precedente-de-adr-052-311-no-aplica" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.3.4 El precedente de ADR-052 §3.11 no aplica
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mi-posicion-alternativa" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Mi posición alternativa
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#34-col-17-como-string-ratifico-88" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        §3.4 col 17 como string — RATIFICO 8/8
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#35-oracle-divergence-ratifico-88" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        §3.5 Oracle Divergence — RATIFICO 8/8
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-alternativas-rechazadas-apoyo-la-tabla" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        §4. Alternativas rechazadas — APOYO LA TABLA
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-estado-de-preguntas-correccion-en-q4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        §5. Estado de preguntas — CORRECCIÓN EN Q4
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-consecuencias-apoyo-con-ampliacion-de-riesgo-1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        §6. Consecuencias — APOYO, CON AMPLIACIÓN DE RIESGO (1)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-validacion-apoyo-pero-con-hueco" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        §7. Validación — APOYO, PERO CON HUECO
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-deudas-reordenamiento-sugerido" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        §8. Deudas — REORDENAMIENTO SUGERIDO
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#9-referencias-completo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        §9. Referencias — COMPLETO
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#resumen-de-voto-de-kimi" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Resumen de voto de Kimi
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#recomendaciones-al-borrador-v2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Recomendaciones al borrador v2
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+  <h1>ADR 055 — Inyectores Sintéticos: Fidelidad al Componente, Determinismo de Bronce y Semántica de Entrega kimi</h1>
+
+<p><strong>Asiento Kimi — Deliberación sobre ADR-055 v1 (Borrador)</strong></p>
+<hr />
+<p>He leído el borrador en su totalidad. A continuación mi análisis sección por sección, con posición sobre cada decisión y una valoración global de la arquitectura del documento.</p>
+<hr />
+<h2 id="0-principio-ordenador-apoyo-con-matiz">§0. Principio ordenador — <strong>APOYO CON MATIZ</strong></h2>
+<p>El principio es sólido y necesario: <em>"suplantador fiel, no simulador libre"</em>. La bidireccionalidad de propagación (sniffer cambia → injector cambia, y viceversa cuando el injector revela discrepancias) es correcta. El matiz que añado:</p>
+<blockquote>
+<p><strong>La fidelidad es al <em>comportamiento observable del contrato</em>, no a la <em>implementación letra por letra</em>.</strong></p>
+</blockquote>
+<p>Si el sniffer real usa <code>dontwait</code> pero <strong>nunca</strong> exhibe pérdida visible en producción (porque el PULL siempre consume más rápido que el PUSH produce, o porque el HWM nunca se alcanza), entonces el suplantador que <em>sí</em> exhibe pérdida/reenvío no es más fiel — es <em>más stressante</em>. Eso es válido como <em>test de carga</em>, no como <em>test de contrato</em>. El §0 debería distinguir entre:
+- <strong>Fidelidad de contrato</strong> (obligatoria, inquebrantable).
+- <strong>Fidelidad de condiciones operativas</strong> (deseable, pero el injector puede ser más o menos agresivo que el real sin invalidarse como espejo).</p>
+<p><strong>Sugerencia:</strong> añadir una nota al §0 que aclare que el suplantador puede <em>instrumentar</em> condiciones extremas (pérdida, reenvío) que el real raramente muestra, siempre que el <strong>mecanismo</strong> sea el mismo. El instrumento es aditivo; el mecanismo de entrega no debe ser <em>más fuerte</em> que el real, pero sí puede ser <em>igual</em> y dejar que las condiciones de test (rápida inyección, HWM bajo) lo hagan visible.</p>
+<hr />
+<h2 id="31-node_id-sintetico-ratifico-88">§3.1 node_id sintético — <strong>RATIFICO 8/8</strong></h2>
+<p><code>isomorfo fijo</code> (<code>synth-node-00</code>) es la decisión correcta. Modela un sensor único, la unicidad la da <code>community_id</code>. La deferencia de multi-nodo a ADR-054 es prudente.</p>
+<p><strong>Nota menor:</strong> el mock <code>synth:node:&lt;event_id&gt;</code> está bien para trazabilidad, pero asegurar que el correlation-engine lo descarte <em>antes</em> de Kuzu es un comportamiento que debería tener test propio (no solo confiar en el prefijo <code>synth:</code>). No bloqueante para este ADR.</p>
+<hr />
+<h2 id="32-dos-perillas-determinista-realista-ratifico-88-con-refinamiento">§3.2 Dos perillas (determinista / realista) — <strong>RATIFICO 8/8 CON REFINAMIENTO</strong></h2>
+<p>La solución de DeepSeek (semilla fija en modo <code>realistic</code>) es elegante. Resuelve el falso dilema determinismo-vs-cobertura.</p>
+<p><strong>Matiz de implementación:</strong> la fórmula de validación de Gemini (<code>{escritos} == {inyectados} \ {sin puertos}</code>) es correcta conceptualmente, pero operativamente requiere que el E2E tenga acceso al <em>conjunto de event_id inyectados</em>. Hoy el injector loguea, pero el E2E no consume ese log. <code>DEBT-INJECTOR-DELIVERY-METRIC-001</code> debería absorber también esta necesidad: el diff de conjuntos debe ser capaz de filtrar por "correlacionable vs no-correlacionable".</p>
+<p><strong>Sugerencia:</strong> en §3.2 o en §8, vincular <code>DEBT-INJECTOR-PROTO-MIX-001</code> con <code>DEBT-INJECTOR-DELIVERY-METRIC-001</code>: la métrica de conjuntos debe poder segmentar por "motivo de ausencia" (no entregado por ZMQ vs entregado pero descartado por <code>nullopt</code>).</p>
+<hr />
+<h2 id="33-semantica-de-entrega-objecion-formal-a-la-anulacion-de-arbitro">§3.3 Semántica de entrega — <strong>OBJECIÓN FORMAL A LA ANULACIÓN DE ÁRBITRO</strong></h2>
+<p>Este es el punto crítico. Mi posición en la 1ª pasada fue <strong>(b) bloqueante con timeout</strong>. El ADR registra que Alonso anuló y optó por "solo instrumentar, no cambiar mecanismo". <strong>Objeto a la anulación por los siguientes motivos:</strong></p>
+<h3 id="331-la-fidelidad-de-0-no-es-argumento-suficiente-aqui">3.3.1 La fidelidad de §0 no es argumento suficiente aquí</h3>
+<p>El sniffer real y el injector no son simétricos en <em>carga</em>:
+- El sniffer real captura del kernel; su tasa está limitada por la NIC y el tráfico de red real. El ZMQ PUSH nunca se satura porque el productor (kernel/netfilter) no puede inyectar más rápido de lo que la red física permite.
+- El injector sintético puede inyectar <strong>a velocidad de memoria</strong> (miles de eventos/ms). El HWM de ZMQ PUSH se alcanza en condiciones que el sniffer real <strong>nunca reproduce</strong>.</p>
+<p>Por tanto, mantener <code>dontwait</code> en el injector no es "ser fiel al sniffer"; es <strong>introducir un artefacto de test que el sniffer real no exhibe</strong>. El artefacto es real de ZMQ, pero las <em>condiciones</em> que lo hacen visible son artificiales del test. Si el objetivo es fidelidad, deberíamos también limitar la tasa del injector a la tasa esperada del sniffer — y eso no se hace.</p>
+<h3 id="332-el-argumento-de-medir-antes-de-arreglar-es-circular">3.3.2 El argumento de "medir antes de arreglar" es circular</h3>
+<p>El ADR dice: "si el instrumento revelara una pérdida que rompe el gate de CI, entonces se reconsidera". Pero el instrumento <strong>ya reveló</strong> la pérdida/reenvío (102 filas de 100, 2 duplicados). El gate de CI <strong>no mide filas</strong>, mide deltas de stats. Eso es precisamente el problema: el gate es ciego a la semántica de entrega. "Medir antes de arreglar" presupone que la medición es neutral, pero <strong>elegir no medir filas</strong> (solo deltas) es una decisión que enmascara el problema.</p>
+<h3 id="333-el-coste-de-b-es-trivial-el-coste-de-solo-instrumentar-es-alto">3.3.3 El coste de (b) es trivial; el coste de "solo instrumentar" es alto</h3>
+<ul>
+<li><strong>(b) bloqueante con timeout:</strong> un <code>setsockopt(ZMQ_SNDTIMEO, 1000)</code> + quitar <code>dontwait</code>. Cambio de 2 líneas. El comportamiento sigue siendo ZMQ PUSH; no se cambia patrón, no se añade retry.</li>
+<li><strong>"Solo instrumentar":</strong> requiere (a) log estructurado del injector con event_id, (b) lectura de bronce para extraer event_id escritos, (c) diff de conjuntos, (d) integración en el gate de CI. Es más trabajo que (b) y <strong>no resuelve el problema</strong>, solo lo documenta.</li>
+</ul>
+<h3 id="334-el-precedente-de-adr-052-311-no-aplica">3.3.4 El precedente de ADR-052 §3.11 no aplica</h3>
+<p>La anulación de ADR-052 fue sobre un <em>campo de identidad</em> (<code>flow_uid</code>) donde la complejidad de implementación justificaba la simplificación. Aquí estamos hablando de <strong>un flag de ZMQ</strong> y un <code>setsockopt</code>. La complejidad es asimétrica: arreglar es más barato que instrumentar.</p>
+<h3 id="mi-posicion-alternativa">Mi posición alternativa</h3>
+<p><strong>Compromiso:</strong> adoptar (b) <em>solo en el injector</em>, con una nota explícita de que el sniffer real mantiene <code>dontwait</code> y que el injector es <strong>más conservador</strong> en entrega por las razones de tasa anteriores. Esto no viola §0 si entendemos §0 como "fidelidad de contrato y semántica observable", no "fidelidad de implementación letra por letra". El contrato observable del sniffer es "entrega best-effort, pero en la práctica at-most-once porque nunca se satura"; el injector con timeout reproduce ese contrato observable.</p>
+<p><strong>Si el Consejo insiste en la anulación:</strong> acepto bajo protesta, pero solicito que <code>DEBT-INJECTOR-DELIVERY-METRIC-001</code> se eleve a <strong>P1</strong> (no P2), porque sin ella el modo <code>deterministic</code> no es realmente determinista (puede variar 100–102 filas entre corridas).</p>
+<hr />
+<h2 id="34-col-17-como-string-ratifico-88">§3.4 col 17 como string — <strong>RATIFICO 8/8</strong></h2>
+<p>Sin objeciones. La decisión de mantener el engine limpio de protobuf es correcta y ya sellada.</p>
+<hr />
+<h2 id="35-oracle-divergence-ratifico-88">§3.5 Oracle Divergence — <strong>RATIFICO 8/8</strong></h2>
+<p>Preservar la procedencia es la única opción coherente con ADR-051. La directriz "no aplanar" al entrar en Kuzu es sabia. Aplazar la decisión gold a ADR-054 es correcto.</p>
+<p><strong>Sugerencia menor:</strong> añadir en §3.5 que el correlation-reader ya demostró que puede transportar strings arbitrarios de <code>authoritative_source</code> sin romper el formato TSV; esto valida que el pipeline es transparente a nuevas fuentes sin cambio de código.</p>
+<hr />
+<h2 id="4-alternativas-rechazadas-apoyo-la-tabla">§4. Alternativas rechazadas — <strong>APOYO LA TABLA</strong></h2>
+<p>La tabla es clara y útil. Añadiría una fila:</p>
+<table>
+<thead>
+<tr>
+<th>Alternativa</th>
+<th>Por qué se rechaza</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Limitar tasa del injector a tasa de sniffer real</td>
+<td>Complejidad innecesaria; el injector no simula condiciones de red, solo contrato de mensajes.</td>
+</tr>
+</tbody>
+</table>
+<p>Esto refuerza por qué (b) es preferible a "ser fiel al dontwait": no estamos simulando la red.</p>
+<hr />
+<h2 id="5-estado-de-preguntas-correccion-en-q4">§5. Estado de preguntas — <strong>CORRECCIÓN EN Q4</strong></h2>
+<p>El ADR dice "Claude votó sí, se retractó". En mi lectura del DAY 177, Claude votó <strong>no</strong> en Q4 ("no DEBT nuevo"). Verificar: en la respuesta de Claude, Q4 dice "Ratificación: no DEBT nuevo, cerrar como 'completar A'". Eso es un <strong>no</strong> a abrir DEBT, no un "sí retractado". La tabla de §5 debería corregirse: <strong>8/8 en Q4</strong>, no 7/8.</p>
+<hr />
+<h2 id="6-consecuencias-apoyo-con-ampliacion-de-riesgo-1">§6. Consecuencias — <strong>APOYO, CON AMPLIACIÓN DE RIESGO (1)</strong></h2>
+<p>El riesgo (1) es crítico: si <code>DEBT-INJECTOR-DELIVERY-METRIC-001</code> no se implementa, la pérdida/reenvío es invisible. Dado que la anulación de Q1 deja el problema sin arreglo, este riesgo debería ser <strong>P1</strong>, no mención pasajera.</p>
+<p>El riesgo (2) sobre <code>seq_in_window</code> es perspicaz. Sugiero elevarlo a <code>DEBT-INJECTOR-SEQWINDOW-001</code> con estado <strong>P2</strong> en §8, no solo "propuesta".</p>
+<hr />
+<h2 id="7-validacion-apoyo-pero-con-hueco">§7. Validación — <strong>APOYO, PERO CON HUECO</strong></h2>
+<p>El punto "Discard path (modo realistic)" está marcado como pendiente. Esto es correcto, pero debería vincularse explícitamente a <code>DEBT-INJECTOR-PROTO-MIX-001</code>. Hoy no hay modo <code>realistic</code> implementado; el ADR no debe dar la impresión de que ya existe.</p>
+<hr />
+<h2 id="8-deudas-reordenamiento-sugerido">§8. Deudas — <strong>REORDENAMIENTO SUGERIDO</strong></h2>
+<table>
+<thead>
+<tr>
+<th>DEBT</th>
+<th>Prio</th>
+<th>Estado</th>
+<th>Nota</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>DEBT-INJECTOR-NODEID-001</code></td>
+<td>P0</td>
+<td>Cerrada</td>
+<td>✓</td>
+</tr>
+<tr>
+<td><code>DEBT-INJECTOR-ROWGAP-001</code></td>
+<td>—</td>
+<td>Cerrada como característica</td>
+<td>✓</td>
+</tr>
+<tr>
+<td><code>DEBT-INJECTOR-DELIVERY-METRIC-001</code></td>
+<td><strong>P1</strong></td>
+<td>Abierta</td>
+<td><strong>Elevar</strong>: sin ella, la anulación de Q1 deja un agujero de observabilidad.</td>
+</tr>
+<tr>
+<td><code>DEBT-INJECTOR-PROTO-MIX-001</code></td>
+<td>P2</td>
+<td>Abierta</td>
+<td>Depende de DELIVERY-METRIC para validar ausencia.</td>
+</tr>
+<tr>
+<td><code>DEBT-INJECTOR-SEQWINDOW-001</code></td>
+<td>P2</td>
+<td>Abierta</td>
+<td>Considerar transporte de <code>seq_in_window</code>.</td>
+</tr>
+<tr>
+<td><code>DEBT-LIB-001</code></td>
+<td>P1</td>
+<td>Diferida</td>
+<td>Traer a pasada futura.</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="9-referencias-completo">§9. Referencias — <strong>COMPLETO</strong></h2>
+<p>Sin objeciones. La trazabilidad a ADR-052, ADR-051, ADR-046 es correcta.</p>
+<hr />
+<h2 id="resumen-de-voto-de-kimi">Resumen de voto de Kimi</h2>
+<table>
+<thead>
+<tr>
+<th>Sección</th>
+<th>Voto</th>
+<th>Nota</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>§0 Principio ordenador</td>
+<td>✅ APOYO</td>
+<td>Con matiz: fidelidad al contrato observable, no a la implementación letra por letra.</td>
+</tr>
+<tr>
+<td>§3.1 node_id</td>
+<td>✅ RATIFICO</td>
+<td>8/8.</td>
+</tr>
+<tr>
+<td>§3.2 Dos perillas</td>
+<td>✅ RATIFICO</td>
+<td>8/8. Semilla fija es clave.</td>
+</tr>
+<tr>
+<td>§3.3 Entrega (Q1)</td>
+<td>⚠️ <strong>OBJECIÓN</strong></td>
+<td>La anulación de árbitro es defensible pero no por §0. Argumento: el injector no reproduce las condiciones operativas del sniffer (tasa). (b) es más barato que instrumentar. Acepto bajo protesta si DELIVERY-METRIC sube a P1.</td>
+</tr>
+<tr>
+<td>§3.4 col 17 string</td>
+<td>✅ RATIFICO</td>
+<td>8/8.</td>
+</tr>
+<tr>
+<td>§3.5 Divergence</td>
+<td>✅ RATIFICO</td>
+<td>8/8.</td>
+</tr>
+<tr>
+<td>Q4 DEBT proto</td>
+<td>✅ RATIFICO</td>
+<td>8/8 (corregir tabla: Claude no votó sí).</td>
+</tr>
+<tr>
+<td>Q3 ADR-055 absorbe</td>
+<td>✅ RATIFICO</td>
+<td>8/8.</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="recomendaciones-al-borrador-v2">Recomendaciones al borrador v2</h2>
+<ol>
+<li><strong>§0:</strong> Añadir distinción entre fidelidad de contrato y fidelidad de condiciones operativas.</li>
+<li><strong>§3.3:</strong> Reconsiderar la anulación, o al menos elevar <code>DEBT-INJECTOR-DELIVERY-METRIC-001</code> a P1 con compromiso de implementación inmediata.</li>
+<li><strong>§5 Q4:</strong> Corregir "Claude votó sí" → "8/8 no".</li>
+<li><strong>§8:</strong> Elevar DELIVERY-METRIC a P1; formalizar SEQWINDOW como P2.</li>
+<li><strong>§3.2:</strong> Vincular PROTO-MIX con DELIVERY-METRIC en la descripción de deuda.</li>
+</ol>
+<p>El ADR es sólido en conjunto. La única fisura real es §3.3, donde la coherencia interna con §0 es más aparente que real. El resto es trabajo de calidad.</p>
+<p>FDO</p>
+<p>KIMI</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.top", "search.highlight"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

@@ -1,0 +1,1345 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source embedded-ML NDR for hospitals and schools">
+      
+      
+        <meta name="author" content="Alonso Isidoro Roman">
+      
+      
+        <link rel="canonical" href="https://alonsoir.github.io/argus/design/host-domain-contract/host_domain_v1-contract/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>Contrato host_domain_v1 — puerta de diseño (Wazuh → grafo host) - ML Defender (aRGus NDR)</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#contrato-host_domain_v1-puerta-de-diseno-wazuh-grafo-host" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../.." title="ML Defender (aRGus NDR)" class="md-header__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ML Defender (aRGus NDR)
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Contrato host_domain_v1 — puerta de diseño (Wazuh → grafo host)
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../../README.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../../docs/ARCHITECTURE.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../../docs/BACKLOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Backlog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../../docs/SECURITY_MODEL.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Security Model
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-tabs__link">
+          
+  
+  
+  ADRs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../docs/contracts/Protobuf contracts.md" class="md-tabs__link">
+          
+  
+  
+  Contracts
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../.." title="ML Defender (aRGus NDR)" class="md-nav__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ML Defender (aRGus NDR)
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../README.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../docs/ARCHITECTURE.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../docs/BACKLOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../docs/SECURITY_MODEL.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADRs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ADRs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013 Seed Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../docs/adr/ADR-021-deployment-topology-seed-families.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-021 Topology SSOT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../docs/adr/ADR-022-threat-model-opcion2-descartada.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-022 Threat Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../docs/contracts/Protobuf contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protobuf
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../docs/contracts/JSON contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JSON
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../docs/contracts/Rag security commands.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#0-proposito-y-encuadre" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        0. Propósito y encuadre
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1-evidencia-medida-y-sus-limites" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Evidencia medida y sus límites
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-inventario-de-lo-que-emite-wazuh-medido" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Inventario de lo que emite Wazuh — [MEDIDO]
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2. Inventario de lo que emite Wazuh — [MEDIDO]">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#21-reparto-por-agente" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.1 Reparto por agente
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#22-reglas-presentes-baseline-autenticacionsesion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.2 Reglas presentes (baseline = autenticación/sesión)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#23-claves-de-nivel-superior-freq-50" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.3 Claves de nivel superior (freq / 50)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#24-regalo-medido-mitre-attck-y-cumplimiento-nativos-por-regla" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.4 Regalo medido: MITRE ATT&amp;CK y cumplimiento nativos por regla
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#25-data-es-una-bolsa-variable-por-regla" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.5 data es una bolsa variable por regla
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#26-identidad-de-host-dos-nombres-distintos" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.6 Identidad de host: dos nombres distintos
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#27-id-de-wazuh" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.7 id de Wazuh
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-decisiones-de-diseno-decision" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Decisiones de diseño — [DECISIÓN]
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-esquema-propuesto-del-grafo-host" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Esquema propuesto del grafo host
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4. Esquema propuesto del grafo host">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#nodos" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Nodos
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#aristas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Aristas
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-campos-del-contrato-host_domain_v1-fila-que-emite-el-adapter" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Campos del contrato host_domain_v1 (fila que emite el adapter)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-objeciones-y-riesgos" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Objeciones y riesgos
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-pendientes-pendiente" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Pendientes — [PENDIENTE]
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-plan-de-implementacion-batallas-siguientes-no-hoy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. Plan de implementación (batallas siguientes, no hoy)
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="contrato-host_domain_v1-puerta-de-diseno-wazuh-grafo-host">Contrato <code>host_domain_v1</code> — puerta de diseño (Wazuh → grafo host)</h1>
+<p><strong>Proyecto:</strong> aRGus NDR · <strong>Rama:</strong> <code>feat/zeek-to-graph</code> · <strong>Fecha:</strong> DAY 240
+<strong>Paso del cierre:</strong> 2 — arrancar el contrato del dominio host
+<strong>Evidencia:</strong> <code>docs/design/host-domain-contract/evidencia/alerts-day240-snapshot.json</code> (50 eventos, congelado)</p>
+<p>Cada afirmación va marcada <strong>[MEDIDO]</strong> (sale de comando/fichero), <strong>[DECISIÓN]</strong> (elección de Alonso)
+o <strong>[PENDIENTE]</strong> (por medir o por decidir). Regla de la casa: HECHO ≠ SOSPECHADO.</p>
+<hr />
+<h2 id="0-proposito-y-encuadre">0. Propósito y encuadre</h2>
+<ul>
+<li><strong>[DECISIÓN]</strong> Wazuh es el 4º sensor pero <strong>NO es de red</strong>: es dominio HOST (HIDS/EDR). Su dato va a
+  SU PROPIO grafo / SU PROPIA BD Kuzu bajo el contrato <code>host_domain_v1</code>, <strong>nunca</strong> al <code>$KUZU</code> de red
+  compartido de <code>mitre-start</code>. Ratifica DAY 225 y <code>DEBT-HOST-DOMAIN-CONTRACT-001</code>.</li>
+<li><strong>[MEDIDO]</strong> El pipeline de red quedó cerrado con 3 sensores (aRGus + Suricata + Zeek). Wazuh es la
+  mitad host del híbrido (ADR-046) y encaja con el ángulo Matzinger del paper: el movimiento lateral y
+  la escalada de privilegio son <strong>señales de daño</strong>, no features de paquete.</li>
+</ul>
+<hr />
+<h2 id="1-evidencia-medida-y-sus-limites">1. Evidencia medida y sus límites</h2>
+<ul>
+<li><strong>[MEDIDO]</strong> El snapshot se tomó del <code>alerts.json</code> de la VM <code>wazuh</code> con <strong>manager (000) + un agente
+  real (002/zeek)</strong> enrolado y <code>Active</code>. Rompe la degeneración de DAY 238, donde solo existía el
+  agente 000 auto-monitorizándose.</li>
+<li><strong>[MEDIDO]</strong> 50 eventos, <strong>0 líneas ilegibles</strong> → el fichero es <strong>JSON-por-línea</strong> (un evento = una
+  línea). Este es el formato que el adapter debe asumir.</li>
+<li><strong>[MEDIDO]</strong> El fichero es <strong>live y crece</strong> (se observó 25 líneas y minutos después 50 eventos): son
+  sesiones PAM abriéndose y cerrándose sin parar por <code>journald</code>.</li>
+<li><strong>[AVISO honesto]</strong> Este snapshot es <strong>dato de diseño</strong>, NO la evidencia reproducible del paper. La
+  evidencia del paper nace de <code>vagrant destroy -f &amp;&amp; vagrant up</code> + MITRE. Además, los eventos aquí
+  proceden de actividad <strong>ordinaria de provisioning</strong> (vagrant/sudo/ssh), no de un ataque.</li>
+</ul>
+<hr />
+<h2 id="2-inventario-de-lo-que-emite-wazuh-medido">2. Inventario de lo que emite Wazuh — [MEDIDO]</h2>
+<h3 id="21-reparto-por-agente">2.1 Reparto por agente</h3>
+<table>
+<thead>
+<tr>
+<th>agent.id</th>
+<th>name</th>
+<th>ip</th>
+<th>eventos</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>000</td>
+<td>argus-wazuh</td>
+<td>(local, sin ip)</td>
+<td>35</td>
+</tr>
+<tr>
+<td>002</td>
+<td>zeek</td>
+<td>192.168.100.11</td>
+<td>15</td>
+</tr>
+</tbody>
+</table>
+<p>La atribución de host real funciona: el 002 aporta con su propia identidad e IP.</p>
+<h3 id="22-reglas-presentes-baseline-autenticacionsesion">2.2 Reglas presentes (baseline = autenticación/sesión)</h3>
+<table>
+<thead>
+<tr>
+<th>rule.id</th>
+<th>nivel</th>
+<th>descripción</th>
+<th>nº</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>5502</td>
+<td>3</td>
+<td>PAM: Login session closed</td>
+<td>18</td>
+</tr>
+<tr>
+<td>5501</td>
+<td>3</td>
+<td>PAM: Login session opened</td>
+<td>15</td>
+</tr>
+<tr>
+<td>5402</td>
+<td>3</td>
+<td>Successful sudo to ROOT</td>
+<td>7</td>
+</tr>
+<tr>
+<td>5715</td>
+<td>3</td>
+<td>sshd: authentication success</td>
+<td>5</td>
+</tr>
+<tr>
+<td>533</td>
+<td>7</td>
+<td>Listened ports (netstat) changed</td>
+<td>3</td>
+</tr>
+<tr>
+<td>502</td>
+<td>3</td>
+<td>Wazuh server started</td>
+<td>1</td>
+</tr>
+<tr>
+<td>503</td>
+<td>3</td>
+<td>Wazuh agent started</td>
+<td>1</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li><strong>[MEDIDO]</strong> <code>rule.groups</code>: syslog 45 · pam 33 · authentication_success 20 · sudo 7 · ossec 5 · sshd 5.</li>
+<li><strong>[MEDIDO]</strong> <code>location</code>: journald 45 · netstat 3 · wazuh-monitord 1 · wazuh-agent 1.</li>
+<li><strong>[CORRECCIÓN a DAY 238]</strong> NO aparece <strong>ningún</strong> evento FIM/syscheck, rootcheck ni SCA en esta
+  ventana. El baseline de un agente recién levantado es higiene de autenticación, no integridad de
+  fichero. (FIM/SCA emergen con cambios de fichero o scans — ver §7 P1.)</li>
+</ul>
+<h3 id="23-claves-de-nivel-superior-freq-50">2.3 Claves de nivel superior (freq / 50)</h3>
+<p><code>timestamp, rule, agent, manager, id, full_log, decoder, location</code> = 50/50 ·
+<code>data</code> = 46/50 · <code>predecoder</code> = 45/50 · <code>previous_output</code> / <code>previous_log</code> = 3/50.</p>
+<h3 id="24-regalo-medido-mitre-attck-y-cumplimiento-nativos-por-regla">2.4 Regalo medido: MITRE ATT&amp;CK y cumplimiento <strong>nativos por regla</strong></h3>
+<ul>
+<li><strong>[MEDIDO]</strong> <code>rule.mitre</code> viene poblado de fábrica:<ul>
+<li><code>5402</code> sudo→ROOT → <strong>T1548.003</strong> (Privilege Escalation, Defense Evasion)</li>
+<li><code>5501</code> PAM login → <strong>T1078</strong> (Valid Accounts)</li>
+<li><code>5715</code> sshd success → <strong>T1078 + T1021</strong> (Valid Accounts + Remote Services); tácticas incluyen
+  <strong>Lateral Movement</strong> de forma literal.</li>
+</ul>
+</li>
+<li><strong>[MEDIDO]</strong> Cada regla trae mapeo de cumplimiento: <code>pci_dss, gdpr, hipaa, nist_800_53, tsc, gpg13</code>.</li>
+<li><strong>[MEDIDO]</strong> El mapeo MITRE/cumplimiento es <strong>por regla y estático</strong> → se normaliza en nodos <code>Rule</code>
+  y <code>MitreTechnique</code>, no se duplica en cada evento.</li>
+</ul>
+<h3 id="25-data-es-una-bolsa-variable-por-regla">2.5 <code>data</code> es una bolsa variable por regla</h3>
+<table>
+<thead>
+<tr>
+<th>rule.id</th>
+<th>data observada</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>5715 sshd</td>
+<td><code>srcip=10.0.2.2</code>, <code>srcport</code>, <code>dstuser</code></td>
+</tr>
+<tr>
+<td>5402 sudo</td>
+<td><code>srcuser</code>, <code>dstuser</code>, <code>pwd</code>, <code>command</code></td>
+</tr>
+<tr>
+<td>5501 PAM</td>
+<td><code>dstuser</code>, <code>uid</code></td>
+</tr>
+<tr>
+<td>5502 PAM</td>
+<td><code>dstuser</code></td>
+</tr>
+<tr>
+<td>503</td>
+<td><code>extra_data="zeek-&gt;any"</code></td>
+</tr>
+<tr>
+<td>533, 502</td>
+<td><strong>sin <code>data</code></strong> — payload en <code>previous_output</code>/<code>full_log</code> como texto</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li><strong>[MEDIDO]</strong> Un evento host <strong>puede traer coordenada de red</strong>: el sshd carga el <code>srcip/srcport</code> del
+  origen del login (breadcrumb de movimiento lateral). Se queda en la BD host; <strong>no</strong> se une al <code>$KUZU</code>
+  de red (invariante).</li>
+</ul>
+<h3 id="26-identidad-de-host-dos-nombres-distintos">2.6 Identidad de host: dos nombres distintos</h3>
+<ul>
+<li><strong>[MEDIDO]</strong> <code>agent.name = "zeek"</code> (nuestro <code>WAZUH_AGENT_NAME</code>, identidad <strong>elegida</strong>) vs
+  <code>predecoder.hostname = "argus-zeek"</code> (hostname real del SO). Son dos.</li>
+<li><strong>[MEDIDO]</strong> <code>timestamp</code> top-level es ISO8601 con millis+TZ (<code>2026-07-31T03:22:09.071+0000</code>) en los
+  50 eventos. <code>predecoder.timestamp</code> es syslog sin año (lossy) → no vale como identidad.</li>
+</ul>
+<h3 id="27-id-de-wazuh">2.7 <code>id</code> de Wazuh</h3>
+<ul>
+<li><strong>[MEDIDO]</strong> <code>id</code> top-level = <code>&lt;epoch_seconds&gt;.&lt;byte_offset_en_el_log&gt;</code> (p.ej. <code>1785468156.2917</code>).
+  50/50 <strong>único</strong> en esta corrida; el offset crece monótono y desempata dentro del mismo segundo.</li>
+<li><strong>[MEDIDO]</strong> El offset es posición en el fichero → estable al <strong>re-ingerir el mismo</strong> <code>alerts.json</code>,
+  <strong>no</strong> estable tras <code>destroy&amp;up</code> (otros id).</li>
+</ul>
+<hr />
+<h2 id="3-decisiones-de-diseno-decision">3. Decisiones de diseño — [DECISIÓN]</h2>
+<ul>
+<li><strong>D1 — Dominio y BD separados.</strong> <code>host_domain_v1</code> es un contrato propio, su BD Kuzu propia. Wazuh es
+  el único escritor de ese grafo → no hay colisión cross-sensor dentro de él.</li>
+<li><strong>D2 — event_id = hash de la línea cruda.</strong> <code>event_id = "wz1:" + base64_std(BLAKE2b-256(TAG ‖
+  raw_line))</code>, con <code>TAG = "argus-hostevent-v1"</code> y <code>raw_line</code> = los bytes exactos de la línea JSON.<ul>
+<li>Idempotente por fichero: re-ingerir el mismo snapshot da el mismo <code>event_id</code> → el <code>MERGE</code> no
+  duplica.</li>
+<li>Cada <code>destroy&amp;up</code> genera líneas nuevas → <code>event_id</code> nuevos. Es <strong>correcto</strong>: son sesiones
+  genuinamente nuevas.</li>
+<li>Mismo linaje que <code>flow_uid</code> (tag de versión + BLAKE2b-256 + base64), namespaced con <code>wz1:</code> para
+  que sea visiblemente distinto del espacio de event_id de red.</li>
+<li>El <code>id</code> crudo de Wazuh se conserva como propiedad de procedencia (<code>wazuh_alert_id</code>), <strong>no</strong> como PK.</li>
+</ul>
+</li>
+<li><strong>D3 — PK del nodo <code>Host</code> = <code>agent.id</code>.</strong> Es el identificador más estable. <code>name</code>, <code>ip</code> y
+  <code>os_hostname</code> (= <code>predecoder.hostname</code>) son propiedades + cross-check.</li>
+<li><strong>D4 — Identidad del evento = host + regla + timestamp</strong>, NO 5-tupla. El <code>event_id</code> de D2
+  operacionaliza esa identidad.</li>
+<li><strong>D5 — <code>data</code> como property flexible + subconjunto común extraído.</strong> No se aplana en columnas fijas;
+  se guarda el <code>data</code> completo (JSON) y se extraen las claves comunes de auth: <code>srcuser, dstuser,
+  srcip, srcport, uid, command</code>.</li>
+<li><strong>D6 — El adapter lee incrementalmente por watermark.</strong> El fichero es append-only y live; el adapter
+  persiste el último offset y lee de ahí a EOF. Para el camino reproducible del paper (<code>destroy&amp;up</code>)
+  lee el fichero fresco entero.</li>
+<li><strong>D7 — MITRE/cumplimiento normalizados por regla</strong> (nodos <code>Rule</code> y <code>MitreTechnique</code>), no por evento.</li>
+</ul>
+<hr />
+<h2 id="4-esquema-propuesto-del-grafo-host">4. Esquema propuesto del grafo host</h2>
+<h3 id="nodos">Nodos</h3>
+<ul>
+<li><strong><code>Host</code></strong> — PK <code>host_id</code> (= <code>agent.id</code>). Props: <code>name</code>, <code>ip</code>, <code>os_hostname</code>.</li>
+<li><strong><code>HostEvent</code></strong> — PK <code>event_id</code> (D2). Props: <code>timestamp</code> (ISO), <code>rule_id</code>, <code>level</code>, <code>decoder</code>,
+  <code>location</code>, <code>full_log</code>, claves comunes (<code>srcuser, dstuser, srcip, srcport, uid, command</code>),
+  <code>data_json</code> (fidelidad completa), <code>wazuh_alert_id</code> (procedencia).</li>
+<li><strong><code>Rule</code></strong> — PK <code>rule_id</code>. Props: <code>level</code>, <code>description</code>, <code>groups[]</code>.</li>
+<li><strong><code>MitreTechnique</code></strong> — PK <code>technique_id</code> (T1078…). Props: <code>name</code>, <code>tactics[]</code>.</li>
+<li><strong><code>Control</code></strong> <em>(opcional, ver P4)</em> — PK <code>(framework, control_id)</code>. Framework ∈ {pci_dss, gdpr, hipaa,
+  nist_800_53, tsc, gpg13}.</li>
+</ul>
+<h3 id="aristas">Aristas</h3>
+<ul>
+<li><code>(HostEvent)-[:ON_HOST]-&gt;(Host)</code> — vía <code>agent.id</code>.</li>
+<li><code>(HostEvent)-[:MATCHED]-&gt;(Rule)</code> — vía <code>rule.id</code>.</li>
+<li><code>(Rule)-[:MAPS_TO]-&gt;(MitreTechnique)</code> — el mapeo vive en la regla.</li>
+<li><code>(Rule)-[:REQUIRES]-&gt;(Control)</code> <em>(opcional)</em>.</li>
+</ul>
+<hr />
+<h2 id="5-campos-del-contrato-host_domain_v1-fila-que-emite-el-adapter">5. Campos del contrato <code>host_domain_v1</code> (fila que emite el adapter)</h2>
+<p><strong>Producidos por nosotros</strong>
+<code>schema_version="host_domain_v1"</code> · <code>source_sensor="wazuh"</code> · <code>event_id</code> (D2) · <code>host_id</code>(=agent.id) ·
+<code>hmac_row</code> <em>(ver P3)</em></p>
+<p><strong>Copiados de Wazuh</strong>
+<code>wazuh_alert_id</code>(=id) · <code>timestamp</code> · <code>agent_id/agent_name/agent_ip</code> · <code>os_hostname</code> ·
+<code>rule_id/rule_level/rule_description/rule_groups[]</code> · <code>decoder_name</code> · <code>location</code> · <code>full_log</code> ·
+<code>data_json</code> + comunes extraídas · <code>mitre_ids[]/mitre_tactics[]/mitre_techniques[]</code> ·
+<code>pci_dss[]/gdpr[]/hipaa[]/nist_800_53[]/tsc[]/gpg13[]</code></p>
+<hr />
+<h2 id="6-objeciones-y-riesgos">6. Objeciones y riesgos</h2>
+<ul>
+<li><strong>O1 — Rotación de logs.</strong> Wazuh rota <code>alerts.json</code>; un watermark por offset se rompe en la rotación.
+  Mitigación por (inode, offset) o por el prefijo de segundos del <code>id</code>. → <strong>[PENDIENTE] P2</strong>.</li>
+<li><strong>O2 — Formas de <code>data</code> no medidas.</strong> FIM/SCA/rootcheck no aparecieron; sus claves de <code>data</code> no están
+  cubiertas por las comunes extraídas. Aceptable: <code>data_json</code> las absorbe; las comunes se amplían al
+  medirlas.</li>
+<li><strong>O3 — event_id no estable entre regeneraciones.</strong> Por diseño (D2): sesiones nuevas = eventos nuevos.
+  Consecuencia: no se puede correlacionar "el mismo login" entre dos <code>destroy&amp;up</code>. No es requisito.</li>
+<li><strong>O4 — Integridad tipo ledger.</strong> El bronce de red firma cada fila (<code>hmac_row</code>). Decidir si el dominio
+  host replica esa disciplina. → <strong>[PENDIENTE] P3</strong>.</li>
+</ul>
+<hr />
+<h2 id="7-pendientes-pendiente">7. Pendientes — [PENDIENTE]</h2>
+<ul>
+<li><strong>P1 — FIM/SCA/rootcheck.</strong> Provocarlos con técnica MITRE host-touching en <code>mitre-start</code> (paso 3),
+  medir su forma de <code>data</code> y ampliar el contrato. Sin esto, el grafo host solo muestra higiene de auth,
+  no "Wazuh cazó el ataque".</li>
+<li><strong>P2 — Rotación de <code>alerts.json</code></strong> en el watermark del adapter (O1).</li>
+<li><strong>P3 — <code>hmac_row</code>/integridad</strong> del dominio host y su provisión de clave
+  (<code>DEBT-BRONZE-KEY-PROVISIONING-001</code>). Inclinación: paridad con el bronce de red, a confirmar.</li>
+<li><strong>P4 — Nodos <code>Control</code>/cumplimiento</strong>: implementar o diferir. Útil para el encuadre hospitalario
+  (HIPAA/GDPR); no bloquea el pipeline.</li>
+<li><strong>P5 — ¿bronce/oro (Parquet) o directo a Kuzu?</strong> El pipeline de red va bronce→oro→Kuzu (ledger
+  append-only, grafo reconstruible = Vía Appia). Decidir si el host replica ese ledger o carga directo.</li>
+</ul>
+<hr />
+<h2 id="8-plan-de-implementacion-batallas-siguientes-no-hoy">8. Plan de implementación (batallas siguientes, no hoy)</h2>
+<ol>
+<li><strong><code>wazuh-adapter/</code></strong> — scaffold siguiendo el estándar de <code>suricata-adapter/</code> y <code>zeek-adapter/</code>:
+   <code>alerts.json</code> → filas <code>host_domain_v1</code>. Resuelve P5 (ledger vs directo) al arrancar.</li>
+<li><strong><code>schema.cypher</code></strong> del grafo host — las tablas de nodo/arista de §4.</li>
+<li><strong><code>host_parquet_to_kuzu_loader</code></strong> (o cargador directo) — espejo de <code>parquet_to_kuzu_loader</code>.</li>
+<li><strong>Cableado en <code>mitre-start</code></strong> — con su <strong><code>$KUZU_HOST</code> propio</strong>, separado del <code>$KUZU</code> de red.</li>
+<li><strong>Gate</strong>: integrar en EMECAS+++, ver datos llegando al grafo host, EMECAS+++ en verde → <strong>merge a
+   main</strong> (probar en <code>feat/zeek-to-graph</code> primero).</li>
+</ol>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.tabs", "navigation.top", "search.highlight"], "search": "../../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

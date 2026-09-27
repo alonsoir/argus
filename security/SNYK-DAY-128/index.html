@@ -1,0 +1,1372 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source embedded-ML NDR for hospitals and schools">
+      
+      
+        <meta name="author" content="Alonso Isidoro Roman">
+      
+      
+        <link rel="canonical" href="https://alonsoir.github.io/argus/security/SNYK-DAY-128/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>SNYK DAY 128 - ML Defender (aRGus NDR)</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#snyk-security-audit-day-128" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-header__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ML Defender (aRGus NDR)
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              SNYK DAY 128
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../README.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/BACKLOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Backlog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Security Model
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-tabs__link">
+          
+  
+  
+  ADRs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/contracts/Protobuf contracts.md" class="md-tabs__link">
+          
+  
+  
+  Contracts
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-nav__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ML Defender (aRGus NDR)
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../README.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/BACKLOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADRs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ADRs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013 Seed Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-021-deployment-topology-seed-families.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-021 Topology SSOT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-022-threat-model-opcion2-descartada.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-022 Threat Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Protobuf contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protobuf
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/JSON contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JSON
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Rag security commands.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#criterio-de-clasificacion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Criterio de clasificación
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cwe-23-relative-path-traversal" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CWE-23 — Relative Path Traversal
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="CWE-23 — Relative Path Traversal">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#finding-1-libsseed-clientsrcseed_clientcpp103-falso-positivo-cerrado" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Finding 1 — libs/seed-client/src/seed_client.cpp:103 — FALSO POSITIVO ✅ CERRADO
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#finding-2-toolsgenerate_synthetic_eventscpp784-third-partytool-no-bloqueante" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Finding 2 — tools/generate_synthetic_events.cpp:784 — THIRD-PARTY/TOOL ⏳ NO BLOQUEANTE
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#finding-3-contribdspca_pipelinesynthetic_data_generatorcpp122-contrib-no-bloqueante" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Finding 3 — contrib/ds/pca_pipeline/synthetic_data_generator.cpp:122 — CONTRIB ⏳ NO BLOQUEANTE
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#finding-4-contribdspca_pipelinesynthetic_data_generatorcpp156-contrib-no-bloqueante" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Finding 4 — contrib/ds/pca_pipeline/synthetic_data_generator.cpp:156 — CONTRIB ⏳ NO BLOQUEANTE
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#finding-5-contribgrokpca_pipelinetrain_pca_pipelinecpp118-contrib-no-bloqueante" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Finding 5 — contrib/grok/pca_pipeline/train_pca_pipeline.cpp:118 — CONTRIB ⏳ NO BLOQUEANTE
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#finding-6-contribgrokpca_pipelinetrain_pca_pipelinecpp24-contrib-no-bloqueante" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Finding 6 — contrib/grok/pca_pipeline/train_pca_pipeline.cpp:24 — CONTRIB ⏳ NO BLOQUEANTE
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#finding-7-toolsgenerate_synthetic_eventscpp532-tool-no-bloqueante" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Finding 7 — tools/generate_synthetic_events.cpp:532 — TOOL ⏳ NO BLOQUEANTE
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#finding-8-libsseed-clientsrcseed_clientcpp98-falso-positivo-cerrado" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Finding 8 — libs/seed-client/src/seed_client.cpp:98 — FALSO POSITIVO ✅ CERRADO
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#finding-9-contribgrokpca_pipelinesynthetic_data_generatorcpp74-contrib-no-bloqueante" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Finding 9 — contrib/grok/pca_pipeline/synthetic_data_generator.cpp:74 — CONTRIB ⏳ NO BLOQUEANTE
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#finding-10-contribqwenpca_pipelinesynthetic_data_generatorcpp93-contrib-no-bloqueante" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Finding 10 — contrib/qwen/pca_pipeline/synthetic_data_generator.cpp:93 — CONTRIB ⏳ NO BLOQUEANTE
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#finding-11-contribdspca_pipelinetrain_pca_pipelinecpp111-contrib-no-bloqueante" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Finding 11 — contrib/ds/pca_pipeline/train_pca_pipeline.cpp:111 — CONTRIB ⏳ NO BLOQUEANTE
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#finding-12-contribqwenpca_pipelinetrain_pca_pipelinecpp24-contrib-no-bloqueante" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Finding 12 — contrib/qwen/pca_pipeline/train_pca_pipeline.cpp:24 — CONTRIB ⏳ NO BLOQUEANTE
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#finding-13-firewall-acl-agentsrcmaincpp273-codigo-propio-analizar" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Finding 13 — firewall-acl-agent/src/main.cpp:273 — CÓDIGO PROPIO, ANALIZAR 🔍
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#finding-14-rag-ingestersrcmaincpp120-codigo-propio-analizar" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Finding 14 — rag-ingester/src/main.cpp:120 — CÓDIGO PROPIO, ANALIZAR 🔍
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cwe-190-integer-overflow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CWE-190 — Integer Overflow
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="CWE-190 — Integer Overflow">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#finding-15-rag-ingestersrccsv_dir_watchercpp171-falso-positivo-cerrado" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Finding 15 — rag-ingester/src/csv_dir_watcher.cpp:171 — FALSO POSITIVO ✅ CERRADO
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#finding-16-rag-ingestersrccsv_file_watchercpp112-falso-positivo-cerrado" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Finding 16 — rag-ingester/src/csv_file_watcher.cpp:112 — FALSO POSITIVO ✅ CERRADO
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#finding-17-contribglmpca_pipelinesynthetic_data_generatorcpp63-contrib-no-bloqueante" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Finding 17 — contrib/glm/pca_pipeline/synthetic_data_generator.cpp:63 — CONTRIB ⏳ NO BLOQUEANTE
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cwe-78-os-command-injection" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CWE-78 — OS Command Injection
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="CWE-78 — OS Command Injection">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#finding-18-firewall-acl-agentsrccoreiptables_wrappercpp625-codigo-propio-high" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Finding 18 — firewall-acl-agent/src/core/iptables_wrapper.cpp:625 — CÓDIGO PROPIO HIGH 🔴
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#resumen-de-clasificacion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Resumen de clasificación
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#deudas-nuevas-generadas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Deudas nuevas generadas
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<p>cat &gt; /Users/aironman/CLionProjects/test-zeromq-docker/docs/security/SNYK-DAY-128.md &lt;&lt; 'EOF'</p>
+<h1 id="snyk-security-audit-day-128">Snyk Security Audit — DAY 128</h1>
+<p><strong>Tag analizado:</strong> <code>v0.5.2-hardened</code><br />
+<strong>Repositorio:</strong> <code>alonsoir/argus</code><br />
+<strong>Fecha:</strong> 2026-04-24<br />
+<strong>Criterio de triage:</strong> Consejo 8/8 DAY 127</p>
+<hr />
+<h2 id="criterio-de-clasificacion">Criterio de clasificación</h2>
+<table>
+<thead>
+<tr>
+<th>Categoría</th>
+<th>Acción</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Código propio + path/overflow/crypto</td>
+<td>Fix bloqueante RED→GREEN</td>
+</tr>
+<tr>
+<td>Código propio + otro HIGH</td>
+<td>Fix próximo sprint</td>
+</tr>
+<tr>
+<td>Third-party no alcanzable</td>
+<td>Documentar con justificación</td>
+</tr>
+<tr>
+<td>Falso positivo demostrable</td>
+<td>Cerrar con justificación</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="cwe-23-relative-path-traversal">CWE-23 — Relative Path Traversal</h2>
+<h3 id="finding-1-libsseed-clientsrcseed_clientcpp103-falso-positivo-cerrado">Finding 1 — <code>libs/seed-client/src/seed_client.cpp:103</code> — FALSO POSITIVO ✅ CERRADO</h3>
+<pre><code class="language-cpp">std::ifstream seed_file(seed_path, std::ios::binary);
+</code></pre>
+<p><strong>Justificación:</strong> El <code>seed_path</code> ya ha sido validado por <code>resolve_seed()</code> en la línea 98
+(4 líneas antes). <code>resolve_seed()</code> enforza prefix, lstat(), O_NOFOLLOW, permisos 0400.
+Snyk no traza la validación previa. Falso positivo demostrable — ver ADR-037.</p>
+<hr />
+<h3 id="finding-2-toolsgenerate_synthetic_eventscpp784-third-partytool-no-bloqueante">Finding 2 — <code>tools/generate_synthetic_events.cpp:784</code> — THIRD-PARTY/TOOL ⏳ NO BLOQUEANTE</h3>
+<pre><code class="language-cpp">std::ofstream spec_file(spec_path);
+</code></pre>
+<p><strong>Justificación:</strong> <code>generate_synthetic_events</code> es una herramienta de desarrollo/lab,
+no código de producción del pipeline. No se despliega en entornos críticos.
+No alcanzable desde la superficie de ataque real. Documentado, no requiere fix.</p>
+<hr />
+<h3 id="finding-3-contribdspca_pipelinesynthetic_data_generatorcpp122-contrib-no-bloqueante">Finding 3 — <code>contrib/ds/pca_pipeline/synthetic_data_generator.cpp:122</code> — CONTRIB ⏳ NO BLOQUEANTE</h3>
+<pre><code class="language-cpp">std::ofstream file(filename, std::ios::binary);
+</code></pre>
+<p><strong>Justificación:</strong> Código en <code>contrib/</code> — herramientas de investigación/entrenamiento,
+no pipeline de producción. No se despliega en hospitales/municipios. No bloqueante.</p>
+<hr />
+<h3 id="finding-4-contribdspca_pipelinesynthetic_data_generatorcpp156-contrib-no-bloqueante">Finding 4 — <code>contrib/ds/pca_pipeline/synthetic_data_generator.cpp:156</code> — CONTRIB ⏳ NO BLOQUEANTE</h3>
+<p><strong>Justificación:</strong> Mismo componente que Finding 3. Ver justificación anterior.</p>
+<hr />
+<h3 id="finding-5-contribgrokpca_pipelinetrain_pca_pipelinecpp118-contrib-no-bloqueante">Finding 5 — <code>contrib/grok/pca_pipeline/train_pca_pipeline.cpp:118</code> — CONTRIB ⏳ NO BLOQUEANTE</h3>
+<p><strong>Justificación:</strong> Código <code>contrib/</code> de entrenamiento. No pipeline de producción.</p>
+<hr />
+<h3 id="finding-6-contribgrokpca_pipelinetrain_pca_pipelinecpp24-contrib-no-bloqueante">Finding 6 — <code>contrib/grok/pca_pipeline/train_pca_pipeline.cpp:24</code> — CONTRIB ⏳ NO BLOQUEANTE</h3>
+<p><strong>Justificación:</strong> Código <code>contrib/</code> de entrenamiento. No pipeline de producción.</p>
+<hr />
+<h3 id="finding-7-toolsgenerate_synthetic_eventscpp532-tool-no-bloqueante">Finding 7 — <code>tools/generate_synthetic_events.cpp:532</code> — TOOL ⏳ NO BLOQUEANTE</h3>
+<pre><code class="language-cpp">std::ifstream config_file(config_path);
+</code></pre>
+<p><strong>Justificación:</strong> config_path viene de argv[3] con default hardcodeado. Herramienta
+de lab, no producción. No alcanzable desde superficie de ataque real.</p>
+<hr />
+<h3 id="finding-8-libsseed-clientsrcseed_clientcpp98-falso-positivo-cerrado">Finding 8 — <code>libs/seed-client/src/seed_client.cpp:98</code> — FALSO POSITIVO ✅ CERRADO</h3>
+<pre><code class="language-cpp">const int seed_fd = argus::safe_path::resolve_seed(seed_path, keys_dir_);
+</code></pre>
+<p><strong>Justificación:</strong> Esta ES la validación — <code>resolve_seed()</code> es precisamente la defensa
+contra path traversal. Snyk flagea la llamada sin entender que es la primitiva segura.
+Falso positivo documentado en ADR-037.</p>
+<hr />
+<h3 id="finding-9-contribgrokpca_pipelinesynthetic_data_generatorcpp74-contrib-no-bloqueante">Finding 9 — <code>contrib/grok/pca_pipeline/synthetic_data_generator.cpp:74</code> — CONTRIB ⏳ NO BLOQUEANTE</h3>
+<p><strong>Justificación:</strong> Código <code>contrib/</code> de generación sintética. No pipeline de producción.</p>
+<hr />
+<h3 id="finding-10-contribqwenpca_pipelinesynthetic_data_generatorcpp93-contrib-no-bloqueante">Finding 10 — <code>contrib/qwen/pca_pipeline/synthetic_data_generator.cpp:93</code> — CONTRIB ⏳ NO BLOQUEANTE</h3>
+<p><strong>Justificación:</strong> Código <code>contrib/</code> de generación sintética. No pipeline de producción.</p>
+<hr />
+<h3 id="finding-11-contribdspca_pipelinetrain_pca_pipelinecpp111-contrib-no-bloqueante">Finding 11 — <code>contrib/ds/pca_pipeline/train_pca_pipeline.cpp:111</code> — CONTRIB ⏳ NO BLOQUEANTE</h3>
+<p><strong>Justificación:</strong> Código <code>contrib/</code> de entrenamiento. No pipeline de producción.</p>
+<hr />
+<h3 id="finding-12-contribqwenpca_pipelinetrain_pca_pipelinecpp24-contrib-no-bloqueante">Finding 12 — <code>contrib/qwen/pca_pipeline/train_pca_pipeline.cpp:24</code> — CONTRIB ⏳ NO BLOQUEANTE</h3>
+<p><strong>Justificación:</strong> Código <code>contrib/</code> de entrenamiento. No pipeline de producción.</p>
+<hr />
+<h3 id="finding-13-firewall-acl-agentsrcmaincpp273-codigo-propio-analizar">Finding 13 — <code>firewall-acl-agent/src/main.cpp:273</code> — CÓDIGO PROPIO, ANALIZAR 🔍</h3>
+<pre><code class="language-cpp">config = ConfigLoader::load_from_file(config_path);
+</code></pre>
+<p><strong>Análisis:</strong> <code>config_path</code> viene de argv o config. Verificar si pasa por
+<code>resolve_config()</code> antes de llegar aquí. Si no → DEBT bloqueante.
+<strong>Acción:</strong> Inspeccionar <code>ConfigLoader::load_from_file()</code> — si usa <code>resolve_config()</code>
+internamente, es falso positivo. Si no, añadir validación.
+<strong>Estado:</strong> PENDIENTE verificación → ver DEBT-FIREWALL-CONFIG-PATH-001 abajo.</p>
+<hr />
+<h3 id="finding-14-rag-ingestersrcmaincpp120-codigo-propio-analizar">Finding 14 — <code>rag-ingester/src/main.cpp:120</code> — CÓDIGO PROPIO, ANALIZAR 🔍</h3>
+<pre><code class="language-cpp">auto config = rag_ingester::ConfigParser::load(config_path);
+</code></pre>
+<p><strong>Análisis:</strong> Igual que Finding 13. <code>ConfigParser::load()</code> ya tiene tests de traversal
+(test_config_parser_traversal — PASSED en DAY 128). Verificar si usa <code>resolve_config()</code>.
+<strong>Estado:</strong> PENDIENTE verificación → probable falso positivo dado que test pasa.</p>
+<hr />
+<h2 id="cwe-190-integer-overflow">CWE-190 — Integer Overflow</h2>
+<h3 id="finding-15-rag-ingestersrccsv_dir_watchercpp171-falso-positivo-cerrado">Finding 15 — <code>rag-ingester/src/csv_dir_watcher.cpp:171</code> — FALSO POSITIVO ✅ CERRADO</h3>
+<pre><code class="language-cpp">while (ptr &lt; buf + n) {
+</code></pre>
+<p><strong>Justificación:</strong> Documentado como F15 en el propio código con comentario explícito:
+"SAFE: n &lt;= BUF_SIZE = 4096 garantizado por POSIX read(). ptr &lt; buf + n nunca desborda.
+Snyk no traza acotación de read() → BUF_SIZE." Falso positivo ya documentado ADR-037.</p>
+<hr />
+<h3 id="finding-16-rag-ingestersrccsv_file_watchercpp112-falso-positivo-cerrado">Finding 16 — <code>rag-ingester/src/csv_file_watcher.cpp:112</code> — FALSO POSITIVO ✅ CERRADO</h3>
+<pre><code class="language-cpp">ev = reinterpret_cast&lt;const inotify_event*&gt;(buf + i);
+</code></pre>
+<p><strong>Justificación:</strong> Patrón estándar inotify POSIX. <code>i</code> está acotado por el tamaño del
+buffer. Snyk no traza la acotación del loop inotify. Falso positivo.</p>
+<hr />
+<h3 id="finding-17-contribglmpca_pipelinesynthetic_data_generatorcpp63-contrib-no-bloqueante">Finding 17 — <code>contrib/glm/pca_pipeline/synthetic_data_generator.cpp:63</code> — CONTRIB ⏳ NO BLOQUEANTE</h3>
+<pre><code class="language-cpp">data.reserve(config.samples * config.dimensions);
+</code></pre>
+<p><strong>Justificación:</strong> Código <code>contrib/</code> de generación sintética. Potencial overflow real
+si config.samples * config.dimensions supera SIZE_MAX, pero no es código de producción.
+Documentado para cuando este código sea promovido a producción.</p>
+<hr />
+<h2 id="cwe-78-os-command-injection">CWE-78 — OS Command Injection</h2>
+<h3 id="finding-18-firewall-acl-agentsrccoreiptables_wrappercpp625-codigo-propio-high">Finding 18 — <code>firewall-acl-agent/src/core/iptables_wrapper.cpp:625</code> — CÓDIGO PROPIO HIGH 🔴</h3>
+<pre><code class="language-cpp">execute_command(cmd);
+</code></pre>
+<p><strong>Análisis:</strong> <code>IPTablesWrapper::cleanup_rules()</code> fue identificado por Snyk en DAY 115
+(23 vulnerabilidades C++ medium). Este es el más crítico — command injection en
+iptables wrapper. <code>cmd</code> podría contener input no sanitizado.</p>
+<p><strong>Acción:</strong> Fix bloqueante RED→GREEN en próximo sprint.
+<strong>Deuda:</strong> DEBT-IPTABLES-INJECTION-001 — ver sección deudas nuevas.</p>
+<hr />
+<h2 id="resumen-de-clasificacion">Resumen de clasificación</h2>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Fichero</th>
+<th>CWE</th>
+<th>Clasificación</th>
+<th>Acción</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>seed_client.cpp:103</td>
+<td>CWE-23</td>
+<td>Falso positivo</td>
+<td>Cerrado</td>
+</tr>
+<tr>
+<td>2</td>
+<td>generate_synthetic_events.cpp:784</td>
+<td>CWE-23</td>
+<td>Tool/no prod</td>
+<td>No bloqueante</td>
+</tr>
+<tr>
+<td>3-6</td>
+<td>contrib/ds,grok/...</td>
+<td>CWE-23</td>
+<td>Contrib/no prod</td>
+<td>No bloqueante</td>
+</tr>
+<tr>
+<td>7</td>
+<td>generate_synthetic_events.cpp:532</td>
+<td>CWE-23</td>
+<td>Tool/no prod</td>
+<td>No bloqueante</td>
+</tr>
+<tr>
+<td>8</td>
+<td>seed_client.cpp:98</td>
+<td>CWE-23</td>
+<td>Falso positivo</td>
+<td>Cerrado</td>
+</tr>
+<tr>
+<td>9-12</td>
+<td>contrib/grok,qwen,ds/...</td>
+<td>CWE-23</td>
+<td>Contrib/no prod</td>
+<td>No bloqueante</td>
+</tr>
+<tr>
+<td>13</td>
+<td>firewall-acl-agent/main.cpp:273</td>
+<td>CWE-23</td>
+<td>Pendiente verificación</td>
+<td>DEBT-FIREWALL-CONFIG-PATH-001</td>
+</tr>
+<tr>
+<td>14</td>
+<td>rag-ingester/main.cpp:120</td>
+<td>CWE-23</td>
+<td>Probable falso positivo</td>
+<td>Verificar</td>
+</tr>
+<tr>
+<td>15</td>
+<td>csv_dir_watcher.cpp:171</td>
+<td>CWE-190</td>
+<td>Falso positivo doc.</td>
+<td>Cerrado (F15/ADR-037)</td>
+</tr>
+<tr>
+<td>16</td>
+<td>csv_file_watcher.cpp:112</td>
+<td>CWE-190</td>
+<td>Falso positivo</td>
+<td>Cerrado</td>
+</tr>
+<tr>
+<td>17</td>
+<td>contrib/glm/...</td>
+<td>CWE-190</td>
+<td>Contrib/no prod</td>
+<td>No bloqueante</td>
+</tr>
+<tr>
+<td>18</td>
+<td>iptables_wrapper.cpp:625</td>
+<td>CWE-78</td>
+<td>Código propio HIGH</td>
+<td>DEBT-IPTABLES-INJECTION-001</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="deudas-nuevas-generadas">Deudas nuevas generadas</h2>
+<p>DEBT-IPTABLES-INJECTION-001   CWE-78, HIGH — execute_command() en iptables_wrapper
+Fix bloqueante RED→GREEN, próximo sprint
+DEBT-FIREWALL-CONFIG-PATH-001 CWE-23 — verificar resolve_config() en ConfigLoader
+Probable falso positivo, verificar en próximo sprint</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.top", "search.highlight"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

@@ -1,0 +1,1267 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source embedded-ML NDR for hospitals and schools">
+      
+      
+        <meta name="author" content="Alonso Isidoro Roman">
+      
+      
+        <link rel="canonical" href="https://alonsoir.github.io/argus/council/Integraci%C3%B3n%20multi-motor%20aRGus-Suricata-Zeek-Wazuh-CHATGPT-segunda-pasada/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>Consejo de Sabios — Ratificación Técnica de la Pasada 2 - ML Defender (aRGus NDR)</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#consejo-de-sabios-ratificacion-tecnica-de-la-pasada-2" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-header__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ML Defender (aRGus NDR)
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Consejo de Sabios — Ratificación Técnica de la Pasada 2
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../README.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/BACKLOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Backlog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Security Model
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-tabs__link">
+          
+  
+  
+  ADRs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/contracts/Protobuf contracts.md" class="md-tabs__link">
+          
+  
+  
+  Contracts
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-nav__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ML Defender (aRGus NDR)
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../README.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/BACKLOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADRs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ADRs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013 Seed Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-021-deployment-topology-seed-families.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-021 Topology SSOT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-022-threat-model-opcion2-descartada.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-022 Threat Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Protobuf contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protobuf
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/JSON contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JSON
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Rag security commands.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#evaluacion-de-las-mociones-m1m4-y-consecuencias-arquitectonicas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Evaluación de las mociones M1–M4 y consecuencias arquitectónicas
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="consejo-de-sabios-ratificacion-tecnica-de-la-pasada-2">Consejo de Sabios — Ratificación Técnica de la Pasada 2</h1>
+<h2 id="evaluacion-de-las-mociones-m1m4-y-consecuencias-arquitectonicas">Evaluación de las mociones M1–M4 y consecuencias arquitectónicas</h2>
+<p>La Pasada 2 mejora significativamente el nivel de rigor respecto a la primera: ya no discute “ideas generales”, sino propiedades operacionales concretas del correlador bajo presión, skew temporal, saturación y asimetría host/red. El Consejo considera que el documento está entrando en zona de arquitectura ejecutable.</p>
+<p>La mayoría de las reconciliaciones propuestas son sólidas y compatibles con sistemas reproducibles por terceros.</p>
+<hr />
+<h1 id="m1-timestamp-canonico">M1 — Timestamp canónico</h1>
+<h2 id="dictamen-ratificada">Dictamen: RATIFICADA</h2>
+<p>La resolución propuesta es técnicamente correcta y está alineada con cómo operan sistemas de correlación temporal serios.</p>
+<hr />
+<h2 id="motivo-fundamental">Motivo fundamental</h2>
+<p>El correlador debe ordenar eventos según:</p>
+<p>```text id="3fjlwm"
+cuándo ocurrió el fenómeno observado</p>
+<pre><code>
+y no según:
+
+```text id=&quot;y0tr6r&quot;
+cuándo el software consiguió emitirlo
+</code></pre>
+<p>Porque:</p>
+<ul>
+<li>la latencia de detección es variable,</li>
+<li>depende del motor,</li>
+<li>depende de carga,</li>
+<li>depende del pipeline interno,</li>
+<li>y puede fluctuar órdenes de magnitud.</li>
+</ul>
+<hr />
+<h2 id="caso-concreto-reproducible">Caso concreto reproducible</h2>
+<h3 id="suricata">Suricata</h3>
+<p>La alerta suele emitirse:</p>
+<ul>
+<li>prácticamente inmediata,</li>
+<li>ligada al paquete.</li>
+</ul>
+<h3 id="wazuh">Wazuh</h3>
+<p>Un evento FIM puede aparecer:</p>
+<ul>
+<li>segundos después,</li>
+<li>tras scan periódico,</li>
+<li>tras pipeline decoder/rule engine,</li>
+<li>tras buffering.</li>
+</ul>
+<p>Usar emisión para windowing produce:</p>
+<p>```text id="1d7g6n"
+false temporal distance</p>
+<pre><code>
+entre eventos causalmente relacionados.
+
+---
+
+## Recomendación adicional importante
+
+El envelope debería conservar explícitamente:
+
+```protobuf id=&quot;c7eq3v&quot;
+uint64 event_time_unix_ns
+uint64 emitted_time_unix_ns
+uint64 ingested_time_unix_ns
+</code></pre>
+<p>no solo vía <code>metadata</code>.</p>
+<p>Razón:</p>
+<ul>
+<li>permite métricas binarias reproducibles,</li>
+<li>simplifica profiling,</li>
+<li>evita parsing textual,</li>
+<li>facilita histogramas de latencia,</li>
+<li>permite detectar congestión interna.</li>
+</ul>
+<hr />
+<h2 id="sobre-la-objecion-de-qwen">Sobre la objeción de Qwen</h2>
+<p>La objeción identifica un problema real:</p>
+<ul>
+<li>incertidumbre temporal de eventos host.</li>
+</ul>
+<p>Pero la solución correcta es:</p>
+<ul>
+<li>ampliar <code>bridge_window</code>,</li>
+<li>marcar confianza temporal,</li>
+<li>no degradar el timestamp canónico.</li>
+</ul>
+<p>La moción responde correctamente.</p>
+<hr />
+<h1 id="m2-politica-de-eviccion">M2 — Política de evicción</h1>
+<h2 id="dictamen-ratificada-fuertemente">Dictamen: RATIFICADA FUERTEMENTE</h2>
+<p>Esta es probablemente la decisión más importante de toda la pasada.</p>
+<p>El Consejo considera que la síntesis propuesta supera claramente tanto:</p>
+<ul>
+<li>el LRU puro,</li>
+<li>como la inmunidad absoluta por severidad.</li>
+</ul>
+<hr />
+<h1 id="hallazgo-importante">Hallazgo importante</h1>
+<p>La Pasada 2 identifica correctamente algo muy serio:</p>
+<h2 id="severity-pinning-attack">“Severity pinning attack”</h2>
+<p>Es un vector completamente real.</p>
+<hr />
+<h2 id="escenario-reproducible">Escenario reproducible</h2>
+<p>Un atacante:</p>
+<ul>
+<li>descubre qué firmas elevan severidad,</li>
+<li>genera flujos distintos,</li>
+<li>mantiene vivas miles de crisis HIGH,</li>
+<li>consume el correlador,</li>
+<li>fuerza evicción de eventos reales.</li>
+</ul>
+<p>La inmunidad absoluta convierte:</p>
+<p>```text id="6s4k9l"
+severity</p>
+<pre><code>
+en:
+
+```text id=&quot;dk31cx&quot;
+memory reservation primitive
+</code></pre>
+<p>Eso es peligrosísimo.</p>
+<hr />
+<h1 id="la-arquitectura-en-3-capas-es-correcta">La arquitectura en 3 capas es correcta</h1>
+<h2 id="capa-1-proteccion-por-recencia">Capa 1 — Protección por recencia</h2>
+<p>Excelente decisión.</p>
+<p>Protege:</p>
+<ul>
+<li>crisis activas,</li>
+<li>correlaciones en construcción,</li>
+<li>bursts reales,</li>
+<li>pipelines normales.</li>
+</ul>
+<p>Y es:</p>
+<ul>
+<li>neutral,</li>
+<li>difícil de explotar,</li>
+<li>estable.</li>
+</ul>
+<hr />
+<h2 id="capa-2-severidad-como-orden">Capa 2 — Severidad como orden</h2>
+<p>También correcta.</p>
+<p>La severidad:</p>
+<ul>
+<li>influye,</li>
+<li>prioriza,</li>
+<li>pero no congela memoria.</li>
+</ul>
+<p>Eso evita el pinning.</p>
+<hr />
+<h2 id="capa-3-cuota-anti-pinning">Capa 3 — Cuota anti-pinning</h2>
+<p>Muy buena decisión arquitectónica.</p>
+<p>Especialmente correcta esta asimetría:</p>
+<p>```text id="esay3m"
+host interno protegido
+origen externo acotado</p>
+<pre><code>
+porque refleja el verdadero modelo defensivo:
+
+* lo importante es la víctima,
+* no el emisor ruidoso.
+
+---
+
+# Recomendación adicional importante
+
+Añadir:
+
+```text id=&quot;9nwl8m&quot;
+saturation mode telemetry
+</code></pre>
+<p>explícita:</p>
+<p>```protobuf id="t10r7k"
+enum SaturationReason {
+  NONE = 0;
+  MEMORY_PRESSURE = 1;
+  SOURCE_QUOTA = 2;
+  GLOBAL_QUOTA = 3;
+}</p>
+<pre><code>
+y exponer:
+
+* cuántas crisis se degradaron,
+* por qué,
+* desde qué origen.
+
+Eso hace auditable ADR-047.
+
+---
+
+# M3 — Transporte de adapters
+
+## Dictamen: RATIFICADA
+
+La reconciliación propuesta es correcta porque descubre que había dos debates mezclados.
+
+---
+
+# Hallazgo importante
+
+El desacuerdo original era parcialmente falso.
+
+Se estaban discutiendo:
+
+* transporte interno,
+* y adquisición externa,
+
+como si fueran el mismo problema.
+
+No lo son.
+
+---
+
+# La separación propuesta es correcta
+
+## Interno
+
+ZeroMQ uniforme.
+
+Perfectamente coherente con:
+
+* ADR-026,
+* ADR-027,
+* arquitectura existente.
+
+---
+
+## Externo
+
+Resolver por:
+
+* motor,
+* tier,
+* reproducibilidad,
+* capacidades nativas.
+
+Esto es correcto y pragmático.
+
+---
+
+# Recomendación importante
+
+El `AdapterSpec v1` debería formalizar:
+
+## Semántica mínima
+
+### REQUIRED
+
+```text id=&quot;n1crtm&quot;
+- at-least-once delivery
+- idempotent replay
+- durable checkpoint
+- monotonic offsets
+- bounded buffering
+- health state
+- replay capability
+</code></pre>
+<hr />
+<h2 id="explicitly-not-guaranteed">EXPLICITLY NOT GUARANTEED</h2>
+<p>```text id="7j9h3d"
+exactly-once</p>
+<pre><code>
+porque:
+
+* es costoso,
+* complejo,
+* innecesario aquí,
+* y ya mitigado por dedup.
+
+Formalizar esto evitará bugs filosóficos futuros.
+
+---
+
+# M4 — Predicado de “fuente esperada”
+
+## Dictamen: RATIFICADA
+
+---
+
+# M4.a — Separación de ventanas
+
+## Correcta
+
+Separar:
+
+* correlación activa,
+* rezagados,
+* idle expiration,
+
+es una mejora muy importante.
+
+---
+
+## Razón
+
+Son tres fenómenos distintos:
+
+| Fenómeno     | Naturaleza    |
+| ------------ | ------------- |
+| correlación  | lógica        |
+| late arrival | transporte    |
+| idle         | ciclo de vida |
+
+Un único timeout mezclaba capas distintas.
+
+---
+
+# M4.b — Rechazo del acoplamiento al ruleset Wazuh
+
+## Correcto
+
+La objeción de Qwen detecta:
+
+* expectativas vacías.
+
+Pero su solución:
+
+```text id=&quot;mjlwmv&quot;
+engine conoce el ruleset de Wazuh
+</code></pre>
+<p>viola separación de responsabilidades.</p>
+<hr />
+<h1 id="riesgo-real-de-esa-propuesta">Riesgo real de esa propuesta</h1>
+<p>El correlador pasaría a depender de:</p>
+<ul>
+<li>reglas,</li>
+<li>decoders,</li>
+<li>updates,</li>
+<li>configuraciones,</li>
+<li>coverage interno.</li>
+</ul>
+<p>Eso:</p>
+<ul>
+<li>rompe encapsulación,</li>
+<li>dificulta reproducibilidad,</li>
+<li>hace el sistema frágil.</li>
+</ul>
+<hr />
+<h1 id="la-mitigacion-actual-ya-basta">La mitigación actual ya basta</h1>
+<p>Porque:</p>
+<ul>
+<li>las ventanas son acotadas,</li>
+<li>el timeout es finito,</li>
+<li>no bloquea ingestión,</li>
+<li>no produce hang sistémico.</li>
+</ul>
+<p>La moción lo resuelve correctamente.</p>
+<hr />
+<h1 id="sobre-d5-corpus-vs-pipeline">Sobre D5 — Corpus vs pipeline</h1>
+<p>Aquí el Consejo mantiene la misma posición:</p>
+<h1 id="el-corpus-debe-ser-el-cimiento">El corpus debe ser el cimiento</h1>
+<p>No porque el pipeline vivo no importe,
+sino porque:</p>
+<p><code>text id="4x2uxc"
+sin corpus reproducible
+no existe validación científica reproducible</code></p>
+<hr />
+<h1 id="recomendacion-estrategica">Recomendación estratégica</h1>
+<h2 id="feder-deberia-entregar">FEDER debería entregar:</h2>
+<h3 id="1-corpus-reproducible-multi-engine">1. Corpus reproducible multi-engine</h3>
+<p>Con:</p>
+<ul>
+<li>pcaps,</li>
+<li>alerts,</li>
+<li>etiquetas,</li>
+<li>correlaciones esperadas,</li>
+<li>community_ids,</li>
+<li>ground truth.</li>
+</ul>
+<h3 id="2-pipeline-vivo-demostrable">2. Pipeline vivo demostrable</h3>
+<p>Aunque:</p>
+<ul>
+<li>sea menos determinista,</li>
+<li>más ligero,</li>
+<li>y secundario respecto al corpus.</li>
+</ul>
+<hr />
+<h1 id="punto-muy-importante">Punto muy importante</h1>
+<p>La Pasada 2 ya está describiendo implícitamente un:</p>
+<h1 id="event-graph-correlation-runtime">“event graph correlation runtime”</h1>
+<p>más que un SIEM clásico.</p>
+<p>Eso cambia:</p>
+<ul>
+<li>cómo se modela el estado,</li>
+<li>cómo se mide saturación,</li>
+<li>cómo se valida,</li>
+<li>cómo se serializa,</li>
+<li>cómo se hacen replays.</li>
+</ul>
+<p>El Consejo recomienda empezar a pensar explícitamente en:</p>
+<ul>
+<li>event graph lifecycle,</li>
+<li>graph compaction,</li>
+<li>temporal edge expiration,</li>
+<li>replay determinism,</li>
+<li>graph reconstruction from corpus.</li>
+</ul>
+<p>Porque el diseño ya apunta naturalmente ahí.</p>
+<hr />
+<h1 id="veredicto-final-de-la-pasada-2">Veredicto Final de la Pasada 2</h1>
+<h2 id="m1-ratificada">M1 — RATIFICADA</h2>
+<h2 id="m2-ratificada-fuertemente">M2 — RATIFICADA FUERTEMENTE</h2>
+<h2 id="m3-ratificada">M3 — RATIFICADA</h2>
+<h2 id="m4-ratificada">M4 — RATIFICADA</h2>
+<h2 id="d5-pendiente-de-decision-estrategica-de-alonso">D5 — pendiente de decisión estratégica de Alonso</h2>
+<p>El Consejo considera que:</p>
+<ul>
+<li>el contrato wire ya tiene forma estable,</li>
+<li>el modelo dual está correctamente asentado,</li>
+<li>la política de saturación ya tiene fundamentos defensivos reales,</li>
+<li>y ADR-046 v4 puede empezar a escribirse sin riesgo serio de rework estructural.
+CHATGPT</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.top", "search.highlight"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

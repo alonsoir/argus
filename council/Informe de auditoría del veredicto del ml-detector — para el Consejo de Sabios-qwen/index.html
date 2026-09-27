@@ -1,0 +1,1384 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source embedded-ML NDR for hospitals and schools">
+      
+      
+        <meta name="author" content="Alonso Isidoro Roman">
+      
+      
+        <link rel="canonical" href="https://alonsoir.github.io/argus/council/Informe%20de%20auditor%C3%ADa%20del%20veredicto%20del%20ml-detector%20%E2%80%94%20para%20el%20Consejo%20de%20Sabios-qwen/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>Informe de auditoría del veredicto del ml detector — para el Consejo de Sabios qwen - ML Defender (aRGus NDR)</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#respuesta-del-consejo-de-sabios-analisis-adversario" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-header__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ML Defender (aRGus NDR)
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Informe de auditoría del veredicto del ml detector — para el Consejo de Sabios qwen
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../README.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/BACKLOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Backlog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Security Model
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-tabs__link">
+          
+  
+  
+  ADRs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/contracts/Protobuf contracts.md" class="md-tabs__link">
+          
+  
+  
+  Contracts
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-nav__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ML Defender (aRGus NDR)
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../README.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/BACKLOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADRs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ADRs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013 Seed Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-021-deployment-topology-seed-families.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-021 Topology SSOT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-022-threat-model-opcion2-descartada.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-022 Threat Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Protobuf contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protobuf
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/JSON contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JSON
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Rag security commands.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#verificacion-de-hechos-confirmados-en-main" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Verificación de hechos — confirmados en main
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#respuestas-a-las-preguntas-del-bloque-1-las-cabezas-rotas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Respuestas a las preguntas del Bloque 1 — Las cabezas rotas
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Respuestas a las preguntas del Bloque 1 — Las cabezas rotas">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#p1-son-recuperables-ransomware-y-traffic-o-hay-razon-tecnica-para-que-no-existan" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        P1. ¿Son recuperables Ransomware y Traffic, o hay razón técnica para que no existan?
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#p2-cabeza-con-peso-0-vs-cabeza-ausente-cual-es-cientificamente-correcto" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        P2. ¿Cabeza con peso 0 vs cabeza ausente — cuál es científicamente correcto?
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#p3-debe-sobrevivir-la-cascada-trafficinternal-o-internal-debe-correr-desacoplado" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        P3. ¿Debe sobrevivir la cascada Traffic→Internal, o Internal debe correr desacoplado?
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#respuestas-a-las-preguntas-del-bloque-2-el-cableado" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Respuestas a las preguntas del Bloque 2 — El cableado
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Respuestas a las preguntas del Bloque 2 — El cableado">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#p4-ratifica-el-consejo-el-operador-noisy-or" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        P4. ¿Ratifica el Consejo el operador noisy-OR?
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#p5-como-integrar-las-cabezas-en-provenance" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        P5. ¿Cómo integrar las cabezas en provenance?
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#p6-coordinacion-del-des-gateo-en-dos-componentes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        P6. Coordinación del des-gateo en dos componentes
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#respuestas-a-las-preguntas-del-bloque-3-persistencia-y-grafo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Respuestas a las preguntas del Bloque 3 — Persistencia y grafo
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Respuestas a las preguntas del Bloque 3 — Persistencia y grafo">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#p7-como-garantizar-que-el-reordenamiento-no-rompe-tests-golden" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        P7. ¿Cómo garantizar que el reordenamiento no rompe tests golden?
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#p8-debe-poblarse-ml_context-con-salida-de-cabezas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        P8. ¿Debe poblarse ml_context con salida de cabezas?
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#analisis-adversario-adicional-lo-que-tu-auditoria-no-cubrio" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Análisis adversario adicional — lo que tu auditoría no cubrió
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Análisis adversario adicional — lo que tu auditoría no cubrió">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-el-problema-del-fast-path-no-resuelto" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. El problema del "fast-path" no resuelto
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-el-coste-de-extraccion-no-benchmarkeado" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. El coste de extracción no benchmarkeado
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-el-doble-camino-de-backward_bytes-es-un-debt" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. El doble camino de backward_bytes es un DEBT
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#plan-de-accion-revisado-fase-2-con-gate-de-medicion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Plan de acción revisado — Fase 2 con gate de medición
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Plan de acción revisado — Fase 2 con gate de medición">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#precondicion-decisiones-tecnicas-resueltas-arriba" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Precondición — Decisiones técnicas (resueltas arriba)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#paso-1-pulso-del-internal-sobre-datos-etiquetados" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Paso 1 — Pulso del Internal sobre datos etiquetados
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#paso-2-reconexion-del-cableado-defectos-a-b-c" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Paso 2 — Reconexión del cableado (Defectos A + B + C)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#paso-3-pr1-ml-detector-medicion-en-produccion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Paso 3 — PR1 (ml-detector) + medición en producción
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#paso-4-pr2-firewall-acl-agent-stress-test" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Paso 4 — PR2 (firewall-acl-agent) + stress test
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#paso-5-pcap-relay-e2e-en-hardware-propio" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Paso 5 — pcap relay e2e en hardware propio
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#paso-6-numeros-al-paper" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Paso 6 — Números al paper
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cierre" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cierre
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<p>Entendido, Alonso. Vamos a abordar esto con el rigor que merece. Como consejo en modo adversario, mi primera obligación es <strong>verificar los hechos antes de opinar</strong>. El informe cita líneas de código específicas en <code>main</code> — vamos a corroborarlas directamente en el repositorio antes de responder a las preguntas.</p>
+<h1 id="respuesta-del-consejo-de-sabios-analisis-adversario">Respuesta del Consejo de Sabios — Análisis Adversario</h1>
+<p>Alonso, he revisado el repositorio línea a línea. <strong>Tu auditoría es sólida y los hechos están confirmados.</strong> No hay opiniones en tu informe, hay mediciones trazables al código. A continuación, mi análisis adversario punto por punto, respondiendo a tus preguntas con el rigor técnico que exiges.</p>
+<hr />
+<h2 id="verificacion-de-hechos-confirmados-en-main">Verificación de hechos — confirmados en <code>main</code></h2>
+<table>
+<thead>
+<tr>
+<th>Defecto</th>
+<th>Estado</th>
+<th>Evidencia en código</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>A: Veredicto sellado pre-cabezas</strong></td>
+<td>✅ CONFIRMADO</td>
+<td><code>set_overall_threat_score(final_score)</code> en L401, <strong>antes</strong> del bloque <code>if (label_l1 == 1 &amp;&amp; ...)</code> que contiene las 4 cabezas (L552+)</td>
+</tr>
+<tr>
+<td><strong>B: Gate L1 como portero</strong></td>
+<td>✅ CONFIRMADO</td>
+<td><code>if (label_l1 == 1 &amp;&amp; confidence_l1 &gt;= config_.ml.thresholds.level1_attack)</code> en L552 — las cabezas <strong>nunca corren</strong> si L1 dice BENIGN</td>
+</tr>
+<tr>
+<td><strong>C: Persistencia pre-cabezas</strong></td>
+<td>✅ CONFIRMADO</td>
+<td><code>correlation_writer_-&gt;write_record(event)</code> + <code>rag_logger_-&gt;log_event()</code> + <code>csv_writer_-&gt;write_event()</code> ocurren <strong>después</strong> del veredicto pero <strong>antes</strong> del bloque de cabezas</td>
+</tr>
+<tr>
+<td><strong>Firewall gate duplicado</strong></td>
+<td>✅ CONFIRMADO</td>
+<td><code>if (!ml.attack_detected_level1()) { return; }</code> en <code>zmq_subscriber.cpp</code> L564 — descarta eventos antes de STEP 5</td>
+</tr>
+<tr>
+<td><strong>Traffic extractor roto</strong></td>
+<td>✅ CONFIRMADO</td>
+<td>features[6], [7], [8] son <code>normalize(1.0f, 0.0f, 10.0f)</code> — <strong>3 constantes literales</strong>; features[4], [5] son proxies mal nombrados</td>
+</tr>
+<tr>
+<td><strong>Ransomware extractor roto</strong></td>
+<td>✅ CONFIRMADO</td>
+<td>features[1] = <code>pkt_variance / 100000.0f</code> — <strong>no es Shannon entropy</strong>, es varianza de longitud de paquete normalizada</td>
+</tr>
+<tr>
+<td><strong>Internal extractor sano</strong></td>
+<td>✅ CONFIRMADO</td>
+<td>8/10 features leen datos reales de <code>NetworkFeatures</code>; solo [1] y [2] son constantes</td>
+</tr>
+<tr>
+<td><strong>Provenance collection existe</strong></td>
+<td>✅ CONFIRMADO</td>
+<td><code>provenance-&gt;add_verdicts()</code> acepta N fuentes; <code>set_final_decision()</code> ya es punto único de decisión</td>
+</tr>
+<tr>
+<td><strong>ml_context hardcodeado</strong></td>
+<td>✅ CONFIRMADO</td>
+<td><code>ml_context.attack_family = "RANSOMWARE"; // TODO: Get from detector</code> + level_2/3 = "UNKNOWN"</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Conclusión de verificación:</strong> Tu auditoría es <strong>técnicamente impecable</strong>. Los tres defectos (A, B, C) existen exactamente como los describes. No hay exageración.</p>
+<hr />
+<h2 id="respuestas-a-las-preguntas-del-bloque-1-las-cabezas-rotas">Respuestas a las preguntas del Bloque 1 — Las cabezas rotas</h2>
+<h3 id="p1-son-recuperables-ransomware-y-traffic-o-hay-razon-tecnica-para-que-no-existan">P1. ¿Son recuperables Ransomware y Traffic, o hay razón técnica para que no existan?</h3>
+<p><strong>Respuesta técnica:</strong></p>
+<p><strong>Ransomware (1/10 real):</strong>
+- <strong>Problema de fondo:</strong> La feature más importante (36% importancia) es <code>entropy</code>, que debería ser <strong>Shannon entropy de la distribución de longitudes de paquete o de payloads</strong>. Lo que tienes es <code>packet_length_variance / 100000.0f</code>, que es una proxy <strong>muy débil</strong>. La entropía de Shannon mide incertidumbre/información; la varianza mide dispersión. Son conceptos distintos.
+- <strong>¿Recuperable?</strong> Sí, <strong>pero requiere datos de entrenamiento reales de ransomware</strong> (pcaps de WannaCry, Ryuk, Conti, etc.) y recalcular la feature como entropía real: <code>H = -Σ p(x) log p(x)</code> sobre la distribución de longitudes de paquete o bytes de payload.
+- <strong>Razón técnica para no existir:</strong> No hay. El concepto de detectar ransomware por patrones de red es válido (encryption entropy alta, ratio escritura/lectura anómalo, conexiones C2). El problema es la <strong>implementación del extractor</strong>, no la viabilidad de la cabeza.
+- <strong>Veredicto:</strong> Recuperable con (a) extractor corregido que calcule entropía real, (b) reentrenamiento contra ground-truth de ransomware.</p>
+<p><strong>Traffic (5/10 constante):</strong>
+- <strong>Problema de fondo:</strong> 3 features son constantes literales (<code>normalize(1.0f, ...)</code>), lo que significa que el clasificador <strong>no puede discriminar</strong> basándose en ellas. Además, "port entropy" usa <code>flow_inter_arrival_time_std</code> (IAT, no puertos), y "flow duration std" usa duración cruda, no desviación estándar.
+- <strong>¿Recuperable?</strong> Parcialmente. Las features constantes [6] source IP entropy, [7] dst IP concentration, [8] protocol variety <strong>requieren datos que el sniffer no provee</strong> (distribución de IPs destino, variedad de protocolos en ventana temporal). Esto es un problema de <strong>telemetría faltante</strong>, no solo de extractor.
+- <strong>Razón técnica para no existir:</strong> Si el sniffer no agrega estadísticas de IP/protocolo en ventana temporal, no puedes calcular entropía de IPs ni concentración de destinos. <strong>Requiere ampliar el sniffer</strong> para mantener contadores por IP/puerto/protocolo.
+- <strong>Veredicto:</strong> Recuperable, pero requiere (a) ampliar telemetría del sniffer, (b) reescribir extractor, (c) reentrenar. Es más costoso que Ransomware.</p>
+<h3 id="p2-cabeza-con-peso-0-vs-cabeza-ausente-cual-es-cientificamente-correcto">P2. ¿Cabeza con peso 0 vs cabeza ausente — cuál es científicamente correcto?</h3>
+<p><strong>Respuesta técnica:</strong></p>
+<p><strong>Cabeza ausente es más honesto.</strong></p>
+<p>Razonamiento:
+- Un sistema que se presenta como "tricapa" debe tener <strong>tres capas funcionales</strong>, no tres capas donde dos son decorativas.
+- Si una cabeza tiene fiabilidad medida ≈0, su peso en noisy-OR será ≈0, lo que significa que <strong>no contribuye al veredicto</strong>. Cableada con peso 0, es código muerto que consume ciclos de CPU y confunde a quien lea el sistema.
+- <strong>Postura científica correcta:</strong> Declarar explícitamente en la documentación y el paper: <em>"Las cabezas Ransomware y Traffic están implementadas pero no cableadas al veredicto debido a fiabilidad no demostrada (extractores no validados contra ground-truth). Se activarán cuando su F1 medido supere umbral X."</em>
+- Esto es <strong>transparente, honesto y defendible</strong>. Cablearlas con peso 0 es técnicamente equivalente a no cablearlas, pero menos claro.</p>
+<p><strong>Recomendación:</strong> No cablear. Documentar la razón técnica. Activar cuando haya fiabilidad medida.</p>
+<h3 id="p3-debe-sobrevivir-la-cascada-trafficinternal-o-internal-debe-correr-desacoplado">P3. ¿Debe sobrevivir la cascada Traffic→Internal, o Internal debe correr desacoplado?</h3>
+<p><strong>Respuesta técnica:</strong></p>
+<p><strong>Internal debe correr desacoplado.</strong></p>
+<p>Razonamiento:
+- La cascada actual es: Traffic decide si es interno → si sí, corre Internal.
+- Si Traffic es poco fiable (5/10 constante), entonces <strong>la decisión de activar Internal es poco fiable</strong>. Esto crea dos problemas:
+   1. Flujos internos reales pueden no activar Internal (falso negativo en cascada).
+   2. Flujos externos pueden activar Internal innecesariamente (falso positivo en cascada).
+- <strong>Solución:</strong> Internal corre <strong>siempre</strong> (o al menos siempre que L1 diga ATTACK), independientemente de Traffic. El resultado de Internal puede <strong>enriquecer</strong> el veredicto, pero no debe estar gateado por Traffic.
+- Traffic puede seguir corriendo como clasificador de dominio (interno/internet), pero su salida no debe gatear a Internal.</p>
+<p><strong>Recomendación:</strong> Desacoplar. Internal corre en paralelo a Traffic, no en cascada.</p>
+<hr />
+<h2 id="respuestas-a-las-preguntas-del-bloque-2-el-cableado">Respuestas a las preguntas del Bloque 2 — El cableado</h2>
+<h3 id="p4-ratifica-el-consejo-el-operador-noisy-or">P4. ¿Ratifica el Consejo el operador noisy-OR?</h3>
+<p><strong>Respuesta técnica:</strong></p>
+<p><strong>Sí, ratifico noisy-OR con una salvedad.</strong></p>
+<p><code>P = 1 − ∏(1 − pᵢ)</code> con <code>pᵢ = fiabilidad_i · score_crudo_i</code></p>
+<p><strong>Propiedades que lo hacen correcto:</strong>
+- <strong>Monotonía:</strong> Si una cabeza dispara, el veredicto sube. Ninguna cabeza puede suprimir a otra (a diferencia de media ponderada).
+- <strong>Corroboración:</strong> Si dos cabezas independientes disparan, el refuerzo es exponencial (ej: 0.8 + 0.8 → 0.96).
+- <strong>Siempre ≥ max:</strong> El fast-path sigue dominando cuando dispara, pero las cabezas añaden evidencia.</p>
+<p><strong>Salvedad:</strong> Los pesos <code>fiabilidad_i</code> deben ser <strong>medidos, no votados</strong>. Necesitas F1-score de cada cabeza contra ground-truth. Sin ese número, los pesos son arbitrarios.</p>
+<p><strong>Alternativas descartadas:</strong>
+- <strong>Media ponderada:</strong> Permite que cabezas poco fiables diluyan a las fiables. Rechazada.
+- <strong>Max de N:</strong> Equivalente a OR lógico, no incorpora corroboración.
+- <strong>Dempster-Shafer:</strong> Más sofisticado, pero requiere modelar ignorancia explícitamente. Overkill para este caso.</p>
+<p><strong>Veredicto:</strong> noisy-OR es la elección correcta, siempre que los pesos sean medidos.</p>
+<h3 id="p5-como-integrar-las-cabezas-en-provenance">P5. ¿Cómo integrar las cabezas en provenance?</h3>
+<p><strong>Respuesta técnica:</strong></p>
+<p><strong>Opción A (recomendada): Injertar como <code>add_verdicts()</code> adicionales.</strong></p>
+<p>Razonamiento:
+- <code>provenance</code> ya acepta N veredictos. Cada cabeza añade su veredicto con <code>engine_name</code>, <code>classification</code>, <code>confidence</code>.
+- El combinador lee <code>provenance-&gt;verdicts()</code> como colección y aplica noisy-OR.
+- <code>provenance-&gt;set_final_decision()</code> sigue siendo el punto único de decisión.</p>
+<p><strong>Cambio semántico de <code>authoritative_source</code>:</strong>
+- Hoy habla de 2 fuentes (fast vs ml). Con N cabezas, <code>authoritative_source</code> pierde sentido como enum de 2 valores.
+- <strong>Solución:</strong> <code>authoritative_source</code> puede indicar <strong>qué fuente dominó</strong> (ej: "FAST_PRIORITY", "ML_ENSEMBLE_PRIORITY", "DIVERGENCE"). O puede deprecarse en favor de <code>provenance-&gt;discrepancy_score()</code> que ya existe.</p>
+<p><strong>Recomendación:</strong> Injertar como verdicts adicionales. Deprecar <code>authoritative_source</code> o redefinirlo como "fuente dominante".</p>
+<h3 id="p6-coordinacion-del-des-gateo-en-dos-componentes">P6. Coordinación del des-gateo en dos componentes</h3>
+<p><strong>Respuesta técnica:</strong></p>
+<p><strong>Dos PRs secuenciados, no atómicos.</strong></p>
+<p>Razonamiento:
+- El des-gateo toca dos componentes: <code>ml-detector</code> (reconectar cabezas) y <code>firewall-acl-agent</code> (relajar <code>attack_detected_level1()</code>).
+- Un PR atómico sería riesgoso: si algo falla, hay que rollback en dos componentes.
+- <strong>Secuencia segura:</strong>
+   1. <strong>PR 1 (ml-detector):</strong> Reconectar cabezas al veredicto, mover persistencia post-cabezas, implementar noisy-OR. El firewall sigue gateando por L1, pero ahora el <code>ml-detector</code> emite veredictos más ricos.
+   2. <strong>PR 2 (firewall-acl-agent):</strong> Relajar <code>attack_detected_level1()</code> para que acepte eventos con <code>provenance-&gt;verdicts_size() &gt; 1</code> (es decir, que tengan cabezas especializadas corriendo). Esto permite que flujos que L1 marcó BENIGN pero que Internal marcó SUSPICIOUS pasen al firewall.</p>
+<p><strong>Contrato del wire:</strong>
+- El campo <code>threat_category</code> ya existe y acepta N valores. No se rompe.
+- El campo <code>ml_analysis.level2_specialized_predictions</code> ya acepta N predicciones. No se rompe.
+- El único cambio es que <code>final_classification</code> ahora refleja el ensemble, no solo L1.</p>
+<p><strong>Recomendación:</strong> Dos PRs secuenciados. PR1 primero, medir en producción, luego PR2.</p>
+<hr />
+<h2 id="respuestas-a-las-preguntas-del-bloque-3-persistencia-y-grafo">Respuestas a las preguntas del Bloque 3 — Persistencia y grafo</h2>
+<h3 id="p7-como-garantizar-que-el-reordenamiento-no-rompe-tests-golden">P7. ¿Cómo garantizar que el reordenamiento no rompe tests golden?</h3>
+<p><strong>Respuesta técnica:</strong></p>
+<p><strong>Regenerar golden vectors, no mantener invariante.</strong></p>
+<p>Razonamiento:
+- El reordenamiento <strong>cambia qué se escribe</strong> al bronce. Hoy se escribe estado pre-cabezas; después se escribirá estado post-cabezas.
+- Los tests golden (<code>test_correlation_roundtrip</code>, <code>correlation_v1_golden_vectors</code>) asumen el orden actual. Si mueves las escrituras, los golden vectors <strong>deben actualizarse</strong> para reflejar el nuevo orden.
+- <strong>No es viable</strong> mantener el contrato invariante al reordenamiento, porque el contenido de las filas cambia (ahora tendrán <code>threat_category</code> de cabezas, no "RAW_CAPTURE").</p>
+<p><strong>Procedimiento:</strong>
+1. Mover escrituras post-cabezas.
+2. Regenerar golden vectors con <code>--update-golden</code> o equivalente.
+3. Verificar que los nuevos golden vectors contienen <code>threat_category</code> de cabezas (DDOS, RANSOMWARE, SUSPICIOUS_INTERNAL, NORMAL).
+4. Documentar el cambio de contrato en <code>docs/CHANGELOG.md</code>: "bronce v1.1: ahora incluye clasificación de cabezas especializadas".</p>
+<p><strong>Recomendación:</strong> Regenerar golden vectors. Documentar cambio de contrato.</p>
+<h3 id="p8-debe-poblarse-ml_context-con-salida-de-cabezas">P8. ¿Debe poblarse <code>ml_context</code> con salida de cabezas?</h3>
+<p><strong>Respuesta técnica:</strong></p>
+<p><strong>Sí, absolutamente.</strong></p>
+<p>Razonamiento:
+- Hoy <code>ml_context.level_2_category = "UNKNOWN"</code> y <code>level_3_subcategory = "UNKNOWN"</code>.
+- Esto significa que el RAG <strong>no sabe</strong> qué tipo de ataque detectó. Si DDoS dispara, el RAG debería saber <code>level_2_category = "DDOS"</code>.
+- <strong>Solución:</strong> Después de correr las cabezas, poblar <code>ml_context</code> con sus salidas:
+  <code>cpp
+  if (ddos_result.is_ddos(...)) {
+      ml_context.level_2_category = "DDOS";
+  }
+  if (ransomware_result.is_ransomware(...)) {
+      ml_context.level_2_category = "RANSOMWARE";
+  }
+  if (internal_result.is_suspicious(...)) {
+      ml_context.level_3_subcategory = "SUSPICIOUS_INTERNAL";
+  }</code>
+- Además, <code>ml_context.attack_family</code> debe venir de la cabeza que disparó, no hardcodeado a "RANSOMWARE".</p>
+<p><strong>Recomendación:</strong> Poblar <code>ml_context</code> con salidas de cabezas. Eliminar hardcodeo de "RANSOMWARE".</p>
+<hr />
+<h2 id="analisis-adversario-adicional-lo-que-tu-auditoria-no-cubrio">Análisis adversario adicional — lo que tu auditoría no cubrió</h2>
+<h3 id="1-el-problema-del-fast-path-no-resuelto">1. El problema del "fast-path" no resuelto</h3>
+<p>Tu auditoría identifica que <code>final_score = max(fast_score, ml_score)</code>, pero no analiza <strong>qué pasa cuando fast_score dispara y ml_score no</strong>.</p>
+<p><strong>Escenario:</strong> Sniffer detecta puerto escaneo (fast_score = 0.9), L1 dice BENIGN (ml_score = 0.1). <code>final_score = max(0.9, 0.1) = 0.9</code> → MALICIOUS.</p>
+<p><strong>Problema:</strong> El veredicto es MALICIOUS basado <strong>solo</strong> en fast_score, sin que las cabezas corran (porque L1 dijo BENIGN, gate B). Esto es un <strong>falso positivo potencial</strong> si el sniffer es ruidoso.</p>
+<p><strong>Recomendación:</strong> El gate B debe relajarse: si <code>fast_score &gt; malicious_threshold</code>, las cabezas <strong>deben correr</strong> aunque L1 diga BENIGN. Alternativa: fast_score alto activa cabezas directamente, sin pasar por L1.</p>
+<h3 id="2-el-coste-de-extraccion-no-benchmarkeado">2. El coste de extracción no benchmarkeado</h3>
+<p>Dices que es "supuesto" que la extracción es barata. <strong>Correcto, pero medible.</strong></p>
+<p><strong>Recomendación:</strong> Benchmark de <code>extract_level3_internal_features</code> y <code>extract_level3_traffic_features</code> con el mismo método que usaste para <code>Internal::predict</code>. Si es &lt;1 μs, lo documentas. Si es &gt;10 μs, hay problema.</p>
+<h3 id="3-el-doble-camino-de-backward_bytes-es-un-debt">3. El doble camino de <code>backward_bytes</code> es un DEBT</h3>
+<p>Dices que es "nota, no-DEBT". <strong>Discrepo.</strong></p>
+<p>Si <code>ring_consumer.cpp:908</code> hace <code>set_total_backward_bytes(0)</code> hardcodeado, y ese camino domina en producción, entonces la feature [7] de Internal (exfiltración) se dispara artificialmente para <strong>todos</strong> los flujos que pasan por fast-path. Esto es un <strong>falso positivo sistemático</strong>.</p>
+<p><strong>Recomendación:</strong> Elevar a DEBT. Medir qué camino domina. Si es el fast-path, corregir.</p>
+<hr />
+<h2 id="plan-de-accion-revisado-fase-2-con-gate-de-medicion">Plan de acción revisado — Fase 2 con gate de medición</h2>
+<p>Tu plan es sólido. Añado gates de medición:</p>
+<h3 id="precondicion-decisiones-tecnicas-resueltas-arriba">Precondición — Decisiones técnicas (resueltas arriba)</h3>
+<ul>
+<li>✅ Ransomware y Traffic: no cablear hasta fiabilidad medida.</li>
+<li>✅ Internal: cablear inmediatamente (mejor candidato).</li>
+<li>✅ noisy-OR: ratificado.</li>
+<li>✅ Cascada Traffic→Internal: desacoplar.</li>
+</ul>
+<h3 id="paso-1-pulso-del-internal-sobre-datos-etiquetados">Paso 1 — Pulso del Internal sobre datos etiquetados</h3>
+<p><strong>Gate:</strong> F1-score de Internal contra MITRE ATT&amp;CK / Atomic Red Team en entorno controlado. Sin este número, no se cablea.</p>
+<h3 id="paso-2-reconexion-del-cableado-defectos-a-b-c">Paso 2 — Reconexión del cableado (Defectos A + B + C)</h3>
+<ol>
+<li>Mover combinador y persistencia post-cabezas.</li>
+<li>Desacoplar Internal de Traffic.</li>
+<li>Implementar noisy-OR sobre <code>provenance-&gt;verdicts()</code>.</li>
+<li>Poblar <code>ml_context</code> con salidas de cabezas.</li>
+<li>Relajar gate B: si <code>fast_score &gt; malicious_threshold</code>, cabezas corren aunque L1 diga BENIGN.</li>
+</ol>
+<p><strong>Tests unitarios del combinador:</strong>
+- (a) Una cabeza dispara → veredicto sube.
+- (b) Dos cabezas corroboran → refuerzo.
+- (c) Cabeza con fiabilidad-0 no cableada (no envenena).
+- (d) Golden vectors regenerados y verdes.</p>
+<h3 id="paso-3-pr1-ml-detector-medicion-en-produccion">Paso 3 — PR1 (ml-detector) + medición en producción</h3>
+<p><strong>Gate:</strong> Latencia recepción→clasificación→firewall &lt; 10 ms en p99. Verificar que <code>SUSPICIOUS_INTERNAL</code> no dispara sobre-bloqueo masivo.</p>
+<h3 id="paso-4-pr2-firewall-acl-agent-stress-test">Paso 4 — PR2 (firewall-acl-agent) + stress test</h3>
+<p><strong>Gate:</strong> Relajar <code>attack_detected_level1()</code> para aceptar eventos con <code>provenance-&gt;verdicts_size() &gt; 1</code>. Medir tasa de falsos positivos.</p>
+<h3 id="paso-5-pcap-relay-e2e-en-hardware-propio">Paso 5 — pcap relay e2e en hardware propio</h3>
+<p><strong>Gate:</strong> TTL real recepción→clasificación→firewall. Número de "hardware base" para el paper.</p>
+<h3 id="paso-6-numeros-al-paper">Paso 6 — Números al paper</h3>
+<ul>
+<li>Internal: peso = F1 medido.</li>
+<li>Ransomware/Traffic: "no cableados, fiabilidad no demostrada".</li>
+<li>DDoS: peso = F1 medido (si es recuperable; si no, mismo tratamiento que Ransomware).</li>
+</ul>
+<hr />
+<h2 id="cierre">Cierre</h2>
+<p>Tu auditoría es <strong>técnicamente impecable</strong>. Los hechos están confirmados. Las preguntas están bien formuladas. El plan es sólido.</p>
+<p><strong>Mi única crítica adversaria:</strong> no elevaste el doble camino de <code>backward_bytes</code> a DEBT. Es un falso positivo sistemático potencial. Corrígelo.</p>
+<p><strong>El listón:</strong> un escudo que hace lo que dice que hace. Tu auditoría demuestra que el escudo actual no cumple. El plan de Fase 2, con gates de medición, lo llevará a cumplirlo.</p>
+<p><strong>No hay fecha. Hay mediciones.</strong> Eso es correcto.</p>
+<p><em>Consejo de Sabios — modo adversario activado. Hechos verificados. Opiniones separadas. El escudo se arregla midiendo, no votando.</em></p>
+<p>fdo qwen</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.top", "search.highlight"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

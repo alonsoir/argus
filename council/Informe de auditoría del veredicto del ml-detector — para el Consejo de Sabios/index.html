@@ -1,0 +1,1607 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source embedded-ML NDR for hospitals and schools">
+      
+      
+        <meta name="author" content="Alonso Isidoro Roman">
+      
+      
+        <link rel="canonical" href="https://alonsoir.github.io/argus/council/Informe%20de%20auditor%C3%ADa%20del%20veredicto%20del%20ml-detector%20%E2%80%94%20para%20el%20Consejo%20de%20Sabios/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>Informe de auditoría del veredicto del ml-detector — para el Consejo de Sabios - ML Defender (aRGus NDR)</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#informe-de-auditoria-del-veredicto-del-ml-detector-para-el-consejo-de-sabios" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-header__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ML Defender (aRGus NDR)
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Informe de auditoría del veredicto del ml-detector — para el Consejo de Sabios
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../README.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/BACKLOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Backlog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Security Model
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-tabs__link">
+          
+  
+  
+  ADRs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/contracts/Protobuf contracts.md" class="md-tabs__link">
+          
+  
+  
+  Contracts
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-nav__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ML Defender (aRGus NDR)
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../README.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/BACKLOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADRs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ADRs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013 Seed Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-021-deployment-topology-seed-families.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-021 Topology SSOT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-022-threat-model-opcion2-descartada.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-022 Threat Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Protobuf contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protobuf
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/JSON contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JSON
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Rag security commands.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#0-proposito-y-encuadre-lease-antes-que-nada" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        0. Propósito y encuadre (léase antes que nada)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1-resumen-ejecutivo-que-esta-roto-medido" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Resumen ejecutivo — qué está roto, medido
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-anatomia-del-flujo-real-de-process_event-medido" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Anatomía del flujo real de process_event (medido)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-salud-de-las-cuatro-cabezas-extractores-de-features-medido" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Salud de las cuatro cabezas — extractores de features (medido)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. Salud de las cuatro cabezas — extractores de features (medido)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#31-ranking-de-salud-medido-sobre-fichero" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.1 Ranking de salud (medido sobre fichero)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#32-evidencia-internal-el-bueno-features-de-peso" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.2 Evidencia — Internal (el bueno), features de peso
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#33-evidencia-traffic-el-roto-5-de-10-constantes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.3 Evidencia — Traffic (el roto), 5 de 10 constantes
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#34-el-cable-aguas-arriba-si-esta-poblado-medido-cierra-un-caveat-importante" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.4 El cable aguas arriba SÍ está poblado (medido — cierra un caveat importante)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-la-prueba-cruda-el-bronce-esta-sellado-monocapa-medido-no-inferido" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. La prueba cruda — el bronce está sellado monocapa (medido, no inferido)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-la-senal-aguas-abajo-como-consume-el-firewall-medido" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. La señal aguas abajo — cómo consume el firewall (medido)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-el-combinador-ya-existe-como-coleccion-medido-corrige-diagnostico-previo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. El combinador ya existe como colección (medido — corrige diagnóstico previo)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-coste-y-determinismo-lo-medido-y-lo-pendiente" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Coste y determinismo — lo medido y lo pendiente
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="7. Coste y determinismo — lo medido y lo pendiente">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#71-hecho-medido-latencia-de-inferencia-del-internal" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.1 HECHO MEDIDO — latencia de inferencia del Internal
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#72-supuesto-declarado-coste-de-la-extraccion-de-features" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.2 SUPUESTO DECLARADO — coste de la extracción de features
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#73-falso-positivo-de-medicion-que-evitamos-leccion-de-metodo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.3 Falso positivo de medición que evitamos (lección de método)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-registro-de-deudas-tecnicas-para-volcar-a-docsbacklogmd" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. Registro de deudas técnicas (para volcar a docs/BACKLOG.md)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#9-preguntas-al-consejo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9. Preguntas al Consejo
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="9. Preguntas al Consejo">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#bloque-1-las-cabezas-rotas-el-corazon-del-asunto" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Bloque 1 — Las cabezas rotas (el corazón del asunto)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bloque-2-el-cableado-arquitectura-de-fase-2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Bloque 2 — El cableado (arquitectura de fase 2)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bloque-3-la-persistencia-y-el-grafo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Bloque 3 — La persistencia y el grafo
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#10-fase-2-plan-de-accion-propuesto-borrador-de-adr" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10. Fase 2 — plan de acción propuesto (borrador de ADR)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="10. Fase 2 — plan de acción propuesto (borrador de ADR)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#precondicion-decidir-las-cabezas-rotas-bloque-1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Precondición — decidir las cabezas rotas (Bloque 1)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#paso-1-pulso-del-internal-sobre-datos-etiquetados-52b-i" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Paso 1 — Pulso del Internal sobre datos etiquetados (5.2b-i)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#paso-2-reconexion-del-cableado-defectos-a-b-c" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Paso 2 — Reconexión del cableado (Defectos A + B + C)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#paso-3-integracion-stress-con-medicion-de-latencia-por-cabeza" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Paso 3 — Integración + stress con medición de latencia por cabeza
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#paso-4-pcap-relay-e2e-en-hardware-propio" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Paso 4 — pcap relay e2e en hardware propio
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#paso-5-numeros-al-paper-con-la-config-honesta" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Paso 5 — Números al paper, con la config honesta
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#11-lo-que-aun-no-podemos-medir-y-por-que-honestidad-sobre-los-limites" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        11. Lo que aún no podemos medir, y por qué (honestidad sobre los límites)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#12-cierre" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        12. Cierre
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="12. Cierre">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#anexo-recordatorio-para-el-consejo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Anexo — recordatorio para el Consejo
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="informe-de-auditoria-del-veredicto-del-ml-detector-para-el-consejo-de-sabios">Informe de auditoría del veredicto del <code>ml-detector</code> — para el Consejo de Sabios</h1>
+<p><strong>Proyecto:</strong> aRGus NDR · <strong>Repositorio:</strong> todo lo citado está en <code>main</code>, corroborable línea a línea
+<strong>Fichero principal auditado:</strong> <code>ml-detector/src/zmq_handler.cpp</code> (<code>ZMQHandler::process_event</code>, líneas 322–875)
+<strong>Sesiones de medición:</strong> DAY 209 → DAY 212 (auditoría, sin cambios de código)
+<strong>Método:</strong> <em>medir, no votar</em> — cada afirmación se traza hacia atrás desde el binario / el fichero, nunca desde la memoria.</p>
+<hr />
+<h2 id="0-proposito-y-encuadre-lease-antes-que-nada">0. Propósito y encuadre (léase antes que nada)</h2>
+<p>Este documento no busca aprobación para una fecha. <strong>No hay fecha límite en este documento.</strong> El criterio es uno solo: el <code>ml-detector</code> debe quedar <strong>fiable y determinista</strong>, o debemos saber —con prueba medida, no con excusa— qué parte no podemos dejar bien todavía y <strong>por qué técnico</strong>.</p>
+<p>Reglas que gobiernan esta auditoría y que pedimos al Consejo respetar:</p>
+<ol>
+<li><strong>La calidad del pipeline no se negocia.</strong> O funciona bien, o no se presenta. No presentaremos ante nadie —ni FEDER, ni la comunidad, ni un hospital— algo que funcione a medias.</li>
+<li><strong>"No hay tiempo" no es una razón válida</strong> para descartar una cabeza de clasificación. La única razón válida para no proveer una cabeza es <strong>técnica</strong>: features irrecuperables, dato de entrenamiento inexistente, o un coste que rompa el determinismo. Si una cabeza no puede quedar bien, necesitamos saberlo con esa razón técnica explícita.</li>
+<li><strong>Separamos dos sentidos de "arreglar"</strong>, y el Consejo debe mantenerlos separados en toda su deliberación:<ul>
+<li><strong>(A) Cablear bien</strong> — que la arquitectura de ejecución coincida con la arquitectura que el diseño promete, y que la señal llegue correcta aguas abajo hasta el grafo. Esto está <strong>en nuestras manos y es medible ahora</strong>.</li>
+<li><strong>(B) Cabezas fiables</strong> — que cada clasificador discrimine de verdad sobre tráfico real. Esto <strong>depende de datos</strong> (algunos aún no generados) y no puede prometerse por decreto.
+  Prometer (B) para una fecha sería sesgo de confirmación. Lo honesto es: <strong>(A) ya, con cada cabeza entrando según su fiabilidad medida; (B) con un plan nombrado para elevar esa fiabilidad cuando el dato exista.</strong></li>
+</ul>
+</li>
+<li><strong>Somos honestos. No mentimos ni tergiversamos.</strong> Damos lo mejor que tenemos con humildad y trabajo. Este documento distingue en todo momento tres categorías: <strong>HECHO MEDIDO</strong>, <strong>PREGUNTA ABIERTA</strong>, <strong>SUPUESTO DECLARADO</strong>.</li>
+</ol>
+<blockquote>
+<p><strong>A quién sirve esto.</strong> El destino último del <code>ml-detector</code> es proteger hospitales y organizaciones que no pueden pagar seguridad de nivel empresarial. Una señal falsa o un veredicto a medias no es un bug abstracto: es un escudo que dice "protegido" cuando no lo está. Ese es el listón.</p>
+</blockquote>
+<hr />
+<h2 id="1-resumen-ejecutivo-que-esta-roto-medido">1. Resumen ejecutivo — qué está roto, medido</h2>
+<p>El veredicto del <code>ml-detector</code> (<code>final_classification</code>: MALICIOUS/BENIGN) tiene <strong>dos defectos apilados</strong>, y la auditoría destapó un <strong>tercer problema de persistencia</strong> que no estaba en el diagnóstico inicial. Los tres están medidos sobre fichero.</p>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Hallazgo</th>
+<th>Categoría</th>
+<th>Evidencia</th>
+<th>Gravedad</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>A</strong></td>
+<td>El veredicto se sella (<code>set_overall_threat_score</code>, L402) <strong>antes</strong> de que corran las 4 cabezas especializadas (L558–819). Las cabezas escriben un informe que el veredicto ya no lee.</td>
+<td>HECHO MEDIDO</td>
+<td><code>zmq_handler.cpp:399–402</code> vs <code>558–819</code></td>
+<td>Alta</td>
+</tr>
+<tr>
+<td><strong>B</strong></td>
+<td><strong>Causa raíz.</strong> Las 4 cabezas solo corren si L1 dijo ATTACK (<code>if label_l1==1 …</code>, L552). L1 es un <em>portero</em>, no un compañero de ensemble. Un flujo que el interno vería como exfiltración pero que L1 (genérico) marca BENIGN, sale BENIGN y el interno <strong>nunca se ejecuta</strong>.</td>
+<td>HECHO MEDIDO</td>
+<td><code>zmq_handler.cpp:552</code></td>
+<td>Crítica</td>
+</tr>
+<tr>
+<td><strong>C</strong></td>
+<td><strong>Nuevo (DAY 212).</strong> Las escrituras a disco (bronce, RAG, CSV) ocurren <strong>antes</strong> del gate y de las cabezas (L525–542). El dato histórico que alimenta el grafo se sella <strong>pre-inferencia-especializada</strong>.</td>
+<td>HECHO MEDIDO</td>
+<td><code>zmq_handler.cpp:525–542</code> + fila de bronce real (§4)</td>
+<td>Crítica (envenena la fuente de verdad del grafo)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Consecuencia conjunta:</strong> el <code>ml-detector</code> es hoy, en ejecución, un clasificador <strong>monocapa</strong> (<code>max(fast_path, L1)</code>) que contradice la arquitectura <strong>tricapa</strong> que el paper (arXiv:2604.04952) dibuja. Las cuatro cabezas especializadas existen, se ejecutan (cuando L1 abre el portón) y rellenan telemetría — pero <strong>ni deciden el veredicto ni llegan al grafo</strong>.</p>
+<p><strong>Además, dos de las cuatro cabezas están medidas como no-fiables</strong> por la salud de su extractor de features (ransomware 1/10, traffic 5/10 — §3). Esto es problema <strong>(B)</strong>, distinto de <strong>(A)</strong>, y es el que necesita la deliberación técnica del Consejo.</p>
+<hr />
+<h2 id="2-anatomia-del-flujo-real-de-process_event-medido">2. Anatomía del flujo real de <code>process_event</code> (medido)</h2>
+<p>Secuencia de ejecución tal como está en el fichero, <strong>no</strong> como la dibuja el diseño. Cada línea es verificable en <code>main</code>.</p>
+<pre><code>322   ZMQHandler::process_event(message)         ← inicio
+351   fast_score = event.fast_detector_score()   ← se LEE y se PRESERVA (el bug viejo DAY 11-12 NO existe)
+358   extract_level1_features + validate
+375   level1_model_-&gt;predict → label_l1, confidence_l1
+393   enrich ml_analysis con L1
+399   ml_score = (label_l1==1) ? confidence_l1 : (1-confidence_l1)   ← &quot;Dual-Score&quot;: ml_score ES L1 y SOLO L1
+400   event.set_ml_detector_score(ml_score)      ← ⚠ el campo del wire se rellena con SOLO L1 (DEBT-5)
+401   final_score = max(fast_score, ml_score)    ← COMBINADOR: max de 2 fuentes
+402   event.set_overall_threat_score(final_score) ← ★ VEREDICTO SELLADO AQUÍ (Defecto A)
+404   authoritative_source = DIVERGENCE|CONSENSUS|FAST_PRIORITY|ML_PRIORITY  ← razona fast-vs-ml
+416   decision_metadata (score_divergence, requires_rag)
+433   final_classification = (final_score &gt;= malicious_threshold) ? MALICIOUS : BENIGN
+445   provenance = event.mutable_provenance()    ← ★ COLECCIÓN de veredictos (ADR-002), acepta N
+452   provenance-&gt;add_verdicts() ← &quot;random-forest-level1&quot;   ← hoy: sniffer + L1 = 2 veredictos
+481   provenance-&gt;set_final_decision(DROP|ALLOW)
+505   ml_context.attack_family = &quot;RANSOMWARE&quot;    ← ⚠ HARDCODED (DEBT-4)
+525   correlation_writer_-&gt;write_record(event)   ← ★ ESCRITURA BRONCE (Defecto C — pre-cabezas)
+530   rag_logger_-&gt;log_event(event, ml_context)  ← ★ ESCRITURA RAG   (Defecto C — pre-cabezas)
+541   csv_writer_-&gt;write_event(event)            ← ★ ESCRITURA CSV   (Defecto C — pre-cabezas)
+549   if (label_l1==1 &amp;&amp; confidence_l1 &gt;= level1_attack) {  ← ★ GATE L1 (Defecto B — causa raíz)
+550     event.set_threat_category(&quot;ATTACK&quot;)                 ←   (ATTACK va DENTRO del gate)
+558       DDoS      → predict (596)  → add_specialized_predictions
+626       Ransomware→ predict (665)  → add_specialized_predictions
+697       Traffic   → predict (733)  → decide dominio interno/internet
+748         if (traffic.is_internal())
+756           Internal → predict (780) → set_threat_category(&quot;SUSPICIOUS_INTERNAL&quot;) (795)
+819     else: event.set_threat_category(&quot;NORMAL&quot;)
+823   plugins invoke_all (ADR-012)
+850   send_enriched_event(event)                 ← ★ EMISIÓN ZMQ
+875   fin process_event
+</code></pre>
+<p><strong>Tres fronteras de no-retorno</strong>, no una. El plan previo (DAY 211) asumía que bastaba "mover el veredicto tras 802". La medición demuestra que hay <strong>tres puntos donde el estado del evento escapa</strong> de <code>process_event</code>:</p>
+<ul>
+<li><strong>Disco (bronce/RAG/CSV):</strong> L525–542 — <strong>antes</strong> de las cabezas.</li>
+<li><strong>ZMQ:</strong> L850 — después de las cabezas.</li>
+</ul>
+<p>Para que el arreglo llegue <strong>al grafo</strong> (no solo al ZMQ), la persistencia a disco debe reubicarse después de la inferencia completa. Esto es el núcleo de por qué (C) es crítico.</p>
+<hr />
+<h2 id="3-salud-de-las-cuatro-cabezas-extractores-de-features-medido">3. Salud de las cuatro cabezas — extractores de features (medido)</h2>
+<p>Una cabeza no vale más que su extractor. Medimos, feature a feature, cuántas leen datos reales de <code>NetworkFeatures</code> y cuántas son constantes o proxies mal nombrados. Fichero: <code>ml-detector/src/feature_extractor.cpp</code>.</p>
+<h3 id="31-ranking-de-salud-medido-sobre-fichero">3.1 Ranking de salud (medido sobre fichero)</h3>
+<table>
+<thead>
+<tr>
+<th>Cabeza</th>
+<th>Extractor</th>
+<th style="text-align: center;">Reales / Constantes</th>
+<th>Veredicto</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Internal (L3)</strong></td>
+<td><code>extract_level3_internal_features</code> (404–448)</td>
+<td style="text-align: center;"><strong>7 / 2</strong> (1 discutible)</td>
+<td><strong>Mejor candidato.</strong> <code>[5]</code> lateral, <code>[7]</code> exfil, <code>[6]</code> scanning, <code>[9]</code> size-std leen <code>nf</code>. <code>[1]</code>,<code>[2]</code> constantes.</td>
+</tr>
+<tr>
+<td>DDoS (L2)</td>
+<td>(medido DAY 209)</td>
+<td style="text-align: center;">6 / 3 (1 real de peso)</td>
+<td>Degradado pero vivo.</td>
+</tr>
+<tr>
+<td>Traffic (L3)</td>
+<td><code>extract_level3_traffic_features</code> (347–403)</td>
+<td style="text-align: center;"><strong>5 / 5</strong></td>
+<td><strong>Roto.</strong> <code>[6]</code>,<code>[7]</code>,<code>[8]</code> son literal <code>1.0f</code>; <code>[4]</code>,<code>[5]</code> son proxies mal nombrados.</td>
+</tr>
+<tr>
+<td>Ransomware (L2)</td>
+<td>(medido DAY 194–209)</td>
+<td style="text-align: center;"><strong>1 / 9</strong></td>
+<td><strong>Roto por diseño.</strong> <code>entropy</code> = varianza de longitud de paquete ÷ 100.000, no Shannon.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="32-evidencia-internal-el-bueno-features-de-peso">3.2 Evidencia — Internal (el bueno), features de peso</h3>
+<pre><code class="language-cpp">// [5] Lateral Movement Score — REAL (lee syn_flag_count, fin_flag_count)
+float syn_rate = safe_divide(nf.syn_flag_count(), total_packets);
+float completion_rate = safe_divide(nf.fin_flag_count(), max(nf.syn_flag_count(),1));
+features[5] = syn_rate * (1.0f - completion_rate);
+
+// [7] Data Exfiltration — REAL (lee total_forward_bytes / total_backward_bytes)
+float outbound_ratio = safe_divide(nf.total_forward_bytes(), max(nf.total_backward_bytes(),1));
+features[7] = (outbound_ratio &gt; 2.0f) ? normalize(outbound_ratio, 2.0f, 10.0f) : 0.0f;
+
+// [1],[2] — CONSTANTES (no leen nf)
+features[1] = 1.0f - normalize(1.0f, 0.0f, 5.0f);   // &quot;service port consistency&quot;
+features[2] = 1.0f - normalize(1.0f, 0.0f, 3.0f);   // &quot;protocol regularity&quot;
+</code></pre>
+<h3 id="33-evidencia-traffic-el-roto-5-de-10-constantes">3.3 Evidencia — Traffic (el roto), 5 de 10 constantes</h3>
+<pre><code class="language-cpp">features[6] = normalize(1.0f, 0.0f, 10.0f);          // &quot;source IP entropy&quot;      — CONSTANTE
+features[7] = 1.0f - normalize(1.0f, 0.0f, 10.0f);   // &quot;dst IP concentration&quot;   — CONSTANTE
+features[8] = normalize(1.0f, 0.0f, 10.0f);          // &quot;protocol variety&quot;       — CONSTANTE
+features[4] = min(normalize(nf.flow_iat_std()...),1); // &quot;port entropy&quot; ← ES IAT std, MAL NOMBRADO
+features[5] = normalize(nf.flow_duration.../1e6, ...); // &quot;flow duration std&quot; ← ES duración cruda
+</code></pre>
+<h3 id="34-el-cable-aguas-arriba-si-esta-poblado-medido-cierra-un-caveat-importante">3.4 El cable aguas arriba SÍ está poblado (medido — cierra un caveat importante)</h3>
+<p>Verificamos que el sniffer <strong>rellena con valores reales de flujo</strong> los campos que lee el extractor Internal. No son campos muertos:</p>
+<pre><code>sniffer/src/userspace/ml_defender_features.cpp:
+  919  set_syn_flag_count(flow.syn_count)
+  918  set_fin_flag_count(flow.fin_count)
+  920  set_rst_flag_count(flow.rst_count)
+  752  set_total_forward_bytes(flow.sbytes)
+  753  set_total_backward_bytes(flow.dbytes)
+  787  set_packet_length_std(std_dev)
+  848-851 set_flow_inter_arrival_time_{min,max,mean,std}
+</code></pre>
+<p><strong>Distinción honesta:</strong> esto prueba que el cable llega a un campo <strong>poblado con telemetría real</strong> (sniffer→extractor verificado end-to-end). <strong>NO</strong> prueba que esos valores <strong>discriminen</strong> clases sobre tráfico interno real — eso es medición pendiente (§6, MITRE). El peso alto provisional del Internal descansa en "cable verificado", no en "calidad demostrada".</p>
+<blockquote>
+<p><strong>Nota (flanco, no-DEBT aún):</strong> existe un segundo camino de poblado en <code>ring_consumer.cpp:908</code> que hace <code>set_total_backward_bytes(0)</code> hardcodeado (fast-path). En ese camino, <code>[7]</code> exfil (ratio forward/backward) se dispararía artificialmente. El camino principal (<code>ml_defender_features.cpp:753</code>) usa <code>flow.dbytes</code> real. <strong>Dos caminos de poblado, uno real y uno degradado.</strong> Hay que medir cuál domina en producción antes de elevarlo a DEBT.</p>
+</blockquote>
+<hr />
+<h2 id="4-la-prueba-cruda-el-bronce-esta-sellado-monocapa-medido-no-inferido">4. La prueba cruda — el bronce está sellado monocapa (medido, no inferido)</h2>
+<p><code>DEBT-BRONZE-WRITTEN-PRE-HEADS-001</code> no se apoya en "leímos el orden de las líneas". Se apoya en una <strong>fila real de bronce</strong> de producción:</p>
+<pre><code>Fichero: /vagrant/logs/correlation/argus/2026-07-06-211714.csv
+
+1,argus,55699877993945_547895546,cpp_sniffer_v33_day12,1:ciqxbXnDl7bVdFSSI2s2iLJixUM=,
+55699,877993945,1.56.168.192,251.0.0.224,5353,5353,UDP,BENIGN,RAW_CAPTURE,
+0.000000,0.068406,0.068406,DETECTOR_SOURCE_ML_PRIORITY,6243e4ca...
+                          ▲            ▲
+              final_classification   threat_category = &quot;RAW_CAPTURE&quot;
+                    = BENIGN          (etiqueta del SNIFFER, no del ml-detector)
+</code></pre>
+<p><strong>Lectura medida:</strong>
+- <code>threat_category = RAW_CAPTURE</code> → es la etiqueta que pone el <strong>sniffer</strong> (<code>ring_consumer.cpp:943</code>), no ninguna de las del <code>ml-detector</code> (ATTACK/DDOS/RANSOMWARE/SUSPICIOUS_INTERNAL/NORMAL). Confirma que la fila se escribió <strong>antes</strong> de que el <code>ml-detector</code> etiquetara nada.
+- Las cuatro cabezas nunca tocaron esta fila. El grafo (bronce→AVRO→Parquet→Kuzu) ingiere el estado <strong>pre-inferencia-especializada</strong>.</p>
+<p><strong>Y el RAG remacha <code>DEBT-RAG-ATTACKFAMILY-HARDCODED-001</code>:</strong></p>
+<pre><code>Fichero: /vagrant/logs/rag/artifacts/2025-12-14/event_fast-alert-5018010314181.json
+  &quot;attack_family&quot;:    &quot;RANSOMWARE&quot;              ← hardcoded en zmq_handler.cpp:505
+  &quot;threat_category&quot;:  &quot;RANSOMWARE_FAST_DETECTION&quot;
+</code></pre>
+<p>En este caso concreto (una detección rápida de ransomware del sniffer) el <code>attack_family="RANSOMWARE"</code> coincide <strong>por accidente</strong>. Cualquier evento no-ransomware saldría igualmente etiquetado "RANSOMWARE". El defecto se sostiene.</p>
+<hr />
+<h2 id="5-la-senal-aguas-abajo-como-consume-el-firewall-medido">5. La señal aguas abajo — cómo consume el firewall (medido)</h2>
+<p>Rastreamos <code>threat_category</code> (campo 17 del wire, <code>network_security.proto:595</code>) hasta sus consumidores. Clasificación en tres grados: <strong>(a)</strong> solo se escribe · <strong>(b)</strong> se lee para registrar · <strong>(c)</strong> se lee para decidir.</p>
+<table>
+<thead>
+<tr>
+<th>Consumidor</th>
+<th>Fichero:línea</th>
+<th style="text-align: center;">Grado</th>
+<th>Qué hace</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Firewall STEP 5</td>
+<td><code>zmq_subscriber.cpp:610</code></td>
+<td style="text-align: center;"><strong>(c) acotado</strong></td>
+<td>Modula <code>timeout</code> (DDOS→600s, RANSOMWARE→3600s, resto→300s) y <code>DetectionType</code>. <strong>NO decide si-bloquear.</strong></td>
+</tr>
+<tr>
+<td>Firewall logger</td>
+<td><code>logger.cpp:348</code></td>
+<td style="text-align: center;">(b)</td>
+<td>Etiqueta <code>threat_type</code>/<code>detector_name</code> en log estructurado.</td>
+</tr>
+<tr>
+<td>Bronce</td>
+<td><code>correlation_writer.cpp:97</code></td>
+<td style="text-align: center;">(b)</td>
+<td>Columna 13. Contamina el dato del grafo (§4).</td>
+</tr>
+<tr>
+<td>RAG</td>
+<td><code>rag_logger.cpp:239</code></td>
+<td style="text-align: center;">(b)</td>
+<td>JSON artifact.</td>
+</tr>
+<tr>
+<td>CSV</td>
+<td><code>csv_event_writer.cpp:256</code></td>
+<td style="text-align: center;">(b)</td>
+<td>Columna 9.</td>
+</tr>
+</tbody>
+</table>
+<p><strong>El gate de L1 está cableado DOS veces</strong> (hallazgo GAP 4, medido). El firewall filtra la entrada <strong>antes</strong> de STEP 5:</p>
+<pre><code class="language-cpp">// firewall-acl-agent/src/api/zmq_subscriber.cpp (~583)
+if (!ml.attack_detected_level1()) {
+    FIREWALL_LOG_DEBUG(&quot;No Level 1 attack detected, skipping&quot;);
+    return;   // ← el firewall DESCARTA el evento si L1 no marcó ataque
+}
+</code></pre>
+<p><strong>Consecuencia para el arreglo:</strong> reconectar las cabezas al veredicto <strong>en el <code>ml-detector</code> no basta</strong>. Aunque el <code>ml-detector</code> emitiera <code>SUSPICIOUS_INTERNAL</code> en un flujo que L1 marcó BENIGN, el firewall lo descartaría en <code>attack_detected_level1()</code>. <strong>El des-gateo es de dos componentes</strong> (<code>ml-detector</code> + <code>firewall-acl-agent</code>), no uno.</p>
+<p>Confirmación de "(c) acotado": como el bloqueo lo decide el filtro L1 (no <code>threat_category</code>), un <code>threat_category</code> erróneo <strong>modula la respuesta</strong> (duración, tipo) pero <strong>no crea ni suprime bloqueos</strong>. <code>DEBT-TRAFFIC-EXTRACTOR-CONSTANTS-001</code> queda en <strong>P2-alto</strong>, no P1: el traffic 5/10 constante puede producir un <code>SUSPICIOUS_INTERNAL</code> espurio con timeout de 300s — sobre-bloqueo leve y temporal, no fallo de seguridad.</p>
+<hr />
+<h2 id="6-el-combinador-ya-existe-como-coleccion-medido-corrige-diagnostico-previo">6. El combinador ya existe como colección (medido — corrige diagnóstico previo)</h2>
+<p><strong>Corrección honesta:</strong> en sesiones previas afirmé que el combinador eran "dos escalares sueltos, sin colección de fuentes". La lectura completa del tramo 432–486 (que no habíamos leído) <strong>lo refuta</strong>. Existe <code>provenance</code> (ADR-002), una estructura de <strong>N veredictos</strong>:</p>
+<pre><code class="language-cpp">// zmq_handler.cpp:445–481
+auto* provenance = event.mutable_provenance();
+bool sniffer_verdict_exists = (provenance-&gt;verdicts_size() &gt; 0);   // ya soporta N
+auto* rf_verdict = provenance-&gt;add_verdicts();                     // añade veredicto
+rf_verdict-&gt;set_engine_name(&quot;random-forest-level1&quot;);
+rf_verdict-&gt;set_classification(...); rf_verdict-&gt;set_confidence(confidence_l1);
+rf_verdict-&gt;set_reason_code(...);    rf_verdict-&gt;set_timestamp_ns(...);
+...
+provenance-&gt;set_discrepancy_score(discrepancy);
+provenance-&gt;set_final_decision(final_score &gt;= malicious_threshold ? &quot;DROP&quot; : &quot;ALLOW&quot;);
+</code></pre>
+<p><strong>Implicación para fase 2 (buena noticia):</strong> el noisy-OR <strong>se injerta</strong>, no se reescribe. Cada cabeza añade su <code>add_verdicts()</code> con su <code>engine_name</code> y <code>confidence</code>; el combinador lee <code>provenance-&gt;verdicts()</code> como colección y cambia la fórmula de agregación de <code>max</code> a noisy-OR. La estructura de provenance ya existe y acepta N. <code>provenance-&gt;set_final_decision()</code> (L481) ya es el punto único de decisión.</p>
+<p><strong>Operador de combinación acordado (a ratificar por el Consejo):</strong></p>
+<pre><code>noisy-OR:   P = 1 − ∏(1 − pᵢ)      con   pᵢ = fiabilidad_i · score_crudo_i
+</code></pre>
+<p>Propiedades: monótono (ninguna cabeza suprime a otra — a diferencia de la media ponderada, que deja que vecinos callados voten a la baja una cabeza fiable que dispara); corroboración incorporada (ransomware+interno se refuerzan); siempre ≥ que <code>max</code> (el fast-path sigue dominando cuando dispara). Pesos = fiabilidad <strong>medida</strong> (§3 + F1 por cabeza), no votada.</p>
+<hr />
+<h2 id="7-coste-y-determinismo-lo-medido-y-lo-pendiente">7. Coste y determinismo — lo medido y lo pendiente</h2>
+<h3 id="71-hecho-medido-latencia-de-inferencia-del-internal">7.1 HECHO MEDIDO — latencia de inferencia del Internal</h3>
+<p>Micro-benchmark con flags de <strong>producción</strong> (<code>-O3 -march=native -DNDEBUG -flto</code>), header desplegado, 16 inputs distintos (no solo caché caliente), <code>volatile sink</code> contra dead-code elimination, doble corrida:</p>
+<pre><code>Internal::predict  N=1000000  sink=87875000
+  media: 0.584 us/pred  (1.713.354 preds/s)   ← corrida 1
+  media: 0.583 us/pred  (1.716.691 preds/s)   ← corrida 2 (estable a la 3ª cifra)
+</code></pre>
+<p>Entorno: VM de desarrollo (VirtualBox), recursos limitados. <strong>0.58 μs sobre un presupuesto de 10 ms = 0.006%.</strong> Aunque las 4 cabezas corrieran en el 100% de los flujos, la suma de inferencias es ruido frente al presupuesto. <strong>El Defecto B no tiene coartada de coste en la parte de inferencia.</strong></p>
+<blockquote>
+<p><strong>Para el paper:</strong> este 0.58 μs es el <em>suelo de latencia de inferencia en hardware de desarrollo con recursos limitados</em>, dato publicable. <strong>Hueco declarado:</strong> falta el número en "hardware base de producción barato" — se anotará cuando dispongamos de ese hardware, para poder afirmar "en hardware suelo el rendimiento es X".</p>
+</blockquote>
+<h3 id="72-supuesto-declarado-coste-de-la-extraccion-de-features">7.2 SUPUESTO DECLARADO — coste de la extracción de features</h3>
+<p><strong>No benchmarkeado.</strong> Leído sobre fichero, <code>extract_level3_traffic_features</code> y <code>extract_level3_internal_features</code> son <strong>aritmética escalar</strong> sobre ~10 getters de proto: sumas, <code>safe_divide</code>, <code>normalize</code>, comparaciones. <strong>Cero bucles, cero paso sobre paquetes.</strong> Coste manifiestamente de nanosegundos, verificable en el fichero por cualquier revisor. Lo declaramos supuesto, no medición oculta. Si el Consejo lo exige, una ronda de bench (requiere construir un <code>NetworkFeatures</code> realista).</p>
+<h3 id="73-falso-positivo-de-medicion-que-evitamos-leccion-de-metodo">7.3 Falso positivo de medición que evitamos (lección de método)</h3>
+<p>La primera corrida del bench dio <code>0.00 μs</code> / <code>inf preds/s</code>: <code>-O3 -flto</code> eliminó el cálculo como dead-code porque el resultado no se usaba. <strong>Un verde que no significaba nada.</strong> Se corrigió forzando el consumo del resultado. Lo documentamos porque es <em>medir no votar</em> aplicado al propio instrumento de medida: un número verde no es una medición hasta que se prueba que mide algo.</p>
+<hr />
+<h2 id="8-registro-de-deudas-tecnicas-para-volcar-a-docsbacklogmd">8. Registro de deudas técnicas (para volcar a <code>docs/BACKLOG.md</code>)</h2>
+<p>Seis deudas medidas en esta auditoría, más una nota. Prioridad según impacto en <strong>fiabilidad/determinismo</strong>, no según fecha.</p>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>P</th>
+<th>Descripción</th>
+<th>Evidencia</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>DEBT-VERDICT-MONOCAPA-001</code></td>
+<td><strong>P0</strong></td>
+<td>El veredicto es <code>max(fast, L1)</code>; las 4 cabezas no lo deciden. Defectos A (secuencia) + B (gate L1). Contradice la tricapa del paper.</td>
+<td><code>zmq_handler.cpp:401,552</code></td>
+</tr>
+<tr>
+<td><code>DEBT-BRONZE-WRITTEN-PRE-HEADS-001</code></td>
+<td><strong>P1</strong></td>
+<td>Bronce/RAG/CSV se escriben antes del gate y las cabezas. El grafo ingiere estado pre-inferencia. Envenena la fuente de verdad del reentrenamiento.</td>
+<td><code>zmq_handler.cpp:525–542</code> + fila <code>RAW_CAPTURE</code> (§4)</td>
+</tr>
+<tr>
+<td><code>DEBT-FIREWALL-L1-GATE-DUPLICATE-001</code></td>
+<td><strong>P2</strong></td>
+<td>El firewall filtra por <code>attack_detected_level1()</code> antes de STEP 5. El des-gateo requiere tocar dos componentes.</td>
+<td><code>zmq_subscriber.cpp:~583</code></td>
+</tr>
+<tr>
+<td><code>DEBT-TRAFFIC-EXTRACTOR-CONSTANTS-001</code></td>
+<td><strong>P2-alto</strong></td>
+<td>Traffic L3: 5/10 features constantes + 2 proxies mal nombrados. Clasificador de dominio no fiable; gatea al interno vía cascada L748.</td>
+<td><code>feature_extractor.cpp:347–403</code></td>
+</tr>
+<tr>
+<td><code>DEBT-RAG-ATTACKFAMILY-HARDCODED-001</code></td>
+<td><strong>P2</strong></td>
+<td><code>attack_family="RANSOMWARE"</code> fijo en todo evento RAG.</td>
+<td><code>zmq_handler.cpp:505</code> + entrada RAG (§4)</td>
+</tr>
+<tr>
+<td><code>DEBT-ML-SCORE-FIELD-L1-ONLY-001</code></td>
+<td><strong>P3</strong></td>
+<td>El campo del wire <code>ml_detector_score</code> se rellena con solo L1, no con la combinación de cabezas. Engaña por nombre.</td>
+<td><code>zmq_handler.cpp:400</code></td>
+</tr>
+<tr>
+<td><em>Nota (no-DEBT)</em></td>
+<td>—</td>
+<td>Doble camino de poblado de <code>backward_bytes</code>: real (<code>ml_defender_features.cpp:753</code>) vs <code>0</code> hardcodeado (<code>ring_consumer.cpp:908</code>). Medir cuál domina.</td>
+<td>—</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Housekeeping pendiente (arrastrado):</strong> <code>git rm</code> de <code>proto_aligned</code> con su DEBT; corregir narrativa tricapa→realidad en el paper; actualizar <code>README.md</code> y <code>docs/BACKLOG.md</code>.</p>
+<hr />
+<h2 id="9-preguntas-al-consejo">9. Preguntas al Consejo</h2>
+<p>Las que necesitan deliberación adversaria de nueve modelos. Ordenadas por lo que bloquean.</p>
+<h3 id="bloque-1-las-cabezas-rotas-el-corazon-del-asunto">Bloque 1 — Las cabezas rotas (el corazón del asunto)</h3>
+<p><strong>P1.</strong> Ransomware (1/10 real: <code>entropy</code> = varianza de longitud de paquete, no Shannon) y Traffic (5/10 constante) están medidas como no-fiables. <strong>¿Son recuperables mediante reentrenamiento honesto contra ground-truth de dominio de red, o hay una razón técnica por la que alguna de ellas no debe existir como cabeza dedicada?</strong> Necesitamos la respuesta técnica, no la temporal. Si una cabeza no puede quedar bien, queremos presentarnos diciendo exactamente por qué, con la cabeza alta.</p>
+<p><strong>P2.</strong> Si una cabeza entra al veredicto con <strong>fiabilidad medida ≈0</strong> (peso ≈0 en el noisy-OR), ¿es eso honesto y determinista, o es preferible <strong>no cablearla en absoluto</strong> hasta que su reentrenamiento la haga fiable? Es decir: ¿"cabeza presente con peso 0" vs "cabeza ausente" — cuál es la postura científica correcta para un sistema que se presenta como tricapa?</p>
+<p><strong>P3.</strong> El Traffic detector decide el dominio (interno/internet) que <strong>gatea</strong> al Internal (cascada L748). Si Traffic es 5/10 constante, el clasificador que decide "esto es interno, activa al Internal" es él mismo poco fiable. <strong>¿Debe la cascada L748 sobrevivir al rediseño, o el Internal debe correr desacoplado de la decisión de dominio de Traffic?</strong></p>
+<h3 id="bloque-2-el-cableado-arquitectura-de-fase-2">Bloque 2 — El cableado (arquitectura de fase 2)</h3>
+<p><strong>P4.</strong> ¿Ratifica el Consejo el operador <strong>noisy-OR</strong> <code>P = 1 − ∏(1 − pᵢ)</code> con <code>pᵢ = fiabilidad_i · score_i</code>, frente a alternativas (media ponderada — descartada por dilución; max de N; Dempster-Shafer)? El razonamiento de monotonía y corroboración está en §6.</p>
+<p><strong>P5.</strong> Sobre <code>provenance</code> (la colección de veredictos, §6): ¿se injertan las 4 cabezas como <code>add_verdicts()</code> adicionales (N fuentes homogéneas), o se conserva el eje fast-vs-ml de <code>authoritative_source</code> y el noisy-OR se calcula aparte? La primera opción es más limpia pero cambia la semántica de <code>authoritative_source</code> (que hoy habla de 2 fuentes).</p>
+<p><strong>P6.</strong> El des-gateo es de <strong>dos componentes</strong> (§5): <code>ml-detector</code> (reconectar cabezas) + <code>firewall-acl-agent</code> (relajar <code>attack_detected_level1()</code>). ¿Cómo se coordina esto sin romper el contrato del wire ni la lógica de bloqueo existente? ¿Un solo PR atómico o dos secuenciados?</p>
+<h3 id="bloque-3-la-persistencia-y-el-grafo">Bloque 3 — La persistencia y el grafo</h3>
+<p><strong>P7.</strong> Reubicar las escrituras de bronce/RAG/CSV <strong>después</strong> de las cabezas (arreglar Defecto C) cambia <strong>qué</strong> se escribe al bronce — que tiene tests golden (<code>test_correlation_roundtrip</code>, <code>correlation_v1_golden_vectors</code>). <strong>¿Cómo garantizamos que el reordenamiento no rompe el contrato <code>correlation_v1</code>?</strong> ¿Se regeneran los golden vectors, o el contrato debe ser invariante al reordenamiento?</p>
+<p><strong>P8.</strong> Mover <code>log_event</code> después de las cabezas exige mover (o repoblar) la construcción de <code>ml_context</code> (L505–517), cuyos campos <code>level_2_category</code>/<code>level_3_subcategory</code> hoy son <code>"UNKNOWN"</code>. <strong>¿El <code>ml_context</code> debe poblarse con lo que produzcan las cabezas?</strong> Esa es justo la información que hoy se pierde.</p>
+<hr />
+<h2 id="10-fase-2-plan-de-accion-propuesto-borrador-de-adr">10. Fase 2 — plan de acción propuesto (borrador de ADR)</h2>
+<p>Sujeto a la deliberación del Consejo. Estructura TDH: cada paso con gate de medición; nada sube al veredicto sin su pulso medido. Ningún paso está condicionado a una fecha.</p>
+<h3 id="precondicion-decidir-las-cabezas-rotas-bloque-1">Precondición — decidir las cabezas rotas (Bloque 1)</h3>
+<p>Antes de escribir cableado, resolver P1–P3. <strong>Si ransomware/traffic no son recuperables, el plan lo dice y esas cabezas entran con peso 0 explícito y documentado (o se retiran).</strong> No se cablea una cabeza cuya fiabilidad no se ha decidido.</p>
+<h3 id="paso-1-pulso-del-internal-sobre-datos-etiquetados-52b-i">Paso 1 — Pulso del Internal sobre datos etiquetados (5.2b-i)</h3>
+<p>Requiere <strong>fuente de datos internos etiquetados</strong> (ver §11). Mide si el Internal <em>discrimina</em> clases sobre tráfico interno real, no solo sobre vectores de juguete. <strong>Gate:</strong> sin este número, el peso del Internal en el noisy-OR es provisional, no confianza.</p>
+<h3 id="paso-2-reconexion-del-cableado-defectos-a-b-c">Paso 2 — Reconexión del cableado (Defectos A + B + C)</h3>
+<ol>
+<li><strong>Mover el bloque combinador</strong> (399–416) y las <strong>tres escrituras de persistencia</strong> (525–542) a <strong>después</strong> de la sección de cabezas (post-819), antes de <code>send_enriched_event</code> (850).</li>
+<li><strong>Sacar Internal + (Traffic, según P3) del gate de L1</strong> — corren siempre, desacoplados.</li>
+<li><strong>Sustituir <code>max</code> por noisy-OR</strong> sobre <code>provenance-&gt;verdicts()</code>, poblado con las 4 cabezas.</li>
+<li><strong>Poblar <code>ml_context</code></strong> con la salida de las cabezas (P8).</li>
+<li><strong>Relajar <code>attack_detected_level1()</code> en el firewall</strong> (P6), coordinado.</li>
+</ol>
+<p><strong>Tests unitarios del combinador (TDH):</strong> (a) una cabeza dispara → veredicto sube; (b) dos cabezas corroboran → refuerzo; (c) cabeza con fiabilidad-0 NO envenena; (d) golden vectors de bronce siguen verdes tras el reordenamiento (P7).</p>
+<h3 id="paso-3-integracion-stress-con-medicion-de-latencia-por-cabeza">Paso 3 — Integración + stress con medición de latencia por cabeza</h3>
+<p>El stress test que sustituye al sniffer, con latencia recepción→clasificación→firewall por cabeza. Verificar que el nuevo flujo de <code>SUSPICIOUS_INTERNAL</code> (que hoy L1 traga) no dispara sobre-bloqueo masivo.</p>
+<h3 id="paso-4-pcap-relay-e2e-en-hardware-propio">Paso 4 — pcap relay e2e en hardware propio</h3>
+<p>TTL real recepción→clasificación→firewall. Aquí entra el número de "hardware base" para el paper (§7.1).</p>
+<h3 id="paso-5-numeros-al-paper-con-la-config-honesta">Paso 5 — Números al paper, con la config honesta</h3>
+<p>Qué cabeza pesa cuánto, ransomware/traffic con su fiabilidad medida. La limitación se formula como <strong>hueco de cobertura</strong> ("aún no tenemos estas cabezas fiables"), <strong>no</strong> como divergencia predicha. No pre-explicamos divergencias no medidas.</p>
+<hr />
+<h2 id="11-lo-que-aun-no-podemos-medir-y-por-que-honestidad-sobre-los-limites">11. Lo que aún no podemos medir, y por qué (honestidad sobre los límites)</h2>
+<ul>
+<li><strong>Calidad discriminante de las cabezas sobre tráfico real (5.2b-i).</strong> Requiere tráfico <strong>etiquetado</strong> de dominio interno (movimiento lateral, exfiltración). NERIS (CTU-13) es C2 de botnet externo: ejercita las features de red genéricas pero <strong>no valida</strong> lateral/exfil. La fuente de datos es MITRE ATT&amp;CK / Atomic Red Team en entorno controlado, generando señal suficiente y etiquetada (no unos pocos <code>curl</code>, que no harían saltar el pipeline). <strong>Este es el trabajo de datos que condiciona (B), y no puede sustituirse por tiempo ni por decreto.</strong></li>
+<li><strong>Reentrenamiento de ransomware/traffic contra ground-truth de red.</strong> Depende de tener ese dato etiquetado primero.</li>
+<li><strong>Coste en hardware de producción.</strong> Depende de tener el hardware base definido.</li>
+</ul>
+<p>Ninguno de estos límites bloquea el <strong>cableado honesto (A)</strong>, que sí está en nuestras manos ahora. Lo que bloquean es poder <em>afirmar</em> que las cuatro cabezas son fiables — y por eso no lo afirmaremos hasta medirlo.</p>
+<hr />
+<h2 id="12-cierre">12. Cierre</h2>
+<p>El <code>ml-detector</code> tiene defectos, algunos serios, todos medidos y corroborables en <code>main</code>. No pedimos aprobar una versión a medias: pedimos la deliberación adversaria de nueve modelos para dejar la pieza <strong>fiable y determinista</strong>, o para saber con prueba técnica qué cabeza no podemos dejar bien todavía y por qué.</p>
+<p>El fin no es una fecha. El fin es un escudo que hace lo que dice que hace, para hospitales y organizaciones que no pueden pagar otro. Ese es el listón, y no lo bajamos.</p>
+<p><em>Via Appia Quality — medir quién clasifica, no solo cómo de bien. Un escudo que conoce sus propias sombras, incluida la sombra entre su código y su diagrama.</em></p>
+<hr />
+<h3 id="anexo-recordatorio-para-el-consejo">Anexo — recordatorio para el Consejo</h3>
+<p>Todo lo citado (líneas de fichero, filas de bronce/RAG, salida de benchmarks) está en <code>main</code> y es verificable directamente en el repositorio. Los números de línea son de DAY 212; si al abrir no cuadran por deriva entre sesiones, re-grepear <code>set_overall_threat_score</code>, <code>label_l1 == 1 &amp;&amp;</code>, <code>mutable_provenance</code>, <code>correlation_writer_-&gt;write_record</code>.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.top", "search.highlight"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

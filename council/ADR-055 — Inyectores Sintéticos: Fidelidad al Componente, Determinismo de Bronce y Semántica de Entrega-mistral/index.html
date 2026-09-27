@@ -1,0 +1,1316 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source embedded-ML NDR for hospitals and schools">
+      
+      
+        <meta name="author" content="Alonso Isidoro Roman">
+      
+      
+        <link rel="canonical" href="https://alonsoir.github.io/argus/council/ADR-055%20%E2%80%94%20Inyectores%20Sint%C3%A9ticos%3A%20Fidelidad%20al%20Componente%2C%20Determinismo%20de%20Bronce%20y%20Sem%C3%A1ntica%20de%20Entrega-mistral/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>ADR 055 — Inyectores Sintéticos: Fidelidad al Componente, Determinismo de Bronce y Semántica de Entrega mistral - ML Defender (aRGus NDR)</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#evaluacion-global" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-header__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ML Defender (aRGus NDR)
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              ADR 055 — Inyectores Sintéticos: Fidelidad al Componente, Determinismo de Bronce y Semántica de Entrega mistral
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../README.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/BACKLOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Backlog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Security Model
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-tabs__link">
+          
+  
+  
+  ADRs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/contracts/Protobuf contracts.md" class="md-tabs__link">
+          
+  
+  
+  Contracts
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-nav__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ML Defender (aRGus NDR)
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../README.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/BACKLOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADRs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ADRs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013 Seed Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-021-deployment-topology-seed-families.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-021 Topology SSOT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-022-threat-model-opcion2-descartada.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-022 Threat Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Protobuf contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protobuf
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/JSON contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JSON
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Rag security commands.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#evaluacion-global" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        📌 Evaluación Global
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#analisis-por-seccion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🔍 Análisis por Sección
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🔍 Análisis por Sección">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#seccion-0-principio-ordenador" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        📜 Sección 0: Principio Ordenador
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#seccion-2-contexto" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        📊 Sección 2: Contexto
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#seccion-3-decisiones" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ⚖️ Sección 3: Decisiones
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="⚖️ Sección 3: Decisiones">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#31-node_id-sintetico-debt-injector-nodeid-001" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.1 node_id sintético (DEBT-INJECTOR-NODEID-001)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#32-trafico-benigno-cobertura-del-discard-path-q2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.2 Tráfico benigno + cobertura del discard path (Q2)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#33-semantica-de-entrega-q1-punto-critico" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.3 Semántica de entrega (Q1) — 🔴 Punto crítico
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#34-col-17-authoritative_source-como-string-simbolico" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.4 col 17 authoritative_source como string simbólico
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#35-oracle-divergence-en-bronce-q5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.5 Oracle Divergence en bronce (Q5)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#seccion-4-alternativas-rechazadas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ❌ Sección 4: Alternativas rechazadas
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#seccion-5-estado-de-las-preguntas-del-consejo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        📋 Sección 5: Estado de las preguntas del Consejo
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#seccion-6-consecuencias" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ⚠️ Sección 6: Consecuencias
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#seccion-7-validacion-emecas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ✅ Sección 7: Validación (EMECAS++)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#seccion-8-deudas-y-diferidos" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        💳 Sección 8: Deudas y diferidos
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#propuestas-de-redaccion-para-el-adr-final" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        📝 Propuestas de Redacción para el ADR Final
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="📝 Propuestas de Redacción para el ADR Final">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-anadir-recuadro-de-decision-de-arbitraje-en-33" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Añadir recuadro de "Decisión de Arbitraje" en §3.3
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-clarificar-la-excepcion-de-instrumentacion-en-0" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Clarificar la excepción de instrumentación en §0
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-ajustar-prioridades-en-8" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Ajustar prioridades en §8
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#-" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ---
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#conclusion-y-recomendacion-final" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🎯 Conclusión y Recomendación Final
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#-_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ---
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+  <h1>ADR 055 — Inyectores Sintéticos: Fidelidad al Componente, Determinismo de Bronce y Semántica de Entrega mistral</h1>
+
+<p>Aironman DirtDiver, tu <strong>ADR-055 v1</strong> es un documento maduro, bien estructurado y alineado con el principio ordenador de fidelidad de las herramientas de <code>tools/</code>. A continuación, mi análisis <strong>sección por sección</strong>, con <strong>aprobaciones, objeciones y sugerencias de refinamiento</strong> para alcanzar el consenso 8/8 y la ratificación final. Usaré el formato <strong>🟢 (aprobado) / 🟡 (refinar) / 🔴 (objeción)</strong> para cada punto, seguido de justificación y propuestas concretas.</p>
+<hr />
+<hr />
+<hr />
+<h2 id="evaluacion-global"><strong>📌 Evaluación Global</strong></h2>
+<p><strong>🟢 El ADR cumple su objetivo:</strong> Formaliza las decisiones de DAY 176–177 bajo el principio de <strong>fidelidad del suplantador</strong> (§0), cierra deudas, y resuelve Q1–Q5 con coherencia técnica.
+<strong>🟡 Requiere ajustes menores</strong> para:
+1. Clarificar la <strong>anulación de árbitro en Q1</strong> (fidelidad vs. pragmatismo en CI).
+2. Asegurar que las <strong>métricas y validaciones</strong> sean accionables y no ambiguas.
+3. <strong>Alcance de las deudas nuevas</strong> (priorización y dependencias).</p>
+<p><strong>🔴 No hay objeciones de fondo.</strong> Las decisiones son técnicamente sólidas y alineadas con el contexto del proyecto.</p>
+<hr />
+<hr />
+<hr />
+<h2 id="analisis-por-seccion"><strong>🔍 Análisis por Sección</strong></h2>
+<hr />
+<h3 id="seccion-0-principio-ordenador"><strong>📜 Sección 0: Principio Ordenador</strong></h3>
+<p><strong>🟢 Aprobado sin cambios.</strong>
+- La definición de <strong>suplantador fiel</strong> es impecable: <em>"Reproduce el comportamiento NÚCLEO del componente oficial que sustituye"</em>.
+- El precedente de propagación bidireccional (cambio en sniffer → actualizar injector) es clave para mantener la fidelidad.
+- <strong>Sugerencia menor:</strong> Añadir un ejemplo concreto de propagación bidireccional (ej: <em>"Si el sniffer pasa a usar <code>send()</code> bloqueante, el injector debe reflejarlo"</em>).</p>
+<hr />
+<h3 id="seccion-2-contexto"><strong>📊 Sección 2: Contexto</strong></h3>
+<p><strong>🟢 Aprobado.</strong>
+- La explicación del <strong>camino A/B</strong> y los <strong>tres hallazgos de DAY 177</strong> es clara y técnica.
+- <strong>Detalle valioso:</strong> La distinción entre <em>síntoma</em> (bronce vacío) y <em>causa raíz</em> (proto aleatorio) es un modelo de análisis para el Consejo.</p>
+<hr />
+<h3 id="seccion-3-decisiones"><strong>⚖️ Sección 3: Decisiones</strong></h3>
+<h4 id="31-node_id-sintetico-debt-injector-nodeid-001"><strong>3.1 node_id sintético (DEBT-INJECTOR-NODEID-001)</strong></h4>
+<p><strong>🟢 Aprobado.</strong>
+- <strong><code>synth-node-00</code></strong> como node_id fijo es coherente con ADR-052 y el modelo de <em>un sensor</em>.
+- <strong>Ratificación 8/8</strong> confirmada.</p>
+<hr />
+<h4 id="32-trafico-benigno-cobertura-del-discard-path-q2"><strong>3.2 Tráfico benigno + cobertura del discard path (Q2)</strong></h4>
+<p><strong>🟢 Aprobado con sugerencia de refinamiento.</strong>
+- <strong>Dos perillas (<code>deterministic</code>/<code>realistic</code>)</strong> + semilla fija es la solución óptima.
+- <strong>Fórmula de validación</strong> (<code>{escritos} == {enviados} \ {sin puertos}</code>) es correcta.
+- <strong>🟡 Sugerencia:</strong>
+    - <strong>Aclarar el umbral del 5%</strong>: ¿Es fijo o configurable? Propuesta:
+      <code>markdown
+      - **Modo `realistic`:** Fracción **configurable** (default 5%) de protocolos sin puertos (ej: ICMP), con semilla fija para determinismo en tests.</code>
+    - <strong>Ejemplo de aserción en CI:</strong>
+      <code>cpp
+      // Modo deterministic
+      assert(bronce_rows == injected_events);
+      // Modo realistic
+      assert(bronce_rows == injected_events - non_port_protocols);</code></p>
+<hr />
+<h4 id="33-semantica-de-entrega-q1-punto-critico"><strong>3.3 Semántica de entrega (Q1) — 🔴 Punto crítico</strong></h4>
+<p><strong>🟡 Requiere clarificación urgente para la confirmación de fidelidad.</strong>
+- <strong>Decisión actual:</strong> Mantener <code>send(dontwait)</code> + <strong>solo instrumentar</strong> (métrica de diff de conjuntos).
+- <strong>Argumento de Alonso:</strong> Fidelidad al sniffer real (§0) &gt; pragmatismo en CI.
+- <strong>Problema:</strong>
+    - El <strong>principio de fidelidad</strong> (§0) es correcto, pero <strong>el sniffer real usa <code>dontwait</code> sin instrumentación</strong>.
+    - <strong>Inconsistencia:</strong> El injector <strong>añade instrumentación</strong> (métrica de conjuntos), lo que lo hace <em>más observable</em> que el sniffer real. ¿Esto viola §0?
+        - <strong>Respuesta:</strong> <strong>No</strong>, porque la instrumentación es <strong>aditiva</strong> (no altera el comportamiento, solo lo mide).
+        - <strong>Pero:</strong> Debe quedar <strong>explícito</strong> en el ADR que:
+          &gt; <em>"La instrumentación de métricas en el injector es una excepción al principio de fidelidad, ya que no modifica el comportamiento, solo lo hace observable. El sniffer real no tiene esta instrumentación, pero el injector la requiere para validar su fidelidad."</em></p>
+<ul>
+<li>
+<p><strong>🟡 Propuesta de redacción para §3.3:</strong></p>
+<blockquote>
+<p><strong>3.3 Semántica de entrega — Instrumentación aditiva para fidelidad observable</strong>
+El injector mantiene <code>send(dontwait)</code> para <strong>reproducir fielmente</strong> la semántica no-garantizada del sniffer real (§0). <strong>Sin embargo</strong>, se añade una <strong>métrica de diff de conjuntos</strong> (<code>{event_id enviados}</code> vs <code>{event_id escritos}</code>) como <strong>herramienta de validación exclusiva del injector</strong>.
+<strong>Justificación:</strong> La instrumentación no altera el comportamiento del injector, solo lo hace observable. Esto permite:
+1. Validar que el injector <strong>no diverge</strong> del sniffer en su comportamiento núcleo.
+2. Detectar pérdidas/reenvíos <strong>sin corregirlos</strong> (fidelidad &gt; robustez).
+       &gt; <strong>Excepción a §0:</strong> La instrumentación es la única adición permitida en herramientas de <code>tools/</code>, ya que su propósito es <strong>medir la fidelidad</strong>, no cambiarla.</p>
+</blockquote>
+</li>
+<li>
+<p><strong>🔴 Objeción menor:</strong></p>
+<ul>
+<li>La <strong>anulación de árbitro</strong> debe quedar <strong>más visible</strong> en el documento. Propuesta:<ul>
+<li>Añadir un <strong>recuadro de "Decisión de Arbitraje"</strong> en §3.3:<blockquote>
+<p>⚠️ <strong>DECISIÓN DE ÁRBITRO (Alonso, DAY 177):</strong>
+El Consejo no alcanzó mayoría en el mecanismo de entrega (3/3/2). Alonso anuló la adición de (a)/(b) sobre el argumento de <strong>fidelidad (§0)</strong>. <strong>Consenso 8/8 en la métrica de conjuntos.</strong></p>
+</blockquote>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<hr />
+<h4 id="34-col-17-authoritative_source-como-string-simbolico"><strong>3.4 col 17 <code>authoritative_source</code> como string simbólico</strong></h4>
+<p><strong>🟢 Aprobado.</strong>
+- Decisión coherente con el contrato de bronce y ADR-052.
+- <strong>Sello E2E</strong> verificado (150 <code>ML_PRIORITY</code> + 9 <code>DIVERGENCE</code>).</p>
+<hr />
+<h4 id="35-oracle-divergence-en-bronce-q5"><strong>3.5 Oracle Divergence en bronce (Q5)</strong></h4>
+<p><strong>🟢 Aprobado.</strong>
+- <strong>Directriz clave:</strong> <em>"No aplanar la divergencia en Kuzu"</em> es correcta y alineada con ADR-051.
+- <strong>🟡 Sugerencia:</strong>
+    - Añadir un <strong>TODO explícito</strong> para ADR-054:
+      &gt; <strong>TODO (ADR-054):</strong> Validar que Kuzu propaga <code>DETECTOR_SOURCE_DIVERGENCE</code> sin aplanamiento, y que el modelo de confianza multi-nodo lo maneje correctamente.</p>
+<hr />
+<hr />
+<h3 id="seccion-4-alternativas-rechazadas"><strong>❌ Sección 4: Alternativas rechazadas</strong></h3>
+<p><strong>🟢 Aprobado.</strong>
+- Tabla clara y justificaciones sólidas.
+- <strong>🟡 Sugerencia menor:</strong>
+    - Añadir una fila para <strong>"No instrumentar el injector"</strong> con la justificación:
+      &gt; <em>"Rechazado: Sin métricas, la fidelidad no es observable. La instrumentación es aditiva y no altera el comportamiento (§0)."</em></p>
+<hr />
+<h3 id="seccion-5-estado-de-las-preguntas-del-consejo"><strong>📋 Sección 5: Estado de las preguntas del Consejo</strong></h3>
+<p><strong>🟢 Aprobado con ajustes.</strong>
+- <strong>Q1:</strong> La tabla refleja correctamente el <strong>split 3/3/2</strong> y el arbitraje.
+- <strong>🟡 Sugerencia:</strong>
+    - <strong>Aclarar el "Consenso 8/8"</strong> en Q1:
+      &gt; <em>"Consenso 8/8 en: (1) rechazar (c) y (d)-solo; (2) adoptar métrica de conjuntos. </em><em>No consenso en mecanismo (a/b).</em><em> Arbitraje: solo instrumento (§3.3)."</em></p>
+<hr />
+<h3 id="seccion-6-consecuencias"><strong>⚠️ Sección 6: Consecuencias</strong></h3>
+<p><strong>🟢 Aprobado.</strong>
+- <strong>Riesgo (2):</strong> <code>seq_in_window</code> es un punto importante. <strong>🟡 Propuesta:</strong>
+    - Añadir un <strong>TODO</strong> en §6:
+      &gt; <strong>TODO:</strong> Evaluar si el injector debe transportar <code>seq_in_window</code> (ADR-052 §3.1.4) para evitar colisiones en ráfagas. Prioridad: <strong>P2</strong> (tras implementar métricas de conjuntos).</p>
+<hr />
+<h3 id="seccion-7-validacion-emecas"><strong>✅ Sección 7: Validación (EMECAS++)</strong></h3>
+<p><strong>🟢 Aprobado.</strong>
+- <strong>Pendientes claros:</strong> Modo <code>realistic</code> + métrica de conjuntos.
+- <strong>🟡 Sugerencia:</strong>
+    - <strong>Añadir un ejemplo de salida esperada</strong> para la métrica:
+      <code>json
+      {
+        "enviados": ["synthetic-0", "synthetic-1", ..., "synthetic-99"],
+        "escritos": ["synthetic-0", "synthetic-1", ..., "synthetic-97"], // 2 duplicados: 8, 29
+        "perdidos": [],
+        "reenvios": ["synthetic-8", "synthetic-29"],
+        "diff": {"perdidos": 0, "reenvios": 2}
+      }</code></p>
+<hr />
+<h3 id="seccion-8-deudas-y-diferidos"><strong>💳 Sección 8: Deudas y diferidos</strong></h3>
+<p><strong>🟢 Aprobado con ajustes de prioridad.</strong>
+| DEBT | Prio | Estado | Comentario |
+|------|------|--------|------------|
+| <code>DEBT-INJECTOR-DELIVERY-METRIC-001</code> | <strong>P1</strong> | Nueva | <strong>🟡 Cambiar a P1:</strong> Es crítica para validar la fidelidad del injector. |
+| <code>DEBT-INJECTOR-PROTO-MIX-001</code> | <strong>P1</strong> | Nueva | <strong>🟡 Cambiar a P1:</strong> Necesaria para cobertura del discard path. |
+| <code>DEBT-INJECTOR-SEQWINDOW-001</code> | P3 | Propuesta | <strong>🟢 Aprobado.</strong> |
+| <code>DEBT-LIB-001</code> | P1 | No deliberada | <strong>🟡 Añadir nota:</strong> <em>"Fuera de alcance de este ADR. Traer a pasada futura."</em> |</p>
+<ul>
+<li><strong>Justificación para P1:</strong><ul>
+<li>Ambas son <strong>bloqueantes</strong> para el determinismo de CI y la cobertura de tests.</li>
+</ul>
+</li>
+</ul>
+<hr />
+<hr />
+<hr />
+<h2 id="propuestas-de-redaccion-para-el-adr-final"><strong>📝 Propuestas de Redacción para el ADR Final</strong></h2>
+<h3 id="1-anadir-recuadro-de-decision-de-arbitraje-en-33"><strong>1. Añadir recuadro de "Decisión de Arbitraje" en §3.3</strong></h3>
+<pre><code class="language-markdown">&gt; ⚠️ **DECISIÓN DE ÁRBITRO (Alonso, DAY 177)**
+&gt; El Consejo no alcanzó mayoría en el mecanismo de entrega para el injector (Q1):
+&gt; - (a) Reintento acotado: 3 votos (Grok, Mistral, Claude).
+&gt; - (b) `send()` bloqueante: 3 votos (Gemini, Qwen, Kimi).
+&gt; - (a)+(b): 2 votos (ChatGPT, DeepSeek).
+&gt; **Consenso 8/8 en:**
+&gt; - Rechazar (c) y (d)-solo.
+&gt; - Adoptar métrica de diff de conjuntos.
+&gt; **Arbitraje:** Alonso anuló (a)/(b) sobre el argumento de **fidelidad (§0)**. El injector **no debe ser más fiable que el sniffer real**. **Solución final:** Mantener `send(dontwait)` + instrumentación aditiva (§3.3).
+</code></pre>
+<h3 id="2-clarificar-la-excepcion-de-instrumentacion-en-0"><strong>2. Clarificar la excepción de instrumentación en §0</strong></h3>
+<p>Añadir al final de §0:</p>
+<pre><code class="language-markdown">&gt; **Excepción permitida:** La instrumentación de métricas (ej: diff de conjuntos en §3.3) es la única adición no-fiel permitida en herramientas de `tools/`, ya que su propósito es **validar la fidelidad**, no alterarla.
+</code></pre>
+<h3 id="3-ajustar-prioridades-en-8"><strong>3. Ajustar prioridades en §8</strong></h3>
+<table>
+<thead>
+<tr>
+<th>DEBT</th>
+<th>Prio</th>
+<th>Estado</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>DEBT-INJECTOR-DELIVERY-METRIC-001</code></td>
+<td><strong>P1</strong></td>
+<td>Nueva</td>
+</tr>
+<tr>
+<td><code>DEBT-INJECTOR-PROTO-MIX-001</code></td>
+<td><strong>P1</strong></td>
+<td>Nueva</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="-">---</h2>
+<h2 id="conclusion-y-recomendacion-final"><strong>🎯 Conclusión y Recomendación Final</strong></h2>
+<p><strong>🟢 El ADR-055 v1 está listo para ratificación con los ajustes propuestos.</strong>
+- <strong>Cambios críticos:</strong>
+    1. <strong>Aclarar la anulación de árbitro en Q1</strong> (recuadro + excepción de instrumentación en §0).
+    2. <strong>Subir a P1 las deudas de métrica y proto mix</strong> (son bloqueantes para CI).
+- <strong>Cambios menores:</strong>
+    - Ejemplo de salida para métricas (§7).
+    - TODO para <code>seq_in_window</code> (§6) y ADR-054 (§3.5).</p>
+<p><strong>🔹 Pregunta clave para el Consejo:</strong></p>
+<blockquote>
+<p><em>"¿Aceptan que la instrumentación del injector (métrica de conjuntos) es una excepción permitida al principio de fidelidad (§0), ya que no altera el comportamiento, solo lo hace observable?"</em></p>
+</blockquote>
+<p><strong>🔹 Si la respuesta es "Sí", el ADR queda listo para versión final.</strong>
+<strong>🔹 Si hay objeciones, el único punto a deliberar es la excepción de instrumentación.</strong></p>
+<h2 id="-_1">---</h2>
+<p><strong>¿Qué ajustes de los propuestos consideras necesarios, o hay algún otro aspecto que el Consejo deba revisar antes de la ratificación?</strong></p>
+<p>FDO
+MISTRAL</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.top", "search.highlight"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

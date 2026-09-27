@@ -1,0 +1,1365 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source embedded-ML NDR for hospitals and schools">
+      
+      
+        <meta name="author" content="Alonso Isidoro Roman">
+      
+      
+        <link rel="canonical" href="https://alonsoir.github.io/argus/Backlog%20bizmodel%20001/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>aRGus NDR — BACKLOG-BIZMODEL-001 - ML Defender (aRGus NDR)</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#argus-ndr-backlog-bizmodel-001" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="ML Defender (aRGus NDR)" class="md-header__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ML Defender (aRGus NDR)
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              aRGus NDR — BACKLOG-BIZMODEL-001
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../README.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../docs/ARCHITECTURE.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../docs/BACKLOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Backlog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../docs/SECURITY_MODEL.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Security Model
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../docs/adr/ADR-013 seed distribution component authentication.md" class="md-tabs__link">
+          
+  
+  
+  ADRs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../docs/contracts/Protobuf contracts.md" class="md-tabs__link">
+          
+  
+  
+  Contracts
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="ML Defender (aRGus NDR)" class="md-nav__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ML Defender (aRGus NDR)
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../README.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/ARCHITECTURE.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/BACKLOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/SECURITY_MODEL.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADRs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ADRs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/adr/ADR-013 seed distribution component authentication.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013 Seed Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/adr/ADR-021-deployment-topology-seed-families.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-021 Topology SSOT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/adr/ADR-022-threat-model-opcion2-descartada.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-022 Threat Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/contracts/Protobuf contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protobuf
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/contracts/JSON contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JSON
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/contracts/Rag security commands.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#modelo-de-negocio-y-estrategia-de-sostenibilidad" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Modelo de Negocio y Estrategia de Sostenibilidad
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1-identidad-del-proyecto" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Identidad del Proyecto
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-modelo-de-negocio-open-core" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Modelo de Negocio: Open-Core
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-paraguas-institucional-uexincibe-preferencia" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Paraguas Institucional — UEx/INCIBE (Preferencia)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. Paraguas Institucional — UEx/INCIBE (Preferencia)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#por-que-uexincibe-es-la-opcion-correcta" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Por qué UEx/INCIBE es la opción correcta
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lo-que-esto-no-significa" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Lo que esto NO significa
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#modelo-de-colaboracion-propuesto" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Modelo de colaboración propuesto
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-despliegue-on-premise-primero-nube-europea" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Despliegue: On-Premise Primero, Nube Europea
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4. Despliegue: On-Premise Primero, Nube Europea">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#filosofia-de-despliegue" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Filosofía de despliegue
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#nube-publica-europa-primero" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Nube pública: Europa primero
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#por-que-europa-primero" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Por qué Europa primero
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-hardware-dimensionamiento-real-del-despliegue" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Hardware: Dimensionamiento Real del Despliegue
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5. Hardware: Dimensionamiento Real del Despliegue">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#el-problema-actual" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        El problema actual
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#hardware-necesario-financiable-via-feder" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Hardware necesario — financiable vía FEDER
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#por-que-el-servidor-de-desarrollo-es-prioritario" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Por qué el servidor de desarrollo es prioritario
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-componente-tecnico-pendiente-telemetry-collector" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Componente Técnico Pendiente: telemetry-collector
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="6. Componente Técnico Pendiente: telemetry-collector">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#descripcion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Descripción
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#principios-de-diseno-day-127" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Principios de diseño (DAY 127)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#es-bloqueante-el-hardware-para-el-diseno" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ¿Es bloqueante el hardware para el diseño?
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#estado" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Estado
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-roadmap-de-sostenibilidad" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Roadmap de Sostenibilidad
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-la-frase-para-andres" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. La frase para Andrés
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="argus-ndr-backlog-bizmodel-001">aRGus NDR — BACKLOG-BIZMODEL-001</h1>
+<h2 id="modelo-de-negocio-y-estrategia-de-sostenibilidad">Modelo de Negocio y Estrategia de Sostenibilidad</h2>
+<p><em>Documentado: DAY 127 — 23 Abril 2026</em>
+<em>Origen: conversación estratégica Alonso + Claude post-Consejo DAY 127</em></p>
+<blockquote>
+<p><strong>Nota de honestidad:</strong> Este documento refleja la visión del autor y sus preferencias.
+No implica acuerdo por parte de ninguna institución mencionada. UEx/INCIBE tienen
+prioridad y autonomía total para decidir su participación. Empezamos con ellos,
+no sin ellos.</p>
+</blockquote>
+<hr />
+<h2 id="1-identidad-del-proyecto">1. Identidad del Proyecto</h2>
+<p><strong>aRGus NDR</strong> es software open-source diseñado por un investigador independiente europeo
+(Extremadura, España) con la colaboración estructurada de 8 modelos de IA internacionales
+(Consejo de Sabios). Su misión es democratizar la ciberseguridad de nivel enterprise para
+hospitales, escuelas y municipios que no pueden permitirse soluciones comerciales.</p>
+<p><strong>Filosofía:</strong> Via Appia Quality — construido para durar décadas.</p>
+<p><strong>Licencia core:</strong> MIT — siempre gratis, siempre open-source. Sin excepciones.</p>
+<hr />
+<h2 id="2-modelo-de-negocio-open-core">2. Modelo de Negocio: Open-Core</h2>
+<p>El modelo adoptado es <strong>open-core</strong>, el mismo que sustenta Redis, HashiCorp, Elastic y
+muchos otros proyectos de infraestructura crítica que han demostrado compatibilidad entre
+sostenibilidad económica y ética open-source.</p>
+<pre><code>CAPA GRATUITA (MIT, siempre)
+─────────────────────────────────────────────────────────────
+aRGus NDR core
+  - Pipeline completo 6 componentes C++20
+  - Detección ML local (XGBoost + RF)
+  - Integridad de plugins (Ed25519)
+  - AppArmor hardening
+  - Documentación completa
+  - Reproducible desde make bootstrap
+
+TARGET: hospitales pequeños, escuelas, municipios, investigadores.
+        Cualquier organización que no pueda pagar.
+
+CAPA DE SERVICIO (aRGus Cloud / Fleet — de pago)
+─────────────────────────────────────────────────────────────
+  - Telemetría federada cifrada (telemetry-collector)
+  - Modelos XGBoost actualizados por la flota global
+  - Grafos de propagación de amenazas (geolocalización asíncrona)
+  - Priorización de distribución de &quot;vacunas&quot; por región
+  - Dashboard de gestión centralizada
+  - SLA y soporte para despliegues institucionales
+  - Certificación y auditoría bajo paraguas UEx/INCIBE
+
+TARGET: hospitales con presupuesto, redes municipales, 
+        organismos regionales y nacionales.
+</code></pre>
+<hr />
+<h2 id="3-paraguas-institucional-uexincibe-preferencia">3. Paraguas Institucional — UEx/INCIBE (Preferencia)</h2>
+<h3 id="por-que-uexincibe-es-la-opcion-correcta">Por qué UEx/INCIBE es la opción correcta</h3>
+<table>
+<thead>
+<tr>
+<th>Necesidad</th>
+<th>Lo que da UEx/INCIBE</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Marco legal LOPD/GDPR para datos hospitalarios</td>
+<td>Sí — sin esto, ningún hospital del SNS puede compartir telemetría</td>
+</tr>
+<tr>
+<td>Certificación para contratación pública</td>
+<td>Sí — barrera de entrada para servicios de seguridad institucionales</td>
+</tr>
+<tr>
+<td>Infraestructura de servidor central (Fase 1)</td>
+<td>Posiblemente — reduce CAPEX inicial</td>
+</tr>
+<tr>
+<td>Credibilidad ante FEDER / Horizon Europe / CDTI</td>
+<td>Sí — investigador independiente compite en desventaja</td>
+</tr>
+<tr>
+<td>Relación existente</td>
+<td>Andrés Caro Lindo (UEx/INCIBE) — endorser arXiv:2604.04952</td>
+</tr>
+</tbody>
+</table>
+<h3 id="lo-que-esto-no-significa">Lo que esto NO significa</h3>
+<ul>
+<li>UEx/INCIBE no controla el proyecto técnico</li>
+<li>La licencia MIT del core no cambia</li>
+<li>El autor mantiene la visión y la arquitectura</li>
+<li>Si UEx/INCIBE decide no participar, se buscan alternativas</li>
+</ul>
+<h3 id="modelo-de-colaboracion-propuesto">Modelo de colaboración propuesto</h3>
+<p>Spin-off o contrato de investigación bajo el paraguas UEx. El autor aporta el código,
+la arquitectura y el conocimiento acumulado (127 días + paper arXiv). UEx aporta el
+marco institucional, la infraestructura inicial y el acceso a convocatorias.</p>
+<p><strong>Acción:</strong> Presentar propuesta a Andrés Caro Lindo — reunión antes de julio 2026.
+<strong>Prerequisito técnico:</strong> BACKLOG-FEDER-001 gates cumplidos.</p>
+<hr />
+<h2 id="4-despliegue-on-premise-primero-nube-europea">4. Despliegue: On-Premise Primero, Nube Europea</h2>
+<h3 id="filosofia-de-despliegue">Filosofía de despliegue</h3>
+<p>aRGus NDR está diseñado para <strong>despliegue on-premise</strong> como primera opción. Un hospital
+o municipio que despliega aRGus en su propia infraestructura no depende de conectividad
+externa para la detección local — el pipeline funciona completamente offline.</p>
+<p>La nube es una <strong>capa de servicio adicional</strong>, no un requisito operativo.</p>
+<h3 id="nube-publica-europa-primero">Nube pública: Europa primero</h3>
+<pre><code>Tier 1 (lanzamiento): Nube europea soberana
+  - Hetzner Cloud (Alemania/Finlandia) — GDPR nativo
+  - OVHcloud (Francia) — infraestructura europea
+  - IONOS Cloud (Alemania)
+  - Alternativa pública: infraestructura CSIC/RedIRIS si UEx facilita acceso
+
+Tier 2 (expansión europea): multi-región EU
+  - Réplicas en España, Francia, Alemania, Países Bajos
+  - Latencia optimizada para clientes europeos
+
+Tier 3 (internacionalización — bendito problema):
+  - Servidores clonados en territorios de clientes
+  - Latencia reducida, soberanía de datos local
+  - Cada región opera bajo marco legal propio
+</code></pre>
+<h3 id="por-que-europa-primero">Por qué Europa primero</h3>
+<ul>
+<li>Los primeros clientes esperados están en Europa</li>
+<li>GDPR como ventaja competitiva, no como carga</li>
+<li>Soberanía tecnológica europea — argumento político y comercial real</li>
+<li>Software diseñado por un europeo, con ánimo de compartir con toda la humanidad
+  pero con la base operativa en territorio europeo</li>
+</ul>
+<hr />
+<h2 id="5-hardware-dimensionamiento-real-del-despliegue">5. Hardware: Dimensionamiento Real del Despliegue</h2>
+<h3 id="el-problema-actual">El problema actual</h3>
+<p>El desarrollo se realiza en un portátil de 2019 o anterior con recursos limitados.
+Esto es suficiente para el pipeline de desarrollo pero no para:
+- Validar el comportamiento bajo carga de la telemetría federada
+- Caracterizar el dimensionamiento real en hardware de producción
+- Entrenar modelos con datos reales a escala hospitalaria</p>
+<h3 id="hardware-necesario-financiable-via-feder">Hardware necesario — financiable vía FEDER</h3>
+<p><strong>Hardware de preproducción / edge:</strong></p>
+<pre><code>Raspberry Pi 4/5 (ARM64) × 4-8 unidades
+  → Perfil hospitalario real: bajo consumo, bajo coste
+  → Validar pipeline completo en edge deployment
+  → Dimensionamiento: ¿full pipeline o sensor-only en Pi?
+
+Mini PCs x86 (NUC / Beelink / Minisforum) × 2-4 unidades  
+  → Perfil municipio/escuela
+  → Alternativa al portátil para desarrollo diario
+
+Servidor de desarrollo / entrenamiento
+  → NVIDIA Spark DGX o equivalente (MSI Titan GT77, Zotac ZBOX)
+  → Sin esto, el portátil del 2019 es un riesgo de proyecto
+  → Permite: entrenar modelos con CIC-IDS-2017 completo sin limitaciones
+             desarrollar sin miedo a que el hardware falle
+</code></pre>
+<p><strong>Servidor central (telemetry-server):</strong></p>
+<pre><code>Servidor rack o torre con:
+  → 64+ GB RAM (análisis de grafos de propagación)
+  → GPU (opcional para entrenamiento federado)
+  → Almacenamiento NVMe 2+ TB (raw telemetry store)
+  → Conectividad 1/10 Gbps
+  → Ubicación: CPD UEx o nube europea soberana
+</code></pre>
+<h3 id="por-que-el-servidor-de-desarrollo-es-prioritario">Por qué el servidor de desarrollo es prioritario</h3>
+<p>Un portátil de 2019 que falla en mitad del desarrollo no es un inconveniente técnico —
+es un riesgo de proyecto real. Los fondos FEDER deben incluir hardware de desarrollo
+que garantice la continuidad del trabajo. Esto es estándar en cualquier proyecto de I+D.</p>
+<hr />
+<h2 id="6-componente-tecnico-pendiente-telemetry-collector">6. Componente Técnico Pendiente: telemetry-collector</h2>
+<h3 id="descripcion">Descripción</h3>
+<p>Nuevo componente del pipeline que actúa como <strong>tap</strong> en el flujo de eventos,
+sin modificar el flujo principal hacia rag-ingester.</p>
+<pre><code>[ml-detector events] + [firewall events]
+         ↓
+   telemetry-client (nuevo componente)
+         ├── → rag-ingester (flujo normal, INTACTO)
+         └── → buffer local
+                    ↓ (cuando alcanza tamaño adecuado)
+               cifrado ChaCha20-Poly1305 + HKDF (infraestructura existente)
+                    ↓
+               telemetry-server (central, UEx/INCIBE)
+                    ├── Raw store (datos completos, TTL configurable)
+                    ├── Análisis de grafos de propagación
+                    │     (geolocalización asíncrona — NUNCA en el cliente)
+                    ├── Entrenamiento delta XGBoost
+                    ├── Evaluación de calidad del modelo
+                    └── Decisión de distribución (prioridad por región)
+                              ↓
+                    Plugin XGBoost firmado Ed25519 → flota selectiva
+</code></pre>
+<h3 id="principios-de-diseno-day-127">Principios de diseño (DAY 127)</h3>
+<ol>
+<li><strong>Collect-first, anonymize-later</strong> — el servidor recibe datos completos.
+   La anonimización ocurre en la capa de distribución o publicación, no de recepción.</li>
+<li><strong>Geolocalización asíncrona</strong> — siempre en el servidor, nunca en el cliente.
+   Lección aprendida de upgraded-happiness: añade lag brutal en el cliente.</li>
+<li><strong>Misma infraestructura criptográfica</strong> — ChaCha20-Poly1305 + HKDF.
+   No se reinventa nada. El telemetry-client es otro componente que usa crypto-transport.</li>
+<li><strong>El pipeline principal es inmutable</strong> — el tap no puede degradar la detección local.</li>
+<li><strong>Priorización geográfica de distribución</strong> — una nueva vacuna no se distribuye
+   a todos por igual. Los nodos en el frente de propagación la reciben primero.</li>
+</ol>
+<h3 id="es-bloqueante-el-hardware-para-el-diseno">¿Es bloqueante el hardware para el diseño?</h3>
+<p><strong>No para el código.</strong> Vagrant multi-nodo simula el ciclo completo.
+<strong>Sí para la validación a escala.</strong> Las preguntas sobre comportamiento bajo avalancha
+real de datos sólo se responden con hardware real y datos hospitalarios reales.
+Eso es exactamente lo que FEDER financia.</p>
+<h3 id="estado">Estado</h3>
+<p>⏳ Diseño pendiente — post-cierre de BACKLOG técnico actual
+ADR pendiente: ADR-039 (telemetry-collector design)</p>
+<hr />
+<h2 id="7-roadmap-de-sostenibilidad">7. Roadmap de Sostenibilidad</h2>
+<pre><code>DAY 128-160: Cerrar BACKLOG técnico
+  → DEBT-PROPERTY-TESTING-PATTERN-001
+  → DEBT-PROVISION-PORTABILITY-001
+  → DEBT-SNYK-WEB-VERIFICATION-001
+  → Documentación completa
+
+Verano 2026 (antes de julio):
+  → Reunión con Andrés Caro Lindo
+  → Presentar: sistema funcionando + paper + modelo de negocio
+  → Propuesta de colaboración UEx/spin-off
+
+Septiembre 2026:
+  → Deadline BACKLOG-FEDER-001
+  → Solicitud financiación con UEx como paraguas
+
+2027 (con financiación):
+  → Hardware de desarrollo (no más portátil del 2019)
+  → Raspberry Pi + mini PCs para caracterización edge
+  → Servidor central en infraestructura UEx o nube europea
+  → Piloto real en 1-2 hospitales extremeños (SESPA)
+  → telemetry-collector en producción real
+  → Primeros ingresos del servicio cloud
+
+Post-2027:
+  → Flota regional, modelo federado funcionando
+  → Expansión a otras CCAA / países europeos
+  → Sostenibilidad demostrada
+  → La casita. Los padres ayudados. El contrato contigo mismo cumplido.
+</code></pre>
+<hr />
+<h2 id="8-la-frase-para-andres">8. La frase para Andrés</h2>
+<blockquote>
+<p><em>"Hemos llegado al límite de lo que un investigador independiente, un portátil del 2019
+y ocho modelos de IA pueden construir solos en 127 días. El paper documenta ese límite
+con rigor. Los fondos FEDER construyen lo que viene después: hardware soberano, datos
+reales, e inteligencia compartida entre los hospitales y municipios de Extremadura.
+Y con suerte, algo que ayude al resto del mundo también."</em></p>
+</blockquote>
+<hr />
+<p><em>DAY 127 — 23 Abril 2026</em>
+<em>"Via Appia Quality — Un escudo que aprende de su propia sombra."</em>
+<em>Software open-source europeo, construido para toda la humanidad.</em></p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.tabs", "navigation.top", "search.highlight"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

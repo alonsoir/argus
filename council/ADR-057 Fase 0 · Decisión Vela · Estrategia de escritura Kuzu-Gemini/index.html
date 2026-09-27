@@ -1,0 +1,1544 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source embedded-ML NDR for hospitals and schools">
+      
+      
+        <meta name="author" content="Alonso Isidoro Roman">
+      
+      
+        <link rel="canonical" href="https://alonsoir.github.io/argus/council/ADR-057%20Fase%200%20%C2%B7%20Decisi%C3%B3n%20Vela%20%C2%B7%20Estrategia%20de%20escritura%20Kuzu-Gemini/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>ADR 057 Fase 0 · Decisión Vela · Estrategia de escritura Kuzu Gemini - ML Defender (aRGus NDR)</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#acta-del-consejo-de-sabios-day-182" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-header__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ML Defender (aRGus NDR)
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              ADR 057 Fase 0 · Decisión Vela · Estrategia de escritura Kuzu Gemini
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../README.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/BACKLOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Backlog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Security Model
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-tabs__link">
+          
+  
+  
+  ADRs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/contracts/Protobuf contracts.md" class="md-tabs__link">
+          
+  
+  
+  Contracts
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-nav__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ML Defender (aRGus NDR)
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../README.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/BACKLOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADRs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ADRs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013 Seed Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-021-deployment-topology-seed-families.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-021 Topology SSOT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-022-threat-model-opcion2-descartada.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-022 Threat Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Protobuf contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protobuf
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/JSON contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JSON
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Rag security commands.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#acta-del-consejo-de-sabios-day-182" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Acta del Consejo de Sabios — DAY 182
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#q1-el-61-transfiere-o-es-un-artefacto-de-la-vm" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Q1 — ¿El ×61 transfiere o es un artefacto de la VM?
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Q1 — ¿El ×61 transfiere o es un artefacto de la VM?">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-la-objecion-en-una-frase" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. La objeción en una frase
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-el-experimento-o-el-numero" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. El experimento o el número
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-veredicto" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Veredicto
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#q2-staleness-a-bajo-caudal-regimen-de-goteo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Q2 — Staleness a bajo caudal (Régimen de goteo)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Q2 — Staleness a bajo caudal (Régimen de goteo)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-la-objecion-en-una-frase_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. La objeción en una frase
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-el-experimento-o-el-numero_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. El experimento o el número
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-veredicto_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Veredicto
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#q3-el-reader-del-smoke-es-un-juguete" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Q3 — El reader del smoke es un juguete
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Q3 — El reader del smoke es un juguete">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-la-objecion-en-una-frase_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. La objeción en una frase
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-el-experimento-o-el-numero_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. El experimento o el número
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-veredicto_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Veredicto
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#q4-a-escala-real-el-cuello-es-la-memoria-no-la-escritura" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Q4 — A escala real, el cuello es la MEMORIA, no la escritura
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Q4 — A escala real, el cuello es la MEMORIA, no la escritura">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-la-objecion-en-una-frase_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. La objeción en una frase
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-el-experimento-o-el-numero_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. El experimento o el número
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-veredicto_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Veredicto
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#q5-atomicidad-un-flow-envenenado-tira-1000-detecciones" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Q5 — Atomicidad: un flow envenenado tira 1000 detecciones
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Q5 — Atomicidad: un flow envenenado tira 1000 detecciones">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-la-objecion-en-una-frase_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. La objeción en una frase
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-el-experimento-o-el-numero_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. El experimento o el número
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-veredicto_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Veredicto
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#q6-1000-es-un-numero-magico" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Q6 — 1000 es un número mágico
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Q6 — 1000 es un número mágico">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-la-objecion-en-una-frase_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. La objeción en una frase
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-el-experimento-o-el-numero_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. El experimento o el número
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-veredicto_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Veredicto
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#q7-borrar-el-wal-es-lo-contrario-de-lo-que-necesita-produccion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Q7 — Borrar el WAL es lo contrario de lo que necesita producción
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Q7 — Borrar el WAL es lo contrario de lo que necesita producción">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-la-objecion-en-una-frase_6" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. La objeción en una frase
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-el-experimento-o-el-numero_6" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. El experimento o el número
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-veredicto_6" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Veredicto
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#q8-diferir-sharding-es-diferir-o-es-cerrar-la-puerta" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Q8 — Diferir sharding ¿es diferir, o es cerrar la puerta?
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Q8 — Diferir sharding ¿es diferir, o es cerrar la puerta?">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-la-objecion-en-una-frase_7" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. La objeción en una frase
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-el-experimento-o-el-numero_7" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. El experimento o el número
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-veredicto_7" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Veredicto
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#q9-el-footgun-esta-prevenido-o-solo-anotado" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Q9 — El footgun ¿está prevenido o solo anotado?
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Q9 — El footgun ¿está prevenido o solo anotado?">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-la-objecion-en-una-frase_8" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. La objeción en una frase
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-el-experimento-o-el-numero_8" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. El experimento o el número
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-veredicto_8" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Veredicto
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#resumen-de-acciones-para-el-cierre-de-la-sesion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Resumen de Acciones para el Cierre de la Sesión
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+  <h1>ADR 057 Fase 0 · Decisión Vela · Estrategia de escritura Kuzu Gemini</h1>
+
+<h2 id="acta-del-consejo-de-sabios-day-182">Acta del Consejo de Sabios — DAY 182</h2>
+<p><strong>Proyecto:</strong> aRGus NDR</p>
+<p><strong>Fase:</strong> Fase 0 · Decisión Vela · Estrategia de escritura Kuzu</p>
+<p><strong>Metodología aplicada:</strong> <em>Medir, no votar.</em></p>
+<hr />
+<h2 id="q1-el-61-transfiere-o-es-un-artefacto-de-la-vm">Q1 — ¿El ×61 transfiere o es un artefacto de la VM?</h2>
+<h3 id="1-la-objecion-en-una-frase">1. La objeción en una frase</h3>
+<p>El factor de aceleración ×61 está inflado artificialmente por la penalización del <code>fsync</code> síncrono por cada sentencia <code>MERGE</code> individual en el entorno virtualizado (VirtualBox).</p>
+<h3 id="2-el-experimento-o-el-numero">2. El experimento o el número</h3>
+<p>Para aislar el coste de parse/plan del coste de I/O (<code>fsync</code>), el benchmark de inserción por fila (run 1) debe ejecutarse bajo tres perfiles de almacenamiento distintos en la misma VM:</p>
+<ul>
+<li><strong>Perfil A (Base):</strong> <code>/tmp</code> nativo en el disco virtual actual.</li>
+<li><strong>Perfil B (No-Sync):</strong> Montar un subdirectorio en memoria real mediante <code>tmpfs</code> (<code>mount -t tmpfs -o size=1G tmpfs /tmp/kuzu_mem</code>). Si el cuello de botella era parse/plan, el tiempo por upsert se mantendrá idéntico al Perfil A. Si era <code>fsync</code>, el rendimiento del Perfil B se disparará, aproximándose al coste neto de CPU.</li>
+<li><strong>Perfil C (Hardware Real):</strong> Ejecución directa en el target físico (N100/RPi5 con NVMe/MicroSD de buena calidad) para fijar el factor transaccional real.</li>
+</ul>
+<pre><code>Métrica a registrar: Delta_fsync = (Tiempo_PerfilA - Tiempo_PerfilB) / Tiempo_PerfilA
+
+</code></pre>
+<p>Si <code>Delta_fsync &gt; 0.85</code>, el beneficio del batching en hardware real caerá drásticamente (pero seguirá existiendo por la amortización del parseo).</p>
+<h3 id="3-veredicto">3. Veredicto</h3>
+<p><strong>Hardening posterior.</strong> La decisión D1 (usar <code>UNWIND</code> con batching) sigue siendo arquitectónicamente superior porque reduce tanto las transacciones como el parseo redundante. Conocer el multiplicador exacto en metal no frena la fusión de la Fase 0.</p>
+<hr />
+<h2 id="q2-staleness-a-bajo-caudal-regimen-de-goteo">Q2 — Staleness a bajo caudal (Régimen de goteo)</h2>
+<h3 id="1-la-objecion-en-una-frase_1">1. La objeción en una frase</h3>
+<p>El buffer basado puramente en tamaño (<code>batch=1000</code>) induce una latencia de detección (staleness) inaceptable de minutos en entornos de bajo tráfico, rompiendo el principio de tiempo real de un NDR.</p>
+<h3 id="2-el-experimento-o-el-numero_1">2. El experimento o el número</h3>
+<p>Establecer un mecanismo de <strong>Flush Cooperativo por Tiempo</strong> mediante un temporizador asíncrono. El SLO de staleness para un NDR de infraestructura crítica se fija de forma invariable en $\le 1000\text{ ms}$ para eventos de red de severidad estándar, y $\le 100\text{ ms}$ para alertas críticas.</p>
+<ul>
+<li><strong>El experimento:</strong> Implementar un hilo de control (<code>Ticker</code>) que emita una señal de <code>FLUSH</code> cada 1000 ms si el buffer tiene elementos, independientemente de si ha alcanzado los 1000 registros.</li>
+<li><strong>La medida:</strong> Simular goteo constante a tasas de 1, 5 y 10 flows/s. Registrar el delta temporal exacto entre la captura del paquete (<code>ts_packet</code>) y su disponibilidad en el grafo tras el commit (<code>ts_graph</code>). El p99 de este delta debe ser $&lt; 1100\text{ ms}$.</li>
+</ul>
+<h3 id="3-veredicto_1">3. Veredicto</h3>
+<p><strong>BLOQUEANTE.</strong> La inclusión de la política <code>flush(size OR time)</code> con un <code>flush_interval_ms = 1000</code> debe codificarse e integrarse en el sumidero (sink) antes de fusionar la Fase 0, o introduciremos un fallo de diseño que cegará al correlador en producción.</p>
+<hr />
+<h2 id="q3-el-reader-del-smoke-es-un-juguete">Q3 — El reader del smoke es un juguete</h2>
+<h3 id="1-la-objecion-en-una-frase_2">1. La objeción en una frase</h3>
+<p>La contención medida en el smoke test no es realista porque una consulta estructuralmente pesada (como un recorrido de grafos multi-hop) retendrá bloqueos de lectura y mutará las estructuras del gestor de memoria intermedia de forma radicalmente distinta a un simple <code>count(*)</code>.</p>
+<h3 id="2-el-experimento-o-el-numero_2">2. El experimento o el número</h3>
+<p>Sustituir el hilo lector genérico por una consulta de correlación adversarial real que fatigue al motor de Kuzu mientras el único hilo de escritura ejecuta la ráfaga de <code>UNWIND</code>.</p>
+<ul>
+<li><strong>La Query de Stress:</strong></li>
+</ul>
+<pre><code class="language-cypher">MATCH (a:Host)-[:Flow]-&gt;(b:Host)-[:Flow]-&gt;(c:Host)
+WHERE a.community_id == $cid OR b.community_id == $cid
+RETURN count(distinct c)
+
+</code></pre>
+<ul>
+<li><strong>La medida:</strong> Ejecutar run 2 (1 writer batcheado) en paralelo con 4 hilos lectores lanzando la query anterior continuamente con CIDs aleatorios pero existentes. Medir el incremento del p99 de la escritura y el rendimiento (queries/s) de la lectura. Si el p99 de la escritura se degrada en más de un 50% frente al run 2 original, el aislamiento de lectura/escritura de Kuzu no es tan inmune como se asume en D4.</li>
+</ul>
+<h3 id="3-veredicto_2">3. Veredicto</h3>
+<p><strong>BLOQUEANTE.</strong> No podemos dar por buena la arquitectura in-process de un único servicio (D4) si una consulta compleja puede bloquear o degradar críticamente la ingesta de tráfico de red en la Fase 0.</p>
+<hr />
+<h2 id="q4-a-escala-real-el-cuello-es-la-memoria-no-la-escritura">Q4 — A escala real, el cuello es la MEMORIA, no la escritura</h2>
+<h3 id="1-la-objecion-en-una-frase_3">1. La objeción en una frase</h3>
+<p>Kuzu mantiene estructuras en memoria (Buffer Manager) proporcionales al tamaño del grafo activo, lo que provocará un desbordamiento de memoria (OOM) en dispositivos con recursos limitados como la RPi5 cuando se alcance el volumen real de millones de flujos.</p>
+<h3 id="2-el-experimento-o-el-numero_3">2. El experimento o el número</h3>
+<ul>
+<li><strong>Paso 1: Medición de la curva RSS.</strong> Automatizar un script que inserte lotes incrementales de flujos sintéticos pero realistas (5 tuplas únicas) y registre el MaxRSS del proceso de forma estricta:</li>
+<li>Punto A: 100k nodos + relaciones (Línea base actual: 632 MB).</li>
+<li>Punto B: 500k nodos + relaciones.</li>
+<li>
+<p>Punto C: 1M nodos + relaciones.</p>
+</li>
+<li>
+<p><strong>Paso 2: La estrategia de acotación.</strong> Kuzu permite configurar el tamaño máximo del Buffer Manager en su configuración inicial (<code>SystemConfig</code>). El experimento debe demostrar que limitando el buffer manager a 2 GB en la inicialización (<code>bufferPoolSize = 2 * 1024 * 1024 * 1024</code>), el sistema procesa 1M de nodos sin lanzar OOM, delegando el exceso al sistema de paginación del motor de almacenamiento de Kuzu.</p>
+</li>
+</ul>
+<h3 id="3-veredicto_3">3. Veredicto</h3>
+<p><strong>Hardening posterior (con pre-requisito regulatorio).</strong> Para dar luz verde a la Fase 0, basta con añadir una validación explícita en la inicialización del componente que fuerce un límite estricto al <code>bufferPoolSize</code> basado en la memoria disponible detectada en el host, evitando que Kuzu consuma toda la RAM de la RPi5 por defecto. El tiering externo (DuckDB/Parquet) se relega al ADR-041.</p>
+<hr />
+<h2 id="q5-atomicidad-un-flow-envenenado-tira-1000-detecciones">Q5 — Atomicidad: un flow envenenado tira 1000 detecciones</h2>
+<h3 id="1-la-objecion-en-una-frase_4">1. La objeción en una frase</h3>
+<p>Un error sintáctico, una violación de restricciones de integridad o un desbordamiento de tipo de datos en un solo registro de la consulta estructurada <code>UNWIND</code> provocará el fallo completo de la transacción, descartando de forma catastrófica 999 registros legítimos.</p>
+<h3 id="2-el-experimento-o-el-numero_4">2. El experimento o el número</h3>
+<p>Verificar el comportamiento transaccional ante fallos mecánicos de Kuzu mediante un test de inyección de fallos.</p>
+<ul>
+<li><strong>El experimento:</strong> Preparar un vector de entrada con 1000 elementos donde el elemento número 500 contenga un valor inválido (por ejemplo, romper una restricción de clave, inyectar un string mal formado en un campo numérico estricto o un timestamp desbordado). Ejecutar la consulta con la API de C++ de Kuzu:</li>
+</ul>
+<pre><code class="language-cpp">auto queryResult = connection.query(&quot;UNWIND $batch AS row ...&quot;, queryParams);
+
+</code></pre>
+<ul>
+<li><strong>La medida:</strong> Comprobar si <code>queryResult-&gt;isSuccess()</code> devuelve falso. Acto seguido, realizar un <code>count(*)</code> sobre el grafo para verificar si se han insertado los 499 elementos anteriores o si el contador es exactamente igual al estado previo (Rollback Total).</li>
+</ul>
+<pre><code>Invariante esperado en Kuzu: Rollback Total de la transacción (ACID estricto).
+
+</code></pre>
+<ul>
+<li><strong>Estrategia de Mitigación (Quarantine/Retry Pattern):</strong> Si la transacción falla, la cola intercepta el lote, lo divide en dos sub-batches de 500 elementos y reintenta de forma recursiva (Bisección de Fallos) hasta aislar el elemento corrupto en un lote individual. Este elemento se envía a un log de cuarentena (<code>/var/log/argus/quarantine.log</code>) y el resto se procesa con éxito.</li>
+</ul>
+<h3 id="3-veredicto_4">3. Veredicto</h3>
+<p><strong>BLOQUEANTE.</strong> El código del sumidero debe incorporar la captura de excepciones/errores del objeto <code>QueryResult</code> y la lógica de reintento por bisección (o caída a inserción secuencial de emergencia para ese lote) antes de poder procesar tráfico real hostil.</p>
+<hr />
+<h2 id="q6-1000-es-un-numero-magico">Q6 — 1000 es un número mágico</h2>
+<h3 id="1-la-objecion-en-una-frase_5">1. La objeción en una frase</h3>
+<p>El tamaño de lote de 1000 registros ha sido elegido de manera arbitraria sin un barrido empírico que demuestre dónde se encuentra el punto de inflexión de la curva de rendimiento y su impacto directo en la latencia operativa.</p>
+<h3 id="2-el-experimento-o-el-numero_5">2. El experimento o el número</h3>
+<p>Ejecutar un barrido paramétrico automatizado en el entorno de pruebas fijo bajo las mismas condiciones exactas de estrés.</p>
+<ul>
+<li><strong>El barrido:</strong> Evaluar el rendimiento configurando el tamaño del lote en $N \in {1, 10, 100, 500, 1000, 2500, 5000}$.</li>
+<li><strong>Métricas a extraer simultáneamente:</strong></li>
+<li>Throughput neto (upserts/s).</li>
+<li>MaxRSS durante la prueba.</li>
+<li>Latencia de confirmación del lote (p95 de la escritura).</li>
+</ul>
+<p>El tamaño óptimo será el menor valor de $N$ donde la ganancia de throughput respecto al escalón anterior sea inferior al 5%, acotando así el radio de impacto de fallos (Q5) y el consumo transaccional de memoria.</p>
+<h3 id="3-veredicto_5">3. Veredicto</h3>
+<p><strong>Hardening posterior.</strong> El valor de 1000 ha demostrado ser sumamente efectivo en el primer test de estrés, ofreciendo una mejora sustancial (×61). El ajuste fino del parámetro óptimo final se puede refinar en la Fase 1 sobre el hardware de destino real.</p>
+<hr />
+<h2 id="q7-borrar-el-wal-es-lo-contrario-de-lo-que-necesita-produccion">Q7 — Borrar el WAL es lo contrario de lo que necesita producción</h2>
+<h3 id="1-la-objecion-en-una-frase_6">1. La objeción en una frase</h3>
+<p>La eliminación manual de los archivos del diario de escritura por adelantado (<code>WAL</code>) en las pruebas para solventar bloqueos destruye las garantías de durabilidad fundamentales y camufla fallos de recuperación del motor de la base de datos tras una parada abrupta o fallo del sistema.</p>
+<h3 id="2-el-experimento-o-el-numero_6">2. El experimento o el número</h3>
+<p>Sustituir la rutina destructiva actual por un test de tolerancia a fallos reales (<code>Crash-Recovery Smoke Test</code>).</p>
+<ul>
+<li><strong>El experimento:</strong> Lanzar el hilo de inserción masiva con el escritor batcheado único. A mitad de la operación (por ejemplo, a los 2.5 segundos), enviar un <code>SIGKILL</code> (<code>kill -9</code>) fulminante al proceso. Esto dejará un archivo <code>.wal</code> con datos confirmados en disco que aún no se han volcado al almacenamiento principal.</li>
+<li><strong>La medida:</strong> Volver a levantar la aplicación de forma normal <em>sin borrar ningún archivo del directorio de datos</em>. Inicializar la base de datos Kuzu y realizar una verificación de consistencia mediante consultas. El motor debe procesar el archivo de diario de forma nativa de manera automática. Contar los registros totales e identificar si coinciden exactamente con los lotes confirmados antes de la recepción de la señal de parada. El test pasa si el estado de la base de datos es consistente y no se produce ninguna corrupción.</li>
+</ul>
+<h3 id="3-veredicto_6">3. Veredicto</h3>
+<p><strong>BLOQUEANTE.</strong> Eliminar la directiva de limpieza destructiva <code>cleanup_db</code> de los scripts de inicialización y validar este comportamiento de recuperación automática es obligatorio. Un sistema de detección de intrusiones no puede permitirse corromper su base de datos o perder eventos tras un corte de energía en el servidor donde opera.</p>
+<hr />
+<h2 id="q8-diferir-sharding-es-diferir-o-es-cerrar-la-puerta">Q8 — Diferir sharding ¿es diferir, o es cerrar la puerta?</h2>
+<h3 id="1-la-objecion-en-una-frase_7">1. La objeción en una frase</h3>
+<p>Diferir el particionamiento de datos (sharding) sin establecer interfaces desacopladas en el flujo de escritura actual creará un acoplamiento directo con un único archivo de base de datos local en disco, forzando una reescritura masiva de la arquitectura en el futuro.</p>
+<h3 id="2-el-experimento-o-el-numero_7">2. El experimento o el número</h3>
+<p>Establecer una invariante de diseño a nivel de código de tipado estricto en la API del sumidero (<code>Sink</code>) mediante un test de conformidad arquitectónica.</p>
+<ul>
+<li><strong>El invariante:</strong> Cada evento procesado por el componente de ingesta debe incluir obligatoriamente un método de cálculo de clave de enrutamiento basado en los datos del evento, y la interfaz del escritor no debe aceptar consultas genéricas arbitrarias sin ella:</li>
+</ul>
+<pre><code class="language-cpp">class SecurityEvent {
+public:
+    // Fuerza la existencia de una clave de enrutamiento basada en la 5-tupla
+    uint64_t getRoutingKey() const noexcept;
+};
+
+</code></pre>
+<ul>
+<li><strong>El experimento/verificación:</strong> Demostrar en el diseño de código que el componente encargado de la correlación (<code>CorrelationEngine</code>) interactúa con una abstracción de interfaz de consulta (<code>GraphRepository</code>), en lugar de instanciar o recibir una referencia directa a la clase concreta <code>kuzu::Connection</code>.</li>
+</ul>
+<h3 id="3-veredicto_7">3. Veredicto</h3>
+<p><strong>Hardening posterior.</strong> Siempre que se mantenga el aislamiento de las operaciones de acceso a datos detrás de interfaces abstractas en esta fase, la lógica de distribución física en múltiples bases de datos puede diferirse de forma segura al hito de hardware real sin bloquear la Fase 0.</p>
+<hr />
+<h2 id="q9-el-footgun-esta-prevenido-o-solo-anotado">Q9 — El footgun ¿está prevenido o solo anotado?</h2>
+<h3 id="1-la-objecion-en-una-frase_8">1. La objeción en una frase</h3>
+<p>Confiar la exclusión mutua de la inicialización de la base de datos únicamente a la disciplina de los desarrolladores o a comentarios explicativos en el código garantiza que se acabe produciendo una corrupción de datos fatal en producción por un doble acceso accidental in-process.</p>
+<h3 id="2-el-experimento-o-el-numero_8">2. El experimento o el número</h3>
+<p>Implementar una protección mecánica estricta en tiempo de compilación e inicialización utilizando un patrón de diseño Singleton coordinado, combinado con un test unitario adversarial.</p>
+<ul>
+<li><strong>El mecanismo de protección:</strong> Envolver la inicialización de la instancia única de <code>kuzu::Database</code> dentro de una factoría controlada que gestione un puntero único global y un flag de estado atómico interno. Si se detecta un segundo intento de construcción desde cualquier hilo con la misma ruta de acceso, se debe lanzar una excepción explícita de forma inmediata.</li>
+<li><strong>El test de estrés unitario:</strong></li>
+</ul>
+<pre><code class="language-cpp">TEST(KuzuGuardTest, PreventDoubleInitialization) {
+    auto&amp; db1 = aRGus::DatabaseRegistry::getInstance(&quot;/tmp/db&quot;);
+    EXPECT_THROW({
+        auto&amp; db2 = aRGus::DatabaseRegistry::getInstance(&quot;/tmp/db&quot;);
+    }, std::runtime_error);
+}
+
+</code></pre>
+<h3 id="3-veredicto_8">3. Veredicto</h3>
+<p><strong>BLOQUEANTE.</strong> Esta guarda mecánica mitiga de raíz el riesgo de corrupción del gestor de memoria intermedia internamente en la aplicación. Debe estar integrada y verificada por el test correspondiente para dar por concluida con éxito la Fase 0.</p>
+<hr />
+<h3 id="resumen-de-acciones-para-el-cierre-de-la-sesion">Resumen de Acciones para el Cierre de la Sesión</h3>
+<table>
+<thead>
+<tr>
+<th>Pregunta</th>
+<th>Clasificación</th>
+<th>Acción Requerida para el Verde (Merge)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Q1 (VM)</strong></td>
+<td>Hardening posterior</td>
+<td>Ninguna para la Fase 0. Medir en N100 en la Fase 1.</td>
+</tr>
+<tr>
+<td><strong>Q2 (Staleness)</strong></td>
+<td><strong>BLOQUEANTE</strong></td>
+<td>Implementar temporizador asíncrono con límite de <code>1000 ms</code>.</td>
+</tr>
+<tr>
+<td><strong>Q3 (Reader)</strong></td>
+<td><strong>BLOQUEANTE</strong></td>
+<td>Añadir query de correlación multi-hop en el hilo de lectura del smoke.</td>
+</tr>
+<tr>
+<td><strong>Q4 (Memoria)</strong></td>
+<td>Hardening posterior</td>
+<td>Configurar de manera estricta el límite del <code>bufferPoolSize</code>.</td>
+</tr>
+<tr>
+<td><strong>Q5 (Fallos)</strong></td>
+<td><strong>BLOQUEANTE</strong></td>
+<td>Programar la bisección recursiva ante fallos en bloques <code>UNWIND</code>.</td>
+</tr>
+<tr>
+<td><strong>Q6 (Batch)</strong></td>
+<td>Hardening posterior</td>
+<td>Mantener <code>1000</code> de forma provisional; optimizar más adelante.</td>
+</tr>
+<tr>
+<td><strong>Q7 (WAL)</strong></td>
+<td><strong>BLOQUEANTE</strong></td>
+<td>Eliminar la limpieza del WAL; verificar recuperación tras <code>kill -9</code>.</td>
+</tr>
+<tr>
+<td><strong>Q8 (Sharding)</strong></td>
+<td>Hardening posterior</td>
+<td>Asegurar interfaces limpias y abstractas en el código de ingesta.</td>
+</tr>
+<tr>
+<td><strong>Q9 (Footgun)</strong></td>
+<td><strong>BLOQUEANTE</strong></td>
+<td>Implementar el Singleton con control de estado y su test unitario.</td>
+</tr>
+</tbody>
+</table>
+<p>¿Procedemos con las modificaciones de los 5 puntos bloqueantes en el sumisionador de código antes de volver a evaluar el estado general del sistema?</p>
+<p>FDO
+GEMINI</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.top", "search.highlight"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

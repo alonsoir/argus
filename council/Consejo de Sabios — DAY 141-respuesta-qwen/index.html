@@ -1,0 +1,1294 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source embedded-ML NDR for hospitals and schools">
+      
+      
+        <meta name="author" content="Alonso Isidoro Roman">
+      
+      
+        <link rel="canonical" href="https://alonsoir.github.io/argus/council/Consejo%20de%20Sabios%20%E2%80%94%20DAY%20141-respuesta-qwen/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>🏛️ CONSEJO DE SABIOS — REVISIÓN DAY 141 - ML Defender (aRGus NDR)</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#consejo-de-sabios-revision-day-141" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-header__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ML Defender (aRGus NDR)
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              🏛️ CONSEJO DE SABIOS — REVISIÓN DAY 141
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../README.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/BACKLOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Backlog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Security Model
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-tabs__link">
+          
+  
+  
+  ADRs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/contracts/Protobuf contracts.md" class="md-tabs__link">
+          
+  
+  
+  Contracts
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-nav__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ML Defender (aRGus NDR)
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../README.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/BACKLOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADRs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ADRs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013 Seed Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-021-deployment-topology-seed-families.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-021 Topology SSOT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-022-threat-model-opcion2-descartada.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-022 Threat Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Protobuf contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protobuf
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/JSON contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JSON
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Rag security commands.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#veredicto-ejecutivo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🎯 Veredicto Ejecutivo
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#respuestas-a-preguntas-formato-cientifico" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ❓ Respuestas a Preguntas — Formato Científico
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="❓ Respuestas a Preguntas — Formato Científico">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#q1-identidad-criptografica-compartida-variant-a-variant-b" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Q1 — Identidad criptográfica compartida Variant A / Variant B
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#q2-debt-variant-b-buffer-size-001-pre-feder-o-post-feder" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Q2 — DEBT-VARIANT-B-BUFFER-SIZE-001: ¿pre-FEDER o post-FEDER?
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#q3-clasificador-de-warnings-tinyllama-vs-grepawk" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Q3 — Clasificador de warnings: TinyLlama vs grep/awk
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#q4-auditoria-automatica-de-dependencias-makefile" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Q4 — Auditoría automática de dependencias Makefile
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#checklist-de-acciones-inmediatas-day-142" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        📋 Checklist de Acciones Inmediatas (DAY 142)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#palabras-finales" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🏁 Palabras Finales
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="consejo-de-sabios-revision-day-141">🏛️ CONSEJO DE SABIOS — REVISIÓN DAY 141</h1>
+<p><em>Feedback basado en ingeniería de sistemas distribuidos, criptografía aplicada y metodología científica para aRGus NDR</em></p>
+<hr />
+<h2 id="veredicto-ejecutivo">🎯 Veredicto Ejecutivo</h2>
+<p><strong>CIERRES TÉCNICOS SÓLIDOS. TRES DECISIONES ARQUITECTÓNICAS CORRECTAS.</strong></p>
+<p>El fix de dependencia implícita en Makefile, la documentación del contrato de lifetime en <code>PcapBackend</code>, y la implementación de <code>sniffer-libpcap.json</code> config-driven demuestran madurez en el manejo de complejidad incremental. Los 9/9 tests PASSED y 0 warnings con <code>-Werror</code> confirman que la disciplina TDH está internalizada.</p>
+<blockquote>
+<p><em>"La simplicidad no es ausencia de decisiones. Es ausencia de decisiones innecesarias."</em></p>
+</blockquote>
+<hr />
+<h2 id="respuestas-a-preguntas-formato-cientifico">❓ Respuestas a Preguntas — Formato Científico</h2>
+<h3 id="q1-identidad-criptografica-compartida-variant-a-variant-b">Q1 — Identidad criptográfica compartida Variant A / Variant B</h3>
+<p><strong>Recomendación concreta:</strong> <strong>COMPARTIR IDENTIDAD CRIPTOGRÁFICA ES CORRECTO. Documentar la decisión en <code>docs/CRYPTO-IDENTITY-MODEL.md</code>.</strong></p>
+<p><strong>Justificación técnica:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Criterio</th>
+<th>Evaluación</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Modelo de amenazas</strong></td>
+<td>✅ Ambos variantes protegen el mismo canal: sniffer → ml-detector. La identidad criptográfica autentica el <em>rol</em>, no la <em>implementación</em>.</td>
+</tr>
+<tr>
+<td><strong>Wire format</strong></td>
+<td>✅ Ambos emiten <code>NetworkSecurityEvent</code> protobuf idéntico, cifrado con mismo <code>CTX_SNIFFER_TO_ML</code>.</td>
+</tr>
+<tr>
+<td><strong>Gestión de claves</strong></td>
+<td>✅ Una identidad = una seed = un punto de rotación. Separar identidades duplicaría complejidad sin beneficio de seguridad proporcional.</td>
+</tr>
+<tr>
+<td><strong>Audit trail</strong></td>
+<td>⚠️ Necesario diferenciar backend en logs/métricas, pero esto es <em>telemetría</em>, no <em>identidad criptográfica</em>.</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Implementación recomendada para diferenciación operacional:</strong></p>
+<pre><code class="language-cpp">// En NetworkSecurityEvent o metadata adjunta
+message CaptureMetadata {
+    string backend_type = 1;  // &quot;ebpf_xdp&quot; | &quot;libpcap&quot;
+    string kernel_version = 2;  // Para correlación de compatibilidad
+    uint32_t capture_flags = 3;  // PROMISC, etc.
+}
+
+// Logging estructurado
+logger.info(&quot;sniffer [{}] started on {}&quot;, 
+    variant == Variant::Ebpf ? &quot;ebpf_xdp&quot; : &quot;libpcap&quot;,
+    config.interface);
+</code></pre>
+<p><strong>Riesgo si se ignora</strong>: Separar identidades criptográficas sin necesidad crearía:
+- Doble gestión de seeds/rotación
+- Complejidad en verificación de firmas downstream (ml-detector tendría que aceptar dos pubkey para "sniffer")
+- Confusión en auditoría: ¿falló el componente o cambió de variante?</p>
+<p><strong>Verificación mínima</strong>:</p>
+<pre><code class="language-bash"># docs/CRYPTO-IDENTITY-MODEL.md debe existir con:
+# 1. Definición: &quot;Identidad criptográfica = rol en pipeline, no implementación&quot;
+# 2. Lista de componentes con identidad compartida entre variantes
+# 3. Procedimiento de rotación: una operación afecta a todas las variantes del rol
+</code></pre>
+<hr />
+<h3 id="q2-debt-variant-b-buffer-size-001-pre-feder-o-post-feder">Q2 — <code>DEBT-VARIANT-B-BUFFER-SIZE-001</code>: ¿pre-FEDER o post-FEDER?</h3>
+<p><strong>Recomendación concreta:</strong> <strong>IMPLEMENTAR PRE-FEDER. El buffer de captura impacta directamente la validez de los benchmarks.</strong></p>
+<p><strong>Justificación técnica:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Factor</th>
+<th>Impacto en FEDER</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Packet drops por buffer undersized</strong></td>
+<td>Skew en métricas de throughput/latencia → resultados no reproducibles</td>
+</tr>
+<tr>
+<td><strong>ARM64/RPi5 kernel defaults</strong></td>
+<td>Buffer típico 2MB puede saturarse a ~400 Mbps con tráfico bursty</td>
+</tr>
+<tr>
+<td><strong>Refactor riesgo</strong></td>
+<td>Bajo: <code>pcap_create()+pcap_set_buffer_size()+pcap_activate()</code> es API estable desde libpcap 1.2</td>
+</tr>
+<tr>
+<td><strong>Tiempo de implementación</strong></td>
+<td>~4-6 horas: cambio localizado en <code>PcapBackend::open()</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Implementación recomendada:</strong></p>
+<pre><code class="language-cpp">// pcap_backend.cpp
+bool PcapBackend::open(const std::string&amp; interface, PacketCallback cb, void* ctx) {
+    char errbuf[PCAP_ERRBUF_SIZE];
+
+    // Usar pcap_create para control explícito de buffer
+    handle_ = pcap_create(interface.c_str(), errbuf);
+    if (!handle_) {
+        logger.error(&quot;pcap_create failed: {}&quot;, errbuf);
+        return false;
+    }
+
+    // Configurar buffer: default 16MB, configurable via JSON
+    // Rationale: 16MB ≈ 11k paquetes de 1500B, suficiente para burst de 50ms a 1Gbps
+    int buffer_size_mb = config_.value(&quot;buffer_size_mb&quot;, 16);
+    if (pcap_set_buffer_size(handle_, buffer_size_mb * 1024 * 1024) != 0) {
+        logger.warn(&quot;pcap_set_buffer_size failed — using kernel default&quot;);
+        // No fallar: fallback a default es aceptable
+    }
+
+    // Otros parámetros críticos
+    pcap_set_snaplen(handle_, config_.value(&quot;snaplen&quot;, 65536));
+    pcap_set_promisc(handle_, config_.value(&quot;promiscuous&quot;, true) ? 1 : 0);
+    pcap_set_timeout(handle_, config_.value(&quot;timeout_ms&quot;, 100));
+
+    if (pcap_activate(handle_) != 0) {
+        logger.error(&quot;pcap_activate failed: {}&quot;, pcap_geterr(handle_));
+        pcap_close(handle_);
+        handle_ = nullptr;
+        return false;
+    }
+
+    callback_ = cb;
+    user_ctx_ = ctx;
+    return true;
+}
+</code></pre>
+<p><strong>Test de demostración</strong>:</p>
+<pre><code class="language-cpp">// tests/test_pcap_backend_buffer.cpp
+TEST(PcapBackend, ConfigurableBufferSize) {
+    PcapBackend backend;
+
+    // Config con buffer explícito
+    Config cfg;
+    cfg.set(&quot;buffer_size_mb&quot;, 32);
+    backend.set_config(cfg);
+
+    // open() debería intentar aplicar 32MB (puede fallar por permisos, pero no por API)
+    // Verificar que no hay crash y que el fallback a default es graceful
+    EXPECT_NO_THROW(backend.open(&quot;lo&quot;, dummy_callback, nullptr));
+
+    // Si open() falla, debe ser por interfaz no disponible, no por buffer config
+    // (lo siempre existe en testing)
+}
+</code></pre>
+<p><strong>Riesgo si se ignora</strong>: Benchmarks FEDER en RPi5 podrían mostrar "latencia inexplicable" o "throughput inferior al esperado" debido a drops de buffer, llevando a conclusiones erróneas sobre la viabilidad de Variant B en hardware real.</p>
+<hr />
+<h3 id="q3-clasificador-de-warnings-tinyllama-vs-grepawk">Q3 — Clasificador de warnings: TinyLlama vs grep/awk</h3>
+<p><strong>Recomendación concreta:</strong> <strong>GREP/AWK ES LA SOLUCIÓN CORRECTA. TinyLlama es over-engineering para este caso de uso.</strong></p>
+<p><strong>Justificación técnica:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Criterio</th>
+<th>grep/awk</th>
+<th>TinyLlama</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Determinismo</strong></td>
+<td>✅ Mismo input → mismo output siempre</td>
+<td>⚠️ Depende de temperatura, seed, versión del modelo</td>
+</tr>
+<tr>
+<td><strong>Auditoría</strong></td>
+<td>✅ Reglas legibles en script bash</td>
+<td>❌ "Caja negra" — difícil explicar por qué se clasificó X</td>
+</tr>
+<tr>
+<td><strong>Mantenimiento</strong></td>
+<td>✅ Añadir patrón = una línea en regex list</td>
+<td>❌ Retrain modelo, validar drift, monitorizar accuracy</td>
+</tr>
+<tr>
+<td><strong>Rendimiento</strong></td>
+<td>✅ &lt;100ms para clasificar 10k líneas</td>
+<td>⚠️ ~2-5s por warning con inferencia local</td>
+</tr>
+<tr>
+<td><strong>Adecuación al problema</strong></td>
+<td>✅ Clasificación = pattern matching sintáctico</td>
+<td>❌ LLMs brillan en semántica, no en sintaxis estructurada</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Implementación recomendada (grep/awk)</strong>:</p>
+<pre><code class="language-bash">#!/bin/bash
+# scripts/classify-build-warnings.sh
+# Clasifica warnings de `make all 2&gt;&amp;1` en THIRD_PARTY_IGNORABLE vs OWN_CODE_BLOCKER
+
+set -euo pipefail
+
+THIRD_PARTY_PATTERNS=(
+    &quot;third_party/&quot;
+    &quot;build-debug/_deps/&quot;
+    &quot;/tmp/faiss/&quot;
+    &quot;llama.cpp/&quot;
+    &quot;xgboost/src/&quot;
+    &quot;protobuf/src/&quot;
+    &quot;-Wdeprecated-declarations&quot;  # Suprimido explícitamente en CMake
+)
+
+OWN_CODE_PATTERNS=(
+    &quot;src/[^/]+/[^/]+\.cpp:[0-9]+:&quot;  # Nuestro código fuente
+    &quot;include/argus/[^/]+\.hpp:[0-9]+:&quot;
+)
+
+classify_warning() {
+    local warning=&quot;$1&quot;
+
+    # Primero: ¿es third-party ignorable?
+    for pattern in &quot;${THIRD_PARTY_PATTERNS[@]}&quot;; do
+        if echo &quot;$warning&quot; | grep -q &quot;$pattern&quot;; then
+            echo &quot;THIRD_PARTY_IGNORABLE&quot;
+            return 0
+        fi
+    done
+
+    # Segundo: ¿es código propio bloqueante?
+    for pattern in &quot;${OWN_CODE_PATTERNS[@]}&quot;; do
+        if echo &quot;$warning&quot; | grep -qE &quot;$pattern&quot;; then
+            echo &quot;OWN_CODE_BLOCKER&quot;
+            return 0
+        fi
+    done
+
+    # Default: tratar como bloqueante para ser conservadores
+    echo &quot;OWN_CODE_BLOCKER&quot;
+}
+
+# Procesar stdin línea por línea
+while IFS= read -r line; do
+    if echo &quot;$line&quot; | grep -qE &quot;warning:|error:&quot;; then
+        classification=$(classify_warning &quot;$line&quot;)
+        echo &quot;[$classification] $line&quot;
+    fi
+done
+</code></pre>
+<p><strong>Riesgo si se ignora</strong>: Usar TinyLlama para este problema añadiría:
+- Dependencia runtime en modelo de 4GB+ para una tarea de 10 líneas de bash
+- Incertidumbre en clasificación (¿por qué este warning se marcó como ignorable?)
+- Complejidad de mantenimiento sin beneficio medible</p>
+<p><strong>Verificación mínima</strong>:</p>
+<pre><code class="language-bash"># tests/test-warning-classifier.sh
+make test-warning-classifier
+# 1. Generar warnings sintéticos de third-party y own-code
+# 2. Ejecutar classify-build-warnings.sh
+# 3. Verificar: 100% precisión en clasificación conocida
+# 4. Verificar: tiempo de ejecución &lt;1s para 1000 warnings
+</code></pre>
+<hr />
+<h3 id="q4-auditoria-automatica-de-dependencias-makefile">Q4 — Auditoría automática de dependencias Makefile</h3>
+<p><strong>Recomendación concreta:</strong> <strong>EMECAS ES SUFICIENTE COMO GATE PRINCIPAL. Añadir <code>make check-clean-build</code> como sanity check ligero, no auditoría completa.</strong></p>
+<p><strong>Justificación técnica:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Enfoque</th>
+<th>Ventajas</th>
+<th>Desventajas</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>EMECAS completo</strong> (<code>vagrant destroy &amp;&amp; up &amp;&amp; bootstrap &amp;&amp; test-all</code>)</td>
+<td>✅ Garantiza reproducibilidad real, detecta cualquier dependencia implícita</td>
+<td>⏱️ ~30-45 min por ejecución</td>
+</tr>
+<tr>
+<td><strong>Auditoría automática de dependencias</strong> (<code>make -d</code>, <code>remake --trace</code>)</td>
+<td>✅ Podría detectar problemas antes de EMECAS</td>
+<td>❌ Complejo de implementar, falsos positivos, mantenimiento costoso</td>
+</tr>
+<tr>
+<td><strong>Sanity check ligero</strong> (<code>make check-clean-build</code>)</td>
+<td>✅ Rápido (~2 min), detecta fallos obvios de dependencias</td>
+<td>⚠️ No cubre todos los casos, pero sí los más comunes</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Implementación recomendada (sanity check)</strong>:</p>
+<pre><code class="language-makefile"># Makefile
+.PHONY: check-clean-build
+check-clean-build:
+    @echo &quot;🔍 Running clean build sanity check...&quot;
+    @# Limpiar artefactos de build (pero no dist/vendor, que es compartido)
+    @make dist-clean &gt;/dev/null 2&gt;&amp;1 || true
+    @# Construir un target mínimo que tenga dependencias no triviales
+    @# seed-client es buen candidato: depende de crypto-transport, tiene tests
+    @echo &quot;   Building seed-client from clean state...&quot;
+    @make seed-client-build -j$(nproc) &gt;/dev/null 2&gt;&amp;1 || { \
+        echo &quot;❌ Clean build failed — undeclared dependency detected&quot;; \
+        echo &quot;💡 Run 'make EMECAS' to reproduce in clean VM&quot;; \
+        exit 1; \
+    }
+    @echo &quot;✅ Clean build sanity check passed&quot;
+</code></pre>
+<p><strong>Documentación obligatoria en <code>CONTRIBUTING.md</code></strong>:</p>
+<pre><code class="language-markdown">## Testing Changes Before Merge
+
+1. **Always run EMECAS before merging to main**:
+   ```bash
+   vagrant destroy -f &amp;&amp; vagrant up &amp;&amp; make bootstrap &amp;&amp; make test-all
+   ```
+This is the only way to guarantee your change works in a clean environment.
+
+2. **For quick iteration**, use `make check-clean-build` to catch obvious dependency issues:
+   ```bash
+   make check-clean-build  # ~2 minutes
+   ```
+   Note: This is a sanity check, not a substitute for EMECAS.
+
+3. **If a build fails in a clean VM**, the root cause is usually:
+    - Missing dependency in CMakeLists.txt or Makefile
+    - Implicit dependency on host environment (e.g., macOS-specific paths)
+    - Artifact pollution from previous builds (deleted by `dist-clean`)
+</code></pre>
+<p><strong>Riesgo si se ignora</strong>: Confiar solo en EMECAS significa que los desarrolladores podrían iterar rápido pero descubrir problemas de dependencias solo al final del ciclo, aumentando el coste de fix. El sanity check ligero ofrece un "fast feedback" sin reemplazar la garantía de EMECAS.</p>
+<p><strong>Verificación mínima</strong>:</p>
+<pre><code class="language-bash"># tests/test-make-dependencies.sh
+make test-make-dependencies
+# 1. Simular dependencia implícita: comentar una línea en CMakeLists.txt
+# 2. Ejecutar make check-clean-build
+# 3. Verificar: falla con mensaje claro sobre dependencia no declarada
+# 4. Restaurar cambio, verificar que pasa
+</code></pre>
+<hr />
+<h2 id="checklist-de-acciones-inmediatas-day-142">📋 Checklist de Acciones Inmediatas (DAY 142)</h2>
+<pre><code class="language-markdown">- [ ] Crear docs/CRYPTO-IDENTITY-MODEL.md con decisión de identidad compartida
+- [ ] Implementar buffer_size_mb en PcapBackend::open() pre-FEDER
+- [ ] Añadir test test_pcap_backend_buffer para validar configuración de buffer
+- [ ] Implementar scripts/classify-build-warnings.sh con grep/awk (no TinyLlama)
+- [ ] Añadir make check-clean-build como sanity check ligero
+- [ ] Actualizar CONTRIBUTING.md con guía de testing pre-merge
+- [ ] Ejecutar EMECAS completo como validación final pre-FEDER demo prep
+</code></pre>
+<hr />
+<h2 id="palabras-finales">🏁 Palabras Finales</h2>
+<p>Alonso:</p>
+<p>DAY 141 cierra un ciclo de refinamiento arquitectónico: decisiones sobre identidad criptográfica, configuración de buffers, clasificación de warnings y auditoría de dependencias reflejan una mentalidad de <em>ingeniería preventiva</em>. No es solo "arreglar lo que falla"; es "diseñar para que sea difícil fallar".</p>
+<p>Las cuatro preguntas que planteáis tocan la esencia del mantenimiento de sistemas críticos: cómo equilibrar rigor con pragmatismo, cómo verificar propiedades costosas sin paralizar el desarrollo, y cómo comunicar decisiones arquitectónicas con transparencia científica.</p>
+<blockquote>
+<p><em>"La seguridad no se improvisa. Se diseña, se verifica y se mantiene con disciplina."</em></p>
+</blockquote>
+<p>Descansad merecidamente. Mañana, con la validación EMECAS completa, estaréis listos para la recta final hacia FEDER. El Consejo revisará la implementación del buffer de captura y el clasificador de warnings con el mismo rigor con el que evaluamos cada línea de este pipeline.</p>
+<p><em>Via Appia Quality · Un escudo que aprende de su propia sombra.</em></p>
+<p><strong>— Consejo de Sabios, DAY 141</strong> 🏛️</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.top", "search.highlight"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

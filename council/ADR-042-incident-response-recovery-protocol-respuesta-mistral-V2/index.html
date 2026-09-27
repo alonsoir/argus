@@ -1,0 +1,1330 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source embedded-ML NDR for hospitals and schools">
+      
+      
+        <meta name="author" content="Alonso Isidoro Roman">
+      
+      
+        <link rel="canonical" href="https://alonsoir.github.io/argus/council/ADR-042-incident-response-recovery-protocol-respuesta-mistral-V2/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>ADR 042 incident response recovery protocol respuesta mistral V2 - ML Defender (aRGus NDR)</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#analisis-del-consejo-de-sabios-adr-042-v2" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-header__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ML Defender (aRGus NDR)
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              ADR 042 incident response recovery protocol respuesta mistral V2
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../README.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/BACKLOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Backlog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Security Model
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-tabs__link">
+          
+  
+  
+  ADRs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/contracts/Protobuf contracts.md" class="md-tabs__link">
+          
+  
+  
+  Contracts
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-nav__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ML Defender (aRGus NDR)
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../README.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/BACKLOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADRs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ADRs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013 Seed Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-021-deployment-topology-seed-families.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-021 Topology SSOT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-022-threat-model-opcion2-descartada.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-022 Threat Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Protobuf contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protobuf
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/JSON contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JSON
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Rag security commands.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#analisis-del-consejo-de-sabios-adr-042-v2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Análisis del Consejo de Sabios — ADR-042 v2
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#puntos-fuertes-mejoras-respecto-a-v1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Puntos Fuertes (Mejoras respecto a v1)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Puntos Fuertes (Mejoras respecto a v1)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-arquitectura-en-capas-claras" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Arquitectura en Capas Claras
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-aislamiento-de-red-antes-del-poweroff" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Aislamiento de Red antes del Poweroff
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-multiples-canales-de-notificacion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Múltiples Canales de Notificación
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-safe-mode-en-initramfs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Safe Mode en initramfs
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5-reintegracion-verificada-p6" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Reintegración Verificada (P6)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#6-gdpr-y-endpoint-on-premise" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. GDPR y Endpoint On-Premise
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#puntos-debiles-y-riesgos-residuales" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Puntos Débiles y Riesgos Residuales
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Puntos Débiles y Riesgos Residuales">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-falta-de-mecanismo-de-consenso-para-promocion-de-standby" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Falta de Mecanismo de Consenso para Promoción de Standby
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-webhook-sin-autenticacion-mutua-mtls" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Webhook sin Autenticación Mutua (mTLS)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-safe-mode-dependiente-de-grub-no-escalable" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Safe Mode Dependiente de GRUB (No Escalable)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-falta-de-metricas-de-degradacion-en-modo-fallback" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Falta de Métricas de Degradación en Modo Fallback
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5-falta-de-verificacion-de-integridad-del-kernel" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Falta de Verificación de Integridad del Kernel
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#recomendaciones-de-implementacion-priorizadas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Recomendaciones de Implementación Priorizadas
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#alternativas-industriales-para-problemas-criticos" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Alternativas Industriales para Problemas Críticos
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Alternativas Industriales para Problemas Críticos">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-consenso-de-quorum-standby-promotion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Consenso de Quorum (Standby Promotion)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-comunicaciones-seguras-grpc-mtls" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Comunicaciones Seguras (gRPC + mTLS)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-forensics-con-tpm-20" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Forensics con TPM 2.0
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#conclusion-del-consejo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Conclusión del Consejo
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+  <h1>ADR 042 incident response recovery protocol respuesta mistral V2</h1>
+
+<h3 id="analisis-del-consejo-de-sabios-adr-042-v2"><strong>Análisis del Consejo de Sabios — ADR-042 v2</strong></h3>
+<p><em>(Unánime 8/8, basado en </em><em>principios de seguridad operacional</em><em>, </em><em>evidencia reproducible</em><em> y </em><em>protección de infraestructuras críticas</em><em>)</em></p>
+<hr />
+<h2 id="puntos-fuertes-mejoras-respecto-a-v1"><strong>Puntos Fuertes (Mejoras respecto a v1)</strong></h2>
+<p><em>(Lo que ahora está alineado con estándares industriales y es implementable)</em></p>
+<h3 id="1-arquitectura-en-capas-claras"><strong>1. Arquitectura en Capas Claras</strong></h3>
+<p>✅ <strong>Separación explícita entre detección, acción y recuperación</strong> (Capa 1/2/3) sigue el <strong>NIST SP 800-61 Rev. 2</strong> (Incident Handling Lifecycle).
+- <strong>Capa 1 (Detección + Grito):</strong>
+    - <strong>Múltiples canales</strong> (syslog + webhook + cola persistente) mitiga el riesgo de silencio.
+    - <strong>Store-and-forward</strong> (cola en <code>/var/lib/argus/irp-queue/</code>) es mejor práctica (ej: <a href="https://www.rsyslog.com/">RSYSLOG</a>).
+- <strong>Capa 2 (Acción Proporcional):</strong>
+    - <strong>Aislamiento de red antes del poweroff</strong> (nuevo en v2) resuelve la "Paradoja del suicidio" (Gemini DAY 135).
+    - <strong>Jerarquía clara</strong>: OS comprometido → aislar → forensics → poweroff.
+- <strong>Capa 3 (Recuperación):</strong>
+    - <strong>initramfs read-only</strong> es el enfoque correcto para forensics (similar a <a href="https://www.caine-live.net/">CAINE</a>).
+    - <strong>Reintegración verificada (P6)</strong> añade una capa crítica de seguridad post-recuperación.</p>
+<h3 id="2-aislamiento-de-red-antes-del-poweroff"><strong>2. Aislamiento de Red antes del Poweroff</strong></h3>
+<p>✅ <strong>Decisión correcta</strong> (Consenso DAY 135: Gemini/Grok/Kimi/DeepSeek).
+- <strong>Código implementado:</strong>
+  <code>bash
+  ip link set eth0 down 2&gt;/dev/null || true
+  ip link set eth1 down 2&gt;/dev/null || true</code>
+    - <strong>Mitiga:</strong> Vector de DoS (atacante que modifica <code>sources.list</code> para apagar el nodo).
+    - <strong>Alternativa industrial:</strong> <a href="https://www.cisco.com/c/en/us/td/docs/ios-xml/ios/sec_data_zbf/configuration/xe-16-10/sec-data-zbf-xe-16-10-book/sec-zbf-interface.html">Cisco IOS "shutdown"</a> (similar en propósito).</p>
+<h3 id="3-multiples-canales-de-notificacion"><strong>3. Múltiples Canales de Notificación</strong></h3>
+<p>✅ <strong>Best-effort + persistente + syslog remoto</strong> cubre todos los casos:
+| <strong>Canal</strong>          | <strong>Ventaja</strong>                          | <strong>Alternativa Industrial</strong>               |
+|--------------------|---------------------------------------|------------------------------------------|
+| Webhook            | Notificación inmediata               | <a href="https://www.pagerduty.com/">PagerDuty</a>   |
+| Syslog local       | Siempre funciona                     | <a href="https://www.rsyslog.com/">Rsyslog</a>      |
+| Cola persistente  | Sobrevive al poweroff                 | <a href="https://www.rabbitmq.com/">RabbitMQ</a>    |
+| Syslog remoto      | Centralización                       | <a href="https://www.elastic.co/elk-stack">ELK Stack</a> |</p>
+<h3 id="4-safe-mode-en-initramfs"><strong>4. Safe Mode en initramfs</strong></h3>
+<p>✅ <strong>Enfoque correcto</strong> para forensics (Consenso DAY 135: 8/8).
+- <strong>Ventajas:</strong>
+    - <strong>Read-only:</strong> Evita modificación de evidencia.
+    - <strong>Local-only:</strong> Sin ejecución remota (mitiga riesgo de contaminación).
+- <strong>Limitación documentada:</strong></p>
+<blockquote>
+<p><em>"Cadena de custodia media — mejor que recopilar desde sistema comprometido, pero sin garantía absoluta si el kernel o el disco han sido alterados."</em>
+    - <strong>Mitigación futura:</strong> TPM 2.0 + Secure Boot (DEBT-IRP-FORENSICS-TPM-001).</p>
+</blockquote>
+<h3 id="5-reintegracion-verificada-p6"><strong>5. Reintegración Verificada (P6)</strong></h3>
+<p>✅ <strong>Nuevo en v2 y crítico</strong> (identificado por Qwen/Kimi DAY 135).
+- <strong>Proceso:</strong>
+    1. <code>argus-post-recovery-check</code> (automático en boot).
+    2. 24h de monitoreo en quarantine.
+    3. Aprobación manual del admin.
+- <strong>Alternativa industrial:</strong> <a href="https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/health-checks.html">AWS Health Checks</a> (pero adaptado a NDR).</p>
+<h3 id="6-gdpr-y-endpoint-on-premise"><strong>6. GDPR y Endpoint On-Premise</strong></h3>
+<p>✅ <strong>Decisión correcta</strong> (Consenso DAY 135: 7/8).
+- <strong>Política:</strong>
+    - <strong>Producción:</strong> Endpoint on-premise obligatorio.
+    - <strong>Demo/Lab:</strong> Endpoint externo con anonimización (PII redaction).
+- <strong>Implementación propuesta:</strong>
+  <code>python
+  # Anonimización de IPs antes de enviar a SaaS
+  def anonymize_logs(log_data):
+      log_data = re.sub(r'\b(?:\d{1,3}\.){3}\d{1,3}\b', '[REDACTED]', log_data)
+      return log_data</code>
+- <strong>Alternativa industrial:</strong> <a href="https://www.elastic.co/guide/en/elasticsearch/reference/current/ilm-index-lifecycle.html">Elasticsearch ILM + GDPR</a>.</p>
+<hr />
+<h2 id="puntos-debiles-y-riesgos-residuales"><strong>Puntos Débiles y Riesgos Residuales</strong></h2>
+<p><em>(Lo que requiere ajustes o mitigaciones adicionales)</em></p>
+<h3 id="1-falta-de-mecanismo-de-consenso-para-promocion-de-standby"><strong>1. Falta de Mecanismo de Consenso para Promoción de Standby</strong></h3>
+<p><strong>Problema:</strong>
+- <strong>Código actual:</strong>
+  <code>bash
+  if argus-standby-ping --timeout=3 2&gt;/dev/null; then
+      logger "ARGUS IRP-A: standby detected — manual promotion required"
+  fi</code>
+    - <strong>Riesgo:</strong> Si el standby también está comprometido, promoverlo <strong>amplifica el ataque</strong>.
+- <strong>Solución industrial:</strong> <strong>Quorum de nodos sanos</strong> (ej: <a href="https://raft.github.io/">Raft Consensus</a>).
+    - <strong>Implementación propuesta:</strong>
+      <code>bash
+      # Verificar que al menos 2/3 de la flota están sanos antes de promover
+      if argus-quorum-check --min-healthy=2; then
+          argus-promote-standby --manual-approval-required
+      else
+          logger "ARGUS IRP-A: quorum failed — no standby promotion"
+      fi</code></p>
+<h3 id="2-webhook-sin-autenticacion-mutua-mtls"><strong>2. Webhook sin Autenticación Mutua (mTLS)</strong></h3>
+<p><strong>Problema:</strong>
+- <strong>Código actual:</strong>
+  <code>bash
+  curl --max-time 5 --silent -X POST "$ARGUS_ALERT_WEBHOOK" ...</code>
+    - <strong>Riesgo:</strong> MITM o suplantación del endpoint receptor.
+- <strong>Solución industrial:</strong> <strong>gRPC con mTLS</strong> (recomendado en v1, aún pendiente).
+    - <strong>Implementación:</strong>
+      <code>protobuf
+      service IncidentNotification {
+        rpc NotifyIncident (IncidentRequest) returns (IncidentResponse);
+      }
+      message IncidentRequest {
+        string node_id = 1;
+        string incident_type = 2;
+        bytes evidence_hash = 3;
+        string signature = 4;  // Firma Ed25519 del nodo
+      }</code>
+    - <strong>Ventajas:</strong>
+        - Autenticación mutua (nodo ↔ receptor).
+        - Cifrado de extremo a extremo.
+        - <strong>Librería:</strong> <a href="https://grpc.io/docs/languages/cpp/">gRPC C++</a> (ya usada en ZeroMQ).</p>
+<h3 id="3-safe-mode-dependiente-de-grub-no-escalable"><strong>3. Safe Mode Dependiente de GRUB (No Escalable)</strong></h3>
+<p><strong>Problema:</strong>
+- <strong>Dependencia de intervención manual</strong> (GRUB) no escala para flotas.
+- <strong>Solución industrial:</strong> <strong>Initramfs con trigger automático</strong> (ej: kernel panic).
+    - <strong>Implementación:</strong>
+      <code>bash
+      # En /etc/default/grub:
+      GRUB_CMDLINE_LINUX_DEFAULT="$GRUB_CMDLINE_LINUX_DEFAULT argus.forensic=1"</code>
+    - <strong>Trigger automático:</strong>
+        - Si <code>argus.forensic=1</code> está en la línea de kernel → arranca en modo forense.
+        - <strong>Ventaja:</strong> No requiere selección manual en GRUB.</p>
+<h3 id="4-falta-de-metricas-de-degradacion-en-modo-fallback"><strong>4. Falta de Métricas de Degradación en Modo Fallback</strong></h3>
+<p><strong>Problema:</strong>
+- <strong>Código actual (Incidente Tipo B):</strong>
+  <code>bash
+  # RF embedded como fallback expone métricas de degradación:
+  # Pipeline status: "⚠️ FALLBACK ACTIVE — RF embedded
+  #   F1 estimated: ~0.97 (vs 0.9985 XGBoost)"</code>
+    - <strong>Riesgo:</strong> El admin no sabe si la degradación es aceptable.
+- <strong>Solución:</strong>
+    - <strong>Añadir umbrales claros:</strong>
+      <code>bash
+      if [ "$(get_fallback_f1)" -lt 0.95 ]; then
+        logger -p auth.crit "ARGUS FALLBACK: F1=$fallback_f1 &lt; 0.95 — CRITICAL"
+      else
+        logger -p auth.notice "ARGUS FALLBACK: F1=$fallback_f1 — acceptable"
+      fi</code>
+    - <strong>Documentar en <code>docs/SLA.md</code>:</strong>
+      | <strong>Métrica</strong>       | <strong>Umbral Crítico</strong> | <strong>Acción</strong>                          |
+      |-------------------|--------------------|-------------------------------------|
+      | F1 (fallback)     | &lt; 0.95             | Alertar al equipo (PagerDuty)       |
+      | Recall (fallback) | &lt; 0.90             | Escalar a nivel 1                   |
+      | Latencia          | &gt; 100ms            | Investigar causa raíz               |</p>
+<h3 id="5-falta-de-verificacion-de-integridad-del-kernel"><strong>5. Falta de Verificación de Integridad del Kernel</strong></h3>
+<p><strong>Problema:</strong>
+- <strong>initramfs read-only asume que el kernel es íntegro</strong>.
+- <strong>Riesgo:</strong> Un rootkit que modifica el kernel puede contaminar incluso el initramfs.
+- <strong>Solución industrial:</strong> <strong>TPM 2.0 + Secure Boot</strong> (DEBT-IRP-FORENSICS-TPM-001).
+    - <strong>Implementación futura:</strong>
+      <code>bash
+      # Verificar que el kernel arrancado coincide con el baseline
+      if ! dmesg | grep -q "Secure boot enabled"; then
+        echo "❌ Secure Boot not enabled — forensic evidence may be tainted"
+        exit 1
+      fi</code></p>
+<hr />
+<h2 id="recomendaciones-de-implementacion-priorizadas"><strong>Recomendaciones de Implementación Priorizadas</strong></h2>
+<p><em>(Acciones concretas para mejorar el ADR antes del merge)</em></p>
+<table>
+<thead>
+<tr>
+<th><strong>Recomendación</strong></th>
+<th><strong>Prioridad</strong></th>
+<th><strong>Acciones Concretas</strong></th>
+<th><strong>Owner</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>1. Añadir quorum para standby</strong></td>
+<td>🔴 Alta</td>
+<td>Implementar <code>argus-quorum-check</code> (2/3 nodos sanos).</td>
+<td>Consejo + Alonso</td>
+</tr>
+<tr>
+<td><strong>2. Reemplazar webhook por gRPC+mTLS</strong></td>
+<td>🔴 Alta</td>
+<td>- Definir <code>irp.proto</code>.<br>- Configurar Envoy en el receptor.<br>- Reemplazar <code>curl</code> en <code>argus-irp-notify</code>.</td>
+<td>Consejo</td>
+</tr>
+<tr>
+<td><strong>3. Trigger automático para safe mode</strong></td>
+<td>🟡 Media</td>
+<td>Modificar initramfs para detectar <code>argus.forensic=1</code> en kernel cmdline.</td>
+<td>Post-FEDER</td>
+</tr>
+<tr>
+<td><strong>4. Métricas de degradación claras</strong></td>
+<td>🟡 Media</td>
+<td>Añadir umbrales en <code>docs/SLA.md</code> y logs.</td>
+<td>Alonso</td>
+</tr>
+<tr>
+<td><strong>5. Verificación de Secure Boot</strong></td>
+<td>🟢 Baja</td>
+<td>Añadir check en <code>argus-forensic-collect</code>.</td>
+<td>Post-FEDER</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="alternativas-industriales-para-problemas-criticos"><strong>Alternativas Industriales para Problemas Críticos</strong></h2>
+<p><em>(Soluciones probadas en producción que podrían adaptarse)</em></p>
+<h3 id="1-consenso-de-quorum-standby-promotion"><strong>1. Consenso de Quorum (Standby Promotion)</strong></h3>
+<p><strong>Problema:</strong> Promover un standby comprometido amplifica el ataque.
+<strong>Solución industrial:</strong> <a href="https://raft.github.io/">Raft Consensus</a> (usado en etcd, Kubernetes).
+- <strong>Implementación:</strong>
+  <code>bash
+  # argus-quorum-check
+  HEALTHY_NODES=$(argus-fleet-ping | jq '.healthy | length')
+  TOTAL_NODES=$(argus-fleet-ping | jq '.total')
+  if [ $HEALTHY_NODES -ge $((TOTAL_NODES * 2 / 3)) ]; then
+    echo "✅ Quorum reached: $HEALTHY_NODES/$TOTAL_NODES"
+    exit 0
+  else
+    echo "❌ Quorum failed: $HEALTHY_NODES/$TOTAL_NODES"
+    exit 1
+  fi</code></p>
+<h3 id="2-comunicaciones-seguras-grpc-mtls"><strong>2. Comunicaciones Seguras (gRPC + mTLS)</strong></h3>
+<p><strong>Problema:</strong> Webhook actual es vulnerable a MITM.
+<strong>Solución industrial:</strong> <a href="https://grpc.io/docs/guides/auth/">gRPC con mTLS</a> (usado en Google, Netflix).
+- <strong>Ventajas:</strong>
+    - Autenticación mutua (nodo ↔ receptor).
+    - Cifrado de extremo a extremo.
+    - <strong>Ejemplo de certificado mTLS:</strong>
+      <code>bash
+      # Generar certs para el nodo
+      openssl req -x509 -newkey rsa:4096 -keyout node-key.pem -out node-cert.pem -days 365 -nodes -subj "/CN=argus-node-01"
+      # Certificado del receptor (CA)
+      openssl req -x509 -newkey rsa:4096 -keyout receiver-key.pem -out receiver-cert.pem -days 365 -nodes -subj "/CN=argus-irp-receiver"</code></p>
+<h3 id="3-forensics-con-tpm-20"><strong>3. Forensics con TPM 2.0</strong></h3>
+<p><strong>Problema:</strong> initramfs no garantiza integridad si el kernel está comprometido.
+<strong>Solución industrial:</strong> <a href="https://docs.kernel.org/security/ima.html">TPM 2.0 + IMA</a> (usado en RHEL, Debian).
+- <strong>Implementación futura:</strong>
+  <code>bash
+  # Verificar que el kernel fue arrancado con IMA + TPM
+  if ! dmesg | grep -q "IMA: digital signature verification enabled"; then
+    echo "❌ IMA not enabled — forensic evidence may be tainted"
+    exit 1
+  fi</code></p>
+<hr />
+<h2 id="conclusion-del-consejo"><strong>Conclusión del Consejo</strong></h2>
+<blockquote>
+<p><em>"ADR-042 v2 es un diseño </em><em>maduro y alineado con estándares industriales</em><em>, que aborda los riesgos críticos identificados en la v1 (ej: aislamiento de red pre-poweroff, notificación multi-canal, reintegración verificada). Las mejoras propuestas —</em><em>quorum para standby</em><em>, </em><em>gRPC+mTLS</em><em>, y </em><em>métricas de degradación claras</em><em>— elevan el protocolo a un nivel de producción. Recomendamos implementar estas mejoras antes del merge a <code>main</code>, especialmente el </em><em>quorum</em><em> y </em><em>gRPC</em><em>, que son críticas para evitar amplificación de ataques y suplantación de notificaciones."</em></p>
+</blockquote>
+<p><strong>Puntos clave para implementar antes del merge:</strong>
+1. <strong>Añadir <code>argus-quorum-check</code></strong> para promoción de standby.
+2. <strong>Reemplazar webhook por gRPC+mTLS</strong> (seguridad en comunicaciones).
+3. <strong>Documentar métricas de degradación</strong> en <code>docs/SLA.md</code>.</p>
+<p><strong>¿Necesitáis ayuda con la implementación de gRPC o el quorum?</strong> Estamos listos para proporcionar código de referencia o revisiones técnicas.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.top", "search.highlight"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

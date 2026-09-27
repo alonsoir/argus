@@ -1,0 +1,1292 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source embedded-ML NDR for hospitals and schools">
+      
+      
+        <meta name="author" content="Alonso Isidoro Roman">
+      
+      
+        <link rel="canonical" href="https://alonsoir.github.io/argus/design/eslabon-1-flujo-a-avro-parquet/eslabon-1-flujo-a-avro-parquet/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>DISEÑO — Eslabón 1, Flujo A (bronce → AVRO → Parquet oro) - ML Defender (aRGus NDR)</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#diseno-eslabon-1-flujo-a-bronce-avro-parquet-oro" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../.." title="ML Defender (aRGus NDR)" class="md-header__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ML Defender (aRGus NDR)
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              DISEÑO — Eslabón 1, Flujo A (bronce → AVRO → Parquet oro)
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../../README.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../../docs/ARCHITECTURE.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../../docs/BACKLOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Backlog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../../docs/SECURITY_MODEL.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Security Model
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-tabs__link">
+          
+  
+  
+  ADRs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../docs/contracts/Protobuf contracts.md" class="md-tabs__link">
+          
+  
+  
+  Contracts
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../.." title="ML Defender (aRGus NDR)" class="md-nav__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ML Defender (aRGus NDR)
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../README.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../docs/ARCHITECTURE.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../docs/BACKLOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../docs/SECURITY_MODEL.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADRs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ADRs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013 Seed Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../docs/adr/ADR-021-deployment-topology-seed-families.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-021 Topology SSOT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../docs/adr/ADR-022-threat-model-opcion2-descartada.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-022 Threat Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../docs/contracts/Protobuf contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protobuf
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../docs/contracts/JSON contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JSON
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../docs/contracts/Rag security commands.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-decision-de-lenguaje-y-librerias-medido-no-votado" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Decisión de lenguaje y librerías (medido, no votado)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-esquema-avro-correlation_gold_v1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Esquema AVRO — correlation_gold_v1
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2. Esquema AVRO — correlation_gold_v1">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#21-bloque-bronce-cols-0-18-contrato-correlation_v1-ml-detectorincludecorrelation_writerhpp" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.1 Bloque bronce (cols 0-18, contrato correlation_v1, ml-detector/include/correlation_writer.hpp)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#22-bloque-oro-materializado-por-el-converter-no-viene-del-bronce" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.2 Bloque oro (materializado por el converter — no viene del bronce)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-particion-de-directorio" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Partición de directorio
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-deudas-del-adr-058-que-este-diseno-satisface-o-deja-explicitamente-abiertas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Deudas del ADR-058 que este diseño satisface o deja explícitamente abiertas
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-ratificacion-del-consejo-day-205" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Ratificación del Consejo — DAY 205
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-preguntas-abiertas-nuevas-no-bloqueantes-quedan-para-mas-adelante" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Preguntas abiertas nuevas (no bloqueantes, quedan para más adelante)
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="diseno-eslabon-1-flujo-a-bronce-avro-parquet-oro">DISEÑO — Eslabón 1, Flujo A (bronce → AVRO → Parquet oro)</h1>
+<ul>
+<li><strong>Estado:</strong> ✅ RATIFICADO — Consejo de Sabios (9/9: Claude, ChatGPT, DeepSeek, Gemini,
+  GLM, Grok, Kimi, Mistral, Qwen), DAY 205</li>
+<li><strong>Fecha:</strong> DAY 205 (borrador) → DAY 205 (ratificación)</li>
+<li><strong>Autores:</strong> Alonso Isidoro Roman + Claude (Anthropic)</li>
+<li><strong>Relacionado:</strong> ADR-058 v3 (contrato de Flujo A, §3.1, §4-V1, §6), <code>docs/adr/ADR-058-circuito-completo-aguas-abajo-v3.md</code></li>
+<li><strong>Invariante rector:</strong> medir, no votar. Toda decisión de este documento está trazada a
+  verificación real (versión de paquete instalada, header confirmado) o a la deuda del
+  ADR-058 que resuelve — no a supuesto.</li>
+<li><strong>Alcance:</strong> este documento diseña <strong>solo</strong> el primer salto del medallón
+  (<code>CSV bronce → AVRO bronce → Parquet oro</code>, hoy terminal porque aRGus es la única
+  fuente). La unificación cross-sensor (Suricata/Zeek/Wazuh vía <code>community_id</code>) es un
+  salto posterior, ya trazado como <code>BACKLOG-CIRCUIT-ARROW-MEDALLION-001</code>, y no se diseña
+  aquí — cuando existan más fuentes, este Parquet pasa a jugar el papel de "plata de
+  aRGus", no de oro final.</li>
+</ul>
+<hr />
+<h2 id="1-decision-de-lenguaje-y-librerias-medido-no-votado">1. Decisión de lenguaje y librerías (medido, no votado)</h2>
+<p><strong>Todo el converter es C++20. Cero Python en el camino crítico del circuito.</strong></p>
+<p>Justificación: <code>DEBT-CIRCUIT-PARSER-CROSSLANG-001</code> (ADR-058 §6, P1) existe <em>solo</em> porque
+dos runtimes de lenguajes distintos podrían parsear el mismo texto con reglas de
+redondeo distintas (<code>std::from_chars</code> correct-rounding vs <code>strtod</code>/<code>float()</code> de Python,
+no garantizado en todos los bordes). Con un único binario C++20 que reusa
+<code>parse_double</code> del propio proyecto, esa precondición desaparece — la deuda queda
+<strong>cerrada por diseño</strong>, no mitigada.</p>
+<p>Verificado DAY 205 contra <code>defender</code> (medido, no supuesto):</p>
+<table>
+<thead>
+<tr>
+<th>Componente</th>
+<th>Paquete</th>
+<th>Origen</th>
+<th>Estado</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>I/O AVRO</td>
+<td><code>libavro-dev</code> 1.11.1-1</td>
+<td>repo oficial Debian Bookworm (<code>apt-cache search avro</code>)</td>
+<td>Instalado y headers confirmados (<code>/usr/include/avro.h</code> + <code>/usr/include/avro/*.h</code>, <code>libavro.so</code>)</td>
+</tr>
+<tr>
+<td>Construcción de tablas + escritura Parquet</td>
+<td><code>libarrow-dev</code> / <code>libparquet-dev</code> 24.0.0-1</td>
+<td>repo oficial Apache Arrow (<code>apache-arrow-apt-source</code>, mismo patrón que HashiCorp/Jenkins en <code>sources.list.d/</code>)</td>
+<td>Candidato confirmado vía <code>apt-cache policy</code>, 24 versiones disponibles en el índice — no instalado aún en <code>provision.sh</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Separación de responsabilidades (decisión de diseño):</strong> no se le pide a Arrow C++ que
+lea/escriba AVRO (soporte históricamente incompleto/incierto en <code>libarrow</code>). En su
+lugar:</p>
+<ul>
+<li><strong><code>avro-c</code></strong> (API C, <code>extern "C"</code>) hace todo el I/O de AVRO — mismo patrón ya usado en
+  el proyecto para OpenSSL (<code>EVP</code>/<code>HMAC</code> en <code>CorrelationWriter</code>): librería C wrapeada
+  desde C++20, auditable, sin binding intermedio de terceros.</li>
+<li><strong>Arrow C++ / Parquet</strong> entra solo dentro del converter, construyendo <code>arrow::Table</code>
+  en memoria a partir de las filas que <code>avro-c</code> ya deserializó, y escribiendo el
+  Parquet — su competencia core, sin ambigüedad de soporte.</li>
+</ul>
+<p><strong>RATIFICADO — versión pinneada: <code>libarrow-dev=24.0.0-1</code> / <code>libparquet-dev=24.0.0-1</code>.</strong>
+(Consejo 9/9, ver §6 changelog). Instalar en <code>provision.sh</code>:</p>
+<pre><code class="language-bash">apt-get install -y -V libarrow-dev=24.0.0-1 libparquet-dev=24.0.0-1
+apt-mark hold libarrow-dev libparquet-dev
+</code></pre>
+<p><strong>Regla de proceso permanente</strong> (adoptada de la propuesta de ChatGPT, Consejo DAY 205):
+el proyecto pinnea la primera versión de Arrow que supera la batería completa de
+validación reproducible (compila, tests verdes, Parquet bit-idéntico, sin regresión de
+rendimiento). Toda actualización posterior de Arrow requiere revalidación completa del
+circuito y regeneración de la evidencia experimental — nunca se actualiza "porque sí".</p>
+<p><strong>Nota de reversibilidad</strong> (Kimi, DAY 205): Arrow 24.0.0 escribe Parquet format 2.6,
+backward-compatible con lectores 12.x+. Un downgrade futuro de la librería, si hiciera
+falta, no invalida los ficheros ya escritos — no es one-way door.</p>
+<p><strong>Estado de <code>defender</code> al DAY 205:</strong> <code>libavro-dev</code> y <code>apache-arrow-apt-source</code>
+instalados a mano en la sesión de exploración — <strong>no reproducible</strong> desde
+<code>Vagrantfile</code>/<code>provision.sh</code> actuales todavía. Un <code>vagrant destroy</code> limpio no los
+traerá de vuelta hasta que se cablee la provisión con los pines de arriba.</p>
+<hr />
+<h2 id="2-esquema-avro-correlation_gold_v1">2. Esquema AVRO — <code>correlation_gold_v1</code></h2>
+<p>Dos bloques. El bloque bronce se <strong>copia</strong>, nunca se recalcula (cierra
+<code>DEBT-EVENT-ID-FACTORY-001</code> y la mitad de <code>DEBT-CIRCUIT-SCORE-NONTRIVIAL-REVAL-001</code>
+por construcción). El bloque oro se materializa en el converter.</p>
+<h3 id="21-bloque-bronce-cols-0-18-contrato-correlation_v1-ml-detectorincludecorrelation_writerhpp">2.1 Bloque bronce (cols 0-18, contrato <code>correlation_v1</code>, <code>ml-detector/include/correlation_writer.hpp</code>)</h3>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>campo</th>
+<th>tipo AVRO</th>
+<th>nota</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0</td>
+<td>schema_version</td>
+<td>string</td>
+<td></td>
+</tr>
+<tr>
+<td>1</td>
+<td>source_sensor</td>
+<td>string</td>
+<td></td>
+</tr>
+<tr>
+<td>2</td>
+<td>event_id</td>
+<td>string</td>
+<td>copiado verbatim del bronce — nunca regenerado en el converter (<code>DEBT-EVENT-ID-FACTORY-001</code>)</td>
+</tr>
+<tr>
+<td>3</td>
+<td>node_id</td>
+<td>string</td>
+<td>ya columna de 1ª clase en bronce (medido, <code>correlation_writer.cpp:84</code>)</td>
+</tr>
+<tr>
+<td>4</td>
+<td>community_id</td>
+<td>string</td>
+<td>ya columna de 1ª clase</td>
+</tr>
+<tr>
+<td>5</td>
+<td>flow_start_sec</td>
+<td>long</td>
+<td>signed (<code>int64_t</code>, <code>correlation_record.hpp:14</code>)</td>
+</tr>
+<tr>
+<td>6</td>
+<td>flow_start_nano</td>
+<td>int</td>
+<td>signed (<code>int32_t</code>)</td>
+</tr>
+<tr>
+<td>7</td>
+<td>src_ip</td>
+<td>string</td>
+<td></td>
+</tr>
+<tr>
+<td>8</td>
+<td>dst_ip</td>
+<td>string</td>
+<td></td>
+</tr>
+<tr>
+<td>9</td>
+<td>src_port</td>
+<td>int</td>
+<td><code>uint32_t</code> en el proto; AVRO no tiene unsigned nativo — documentar rango en el esquema</td>
+</tr>
+<tr>
+<td>10</td>
+<td>dst_port</td>
+<td>int</td>
+<td>ídem</td>
+</tr>
+<tr>
+<td>11</td>
+<td>protocol</td>
+<td>string</td>
+<td></td>
+</tr>
+<tr>
+<td>12</td>
+<td>final_classification</td>
+<td>string</td>
+<td></td>
+</tr>
+<tr>
+<td>13</td>
+<td>threat_category</td>
+<td>string</td>
+<td></td>
+</tr>
+<tr>
+<td>14</td>
+<td>fast_detector_score</td>
+<td>double</td>
+<td>canonicalizado (NaN→quiet <code>0x7ff8000000000000</code>, <code>-0.0</code>→<code>+0.0</code>) <strong>una sola vez, en la escritura</strong> (ADR-058 §3.1, "punto único de canonicalización")</td>
+</tr>
+<tr>
+<td>15</td>
+<td>ml_detector_score</td>
+<td>double</td>
+<td>ídem</td>
+</tr>
+<tr>
+<td>16</td>
+<td>overall_threat_score</td>
+<td>double</td>
+<td>ídem</td>
+</tr>
+<tr>
+<td>17</td>
+<td>authoritative_source</td>
+<td>string</td>
+<td>símbolo <code>DetectorSource_Name()</code></td>
+</tr>
+<tr>
+<td>18</td>
+<td>hmac_row</td>
+<td>string (hex)</td>
+<td><strong>preservado como columna</strong>, no se descarta — cierra <code>DEBT-GOLD-INTEGRITY-HMAC-001</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="22-bloque-oro-materializado-por-el-converter-no-viene-del-bronce">2.2 Bloque oro (materializado por el converter — no viene del bronce)</h3>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>campo</th>
+<th>tipo AVRO</th>
+<th>por qué</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>19</td>
+<td>flow_start_window</td>
+<td>long</td>
+<td>hoy 100% derivada en read-time (<code>window_micros()</code>, <code>correlation-engine/src/main.cpp:117</code>), nunca escrita en Parquet — <code>DEBT-GOLD-NODE-DIMENSION-001</code> exige materializarla para que el ledger sea auto-verificable sin depender de que <code>window_micros()</code> no cambie de bucketing</td>
+</tr>
+<tr>
+<td>20</td>
+<td>seq_in_window</td>
+<td>int</td>
+<td>hoy fijo a 0 (<code>DEBT-FLOWUID-SEQ-COLLISION-001</code>); se materializa igual, aunque su valor no varíe todavía</td>
+</tr>
+<tr>
+<td>21</td>
+<td>flow_uid</td>
+<td>string (base64)</td>
+<td>recomputado en el converter con <code>encode_flow_input</code> (mismo encoding canónico ya congelado y verificado byte-a-byte contra <code>hashlib.blake2b</code>, <code>flow_uid.hpp</code>) desde 3+4+19[+20] — permite verificar re-derivación bit a bit contra la propiedad ya materializada en Kuzu (<code>cypher_builder.hpp:101,110</code>)</td>
+</tr>
+<tr>
+<td>22</td>
+<td>ingested_at</td>
+<td>long (<code>timestamp-micros</code>, logical type)</td>
+<td>clase <strong>E</strong> — determinista-de-ejecución (<code>kuzu_graph_sink.hpp:47</code>). Se <strong>preserva</strong> desde el bronce/WAL, nunca se recalcula al reprocesar; jerarquía de fuentes: el WAL prevalece en replay, el campo Kuzu es vista del estado actual (<code>DEBT-CIRCUIT-TEMPORAL-ANOMALY-PARITY-001</code>, parte b)</td>
+</tr>
+<tr>
+<td>23</td>
+<td>temporal_anomaly</td>
+<td>boolean</td>
+<td>clase <strong>E</strong>, fórmula portada 1:1 desde <code>cypher_builder.hpp:86</code>, evaluada sobre el <code>ingested_at</code> correcto — nunca el del reproceso (<code>DEBT-CIRCUIT-TEMPORAL-ANOMALY-PARITY-001</code>, parte a)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Relación con el predicado de equivalencia §3.1 (ADR-058):</strong>
+- Cols 0-18 + 19-21 son clase <strong>D</strong> (determinista-de-dato) → entran en <code>EQUIV(Camino0, FlujoA+B)</code>, comparación <code>==</code> bit-exacta en los doubles (14-16), tras canonicalización.
+- Cols 22-23 son clase <strong>E</strong> → quedan explícitamente <strong>fuera</strong> del predicado, por diseño, no por omisión.</p>
+<hr />
+<h2 id="3-particion-de-directorio">3. Partición de directorio</h2>
+<p><strong>Por fecha únicamente</strong> (<code>date=YYYY-MM-DD/</code>, heredado del rotado de segmentos del
+bronce, DAY 203). <strong>Sin</strong> partición secundaria por <code>node_id</code> todavía.</p>
+<p>Motivo: el propio ADR-058 §8 declina explícitamente el gold-plating especulativo (SLA,
+particiones anticipadas sin dato de volumen real) hasta que el número de nodos e
+instalaciones lo justifique — coherente con "medir, no votar" y con la regla de "una
+batalla" del proyecto. Si la hipótesis central del proyecto (contribución por nodo a la
+calidad del corpus) madura, particionar por <code>node_id</code> es un cambio de layout de
+directorio, no de esquema — no bloquea el diseño actual.</p>
+<hr />
+<h2 id="4-deudas-del-adr-058-que-este-diseno-satisface-o-deja-explicitamente-abiertas">4. Deudas del ADR-058 que este diseño satisface o deja explícitamente abiertas</h2>
+<table>
+<thead>
+<tr>
+<th>Deuda</th>
+<th>Efecto de este diseño</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>DEBT-CIRCUIT-PARSER-CROSSLANG-001</code> (P1)</td>
+<td><strong>Cerrada por diseño</strong> — sin runtime Python, no hay frontera de lenguaje que cruzar</td>
+</tr>
+<tr>
+<td><code>DEBT-GOLD-NODE-DIMENSION-001</code> (P0)</td>
+<td>Satisfecha — cols 19-21 materializan <code>flow_start_window</code>/<code>seq_in_window</code>/<code>flow_uid</code> en el oro</td>
+</tr>
+<tr>
+<td><code>DEBT-GOLD-INTEGRITY-HMAC-001</code> (P0)</td>
+<td>Satisfecha para HMAC por-fila (col 18 preservada). <strong>Pendiente de diseño aparte:</strong> firma del Parquet consolidado como artefacto (greenfield HMAC-SHA256, no reutiliza el firmador Ed25519 de <code>scripts/parquet/</code> — <code>DEBT-DOCS-MEDALLION-DUALITY-001</code>)</td>
+</tr>
+<tr>
+<td><code>DEBT-EVENT-ID-FACTORY-001</code> (P1)</td>
+<td>Satisfecha por regla de diseño — <code>event_id</code> se copia, nunca se regenera</td>
+</tr>
+<tr>
+<td><code>DEBT-CIRCUIT-SCORE-NONTRIVIAL-REVAL-001</code> (P1)</td>
+<td>Parcialmente satisfecha — el esquema fuerza copia bit-exacta de scores; la re-validación con scores no-triviales sigue pendiente de que <code>DEBT-RANSOMWARE-ML-HEAD-INERT-001</code> se cierre</td>
+</tr>
+<tr>
+<td><code>DEBT-CIRCUIT-TEMPORAL-ANOMALY-PARITY-001</code> (P1)</td>
+<td>Cubierta por cols 22-23 y la regla de jerarquía de fuentes (WAL prevalece en replay) — implementación aún pendiente</td>
+</tr>
+<tr>
+<td><code>DEBT-PARQUET-KUZU-CONNECTOR-001</code> (P1, Flujo B)</td>
+<td><strong>Fuera de alcance de este documento</strong> — este diseño cubre bronce→AVRO→Parquet oro (Flujo A), no el conector Parquet→Kuzu</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="5-ratificacion-del-consejo-day-205">5. Ratificación del Consejo — DAY 205</h2>
+<p><strong>Q1 — Versión Arrow/Parquet:</strong> <code>24.0.0-1</code>, pinneada explícita + <code>apt-mark hold</code>. Ver §1.
+Voto: 8/9 directo a <code>24.0.0-1</code>; Claude (voto inicial <code>18.1.0-1</code>) cambió su voto tras
+constatar que Arrow no tiene modelo LTS (a diferencia de Kuzu, que sí tenía riesgo real
+de discontinuidad) y que nadie aportó evidencia de CVEs sin parchear que justificaran
+una versión anterior. Regla de proceso adoptada (ChatGPT): pinnear la primera versión
+que supera la batería de validación reproducible; revalidar antes de cualquier upgrade.</p>
+<p><strong>Q2 — Puertos en AVRO (cols 9-10):</strong> <code>int</code> signed 32-bit + campo <code>doc</code> documentando la
+asimetría con <code>uint32_t</code> del proto. <strong>Unanimidad 9/9.</strong> Sin deuda nueva. Redacción
+adoptada (Kimi):</p>
+<pre><code class="language-json">{
+  &quot;name&quot;: &quot;src_port&quot;,
+  &quot;type&quot;: &quot;int&quot;,
+  &quot;doc&quot;: &quot;Unsigned uint32_t del proto. Rango válido: 0-65535. Valores &gt;= 2^31 son reservados para extensión futura.&quot;
+}
+</code></pre>
+<p>Análogo para <code>dst_port</code>.</p>
+<p><strong>Q3 — ADR vs. documento de apoyo:</strong> Documento de apoyo, referenciado desde ADR-058.
+<strong>8/9</strong> — único disidente: Grok (proponía ADR-059, argumentando impacto en deudas
+P0/P1). Mayoría considera que <em>impactar</em> deudas no equivale a <em>decidir</em> arquitectura
+nueva — este documento vive en containment bajo ADR-058, no en paridad con él. Ruta de
+archivo: <code>docs/design/eslabon-1-flujo-a-avro-parquet/eslabon-1-flujo-a-avro-parquet.md</code>,
+referenciado desde ADR-058 §9
+(changelog) o sección de referencias.</p>
+<p><strong>Correcciones de hecho registradas durante la deliberación:</strong> Mistral describió la
+serie 24.x de Arrow como "LTS" — inexacto, ninguna rama de Arrow tiene ese estatus
+(confirmado independientemente por DeepSeek, GLM, Qwen, Grok). No cambia la conclusión
+(24.0.0-1 sigue siendo la versión correcta) pero se deja registrado por higiene
+epistémica.</p>
+<h2 id="6-preguntas-abiertas-nuevas-no-bloqueantes-quedan-para-mas-adelante">6. Preguntas abiertas nuevas (no bloqueantes, quedan para más adelante)</h2>
+<ol>
+<li><strong>Política de compatibilidad <code>correlation_gold_v1</code> → <code>v2</code></strong> (aportada por ChatGPT,
+   no estaba en el alcance original). Sin resolver ahora — decidir cuándo se plantee
+   la primera necesidad real de evolución de esquema, no antes.</li>
+<li><strong>Interfaces <code>BronzeReader</code>/<code>GoldWriter</code></strong> (aportada por ChatGPT) para desacoplar el
+   algoritmo del converter del formato concreto (AVRO/Parquet), coherente con el patrón
+   ya usado en el proyecto (<code>ICryptoProvider</code>, <code>IGraphSink</code>). Recomendado como
+   refinamiento de implementación, no bloqueante de esta ratificación.</li>
+</ol>
+<hr />
+<p><em>Documento de apoyo a ADR-058 v3 — RATIFICADO por el Consejo de Sabios (9/9), DAY 205 — Via Appia Quality.</em></p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.tabs", "navigation.top", "search.highlight"], "search": "../../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

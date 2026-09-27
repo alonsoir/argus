@@ -1,0 +1,1380 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source embedded-ML NDR for hospitals and schools">
+      
+      
+        <meta name="author" content="Alonso Isidoro Roman">
+      
+      
+        <link rel="canonical" href="https://alonsoir.github.io/argus/council/Nota%20al%20Consejo%20%E2%80%94%20el%20porqu%C3%A9%20de%20la%20monocapa%3A%20concurrencia%2C%20no%20descuido-qwen/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>Respuesta del Consejo de Sabios — Nota aclaratoria sobre concurrencia - ML Defender (aRGus NDR)</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#respuesta-del-consejo-de-sabios-nota-aclaratoria-sobre-concurrencia" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-header__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ML Defender (aRGus NDR)
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Respuesta del Consejo de Sabios — Nota aclaratoria sobre concurrencia
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../README.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/BACKLOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Backlog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Security Model
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-tabs__link">
+          
+  
+  
+  ADRs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/contracts/Protobuf contracts.md" class="md-tabs__link">
+          
+  
+  
+  Contracts
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-nav__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ML Defender (aRGus NDR)
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../README.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/BACKLOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADRs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ADRs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013 Seed Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-021-deployment-topology-seed-families.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-021 Topology SSOT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-022-threat-model-opcion2-descartada.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-022 Threat Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Protobuf contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protobuf
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/JSON contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JSON
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Rag security commands.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#verificacion-de-hechos-todos-confirmados-en-main" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Verificación de hechos — todos confirmados en main
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#validacion-del-razonamiento-determinismo-por-construccion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Validación del razonamiento — determinismo por construcción
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#respuestas-a-las-tres-preguntas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Respuestas a las tres preguntas
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Respuestas a las tres preguntas">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#p1-basta-un-hilo-para-el-throughput-objetivo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        P1. ¿Basta un hilo para el throughput objetivo?
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#p2-gate-de-throughput-que-medicion-exigimos" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        P2. Gate de throughput — ¿qué medición exigimos?
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#p3-postura-para-el-paper-es-defendible-presentar-el-ml-detector-como-monohilo-por-decision-de-determinismo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        P3. Postura para el paper — ¿es defendible presentar el ml-detector como monohilo por decisión de determinismo?
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#analisis-adversario-adicional-lo-que-la-nota-no-cubre" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Análisis adversario adicional — lo que la nota no cubre
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Análisis adversario adicional — lo que la nota no cubre">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-el-cuello-de-botella-real-io-de-disco-bajo-mutex_" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. El cuello de botella real: I/O de disco bajo mutex_
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-backpressure-que-pasa-cuando-el-worker-no-da-abasto" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Backpressure: qué pasa cuando el worker no da abasto
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-estado-mutable-en-modelos-de-inferencia-verificacion-pendiente" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Estado mutable en modelos de inferencia — verificación pendiente
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-la-configuracion-cosmetica-es-un-debt-de-documentacion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. La configuración cosmética es un DEBT de documentación
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#plan-de-accion-revisado-fase-2-con-gate-de-throughput" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Plan de acción revisado — Fase 2 con gate de throughput
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Plan de acción revisado — Fase 2 con gate de throughput">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#precondicion-decisiones-tecnicas-resueltas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Precondición — Decisiones técnicas (resueltas)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#paso-1-pulso-del-internal-sobre-datos-etiquetados" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Paso 1 — Pulso del Internal sobre datos etiquetados
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#paso-2-reconexion-del-cableado-defectos-a-b-c" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Paso 2 — Reconexión del cableado (Defectos A + B + C)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#paso-3-gate-de-throughput-nuevo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Paso 3 — Gate de throughput (NUEVO)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#paso-4-pr1-ml-detector-medicion-en-produccion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Paso 4 — PR1 (ml-detector) + medición en producción
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#paso-5-pr2-firewall-acl-agent-stress-test" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Paso 5 — PR2 (firewall-acl-agent) + stress test
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#paso-6-pcap-relay-e2e-en-hardware-propio" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Paso 6 — pcap relay e2e en hardware propio
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#paso-7-numeros-al-paper" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Paso 7 — Números al paper
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#paso-8-debts-de-documentacion-nuevo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Paso 8 — DEBTs de documentación (NUEVO)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cierre" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cierre
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="respuesta-del-consejo-de-sabios-nota-aclaratoria-sobre-concurrencia">Respuesta del Consejo de Sabios — Nota aclaratoria sobre concurrencia</h1>
+<p>Alonso, he verificado los hechos que citas línea a línea en <code>main</code>. <strong>Todos están confirmados.</strong> La nota cambia sustancialmente la precondición del cableado, y tu razonamiento es correcto. A continuación, mi análisis adversario punto por punto.</p>
+<hr />
+<h2 id="verificacion-de-hechos-todos-confirmados-en-main">Verificación de hechos — todos confirmados en <code>main</code></h2>
+<table>
+<thead>
+<tr>
+<th>Afirmación</th>
+<th>Estado</th>
+<th>Evidencia en código</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>worker_thread_</code> es <code>std::unique_ptr&lt;std::thread&gt;</code> (un único hilo)</td>
+<td>✅ CONFIRMADO</td>
+<td><code>zmq_handler.hpp</code> — declaración como <code>unique_ptr</code>, no vector ni pool</td>
+</tr>
+<tr>
+<td>Se instancia <strong>una sola vez</strong> con <code>make_unique&lt;std::thread&gt;(&amp;ZMQHandler::run, this)</code></td>
+<td>✅ CONFIRMADO</td>
+<td><code>zmq_handler.cpp:start()</code> — una única llamada, no hay bucle de creación</td>
+</tr>
+<tr>
+<td><code>process_event</code> usa <code>event</code> <strong>local por invocación</strong></td>
+<td>✅ CONFIRMADO</td>
+<td><code>protobuf::NetworkSecurityEvent event;</code> declarado dentro del <code>try</code> de <code>process_event</code>, no es miembro de clase</td>
+</tr>
+<tr>
+<td><code>config.threading.worker_threads</code> es <strong>solo logging</strong></td>
+<td>✅ CONFIRMADO</td>
+<td><code>main.cpp</code> — solo aparece en <code>std::cout</code> y <code>log-&gt;info(" Threads: {} workers...")</code>, <strong>nunca</strong> se pasa a constructor de thread pool</td>
+</tr>
+<tr>
+<td><code>config.threading.ml_inference_threads</code> es <strong>solo logging</strong></td>
+<td>✅ CONFIRMADO</td>
+<td>Mismo patrón: solo en <code>log-&gt;info(" ML Inference: {} threads")</code></td>
+</tr>
+<tr>
+<td><code>CsvEventWriter</code> tiene <code>mutex_</code> propio con <code>lock_guard</code></td>
+<td>✅ CONFIRMADO</td>
+<td><code>csv_event_writer.cpp:write_event()</code> — <code>std::lock_guard&lt;std::mutex&gt; lock(mutex_);</code> antes de escribir; mismo patrón en <code>flush()</code> y <code>get_stats()</code></td>
+</tr>
+<tr>
+<td><code>RAGLogger</code> tiene <code>mutex_</code> propio con <code>lock_guard</code></td>
+<td>✅ CONFIRMADO</td>
+<td><code>rag_logger.cpp:write_jsonl()</code> — <code>std::lock_guard&lt;std::mutex&gt; lock(mutex_);</code> al inicio; <code>check_rotation_locked()</code> y <code>rotate_logs_locked()</code> tienen PRECONDITION explícito: "mutex_ must be held by caller"</td>
+</tr>
+<tr>
+<td><code>CorrelationWriter</code> tiene <code>mutex_</code> propio</td>
+<td>✅ CONFIRMADO</td>
+<td>Mismo patrón verificado en auditoría previa</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Conclusión de verificación:</strong> La nota es <strong>técnicamente impecable</strong>. Los cuatro puntos del "hecho que faltaba" están corroborados línea a línea. No hay exageración.</p>
+<hr />
+<h2 id="validacion-del-razonamiento-determinismo-por-construccion">Validación del razonamiento — determinismo por construcción</h2>
+<p>Tu conclusión es correcta:</p>
+<blockquote>
+<p>"Reconectar las cuatro cabezas al veredicto, en el modo actual, es determinista por construcción."</p>
+</blockquote>
+<p><strong>Razonamiento técnico que lo sustenta:</strong></p>
+<ol>
+<li><strong>Un único worker</strong> → no hay segundo hilo que pueda correr en paralelo con el primero.</li>
+<li><strong><code>event</code> local por invocación</strong> → cada mensaje tiene su propio estado, no compartido entre invocaciones.</li>
+<li><strong>Writers con <code>mutex_</code> propio</strong> → incluso si hubiera múltiples workers (que no los hay), la persistencia está serializada por diseño.</li>
+<li><strong>Modelos de inferencia</strong> → <code>level1_model_-&gt;predict()</code>, <code>ddos_detector-&gt;predict()</code>, etc. son llamadas a modelos cargados en memoria. <strong>Verificación pendiente:</strong> si los modelos tienen estado mutable interno (buffers de ONNX Runtime, escalers de random forest), eso sería un problema. Pero con un único worker, no hay carrera posible.</li>
+</ol>
+<p><strong>La carrera de agosto de 2025 vivía en el paralelismo de inferencia.</strong> Hoy no hay paralelismo. El cableado honesto de la tricapa <strong>no reabre la herida</strong>.</p>
+<hr />
+<h2 id="respuestas-a-las-tres-preguntas">Respuestas a las tres preguntas</h2>
+<h3 id="p1-basta-un-hilo-para-el-throughput-objetivo">P1. ¿Basta un hilo para el throughput objetivo?</h3>
+<p><strong>Respuesta técnica:</strong></p>
+<p><strong>Probablemente sí, pero debe medirse.</strong> Tu propuesta de gate es correcta, pero la refino:</p>
+<p><strong>Gate de throughput exigido:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Métrica</th>
+<th>Umbral</th>
+<th>Condición</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Latencia p99 recepción→emisión</strong></td>
+<td>&lt; 10 ms</td>
+<td>Con las 4 cabezas activas (aunque 2 tengan peso 0 en noisy-OR)</td>
+</tr>
+<tr>
+<td><strong>Latencia p50</strong></td>
+<td>&lt; 2 ms</td>
+<td>Mismo escenario</td>
+</tr>
+<tr>
+<td><strong>Tasa de drop bajo backpressure</strong></td>
+<td>&lt; 0.1%</td>
+<td>Cuando ZMQ queue esté al 80% de capacidad</td>
+</tr>
+<tr>
+<td><strong>Throughput sostenido</strong></td>
+<td>100 Mbps línea</td>
+<td>Durante 10 minutos continuos</td>
+</tr>
+<tr>
+<td><strong>CPU del worker</strong></td>
+<td>&lt; 80% de un core</td>
+<td>Para dejar margen al OS y otros procesos</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Escenario de prueba:</strong>
+- Stress a 10, 50, 100 Mbps con tráfico real (pcap replay) o sintético (generador de flujos).
+- Las 4 cabezas corren <strong>siempre</strong> (no solo cuando L1 dice ATTACK), para medir el peor caso.
+- Medir latencia end-to-end: timestamp de recepción ZMQ vs timestamp de emisión ZMQ.
+- Medir tasa de drop: eventos recibidos vs eventos procesados.</p>
+<p><strong>El cuello de botella probable no es el cómputo, sino el I/O.</strong> Tu intuición es correcta:</p>
+<ul>
+<li>Inferencia: ~2-3 μs por evento (L1 + 4 cabezas)</li>
+<li>Extracción de features: ~1 μs por evento</li>
+<li><strong>Persistencia: I/O de disco bajo <code>mutex_</code></strong> — esto es lo que puede dominar.</li>
+</ul>
+<p><strong>Medición específica exigida:</strong> desglosar latencia en:
+1. Recepción ZMQ → inicio <code>process_event</code>
+2. <code>process_event</code> → fin de inferencia (cómputo)
+3. Fin de inferencia → fin de persistencia (I/O)
+4. Fin de persistencia → emisión ZMQ</p>
+<p>Si el paso 3 domina (&gt;5 ms p99), hay que optimizar I/O (buffering, escritura asíncrona, o reducir frecuencia de <code>flush()</code>).</p>
+<h3 id="p2-gate-de-throughput-que-medicion-exigimos">P2. Gate de throughput — ¿qué medición exigimos?</h3>
+<p><strong>Respuesta técnica:</strong></p>
+<p><strong>La que propones es correcta, con tres adiciones:</strong></p>
+<ol>
+<li><strong>Desglose de latencia por fase</strong> (arriba): no solo end-to-end, sino dónde se gasta el tiempo.</li>
+<li><strong>Prueba de backpressure</strong>: llenar la queue ZMQ hasta 80% y medir tasa de drop. Si el worker no da abasto, ZMQ acumula, y eventualmente se pierden eventos.</li>
+<li><strong>Prueba de duración sostenida</strong>: 10 minutos continuos a 100 Mbps, no solo ráfagas cortas. El I/O de disco puede degradarse con el tiempo (buffer cache lleno, rotación de ficheros, etc.).</li>
+</ol>
+<p><strong>Instrumentación requerida:</strong>
+- Contadores en <code>ZMQHandler</code>: <code>events_received</code>, <code>events_processed</code>, <code>events_dropped</code>, <code>latency_histogram</code> (p50, p95, p99).
+- Contadores en writers: <code>write_latency_histogram</code> (p50, p95, p99).
+- Métricas de backpressure: <code>zmq_queue_depth</code>, <code>zmq_hwm_reached</code>.</p>
+<p><strong>Gate de aprobación:</strong> todos los umbrales de la tabla anterior cumplidos durante 10 minutos continuos.</p>
+<h3 id="p3-postura-para-el-paper-es-defendible-presentar-el-ml-detector-como-monohilo-por-decision-de-determinismo">P3. Postura para el paper — ¿es defendible presentar el ml-detector como monohilo por decisión de determinismo?</h3>
+<p><strong>Respuesta técnica:</strong></p>
+<p><strong>Sí, es defendible. Y es más honesto que prometer concurrencia que no ejecutas.</strong></p>
+<p><strong>Razonamiento:</strong></p>
+<ol>
+<li>
+<p><strong>Transparencia:</strong> El paper dice "tricapa", no "multihilo". La tricapa es la arquitectura de clasificación (L1 + L2 + L3), no la de ejecución. Puedes presentar la tricapa completa corriendo en un solo hilo, con latencia medida.</p>
+</li>
+<li>
+<p><strong>Honestidad:</strong> Si presentas "worker_threads: 2" en la configuración pero el binario ejecuta 1, es una divergencia entre diseño e implementación. Mejor decir: "monohilo por decisión de determinismo, con la tricapa completa dentro de presupuesto de latencia".</p>
+</li>
+<li>
+<p><strong>Fortaleza técnica:</strong> Un sistema que <strong>elige</strong> monohilo para garantizar determinismo es más fuerte que uno que <strong>promete</strong> multihilo pero no lo ejecuta. La elección consciente es defendible; el olvido no.</p>
+</li>
+<li>
+<p><strong>Dato publicable:</strong> El throughput medido (100 Mbps en un solo hilo, con latencia p99 &lt; 10 ms) es un resultado sólido. No necesitas multihilo para impresionar; necesitas que el monohilo dé abasto, y si lo hace, es suficiente.</p>
+</li>
+</ol>
+<p><strong>Formulación para el paper:</strong></p>
+<blockquote>
+<p>"El ml-detector opera como un worker secuencial único por decisión de diseño, priorizando determinismo sobre paralelismo. La arquitectura tricapa completa (L1 + 4 cabezas especializadas) se ejecuta dentro de un presupuesto de latencia de 10 ms (p99 medido: X ms en hardware Y), sosteniendo un throughput de Z Mbps. Esta elección elimina condiciones de carrera en la inferencia y garantiza que el veredicto sea reproducible para la misma entrada."</p>
+</blockquote>
+<p><strong>Configuración cosmética — DEBT de documentación:</strong></p>
+<p><code>config.threading.worker_threads</code> y <code>ml_inference_threads</code> son <strong>mentiras documentadas</strong>. Prometen concurrencia que no existe. <strong>Dos opciones:</strong></p>
+<ol>
+<li><strong>Eliminarlos del JSON de configuración</strong> y del logging. Honestidad total.</li>
+<li><strong>Documentar explícitamente</strong> que son "reservados para futura implementación" y que el sistema actual es monohilo por diseño.</li>
+</ol>
+<p><strong>Recomendación:</strong> Opción 2, con nota en <code>docs/ARCHITECTURE.md</code>: "Threading: el ml-detector opera como worker secuencial único. Los parámetros <code>worker_threads</code> y <code>ml_inference_threads</code> están reservados para futura implementación de pool de workers, pendiente de validación de thread-safety en modelos de inferencia."</p>
+<hr />
+<h2 id="analisis-adversario-adicional-lo-que-la-nota-no-cubre">Análisis adversario adicional — lo que la nota no cubre</h2>
+<h3 id="1-el-cuello-de-botella-real-io-de-disco-bajo-mutex_">1. El cuello de botella real: I/O de disco bajo <code>mutex_</code></h3>
+<p>Tu nota identifica correctamente que "el coste dominante probable no es el cómputo sino la persistencia por evento". Pero no cuantifica el impacto.</p>
+<p><strong>Análisis técnico:</strong></p>
+<ul>
+<li>Cada evento escribe a <strong>tres writers</strong>: bronce, RAG, CSV.</li>
+<li>Cada writer tiene su <code>mutex_</code> y hace <code>flush()</code> después de cada escritura (vi esto en <code>csv_event_writer.cpp</code> y <code>rag_logger.cpp</code>).</li>
+<li><code>flush()</code> fuerza escritura a disco, lo que es <strong>síncrono y lento</strong> (típicamente 1-10 ms por escritura en HDD, 0.1-1 ms en SSD).</li>
+<li>Tres writers × 1 ms = 3 ms por evento. Esto <strong>ya está cerca del presupuesto de 10 ms</strong>.</li>
+</ul>
+<p><strong>Recomendación:</strong>
+- Medir latencia de <code>write_event()</code> + <code>flush()</code> para cada writer.
+- Considerar <strong>buffering</strong>: acumular N eventos en memoria y escribir en bloque cada T segundos, o cuando el buffer alcance X MB. Esto reduce drásticamente el I/O.
+- Alternativa: escritura asíncrona con queue interna, pero esto reintroduce complejidad de concurrencia.</p>
+<h3 id="2-backpressure-que-pasa-cuando-el-worker-no-da-abasto">2. Backpressure: qué pasa cuando el worker no da abasto</h3>
+<p>Tu nota no menciona qué ocurre si el worker secuencial no procesa eventos tan rápido como llegan.</p>
+<p><strong>Escenario:</strong>
+- Sniffer emite 10,000 eventos/segundo.
+- Worker tarda 0.5 ms por evento → procesa 2,000 eventos/segundo.
+- ZMQ queue se llena → eventos se pierden o se bloquean.</p>
+<p><strong>Preguntas abiertas:</strong>
+- ¿ZMQ tiene <code>ZMQ_RCVHWM</code> configurado? Si sí, ¿cuál es el límite?
+- ¿Qué pasa cuando se alcanza el HWM: se pierden eventos, o se bloquea el sniffer?
+- ¿Hay métricas de backpressure en producción?</p>
+<p><strong>Recomendación:</strong>
+- Documentar el comportamiento de backpressure en <code>docs/ARCHITECTURE.md</code>.
+- Añadir métricas de <code>zmq_queue_depth</code> y <code>events_dropped</code>.
+- Si el worker no da abasto, las opciones son: (a) optimizar I/O (buffering), (b) reintroducir multihilo (con las precauciones de thread-safety), o (c) reducir la frecuencia de inferencia (ej: solo correr cabezas cuando L1 diga ATTACK, como hoy).</p>
+<h3 id="3-estado-mutable-en-modelos-de-inferencia-verificacion-pendiente">3. Estado mutable en modelos de inferencia — verificación pendiente</h3>
+<p>Tu nota dice: "La carrera de 2025 pudo deberse a estado mutable <em>dentro</em> de los modelos de inferencia (buffers, scalers) compartido entre hilos — no al <code>event</code>."</p>
+<p><strong>Esto es correcto, pero no verificado.</strong></p>
+<p><strong>Pregunta abierta:</strong> ¿Los modelos de inferencia (ONNX Runtime para L1, random forest C++ para L2/L3) tienen estado mutable interno?</p>
+<ul>
+<li><strong>ONNX Runtime:</strong> <code>Ort::Session</code> es thread-safe para inferencia, pero <strong>no</strong> para carga/descarga de modelos. Si hay un único <code>level1_model_</code> compartido, es seguro con un worker.</li>
+<li><strong>Random forest C++:</strong> Si los árboles son estructuras inmutables cargadas en memoria, es thread-safe. Si hay buffers temporales o escalers con estado mutable, no lo es.</li>
+</ul>
+<p><strong>Con un único worker, esto no importa.</strong> Pero si algún día se reintroduce multihilo, hay que verificar thread-safety de cada modelo.</p>
+<p><strong>Recomendación:</strong> Documentar en <code>docs/ARCHITECTURE.md</code>: "Los modelos de inferencia se asumen thread-safe para inferencia, pero no se ha verificado explícitamente. Con el worker secuencial actual, esto no es un problema. Cualquier reintroducción de multihilo requiere auditoría de thread-safety de cada modelo."</p>
+<h3 id="4-la-configuracion-cosmetica-es-un-debt-de-documentacion">4. La configuración cosmética es un DEBT de documentación</h3>
+<p>Como mencioné arriba, <code>config.threading.worker_threads</code> y <code>ml_inference_threads</code> son <strong>mentiras documentadas</strong>. Esto no es un bug técnico, pero es un bug de honestidad.</p>
+<p><strong>Recomendación:</strong> Elevar a DEBT:
+- <code>DEBT-CONFIG-COSMETIC-THREADING-001</code>: Los parámetros <code>worker_threads</code> y <code>ml_inference_threads</code> en la configuración no se usan; el sistema es monohilo por diseño. Documentar o eliminar.</p>
+<hr />
+<h2 id="plan-de-accion-revisado-fase-2-con-gate-de-throughput">Plan de acción revisado — Fase 2 con gate de throughput</h2>
+<p>Tu plan original es sólido. Añado el gate de throughput y las correcciones de la nota:</p>
+<h3 id="precondicion-decisiones-tecnicas-resueltas">Precondición — Decisiones técnicas (resueltas)</h3>
+<ul>
+<li>✅ Ransomware y Traffic: no cablear hasta fiabilidad medida.</li>
+<li>✅ Internal: cablear inmediatamente.</li>
+<li>✅ noisy-OR: ratificado.</li>
+<li>✅ Cascada Traffic→Internal: desacoplar.</li>
+<li>✅ Monohilo: confirmado como elección de diseño, no como deuda.</li>
+</ul>
+<h3 id="paso-1-pulso-del-internal-sobre-datos-etiquetados">Paso 1 — Pulso del Internal sobre datos etiquetados</h3>
+<p><strong>Gate:</strong> F1-score de Internal contra MITRE ATT&amp;CK / Atomic Red Team.</p>
+<h3 id="paso-2-reconexion-del-cableado-defectos-a-b-c">Paso 2 — Reconexión del cableado (Defectos A + B + C)</h3>
+<ol>
+<li>Mover combinador y persistencia post-cabezas.</li>
+<li>Desacoplar Internal de Traffic.</li>
+<li>Implementar noisy-OR sobre <code>provenance-&gt;verdicts()</code>.</li>
+<li>Poblar <code>ml_context</code> con salidas de cabezas.</li>
+<li>Relajar gate B: si <code>fast_score &gt; malicious_threshold</code>, cabezas corren aunque L1 diga BENIGN.</li>
+</ol>
+<h3 id="paso-3-gate-de-throughput-nuevo">Paso 3 — Gate de throughput (NUEVO)</h3>
+<p><strong>Medición exigida:</strong>
+- Latencia p99 &lt; 10 ms, p50 &lt; 2 ms.
+- Throughput sostenido 100 Mbps durante 10 minutos.
+- Tasa de drop &lt; 0.1% bajo backpressure.
+- Desglose de latencia por fase (recepción, cómputo, I/O, emisión).</p>
+<p><strong>Si no pasa el gate:</strong>
+- Optimizar I/O (buffering en writers).
+- Reevaluar si es necesario correr las 4 cabezas en cada evento, o solo cuando L1/fast_score disparen.</p>
+<h3 id="paso-4-pr1-ml-detector-medicion-en-produccion">Paso 4 — PR1 (ml-detector) + medición en producción</h3>
+<p><strong>Gate:</strong> Todos los umbrales de throughput cumplidos.</p>
+<h3 id="paso-5-pr2-firewall-acl-agent-stress-test">Paso 5 — PR2 (firewall-acl-agent) + stress test</h3>
+<p><strong>Gate:</strong> Relajar <code>attack_detected_level1()</code> sin disparar sobre-bloqueo masivo.</p>
+<h3 id="paso-6-pcap-relay-e2e-en-hardware-propio">Paso 6 — pcap relay e2e en hardware propio</h3>
+<p><strong>Gate:</strong> Throughput en hardware base de producción.</p>
+<h3 id="paso-7-numeros-al-paper">Paso 7 — Números al paper</h3>
+<ul>
+<li>Internal: peso = F1 medido.</li>
+<li>Ransomware/Traffic: "no cableados, fiabilidad no demostrada".</li>
+<li>DDoS: peso = F1 medido (si es recuperable).</li>
+<li><strong>Threading:</strong> "monohilo por decisión de determinismo, throughput medido X Mbps, latencia p99 Y ms".</li>
+</ul>
+<h3 id="paso-8-debts-de-documentacion-nuevo">Paso 8 — DEBTs de documentación (NUEVO)</h3>
+<ul>
+<li><code>DEBT-CONFIG-COSMETIC-THREADING-001</code>: Documentar o eliminar <code>worker_threads</code> y <code>ml_inference_threads</code>.</li>
+<li><code>DEBT-BACKPRESSURE-DOCUMENTATION-001</code>: Documentar comportamiento de backpressure en ZMQ.</li>
+<li><code>DEBT-MODEL-THREADSAFETY-001</code>: Documentar que los modelos se asumen thread-safe pero no se ha verificado explícitamente.</li>
+</ul>
+<hr />
+<h2 id="cierre">Cierre</h2>
+<p>Tu nota aclaratoria es <strong>técnicamente impecable</strong> y cambia la precondición del cableado. Los hechos están confirmados. El razonamiento es correcto.</p>
+<p><strong>Mi única crítica adversaria:</strong> no cuantificaste el impacto del I/O de disco en la latencia, ni el comportamiento de backpressure. Son los dos riesgos reales del monohilo, y deben medirse antes de afirmar que "basta un hilo".</p>
+<p><strong>El listón:</strong> un escudo que hace lo que dice que hace. Tu nota demuestra que la monocapa fue una elección de seguridad concurrente, no un olvido. Reconectar la tricapa en monohilo devuelve la señal sin reabrir la herida. Y si un día se quiere multihilo, será una medición nueva, no una deuda vieja.</p>
+<p><em>Consejo de Sabios — modo adversario activado. Hechos verificados. Razonamiento validado. El escudo se arregla midiendo, no votando. Y ahora sabemos por qué proyectó sus sombras: no fue descuido, fue elección.</em></p>
+<p>fdo</p>
+<p>qwen</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.top", "search.highlight"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

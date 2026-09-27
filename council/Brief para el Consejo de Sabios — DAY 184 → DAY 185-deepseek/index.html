@@ -1,0 +1,971 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source embedded-ML NDR for hospitals and schools">
+      
+      
+        <meta name="author" content="Alonso Isidoro Roman">
+      
+      
+        <link rel="canonical" href="https://alonsoir.github.io/argus/council/Brief%20para%20el%20Consejo%20de%20Sabios%20%E2%80%94%20DAY%20184%20%E2%86%92%20DAY%20185-deepseek/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>Brief para el Consejo de Sabios — DAY 184 → DAY 185 deepseek - ML Defender (aRGus NDR)</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#1-es-correcto-el-orden-medirprimero" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-header__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ML Defender (aRGus NDR)
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Brief para el Consejo de Sabios — DAY 184 → DAY 185 deepseek
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../README.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/BACKLOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Backlog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Security Model
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-tabs__link">
+          
+  
+  
+  ADRs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/contracts/Protobuf contracts.md" class="md-tabs__link">
+          
+  
+  
+  Contracts
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-nav__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ML Defender (aRGus NDR)
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../README.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/BACKLOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADRs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ADRs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013 Seed Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-021-deployment-topology-seed-families.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-021 Topology SSOT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-022-threat-model-opcion2-descartada.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-022 Threat Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Protobuf contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protobuf
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/JSON contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JSON
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Rag security commands.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-es-correcto-el-orden-medirprimero" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. ¿Es correcto el orden medir‑primero?
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-opcion-b-struct-plano-vs-a-protobuf" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Opción B (struct plano) vs. A (protobuf)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-que-le-falta-al-injector-adversarial-para-no-ser-complice" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. ¿Qué le falta al injector adversarial para no ser cómplice?
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-injectorafichero-vs-tcpreplay-para-la-primera-medicion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Injector‑a‑fichero vs. tcpreplay para la primera medición
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-el-refactor-correlationwriter-libreria-compartida" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. El refactor CorrelationWriter → librería compartida
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-hmac-en-el-banco-de-tortura" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. HMAC en el banco de tortura
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+  <h1>Brief para el Consejo de Sabios — DAY 184 → DAY 185 deepseek</h1>
+
+<p>El Consejo ha examinado el brief con atención. Celebramos la solidez del trabajo del día 184 — en particular el <code>[[nodiscard]] FlushResult</code>, la transacción agrupada verificada en VERIFY‑3 y la migración a <code>execute(prepared)</code> que cierra H‑1 en el camino real de Kuzu. Las seis preguntas se responden a continuación, apoyadas en evidencia medible y en el propio principio rector del proyecto: torturar el pipeline sin perder ni corromper datos.</p>
+<hr />
+<h3 id="1-es-correcto-el-orden-medirprimero">1. ¿Es correcto el orden medir‑primero?</h3>
+<p><strong>Sí, es el orden correcto.</strong> La pregunta subyacente es si el camino directo (bronce CSV → correlation‑engine → Kuzu) puede arrojar un «falso verde» por no parecerse a producción. El riesgo de falso verde se materializaría <em>solo si se diera por terminada la evaluación tras esta primera tortura</em>, pero el brief explícitamente planifica después tcpreplay CTU‑13 y herramientas red‑team reales. Por tanto, la primera medición es una línea base del núcleo (correlation‑engine + sink Kuzu) sin el ruido de componentes aún no construidos.</p>
+<p>Construir la capa de consolidación Avro antes de medir <strong>introduce más variables de las que controla</strong> y pospone la detección de fallos en el camino que ya existe. La evidencia que guía esta decisión es el propio VERIFY‑3: el batch transaccional en Kuzu se midió primero de forma aislada, antes de construir sobre él. Siguiendo la misma lógica, medir el camino directo da el «suelo» del pipeline; si ese suelo ya pierde filas, se sabe sin haber escrito una sola línea de Avro. Si no las pierde, se valida el suelo y se procede a añadir capas. Es ciencia incremental: una variable por vez.</p>
+<p>La objeción del «falso verde» se mitiga con el diseño del injector adversarial: puede inyectar exactamente el mismo volumen, ráfagas y casos frontera que produciría un productor real. La única diferencia es el formato de entrada al correlation‑engine (CSV vs. Avro). Si el parsing CSV resultara un cuello de botella, se mediría correctamente como tal y se corregiría; si no, se confirma que el motor no depende de Avro para su integridad. No hay atajo que evite medir.</p>
+<hr />
+<h3 id="2-opcion-b-struct-plano-vs-a-protobuf">2. Opción B (struct plano) vs. A (protobuf)</h3>
+<p><strong>La opción B es la decisión correcta</strong>, y el test de equivalencia byte‑idéntica es una mitigación suficiente. Razonamos con evidencia concreta del proyecto:</p>
+<ul>
+<li><strong>Precedente DAY 183</strong>: La migración de <code>build_cypher</code> a <code>make_bindings</code> se validó con un test que garantizaba salida byte‑idéntica. Ese mismo patrón se aplica aquí. El riesgo de divergencia se convierte en invariante medido; si el test pasa, la salida es indistinguible de la actual. Si alguien modifica el adaptador y rompe el test, la regresión se detecta de inmediato.</li>
+<li><strong>Menor acoplamiento</strong>: El injector de tortura es el tercer hermano de una familia de stress‑testers que <em>no</em> arrastran las dependencias completas de los sistemas que emulan. El que emula sniffer no enlaza libpcap entera; el de ml‑detector no enlaza el modelo. Forzar un protobuf completo al injector introduce una dependencia pesada (y su generación de código) sin beneficio medible. La struct plana <code>CorrelationV1Row</code> es el contrato canónico, igual que <code>CorrelationRecord</code> en el consumidor.</li>
+<li><strong>Desacople limpio</strong>: El adaptador <code>NetworkSecurityEvent → CorrelationV1Row → build_row</code> en ml‑detector es una capa fina, trazable y testeable. No hay punto de divergencia <em>adicional</em> porque la transformación es determinista; el test byte‑idéntico lo demuestra. La opción A conservaría la serialización acoplada a protobuf y obligaría al injector a construir objetos protobuf para unas pocas filas de tortura, exactamente el tipo de lastre que el brief quiere eliminar.</li>
+</ul>
+<p>Por tanto, B unifica el contrato, mantiene la equivalencia demostrada y limpia la arquitectura sin riesgo de divergencia no medido.</p>
+<hr />
+<h3 id="3-que-le-falta-al-injector-adversarial-para-no-ser-complice">3. ¿Qué le falta al injector adversarial para no ser cómplice?</h3>
+<p>Más allá de los casos listados, un injector verdaderamente adversarial debe explorar estas clases de entrada que romperían el pipeline actual:</p>
+<ul>
+<li><strong>CSV malformado a propósito</strong>: Delimitadores dentro de campos sin escapar correctamente, saltos de línea embebidos en un campo de texto, líneas con número incorrecto de columnas, <em>byte order marks</em> (BOM) al inicio del fichero. El correlation‑engine lee CSV; el injector debe verificar si el parser es robusto.</li>
+<li><strong>Cargas que disparen escritura concurrente sobre el mismo fichero</strong>: Si el correlation‑engine hace tail‑read mientras el injector escribe, pueden darse lecturas parciales o líneas truncadas. El injector debe simular ráfagas que ensucien el fichero justo en el momento de lectura para exponer condiciones de carrera.</li>
+<li><strong>Valores límite en todos los campos</strong>: No solo <code>node_id</code> con comillas/backslash, sino: cadenas vacías, cadenas de longitud máxima (¿hay límite en la BD?), bytes nulos (<code>\0</code>), secuencias UTF‑8 inválidas, y valores numéricos en los extremos de su tipo (INT32_MAX, NaN si se usaran floats).</li>
+<li><strong>Colisiones de <code>flow_uid</code> con variantes</strong>: <code>flow_uid</code> nulo, vacío, o duplicado exacto pero con timestamps fuera de orden (¿el motor maneja llegada tardía?), o millones de filas con el mismo <code>flow_uid</code> para probar el coste de actualización de un único nodo.</li>
+<li><strong>Carga que obliga a múltiples flushes concurrentes</strong>: Si el acumulador se llena más rápido de lo que tarda un <code>flush()</code> (medido en 0.86 s baseline), se dispara un flush inline. Un bucle apretado de <code>write()</code> que llene el buffer repetidamente mientras el <code>flush()</code> anterior aún no ha terminado podría provocar crecimiento no acotado de memoria o caídas. Esto requiere un test de back‑pressure.</li>
+<li><strong>Inyección de filas con HMAC válido pero clave incorrecta</strong>: Aunque la tortura principal requiere HMAC correcto para no falsear la medición, un escenario adicional con HMAC inválido (clave equivocada) permite medir que el consumidor <em>realmente</em> descarta y contabiliza correctamente las filas corruptas. Así se verifica la integridad de la métrica de pérdidas.</li>
+<li><strong>Eventos que generan grafos patológicamente densos</strong>: Por ejemplo, un solo <code>src_ip</code> con miles de <code>dst_ip</code> distintos en la misma ráfaga, forzando la creación de muchas aristas simultáneas y potencialmente una degradación cuadrática en el sink de Kuzu si no se usan índices adecuados.</li>
+</ul>
+<p>El injector debe documentar <em>cada</em> uno de estos vectores y la hipótesis que prueba, para que la tortura no sea solo un caudal alto, sino una batería de casos de rotura.</p>
+<hr />
+<h3 id="4-injectorafichero-vs-tcpreplay-para-la-primera-medicion">4. Injector‑a‑fichero vs. tcpreplay para la primera medición</h3>
+<p><strong>Es legítimo y metodológicamente sólido.</strong> El brief documenta el cuello de botella conocido de VirtualBox: «Message too long», drops de MTU. Hacer tcpreplay en ese entorno mediría principalmente la red virtual, no el pipeline de aRGus. Sería como medir la resistencia de un material con una báscula rota.</p>
+<p>Aislar el pipeline del NIC permite:</p>
+<ul>
+<li>Obtener la <strong>capacidad intrínseca</strong> del correlation‑engine + Kuzu sin factores de confusión.</li>
+<li>Establecer una línea base que, combinada posteriormente con tcpreplay, permitirá <strong>descomponer la pérdida</strong>: si el sistema con tcpreplay pierde X% y el pipeline aislado pierde Y%, la diferencia es atribuible al NIC + sistema operativo virtual.</li>
+<li>Decidir si el NIC virtual es un limitante aceptable para las pruebas posteriores (CTU‑13) o si se necesita un entorno de medición diferente.</li>
+</ul>
+<p>El argumento de que producción tendrá Raspberries + TCP, y que el NIC real podría ser un cuello, es válido, pero ese cuello <strong>se medirá después con tcpreplay/CTU‑13 aceptando el techo conocido de VirtualBox</strong>. No se está ocultando, se está <em>controlando</em> la variable. Lo que no se debe hacer es asumir que el pipeline está bien cuando el 90% de las pérdidas venían del NIC virtual. La estrategia elegida evita precisamente eso.</p>
+<hr />
+<h3 id="5-el-refactor-correlationwriter-libreria-compartida">5. El refactor <code>CorrelationWriter</code> → librería compartida</h3>
+<p><strong>Es el primer ladrillo correcto.</strong> No sobre‑anticipa; extrae una responsabilidad ya identificada y duplicada (el consumidor tiene <code>CorrelationRecord</code>; el productor tiene el protobuf; el injector necesitará generar el mismo formato). El principio de «una piedra, tres muros» está bien aplicado.</p>
+<p>La posible objeción — «el producer real leerá de log y enviará por ZMQ, no serializará desde struct» — no invalida la librería. La serialización a formato <code>correlation_v1</code> (sea CSV+HMAC o Avro en el futuro) es una capa independiente del origen de datos. El <code>argus-adapter-producer</code> leerá del log, construirá un <code>CorrelationV1Row</code> (como hará ml‑detector con su evento) y <em>usará la misma librería</em> para serializarlo y enviarlo. Así se evita tener dos implementaciones de la serialización, que es exactamente la deuda que el brief quiere prevenir.</p>
+<p>Si más adelante se descubre que el producer necesita una variante del formato, la librería compartida es el lugar natural para versionarlo. Pero hoy el contrato es uno, y extraerlo es refactorización de manual, no anticipación excesiva. La alternativa — dejarlo en ml‑detector y luego copiarlo al producer — es técnicamente un error.</p>
+<hr />
+<h3 id="6-hmac-en-el-banco-de-tortura">6. HMAC en el banco de tortura</h3>
+<p><strong>De acuerdo: aquí es correctitud‑de‑medición, no securización de más.</strong> Si el injector no firma con la clave que espera el consumidor, este descarta el 100% de las filas. La tortura mediría entonces una pérdida ficticia total, inutilizando la prueba. La presencia del HMAC garantiza que el flujo de datos no sea detenido por una comprobación de integridad que no es el objeto de estudio.</p>
+<p>La deuda <code>DEBT-BRONZE-KEY-PROVISIONING-001</code> es real, pero manejable con una mitigación simple:</p>
+<ul>
+<li><strong>Clave de banco, no de producción</strong>: Generar un par de claves exclusivo para el entorno de tortura (ej. <code>test_hmac_key</code>), almacenado en un fichero de configuración leído tanto por el injector como por el correlation‑engine. No es un secreto de producción; es un «secreto de laboratorio».</li>
+<li><strong>Inyección de la clave por variable de entorno o ruta de fichero</strong>: El injector recibe <code>BRONZE_HMAC_KEY_FILE=/path/to/test.key</code>. Esto desacopla el banco de la provisión real sin modificar el contrato del HMAC. La deuda se documenta como «el banco requiere una clave compartida; en CI se usa una clave de prueba generada ad‑hoc».</li>
+</ul>
+<p>La pregunta «¿hay forma de que el injector firme con la misma clave sin acoplar el banco a la provisión?» se responde afirmativamente: sí, con una clave de banco explícitamente separada de la infraestructura de secretos de producción. La deuda queda acotada a «el banco no es zero‑trust en la capa HMAC», lo cual es aceptable para un instrumento de medición.</p>
+<hr />
+<p>El Consejo considera que las decisiones propuestas para el día 185 están fundamentadas en evidencia, mantienen el foco en el eje no negociable y protegen la validez del split MITRE. Quedamos a disposición para cualquier escrutinio adicional.</p>
+<p>FDO</p>
+<p>DEEPSEEK</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.top", "search.highlight"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

@@ -1,0 +1,79 @@
+# Patch para sniffer/Makefile - Hardening Flags
+# Aplicar: patch -p0 < Makefile_hardening.patch
+# O copiar manualmente las secciones
+
+# ==============================================================================
+# SECCIÓN A AÑADIR AL INICIO DEL Makefile (después de CXXFLAGS iniciales)
+# ==============================================================================
+
+# ------------------------------------------------------------------------------
+# HARDENING FLAGS - Preparados para Fase de Hardening Post-Papers
+# ------------------------------------------------------------------------------
+# Descomentarlas cuando:
+# 1. Todos los papers estén enviados a revisión
+# 2. Todas las features implementadas
+# 3. Comience la fase de fixing
+#
+# Para activar: descomenta la línea HARDENING_ENABLED y recompila
+# ------------------------------------------------------------------------------
+
+# HARDENING_ENABLED = 1
+
+ifdef HARDENING_ENABLED
+
+# Basic Security (siempre útil, bajo overhead)
+CXXFLAGS += -Wall -Wextra -Werror
+CXXFLAGS += -Wformat=2 -Wformat-security
+CXXFLAGS += -fstack-protector-strong
+CXXFLAGS += -D_FORTIFY_SOURCE=2
+CXXFLAGS += -fPIE
+LDFLAGS += -pie -Wl,-z,relro -Wl,-z,now
+
+# Advanced Warnings (detecta issues sutiles)
+CXXFLAGS += -Wconversion -Wsign-conversion
+CXXFLAGS += -Wnull-dereference
+CXXFLAGS += -Wdouble-promotion
+CXXFLAGS += -Wshadow
+CXXFLAGS += -Wcast-qual
+
+# AddressSanitizer (memory errors)
+# SANITIZER = address
+# CXXFLAGS += -fsanitize=address -fno-omit-frame-pointer
+# LDFLAGS += -fsanitize=address
+
+# ThreadSanitizer (race conditions)
+# SANITIZER = thread
+# CXXFLAGS += -fsanitize=thread
+# LDFLAGS += -fsanitize=thread
+
+# UndefinedBehaviorSanitizer (UB detection)
+# SANITIZER = undefined
+# CXXFLAGS += -fsanitize=undefined
+# LDFLAGS += -fsanitize=undefined
+
+# MemorySanitizer (uninitialized reads)
+# SANITIZER = memory
+# CXXFLAGS += -fsanitize=memory -fno-omit-frame-pointer
+# LDFLAGS += -fsanitize=memory
+
+endif
+
+# ------------------------------------------------------------------------------
+# NOTAS DE USO:
+# ------------------------------------------------------------------------------
+# 1. Fase actual (desarrollo): Todo comentado
+# 2. Fase hardening: Descomentar HARDENING_ENABLED = 1
+# 3. Sanitizers: Usar UNO a la vez, no simultáneos
+#    - make clean && make SANITIZER=address
+#    - ./sniffer [test]
+#    - Repetir con thread, undefined, memory
+# 4. Performance hit:
+#    - Basic security: ~5% overhead
+#    - ASan: ~2× slowdown
+#    - TSan: ~5-15× slowdown
+#    - MSan: ~3× slowdown
+# ------------------------------------------------------------------------------
+
+# ==============================================================================
+# FIN DEL PATCH
+# ==============================================================================

@@ -1,0 +1,1915 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source embedded-ML NDR for hospitals and schools">
+      
+      
+        <meta name="author" content="Alonso Isidoro Roman">
+      
+      
+        <link rel="canonical" href="https://alonsoir.github.io/argus/adr/ADR-058-circuito-completo-aguas-abajo-v3/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>ADR-058 — Circuito completo aguas abajo (medallón: adapters → bronce → LZ → Kuzu → dashboard) - ML Defender (aRGus NDR)</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#adr-058-circuito-completo-aguas-abajo-medallon-adapters-bronce-lz-kuzu-dashboard" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-header__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ML Defender (aRGus NDR)
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              ADR-058 — Circuito completo aguas abajo (medallón: adapters → bronce → LZ → Kuzu → dashboard)
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../README.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/BACKLOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Backlog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Security Model
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-tabs__link">
+          
+  
+  
+  ADRs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/contracts/Protobuf contracts.md" class="md-tabs__link">
+          
+  
+  
+  Contracts
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-nav__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ML Defender (aRGus NDR)
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../README.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/BACKLOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADRs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ADRs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013 Seed Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-021-deployment-topology-seed-families.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-021 Topology SSOT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-022-threat-model-opcion2-descartada.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-022 Threat Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Protobuf contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protobuf
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/JSON contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JSON
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Rag security commands.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-contexto" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Contexto
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-decision-forma-del-oro-ratificada-99-day-197" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Decisión — Forma del oro (ratificada 9/9, DAY 197)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-caminos-del-medallon-y-criterio-de-cierre" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Caminos del medallón y criterio de cierre
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. Caminos del medallón y criterio de cierre">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#31-predicado-de-equivalencia-especificacion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.1 Predicado de equivalencia (especificación)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#32-clausula-de-caducidad-atada-a-108" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.2 Cláusula de caducidad (atada a 10.8)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-evidencia-medida-gate-day-198-99-contra-bytes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Evidencia medida — Gate DAY 198 (9/9 contra bytes)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4. Evidencia medida — Gate DAY 198 (9/9 contra bytes)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#v1-propagacion-de-flow_start_window-al-oro-decision-materializar" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        V1 — Propagación de flow_start_window al oro ✓ (decisión: MATERIALIZAR)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#v2-centinela-1-en-campos-numericos-veredicto-fantasma-en-puertos" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        V2 — Centinela -1 en campos numéricos ✓ (veredicto: FANTASMA en puertos)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#v3-writerreader-resuelven-al-mismo-path-roja-benigna" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        V3 — Writer/reader resuelven al mismo path ✓ (roja BENIGNA)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#v4-precondicion-day194-satisfecha" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        V4 — Precondición day194 ✓ (satisfecha)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#v5-puerto-icmp-en-sniffer-sin-centinela-negativo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        V5 — Puerto ICMP en sniffer ✓ (sin centinela negativo)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#v6-writer-no-remapea-el-puerto-0-atraviesa-limpio" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        V6 — Writer no remapea el puerto ✓ (0 atraviesa limpio)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#v7-verbo-de-escritura-al-grafo-merge-equivalencia-robusta-a-colision" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        V7 — Verbo de escritura al grafo ✓ (MERGE, equivalencia robusta a colisión)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#v8-interpolacion-de-cypher-linea-154-logging-aislado-adr-057-intacto" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        V8 — Interpolación de Cypher (línea 154) ✓ (logging aislado, ADR-057 intacto)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#v9-encoding-canonico-de-flow_uid-resuelta-de-facto" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        V9 — Encoding canónico de flow_uid ✓ (resuelta de facto)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-eslabon-0-primera-implementacion-mismo-pr-que-este-adr" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Eslabón 0 (primera implementación, mismo PR que este ADR)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-deudas-estado-post-gate-day-198" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Deudas (estado post-gate DAY 198)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-consecuencias" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Consecuencias
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-estado-de-ratificacion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. Estado de ratificación
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#9-changelog-v1-v2-day-199" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9. Changelog v1 → v2 (DAY 199)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#10-changelog-v2-v3-day-199-segunda-ronda-adversarial" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10. Changelog v2 → v3 (DAY 199, segunda ronda adversarial)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#correccion-post-v3-day-207" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Corrección post-v3 (DAY 207)
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="adr-058-circuito-completo-aguas-abajo-medallon-adapters-bronce-lz-kuzu-dashboard">ADR-058 — Circuito completo aguas abajo (medallón: adapters → bronce → LZ → Kuzu → dashboard)</h1>
+<ul>
+<li><strong>Estado:</strong> PROPUESTO (v3 — cierre con deudas abiertas registradas; pendiente confirmación del Consejo)</li>
+<li><strong>Fecha:</strong> DAY 199 (hoy)</li>
+<li><strong>Revisión v3 (DAY 199):</strong> segunda ronda adversarial del Consejo incorporada. Lo medible
+  entró (aristas=igualdad de conjuntos; reconciliación window oro↔Kuzu; scores placeholder
+  necesario-no-suficiente); las specs de Flujo A/B inexistente se convirtieron en deudas
+  trazadas (parser cross-language, orden Flujo B, procedencia temporal_anomaly, factoría
+  event_id); el gold-plating se declinó por nombre (§8). Cierre con deudas registradas, no
+  espera de unanimidad incondicional. Detalle en §10.</li>
+<li><strong>Revisión:</strong> v2 (DAY 199) — §3.1 reescrita tras revisión adversarial del Consejo (8 modelos).
+  Las objeciones se midieron contra <code>fichero:línea</code>: tres bloqueantes propuestos cayeron contra
+  el binario (window/seq YA materializadas L101/110; <code>event_id</code>=bronce col 2; scores YA <code>DOUBLE</code>
+  en <code>schema.cypher</code>); el resto se incorporó. Detalle por edición en §9 (changelog).</li>
+<li><strong>Rama:</strong> <code>day196/circuit-adapters-zmq</code></li>
+<li><strong>Supersede / consolida:</strong> <code>PLAN — Circuito completo aguas abajo (DAY 196 → implementación).md</code> (consolidado DAY 197, §10 = decisiones cerradas)</li>
+<li><strong>Relacionado:</strong> ADR-046 v4, ADR-051 (parity gate), ADR-052 (flow_uid identidad multi-nodo), ADR-057 (Kuzu / bitemporalidad)</li>
+<li><strong>Invariante rector:</strong> medir, no votar. Toda decisión de este ADR está trazada a <code>fichero:línea</code> del binario, no a memoria.</li>
+</ul>
+<hr />
+<h2 id="1-contexto">1. Contexto</h2>
+<p>El circuito aguas abajo materializa el flujo completo desde los adaptadores hasta el
+dashboard: <code>adapters → bronce → Landing Zone (medallón) → grafo Kuzu → dashboard</code>.
+La forma del oro fue ratificada 9/9 por el Consejo en DAY 197. Este ADR la sella y
+añade la evidencia medida en el gate de DAY 198 (9 verificaciones contra bytes).</p>
+<p>El supuesto operativo de partida es que la inferencia ML está rota/incompleta
+(DEBT-RANSOMWARE-ML-HEAD-INERT-001): el circuito se cierra primero por el camino que
+<strong>ya existe</strong>, y la re-cualificación de modelos se difiere a post-circuito.</p>
+<hr />
+<h2 id="2-decision-forma-del-oro-ratificada-99-day-197">2. Decisión — Forma del oro (ratificada 9/9, DAY 197)</h2>
+<p><strong>Oro-como-ledger + join en Kuzu (write-time).</strong> El ledger es el ÚNICO oro. Kuzu y
+cualquier wide-table (incl. matriz de features ML, ADR-040) son <strong>proyecciones
+co-iguales reconstruibles</strong>, no oros alternativos. No existe caso para oro-como-join.</p>
+<p>Corolarios cerrados (§10 del plan):</p>
+<ol>
+<li><strong><code>flow_uid</code> es la PK del grafo</strong>, NO <code>community_id</code> (coherencia ADR-052).</li>
+<li><strong><code>node_id</code> / <code>community_id</code> / <code>flow_start_window</code></strong> son columnas de primera clase
+   del oro-ledger (hipótesis del proyecto: contribución por nodo).</li>
+<li><strong>Wazuh</strong> → contrato de dominio host <strong>separado</strong> (host↔red), conectado al grafo por
+   <code>agent_id</code>/IP con método+confianza anotados en la arista (no fusionado en el contrato
+   <code>correlation_v1</code>). Decisión sube antes del Eslabón 1.<blockquote>
+<p>NOTA [medido DAY 198]: el nombre <code>host_domain_v1</code> del prompt de continuidad <strong>no
+aparece en ningún doc del repo</strong>. La deuda canónica de integración Wazuh es
+<code>DEBT-ARGUSPP-WAZUH-001</code> (F4, OPEN); el contrato a crear es
+<code>DEBT-HOST-DOMAIN-CONTRACT-001</code> (P1); el diseño host↔red (Translation node /
+<code>agent_id</code> / NAT, anotando método+confianza) vive en <code>BACKLOG.md:4244,4283</code>. El
+nombre del contrato se define al abrir esa deuda, no aquí.</p>
+</blockquote>
+</li>
+<li><strong>Timestamp se funde en la LZ</strong>, NO en el writer C++.</li>
+<li><strong>ZMQ handoff = PUSH/PULL</strong> (at-least-once), no PUB/SUB.</li>
+<li><strong>Integridad del oro</strong> [medido DAY 198, plan-doc §10.1, líneas 235/258/312]:<ul>
+<li><strong>HMAC-SHA256 por-fila</strong> heredado de bronce como <strong>columna</strong> del oro, verificable
+  contra clave. Replay del grafo coherente en el tiempo ⟺ filas conservan su HMAC.</li>
+<li><strong>Firma del Parquet consolidado como artefacto</strong> — <strong>greenfield, HMAC-SHA256
+  coherente con bronce. NO reutiliza el firmador Ed25519</strong> del pipeline
+  <code>scripts/parquet/</code> (capa RAG-127, contrato distinto). Confundir ambos firmadores
+  es exactamente <code>DEBT-DOCS-MEDALLION-DUALITY-001</code>: RAG-127/Ed25519 (análisis) vs
+  correlación-19/HMAC (grafo). El converter del circuito <strong>no</strong> llama al firmador RAG.</li>
+</ul>
+</li>
+<li><strong><code>event_id</code> = identidad de evento, contrato de unicidad por instalación (decisión
+   consciente DAY 199).</strong> Medido: <code>correlation_writer.cpp:84</code> <strong>copia</strong> <code>event.event_id()</code>
+   (no lo genera); el <code>event_id</code> nace en el productor del evento, aguas arriba del bronce, y
+   viaja como dato (col 2). <strong>Decisión de contrato:</strong> <code>event_id</code> debe ser un identificador
+   único por evento dentro de una <strong>instalación</strong>, emitido por una fuente única (factoría tipo
+   inyección de dependencia) que todos los componentes usan. Se toleran <code>event_id</code> iguales
+   <strong>entre instalaciones distintas</strong> (cada uno pertenece a su instalación; no se cruzan).
+   <strong>Límite declarado:</strong> este contrato NO contempla <strong>fusión de grafos de instalaciones
+   distintas</strong>; si algún día se requiere, se vuelve a la pizarra (no se hace overengineering
+   ahora para un caso no contemplado). El «es UUID único de facto» es hoy un <em>deber-ser</em> del
+   contrato, no un <em>medido</em>; la verificación de que todos los productores lo cumplen se traza
+   en <code>DEBT-EVENT-ID-FACTORY-001</code> (P1). Para el predicado §3.1 esto es irrelevante: ambos
+   caminos leen el mismo <code>event_id</code> del mismo bronce (col 2) → mismo set por construcción,
+   sea cual sea su cardinalidad real.</li>
+</ol>
+<hr />
+<h2 id="3-caminos-del-medallon-y-criterio-de-cierre">3. Caminos del medallón y criterio de cierre</h2>
+<p>Tres caminos (medido DAY 197 — el conector Parquet→Kuzu NO existe ni en prototipo):</p>
+<ul>
+<li><strong>Camino 0</strong> — <code>ifstream</code> bronce → Kuzu. <strong>Ya existe</strong> (<code>correlation-engine/src/main.cpp</code>).</li>
+<li><strong>Flujo A</strong> — bronce → AVRO → Parquet oro. Greenfield.</li>
+<li><strong>Flujo B</strong> — Parquet → Kuzu. Greenfield (Eslabón 2).</li>
+</ul>
+<p><strong>Criterio de cierre del medallón</strong> = test de equivalencia <strong>Camino-0 ≡ Flujo-A+B</strong>.</p>
+<h3 id="31-predicado-de-equivalencia-especificacion">3.1 Predicado de equivalencia (especificación)</h3>
+<p>El único output común a ambas ramas es la <strong>proyección Kuzu</strong>. El predicado se define
+ahí, no sobre representaciones intermedias. <strong>Medido DAY 198</strong> contra
+<code>schema.cypher</code> y <code>cypher_builder.hpp</code>: el grafo tiene 3 tablas de nodo
+(<code>NetworkFlow</code> PK=<code>flow_uid</code>, <code>Alert</code>/<code>TelemetryEvent</code> PK=<code>event_id</code>) y 3 relaciones
+(<code>ALERT_ABOUT</code>, <code>TELEMETRY_ABOUT</code>, <code>CORRELATES_FLOW</code>). Un predicado solo sobre
+<code>flow_uid</code> sería <strong>demasiado estrecho</strong> (dos grafos pueden coincidir en flujos y diferir
+en alerts, scores o aristas). El predicado completo:</p>
+<p>El predicado compara solo propiedades <strong>deterministas-de-dato</strong> (derivan del
+bronce; idénticas entre ejecuciones). Excluye explícitamente las propiedades
+<strong>deterministas-de-ejecución</strong> (derivan del reloj/orden del run; divergen entre
+corridas <strong>por diseño, no por bug</strong>). La partición está trazada a <code>fichero:línea</code>
+(ver «Partición de propiedades» más abajo).</p>
+<pre><code>EQUIV(Camino0, FlujoA+B) :=
+   set(flow_uid)_C0                  == set(flow_uid)_AB         # NetworkFlow (PK, V9)
+ ∧ set(event_id)_C0                  == set(event_id)_AB         # Alert ∪ TelemetryEvent
+                                                                 #   (event_id = bronce col 2, ver nota)
+ ∧ ∀ uid: props_identidad(uid)_C0    == props_identidad(uid)_AB  # node_id, community_id,
+                                                                 #   flow_start_window, seq_in_window
+                                                                 #   (materializadas L101/110, ver nota)
+ ∧ ∀ eid: props_veredicto(eid)_C0    == props_veredicto(eid)_AB  # final_classification, threat_category,
+                                                                 #   3 scores double, authoritative_source
+                                                                 #   double BIT-EXACTOS por defecto (ver nota)
+ ∧ set((tipo, from_uid, to_eid, method, confidence))_C0                  # aristas: IGUALDAD
+      == set((tipo, from_uid, to_eid, method, confidence))_AB            #   DE CONJUNTOS,
+                                                                 #   bidireccional (ver nota aristas)
+                                                                 #   tipo ∈ {ALERT_ABOUT, TELEMETRY_ABOUT, CORRELATES_FLOW}
+ # EXCLUIDAS (clase determinista-de-ejecución, NO van al predicado):
+ #   ingested_at      — wall-clock per-fila (kuzu_graph_sink.hpp:47)
+ #   temporal_anomaly — deriva de ingested_at (cypher_builder.hpp:86)
+ # hmac_row NO está en este predicado: no vive en la proyección Kuzu (0 hits en
+ # schema.cypher). Se verifica aparte como integridad bronce↔oro (ver nota HMAC).
+</code></pre>
+<p><strong>Partición de propiedades (medido DAY 199 contra <code>cypher_builder.hpp</code>,
+<code>kuzu_graph_sink.hpp</code>, <code>correlation_reader.cpp</code>, <code>schema.cypher</code>):</strong></p>
+<table>
+<thead>
+<tr>
+<th>Clase</th>
+<th>Propiedades</th>
+<th>Traza</th>
+<th>En predicado</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>D — determinista-de-dato</strong></td>
+<td><code>flow_uid</code>, <code>event_id</code>, <code>node_id</code>, <code>community_id</code>, <code>flow_start_window</code>, <code>seq_in_window</code>, <code>final_classification</code>, <code>threat_category</code>, <code>fast_detector_score</code>, <code>ml_detector_score</code>, <code>overall_threat_score</code>, <code>authoritative_source</code>, <code>method</code>, <code>confidence</code></td>
+<td><code>cypher_builder.hpp:101-103,110-112</code>; <code>event_id</code>=<code>correlation_reader.cpp:85</code> (col 2); aristas=<code>schema.cypher:71-73</code></td>
+<td><strong>SÍ</strong> (<code>==</code>, bit-exacto en doubles)</td>
+</tr>
+<tr>
+<td><strong>E — determinista-de-ejecución</strong></td>
+<td><code>ingested_at</code>, <code>temporal_anomaly</code></td>
+<td><code>kuzu_graph_sink.hpp:47</code> (<code>ingest_now_ns()</code> per-fila); <code>cypher_builder.hpp:86</code> (<code>window_to_epoch_nanos(window) &gt; ingested_at_ns + margen</code>)</td>
+<td><strong>NO</strong> (divergen entre corridas por diseño)</td>
+</tr>
+</tbody>
+</table>
+<p>Razón de la exclusión: la equivalencia de dos <strong>caminos</strong> debe definirse sobre lo que
+deriva del <strong>dato</strong>, no sobre cuándo corrió cada camino. <code>ingested_at</code> se sella con
+<code>CLOCK_REALTIME</code> a la entrada del sink (per-fila); dos ejecuciones producen relojes
+distintos. <code>temporal_anomaly</code> es un <code>bool</code> que <strong>parece</strong> determinista-de-dato (deriva
+de <code>window</code>) pero su fórmula toca <code>ingested_at</code> (<code>cypher_builder.hpp:86</code>), luego hereda
+el no-determinismo para flujos cuya window cae cerca del instante de ingestión. Incluir
+cualquiera de las dos en el predicado lo haría fallar entre Camino 0 y Flujo A+B <strong>sin
+que exista bug alguno en el converter</strong>. La verificación correcta de <code>temporal_anomaly</code>
+no es equivalencia-entre-caminos sino un <strong>test unitario de la fórmula</strong> (mismo <code>window</code>
++ mismo <code>ingested_at</code> fijo ⇒ mismo bool); se traza en
+<code>DEBT-CIRCUIT-TEMPORAL-ANOMALY-PARITY-001</code> (P2).</p>
+<p><strong>Nota — <code>event_id</code> y window/seq son datos del bronce, no generados aguas abajo
+(medido DAY 199):</strong> objeción del Consejo (varios modelos): «<code>event_id</code> podría ser UUID
+v4 → los sets nunca coinciden» y «Camino 0 no escribe <code>flow_start_window</code>/<code>seq_in_window</code>
+→ el predicado falla por construcción». <strong>Ambas caen contra el binario.</strong>
+<code>event_id</code> se lee como <strong>columna 2 del bronce</strong> (<code>correlation_reader.cpp:85</code>:
+<code>r.event_id = f[2]</code>; struct <code>correlation_record.hpp:14</code> lo marca <code>// 2</code>): viaja como
+dato, igual que <code>flow_uid</code>; ambos caminos leen el mismo <code>f[2]</code> → mismo set por
+construcción. (Matiz: <code>ingest_clock.hpp:6</code> indica que el wall-clock compone el
+<code>event_id</code> en el <strong>productor</strong>, aguas arriba del bronce; irrelevante para la
+equivalencia, que empieza una vez el valor ya está escrito en bronce.)
+<code>flow_start_window</code> y <code>seq_in_window</code> <strong>sí se materializan</strong> como propiedades del nodo
+en Camino 0 (<code>cypher_builder.hpp:101,110</code>: <code>ON CREATE SET f.flow_start_window=...,
+f.seq_in_window=...</code>): no se computan-y-tiran, se computan en read-time <strong>y</strong> se
+escriben. El predicado <code>props_identidad ==</code> se sostiene porque ambos caminos las emiten.</p>
+<p><strong>Nota — igualdad de los scores: BIT-EXACTA por defecto (medido DAY 198):</strong> los 3
+<code>double</code> (cols 14-16) se comparan <strong>bit a bit</strong>, no con tolerancia. Justificación medida,
+no supuesta: ambos caminos parten del <strong>mismo</strong> double — el de <code>parse_double</code> sobre el
+<strong>mismo bronce CSV</strong> (Camino 0 y Flujo A leen el mismo texto; la degradación texto→double,
+si la hay, es idéntica en ambos y se cancela en el predicado). El único tramo donde
+difieren es AVRO→Parquet→conector, y ese tramo es <strong>lossless por tipo</strong>: AVRO <code>double</code> y
+el tipo físico <code>DOUBLE</code> de Parquet son ambos IEEE 754 binary64 — la misma representación
+que un <code>double</code> de C++. Un round-trip double→AVRO→Parquet→double <strong>preserva los bits</strong>
+salvo que el converter (a) trunque a <code>float32</code>, (b) recompute el score en oro en vez de
+copiarlo, o (c) reformatee vía texto intermedio. Esos tres son <strong>exactamente los bugs que
+el test debe cazar</strong> — una ε los enmascararía. (El path de logging ya fuerza
+<code>precision(17)</code> + <code>locale::classic()</code> en <code>cypher_builder.hpp:151</code>: el único punto de
+pérdida real es texto, y ahí ya está cubierto.)</p>
+<blockquote>
+<p><strong>Necesario, no suficiente, mientras el ML head esté inerte (medido DAY 199, P1).</strong>
+El supuesto operativo (§1, <code>DEBT-RANSOMWARE-ML-HEAD-INERT-001</code>) es que la inferencia
+está incompleta. Medido: hoy hay scores <strong>placeholder</strong> en el pipeline ML
+(<code>ml-detector/src/main.cpp:419</code>: <code>.temporal_anomaly_score = 0.5f</code> constante). Si las
+columnas de score del bronce son valores fijos o degenerados, el predicado bit-exacto
+sobre ellas <strong>pasa trivialmente</strong> (<code>0.5 == 0.5</code> por ambos caminos) y <strong>no ejercita el
+camino de scores que varían</strong>. El test es por tanto <strong>necesario</strong> (cualquier divergencia
+de serialización lo rompe) pero <strong>no suficiente</strong> para declarar el path de scores
+verificado: prueba que el converter no corrompe un double, no que preserve la <em>variación</em>
+de scores reales que hoy no existen. <strong>Cláusula:</strong> el cierre del medallón sobre scores
+no-triviales se <strong>re-valida</strong> cuando la inferencia esté viva (post-<code>ML-HEAD-INERT</code>), con
+un dataset de scores variados. Trazado en <code>DEBT-CIRCUIT-SCORE-NONTRIVIAL-REVAL-001</code> (P1).</p>
+<p><strong>Cláusula de escape de ε (condicionada a medición, no a priori):</strong> ε se introduce
+<strong>solo si</strong> la medición sobre el Flujo-A real exhibe no-bit-exactitud <strong>con causa
+entendida y benigna</strong> (p.ej. una cuantización inevitable y documentada del converter).
+Entonces ε se <strong>deriva de esa cuantización medida</strong> — no es un número a ojo — y se
+documenta la fuente. Hasta entonces el criterio es <code>==</code>. Esto honra "medir, no votar":
+no ratificamos hoy una tolerancia para una pérdida no medida que el análisis de tipos
+predice <strong>inexistente</strong>.</p>
+<p><strong>Guarda de comparación: una sola regla canónica para los bordes IEEE 754
+(medido DAY 199, P2).</strong> Pasar de <code>≈ε</code> a <code>==</code> aflora dos bordes que con ε quedaban
+ocultos (igual de rotos, pero invisibles). <strong>No pueden tratarse con la misma
+primitiva</strong> — y este es el error que hay que evitar:
+- <strong>NaN:</strong> <code>NaN != NaN</code>. Un <code>==</code> crudo falla aunque ambos lados sean NaN.
+- <strong>Cero con signo:</strong> <code>-0.0</code> y <code>+0.0</code> son <strong>bit-distintos</strong> (<code>0x8000…0</code> vs <code>0x0</code>) pero
+  numéricamente iguales. Un <code>==</code> crudo los iguala (oculta divergencia de bits); un
+  <code>memcmp</code> crudo de 8 bytes los <strong>separa</strong> (falsa divergencia). Por eso <code>memcmp</code> solo
+  —como se proponía— es incorrecto: rompe el caso <code>-0.0</code>.</p>
+<p><strong>Regla única:</strong> comparar sobre el <strong>patrón de bits canonicalizado</strong>, donde
+canonicalización = { todo NaN → un único patrón quiet <code>0x7ff8000000000000</code>;
+<code>-0.0</code> → <code>+0.0</code> }. Sobre ese patrón, <code>==</code> bit a bit. Una sola regla coherente para
+los tres casos (finitos, NaN, ceros). Ambos caminos deben canonicalizar <strong>antes</strong> de
+comparar; el converter Flujo A aplica la misma canonicalización. (Apunte medido: la
+serialización a AVRO/Parquet puede mutar el <em>payload</em>/signo del NaN —signaling→quiet—,
+por eso la canonicalización a un patrón único es necesaria, no opcional.)</p>
+<p><strong>Punto único de canonicalización (DAY 199, objeción Qwen/ChatGPT/Gemini):</strong> para no
+dejar el grafo Kuzu con valores no-canónicos (que romperían cualquier consulta posterior
+que compare scores sin canonicalizar), la canonicalización se aplica <strong>una sola vez, en
+el converter Flujo A al escribir</strong> (no solo en el test). Una <strong>única función compartida</strong>
+(no dos implementaciones que puedan divergir con el tiempo). El test de equivalencia
+<strong>asume grafos ya canónicos</strong> y no re-canonicaliza. Tensión consciente registrada por
+Gemini: canonicalizar en escritura significa que un <code>-0.0</code> legítimo del bronce se
+persiste como <code>+0.0</code> — se acepta como pérdida benigna y documentada (el signo del cero
+no porta semántica de score), NO como divergencia a cazar. No bloquea el cierre.</p>
+</blockquote>
+<p><strong>Nota — robustez a colisión <code>flow_uid</code> (medido DAY 198):</strong> el sink usa <strong>MERGE</strong> en
+ambos paths (<code>cypher_builder.hpp:100,154</code>), con <strong>solo <code>ON CREATE SET</code>, sin
+<code>ON MATCH SET</code></strong> (8 ocurrencias CREATE, 0 MATCH). Consecuencia: ante dos flujos que
+hashean al mismo <code>flow_uid</code> (colisión por <code>seq_in_window=0</code>,
+<code>DEBT-FLOWUID-SEQ-COLLISION-001</code>), el segundo hace MATCH puro y sus propiedades se
+<strong>descartan de forma idéntica en ambos caminos</strong>. Por tanto la <strong>equivalencia se
+sostiene</strong> ante colisión — Camino 0 y Flujo A+B producen el mismo grafo, <strong>bajo una
+precondición medida</strong> (ver abajo). La colisión es deuda de <strong>fidelidad</strong> (se pierde un
+flujo real, P2), NO de <strong>equivalencia</strong> (ambos caminos pierden el mismo). El medallón
+<strong>no queda bloqueado</strong> por ella.</p>
+<blockquote>
+<p><strong>Precondición de la robustez (objeción del Consejo, aceptada): orden de inserción
+determinista.</strong> El argumento «ambos descartan idénticamente» solo se sostiene si, ante
+colisión <code>flow_uid</code>, <strong>el mismo flujo gana el <code>ON CREATE SET</code> en ambos caminos</strong> — y eso
+depende del <strong>orden de inserción</strong>. Camino 0 es <code>ifstream</code> secuencial (orden = líneas
+del bronce). Flujo B (Parquet→Kuzu, greenfield) podría insertar en paralelo/bulk, en cuyo
+caso ganaría un flujo distinto y el predicado rompería <strong>por carrera de arquitectura, no
+por bug del converter</strong>. <strong>Decreto:</strong> el Flujo B inserta en orden determinista por
+<code>(flow_start_window, seq_in_window)</code> antes del sink Kuzu; el test de equivalencia asume y
+verifica esta precondición. Sin orden determinista, el predicado mide la convergencia del
+sink bajo un orden concreto, no la equivalencia de los caminos.
+Relacionado: <code>DEBT-NEO4J-FLOW-KEY-COMPOSITE-001</code> (PK compuesta <code>(flow_uid, seq)</code> aún no
+implementada — el schema usa PK simple). Sobre <code>DEBT-FLOWUID-CANONICAL-ENCODING-001</code>
+<strong>[medido DAY 198, <code>flow_uid.hpp</code>]: resuelta de facto.</strong> El encoding
+(<code>encode_flow_input</code>) es canónico, self-describing e inyectivo por construcción:
+length-prefix <code>uint16</code> BE antes de cada string variable (sin separador → imposible
+colisión de encoding entre <code>node_id</code>/<code>community_id</code>), <code>window</code> y <code>seq</code> como enteros
+<strong>big-endian de ancho fijo</strong> (<code>put_be64</code>/<code>put_be32</code>, no string decimal → sin ambigüedad
+cross-language), tag de versión <code>"argus-flowuid-v1"</code> (16B) prefijado al input (el
+esquema se versiona dentro del hash), BLAKE2b-256 sin truncado (<code>static_assert</code>
+digest_size=32). <strong>Vectores congelados verificados byte-idénticos C++ ↔
+<code>hashlib.blake2b</code></strong> — la paridad cross-language ya existe. Consecuencia para el
+predicado: <code>set(flow_uid)_C0 == set(flow_uid)_AB</code> <strong>no puede fallar por encoding</strong>; solo
+por colisión <code>seq</code> (neutralizada por MERGE para equivalencia) o por bug del converter
+(que es lo que el test debe cazar). Acción residual: el converter Flujo A <strong>reusa</strong>
+<code>encode_flow_input</code> (o, si es Python, los vectores golden congelados), no reimplementa.</p>
+<p><strong>Precondición de bit-exacto en el tramo texto→double (DAY 199, objeción GLM, aceptada
+como precondición trazada — no bloqueante):</strong> la justificación bit-exacta asume que ambos
+caminos parten del <strong>mismo</strong> double al parsear el <strong>mismo</strong> texto del bronce. Eso exige
+que ambos usen un parser texto→double con <strong>el mismo redondeo</strong>. Camino 0 usa C++
+<code>std::from_chars</code> (C++17: <em>correct rounding</em> garantizado). Si el converter Flujo A es
+<strong>Python</strong>, <code>float()</code> delega en <code>strtod</code> de la libc del sistema, que <strong>no</strong> garantiza
+correct-rounding en todos los bordes (subnormales, &gt;17 dígitos significativos) según la
+libc (glibc histórico, vs musl). Para esos valores límite, ambos lados pueden producir
+bits distintos del <strong>mismo</strong> texto, y el predicado <code>==</code> fallaría <strong>sin bug del converter</strong>.
+Este tramo (CSV→double) es distinto del tramo AVRO→Parquet (que sí está analizado por
+tipo). <strong>Decreto:</strong> el converter Flujo A usa un parser texto→double con correct-rounding
+equivalente a <code>from_chars</code> (p.ej. C++ reusando <code>parse_double</code>; o, si es Python,
+<code>numpy</code>/<code>fast_float</code>/parser correct-rounding <strong>no</strong> <code>float()</code> ingenuo en bordes). Si por
+diseño acaba siendo Python con parser no garantizado, el gate añade un paso previo:
+parsear todos los doubles del bronce con ambos runtimes y medir <code>max|d_cpp − d_py|</code>; si
+<code>&gt; 0 ULP</code>, se deriva <code>ε_parse</code> de esa medición (cláusula de escape ε, §3.1) <strong>con causa
+medida</strong>. Trazado en <code>DEBT-CIRCUIT-PARSER-CROSSLANG-001</code> (P1). No bloquea: el lenguaje del
+Flujo A aún no está decidido; la precondición viaja con la decisión.</p>
+</blockquote>
+<p><strong>Nota — HMAC: integridad bronce↔oro, NO cláusula del predicado (medido DAY 199):</strong>
+objeción del Consejo (DeepSeek), <strong>aceptada</strong>. El predicado V1 incluía
+<code>∀ fila: hmac_row preservado</code>, pero <code>hmac</code> tiene <strong>0 ocurrencias en <code>schema.cypher</code></strong>: el
+grafo Kuzu <strong>no almacena HMAC</strong>, ni por Camino 0 ni por Flujo A+B. Una cláusula sobre la
+proyección Kuzu que referencia un campo ausente de Kuzu es <strong>inverificable</strong> donde estaba.
+Corrección: <code>hmac_row</code> <strong>sale del predicado de equivalencia</strong> (§3.1) y se reubica como
+<strong>control de integridad bronce↔oro-ledger</strong> — se verifica que cada fila del oro conserva el
+HMAC heredado del bronce (§2 corolario 6), de forma independiente al test
+Camino-0 ≡ Flujo-A+B. La definición del mecanismo (clave, alcance por-fila vs por-artefacto)
+vive en <code>DEBT-GOLD-INTEGRITY-HMAC-001</code> (P0).</p>
+<p><strong>Nota — aristas: igualdad de conjuntos, no «coinciden» (medido DAY 199, objeción
+GLM/DeepSeek/Mistral aceptada):</strong> la v2 escribía «aristas coinciden (con
+method/confidence)», ambiguo entre <em>subconjunto</em> (∀ arista ∈ C0 → ∃ en AB; AB puede
+tener aristas extra) e <em>igualdad de conjuntos</em> (bidireccional). La lectura débil es
+insuficiente: si Flujo A+B produjera aristas fantasma (correlaciones que Camino 0 no
+tiene), un test de subconjunto pasaría y el dashboard mostraría relaciones falsas.
+<strong>Especificación exacta:</strong> el predicado exige <strong>igualdad de conjuntos bidireccional</strong>
+sobre la tupla <code>(tipo, from_uid, to_eid, method, confidence)</code> que identifica unívocamente
+cada arista (campos medidos en <code>schema.cypher:71-73</code>: las tres REL TABLE llevan <code>method
+STRING, confidence DOUBLE</code>; <code>CORRELATES_FLOW</code> añade <code>community_id STRING</code>). <code>method</code> y
+<code>confidence</code> son clase D (determinista-de-dato): hoy <code>cypher_builder.hpp:105,114</code> los fija
+constantes (<code>method='direct'</code>, <code>confidence=1.0</code>); cuando el join los module
+(<code>DEBT-JOIN-CONFIDENCE-001</code>) seguirán siendo deterministas mientras el join lo sea (atado
+a §3.2). <code>confidence</code> se compara <strong>bit-exacto</strong> como los demás doubles (misma guarda
+canónica NaN/<code>-0.0</code>).</p>
+<h3 id="32-clausula-de-caducidad-atada-a-108">3.2 Cláusula de caducidad (atada a 10.8)</h3>
+<p>El predicado §3.1 es <strong>válido mientras el join sea determinista</strong> (hoy: parámetros en
+JSON → propiedad mantenida). Al activar <code>DEBT-JOIN-CONFIDENCE-001</code> (join adaptativo /
+no-determinista), dos caminos pueden tomar decisiones de join distintas y la
+equivalencia rompe <strong>por diseño, no por bug</strong>. En ese momento el predicado debe
+revisarse (probablemente relajarse a equivalencia sobre el subconjunto determinista +
+banda de tolerancia en el join confidence).</p>
+<hr />
+<h2 id="4-evidencia-medida-gate-day-198-99-contra-bytes">4. Evidencia medida — Gate DAY 198 (9/9 contra bytes)</h2>
+<blockquote>
+<p>Cada fila está trazada al binario. Ninguna afirmación se apoya en memoria.</p>
+</blockquote>
+<h3 id="v1-propagacion-de-flow_start_window-al-oro-decision-materializar">V1 — Propagación de <code>flow_start_window</code> al oro  ✓ (decisión: MATERIALIZAR)</h3>
+<ul>
+<li><strong>Medido (reader):</strong> <code>correlation-engine/src/main.cpp:117</code> computa
+  <code>window = window_micros(flow_start_sec, flow_start_nano)</code> en <strong>read-time</strong>. La window
+  es input del hash (<code>compute_flow_uid(node_id, community_id, window)</code>, <code>main.cpp:118</code>),
+  no una columna.</li>
+<li><strong>Medido (writer):</strong> <code>ml-detector/src/correlation_writer.cpp:88-89</code> escribe
+  <code>flow_start_sec = ts.seconds()</code> y <code>flow_start_nano = ts.nanos()</code> por separado;
+  <strong>nunca</strong> un <code>flow_start_window</code>. Confirmado por ambos extremos: la window es 100%
+  derivada, no existe en el contrato.</li>
+<li><strong>Decisión:</strong> materializar <code>flow_start_window</code> como <strong>columna hash-input del oro</strong>,
+  junto a <code>node_id</code> (col 3) y <code>community_id</code> (col 4). Sin esto, una fila del ledger no
+  es re-verificable independientemente: el día que cambie el bucketing de
+  <code>window_micros()</code>, el <code>flow_uid</code> re-derivado deja de coincidir con el que entró al
+  hash. Es <strong>precondición de Via Appia</strong>, no preferencia.<blockquote>
+<p><strong>Precisión (DAY 199, reconcilia §3.1):</strong> «no existe en ningún extremo» se refiere
+a la <strong>columna del oro-ledger Parquet</strong> (Flujo A, greenfield: nada que migrar ahí).
+NO contradice §3.1: <code>flow_start_window</code> <strong>sí</strong> se materializa hoy como <strong>propiedad
+del nodo Kuzu</strong> en Camino 0 (<code>cypher_builder.hpp:101,110</code>, <code>ON CREATE SET</code>). Son dos
+sitios distintos — proyección Kuzu (ya escrita) ≠ columna del Parquet oro (greenfield).
+La decisión V1 materializa la columna <strong>del Parquet oro</strong>; la propiedad del nodo ya
+existe. Ambas afirmaciones son ciertas sobre sitios distintos.</p>
+</blockquote>
+</li>
+<li><strong>Deuda:</strong> <code>DEBT-GOLD-NODE-DIMENSION-001</code> se amplía para incluir <code>flow_start_window</code>
+  como 4º hash-input materializado.</li>
+</ul>
+<h3 id="v2-centinela-1-en-campos-numericos-veredicto-fantasma-en-puertos">V2 — Centinela <code>-1</code> en campos numéricos  ✓ (veredicto: FANTASMA en puertos)</h3>
+<p>Cadena medida extremo a extremo:</p>
+<ul>
+<li><strong>Proto:</strong> <code>protobuf/network_security.proto:105-106</code> → <code>uint32 source_port</code>,
+  <code>uint32 destination_port</code>. Estructuralmente <strong>no puede transportar <code>-1</code></strong>.</li>
+<li><strong>Sniffer:</strong> <code>ring_consumer.cpp:874-875</code> y <code>main_libpcap.cpp:130-137</code> asignan el
+  puerto vía <code>ntohs()</code> (→ <code>uint16</code>) o campo unsigned. ICMP usa puerto <strong><code>0</code></strong>
+  (<code>test_community_id.cpp:62</code>: <code>compute_community_id(..., 0, 0, 1)</code>), no <code>-1</code>.</li>
+<li><strong>Writer:</strong> <code>correlation_writer.cpp:91-92</code> copia <code>nf.source_port()</code> directo al Row,
+  sin remapeo. <code>"0"</code> se serializa tal cual.</li>
+<li><strong>Reader:</strong> <code>correlation_reader.cpp</code> <code>parse_num&lt;uint32_t&gt;</code> con <code>std::from_chars</code>
+  acepta <code>"0"</code>. Fila <strong>sobrevive</strong>.</li>
+</ul>
+<p><strong>Conclusión:</strong> no hay descarte silencioso de filas ICMP. El centinela <code>-1</code> que se
+temía no existe en <code>src_port</code>/<code>dst_port</code>. <strong>NO se cambian los tipos</strong> (<code>uint32_t</code> se
+mantiene): cambiarlos a signed introduciría divergencia con el proto y una rama de
+centinela que ningún productor alimenta.</p>
+<p><strong>Riesgo residual (P2):</strong> <code>flow_start_sec</code> (<code>int64_t</code>) y <code>flow_start_nano</code> (<code>int32_t</code>)
+<strong>sí</strong> son signed (<code>correlation_record.hpp:14-15</code>). Un <code>-1</code> ahí sobrevive como valor y
+se propagaría al hash vía <code>window_micros(-1,-1)</code> sin marca de centinela. Riesgo
+<strong>semántico</strong>, no de pérdida de fila.</p>
+<p><strong>Trampa documental (P2):</strong> el comentario de <code>correlation_reader.hpp:12</code> colapsa
+"campo numérico ilegible" sin distinguir corrupto de centinela. Inocuo hoy (no hay
+centinela en los unsigned); trampa para un campo unsigned futuro con centinela <code>-1</code>.</p>
+<ul>
+<li><strong>Deuda:</strong> <code>DEBT-PARSE-VERIFY-SENTINEL-001</code> <strong>degradada P0 → P2</strong>. Acción: documentar
+  que el contrato usa <code>0</code> para puerto-ausente; documentar la asimetría
+  signed(sec/nano)/unsigned(puertos); vigilar campos unsigned futuros.</li>
+</ul>
+<h3 id="v3-writerreader-resuelven-al-mismo-path-roja-benigna">V3 — Writer/reader resuelven al mismo path  ✓ (roja BENIGNA)</h3>
+<ul>
+<li><strong>Writer:</strong> <code>correlation_writer.cpp:177</code> →
+  <code>return config_.base_dir + "/" + date + ".csv"</code> (rota por fecha).</li>
+<li><strong>Reader:</strong> <code>main.cpp:60-68,104</code> abre un <strong>único path fijo</strong> (<code>--bronze</code> o
+  <code>ARGUS_BRONZE_CSV</code>) con un solo <code>ifstream in(bronze_path)</code>.</li>
+<li><strong>Rotation-follow roto (medido):</strong> <code>main.cpp:125-132</code> hace <code>in.clear(); drain()</code>
+  sobre el <strong>mismo</strong> handle. Cuando el writer rota a medianoche al fichero del día
+  siguiente, el reader sigue tailando el de ayer y <strong>nunca ve el nuevo</strong>.</li>
+<li><strong>Veredicto:</strong> roja con causa conocida y <strong>parche ya planificado</strong> (Eslabón 0:
+  watcher <code>inotify</code>/<code>IN_CLOSE_WRITE</code>). No bloquea el ADR; lo justifica.</li>
+<li><strong>Deudas P0 confirmadas:</strong> <code>DEBT-CIRCUIT-BRONZE-ROTATION-FOLLOW-001</code>,
+  <code>DEBT-CONFIG-BRONZE-HARDCODE-001</code> (fuentes de config divergentes: writer = JSON
+  <code>base_dir</code>, reader = env/arg; sincronizados a mano).</li>
+</ul>
+<h3 id="v4-precondicion-day194-satisfecha">V4 — Precondición day194  ✓ (satisfecha)</h3>
+<ul>
+<li><strong>Medido:</strong> <code>remotes/origin/day194/ransomware-provenance-desync</code> existe; <strong>PR #107
+  mergeado</strong> (commit <code>77a3de9c</code>), con DAY194/195 dentro (provenance audit + desync
+  dirimido + lab firetest spec). El trabajo está integrado.</li>
+<li>La precondición del plan ("confirmar que day194 está cerrada") apuntaba al nombre
+  <strong>local</strong> (inexistente); la rama real es remota y ya mergeada. <strong>No hay bloqueo.</strong></li>
+<li><strong>Limpieza opcional (no bloqueante):</strong> borrar la rama remota efímera post-merge.</li>
+</ul>
+<h3 id="v5-puerto-icmp-en-sniffer-sin-centinela-negativo">V5 — Puerto ICMP en sniffer  ✓ (sin centinela negativo)</h3>
+<p>Cubierto en V2: ICMP usa <code>0</code> (<code>test_community_id.cpp:62</code>), no <code>-1</code>.</p>
+<h3 id="v6-writer-no-remapea-el-puerto-0-atraviesa-limpio">V6 — Writer no remapea el puerto  ✓ (<code>0</code> atraviesa limpio)</h3>
+<p>Cubierto en V2: <code>correlation_writer.cpp:91-92</code> copia directa sin transformar.</p>
+<h3 id="v7-verbo-de-escritura-al-grafo-merge-equivalencia-robusta-a-colision">V7 — Verbo de escritura al grafo  ✓ (MERGE, equivalencia robusta a colisión)</h3>
+<ul>
+<li><strong>Medido:</strong> <code>cypher_builder.hpp:100-114</code> (path producción, prepared <code>$param</code>) y
+  <code>:154-179</code> (path logging, interpolado) usan <strong>MERGE</strong> sobre <code>NetworkFlow {flow_uid}</code> y
+  <code>Alert/TelemetryEvent {event_id}</code>. Solo <code>ON CREATE SET</code>, <strong>cero <code>ON MATCH SET</code></strong>.</li>
+<li><strong>Consecuencia para §3.1:</strong> colisión <code>flow_uid</code> → segundo flujo descartado idéntico en
+  ambos caminos → equivalencia robusta (ver nota §3.1). Fidelidad P2, no bloqueante.</li>
+</ul>
+<h3 id="v8-interpolacion-de-cypher-linea-154-logging-aislado-adr-057-intacto">V8 — Interpolación de Cypher (línea 154)  ✓ (logging aislado, ADR-057 intacto)</h3>
+<ul>
+<li><strong>Medido:</strong> la interpolación de string <code>{flow_uid:'" &lt;&lt; fuid &lt;&lt; "'}</code> vive <strong>solo</strong> en
+  <code>build_cypher()</code>, que alimenta <code>logger_-&gt;info("[CYPHER] {}", ...)</code>
+  (<code>logging_graph_sink.cpp:27</code>) — <strong>no toca BD</strong>. Producción (<code>KuzuGraphSink</code>) usa
+  exclusivamente prepared statements parametrizados (<code>kuzu_graph_sink.cpp:90-96</code>).</li>
+<li><code>cypher_builder.hpp:46</code> documenta el invariante: producción y logging comparten
+  <code>make_bindings()</code> → no pueden divergir. <code>:122</code> marca el <code>esc()</code> como defensa del log,
+  NO como frontera de seguridad. <strong>No hay regresión de ADR-057</strong> (Cypher injection).</li>
+</ul>
+<h3 id="v9-encoding-canonico-de-flow_uid-resuelta-de-facto">V9 — Encoding canónico de <code>flow_uid</code>  ✓ (resuelta de facto)</h3>
+<ul>
+<li><strong>Medido (<code>flow_uid.hpp</code>):</strong> <code>encode_flow_input</code> es canónico e inyectivo:
+  length-prefix <code>uint16</code> BE por string (sin separador), <code>window</code>/<code>seq</code> como enteros BE
+  de ancho fijo (<code>put_be64</code>/<code>put_be32</code>), tag de versión <code>"argus-flowuid-v1"</code> (16B)
+  prefijado, BLAKE2b-256 sin truncado (<code>static_assert</code> digest_size=32).</li>
+<li><strong>Paridad cross-language ya congelada:</strong> vectores verificados byte-idénticos contra
+  <code>hashlib.blake2b(digest_size=32)</code>. El converter Flujo A no puede divergir si reusa el
+  encoding. → <code>set(flow_uid)</code> no falla por encoding; <code>DEBT-FLOWUID-CANONICAL-ENCODING-001</code>
+  resuelta de facto (acción residual: no-duplicación, ver §3.1).</li>
+</ul>
+<hr />
+<h2 id="5-eslabon-0-primera-implementacion-mismo-pr-que-este-adr">5. Eslabón 0 (primera implementación, mismo PR que este ADR)</h2>
+<p>Config bronce a JSON (<code>bronze_root</code> + patrón naming, calcado de <code>csv_writer</code>
+<code>config_loader.cpp:455</code>) + watcher <code>inotify</code>/<code>IN_CLOSE_WRITE</code> + escritura atómica
+<code>.tmp</code> → rename + cierre por tiempo absoluto.</p>
+<p>Cierra: <code>DEBT-CONFIG-BRONZE-HARDCODE-001</code> + <code>DEBT-CIRCUIT-BRONZE-ROTATION-FOLLOW-001</code>
+(ambas P0).</p>
+<hr />
+<h2 id="6-deudas-estado-post-gate-day-198">6. Deudas (estado post-gate DAY 198)</h2>
+<blockquote>
+<p>Nombres verificados contra <code>grep -rhoE 'DEBT-[A-Z0-9-]+' docs/ | sort -u</code> (DAY 198):
+todos existen literalmente en el repo. No hay nombre inventado de memoria.</p>
+</blockquote>
+<p><strong>P0:</strong>
+- <code>DEBT-CIRCUIT-BRONZE-ROTATION-FOLLOW-001</code> (medida V3 — Eslabón 0)
+- <code>DEBT-CONFIG-BRONZE-HARDCODE-001</code> (medida V3 — Eslabón 0)
+- <code>DEBT-GOLD-NODE-DIMENSION-001</code> (ampliada V1 — incluye <code>flow_start_window</code>)
+- <code>DEBT-GOLD-INTEGRITY-HMAC-001</code>
+- <code>DEBT-ZMQ-DELIVERY-GUARANTEE-001</code></p>
+<p><strong>P1:</strong>
+- <code>DEBT-HOST-DOMAIN-CONTRACT-001</code> (pre-Eslabón 1; contrato Wazuh host↔red por definir)
+- <code>DEBT-EVENT-ID-FACTORY-001</code> (<strong>nueva DAY 199</strong> — decisión de contrato §2 corolario 7).
+  Verificar/garantizar que <strong>todos</strong> los productores de evento obtienen <code>event_id</code> de una
+  fuente única con unicidad por instalación. Medir dónde nace hoy (<code>correlation_writer.cpp:84</code>
+  solo lo copia; el origen está aguas arriba, sin medir aún). Si hay productores que generan
+  <code>event_id</code> por caminos distintos sin unicidad garantizada, abrir el mecanismo de factoría.
+  Análogo a <code>DEBT-FLOWUID-SEQ-COLLISION-001</code>: un <code>event_id</code> duplicado sería fidelidad
+  (MERGE descarta el segundo idéntico en ambos caminos), no equivalencia; no bloquea el
+  medallón. Fusión de grafos inter-instalación: explícitamente fuera de alcance.
+- <code>DEBT-PARQUET-KUZU-CONNECTOR-001</code> (greenfield, Eslabón 2). <strong>Ampliada v3:</strong> porta la
+  precondición de orden determinista del §3.1 (decreto MERGE). El conector Flujo B <strong>debe</strong>
+  insertar ordenado por <code>(flow_start_window, seq_in_window)</code> antes del sink Kuzu — Parquet es
+  columnar y los loaders bulk/paralelos no preservan orden de fila salvo <code>ORDER BY</code> explícito.
+  El <strong>cómo</strong> (sort previo, <code>ORDER BY</code> en la lectura, o writer single-thread durante el test)
+  es implementación del conector greenfield, no de este ADR. <strong>Verificación (no circular):</strong>
+  un test independiente, <strong>previo</strong> al de equivalencia, intercepta las sentencias MERGE/INSERT
+  del conector y verifica orden <code>(flow_start_window ASC, seq_in_window ASC)</code>; si no pasa, el
+  test de equivalencia <strong>no se ejecuta</strong> (evita diagnóstico ambiguo orden-vs-bug).
+- <code>DEBT-CIRCUIT-FS-DROP-001</code>
+- <code>DEBT-CIRCUIT-TEMPORAL-ANOMALY-PARITY-001</code> (<strong>nueva DAY 199, reclasificada P2→P1 en v3</strong>
+  tras objeción Kimi/Gemini/GLM). Dos partes. <strong>(a) Paridad de fórmula:</strong> <code>temporal_anomaly</code>
+  excluida del predicado §3.1 por derivar de <code>ingested_at</code> (<code>cypher_builder.hpp:86</code>,
+  determinista-de-ejecución); su verificación es un test unitario —mismo <code>window</code> +
+  <code>ingested_at</code> fijo ⇒ mismo bool— y el converter Flujo A porta la fórmula 1:1. <strong>(b)
+  Procedencia de <code>ingested_at</code> (ampliación v3):</strong> un unit test de la fórmula NO caza que el
+  converter Flujo A alimente la fórmula con el <code>ingested_at</code> <em>correcto</em>. Escenario de fallo
+  no cubierto por el predicado: el converter usa el timestamp de procesamiento del Parquet
+  en vez del de ingestión del bronce → la fórmula da un bool «correcto» sobre un input
+  <em>wrong</em>, el unit test pasa, y la detección de anomalía temporal (señal anti-evasión, crítica
+  en ransomware lento) falla silenciosamente en producción. <strong>Acción:</strong> el test de aceptación
+  del Flujo A+B verifica <em>procedencia</em> — dado un bronce con timestamps conocidos, que el
+  <code>ingested_at</code> persistido sea coherente con las filas del bronce (banda esperada / monotonía
+  con el orden de filas), inyectable con mock clock. No es bit-exacto: es coherencia de origen.)</p>
+<p><strong>P2:</strong>
+- <code>DEBT-PARSE-VERIFY-SENTINEL-001</code> (<strong>degradada de P0</strong> — medida V2; doc + vigilancia)
+- <code>DEBT-ADAPTERSPEC-ENVELOPE-001</code>
+- <code>DEBT-DOCS-MEDALLION-DUALITY-001</code> (firma del oro HMAC ≠ Ed25519 RAG — ver §2 corolario 6)
+- <code>DEBT-JOIN-CONFIDENCE-001</code> (gobierna la cláusula de caducidad §3.2)
+- <code>DEBT-FLOWUID-SEQ-COLLISION-001</code> (medida V7 — <code>seq_in_window=0</code>; fidelidad, no
+  equivalencia; no bloquea el medallón)
+- <code>DEBT-NEO4J-FLOW-KEY-COMPOSITE-001</code> (PK compuesta <code>(flow_uid, seq)</code> no implementada;
+  el schema usa PK simple <code>flow_uid</code>)
+- <code>DEBT-FLOWUID-CANONICAL-ENCODING-001</code> (<strong>resuelta de facto</strong> — medida DAY 198;
+  encoding inyectivo length-prefixed + BE + tag versión, paridad C++/Python congelada;
+  acción residual: converter Flujo A reusa <code>encode_flow_input</code>, no reimplementa)
+<em>(Esta deuda se reclasifica a P1 — ver bloque P1.)</em></p>
+<p><strong>P3:</strong>
+- higiene <code>backups/</code>/<code>.backup</code> → <code>git rm --cached</code> / <code>.gitignore</code>
+- limpieza rama remota <code>day194/...</code> efímera (V4)</p>
+<hr />
+<h2 id="7-consecuencias">7. Consecuencias</h2>
+<ul>
+<li>El medallón se cierra primero por Camino 0 (existe), con el test de equivalencia
+  §3.1 como gate de aceptación de Flujo A+B.</li>
+<li>El contrato de 19 columnas <strong>no se modifica</strong> (V2 lo dejó intacto: los tipos son
+  correctos extremo a extremo).</li>
+<li><code>flow_start_window</code> se añade al oro como columna nueva (V1) — no toca el contrato
+  bronce, solo el converter Flujo A y el esquema del oro-ledger.</li>
+<li>El ADR entra en el mismo PR que el Eslabón 0 (commit de doc no pasa gate de build,
+  va con la implementación) — coherente con la regla de rama del plan.</li>
+<li><strong>Naturaleza del ADR (objeción de proceso, Kimi):</strong> este ADR es <strong>prospectivo en la
+  decisión</strong> (forma del oro, predicado §3.1, bit-exacto — decisiones a futuro) y
+  <strong>retrospectivo en la evidencia</strong> (el gate DAY 198 mide binario ya existente: Camino 0,
+  schema, cypher_builder). La ratificación del Consejo confirma la <em>decisión</em> y la <em>fidelidad
+  de la evidencia medida</em>; no pretende ser un gate pre-merge sobre código inexistente (Flujo
+  A/B greenfield). Que el doc viaje con el Eslabón 0 es regla de rama consciente, no
+  ratificación post-hoc encubierta.</li>
+</ul>
+<hr />
+<h2 id="8-estado-de-ratificacion">8. Estado de ratificación</h2>
+<p><strong>Bit-exacto por defecto: RATIFICADO</strong> (ronda DAY 199, Consejo 8 modelos). La sub-decisión
+abierta en la v1 — <code>==</code> bit-exacto en los 3 scores double con ε degradada a cláusula de
+escape condicionada a medición — se sometió al Consejo y <strong>no fue objetada de fondo</strong> (voto
+explícito a favor; el resto refinó los bordes, no la decisión). Queda cerrada.</p>
+<p><strong>Lo que esta v2 lleva al Consejo NO es re-litigación, sino confirmación de las correcciones
+medidas.</strong> La revisión adversarial de la v1 produjo objeciones de calidad. Cada una se
+<strong>midió contra <code>fichero:línea</code></strong>, no se debatió:</p>
+<ul>
+<li><strong>Cayeron contra el binario</strong> (la medición refuta la objeción):</li>
+<li>«window/seq no las escribe Camino 0» → <strong>falso</strong>: <code>cypher_builder.hpp:101,110</code> las
+    materializa (<code>ON CREATE SET</code>).</li>
+<li>«<code>event_id</code> indefinido / posible UUID v4» → <strong>falso</strong>: es bronce col 2
+    (<code>correlation_reader.cpp:85</code>).</li>
+<li>«el schema podría declarar FLOAT en los scores» → <strong>falso</strong>: <code>schema.cypher:42-44,62-64</code>
+    son <code>DOUBLE</code>; refuerza bit-exacto.</li>
+<li><strong>Incorporadas a §3.1</strong> (la medición confirma la objeción):</li>
+<li><code>hmac_row</code> sale del predicado → integridad bronce↔oro (0 hits de <code>hmac</code> en
+    <code>schema.cypher</code>). [DeepSeek]</li>
+<li><strong>Partición D/E</strong>: <code>ingested_at</code> (<code>kuzu_graph_sink.hpp:47</code>) y <code>temporal_anomaly</code>
+    (<code>cypher_builder.hpp:86</code>) excluidas por deterministas-de-ejecución. [hallazgo de la
+    medición; ningún modelo lo vio, tampoco la v1]</li>
+<li>NaN + <code>-0.0</code>: una sola regla canónica (canonicalizar, no <code>memcmp</code> crudo ni <code>==</code> crudo).</li>
+<li>MERGE robusto a colisión <strong>bajo precondición</strong> de orden de inserción determinista.
+    [Gemini/Kimi/Qwen]</li>
+<li><strong>Diferidas como deuda trazada</strong> (fuera del alcance de este ADR, no gold-plating dentro):
+  oro-ledger como multiset bajo at-least-once; HMAC scope full-row vs columnas-grafo;
+  <code>inotify</code> + NFS/contenedor → fallback polling. Punteros en §6 y backlog.</li>
+<li><strong>Declinadas por alcance, nombradas explícitamente (no por omisión — por diseño):</strong> el
+  lote de revisión V2 propuso, en contexto «salva vidas», un conjunto de mejoras que <strong>no
+  son defectos del circuito</strong> sino trabajo de otra capa o post-FEDER. Se declinan en este
+  ADR, con nombre, para que quede trazado que se vieron y se decidieron fuera de alcance —
+  no que se pasaron por alto:</li>
+<li><strong>Hash determinista del grafo completo</strong> (Mistral): da un booleano sin diagnóstico, peor
+    que el predicado por-propiedad que ya localiza la divergencia. Rechazado por inferior.</li>
+<li><strong>Recovery/backup/restore de Kuzu, snapshot diario</strong> (Qwen/Mistral): Kuzu es proyección
+    reconstruible desde el oro-ledger por diseño (§2); el procedimiento operativo es post-FEDER.</li>
+<li><strong>Observabilidad/Prometheus/Grafana, métricas de circuito</strong> (Qwen/Grok): capa de operación,
+    no del predicado. Backlog post-circuito (<code>DEBT-CIRCUIT-OBSERVABILITY-001</code> si se abre).</li>
+<li><strong>Performance/throughput SLA, query budgeting</strong> (Qwen/Mistral/Grok): el circuito se cierra
+    por correctitud primero (Camino 0 existe); el benchmark es ADR-029, no éste.</li>
+<li><strong>Backpressure/HWM en ZMQ</strong> (Qwen): ya hay <code>DEBT-ZMQ-DELIVERY-GUARANTEE-001</code> (P0); el
+    detalle de HWM es de Eslabón 1, no del cierre del predicado.</li>
+<li><strong>HMAC lifecycle (rotación, versión de clave, revalidación)</strong> (Kimi/ChatGPT/Grok/Mistral):
+    ya es <code>DEBT-GOLD-INTEGRITY-HMAC-001</code> (P0); el ciclo de vida cripto es trabajo propio, no
+    de este ADR. La infraestructura epoch/rotación ya existe (crypto DAY 156-162).</li>
+<li><strong>Schema evolution, RBAC, retention, timezone</strong> (Qwen): post-FEDER, otra capa.<blockquote>
+<p>El criterio de cierre: este ADR documenta <strong>una decisión medible contra binario
+existente</strong>. Specs de un binario que aún no existe (Flujo A/B) van a deuda trazada, no al
+cuerpo del ADR — documentarlas aquí sería votar contra un binario inexistente, el anti-
+patrón inverso de «medir, no votar».</p>
+</blockquote>
+</li>
+</ul>
+<p>Petición concreta al Consejo: <strong>confirmar</strong> que las correcciones de §3.1 reflejan
+fielmente lo medido. No se reabre la forma del oro (ratificada DAY 197) ni bit-exacto
+(ratificado DAY 199). 10.8 diferida con ticket (<code>DEBT-JOIN-CONFIDENCE-001</code>). Con esta
+confirmación, el plan cierra como ADR.</p>
+<hr />
+<h2 id="9-changelog-v1-v2-day-199">9. Changelog v1 → v2 (DAY 199)</h2>
+<p>Trazabilidad de cada cambio respecto a la v1 presentada al Consejo. El original v1 se
+conserva intacto; esta v2 es un fichero separado.</p>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>§</th>
+<th>Cambio</th>
+<th>Origen</th>
+<th>Veredicto medido</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>1</td>
+<td>"6 verificaciones" → "9"</td>
+<td>A3 (Claude)</td>
+<td>fósil de versión previa</td>
+</tr>
+<tr>
+<td>2</td>
+<td>3.1</td>
+<td>Predicado particionado D/E; <code>ingested_at</code>+<code>temporal_anomaly</code> EXCLUIDAS</td>
+<td>medición DAY 199</td>
+<td><code>kuzu_graph_sink.hpp:47</code>, <code>cypher_builder.hpp:86</code></td>
+</tr>
+<tr>
+<td>3</td>
+<td>3.1</td>
+<td><code>hmac_row</code> fuera del predicado → integridad bronce↔oro</td>
+<td>DeepSeek</td>
+<td>0 hits <code>hmac</code> en <code>schema.cypher</code></td>
+</tr>
+<tr>
+<td>4</td>
+<td>3.1</td>
+<td>Nota: <code>event_id</code>=bronce col 2; window/seq YA materializadas</td>
+<td>GLM/Kimi (refutadas)</td>
+<td><code>correlation_reader.cpp:85</code>, <code>cypher_builder.hpp:101,110</code></td>
+</tr>
+<tr>
+<td>5</td>
+<td>3.1</td>
+<td>Guarda canónica única NaN + <code>-0.0</code> (no <code>memcmp</code> crudo)</td>
+<td>Claude/Gemini/DeepSeek/Qwen</td>
+<td>IEEE 754</td>
+</tr>
+<tr>
+<td>6</td>
+<td>3.1</td>
+<td>MERGE robusto <strong>bajo</strong> orden de inserción determinista</td>
+<td>Gemini/Kimi/Qwen</td>
+<td><code>cypher_builder.hpp</code> MERGE/ON CREATE</td>
+</tr>
+<tr>
+<td>7</td>
+<td>6</td>
+<td>Nueva <code>DEBT-CIRCUIT-TEMPORAL-ANOMALY-PARITY-001</code> (P2)</td>
+<td>hallazgo medición</td>
+<td><code>cypher_builder.hpp:86</code></td>
+</tr>
+<tr>
+<td>8</td>
+<td>6</td>
+<td>Ref <code>§2.6</code> → <code>§2 corolario 6</code></td>
+<td>A4 (Claude)</td>
+<td>higiene interna</td>
+</tr>
+<tr>
+<td>9</td>
+<td>8</td>
+<td>Cierre: "confirmar lo medido", no re-litigar; bit-exacto RATIFICADO</td>
+<td>árbitro</td>
+<td>—</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p>Nota de scope: objeciones de gold-plating del lote (backpressure/HWM, schema evolution,
+SLA del test, key management, RBAC, retention, rollback, timezone, hash-grafo-completo)
+se declinan en este ADR por violar "una batalla" / ya cubiertas por deuda existente.
+No son defectos del circuito; son trabajo post-FEDER o de otra capa.</p>
+</blockquote>
+<hr />
+<h2 id="10-changelog-v2-v3-day-199-segunda-ronda-adversarial">10. Changelog v2 → v3 (DAY 199, segunda ronda adversarial)</h2>
+<p>Criterio de cierre aplicado: <strong>entra lo medible contra binario existente; las specs de un
+binario inexistente (Flujo A/B greenfield) van a deuda trazada; el gold-plating se declina
+con nombre.</strong> El V2 se conserva intacto; esta v3 es fichero separado.</p>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>§</th>
+<th>Cambio</th>
+<th>Origen</th>
+<th>Clase</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>11</td>
+<td>3.1</td>
+<td>Aristas: «coinciden» → <strong>igualdad de conjuntos</strong> bidireccional sobre <code>(tipo, from, to, method, confidence)</code> + nota</td>
+<td>GLM/DeepSeek/Mistral</td>
+<td>medible, del predicado</td>
+</tr>
+<tr>
+<td>12</td>
+<td>4-V1</td>
+<td>Reconciliación B1: «no existe en ningún extremo» = columna Parquet-oro (greenfield) ≠ propiedad nodo Kuzu (ya escrita L101/110)</td>
+<td>Claude (auto-adversario)</td>
+<td>contradicción interna corregida</td>
+</tr>
+<tr>
+<td>13</td>
+<td>3.1</td>
+<td>Nota: test <strong>necesario-no-suficiente</strong> con scores placeholder (<code>0.5f</code>, <code>main.cpp:419</code>); re-valida con ML vivo → <code>DEBT-CIRCUIT-SCORE-NONTRIVIAL-REVAL-001</code> (P1)</td>
+<td>Claude (A5, recuperada)</td>
+<td>medible, grieta de fondo</td>
+</tr>
+<tr>
+<td>14</td>
+<td>3.1</td>
+<td>Precondición parser texto→double correct-rounding cross-language → <code>DEBT-CIRCUIT-PARSER-CROSSLANG-001</code> (P1)</td>
+<td>GLM</td>
+<td>precondición trazada, no bloqueante</td>
+</tr>
+<tr>
+<td>15</td>
+<td>6</td>
+<td><code>DEBT-CIRCUIT-TEMPORAL-ANOMALY-PARITY-001</code> P2→<strong>P1</strong> + alcance ampliado a <strong>procedencia de <code>ingested_at</code></strong></td>
+<td>Kimi/Gemini/GLM</td>
+<td>deuda reclasificada</td>
+</tr>
+<tr>
+<td>16a</td>
+<td>3.1</td>
+<td>Canonicalización IEEE 754: <strong>punto único</strong> (converter, función compartida), test asume grafos canónicos</td>
+<td>Qwen/ChatGPT/Gemini</td>
+<td>spec converter</td>
+</tr>
+<tr>
+<td>16b</td>
+<td>6</td>
+<td>Orden Flujo B → <code>DEBT-PARQUET-KUZU-CONNECTOR-001</code> ampliada; verificación no-circular (test previo intercepta orden)</td>
+<td>Gemini/Kimi/Qwen/DeepSeek</td>
+<td>spec Flujo inexistente → deuda</td>
+</tr>
+<tr>
+<td>16c</td>
+<td>7</td>
+<td>Naturaleza: ADR <strong>prospectivo-en-decisión / retrospectivo-en-evidencia</strong></td>
+<td>Kimi (proceso)</td>
+<td>aclaración</td>
+</tr>
+<tr>
+<td>16d</td>
+<td>8</td>
+<td>Gold-plating <strong>declinado por nombre</strong> (hash-grafo, recovery, observabilidad, perf SLA, backpressure, HMAC lifecycle, schema evol)</td>
+<td>lote V2</td>
+<td>scope explícito</td>
+</tr>
+<tr>
+<td>17</td>
+<td>2,6</td>
+<td><code>event_id</code>: contrato de unicidad por instalación (corolario 7) + <code>DEBT-EVENT-ID-FACTORY-001</code> (P1); fusión de grafos fuera de alcance</td>
+<td>Alonso (decisión) / Kimi</td>
+<td>decisión + deuda</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>Deudas nuevas en v3 (4):</strong> <code>DEBT-CIRCUIT-SCORE-NONTRIVIAL-REVAL-001</code> (P1),
+<code>DEBT-CIRCUIT-PARSER-CROSSLANG-001</code> (P1), <code>DEBT-EVENT-ID-FACTORY-001</code> (P1), y la
+reclasificación de <code>DEBT-CIRCUIT-TEMPORAL-ANOMALY-PARITY-001</code> a P1 con alcance ampliado.
+Todas registradas en §6; pendiente volcado a <code>docs/backlog.md</code> (primera tarea post-cierre).</p>
+<p><strong>Postura de cierre:</strong> este ADR no espera unanimidad incondicional del Consejo. La segunda
+ronda confirmó que el patrón adversarial genera bordes nuevos indefinidamente (cada ronda
+resuelve los previos y encuentra otros). El criterio de cierre lo fija el arbitraje: lo
+medible entra, lo inexistente va a deuda, el gold-plating se nombra y se declina. Lo que
+aparezca al tratar las deudas se estudia entonces, con humildad, contra el binario de ese
+momento. <strong>Via Appia: cada piedra medida en su sitio; las que aún no existen, señalizadas
+en el mapa, no inventadas en la calzada.</strong></p>
+</blockquote>
+<hr />
+<h2 id="correccion-post-v3-day-207">Corrección post-v3 (DAY 207)</h2>
+<p><strong>Fecha:</strong> 2026-07-05
+<strong>Corrige:</strong> fila 16a de la tabla de cambios v2→v3 — <em>"Canonicalización IEEE 754:
+punto único (converter, función compartida), test asume grafos canónicos"</em>
+(Qwen/ChatGPT/Gemini, DAY 199).</p>
+<p><strong>Hallazgo (DAY 207, durante diseño del test de equivalencia parcial §3.1):</strong>
+en DAY 199 el converter (Flujo A) todavía no existía como código — nació DAY 205.
+El decreto "punto único: converter" no consideró que <strong>Camino 0 nunca canonicaliza</strong>
+antes de escribir a Kuzu (<code>segment_processor.cpp</code> → <code>cypher_builder.hpp::make_bindings</code>
+usan <code>r.fast_detector_score</code>/<code>ml_detector_score</code>/<code>overall_threat_score</code> tal cual
+los devuelve <code>parse_and_verify</code>, sin tocar). Si el converter es el único punto que
+canonicaliza, Camino 0 y Flujo A+B <strong>divergen bit a bit</strong> en cualquier fila con
+NaN o <code>-0.0</code> en los scores — mismo <code>flow_uid</code>, score distinto.</p>
+<p><strong>Corrección:</strong> el punto único de canonicalización IEEE 754 se reubica de
+"el converter" a <strong><code>parse_and_verify</code></strong> (<code>correlation-engine/src/correlation_reader.cpp</code>),
+porque es el confluente real de ambos caminos — Camino 0 lo llama vía
+<code>segment_processor.cpp</code>, Flujo A+B lo llama directamente. Un solo sitio,
+heredado por los dos sin que cada consumidor tenga que acordarse de aplicarlo.</p>
+<p><strong>Implementación:</strong>
+- Nuevo header <code>correlation-engine/include/correlation_engine/canonical_double.hpp</code>
+  (misma lógica ya existente y duplicada en el smoke test y el converter:
+  NaN → <code>0x7ff8000000000000</code> canónico, <code>-0.0</code> → <code>+0.0</code>).
+- <code>parse_and_verify</code> aplica <code>canonicalize_double</code> a los 3 scores tras el parseo,
+  <strong>después</strong> de la verificación HMAC (<code>ct_equal</code>) — cero impacto en la frontera
+  de confianza, solo en el valor final materializado.
+- El converter retira su definición local y sus 3 llamadas — hereda records
+  ya canónicos sin hacer nada especial.</p>
+<p><strong>Evidencia (medir, no votar):</strong>
+- <code>correlation-engine/tests/test_correlation_reader.cpp</code> — 2 tests nuevos
+  (<code>CanonicalizesNaNScore</code>, <code>CanonicalizesNegativeZeroScore</code>), verifican bit
+  exacto vía <code>std::bit_cast&lt;uint64_t&gt;</code>. Suite completa: 8/8 PASSED.
+- <code>make correlation-engine-test</code> (ctest completo del correlation-engine,
+  incluye Camino 0): 7/7 PASSED — sin regresión.
+- Converter recompilado tras retirar la copia local, ejecutado contra el mismo
+  segmento bronce real del DAY 206 (<code>logs/correlation/argus/2026-07-04-032653.csv</code>):
+  24/24 filas convertidas, 0 descartadas — resultado idéntico al de antes del cambio.</p>
+<p><strong>Nota — alcance:</strong> esto cierra la equivalencia de canonicalización entre Camino 0
+y Flujo A+B <em>hoy</em>. NO cierra el predicado §3.1 completo (que se mide sobre la
+proyección Kuzu, no sobre el Parquet intermedio) — eso sigue bloqueado en
+<code>DEBT-PARQUET-KUZU-CONNECTOR-001</code> (Flujo B, greenfield). Cuando Flujo B exista,
+debe copiar el Parquet ya-canónico a Kuzu; <strong>no</strong> hace falta canonicalizar de nuevo
+ahí, porque ambas fuentes (Camino 0 y Flujo A+B) ya comparten el mismo punto único.</p>
+<p><strong>Registrado en:</strong> <code>docs/BACKLOG.md</code> → <code>DEBT-CIRCUIT-CANONICALIZE-PARITY-001</code>
+(abierta y cerrada el mismo día, con evidencia).</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.top", "search.highlight"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

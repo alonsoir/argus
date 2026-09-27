@@ -1,0 +1,1333 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source embedded-ML NDR for hospitals and schools">
+      
+      
+        <meta name="author" content="Alonso Isidoro Roman">
+      
+      
+        <link rel="canonical" href="https://alonsoir.github.io/argus/engineering_decisions/AdapterSpec%20v1%20%E2%80%94%20Contrato%20de%20Ingesta%20de%20Adapters%20%28aRGus%2B%2B%20NDR-EDR%29/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>AdapterSpec v1 — Contrato de Ingesta de Adapters (aRGus++ NDR-EDR) - ML Defender (aRGus NDR)</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#adapterspec-v1-contrato-de-ingesta-de-adapters-argus-ndr-edr" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-header__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ML Defender (aRGus NDR)
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              AdapterSpec v1 — Contrato de Ingesta de Adapters (aRGus++ NDR-EDR)
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../README.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/BACKLOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Backlog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Security Model
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-tabs__link">
+          
+  
+  
+  ADRs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/contracts/Protobuf contracts.md" class="md-tabs__link">
+          
+  
+  
+  Contracts
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-nav__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ML Defender (aRGus NDR)
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../README.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/BACKLOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADRs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ADRs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013 Seed Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-021-deployment-topology-seed-families.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-021 Topology SSOT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-022-threat-model-opcion2-descartada.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-022 Threat Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Protobuf contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protobuf
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/JSON contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JSON
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Rag security commands.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-proposito-y-alcance" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Propósito y alcance
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-garantias-de-entrega" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Garantías de entrega
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-envelope-de-salida" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Envelope de salida
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-native_event_id-y-determinismo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. native_event_id y determinismo
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-mapeo-de-timestamps" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Mapeo de timestamps
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-checkpoint-monotonico" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Checkpoint monotónico
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-transporte" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Transporte
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="7. Transporte">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#71-tramo-interno-adapter-engine-siempre-zeromq" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.1 Tramo interno (adapter → engine): siempre ZeroMQ
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#72-tramo-externo-motor-adapter-por-tier-y-por-motor" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.2 Tramo externo (motor → adapter): por tier y por motor
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-backpressure-y-resiliencia" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. Backpressure y resiliencia
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#9-health-y-metricas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9. Health y métricas
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#10-notas-por-motor" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10. Notas por motor
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#101-mapeo-normativo-argus-securityevent-f1-consumidor-de-bronce" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10.1 Mapeo normativo aRGus → SecurityEvent (F1 — consumidor de bronce)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#11-obligaciones-de-reproducibilidad" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        11. Obligaciones de reproducibilidad
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#12-parametros-configurables-contrato-json" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        12. Parámetros configurables (contrato JSON)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#13-validacion-emecas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        13. Validación (EMECAS++)
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="adapterspec-v1-contrato-de-ingesta-de-adapters-argus-ndr-edr">AdapterSpec v1 — Contrato de Ingesta de Adapters (aRGus++ NDR-EDR)</h1>
+<table>
+<thead>
+<tr>
+<th>Campo</th>
+<th>Valor</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Documento</strong></td>
+<td>AdapterSpec v1 (normativo)</td>
+</tr>
+<tr>
+<td><strong>Fecha</strong></td>
+<td>2026-05-29 (DAY 169)</td>
+</tr>
+<tr>
+<td><strong>Estado</strong></td>
+<td>v1 — aceptado</td>
+</tr>
+<tr>
+<td><strong>Referenciado por</strong></td>
+<td>ADR-046 v4 §3.10</td>
+</tr>
+<tr>
+<td><strong>Relaciona</strong></td>
+<td>ADR-026/027 (ZeroMQ PUB/SUB), <code>network_security.proto</code> (envelope)</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p>Convención: <strong>DEBE</strong> (obligatorio), <strong>DEBERÍA</strong> (recomendado fuerte), <strong>NO DEBE</strong> (prohibido).</p>
+</blockquote>
+<hr />
+<h2 id="1-proposito-y-alcance">1. Propósito y alcance</h2>
+<p>Un <strong>adapter</strong> es el componente que convierte la salida de un motor (Suricata, Zeek, Wazuh, o el sniffer nativo de aRGus) en eventos <code>SecurityEvent</code> normalizados y los entrega al correlation-engine. Esta especificación define el contrato común que <strong>todo</strong> adapter DEBE cumplir, de modo que el engine sea agnóstico al motor de origen y que el dataset resultante sea reproducible (ADR-046 v4 §3.11).</p>
+<p>Un adapter tiene tres etapas: <strong>leer</strong> (del motor externo), <strong>normalizar</strong> (al envelope), <strong>publicar</strong> (al bus interno).</p>
+<hr />
+<h2 id="2-garantias-de-entrega">2. Garantías de entrega</h2>
+<ul>
+<li>El adapter <strong>DEBE</strong> garantizar <strong>at-least-once</strong>: ningún evento leído del motor se pierde silenciosamente entre la lectura y la publicación al engine.</li>
+<li>El adapter y el engine <strong>DEBEN</strong> ser <strong>idempotentes</strong> ante reentrega: la clave de deduplicación es <code>(source_engine, native_event_id)</code>.</li>
+<li>El sistema <strong>NO DEBE</strong> intentar <strong>exactly-once</strong>. Se declara explícitamente fuera de alcance: es costoso, complejo e innecesario aquí, y ya está mitigado por la deduplicación idempotente. Documentarlo evita bugs filosóficos de concurrencia.</li>
+</ul>
+<hr />
+<h2 id="3-envelope-de-salida">3. Envelope de salida</h2>
+<p>El adapter <strong>DEBE</strong> emitir el envelope <code>SecurityEvent</code> definido en <code>network_security.proto</code> (ADR-046 v4 §3.8): <code>source_engine</code>, <code>native_event_id</code>, <code>event_time_unix_ns</code>, <code>optional emitted_time_unix_ns</code>, <code>optional ingested_time_unix_ns</code>, <code>optional community_id</code>, <code>optional host_key</code>, <code>domain</code>, <code>severity</code>, <code>raw_payload</code>, <code>metadata</code>.</p>
+<ul>
+<li><code>community_id</code> se rellena solo si el evento tiene 5-tupla completa (TCP/UDP/SCTP). Si no (eventos host sin flujo, o ICMP diferido), se omite.</li>
+<li><code>host_key</code> se rellena para todo evento con IP interna identificable; para eventos host es la clave primaria de anclaje.</li>
+<li><code>domain</code> clasifica el evento como <code>NETWORK | HOST | HYBRID</code>.</li>
+</ul>
+<hr />
+<h2 id="4-native_event_id-y-determinismo">4. <code>native_event_id</code> y determinismo</h2>
+<ul>
+<li><code>native_event_id</code> <strong>DEBE</strong> identificar unívocamente el evento dentro de su <code>source_engine</code>.</li>
+<li><strong>En el tier determinista</strong> (replay de golden pcap), <code>native_event_id</code> <strong>DEBE</strong> ser <strong>determinista</strong>: derivado de <code>(offset-en-pcap + índice-de-evento)</code> o equivalente estable, de modo que el mismo input reprocesado genere los mismos IDs. Esto es prerrequisito de la reproducibilidad bit-a-bit del dataset (ADR-046 v4 §3.11) y de la generación determinista de <code>crisis_id</code> (§3.7).</li>
+<li><strong>En el tier vivo</strong>, <code>native_event_id</code> es el ID nativo que provea el motor (o un hash estable de campos invariantes del evento si el motor no provee uno).</li>
+</ul>
+<hr />
+<h2 id="5-mapeo-de-timestamps">5. Mapeo de timestamps</h2>
+<ul>
+<li><code>event_time_unix_ns</code> (ocurrencia, canónico para windowing) <strong>DEBE</strong> poblarse según la tabla por motor de ADR-046 v4 §3.3 (Suricata <code>eve.timestamp</code>; Zeek <code>ts</code>; Wazuh <code>alert.timestamp</code> con <code>scan_time</code>/<code>file_mtime</code> a <code>metadata</code>).</li>
+<li><code>emitted_time_unix_ns</code> (cuando el motor emite al adapter) y <code>ingested_time_unix_ns</code> (cuando el adapter recibe/publica) son <strong>telemetría operativa específica del run</strong>. El adapter <strong>DEBERÍA</strong> poblarlos cuando pueda; <strong>DEBE</strong> omitirlos en el tier determinista que lee captura histórica.</li>
+<li>El adapter <strong>NO DEBE</strong> usar emisión ni ingesta como <code>event_time_unix_ns</code>.</li>
+</ul>
+<hr />
+<h2 id="6-checkpoint-monotonico">6. Checkpoint monotónico</h2>
+<ul>
+<li>El adapter <strong>DEBE</strong> mantener un <strong>checkpoint monotónico</strong> que represente su posición de avance, persistente entre reinicios.</li>
+<li>La forma del checkpoint depende del transporte: <strong>offset de fichero</strong> (tail), <strong>offset de topic/partición</strong> (Kafka/Redis), o <strong>sequence number en el envelope</strong> con patrón XPUB/XSUB (ZeroMQ interno).</li>
+<li>El engine <strong>DEBE</strong> poder solicitar al adapter "reanuda desde checkpoint X". La combinación checkpoint + dedup <code>(source_engine, native_event_id)</code> garantiza reanudación sin pérdida ni duplicación efectiva.</li>
+</ul>
+<hr />
+<h2 id="7-transporte">7. Transporte</h2>
+<h3 id="71-tramo-interno-adapter-engine-siempre-zeromq">7.1 Tramo interno (adapter → engine): siempre ZeroMQ</h3>
+<ul>
+<li>El adapter <strong>DEBE</strong> publicar por <strong>ZeroMQ PUB/SUB</strong> (invariante del proyecto, ADR-026/027).</li>
+<li><strong>DEBE</strong> respetar la regla de slow-joiner: el socket PUB hace <code>bind()</code> <strong>antes</strong> de que el SUB del engine haga <code>connect()</code>.</li>
+</ul>
+<h3 id="72-tramo-externo-motor-adapter-por-tier-y-por-motor">7.2 Tramo externo (motor → adapter): por tier y por motor</h3>
+<table>
+<thead>
+<tr>
+<th>Contexto</th>
+<th>Transporte</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Tier determinista (golden)</td>
+<td>Lectura de fichero fijo / replay (reproducible)</td>
+</tr>
+<tr>
+<td>Tier vivo — Suricata</td>
+<td><code>eve</code> → redis / unix-socket nativo; <em>fallback</em> tail durable</td>
+</tr>
+<tr>
+<td>Tier vivo — Zeek</td>
+<td>Kafka/Redis vía plugin; <em>fallback</em> tail durable</td>
+</tr>
+<tr>
+<td>Tier vivo — Wazuh</td>
+<td>socket de salida; <em>fallback</em> tail durable</td>
+</tr>
+<tr>
+<td>aRGus (sniffer nativo)</td>
+<td>ZeroMQ nativo (sin cambios)</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>El transporte externo <strong>DEBE</strong> estar <strong>congelado por motor y entorno</strong>. <strong>NO DEBE</strong> haber fallback push↔tail silencioso en runtime: cambiar de transporte rompe la reproducibilidad entre runs.</li>
+<li>El camino push vivo <strong>no es replayable</strong> → es <strong>libre de aserciones por construcción</strong>; toda aserción determinista va por el camino de fichero.</li>
+</ul>
+<hr />
+<h2 id="8-backpressure-y-resiliencia">8. Backpressure y resiliencia</h2>
+<ul>
+<li>El adapter <strong>DEBE</strong> usar un <strong>buffer acotado</strong>. Ante desbordamiento (<code>on_overflow</code>), <strong>DEBE</strong> <code>log_and_drop_with_metric</code>; <strong>NO DEBE</strong> bloquear la ingesta del motor ni del engine.</li>
+<li>El adapter <strong>DEBE</strong> reintentar fallos transitorios con <strong>backoff exponencial</strong> (arranque sugerido: <code>max_attempts = 10</code>, <code>initial_delay = 100 ms</code>).</li>
+<li>Tail durable: <strong>DEBE</strong> manejar rotación de fichero (inotify + rename atómico) y líneas JSON parciales (no procesar una línea hasta verla completa/<code>\n</code>).</li>
+</ul>
+<hr />
+<h2 id="9-health-y-metricas">9. Health y métricas</h2>
+<p>El adapter <strong>DEBE</strong> exponer un <strong>health endpoint</strong> y, como mínimo, las métricas:</p>
+<pre><code>last_checkpoint_ts
+events_processed
+dedup_drops
+buffer_overflow_drops
+adapter_latency_ms        # ingested - emitted
+</code></pre>
+<p>Estas alimentan la observabilidad de degradación de ADR-047 y la telemetría de latencia del pipeline.</p>
+<hr />
+<h2 id="10-notas-por-motor">10. Notas por motor</h2>
+<ul>
+<li><strong>Suricata</strong> (<code>eve.json</code>): JSON estructurado, <code>community_id</code> nativo (verificar <code>community-id-seed: 0</code>). Mapeo directo a <code>SecurityEvent</code>, <code>domain = NETWORK</code>.</li>
+<li><strong>Zeek</strong> (<code>conn.log</code>, <code>notice.log</code>, modo JSON): <code>community_id</code> nativo (<code>community-id-v1</code>, mismo seed). Mapeo directo, <code>domain = NETWORK</code>.</li>
+<li><strong>Wazuh</strong> (<code>alerts.json</code>): el adapter <strong>DEBE</strong> clasificar cada alerta:<ul>
+<li>(a) tiene 5-tupla extraíble → recalcula <code>community_id</code> (mismo algoritmo) → <code>domain = HYBRID</code>;</li>
+<li>(b) solo host (FIM, rootcheck, auth, SCA) → solo <code>host_key</code> → <code>domain = HOST</code>.
+  El adapter <strong>NO DEBE</strong> ingerir el <code>eve.json</code> de Suricata (evita eco; ADR-046 v4 R4).</li>
+</ul>
+</li>
+<li><strong>aRGus (sniffer nativo):</strong> emite por ZeroMQ nativo; calcula <code>community_id</code> en origen; <code>emitted_time_unix_ns</code> ≈ <code>event_time_unix_ns</code> (emisión inmediata, redundante).</li>
+</ul>
+<hr />
+<h2 id="101-mapeo-normativo-argus-securityevent-f1-consumidor-de-bronce">10.1 Mapeo normativo aRGus → SecurityEvent (F1 — consumidor de bronce)</h2>
+<blockquote>
+<p><strong>Alcance.</strong> Esta tabla es el contrato F1 del adapter de aRGus. Su fuente NO es el
+<code>NetworkSecurityEvent</code> rico del sniffer, sino la <strong>fila de bronce <code>correlation_v1</code></strong>
+(18 columnas de contenido 0-17 + HMAC) que el ml-detector escribe. El consumidor es un
+<strong>re-empaquetador</strong>: no calcula features, lee lo ya escrito. El veredicto ya viene
+resuelto del ml-detector (<code>zmq_handler.cpp</code>), no se recalcula.</p>
+<p><strong>Hecho verificado (DAY 178):</strong> <code>message SecurityEvent</code> NO existe en <code>network_security.proto</code>
+(único <code>.proto</code> del repo). El adapter de aRGus NO crea un mensaje nuevo: produce el envelope
+agnóstico rellenando sus campos desde bronce (decisión YAGNI — el <code>message SecurityEvent</code>
+formal se definirá cuando exista un 2º productor real, F2/F3).</p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th>Campo <code>SecurityEvent</code></th>
+<th>Origen en bronce <code>correlation_v1</code></th>
+<th>Regla</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>source_engine</code></td>
+<td>—</td>
+<td>Constante <code>"argus"</code>.</td>
+</tr>
+<tr>
+<td><code>native_event_id</code></td>
+<td>col 2 <code>event_id</code></td>
+<td>Mapeo directo. ⚠️ Ver nota determinismo.</td>
+</tr>
+<tr>
+<td><code>event_time_unix_ns</code></td>
+<td>cols 5+6 <code>flow_start_sec</code>,<code>flow_start_nano</code></td>
+<td><code>sec * 1_000_000_000 + nano</code>. Tiempo de <strong>ocurrencia</strong> del flujo (cumple §5: no emisión/ingesta).</td>
+</tr>
+<tr>
+<td><code>emitted_time_unix_ns</code> (opt)</td>
+<td>—</td>
+<td>Omitir en tier determinista (§5). En vivo ≈ <code>event_time</code> (emisión inmediata, redundante).</td>
+</tr>
+<tr>
+<td><code>ingested_time_unix_ns</code> (opt)</td>
+<td>—</td>
+<td>Lo pone el <strong>engine</strong> al recibir, no el adapter.</td>
+</tr>
+<tr>
+<td><code>community_id</code> (opt)</td>
+<td>col 4 <code>community_id</code></td>
+<td>Mapeo directo. Vacío <code>""</code> en bronce → campo omitido.</td>
+</tr>
+<tr>
+<td><code>host_key</code> (opt)</td>
+<td>—</td>
+<td><strong>n/a</strong> para aRGus (señal NETWORK; se une por <code>community_id</code>, no por host).</td>
+</tr>
+<tr>
+<td><code>domain</code></td>
+<td>—</td>
+<td>Constante <code>NETWORK</code>.</td>
+</tr>
+<tr>
+<td><code>severity</code></td>
+<td>col 16 <code>overall_threat_score</code> + col 12 <code>final_classification</code></td>
+<td>Derivado: score 0-1 (col 16) con etiqueta (col 12). NO se recalcula — ya lo decidió el ml-detector.</td>
+</tr>
+<tr>
+<td><code>raw_payload</code></td>
+<td><strong>fila CSV bronce completa (cols 0-17 + HMAC)</strong></td>
+<td>Opción (a): el blob crudo es la línea de bronce tal cual se escribió, byte a byte (HMAC auditable incluido).</td>
+</tr>
+<tr>
+<td><code>metadata</code> (map)</td>
+<td>cols 0,1,3,7-11,13-15,17</td>
+<td>Ver desglose abajo.</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Desglose de <code>metadata</code></strong> (lo que no es campo de primer nivel del envelope pero bronce sí lleva):
+<code>schema_version</code> (col 0), <code>source_sensor</code> (col 1), <code>node_id</code>/<code>originating_node_id</code> (col 3 — en F1 sintético = <code>synth-node-00</code>), <code>source_ip</code>/<code>destination_ip</code> (cols 7-8), <code>source_port</code>/<code>destination_port</code> (cols 9-10), <code>protocol_name</code> (col 11), <code>threat_category</code> (col 13), <code>fast_detector_score</code> (col 14), <code>ml_detector_score</code> (col 15), <code>authoritative_source</code> (col 17, string simbólico <code>DETECTOR_SOURCE_*</code>).</p>
+<p><strong>Omitido por diseño en F1 (declarado, no escondido):</strong> las 83 features ML, <code>GeoEnrichment</code>,
+<code>TricapaMLAnalysis</code>, <code>DetectionProvenance</code> del <code>NetworkSecurityEvent</code> <strong>NO</strong> sobreviven a bronce
+— bronce preserva identidad + veredicto, no el detalle de features. El <code>raw_payload</code> (a) es
+lossy en features pero íntegro en veredicto. Si un caso de uso forense exige las features,
+se reabre como deuda (candidata: <code>raw_payload</code> enriquecido o segunda fuente). Hoy YAGNI.</p>
+<blockquote>
+<p>⚠️ <strong>Nota determinismo <code>native_event_id</code> (deuda abierta, no resuelta en F1).</strong> AdapterSpec §4
+exige, en el tier determinista (golden pcap), que <code>native_event_id</code> derive de
+<code>(offset-pcap + índice-de-evento)</code>. Hoy el <code>event_id</code> de aRGus (col 2) es un id interno
+(<code>synthetic-N</code> en el injector; id de origen en vivo), <strong>no</strong> anclado al offset del pcap.
+Cumple para el tier vivo (dedup estable); <strong>no</strong> garantiza reproducibilidad bit-a-bit en el
+tier golden. → Pendiente de diseño antes de declarar el tier determinista de aRGus cerrado.</p>
+</blockquote>
+<h2 id="11-obligaciones-de-reproducibilidad">11. Obligaciones de reproducibilidad</h2>
+<ul>
+<li>El adapter participa en el <strong>artefacto autoritativo (B)</strong> de ADR-046 v4 §3.11: el stream de <code>SecurityEvent</code> que emite, una vez grabado y sellado, es parte del corpus reproducible.</li>
+<li>En el tier determinista, dada la misma captura de entrada y el mismo <code>config_hash</code>, el adapter <strong>DEBE</strong> producir el <strong>mismo stream de envelopes bit-a-bit</strong> (de ahí el <code>native_event_id</code> determinista de §4 y la omisión de <code>emitted/ingested</code> de §5).</li>
+</ul>
+<hr />
+<h2 id="12-parametros-configurables-contrato-json">12. Parámetros configurables (contrato JSON)</h2>
+<table>
+<thead>
+<tr>
+<th>Parámetro</th>
+<th>Default</th>
+<th>Nota</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>transport</code></td>
+<td>por motor/tier</td>
+<td>Congelado en runtime (§7.2)</td>
+</tr>
+<tr>
+<td><code>checkpoint.storage</code></td>
+<td>sqlite | leveldb | redis</td>
+<td>Según transporte</td>
+</tr>
+<tr>
+<td><code>retry.max_attempts</code></td>
+<td>10</td>
+<td>Backoff exponencial</td>
+</tr>
+<tr>
+<td><code>retry.initial_delay_ms</code></td>
+<td>100</td>
+<td>—</td>
+</tr>
+<tr>
+<td><code>buffer.max_events</code></td>
+<td>10 000</td>
+<td>Acotado</td>
+</tr>
+<tr>
+<td><code>buffer.on_overflow</code></td>
+<td>log_and_drop_with_metric</td>
+<td>Nunca bloquear</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p>Escalares por JSON (validado al cargar: esquema + cotas, fail-closed). La estructura del adapter (etapas, dedup, modelo de checkpoint) es código + revisión, no JSON.</p>
+</blockquote>
+<hr />
+<h2 id="13-validacion-emecas">13. Validación (EMECAS++)</h2>
+<ul>
+<li><strong>Idempotencia:</strong> reentregar el mismo evento N veces → una sola entrada en el engine (dedup por <code>(source_engine, native_event_id)</code>).</li>
+<li><strong>Reanudación:</strong> matar el adapter a mitad de stream y reanudar desde checkpoint → sin pérdida ni duplicación efectiva.</li>
+<li><strong>Determinismo (tier golden):</strong> misma captura + mismo <code>config_hash</code> → stream de envelopes idéntico bit-a-bit, incluidos <code>native_event_id</code>.</li>
+<li><strong>Backpressure:</strong> saturar el buffer → <code>log_and_drop_with_metric</code>, nunca bloqueo; métrica <code>buffer_overflow_drops</code> refleja la pérdida.</li>
+<li><strong>Rotación (tail):</strong> rotar el fichero de log a mitad de lectura → sin pérdida, offset reanudado correctamente.</li>
+</ul>
+<hr />
+<p>— Consejo de Sabios, DAY 169. Documento normativo derivado de ADR-046 v4.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.top", "search.highlight"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

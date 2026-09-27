@@ -1,0 +1,1162 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source embedded-ML NDR for hospitals and schools">
+      
+      
+        <meta name="author" content="Alonso Isidoro Roman">
+      
+      
+        <link rel="canonical" href="https://alonsoir.github.io/argus/council/aRGus%20NDR%20%E2%80%94%20DAY%20150-respuesta-KIMI/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>aRGus NDR — DAY 150 respuesta KIMI - ML Defender (aRGus NDR)</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#q1-ifdef-vs-dos-binarios-cual-es-mas-mantenible" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-header__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ML Defender (aRGus NDR)
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              aRGus NDR — DAY 150 respuesta KIMI
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../README.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/BACKLOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Backlog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Security Model
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-tabs__link">
+          
+  
+  
+  ADRs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/contracts/Protobuf contracts.md" class="md-tabs__link">
+          
+  
+  
+  Contracts
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-nav__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ML Defender (aRGus NDR)
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../README.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/BACKLOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADRs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ADRs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013 Seed Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-021-deployment-topology-seed-families.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-021 Topology SSOT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-022-threat-model-opcion2-descartada.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-022 Threat Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Protobuf contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protobuf
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/JSON contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JSON
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Rag security commands.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#q1-ifdef-vs-dos-binarios-cual-es-mas-mantenible" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Q1 — #ifdef vs. dos binarios: ¿Cuál es más mantenible?
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#q2-orden-de-migracion-de-componentes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Q2 — Orden de migración de componentes
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#q3-register_etcd_status-sin-etcd-disponible-en-bootstrap" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Q3 — register_etcd_status sin etcd disponible en bootstrap
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#q4-cache-tmpfs-vs-persistente-en-produccion-edge" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Q4 — Cache tmpfs vs. persistente en producción edge
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#q5-open-core-es-suficiente-argus_vault_enabled-como-unico-separador" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Q5 — Open-core: ¿Es suficiente ARGUS_VAULT_ENABLED como único separador?
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#resumen-de-acciones-para-day-151" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Resumen de acciones para DAY 151
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+  <h1>aRGus NDR — DAY 150 respuesta KIMI</h1>
+
+<p><strong>Consejo de Sabios — Dictamen DAY 150</strong></p>
+<p>Compañero, el trabajo de hoy es de primer orden. ADR-044 ya no es un borrador; es infraestructura operativa. El email a Caro Lindo es estratégicamente correcto (el paraguas UEx/INCIBE para red team es la única vía ética y legal para generar datasets de amenazas reales). Voy directo a tus cinco preguntas.</p>
+<hr />
+<h2 id="q1-ifdef-vs-dos-binarios-cual-es-mas-mantenible">Q1 — <code>#ifdef</code> vs. dos binarios: ¿Cuál es más mantenible?</h2>
+<p><strong>Ni <code>#ifdef</code> espagueti ni dos binarios. El patrón correcto es una interfaz abstracta común con inyección de dependencias.</strong></p>
+<p>Tu código actual tiene dos implementaciones: <code>seed-client</code> (community) y <code>VaultClient</code> (enterprise). El riesgo de <code>#ifdef ARGUS_VAULT_ENABLED</code> es real: divergencia silenciosa, código imposible de leer, y tests que solo compilan una ruta en CI.</p>
+<p><strong>Arquitectura recomendada:</strong></p>
+<pre><code class="language-cpp">// common/crypto_provider.h — interfaz común, sin #ifdef
+class CryptoProvider {
+public:
+    virtual ~CryptoProvider() = default;
+    virtual KeyPair derive_keypair(const std::string&amp; family, 
+                                    const std::string&amp; component) = 0;
+    virtual std::string fingerprint(const PublicKey&amp; pk) = 0;
+};
+
+// seed_file_provider.cpp — community
+class SeedFileProvider : public CryptoProvider { ... };
+
+// vault_provider.cpp — enterprise
+class VaultProvider : public CryptoProvider { ... };
+
+// factory — decisión en un solo punto
+std::unique_ptr&lt;CryptoProvider&gt; CryptoProvider::create(Config cfg) {
+    if (cfg.vault_enabled) return std::make_unique&lt;VaultProvider&gt;(cfg);
+    return std::make_unique&lt;&lt;SeedFileProvider&gt;(cfg);
+}
+</code></pre>
+<p><strong>Implicaciones:</strong>
+- Los 6 componentes no ven <code>#ifdef</code>. Solo llaman a <code>CryptoProvider::create()</code>.
+- El flag CMake <code>ARGUS_VAULT_ENABLED</code> solo controla qué <code>.cpp</code> se compila y linka, no hay macros en headers de componentes.
+- CI/CD debe compilar <strong>ambas</strong> configuraciones en paralelo (<code>ON</code> y <code>OFF</code>). Si un PR rompe community, el build rojo lo detecta inmediatamente. Esto elimina la divergencia silenciosa.</p>
+<p><strong>Veredicto:</strong> Refactoriza <code>vault_client.h</code> + <code>seed-client</code> para implementar la interfaz común <strong>antes</strong> de integrar en <code>etcd-server</code>. Es 2 horas de trabajo que ahorran 20 horas de debug en el futuro.</p>
+<hr />
+<h2 id="q2-orden-de-migracion-de-componentes">Q2 — Orden de migración de componentes</h2>
+<p><strong>etcd-server primero es correcto e inevitable.</strong> Pero el orden posterior debe respetar el <strong>flujo de datos</strong>, no solo la jerarquía criptográfica.</p>
+<table>
+<thead>
+<tr>
+<th>Orden</th>
+<th>Componente</th>
+<th>Justificación</th>
+<th>Riesgo</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>1</strong></td>
+<td><code>etcd-server</code></td>
+<td>Trust anchor. Sin él no hay barrera.</td>
+<td>Bajo: no procesa tráfico de red.</td>
+</tr>
+<tr>
+<td><strong>2</strong></td>
+<td><code>sniffer</code> + <code>ml-detector</code></td>
+<td>Core del pipeline de detección. Ambos pueden migrarse en paralelo porque son independientes criptográficamente (familias distintas o misma familía, pero sin dependencia funcional).</td>
+<td><strong>Alto en sniffer</strong>: si <code>VaultClient</code> bloquea el arranque &gt;5s, el sniffer pierde paquetes iniciales. La inicialización criptográfica debe completarse <strong>antes</strong> de <code>pcap_open_live()</code> / <code>AF_PACKET</code>.</td>
+</tr>
+<tr>
+<td><strong>3</strong></td>
+<td><code>firewall-acl-agent</code></td>
+<td>Depende funcionalmente de <code>ml-detector</code> (recibe alertas para actuar), pero criptográficamente es independiente.</td>
+<td>Medio: si ml-detector no está listo, firewall no tiene alertas que procesar, pero esto ya es cierto hoy.</td>
+</tr>
+<tr>
+<td><strong>4</strong></td>
+<td><code>rag-ingester</code></td>
+<td>No crítico para detección en tiempo real.</td>
+<td>Bajo.</td>
+</tr>
+<tr>
+<td><strong>5</strong></td>
+<td><code>rag-security</code></td>
+<td>Infraestructura de soporte.</td>
+<td>Bajo.</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Nota crítica sobre <code>sniffer</code>:</strong> Es el único componente donde la latencia de arranque importa. Un corte de luz en un hospital seguido de rearranque debe tener el sniffer capturando en &lt;2s. Si <code>VaultClient::fetch_crypto_material()</code> tarda 5s (timeout) + jitter 4s (stagger) = 9s, esos 9s son ciegos de red.</p>
+<p><strong>Mitigación:</strong> El sniffer debe hacer <strong>pre-fetch criptográfico</strong> en un hilo separado durante el bootstrap, o mejor: el systemd unit del sniffer debe tener <code>Type=notify</code> y <code>NotifyAccess=all</code>, y no notificar <code>READY=1</code> hasta que crypto esté lista. Pero el socket de captura se abre inmediatamente en modo "capturar y bufferizar", sin descifrar/verificar hasta que crypto esté lista. Si tu pipeline no descifra en el sniffer (solo captura), esto no aplica. Si el sniffer firma los frames, sí aplica.</p>
+<p><strong>Veredicto:</strong> Orden aceptado, pero prioriza la migración de <code>sniffer</code> con medición de latencia de arranque. Si supera 2s, optimiza el path.</p>
+<hr />
+<h2 id="q3-register_etcd_status-sin-etcd-disponible-en-bootstrap">Q3 — <code>register_etcd_status</code> sin etcd disponible en bootstrap</h2>
+<p><strong>NO uses fichero local en <code>/run</code>. Eso es un hack que rompe la coherencia del sistema.</strong></p>
+<p>La solución correcta es que <code>etcd-server</code> use un <strong>cliente etcd local</strong> contra sí mismo:</p>
+<pre><code class="language-cpp">// etcd-server bootstrap (pseudocódigo)
+int main() {
+    // 1. Crypto material desde Vault (sin barrera)
+    auto crypto = VaultClient::fetch_crypto_material();
+
+    // 2. Arrancar servidor Raft (escucha en 127.0.0.1:2379 y eth1:2379)
+    etcd_server.start();
+
+    // 3. Ahora etcd está online. Usar cliente local loopback.
+    EtcdClient local_client(&quot;127.0.0.1:2379&quot;);
+    local_client.put(&quot;/argus/crypto_ready/etcd-server&quot;, 
+                     json{crypto.fingerprint, crypto.key_version});
+
+    // 4. El coordinador (un watcher o el propio etcd-server) cuenta crypto_ready
+    //    de todos los componentes, incluido él mismo.
+}
+</code></pre>
+<p><strong>Ventajas:</strong>
+- Un solo mecanismo de registro (<code>put</code> en etcd) para todos los componentes.
+- No hay estado split-brain entre fichero local y etcd.
+- Los demás componentes no necesitan saber que etcd-server es especial; solo leen la key <code>/argus/crypto_ready/*</code> y esperan N=6 entries.</p>
+<p><strong>La barrera "ALL crypto_ready"</strong> la implementa un coordinador (puede ser un script <code>make bootstrap</code> o un componente <code>orchestrator</code> minimalista):</p>
+<pre><code class="language-bash"># make bootstrap espera 6 crypto_ready
+until etcdctl get /argus/crypto_ready/ --prefix | wc -l -eq 6; do
+    sleep 1
+done
+echo &quot;ALL crypto_ready → pipeline open&quot;
+</code></pre>
+<p><strong>Veredicto:</strong> etcd-server se registra en etcd via loopback. Nada de ficheros locales. La barrera es uniforme.</p>
+<hr />
+<h2 id="q4-cache-tmpfs-vs-persistente-en-produccion-edge">Q4 — Cache tmpfs vs. persistente en producción edge</h2>
+<p><strong>Tu diagnóstico es correcto: tmpfs en prod edge es una vulnerabilidad operativa, no una virtud de seguridad.</strong></p>
+<p>Escenario: Hospital General de Badajoz, corte de luz 15 minutos. Nodo edge reinicia. <code>/run</code> se vacía. Vault central está en Madrid. La WAN tarda 3 minutos en recuperarse. El nodo edge no arranca sin Vault → NDR offline durante 3 minutos → ventana de ataque sin detección.</p>
+<p><strong>Esto viola el principio de misión crítica</strong> (ADR-0043, restricción no negociable: <em>"el nodo edge no puede degradar su capacidad de detección"</em>).</p>
+<p><strong>Solución: cache persistente cifrada en disco, con TTL estricto.</strong></p>
+<pre><code class="language-yaml"># vault_client_config.json (generado por Ansible/Jinja2)
+cache:
+  dev:
+    path: &quot;/run/argus/crypto-cache&quot;      # tmpfs, se pierce en destroy
+    ttl_seconds: 3600                      # 1h
+  prod:
+    path: &quot;/var/lib/argus/crypto-cache&quot;  # ext4/xfs, cifrado con LUKS/dm-crypt
+    ttl_seconds: 900                     # 15min
+    permissions: &quot;0600&quot;
+    encrypted: true                        # requiere filesystem cifrado o fscrypt
+</code></pre>
+<p><strong>Condiciones:</strong>
+- El disco del nodo edge <strong>ya debe estar cifrado</strong> (LUKS, BitLocker, o filesystem nativo cifrado). Si no lo está, cache persistente = material criptográfico en disco plano = compromiso físico.
+- El TTL sigue funcionando: si el archivo de cache tiene <code>mtime</code> &gt; TTL, se rechaza. Un corte de luz de 2 horas = cache rechazada = necesita Vault.
+- En dev, Ansible genera <code>path: /run/argus/crypto-cache</code> (tmpfs). En prod, <code>path: /var/lib/argus/crypto-cache</code> (persistente). El código C++ no cambia; solo lee la ruta de config.</p>
+<p><strong>¿Violación de TODO O NADA?</strong> No. El principio protege contra arranque sin crypto. La cache persistente <strong>es crypto</strong> (seed cifrada o keypair cifrado con clave de filesystem). No es un modo degradado; es un modo de recuperación ante desastre operativo.</p>
+<p><strong>Veredicto:</strong> Implementa cache persistente para prod. tmpfs solo para dev. Configurable via Ansible/Jinja2. Requisito previo: disco cifrado en nodos edge (documentar en ADR-044 o ADR-045).</p>
+<hr />
+<h2 id="q5-open-core-es-suficiente-argus_vault_enabled-como-unico-separador">Q5 — Open-core: ¿Es suficiente <code>ARGUS_VAULT_ENABLED</code> como único separador?</h2>
+<p><strong>No. Un único flag monolítico es insuficiente para una estrategia open-core sostenible.</strong></p>
+<p>Community edition debe ser <strong>funcionalmente completa para un NDR local</strong>: detecta, alerta, bloquea. Enterprise debe añadir <strong>governance, memoria histórica, y orquestación</strong>.</p>
+<p><strong>Propuesta de features granular:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Feature</th>
+<th>Community</th>
+<th>Enterprise</th>
+<th>Justificación</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>ARGUS_FEATURE_VAULT</code></td>
+<td>OFF</td>
+<td>ON</td>
+<td>Crypto governance (ADR-044)</td>
+</tr>
+<tr>
+<td><code>ARGUS_FEATURE_NEO4J</code></td>
+<td>OFF</td>
+<td>ON</td>
+<td>Memoria episódica distribuida (ADR-0043)</td>
+</tr>
+<tr>
+<td><code>ARGUS_FEATURE_FEDERATED_LEARNING</code></td>
+<td>OFF</td>
+<td>ON</td>
+<td>Agregación de modelos (ADR-038)</td>
+</tr>
+<tr>
+<td><code>ARGUS_FEATURE_FALCO</code></td>
+<td>OFF</td>
+<td>ON</td>
+<td>Respuesta automatizada/orquestada</td>
+</tr>
+<tr>
+<td><code>ARGUS_FEATURE_OPENCANARY</code></td>
+<td>OFF</td>
+<td>ON</td>
+<td>Honeypot deception avanzada</td>
+</tr>
+<tr>
+<td><code>ARGUS_FEATURE_RAG_LLM</code></td>
+<td>OFF</td>
+<td>ON</td>
+<td>Análisis LLM, requiere GPU/central</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Meta-flag:</strong></p>
+<pre><code class="language-cmake">option(ARGUS_EDITION_ENTERPRISE &quot;Enable all enterprise features&quot; OFF)
+if(ARGUS_EDITION_ENTERPRISE)
+    set(ARGUS_FEATURE_VAULT ON)
+    set(ARGUS_FEATURE_NEO4J ON)
+    set(ARGUS_FEATURE_FEDERATED_LEARNING ON)
+    # ...
+endif()
+</code></pre>
+<p><strong>Por qué esto importa para FEDER:</strong>
+El evaluador FEDER (22-Sep-2026) debe ver una contribución científica clara. Si todo el código es "enterprise" y la community es un cascarón vacío, el valor de la investigación se diluye. La community edition debe ser lo suficientemente robusta como para que un hospital pequeño la despliegue sin infraestructura central. Eso demuestra que el core ML (F1=0.9985) es independiente de la gobernanza enterprise.</p>
+<p><strong>Veredicto:</strong> Define los 6 features arriba <strong>antes</strong> de integrar <code>VaultClient</code> en todos los componentes. Si no lo haces ahora, tendrás que refactorizar <code>#ifdef</code> esparcidos más tarde. Es 1 día de trabajo que ahorra 1 semana de deuda.</p>
+<hr />
+<h2 id="resumen-de-acciones-para-day-151">Resumen de acciones para DAY 151</h2>
+<table>
+<thead>
+<tr>
+<th>Prioridad</th>
+<th>Tarea</th>
+<th>Justificación</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>P0</strong></td>
+<td>Refactor <code>seed-client</code> + <code>VaultClient</code> → interfaz <code>CryptoProvider</code></td>
+<td>Bloquea la integración limpia en componentes.</td>
+</tr>
+<tr>
+<td><strong>P0</strong></td>
+<td>Integrar <code>etcd-server</code> con <code>VaultProvider</code> via loopback</td>
+<td>Bootstrap especial, pero sin hacks de fichero local.</td>
+</tr>
+<tr>
+<td><strong>P1</strong></td>
+<td>Configurar cache persistente <code>/var/lib/argus/crypto-cache</code> para prod</td>
+<td>Misión crítica ante cortes de luz.</td>
+</tr>
+<tr>
+<td><strong>P1</strong></td>
+<td>Definir features granular (VAULT, NEO4J, FL, FALCO, etc.)</td>
+<td>Arquitectura open-core sostenible.</td>
+</tr>
+<tr>
+<td><strong>P1</strong></td>
+<td>Medir latencia de arranque de <code>sniffer</code> con <code>VaultProvider</code></td>
+<td>Si &gt;2s, requiere optimización.</td>
+</tr>
+<tr>
+<td><strong>P2</strong></td>
+<td>Implementar <code>register_etcd_status</code> real + keepalive</td>
+<td>DEBT-CRYPTO-HEARTBEAT-001.</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Una nota final:</strong> Tu decisión de "open-core" es la más importante del proyecto desde el punto de vista de impacto. Un NDR que solo funcione como SaaS centralizado es inútil para un colegio rural. Un NDR community que funcione localmente y se "mejore" con enterprise es el modelo correcto para infraestructura crítica de bajo presupuesto. Que el código refleje esa filosofía.</p>
+<p><em>El Consejo ha hablado. Que el commit de mañana incluya la interfaz <code>CryptoProvider</code>.</em> 🛡️</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.top", "search.highlight"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

@@ -1,0 +1,1381 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source embedded-ML NDR for hospitals and schools">
+      
+      
+        <meta name="author" content="Alonso Isidoro Roman">
+      
+      
+        <link rel="canonical" href="https://alonsoir.github.io/argus/adr/ADR-057-capa-consulta-grafo-kuzu-bitemporalidad-nl-v2/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>ADR-057 — Capa de consulta del grafo (Kuzu), bitemporalidad y acceso NL→plantilla - ML Defender (aRGus NDR)</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#adr-057-capa-de-consulta-del-grafo-kuzu-bitemporalidad-y-acceso-nlplantilla" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-header__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ML Defender (aRGus NDR)
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              ADR-057 — Capa de consulta del grafo (Kuzu), bitemporalidad y acceso NL→plantilla
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../README.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/BACKLOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Backlog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Security Model
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-tabs__link">
+          
+  
+  
+  ADRs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/contracts/Protobuf contracts.md" class="md-tabs__link">
+          
+  
+  
+  Contracts
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-nav__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ML Defender (aRGus NDR)
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../README.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/BACKLOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADRs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ADRs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013 Seed Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-021-deployment-topology-seed-families.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-021 Topology SSOT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-022-threat-model-opcion2-descartada.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-022 Threat Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Protobuf contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protobuf
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/JSON contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JSON
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Rag security commands.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#0-revision-que-cambia-respecto-a-la-version-embrionaria" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        0. Revisión — qué cambia respecto a la versión embrionaria
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="0. Revisión — qué cambia respecto a la versión embrionaria">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#0bis-cambios-de-la-v2-day-182-el-smoke-b1-ejecutado" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        0.bis — Cambios de la v2 (DAY 182): el smoke B1, ejecutado
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1-contexto" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Contexto
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-decision" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Decisión
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2. Decisión">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#20-modelo-de-concurrencia-de-kuzu-firme-restriccion-de-entorno-medida-day-182" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.0 Modelo de concurrencia de Kuzu — FIRME (restricción de entorno, MEDIDA DAY 182)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#21-ubicacion-in-process-un-unico-proceso-dueno-firme" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.1 Ubicación: in-process, un único proceso dueño — FIRME
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#22-frontera-de-responsabilidades-firme" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.2 Frontera de responsabilidades — FIRME
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#23-interfaz-de-consulta-plantillas-parametrizadas-sin-llm-al-inicio-firme-heredado" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.3 Interfaz de consulta: plantillas parametrizadas, sin LLM al inicio — FIRME (heredado)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#24-bitemporalidad-firme-heredado-implementado-fase-0-day-182" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.4 Bitemporalidad — FIRME (heredado, implementado Fase 0 DAY 182)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#25-topologia-un-grafo-vs-n-grafos-resuelta-por-medicion-d1-smoke-b1-day-182" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.5 Topología: un grafo vs. N grafos — ✅ RESUELTA POR MEDICIÓN (D1, smoke B1, DAY 182)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#26-motor-de-grafo-kuzu-original-vs-fork-de-vela-resuelta-por-medicion-d2-smoke-b1-day-182" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.6 Motor de grafo: Kuzu original vs. fork de Vela — ✅ RESUELTA POR MEDICIÓN (D2, smoke B1, DAY 182)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#27-motor-columnar-de-promocionconsulta-arrowc-vs-duckdb-abierta-d3-sin-tocar" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.7 Motor columnar de promoción/consulta: Arrow/C++ vs. DuckDB — ABIERTA (D3, sin tocar)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#28-indice-temporal-del-tier-caliente-firme-medidoverificado-day-182" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.8 Índice temporal del tier caliente — FIRME (MEDIDO/VERIFICADO DAY 182)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-experimentos-que-resuelven-las-decisiones-abiertas-el-instrumento" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Experimentos que resuelven las decisiones abiertas (el instrumento)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. Experimentos que resuelven las decisiones abiertas (el instrumento)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#30-b1-ejecutado-resuelve-d1-d2-day-182" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.0 — B1 EJECUTADO (resuelve D1 + D2) · DAY 182
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#31-fase-0-del-grafo-medida-implementada-guardas-que-protegen-el-experimento" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.1 — Fase 0 del grafo (MEDIDA / IMPLEMENTADA) + guardas que protegen el experimento
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#32-b2-pendiente-resuelve-d3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.2 — B2 PENDIENTE (resuelve D3)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-consecuencias" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Consecuencias
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-alternativas-consideradas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Alternativas consideradas
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-pendiente-antes-del-cierre-del-adr" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Pendiente antes del cierre del ADR
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-proposito-esta-capa-es-andamiaje-no-fin" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Propósito: esta capa es andamiaje, no fin
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-endurecimiento-diferido-no-es-camino-critico-del-experimento" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. Endurecimiento DIFERIDO (no es camino crítico del experimento)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#fuentes-concurrencia-forks-indices-verificadas-day-181182" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fuentes (concurrencia, forks, índices — verificadas DAY 181–182)
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="adr-057-capa-de-consulta-del-grafo-kuzu-bitemporalidad-y-acceso-nlplantilla">ADR-057 — Capa de consulta del grafo (Kuzu), bitemporalidad y acceso NL→plantilla</h1>
+<p><strong>Estado:</strong> Provisional / en maduración. Contiene decisiones <strong>FIRMES</strong>, decisiones <strong>RESUELTAS POR MEDICIÓN</strong> (v2, DAY 182) y decisiones <strong>ABIERTAS</strong> que se resuelven por <strong>medición, no por votación</strong>. Revisado por el Consejo de Sabios (1ª vuelta DAY 181, 2ª vuelta DAY 182 sobre el smoke ejecutado).</p>
+<p><strong>Componente:</strong> <strong><code>graph-engine</code></strong> (componente propio, distinto de <code>correlation-engine</code>). Lee la <strong>zona GOLD</strong> del lakehouse gobernado por <strong>Apache Iceberg</strong> (bronce/plata/oro) y es el <strong>único dueño <code>READ_WRITE</code></strong> del/los fichero(s) <code>.kuzu</code>: crea, actualiza y sirve lecturas del grafo. No tiene relación con <code>rag-ingester</code>/<code>rag-security</code>. <strong>Nota de migración:</strong> las clases de grafo (<code>IGraphSink</code>, <code>KuzuGraphSink</code>, <code>LoggingGraphSink</code>, <code>cypher_builder</code>, <code>flow_uid</code>, <code>ingest_clock</code>) viven hoy físicamente en <code>correlation-engine</code>; su hogar definitivo es <code>graph-engine</code> y habrá que extraerlas (DEBT-GRAPH-ENGINE-EXTRACTION-001).</p>
+<hr />
+<h2 id="0-revision-que-cambia-respecto-a-la-version-embrionaria">0. Revisión — qué cambia respecto a la versión embrionaria</h2>
+<ol>
+<li>Incorpora el <strong>medallion</strong> (Iceberg: bronce/plata/oro) como entorno del grafo; <code>correlation-engine</code> alimenta bronce, <code>graph-engine</code> lee oro.</li>
+<li><strong>Resuelve</strong> §2.1 (in-process vs. servicio) con el modelo de concurrencia real de Kuzu.</li>
+<li><strong>Abre tres decisiones medidas:</strong> (D1) un grafo vs. N grafos; (D2) Kuzu original vs. fork de Vela; (D3) motor columnar Arrow/C++ vs. DuckDB para el join silver→gold y el scan de dataset.</li>
+<li><strong>Fija la frontera de responsabilidades:</strong> generación de dataset = scan parquet gold; grafo = travesía de grano fino.</li>
+<li>Reabre el supuesto previo de "DuckDB para el tier frío": ahora es decisión medida, no dada por sentada.</li>
+<li><strong>Subordina</strong> D1/D2/D3 al propósito último (§7): el criterio de desempate es qué opción desbloquea antes la generación de datasets para el experimento de aprendizaje ensemble.</li>
+<li>Añade <strong>§7 (Propósito y condición de validez del experimento)</strong> y <strong>fija D3 dentro de este ADR</strong> (no se extrae a un ADR-058), por la decisión deliberada de cerrar ADRs abiertos antes que abrir nuevos.</li>
+</ol>
+<h3 id="0bis-cambios-de-la-v2-day-182-el-smoke-b1-ejecutado">0.bis — Cambios de la v2 (DAY 182): el smoke B1, ejecutado</h3>
+<p>El smoke <code>DEBT-KUZU-CONCURRENCY-SMOKE-001</code> (adelantado a Fase 0 por arbitraje DAY 181) se <strong>ejecutó y midió</strong>. Sus resultados <strong>cierran D1 y D2</strong> y refinan §2.0/§2.1. Cambios concretos:</p>
+<ul>
+<li><strong>§2.5 (D1) y §2.6 (D2): de ABIERTA → RESUELTA POR MEDICIÓN.</strong> Un grafo, Kuzu stock, <strong>Vela NO</strong>. Evidencia en §3.0.</li>
+<li><strong>§2.0/§2.1: reforzadas</strong> con lo medido (lock cross-proceso confirmado; 2º <code>Database</code> in-process abre → footgun → guarda barata).</li>
+<li><strong>Nuevo §3.0</strong> con la tabla de resultados del smoke (run1/run2/run3) y el veredicto.</li>
+<li><strong>Nuevo §3.1</strong> — Fase 0 del grafo, medida: <code>ingested_at</code> + <code>temporal_anomaly</code> (verde) + las <strong>tres guardas baratas que protegen el experimento</strong> bajo carga (no "production-readiness").</li>
+<li><strong>§2.8 (nuevo) — Índice temporal:</strong> Kuzu 0.11.3 <strong>no tiene índice de rango</strong>; la aceleración temporal vive en el tier frío (Parquet/DuckDB), el caliente acepta full-scan + medir. (Reescribe el ítem "índice sobre <code>ingested_at</code>" que la 1ª vuelta del Consejo había sugerido.)</li>
+<li><strong>Nuevo §8 — Endurecimiento DIFERIDO:</strong> el feedback de la 2ª vuelta del Consejo (durabilidad WAL, atomicidad de batch, backpressure, tiering) se aparca con nombre y experimento, <strong>activable si y cuando la hipótesis se corrobore y se decida desplegar</strong> (ver §7). No es camino crítico del experimento.</li>
+</ul>
+<p><strong>Distinción que esta v2 fija explícitamente, para que no se vuelva a confundir:</strong> el eje de este ADR (§7) es <em>¿aguanta el andamiaje la carga de la prueba y nos deja medir si el ensemble + el grafo hacen ver más a aRGus?</em> — NO <em>¿es el sink production-ready para un NDR hospitalario desplegado?</em>. La 2ª vuelta del Consejo respondió, con razón, a la pregunta tal como se le formuló (production-readiness) y marcó cinco bloqueantes. <strong>En el eje real del experimento, casi ninguno bloquea:</strong> la durabilidad tras crash, el DoS por envenenamiento o el staleness en ataque activo son propiedades de un servidor <em>desplegado</em>, no de la ruta crítica hacia el <em>resultado científico</em>, que se publica salga como salga (corroborada con estos datos, o no corroborada con estos otros). Lo único del feedback que sí entra ahora es lo que impide que <strong>el banco de pruebas falsee la medición</strong> (§3.1).</p>
+<hr />
+<h2 id="1-contexto">1. Contexto</h2>
+<p>El recorrido del dato, tal como queda establecido:</p>
+<p><code>correlation-engine</code> recibe los ficheros-contrato <strong>aspectv1</strong> de cada componente → los deposita en la <strong>LZ bronze</strong> (Apache Iceberg). Promoción por fases consolidadas: CSV (bronze) → <strong>Avro</strong> al consolidar → <strong>Parquet</strong> en <strong>silver</strong> al consolidar → <strong>parquets con join</strong> en <strong>gold</strong> (join de aRGus+Suricata+Zeek por <code>community_id</code>; posibles joins adicionales por <code>trace_id</code> / <code>flow_id</code>). El grafo se construye <strong>desde gold</strong>, y lo construye <code>graph-engine</code> (componente propio).</p>
+<p>De aquí emergen <strong>dos superficies de lectura distintas</strong>, con cargas distintas:
+- <strong>Columnar</strong> (lakehouse): generación de datasets, agregados, consultas a frío.
+- <strong>Travesía</strong> (grafo): correlación de grano fino.</p>
+<p><strong>Casos de uso conocidos:</strong> (a) generación de datasets que juntan todas las señales de telemetría; (b) retro-hunt de IOC; (c) <strong>otros aún desconocidos</strong>. El conjunto de consultas es incompleto y va a crecer.</p>
+<p><strong>Principio rector bajo incertidumbre de queries:</strong> <em>modelar el dominio, no la consulta.</em> Las consultas son volátiles; el dominio de telemetría (flujo, host, sensor, señal, cadena causal) es estable.</p>
+<p><strong>Perfil de carga:</strong> se prevén <strong>muchas más actualizaciones que lecturas</strong> (escrituras dominantes). Solicitar la generación de un dataset es una solicitud de <strong>lectura</strong>. <strong>Confirmado por medición (DAY 182):</strong> bajo perfil write-heavy realista (~100:1), el cuello de escritura de Kuzu es el overhead por-<code>query()</code>, no el fsync ni el escritor único (§3.0).</p>
+<p><strong>Contingencia de upstream:</strong> Kuzu fue <strong>archivado por upstream (oct-2025)</strong>, v0.11.3 release final (pin SHA256). Mitigado por <code>DEBT-KUZU-UPSTREAM-ARCHIVED-001</code> (P2) + la abstracción <code>IGraphSink</code> (backend intercambiable) + plan B fork <code>Vela-Engineering/kuzu</code>. <strong>El catálogo de plantillas (§2.3) es la frontera de portabilidad</strong> — no acumular Cypher nativo fuera de él.</p>
+<hr />
+<h2 id="2-decision">2. Decisión</h2>
+<h3 id="20-modelo-de-concurrencia-de-kuzu-firme-restriccion-de-entorno-medida-day-182">2.0 Modelo de concurrencia de Kuzu — FIRME (restricción de entorno, MEDIDA DAY 182)</h3>
+<ul>
+<li>Kuzu es embebido; el <strong>lock es por fichero</strong> de base de datos. <strong>Varios <code>.kuzu</code> distintos conviven</strong>, cada uno en <code>READ_WRITE</code>, sin conflicto mutuo; un mismo proceso puede sostener N objetos <code>Database</code> apuntando a N ficheros <strong>distintos</strong>.</li>
+<li><strong>Por cada fichero:</strong> exactamente <strong>un proceso</strong> puede ser su dueño en <code>READ_WRITE</code>. Dentro de ese proceso, <strong>múltiples <code>Connection</code></strong> sacadas del único <code>Database</code> compartido emiten lecturas <strong>y</strong> escrituras concurrentes de forma segura (cada sentencia va envuelta en transacción). <strong>Esta es la garantía firme que satisface la <em>conditio sine qua non</em></strong> (R/W concurrente).</li>
+<li><strong>MEDIDO (smoke [B], DAY 182):</strong> un <strong>segundo proceso</strong> que abra el mismo fichero <strong>es rechazado por lock</strong> (exit=2, confirmado). PERO un <strong>segundo <code>Database</code> in-process sobre el mismo path ABRE</strong> sin error — Kuzu <strong>no se autoprotege in-process</strong>: dos buffer managers sobre los mismos datos = corrupción silenciosa. Es un <strong>footgun</strong>, no una protección. → guarda propia obligatoria (§3.1, <code>DatabaseRegistry</code>).</li>
+<li><strong>MEDIDO (smoke, escritura):</strong> Kuzu permite <strong>una sola write-tx en todo el sistema</strong> — confirmado por el propio motor: <em>"Cannot start a new write transaction... Only one write transaction at a time is allowed."</em> Es invariante de software de Kuzu, <strong>no artefacto de VM</strong>.</li>
+<li><strong>Consecuencia:</strong> cualquier proceso que no sea el dueño debe llegar al grafo <strong>a través del dueño</strong> (fachada IPC, p. ej. el patrón ZMQ ya existente), nunca abriendo el fichero.</li>
+</ul>
+<h3 id="21-ubicacion-in-process-un-unico-proceso-dueno-firme">2.1 Ubicación: in-process, un único proceso dueño — FIRME</h3>
+<p>El componente de grafo (<strong><code>graph-engine</code></strong>) es el <strong>único dueño <code>READ_WRITE</code></strong> del/los fichero(s) de grafo. Lee eventos de la zona GOLD de Iceberg y atiende las consultas de grano fino. El invariante operativo es <strong>"un solo proceso es dueño del <code>.kuzu</code>"</strong>, no "un solo usuario": varios administradores son válidos siempre que hablen con ese proceso, no que abran el fichero. <strong>Reforzado DAY 182:</strong> "un solo proceso dueño" es correcto NO porque el lock impida un 2º <code>Database</code> in-process (no lo impide — es un footgun), sino porque cross-proceso está bloqueado <strong>y</strong> in-process es un footgun. La guarda lo hace imposible por construcción (§3.1).</p>
+<h3 id="22-frontera-de-responsabilidades-firme">2.2 Frontera de responsabilidades — FIRME</h3>
+<ul>
+<li><strong>Generación de dataset = scan columnar sobre parquet gold</strong>, <em>no</em> travesía de grafo. No lee siquiera de Kuzu: lee el tier columnar. Esto descarga al grafo de la exportación masiva.</li>
+<li>El <strong>grafo</strong> queda reservado para lo que solo el grafo hace: <strong>travesías de correlación de grano fino</strong> (retro-hunt y las que vengan).</li>
+</ul>
+<h3 id="23-interfaz-de-consulta-plantillas-parametrizadas-sin-llm-al-inicio-firme-heredado">2.3 Interfaz de consulta: plantillas parametrizadas, sin LLM al inicio — FIRME <em>(heredado)</em></h3>
+<p>Path 2: plantillas Cypher parametrizadas; nada de NL→Cypher libre. El LLM, cuando se añada, mapea NL→(intención, parámetros) contra plantillas pre-validadas. El catálogo de preguntas SOC <em>es</em> la biblioteca de plantillas. La capa NL es azúcar intercambiable, diferida (ADR propio, DEBT-NL-BENCHMARK-001). <strong>El catálogo es además la frontera de portabilidad ante el upstream archivado.</strong></p>
+<h3 id="24-bitemporalidad-firme-heredado-implementado-fase-0-day-182">2.4 Bitemporalidad — FIRME <em>(heredado, implementado Fase 0 DAY 182)</em></h3>
+<p><code>event_time</code> vs. <code>knowledge_time</code>. Los flujos nunca se reescriben; los indicadores se <strong>anotan</strong> sobre ellos con <code>knowledge_time</code>. Habilita forense reproducible e informes "a fecha de". Implementación Fase 0 en §3.1: <code>ingested_at</code> (provenance/first_seen, NO reproducibilidad — wall clock deliberado, distinto del <code>bpf_ktime</code> envenenable del sensor) + <code>temporal_anomaly</code> (unilateral: futuro-datación = firma de clock-injection).</p>
+<h3 id="25-topologia-un-grafo-vs-n-grafos-resuelta-por-medicion-d1-smoke-b1-day-182">2.5 Topología: un grafo vs. N grafos — ✅ RESUELTA POR MEDICIÓN (D1, smoke B1, DAY 182)</h3>
+<p><strong>Veredicto: UN GRAFO.</strong> El smoke confirmó las dos mitades del razonamiento original:
+- La amplificación de escritura de N grafos por eje (<code>community_id</code>/<code>trace_id</code>/<code>flow_id</code>) duele justo donde las escrituras dominan, y fragmenta las consultas cross-eje futuras. Modelo correcto: <strong>un grafo, ejes como tipos de arista/nodo</strong>.
+- El único beneficio de fragmentar —paralelismo de escritura— <strong>no existe en Kuzu stock</strong>: el smoke (run3, 4 writers) midió <strong>373.000 rechazos</strong> por la única write-tx del sistema, con solo +37% de throughput y la contención de lectura p99 disparándose a ×11.37. Multi-writer <strong>no escala</strong>.</p>
+<p><strong>Si la medición justificara fragmentar, el eje correcto sigue siendo el TEMPORAL</strong> (sharding del tier caliente), nunca el de correlación (rompe la entidad). Diferido a §8 con invariante de shardability preservada barata (la routing key <code>community_id</code> ya existe; <code>IGraphSink</code>/<code>IGraphQuery</code> son el seam).</p>
+<h3 id="26-motor-de-grafo-kuzu-original-vs-fork-de-vela-resuelta-por-medicion-d2-smoke-b1-day-182">2.6 Motor de grafo: Kuzu original vs. fork de Vela — ✅ RESUELTA POR MEDICIÓN (D2, smoke B1, DAY 182)</h3>
+<p><strong>Veredicto: KUZU ORIGINAL (stock). Vela NO.</strong> El lean a priori era Vela (multi-writer in-process). La medición lo revierte:
+- El cuello <strong>NO era la serialización del escritor único</strong>. Era el <strong>overhead por-<code>query()</code></strong> (parse/plan + fsync por llamada). La palanca real es <strong>batchear sentencias con <code>UNWIND</code></strong> (una <code>query()</code> = N upserts), que da <strong>×55–61</strong> y vive en Kuzu stock.
+- Lo único que Vela añadiría —writers paralelos— es exactamente lo que run3 demostró que <strong>no escala</strong> (single write-tx). Por tanto Vela no aporta sobre el problema medido.
+- <strong>Reconsiderar Vela solo si</strong> un sink con UNWIND batch + 1 writer se mide corto en hardware real (x86 RAW / N100 / RPi5, ADR-041) — y entonces como decisión del Consejo con revisión de seguridad (fork de comunidad, supply-chain; nótese que el upstream de Kuzu también está archivado).</p>
+<p><code>DEBT-KUZU-UPSTREAM-ARCHIVED-001</code> (P2) sigue vigente como contingencia; este veredicto NO la cierra, solo decide que el salto a Vela no está justificado hoy por rendimiento.</p>
+<h3 id="27-motor-columnar-de-promocionconsulta-arrowc-vs-duckdb-abierta-d3-sin-tocar">2.7 Motor columnar de promoción/consulta: Arrow/C++ vs. DuckDB — ABIERTA (D3, sin tocar)</h3>
+<p><strong>El smoke de Kuzu NO toca esta decisión.</strong> D3 sigue ABIERTA y se resuelve con <strong>B2</strong> (banco de promoción/join, §3). El lean (capita fina C++/Arrow si se mantiene fina; DuckDB si igualar su robustez convierte la capita en medio motor) permanece sin cambios. <em>Nota: se mantiene dentro del ADR-057, no se extrae a ADR-058.</em></p>
+<h3 id="28-indice-temporal-del-tier-caliente-firme-medidoverificado-day-182">2.8 Índice temporal del tier caliente — FIRME (MEDIDO/VERIFICADO DAY 182)</h3>
+<p>Kuzu 0.11.3 <strong>no ofrece índice secundario ni de rango</strong> (solo PK-hash, FTS sobre STRING, HNSW sobre vectores — verificado). Por tanto <strong>no existe "índice sobre <code>ingested_at</code>"</strong> en el tier caliente. Consecuencia de diseño:
+- La <strong>aceleración de consultas por rango temporal vive en el tier FRÍO</strong> (Parquet/DuckDB, predicate pushdown).
+- El <strong>tier caliente (Kuzu) acepta full-scan temporal + medir</strong>; si el full-scan se mide caro a escala real, la respuesta es <strong>tiering hot→cold más agresivo</strong> (§8), no un índice que el motor no tiene.
+- Los campos crudos (<code>flow_start_window</code>, <code>ingested_at</code>) se conservan para que un cálculo bitemporal a futuro (bilateral/pasado) se haga en runtime sin cerrar puertas.</p>
+<hr />
+<h2 id="3-experimentos-que-resuelven-las-decisiones-abiertas-el-instrumento">3. Experimentos que resuelven las decisiones abiertas (el instrumento)</h2>
+<p>El smoke test deja de ser una comprobación de corrección y se convierte en el <strong>instrumento que decide la arquitectura</strong>.</p>
+<p><strong>Criterio de desempate (ver §7):</strong> si B1 o B2 no arrojan un ganador nítido, gana la opción que <strong>antes desbloquee la generación de datasets</strong> para el experimento de aprendizaje. Velocidad hacia el experimento por encima de elegancia arquitectónica.</p>
+<h3 id="30-b1-ejecutado-resuelve-d1-d2-day-182">3.0 — B1 EJECUTADO (resuelve D1 + D2) · DAY 182</h3>
+<p>Banco de contención escritura/lectura con perfil write-heavy realista (i9 / VirtualBox, <code>/tmp</code> nativo del guest — NO vboxsf, que rompe el <code>mmap</code> de Kuzu —, 5 s, grafo inicial 100k nodos vía UNWIND, upsert flood ~100:1):</p>
+<table>
+<thead>
+<tr>
+<th>run</th>
+<th>estrategia</th>
+<th>upserts/s</th>
+<th>por-upsert p50</th>
+<th>maxRSS</th>
+<th>veredicto</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>MERGE/fila (sink actual)</td>
+<td>164–229</td>
+<td>~6.0 ms</td>
+<td>632 MB</td>
+<td>overhead por-<code>query()</code></td>
+</tr>
+<tr>
+<td>2</td>
+<td>UNWIND batch=1000, 1 writer</td>
+<td>10.000–12.200</td>
+<td>~78–94 µs</td>
+<td>664–682 MB</td>
+<td><strong>×55–61 más rápido</strong></td>
+</tr>
+<tr>
+<td>3</td>
+<td>UNWIND batch=1000, 4 writers</td>
+<td>13.800–16.000</td>
+<td>~82–97 µs</td>
+<td>821 MB</td>
+<td>373k rechazos write-tx, no escala</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Descomposición (de los dos primeros runs):</strong> <code>coste(n) = P + S + n·E</code> → <strong>E ≈ 88 µs/fila</strong> (ejecución real del MERGE, irreducible), <strong>P+S ≈ 5.93 ms</strong> (parse/plan + commit/fsync, fijo, amortizable). El ×55–61 es <em>enteramente</em> amortizar ese coste fijo de 1-por-fila a 1-por-1000.</p>
+<p><strong>Hallazgos de operación medidos (cada uno contradijo doc o supuesto):</strong>
+1. <strong>Lock:</strong> la doc decía que un 2º <code>Database</code> sobre el mismo path falla. MEDIDO: cross-proceso sí falla (exit=2); <strong>in-process abre</strong> (footgun, dos buffer managers → corrupción). El "un Database, N Connections" es correcto por ser cross-proceso-bloqueado <strong>y</strong> in-process-footgun, no por el lock.
+2. <strong>Cuello = overhead por-<code>query()</code>, no fsync solo ni single-writer.</strong> UNWIND+single-MERGE &gt;&gt; MERGE-por-fila (el procesamiento estático domina).
+3. <strong>Crash (Ctrl-C/SIGKILL) deja WAL huérfano.</strong> Incidente del propio smoke: borrar el <code>.kuzu</code> y dejar el <code>.wal</code> huérfano → reapertura lanza <code>unordered_map::at</code>. <strong>Corrección honesta:</strong> fue auto-infligido (inconsistencia artificial), NO prueba de fallo de recuperación de Kuzu. El smoke se auto-sana con <code>cleanup_db</code> (limpia <code>.wal</code>/<code>.lock</code>/sidecars al arrancar). La recuperación real tras crash queda sin validar → §8 (no bloquea el experimento).</p>
+<p><strong>Veredicto B1:</strong> un grafo (D1), Kuzu stock (D2), Vela NO. El sink de <code>graph-engine</code> debe escribir con <strong>UNWIND batch + 1 writer</strong>.</p>
+<blockquote>
+<p><em>La documentación es un voto; el smoke es una medida.</em> — DAY 182</p>
+</blockquote>
+<h3 id="31-fase-0-del-grafo-medida-implementada-guardas-que-protegen-el-experimento">3.1 — Fase 0 del grafo (MEDIDA / IMPLEMENTADA) + guardas que protegen el experimento</h3>
+<p><strong>Verde y aplicado (EMECAS DAY 182):</strong>
+- <code>ingested_at</code> (epoch-ns wall clock = first_seen, <code>ON CREATE SET</code>) en las 3 tablas de nodo (<code>NetworkFlow</code>, <code>Alert</code>, <code>TelemetryEvent</code>).
+- <code>temporal_anomaly</code> (BOOLEAN, <strong>unilateral</strong>: TRUE si <code>flow_start_window &gt; ingested_at + margen</code>) solo en <code>NetworkFlow</code>. Margen <code>kTemporalMarginNs = 2s</code> PLACEHOLDER a calibrar. Raw fields conservados para un cómputo bilateral/pasado a futuro.
+- <code>build_cypher()</code> toma <code>ingested_at_ns</code> por parámetro (función libre, determinista y testeable con valor fijo — sin DI). <code>cypher_builder</code> es la única fuente de Cypher, <code>locale::classic()</code> siempre. Cierra la frontera de inyección Cypher (H-1).
+- <code>make test-components</code> ahora corre <code>correlation-engine-test</code> PRIMERO (cerró <code>DEBT-CE-TESTS-UNGATED-001</code>: los tests de Kuzu+H-1 no gateaban merges desde DAY 180).</p>
+<p><strong>Tres guardas baratas que protegen LA MEDICIÓN (no production-readiness), necesarias para que el banco aguante la tortura de datos a 33 Mb/s (Vagrant) y más en x86 RAW sin perder ni corromper datos del experimento:</strong></p>
+<ol>
+<li><strong>Sink con UNWIND batch + flush-by-(size OR time) + 1 writer.</strong> El throughput (×55–61) viene del batch; el flush-by-time evita cegarse en valles de caudal (un flow no debe quedar sin commitear indefinidamente si el batch no se llena). Sin esto, la riada o satura (pierde) o el grafo va stale. Es condición de que el experimento <strong>mida lo que entra</strong>.</li>
+<li><strong><code>DatabaseRegistry</code> (path→<code>weak_ptr&lt;Database&gt;</code>).</strong> Hace <strong>imposible</strong> abrir un 2º <code>Database</code> sobre el mismo path (lanza). Protege los runs de una corrupción auto-infligida (el footgun de §2.0). Barato (~10 líneas + test). <em>Bonus:</em> habilita N paths distintos → no cierra la puerta al sharding temporal de §8 (un singleton ciego sí la cerraría).</li>
+<li><strong>Capar <code>bufferPoolSize</code> en init</strong> según la RAM asignada a Vagrant (y al x86 RAW). Evita que Kuzu coja RAM por defecto y compita con el resto del pipeline durante la tortura. El RSS queda acotado por el cap (Kuzu pagina a disco) — <strong>no es el OOM lineal que se temió</strong>; el riesgo real a escala es la latencia de paginación, que se mide aparte (§8).</li>
+</ol>
+<p><strong>Estas tres son las únicas piezas del feedback de la 2ª vuelta del Consejo que entran en el camino crítico del experimento.</strong> El resto se difiere (§8).</p>
+<h3 id="32-b2-pendiente-resuelve-d3">3.2 — B2 PENDIENTE (resuelve D3)</h3>
+<p>Banco de promoción/join (Arrow/C++ vs. DuckDB) sobre el join aRGus+Suricata+Zeek por <code>community_id</code>. Tres ejes: rendimiento, comportamiento bajo presión de memoria (spill), coste de mantenimiento medible (líneas de C++ crítico). <strong>Sin ejecutar.</strong> Avro fuera del cuadrilátero.</p>
+<hr />
+<h2 id="4-consecuencias">4. Consecuencias</h2>
+<ul>
+<li>(+) R/W concurrente <strong>garantizado</strong> in-process; la <em>conditio sine qua non</em> queda satisfecha y <strong>medida</strong>.</li>
+<li>(+) D1 y D2 <strong>resueltas con datos</strong> (un grafo, Kuzu stock), no con votos ni elegancia.</li>
+<li>(+) Separación nítida de superficies de lectura: columnar (masivo/dataset/frío) vs. travesía (grano fino).</li>
+<li>(+) Diseño <strong>robusto ante consultas futuras desconocidas</strong> (grafo modelado por dominio).</li>
+<li>(+) El sink batcheado da ×55–61 — el andamiaje puede tragar la tortura de datos del experimento.</li>
+<li>(−) Potencialmente <strong>tres motores</strong> en el stack (Kuzu, Arrow, quizá DuckDB): mantenimiento + deuda de versiones.</li>
+<li>(−) D3 <strong>diferida</strong> hasta B2 — cierre no alcanzado por diseño (<em>medir, no votar</em>).</li>
+<li>(−) Endurecimiento de producción (durabilidad WAL, atomicidad, backpressure, tiering) <strong>diferido a §8</strong>: el andamiaje del experimento no es un despliegue hospitalario, y no debe pagar ese coste hasta que la hipótesis lo justifique.</li>
+<li>(−) Upstream Kuzu archivado: contingencia viva (<code>DEBT-KUZU-UPSTREAM-ARCHIVED-001</code>).</li>
+</ul>
+<hr />
+<h2 id="5-alternativas-consideradas">5. Alternativas consideradas</h2>
+<ul>
+<li><strong>Particionar el grafo por eje de correlación</strong> → descartado por medición (D1, §2.5); rompe la entidad y triplica la escritura; el paralelismo que justificaría fragmentar no escala en Kuzu (run3).</li>
+<li><strong>Fork de Vela (multi-writer)</strong> → descartado por medición hoy (D2, §2.6); revisable solo si UNWIND+1writer se mide corto en hardware real.</li>
+<li><strong>Índice sobre <code>ingested_at</code> en Kuzu</strong> → imposible (Kuzu 0.11.3 no tiene índice de rango, §2.8); la aceleración temporal vive en el tier frío.</li>
+<li><strong>Exponer Cypher crudo / NL→Cypher libre con LLM</strong> → descartado <em>(heredado)</em>.</li>
+<li><strong>Sin bitemporalidad</strong> → insuficiente para forense reproducible <em>(heredado)</em>.</li>
+<li><strong>DuckDB dado por sentado para el tier frío</strong> → reabierto: decisión medida (D3, B2).</li>
+</ul>
+<hr />
+<h2 id="6-pendiente-antes-del-cierre-del-adr">6. Pendiente antes del cierre del ADR</h2>
+<ul>
+<li>[x] Ejecutar <strong>B1</strong> (D1+D2) — HECHO DAY 182, resultados en §3.0.</li>
+<li>[ ] Ejecutar <strong>B2</strong> (D3, Arrow vs DuckDB) — traer números.</li>
+<li>[ ] Decidir el <strong>nombre</strong> del componente (<code>graph-engine</code> provisional; candidatos <code>graph-sentinel</code>/<code>graph-warden</code>).</li>
+<li>[ ] <strong>Extraer las clases de grafo de <code>correlation-engine</code> a <code>graph-engine</code></strong> (DEBT-GRAPH-ENGINE-EXTRACTION-001).</li>
+<li>[ ] Calibrar el <strong>margen de <code>temporal_anomaly</code></strong> (2s placeholder) con dato real.</li>
+<li>[ ] Definir la <strong>partición disjunta de escenarios MITRE</strong> (entrenar A–M / evaluar N–Z) antes del experimento de aprendizaje (§7).</li>
+<li>[ ] <em>(heredado)</em> Catálogo inicial de plantillas (§2.3); dependencia con <code>DEBT-ARGUSPP-CLOCK-INJECTION-PROD-001</code>.</li>
+</ul>
+<hr />
+<h2 id="7-proposito-esta-capa-es-andamiaje-no-fin">7. Propósito: esta capa es andamiaje, no fin</h2>
+<p>Toda esta capa —medallion, join en gold, grafo, motor columnar— <strong>no es el fin, es andamiaje.</strong> Existe para habilitar <strong>la pregunta fundamental del proyecto</strong>: ¿pueden los modelos ensemble (árboles) aprender de la experiencia acumulada que han visto los nodos distribuidos y mejorar con ella? Demostrar esa mejora es lo más importante.</p>
+<p>Como <strong>no existe todavía una red distribuida real</strong>, la hipótesis se somete a prueba por sustitución: ejecutar <strong>tests MITRE lo más variados posibles</strong> que ataquen al <strong>pipeline completo</strong> al máximo de caudal disponible (33 Mb/s en Vagrant; mayor en el servidor x86 RAW conectado a la misma red, fuera de Vagrant), producir datasets, y medir si el ensemble mejora al incorporar la experiencia previa.</p>
+<p><strong>El andamiaje debe aguantar la tortura.</strong> El pipeline tiene que tragar la carga máxima de la tarjeta de red sin perder ni corromper datos del experimento — de ahí las tres guardas de §3.1 (UNWIND batch para throughput, flush-by-time para no cegarse, <code>bufferPoolSize</code> capado para no competir por RAM). Esto NO es "production-ready para hospital": es "el banco de pruebas no falsea la medición".</p>
+<p><strong>Subordinación de decisiones.</strong> D1, D2 y D3 son <strong>instrumentales</strong>. Cuando B1/B2 no den un ganador nítido, el criterio de desempate es <strong>qué opción desbloquea antes la generación de datasets</strong> — no qué arquitectura es más elegante. Una opción 90% tan buena que permita generar datasets esta semana gana a una óptima que llegue el mes que viene. El desarrollo no se puede eternizar: necesitamos ver resultados.</p>
+<p><strong>Condición de validez del experimento (no negociable).</strong> Los escenarios MITRE que generan el dataset de "experiencia previa" deben ser <strong>disjuntos</strong> de los que evalúan la mejora. Se entrena con la experiencia de los escenarios <strong>A–M</strong> y se mide la mejora contra escenarios <strong>N–Z no vistos</strong>:
+- Mejora sobre <strong>N–Z</strong> → aprendizaje sobre experiencia (resultado publicable).
+- Mejora solo sobre <strong>A–M</strong> → memorización / overfitting al banco (no publicable). Esta partición <em>es</em> el experimento. Walk-forward + golden set inmutable conforme a <strong>ADR-040</strong>.</p>
+<p><strong>Honestidad científica (<em>medir, no votar</em>).</strong> El experimento debe poder decir <strong>que no</strong>. Un resultado <strong>nulo o negativo</strong> con datos disjuntos también es un hallazgo, y se publica: indicaría que la hipótesis necesita más señal, más nodos o un dataset más rico antes de sostenerse. Pase lo que pase —hipótesis corroborada con estos datos, o camino seco con estos otros— <strong>se entregan datasets de valor al equipo de Andrés (UEx/INCIBE)</strong>, y la decisión de publicar una cosa u otra <strong>no depende de tener la mejor implementación posible del grafo.</strong> Si el diseño solo pudiera confirmar, no sería medición.</p>
+<hr />
+<h2 id="8-endurecimiento-diferido-no-es-camino-critico-del-experimento">8. Endurecimiento DIFERIDO (no es camino crítico del experimento)</h2>
+<p>Recoge el feedback de la <strong>2ª vuelta del Consejo (DAY 182)</strong> que es real para un <strong>despliegue de producción</strong> pero <strong>NO</strong> para el andamiaje del experimento. Todo aquí queda con nombre y experimento, <strong>activable si y cuando la hipótesis se corrobore y se decida desplegar en infraestructura real</strong> (RPi5/N100/x86). Encuadrado bajo <code>DEBT-KUZU-CONCURRENCY-SMOKE-001</code> en el BACKLOG (paraguas único, para que este hilo resurja con la noticia — buena o seca — sobre la hipótesis ensemble).</p>
+<table>
+<thead>
+<tr>
+<th>Eje</th>
+<th>Qué falta</th>
+<th>Experimento que lo zanja</th>
+<th>Por qué NO bloquea el experimento</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Durabilidad WAL (Q7)</strong></td>
+<td>Recuperación real tras crash sin validar (el smoke borra el WAL; producción debe recuperarlo).</td>
+<td><code>restore_from_wal_smoke_test</code>: SIGKILL a media riada con AMBOS ficheros intactos → reabrir sin limpiar → 0 commits ackeados perdidos (≥100 iter). Ligado a <code>DEBT-LABEL-WAL-001</code>.</td>
+<td>Un crash del banco se reinicia y se relanza la tanda; no falsea la métrica de mejora del ensemble. (Upstream archivado: si la recuperación falla, lo posees tú.)</td>
+</tr>
+<tr>
+<td><strong>Atomicidad / poison (Q5)</strong></td>
+<td>UNWIND = 1 tx → una fila maligna tira el batch.</td>
+<td>Validación tipada en el borde (enlaza H-1) + bisección-retry + quarantine. Confirmar rollback total.</td>
+<td>El tráfico del experimento es MITRE controlado, no hostil-adversarial-de-ingesta; el envenenamiento es amenaza de despliegue.</td>
+</tr>
+<tr>
+<td><strong>Backpressure sostenido (Q10)</strong></td>
+<td>Cola productor→writer único sin política bajo sobrecarga sostenida.</td>
+<td>Productor = 2× writer durante 30 min → RSS acotada + política explícita (degradar resolución antes que cegar).</td>
+<td>A 33 Mb/s (y x86 RAW acotado) con flush-by-size+time el sink absorbe; la sobrecarga sostenida con drop silencioso es escenario de despliegue bajo flood.</td>
+</tr>
+<tr>
+<td><strong>Reader real (Q3)</strong></td>
+<td>Contención medida con <code>count(*)</code>, no con traversal de correlación.</td>
+<td>Sustituir por traversal 2–3 hop por <code>community_id</code>; medir p99 lectura + degradación del writer + RSS (acopla con memoria).</td>
+<td>La "lectura sana" es claim de producción; el experimento escribe mucho y lee poco/offline (datasets = scan columnar, no traversal). Anotar como <em>provisional</em> hasta medir.</td>
+</tr>
+<tr>
+<td><strong>Memoria a escala (Q4)</strong></td>
+<td>Curva RSS vs nodos con <code>bufferPoolSize</code> fijo; tiering hot→cold.</td>
+<td>A pool fijo (p.ej. 2 GB), cargar 100k/500k/1M → confirmar RSS acotado por pool (no OOM lineal) + medir latencia por thrashing en almacenamiento lento. Tiering Parquet/DuckDB.</td>
+<td>Target del experimento = servidor grande (Vagrant con RAM asignada, luego x86 RAW); el OOM en RPi5 es problema de despliegue embebido. La guarda de §3.1 (capar pool) ya evita que compita por RAM.</td>
+</tr>
+<tr>
+<td><strong>Batch sweep (Q6)</strong></td>
+<td><code>batch=1000</code> sin barrido.</td>
+<td>Sweep <code>{1,10,100,300,500,1000,...}</code> con flush-by-time activo; codo donde Δthroughput&lt;5%. Predicción analítica: ~300–500.</td>
+<td>1000 funciona y da ×55–61; el ajuste fino es optimización, no condición de medir.</td>
+</tr>
+<tr>
+<td><strong>Decomposición fsync/parse (Q1)</strong></td>
+<td>P+S≈5.93ms sin separar fsync de parse/plan; medido en VM.</td>
+<td>tmpfs vs disco (aísla fsync) + prepared-stmt (aísla parse/plan), en x86 RAW.</td>
+<td>La dirección (UNWIND gana, Vela no) es invariante al hardware; solo cambia la magnitud del ×. Calibración para ADR-041, no gate.</td>
+</tr>
+<tr>
+<td><strong>Shardability (Q8)</strong></td>
+<td>Preservar que el sharding temporal futuro no exija reescritura.</td>
+<td>Mantener routing key explícita (<code>community_id</code> ya existe) + <code>IGraphQuery</code> espejo de <code>IGraphSink</code>.</td>
+<td>Es invariante barata, ya casi satisfecha; no hay que implementar sharding, solo no cerrarle la puerta.</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Insight de síntesis (no perder):</strong> los cinco "bloqueantes de producción" del Consejo (flush, poison, backpressure, guard, reader) <strong>no son cinco problemas, son uno</strong>: gestionar una <strong>cola hacia un único consumidor de tasa fija</strong> (el writer único de Kuzu). En despliegue, eso es el subsistema <code>IngestQueue</code> de <code>graph-engine</code>. En el experimento, basta la versión mínima de §3.1.</p>
+<hr />
+<h2 id="fuentes-concurrencia-forks-indices-verificadas-day-181182">Fuentes (concurrencia, forks, índices — verificadas DAY 181–182)</h2>
+<ul>
+<li>Kuzu — <em>Connections &amp; Concurrency</em> (doc oficial): un <code>Database</code> <code>READ_WRITE</code> por fichero, conexiones múltiples concurrentes, patrón servidor para multi-proceso.</li>
+<li>Kuzu — issue #3295 / #3872: el segundo PROCESO falla por lock incluso en <code>READ_ONLY</code> mientras hay escritor.</li>
+<li>Kuzu — paper / docs: "one writer transaction in the system" (serializable por diseño). Confirmado en runtime DAY 182 (mensaje de error literal).</li>
+<li>Kuzu — UNWIND + MERGE batch (tutorial/docs): patrón set-based; principio general (Neptune/Neo4j) "una cláusula MERGE por nodo es ineficiente, UNWIND+single-MERGE es lo óptimo".</li>
+<li>Kuzu — índices: PK-hash + FTS (STRING) + HNSW (vectores); <strong>sin índice secundario/de rango</strong> en 0.11.3.</li>
+<li><code>Vela-Engineering/kuzu</code>: fork con multi-writer in-process; mantenimiento activo tras el archivado del upstream. (No elimina el lock multi-proceso.)</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.top", "search.highlight"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

@@ -1,0 +1,1211 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source embedded-ML NDR for hospitals and schools">
+      
+      
+        <meta name="author" content="Alonso Isidoro Roman">
+      
+      
+        <link rel="canonical" href="https://alonsoir.github.io/argus/council/CONSEJO%20DE%20SABIOS%20%E2%80%94%20DAY%20149/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>CONSEJO DE SABIOS — DAY 149 - ML Defender (aRGus NDR)</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#consejo-de-sabios-day-149" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-header__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ML Defender (aRGus NDR)
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              CONSEJO DE SABIOS — DAY 149
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../README.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/BACKLOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Backlog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Security Model
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-tabs__link">
+          
+  
+  
+  ADRs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/contracts/Protobuf contracts.md" class="md-tabs__link">
+          
+  
+  
+  Contracts
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-nav__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ML Defender (aRGus NDR)
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../README.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/BACKLOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADRs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ADRs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013 Seed Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-021-deployment-topology-seed-families.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-021 Topology SSOT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-022-threat-model-opcion2-descartada.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-022 Threat Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Protobuf contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protobuf
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/JSON contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JSON
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Rag security commands.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#informe-arquitectura-cicd-criptografica-jenkins-vault-commonvault_client" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Informe: Arquitectura CI/CD Criptográfica — Jenkins + Vault + common/vault_client
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1-contexto-que-hemos-construido-hoy-day-149" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. CONTEXTO — QUÉ HEMOS CONSTRUIDO HOY (DAY 149)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-diseno-naive-inicial-alonso-day-149-0900" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. DISEÑO NAIVE INICIAL (Alonso, DAY 149, ~09:00)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-analisis-adversarial-claude-day-149" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. ANÁLISIS ADVERSARIAL (Claude, DAY 149)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. ANÁLISIS ADVERSARIAL (Claude, DAY 149)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#p0-criticos-bloquean-feder-si-no-se-resuelven" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        P0 — Críticos (bloquean FEDER si no se resuelven)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#p1-importantes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        P1 — Importantes
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#p2-deuda-tecnica-aceptable" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        P2 — Deuda técnica aceptable
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#resumen" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Resumen
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-arquitectura-propuesta-post-analisis" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. ARQUITECTURA PROPUESTA (post-análisis)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-orden-de-implementacion-propuesto" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. ORDEN DE IMPLEMENTACIÓN PROPUESTO
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-preguntas-para-el-consejo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. PREGUNTAS PARA EL CONSEJO
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-lo-que-haremos-manana-day-150" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. LO QUE HAREMOS MAÑANA (DAY 150)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-agradecimiento" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. AGRADECIMIENTO
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="consejo-de-sabios-day-149">CONSEJO DE SABIOS — DAY 149</h1>
+<h2 id="informe-arquitectura-cicd-criptografica-jenkins-vault-commonvault_client">Informe: Arquitectura CI/CD Criptográfica — Jenkins + Vault + common/vault_client</h2>
+<p><strong>Fecha:</strong> 12 Mayo 2026<br />
+<strong>Autor:</strong> Alonso Isidoro Román<br />
+<strong>Para:</strong> Claude, Grok, ChatGPT, DeepSeek, Qwen, Gemini, Kimi, Mistral<br />
+<strong>ADRs relacionados:</strong> ADR-013, ADR-020, ADR-021, ADR-004<br />
+<strong>Prioridad:</strong> P0 pre-FEDER  </p>
+<hr />
+<h2 id="1-contexto-que-hemos-construido-hoy-day-149">1. CONTEXTO — QUÉ HEMOS CONSTRUIDO HOY (DAY 149)</h2>
+<p>Antes de la pregunta principal, el estado del arte tras DAY 149:</p>
+<ul>
+<li><strong>DEBT-PARQUET-SCHEMA-001 CERRADA:</strong> Schema Arrow v1.0 para ml_detector_events (15 fields) y firewall_acl_events (7 fields). 207,122 filas convertidas. Ratio compresión 11-12x. Roundtrip: 53+1 PASSED. Vault dev mode prototipo K_pseudo + HMAC-SHA256: determinismo OK, aislamiento OK, post-destroy irrecuperable OK.</li>
+<li><strong>Infraestructura CI/CD:</strong> Ansible + Jinja2 templates para sniffer.json, ml_detector_config.json, rag_logger_config.json. Playbook deploy_configs.yml ejecutado en VM: 9 OK, 3 changed, 0 failed. Jenkinsfile con stage Deploy Configs. Vault + Ansible + Jinja2 + Jenkins en Vagrantfile dev. Vault runtime en Vagrant prod (ADR-039 BSR axiom respetado).</li>
+<li><strong>Paper:</strong> Abstract v24 "architecturally complementary by design". v3 en arXiv (submit/7576269).</li>
+<li><strong>Main:</strong> v0.7.2 @ f2e2ebd → 81490fcb (5 PRs mergeados).</li>
+</ul>
+<hr />
+<h2 id="2-diseno-naive-inicial-alonso-day-149-0900">2. DISEÑO NAIVE INICIAL (Alonso, DAY 149, ~09:00)</h2>
+<p>Durante la sesión de hoy emergió la necesidad de mover la generación de material criptográfico del portátil del founder al pipeline CI/CD. El diseño inicial propuesto fue:</p>
+<pre><code>Jenkins (origen)
+├── Selecciona entropy source del filesystem donde corre
+├── Genera seeds distintas por ambiente + componente
+├── PUT → Vault(argus/{env}/seeds/{component})
+├── Deriva keypairs Ed25519 en memoria
+├── Configura JSON de cada componente con vault_path
+└── Si falla → ABORT. Todo o nada.
+
+common/vault_client (módulo C++ interno, no plugin)
+├── Al arrancar: GET seed desde Vault
+├── Deriva keypair Ed25519 en memoria (libsodium)
+├── Registra en etcd: &quot;component X online, crypto ready&quot;
+└── Si falla → exit(1). ZeroMQ no abre hasta crypto OK.
+
+etcd-server (coordinador de rotación)
+├── Verifica topología completa antes de rotar
+├── Solicita nueva seed a Jenkins/Vault cuando toca
+└── Coordina rollout componente a componente
+</code></pre>
+<p><strong>Principio fundamental confirmado:</strong> TODO O NADA. El pipeline no arranca sin criptografía completa. No existe modo degradado sin crypto.</p>
+<hr />
+<h2 id="3-analisis-adversarial-claude-day-149">3. ANÁLISIS ADVERSARIAL (Claude, DAY 149)</h2>
+<h3 id="p0-criticos-bloquean-feder-si-no-se-resuelven">P0 — Críticos (bloquean FEDER si no se resuelven)</h3>
+<p><strong>P0.1 — Jenkins como SPoF criptográfico</strong><br />
+Jenkins comprometido = todas las seeds de todos los ambientes comprometidas. El problema del portátil del founder se traslada a Jenkins.<br />
+<em>Mitigación propuesta:</em> Jenkins solo aporta entropy al proceso. Vault genera la seed internamente con su propio RNG certificado (<code>vault write sys/tools/random</code>). Jenkins nunca ve la seed completa — solo dispara el proceso.</p>
+<p><strong>P0.2 — Estado inconsistente ZeroMQ pre-crypto</strong><br />
+<code>exit(1)</code> en el componente no es suficiente si el componente upstream ya abrió el socket y envió mensajes antes de que el downstream completara crypto. El pipeline puede quedar en estado inconsistente.<br />
+<em>Mitigación propuesta:</em> etcd como barrera de sincronización pre-arranque. Nadie abre ZeroMQ hasta que etcd confirma <code>crypto_ready</code> de TODOS los componentes. El orden de inicialización es: Vault → seed → keypair → etcd register → ZeroMQ open.</p>
+<p><strong>P0.3 — Vault inmem rompe EMECAS</strong><br />
+Vault dev mode usa backend <code>inmem</code>. Cada <code>vagrant destroy -f</code> destruye todas las seeds. El EMECAS ritual (<code>vagrant destroy -f &amp;&amp; vagrant up &amp;&amp; make bootstrap &amp;&amp; make test-all</code>) destruye la VM y requiere re-provisionar toda la criptografía en cada ciclo. Esto rompe la automatización actual.<br />
+<em>Mitigación propuesta:</em> Vault con backend <code>file</code> incluso en dev. El EMECAS debe incluir <code>make provision-crypto</code> como paso obligatorio después de <code>vagrant up</code>.</p>
+<h3 id="p1-importantes">P1 — Importantes</h3>
+<p><strong>P1.1 — Disponibilidad vs TODO O NADA en infraestructura crítica</strong><br />
+Si Vault está temporalmente caído cuando un componente necesita reiniciarse (systemd restart, OOM killer), el componente no arranca. En un hospital, un NDR offline durante una ventana de ataque puede ser peor que un NDR con crypto degradada.<br />
+<em>Tensión de diseño real:</em> ¿TODO O NADA absoluto vs cache cifrada en tmpfs con TTL?<br />
+<em>Propuesta:</em> cache cifrada en tmpfs (no en disco) con TTL configurable. Si tmpfs tiene la seed y Vault está caído, el componente puede arrancar. Si tmpfs también está vacío → TODO O NADA.</p>
+<p><strong>P1.2 — etcd comprometido puede triggear rotación falsa</strong><br />
+Si etcd es comprometido, el atacante puede disparar una rotación coordinada en el momento de mayor vulnerabilidad, poniendo a todos los componentes en estado de renegociación simultánea — ventana de ataque perfecta. O puede bloquear la rotación indefinidamente.<br />
+<em>Mitigación:</em> etcd coordina el timing pero NO tiene acceso a las seeds. Solo dice "es hora". Jenkins/Vault son los únicos que generan y custodian material criptográfico.</p>
+<p><strong>P1.3 — Assert dev≠prod no implementado</strong><br />
+No hay ningún mecanismo que aserte empíricamente que <code>seed_dev != seed_prod</code> antes de almacenarlas en Vault, especialmente si Jenkins corre en el mismo servidor para ambos ambientes.<br />
+<em>Mitigación:</em> <code>provision_crypto.sh</code> hace assert explícito y falla si seeds son iguales. Trivial de implementar, crítico de tener.</p>
+<h3 id="p2-deuda-tecnica-aceptable">P2 — Deuda técnica aceptable</h3>
+<p><strong>P2.1 — Latencia de arranque:</strong> cada componente hace una llamada HTTP a Vault en el arranque.<br />
+<strong>P2.2 — Ventana de incompatibilidad durante rotación:</strong> durante el rollout, hay un momento en que sniffer tiene clave nueva y ml-detector tiene la vieja. etcd debe serializar el proceso.<br />
+<strong>P2.3 — key_rotation_hours visible en group_vars:</strong> información operacional que un atacante puede usar para timing attacks.</p>
+<h3 id="resumen">Resumen</h3>
+<table>
+<thead>
+<tr>
+<th>Problema</th>
+<th>Severidad</th>
+<th>¿Bloquea FEDER?</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Jenkins SPoF criptográfico</td>
+<td>P0</td>
+<td>No — Vault RNG mitiga</td>
+</tr>
+<tr>
+<td>Estado inconsistente ZeroMQ</td>
+<td>P0</td>
+<td>Sí — necesita barrera etcd</td>
+</tr>
+<tr>
+<td>Vault inmem rompe EMECAS</td>
+<td>P0</td>
+<td>Sí — necesita backend file</td>
+</tr>
+<tr>
+<td>TODO O NADA vs disponibilidad</td>
+<td>P1</td>
+<td>No — decisión de diseño</td>
+</tr>
+<tr>
+<td>etcd comprometido</td>
+<td>P1</td>
+<td>No — etcd no toca seeds</td>
+</tr>
+<tr>
+<td>Assert dev≠prod</td>
+<td>P1</td>
+<td>No — trivial añadir</td>
+</tr>
+<tr>
+<td>Latencia arranque</td>
+<td>P2</td>
+<td>No</td>
+</tr>
+<tr>
+<td>Ventana rotación parcial</td>
+<td>P2</td>
+<td>No</td>
+</tr>
+<tr>
+<td>key_rotation_hours visible</td>
+<td>P2</td>
+<td>No</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="4-arquitectura-propuesta-post-analisis">4. ARQUITECTURA PROPUESTA (post-análisis)</h2>
+<pre><code>JENKINS (entropy provider + orquestador)
+├── NO genera la seed directamente
+├── Llama a Vault API: vault write sys/tools/random bytes=32
+├── Vault genera seed con su RNG certificado
+├── Jenkins almacena path en JSON de cada componente
+├── Assert: seed_dev != seed_prod (fallo = abort pipeline)
+└── Si cualquier paso falla → ABORT. Pantalla. Todo o nada.
+
+VAULT (única autoridad criptográfica)
+├── argus/dev/seeds/{component}   ← Vault genera, Jenkins dispara
+├── argus/prod/seeds/{component}
+├── Backend: file (no inmem) incluso en dev
+└── Solo Jenkins escribe. Los componentes solo leen.
+
+common/vault_client (módulo C++20 interno, en common/)
+├── Al arrancar: GET seed desde Vault
+├── Si Vault OK: deriva keypair en memoria (libsodium)
+├── Si Vault KO y tmpfs tiene seed con TTL válido: usa cache
+├── Si Vault KO y tmpfs vacío: exit(1) inmediato
+├── Registra en etcd: &quot;crypto_ready: component_id&quot;
+└── ZeroMQ no abre hasta ACK de etcd
+
+etcd-server (coordinador — SIN acceso a seeds)
+├── Barrera pre-arranque: espera crypto_ready de TODOS
+├── Coordina rotación: verifica topología completa primero
+├── Notifica &quot;rotation_pending&quot; a cada componente
+├── Espera ACK de TODOS antes de marcar rotation_done
+└── Timeout → rollback + alerta. NUNCA rotación parcial.
+
+FLUJO DE ARRANQUE (invariante):
+Vault → seed → keypair (memoria) → etcd register crypto_ready
+→ etcd confirma ALL crypto_ready → ZeroMQ open
+Cualquier fallo → exit(1) + log claro + systemd FailureAction=poweroff
+</code></pre>
+<p><strong>Relación con ADRs existentes:</strong>
+- <strong>ADR-013 PHASE 2:</strong> <code>common/vault_client</code> reemplaza <code>seed-client</code> que leía de disco. Mismo contrato, fuente Vault en lugar de filesystem.
+- <strong>ADR-020:</strong> TODO O NADA se fortalece. No existe ruta sin crypto.
+- <strong>ADR-021 INVARIANTE-SEED-001:</strong> seed_family compartido en single-node se mantiene. Vault custodia el seed raíz único.
+- <strong>ADR-004:</strong> cooldown de rotación (≥ grace_period) sigue aplicando. etcd lo respeta.</p>
+<hr />
+<h2 id="5-orden-de-implementacion-propuesto">5. ORDEN DE IMPLEMENTACIÓN PROPUESTO</h2>
+<pre><code>DAY 149/150  scripts/jenkins/provision_crypto.sh
+├── Vault backend file (no inmem)
+├── vault write sys/tools/random → seed por componente
+├── Assert seed_dev != seed_prod
+└── JSON update con vault_path por componente
+
+DAY 150/151  common/vault_client.{h,cpp}
+├── GET seed desde Vault
+├── Deriva keypair libsodium en memoria
+├── Cache tmpfs con TTL
+├── exit(1) si Vault KO y cache vacía
+└── etcd register crypto_ready
+
+DAY 151+     Integrar vault_client en cada componente
+└── Reemplazar lectura seed.bin de disco
+
+DAY FEDER    etcd rotation coordinator
+└── Requiere topología HA completa
+</code></pre>
+<hr />
+<h2 id="6-preguntas-para-el-consejo">6. PREGUNTAS PARA EL CONSEJO</h2>
+<p><strong>Q1 — Vault RNG vs entropy externa:</strong><br />
+¿Es suficiente <code>vault write sys/tools/random bytes=32</code> como única fuente de entropy para las seeds de producción, o debemos mezclar entropy externa (getrandom(), RDRAND, TPM) antes de enviarlo a Vault? ¿Qué estándar aplica aquí — NIST SP 800-90A/B/C?</p>
+<p><strong>Q2 — Cache tmpfs: ¿tropieza con TODO O NADA?</strong><br />
+La cache cifrada en tmpfs con TTL permite que un componente arranque aunque Vault esté temporalmente caído. ¿Esto viola el principio TODO O NADA de ADR-020, o es una extensión razonable del modelo de amenaza dado que tmpfs no sobrevive a un reboot? ¿Hay un modelo de amenaza donde la cache tmpfs sea el vector de ataque?</p>
+<p><strong>Q3 — etcd como barrera pre-arranque: ¿huevo y gallina?</strong><br />
+etcd-server necesita estar online para que los componentes registren <code>crypto_ready</code>. Pero etcd-server también necesita su propio material criptográfico para arrancar. ¿Cómo rompemos este ciclo de dependencia? ¿etcd-server es el único componente que arranca sin barrera etcd, con crypto obtenida directamente de Vault?</p>
+<p><strong>Q4 — Vault backend file en dev: ¿suficiente o necesitamos Vault HA desde el principio?</strong><br />
+Backend <code>file</code> en dev es single-node y sin replicación. Si el fichero se corrompe, se pierden todos los secrets. ¿Es aceptable para dev dado que Jenkins puede re-provisionar? ¿O debemos usar backend <code>raft</code> (Vault HA integrado) desde el principio para que dev y prod sean más parecidos?</p>
+<p><strong>Q5 — Rotación coordinada por etcd: ¿cuál es el blast radius mínimo aceptable?</strong><br />
+Durante la rotación, hay una ventana donde sniffer tiene clave nueva y ml-detector tiene la vieja. ADR-004 define cooldown = grace_period para HMAC keys. ¿El mismo modelo aplica a las ChaCha20 seeds? ¿O la rotación de seeds debe ser atómica (todos o ninguno en el mismo instante), aceptando una micro-ventana de pipeline offline?</p>
+<p><strong>Q6 — <code>provision_crypto.sh</code> en Jenkinsfile: ¿stage separado o integrado en bootstrap?</strong><br />
+¿Debe <code>provision_crypto.sh</code> ser un stage independiente en el Jenkinsfile ("Provision Crypto") que puede fallar y detener el pipeline, o debe integrarse en <code>make bootstrap</code> como paso obligatorio? La ventaja del stage separado es visibilidad; la del bootstrap integrado es atomicidad.</p>
+<p><strong>Q7 — Seed families (ADR-021) y Vault: ¿paths separados por familia o por componente?</strong><br />
+ADR-021 define familias de canal (family_A: sniffer↔ml-detector, family_B: ml-detector↔firewall, etc.). En Vault, ¿almacenamos una seed por familia (<code>argus/dev/families/family_A</code>) o una seed por componente (<code>argus/dev/seeds/sniffer</code>)? La primera respeta el modelo de familias y minimiza el blast radius de un componente comprometido. La segunda es más simple. ¿Cuál recomendáis para la fase FEDER?</p>
+<hr />
+<h2 id="7-lo-que-haremos-manana-day-150">7. LO QUE HAREMOS MAÑANA (DAY 150)</h2>
+<ol>
+<li>Procesar feedback del Consejo sobre Q1-Q7</li>
+<li>Actualizar ADR-013 con la arquitectura Vault (PHASE 3)</li>
+<li>Crear ADR-044: CI/CD Crypto Pipeline (Jenkins + Vault + vault_client)</li>
+<li>Implementar <code>scripts/jenkins/provision_crypto.sh</code> (P0.3: Vault backend file)</li>
+<li>Cerrar DEBT-PARQUET-TIMESTAMP-NS-001 si hay tiempo (firewall-acl-agent ns)</li>
+</ol>
+<hr />
+<h2 id="8-agradecimiento">8. AGRADECIMIENTO</h2>
+<p>Este diseño emerge directamente de la experiencia operacional de Alonso en Ericsson con pipelines CI/CD de telecomunicaciones, adaptada al modelo de amenaza de infraestructura crítica de aRGus NDR. La pregunta "¿cuál es el blast radius si Jenkins es comprometido?" es la pregunta correcta que cualquier arquitecto de seguridad haría. El Consejo tiene ahora todos los elementos para mejorarla.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.top", "search.highlight"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

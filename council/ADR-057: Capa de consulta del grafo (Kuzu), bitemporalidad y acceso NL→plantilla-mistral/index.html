@@ -1,0 +1,1490 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source embedded-ML NDR for hospitals and schools">
+      
+      
+        <meta name="author" content="Alonso Isidoro Roman">
+      
+      
+        <link rel="canonical" href="https://alonsoir.github.io/argus/council/ADR-057%3A%20Capa%20de%20consulta%20del%20grafo%20%28Kuzu%29%2C%20bitemporalidad%20y%20acceso%20NL%E2%86%92plantilla-mistral/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>ADR 057: Capa de consulta del grafo (Kuzu), bitemporalidad y acceso NL→plantilla mistral - ML Defender (aRGus NDR)</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#1-capa-de-consulta-in-process-realmente-es-la-unica-opcion" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-header__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ML Defender (aRGus NDR)
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              ADR 057: Capa de consulta del grafo (Kuzu), bitemporalidad y acceso NL→plantilla mistral
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../README.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/BACKLOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Backlog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Security Model
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-tabs__link">
+          
+  
+  
+  ADRs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/contracts/Protobuf contracts.md" class="md-tabs__link">
+          
+  
+  
+  Contracts
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-nav__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ML Defender (aRGus NDR)
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../README.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/BACKLOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADRs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ADRs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013 Seed Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-021-deployment-topology-seed-families.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-021 Topology SSOT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-022-threat-model-opcion2-descartada.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-022 Threat Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Protobuf contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protobuf
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/JSON contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JSON
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Rag security commands.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-capa-de-consulta-in-process-realmente-es-la-unica-opcion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🔍 1. Capa de Consulta In-Process: ¿Realmente es la única opción?
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🔍 1. Capa de Consulta In-Process: ¿Realmente es la única opción?">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#fortalezas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ✅ Fortalezas
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#puntos-debiles-y-riesgos" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ⚠️ Puntos débiles y riesgos
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#recomendacion-para-el-consejo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        📌 Recomendación para el Consejo
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-bitemporalidad-el-diseno-actual-es-suficiente" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ⏳ 2. Bitemporalidad: ¿El diseño actual es suficiente?
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="⏳ 2. Bitemporalidad: ¿El diseño actual es suficiente?">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#fortalezas_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ✅ Fortalezas
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#puntos-debiles-y-riesgos_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ⚠️ Puntos débiles y riesgos
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#recomendacion-para-el-consejo_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        📌 Recomendación para el Consejo
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-acceso-nlplantilla-es-seguro-y-escalable" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🗣️ 3. Acceso NL→Plantilla: ¿Es seguro y escalable?
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🗣️ 3. Acceso NL→Plantilla: ¿Es seguro y escalable?">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#fortalezas_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ✅ Fortalezas
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#puntos-debiles-y-riesgos_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ⚠️ Puntos débiles y riesgos
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#recomendacion-para-el-consejo_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        📌 Recomendación para el Consejo
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-plan-por-fases-es-realista" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        📊 4. Plan por Fases: ¿Es realista?
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="📊 4. Plan por Fases: ¿Es realista?">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#recomendacion-para-el-consejo_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        📌 Recomendación para el Consejo
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-riesgos-criticos-requieren-atencion-inmediata" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🚨 5. Riesgos Críticos (Requieren Atención Inmediata)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-puntos-fuertes-ratificar-sin-cambios" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ✅ 6. Puntos Fuertes (Ratificar sin Cambios)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-resumen-de-decisiones-para-el-consejo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        📝 7. Resumen de Decisiones para el Consejo
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-acciones-inmediatas-para-el-consejo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🔥 8. Acciones Inmediatas para el Consejo
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#-" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ---
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#9-preguntas-abiertas-para-el-consejo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        💡 9. Preguntas Abiertas para el Consejo
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#-_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ---
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#conclusion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        📌 Conclusión
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+  <h1>ADR 057: Capa de consulta del grafo (Kuzu), bitemporalidad y acceso NL→plantilla mistral</h1>
+
+<p>Aironman DirtDiver, el <strong>ADR-057</strong> es un documento técnico robusto, con una estructura clara y decisiones bien argumentadas. Sin embargo, como solicitaste, voy a analizarlo desde la perspectiva del <strong>Consejo de Sabios</strong>, identificando <strong>puntos débiles, riesgos ocultos y oportunidades de mejora</strong>, siempre con base en <strong>información comprobable, medible y evidencia técnica</strong>. Organizaré el análisis en secciones clave, destacando lo que requiere atención urgente, lo que es sólido y lo que podría optimizarse.</p>
+<hr />
+<hr />
+<h2 id="1-capa-de-consulta-in-process-realmente-es-la-unica-opcion">🔍 <strong>1. Capa de Consulta In-Process: ¿Realmente es la única opción?</strong></h2>
+<h3 id="fortalezas">✅ <strong>Fortalezas</strong></h3>
+<ul>
+<li><strong>Invariantes de seguridad preservadas</strong>: El argumento de <strong>Falco</strong> y el <strong>lock de Kuzu</strong> son sólidos. Kuzu embebido (v0.11.3) <strong>no está diseñado para concurrencia multi-proceso</strong> en modo escritura/lectura simultánea sobre el mismo fichero <code>.kuzu</code>. La documentación oficial de Kuzu <a href="https://github.com/kuzu-db/kuzu/blob/main/docs/embedding.md">confirma</a> que el modo embebido es <strong>single-writer, multiple-reader solo si el writer no tiene el lock activo</strong>. En la práctica, esto significa que:</li>
+<li>Si el <code>correlation-engine</code> mantiene el handle de escritura abierto, <strong>ningún otro proceso puede abrir la BD en modo READ_ONLY</strong> (el smoke test propuesto en <strong>Fase 2</strong> lo confirmará).</li>
+<li>
+<p><strong>Conclusión medible</strong>: Si el smoke test falla (no permite READ_ONLY concurrent), <strong>in-process es la única opción viable hoy</strong>. Si pasa, la puerta a un lector externo queda abierta, pero <strong>no es recomendable</strong> por los riesgos de Falco y autenticación.</p>
+</li>
+<li>
+<p><strong>Autenticación y superficie de ataque</strong>: Evitar un servicio externo elimina la necesidad de gestionar credenciales, TLS, rate-limiting, etc. <strong>Reducción de complejidad y riesgo</strong>.</p>
+</li>
+</ul>
+<h3 id="puntos-debiles-y-riesgos">⚠️ <strong>Puntos débiles y riesgos</strong></h3>
+<table>
+<thead>
+<tr>
+<th><strong>Riesgo</strong></th>
+<th><strong>Argumentación</strong></th>
+<th><strong>¿Medible?</strong></th>
+<th><strong>Recomendación</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Acoplamiento fuerte al engine</strong></td>
+<td>Si en el futuro se necesita consultar el grafo desde otro componente (ej: dashboard en tiempo real), el diseño in-process <strong>obliga a pasar por el engine</strong>, lo que podría convertirse en un <strong>cuello de botella</strong>.</td>
+<td>Sí: Benchmark de latencia en consultas concurrentes (ej: 100 consultas/s).</td>
+<td><strong>Incluir en Fase 2</strong>: Medir el impacto en latencia de consultas in-process vs. un servicio externo (si el smoke test lo permite).</td>
+</tr>
+<tr>
+<td><strong>Fragilidad del catálogo de plantillas</strong></td>
+<td>Si el catálogo crece (ej: +20 plantillas), mantenerlo <strong>in-process en C++</strong> puede volverse <strong>difícil de auditar y versionar</strong>.</td>
+<td>Sí: Contar el número de plantillas y tiempo de revisión por cambio.</td>
+<td><strong>Alternativa</strong>: Evaluar si el catálogo podría vivir en un <strong>módulo separado</strong> (ej: librería dinámica) para permitir actualizaciones sin recompilar el engine.</td>
+</tr>
+<tr>
+<td><strong>Dependencia de <code>libkuzu</code></strong></td>
+<td>Si Kuzu cambia su modelo de concurrencia en versiones futuras (ej: v0.12+), el diseño actual <strong>podría quedar obsoleto</strong>.</td>
+<td>Sí: Revisar el <a href="https://github.com/kuzu-db/kuzu/milestones">roadmap de Kuzu</a> y su política de compatibilidad.</td>
+<td><strong>Mitigación</strong>: Documentar esta dependencia como <strong>deuda técnica (DEBT-KUZU-CONCURRENCY-001)</strong> y revisarla cada 6 meses.</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h3 id="recomendacion-para-el-consejo">📌 <strong>Recomendación para el Consejo</strong></h3>
+<ul>
+<li><strong>Ratificar in-process como default</strong>, pero <strong>dejar la puerta abierta</strong> a un servicio externo en el futuro si:</li>
+<li>El smoke test de <strong>Fase 2</strong> confirma que Kuzu <strong>sí permite READ_ONLY concurrent</strong>.</li>
+<li>Se diseña una <strong>regla Falco específica</strong> para el lector externo (ej: solo permisos de lectura, sin escritura).</li>
+<li>Se implementa <strong>autenticación mutua (mTLS)</strong> entre el engine y el servicio.</li>
+<li><strong>Acción medible</strong>: Ejecutar el smoke test <strong>antes de la Fase 1</strong> para cerrar esta incertidumbre.</li>
+</ul>
+<hr />
+<hr />
+<h2 id="2-bitemporalidad-el-diseno-actual-es-suficiente">⏳ <strong>2. Bitemporalidad: ¿El diseño actual es suficiente?</strong></h2>
+<h3 id="fortalezas_1">✅ <strong>Fortalezas</strong></h3>
+<ul>
+<li><strong>Desacoplamiento de CLOCK-INJECTION</strong>: El <code>ingested_at</code> estampado por el <strong>engine</strong> (no el sniffer) es una solución elegante. El reloj del engine es <strong>NTP-disciplinado</strong> (DEBT-ARGUSPP-NTP-001 cerrada), por lo que:</li>
+<li><strong><code>flow_start_window</code></strong> (tiempo de evento) sigue siendo <strong>no reproducible</strong> (heredado del sniffer).</li>
+<li><strong><code>ingested_at</code></strong> (tiempo de conocimiento) es <strong>fiable hoy</strong>.</li>
+<li>
+<p><strong>Ortogonalidad confirmada</strong>: La bitemporalidad no agrava el problema de CLOCK-INJECTION, sino que <strong>lo mitiga parcialmente</strong>.</p>
+</li>
+<li>
+<p><strong>Modelado explícito vs. nativo</strong>: Kuzu v0.11.3 <strong>no soporta tablas temporales nativas</strong> (confirmado en <a href="https://kuzudb.com/docs/property-graph-model">su documentación</a>). El enfoque de <strong>propiedad + WAL externo</strong> es el único viable.</p>
+</li>
+<li>
+<p><strong>Coste de implementación</strong>: Añadir <code>ingested_at</code> <strong>ahora</strong> (grafo vacío) es <strong>gratis</strong>. Retrofitearlo después sería costoso (DEBT-NEO4J-FLOW-KEY-001).</p>
+</li>
+</ul>
+<h3 id="puntos-debiles-y-riesgos_1">⚠️ <strong>Puntos débiles y riesgos</strong></h3>
+<table>
+<thead>
+<tr>
+<th><strong>Riesgo</strong></th>
+<th><strong>Argumentación</strong></th>
+<th><strong>¿Medible?</strong></th>
+<th><strong>Recomendación</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Falta de validación del WAL</strong></td>
+<td>El diseño asume que <strong>DEBT-LABEL-WAL-001</strong> (WAL con hash-chain) estará disponible para reconstruir el estado histórico. Pero <strong>DEBT-LABEL-WAL-001 está abierta</strong> (no cerrada).</td>
+<td>Sí: Revisar el estado actual de DEBT-LABEL-WAL-001 y su fecha estimada de cierre.</td>
+<td><strong>Acción crítica</strong>: <strong>No avanzar a Fase 4</strong> hasta que DEBT-LABEL-WAL-001 esté <strong>cerrada y probada</strong>. Sin WAL, la bitemporalidad es <strong>incompleta</strong>.</td>
+</tr>
+<tr>
+<td><strong><code>ingested_at</code> como UINT64</strong></td>
+<td>Usar un entero para timestamps puede ser <strong>frágil</strong> (ej: overflow en 2038 si es segundos desde epoch).</td>
+<td>Sí: Calcular el rango máximo de <code>ingested_at</code> (ej: nanosegundos desde epoch = 2^64 ns ≈ 584 años).</td>
+<td><strong>Mitigación</strong>: Usar <strong><code>UINT64</code> para nanosegundos</strong> (como hace el engine) y documentar el formato (ej: "nanosegundos desde Unix epoch").</td>
+</tr>
+<tr>
+<td><strong>Consultas bitemporales complejas</strong></td>
+<td>Las plantillas <strong>T4</strong> (Retro-hunt de IOC) y <strong>T2</strong> (Contexto de alerta) requieren <strong>joins temporales</strong> (ej: "flujos con <code>ingested_at</code> entre X e Y"). Kuzu <strong>no tiene soporte nativo</strong> para esto, por lo que las consultas serán <strong>manuales y potencialmente lentas</strong>.</td>
+<td>Sí: Benchmark de rendimiento de T4 con 1M nodos y 10M aristas.</td>
+<td><strong>Mitigación</strong>: Crear <strong>índices en <code>ingested_at</code></strong> para acelerar filtros temporales.</td>
+</tr>
+<tr>
+<td><strong>Inconsistencia temporal</strong></td>
+<td>Si un flujo se actualiza (ej: <code>final_classification</code> cambia), <strong><code>ingested_at</code> no se modifica</strong> (solo <code>ON CREATE SET</code>). Esto es correcto para transaction-time, pero <strong>¿qué pasa con el valid-time?</strong> (ej: si el flujo se re-clasifica, ¿el <code>flow_start_window</code> sigue siendo válido?).</td>
+<td>Sí: Auditar casos de actualización de flujos en producción.</td>
+<td><strong>Aclaración necesaria</strong>: Definir si <code>flow_start_window</code> es <strong>inmutable</strong> (como <code>ingested_at</code>) o puede cambiar. Si puede cambiar, se necesita un <strong>mecanismo de versionado</strong> (ej: nueva propiedad <code>valid_from</code>).</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h3 id="recomendacion-para-el-consejo_1">📌 <strong>Recomendación para el Consejo</strong></h3>
+<ol>
+<li><strong>Ratificar <code>ingested_at</code> como UINT64 (nanosegundos desde epoch)</strong> y su semántica <strong><code>ON CREATE SET</code></strong>.</li>
+<li><strong>Exigir que DEBT-LABEL-WAL-001 se cierre antes de Fase 4</strong>. Sin WAL, la bitemporalidad es <strong>inútil para forense</strong>.</li>
+<li><strong>Añadir índices en <code>ingested_at</code></strong> para optimizar consultas temporales (ej: <code>CREATE INDEX ON NetworkFlow(ingested_at)</code>).</li>
+<li><strong>Clarificar la inmutabilidad de <code>flow_start_window</code></strong>. Si puede cambiar, evaluar añadir <code>valid_from</code>/<code>valid_to</code>.</li>
+</ol>
+<hr />
+<hr />
+<h2 id="3-acceso-nlplantilla-es-seguro-y-escalable">🗣️ <strong>3. Acceso NL→Plantilla: ¿Es seguro y escalable?</strong></h2>
+<h3 id="fortalezas_2">✅ <strong>Fortalezas</strong></h3>
+<ul>
+<li><strong>Seguridad por diseño</strong>: El enfoque <strong>NL→plantilla auditada</strong> (nunca NL→Cypher) elimina riesgos de:</li>
+<li><strong>Inyección de Cypher</strong> (ej: <code>MATCH (n) DELETE n</code>).</li>
+<li><strong>Alucinación de estructura</strong> (ej: consultar nodos que no existen).</li>
+<li><strong>Consultas destructivas</strong> (ej: <code>DETACH DELETE</code>).</li>
+<li><strong>Reutilización de TinyLlama</strong>: No se introducen nuevas dependencias. El modelo ya está <strong>entrenado para clasificación</strong> (no generación), lo que reduce el riesgo de <strong>hallucinations</strong>.</li>
+<li><strong>Catálogo inicial bien definido</strong>: Las plantillas <strong>T1–T6</strong> cubren casos de uso reales:</li>
+<li><strong>T1–T3</strong>: Aprovechan el grafo (navegación topológica).</li>
+<li><strong>T4</strong>: Justifica la bitemporalidad.</li>
+<li><strong>T5–T6</strong>: "Convenience" (honestidad de diseño).</li>
+</ul>
+<h3 id="puntos-debiles-y-riesgos_2">⚠️ <strong>Puntos débiles y riesgos</strong></h3>
+<table>
+<thead>
+<tr>
+<th><strong>Riesgo</strong></th>
+<th><strong>Argumentación</strong></th>
+<th><strong>¿Medible?</strong></th>
+<th><strong>Recomendación</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Falsos positivos/negativos en NL</strong></td>
+<td>TinyLlama puede <strong>clasificar mal</strong> una petición (ej: "muéstrame los flujos de este host" → mapea a T5 en lugar de T1).</td>
+<td>Sí: Evaluar precisión/recall con un <strong>dataset de pruebas</strong> (ej: 100 consultas reales de operadores).</td>
+<td><strong>Acción crítica</strong>: Crear un <strong>benchmark de NL</strong> antes de Fase 3. Umbral de confianza: <strong>≥95% de precisión</strong> (ajustable).</td>
+</tr>
+<tr>
+<td><strong>Catálogo estático vs. necesidades dinámicas</strong></td>
+<td>Si los operadores necesitan consultas no cubiertas por T1–T6, el sistema <strong>rechazará</strong> la petición.</td>
+<td>Sí: Contar el % de peticiones rechazadas en producción.</td>
+<td><strong>Mitigación</strong>: Incluir una <strong>plantilla "escape hatch"</strong> (ej: <code>T7: Consulta personalizada</code>) que requiera <strong>aprobación manual</strong> (ej: JWT firmado por un admin).</td>
+</tr>
+<tr>
+<td><strong>Firma del catálogo (Ed25519)</strong></td>
+<td>Firmar el catálogo es una buena idea, pero <strong>¿cómo se gestiona la rotación de claves?</strong> (ej: si una plantilla se actualiza, ¿se firma con la misma clave o una nueva?).</td>
+<td>Sí: Definir el proceso de rotación de claves.</td>
+<td><strong>Recomendación</strong>: Usar un <strong>esquema de firma jerárquico</strong> (ej: clave maestra para el engine, claves derivadas para el catálogo).</td>
+</tr>
+<tr>
+<td><strong>Parámetros no validados</strong></td>
+<td>El ADR menciona que los parámetros se validan por <strong>tipo</strong>, pero <strong>¿qué pasa con el rango?</strong> (ej: <code>$n</code> en T1 podría ser 1000, causando una consulta costosa).</td>
+<td>Sí: Medir el tiempo de ejecución de T1 con <code>$n=1000</code> vs. <code>$n=4</code>.</td>
+<td><strong>Mitigación</strong>: Añadir <strong>límites estrictos</strong> a los parámetros (ej: <code>$n ≤ 4</code>, ventana temporal ≤ 24h).</td>
+</tr>
+<tr>
+<td><strong>Dependencia de TinyLlama</strong></td>
+<td>Si el modelo se actualiza (ej: nueva versión de TinyLlama), <strong>¿cómo se valida que no rompe el clasificador?</strong></td>
+<td>Sí: Crear un <strong>test de regresión</strong> para el clasificador.</td>
+<td><strong>Recomendación</strong>: Incluir el <strong>hash del modelo</strong> en el catálogo firmado para garantizar reproducibilidad.</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h3 id="recomendacion-para-el-consejo_2">📌 <strong>Recomendación para el Consejo</strong></h3>
+<ol>
+<li><strong>Ratificar el catálogo inicial T1–T6</strong>, pero <strong>añadir T7 (escape hatch)</strong> para casos no cubiertos.</li>
+<li><strong>Definir umbral de confianza del clasificador</strong>:</li>
+<li><strong>Opción A</strong>: Rechazo duro si confianza &lt; 95%.</li>
+<li><strong>Opción B</strong>: Devolver las <strong>2–3 plantillas candidatas</strong> y dejar que el operador elija (más flexible, pero menos seguro).</li>
+<li><strong>Recomendación</strong>: <strong>Opción A</strong> (seguridad &gt; conveniencia).</li>
+<li><strong>Validar parámetros con rangos estrictos</strong> (ej: <code>$n ≤ 4</code>, ventana temporal ≤ 7 días).</li>
+<li><strong>Firmar el catálogo con Ed25519</strong> y documentar el proceso de rotación de claves.</li>
+<li><strong>Crear un benchmark de NL</strong> con consultas reales antes de Fase 3.</li>
+</ol>
+<hr />
+<hr />
+<h2 id="4-plan-por-fases-es-realista">📊 <strong>4. Plan por Fases: ¿Es realista?</strong></h2>
+<table>
+<thead>
+<tr>
+<th><strong>Fase</strong></th>
+<th><strong>Riesgo</strong></th>
+<th><strong>Recomendación</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Fase 0</strong></td>
+<td>Bajo riesgo. Añadir <code>ingested_at</code> es <strong>gratis</strong> y no afecta al contrato <code>correlation_v1</code>.</td>
+<td><strong>Aprobar sin cambios</strong>.</td>
+</tr>
+<tr>
+<td><strong>Fase 1</strong></td>
+<td>Riesgo medio: Si el catálogo no está bien definido, <strong>Fase 3 (NL) fallará</strong>.</td>
+<td><strong>Asegurar que T1–T6 están probadas</strong> contra un grafo sembrado antes de avanzar.</td>
+</tr>
+<tr>
+<td><strong>Fase 2</strong></td>
+<td>Riesgo alto: Si Kuzu <strong>no permite READ_ONLY concurrent</strong>, el diseño in-process es <strong>definitivo</strong>.</td>
+<td><strong>Ejecutar el smoke test ANTES de Fase 1</strong>.</td>
+</tr>
+<tr>
+<td><strong>Fase 3</strong></td>
+<td>Riesgo alto: Si el clasificador NL tiene baja precisión, <strong>las consultas serán inútiles</strong>.</td>
+<td><strong>No avanzar hasta tener el benchmark de NL (≥95% precisión)</strong>.</td>
+</tr>
+<tr>
+<td><strong>Fase 4</strong></td>
+<td>Riesgo crítico: <strong>Depende de DEBT-LABEL-WAL-001</strong>. Sin WAL, <strong>no hay forense bitemporal</strong>.</td>
+<td><strong>Bloquear Fase 4 hasta que DEBT-LABEL-WAL-001 esté cerrada</strong>.</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h3 id="recomendacion-para-el-consejo_3">📌 <strong>Recomendación para el Consejo</strong></h3>
+<ul>
+<li><strong>Reordenar las fases</strong>:</li>
+<li><strong>Fase 0</strong> (añadir <code>ingested_at</code>).</li>
+<li><strong>Fase 2</strong> (smoke test de concurrencia Kuzu) → <strong>Decide si in-process es definitivo</strong>.</li>
+<li><strong>Fase 1</strong> (catálogo de plantillas).</li>
+<li><strong>Fase 3</strong> (NL) → <strong>Solo si el benchmark de NL pasa</strong>.</li>
+<li><strong>Fase 4</strong> (WAL + firma) → <strong>Solo si DEBT-LABEL-WAL-001 está cerrada</strong>.</li>
+</ul>
+<hr />
+<hr />
+<h2 id="5-riesgos-criticos-requieren-atencion-inmediata">🚨 <strong>5. Riesgos Críticos (Requieren Atención Inmediata)</strong></h2>
+<table>
+<thead>
+<tr>
+<th><strong>Riesgo</strong></th>
+<th><strong>Impacto</strong></th>
+<th><strong>Acción Requerida</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>DEBT-LABEL-WAL-001 abierta</strong></td>
+<td>Sin WAL, <strong>no hay forense bitemporal</strong>. Fase 4 sería <strong>inútil</strong>.</td>
+<td><strong>Priorizar el cierre de DEBT-LABEL-WAL-001</strong>.</td>
+</tr>
+<tr>
+<td><strong>Smoke test de Kuzu no ejecutado</strong></td>
+<td>Si Kuzu <strong>no permite READ_ONLY concurrent</strong>, in-process es <strong>la única opción</strong>.</td>
+<td><strong>Ejecutar el smoke test en Fase 2 (antes de Fase 1)</strong>.</td>
+</tr>
+<tr>
+<td><strong>Benchmark de NL no existe</strong></td>
+<td>Si TinyLlama tiene baja precisión, <strong>Fase 3 fallará</strong>.</td>
+<td><strong>Crear dataset de pruebas y benchmark antes de Fase 3</strong>.</td>
+</tr>
+<tr>
+<td><strong>Índices en <code>ingested_at</code> no creados</strong></td>
+<td>Consultas temporales (T4) serán <strong>lentas</strong>.</td>
+<td><strong>Añadir índices en Fase 0 o 1</strong>.</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<hr />
+<h2 id="6-puntos-fuertes-ratificar-sin-cambios">✅ <strong>6. Puntos Fuertes (Ratificar sin Cambios)</strong></h2>
+<ol>
+<li><strong>Principio "medir, no votar"</strong>: Enfoque correcto para decisiones técnicas.</li>
+<li><strong>Desacoplamiento de CLOCK-INJECTION</strong>: <code>ingested_at</code> resuelve parte del problema.</li>
+<li><strong>Catálogo de plantillas auditado</strong>: Evita inyección y alucinación.</li>
+<li><strong>Fases incrementales</strong>: Reduce el riesgo de sobre-ingeniería.</li>
+</ol>
+<hr />
+<hr />
+<h2 id="7-resumen-de-decisiones-para-el-consejo">📝 <strong>7. Resumen de Decisiones para el Consejo</strong></h2>
+<table>
+<thead>
+<tr>
+<th><strong>Tema</strong></th>
+<th><strong>Decisión Propuesta</strong></th>
+<th><strong>Argumentación</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Default in-process</strong></td>
+<td>✅ <strong>Ratificar</strong></td>
+<td>Kuzu no soporta concurrencia multi-proceso en escritura/lectura simultánea (smoke test pendiente).</td>
+</tr>
+<tr>
+<td><strong><code>ingested_at</code> (UINT64, ON CREATE SET)</strong></td>
+<td>✅ <strong>Ratificar</strong></td>
+<td>Desacopla de CLOCK-INJECTION, coste gratis ahora.</td>
+</tr>
+<tr>
+<td><strong>Catálogo T1–T6 + T7 (escape hatch)</strong></td>
+<td>✅ <strong>Ratificar + añadir T7</strong></td>
+<td>Cubre casos de uso, pero necesita flexibilidad para consultas no previstas.</td>
+</tr>
+<tr>
+<td><strong>Umbral de confianza NL</strong></td>
+<td>✅ <strong>95% (rechazo duro)</strong></td>
+<td>Seguridad &gt; conveniencia.</td>
+</tr>
+<tr>
+<td><strong>Firma del catálogo (Ed25519)</strong></td>
+<td>✅ <strong>Ratificar</strong></td>
+<td>Garantiza integridad y auditabilidad.</td>
+</tr>
+<tr>
+<td><strong>Índices en <code>ingested_at</code></strong></td>
+<td>✅ <strong>Añadir en Fase 0/1</strong></td>
+<td>Optimiza consultas temporales.</td>
+</tr>
+<tr>
+<td><strong>DEBT-LABEL-WAL-001</strong></td>
+<td>⚠️ <strong>Bloquear Fase 4 hasta cierre</strong></td>
+<td>Sin WAL, no hay forense bitemporal.</td>
+</tr>
+<tr>
+<td><strong>Smoke test Kuzu</strong></td>
+<td>⚠️ <strong>Ejecutar en Fase 2 (antes de Fase 1)</strong></td>
+<td>Decide si in-process es definitivo.</td>
+</tr>
+<tr>
+<td><strong>Benchmark NL</strong></td>
+<td>⚠️ <strong>Requerir ≥95% precisión antes de Fase 3</strong></td>
+<td>Evita fallos en producción.</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<hr />
+<h2 id="8-acciones-inmediatas-para-el-consejo">🔥 <strong>8. Acciones Inmediatas para el Consejo</strong></h2>
+<ol>
+<li><strong>Convocar reunión</strong> para ratificar las decisiones de la tabla anterior.</li>
+<li><strong>Asignar responsables</strong>:</li>
+<li><strong>Smoke test Kuzu</strong>: Alonso (dueño de <code>libkuzu</code>).</li>
+<li><strong>Benchmark NL</strong>: Equipo de RAG (dueños de TinyLlama).</li>
+<li><strong>DEBT-LABEL-WAL-001</strong>: Priorizar cierre (equipo de WAL).</li>
+<li><strong>Documentar</strong>:</li>
+<li><strong>DEBT-KUZU-CONCURRENCY-001</strong>: Dependencia del modelo de concurrencia de Kuzu.</li>
+<li><strong>DEBT-NL-BENCHMARK-001</strong>: Dataset y métricas del benchmark de NL.</li>
+</ol>
+<h2 id="-">---</h2>
+<h2 id="9-preguntas-abiertas-para-el-consejo">💡 <strong>9. Preguntas Abiertas para el Consejo</strong></h2>
+<ol>
+<li><strong>¿Qué pasa si un flujo se actualiza?</strong> ¿Es <code>flow_start_window</code> inmune? ¿Necesitamos <code>valid_from</code>/<code>valid_to</code>?</li>
+<li><strong>¿Cómo se gestiona la rotación de claves para la firma del catálogo?</strong></li>
+<li><strong>¿Qué umbral de confianza es aceptable para NL?</strong> (¿95%, 90%, 99%?)</li>
+<li><strong>¿Se permite el "escape hatch" (T7) para consultas personalizadas?</strong> ¿Con qué controles?</li>
+<li><strong>¿Qué métricas de rendimiento son críticas para las plantillas?</strong> (ej: T4 &lt; 100ms con 1M nodos).</li>
+</ol>
+<h2 id="-_1">---</h2>
+<h2 id="conclusion">📌 <strong>Conclusión</strong></h2>
+<p>El <strong>ADR-057</strong> es <strong>técnicamente sólido</strong>, pero requiere:
+1. <strong>Validación empírica</strong> (smoke test Kuzu, benchmark NL).
+2. <strong>Cierre de dependencias críticas</strong> (DEBT-LABEL-WAL-001).
+3. <strong>Ajustes menores</strong> (índices, T7, umbral de confianza).</p>
+<p><strong>Recomendación final</strong>:</p>
+<blockquote>
+<p><strong>"Aprobar el ADR con las condiciones y acciones inmediatas descritas, y no avanzar a Fases 3–4 hasta que los smoke tests y benchmarks estén completados."</strong></p>
+</blockquote>
+<hr />
+<p>¿Qué aspecto te gustaría profundizar primero, Aironman DirtDiver? ¿O prefieres que preparemos un <strong>resumen ejecutivo</strong> para presentar al Consejo?</p>
+<p>FDO </p>
+<p>MISTRAL</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.top", "search.highlight"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

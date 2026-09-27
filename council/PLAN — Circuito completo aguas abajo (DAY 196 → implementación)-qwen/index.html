@@ -1,0 +1,1209 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source embedded-ML NDR for hospitals and schools">
+      
+      
+        <meta name="author" content="Alonso Isidoro Roman">
+      
+      
+        <link rel="canonical" href="https://alonsoir.github.io/argus/council/PLAN%20%E2%80%94%20Circuito%20completo%20aguas%20abajo%20%28DAY%20196%20%E2%86%92%20implementaci%C3%B3n%29-qwen/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>CONSEJO DE SABIOS — REVISIÓN ADVERSARIAL PLAN DAY 196 - ML Defender (aRGus NDR)</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#consejo-de-sabios-revision-adversarial-plan-day-196" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-header__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ML Defender (aRGus NDR)
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              CONSEJO DE SABIOS — REVISIÓN ADVERSARIAL PLAN DAY 196
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../README.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/BACKLOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Backlog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Security Model
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-tabs__link">
+          
+  
+  
+  ADRs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/contracts/Protobuf contracts.md" class="md-tabs__link">
+          
+  
+  
+  Contracts
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-nav__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ML Defender (aRGus NDR)
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../README.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/BACKLOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADRs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ADRs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013 Seed Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-021-deployment-topology-seed-families.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-021 Topology SSOT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-022-threat-model-opcion2-descartada.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-022 Threat Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Protobuf contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protobuf
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/JSON contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JSON
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Rag security commands.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#objeciones-principales-al-plan" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        OBJECIONES PRINCIPALES AL PLAN
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="OBJECIONES PRINCIPALES AL PLAN">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-falsa-dicotomia-patron-conocido-vs-greenfield-7-eslabon-1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Falsa dicotomía "patrón conocido" vs "greenfield" (§7, Eslabón 1)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-oro-como-ledger-costo-de-rendimiento-no-cuantificado-102" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Oro-como-ledger: costo de rendimiento no cuantificado (§10.2)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-centinela-1-ambiguedad-en-edge-cases-5-103" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Centinela -1: ambigüedad en edge cases (§5, §10.3)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-wazuh-decision-de-esquema-diferida-sin-plan-de-contingencia-4-105" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Wazuh: decisión de esquema diferida sin plan de contingencia (§4, §10.5)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5-zmq-pubsub-riesgos-de-slow-joiner-y-backpressure-no-mitigados-71-9" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. ZMQ PUB/SUB: riesgos de slow-joiner y backpressure no mitigados (§7.1, §9)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#6-rotacion-de-ficheros-soluciones-propuestas-tienen-trade-offs-ocultos-9-104" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Rotación de ficheros: soluciones propuestas tienen trade-offs ocultos (§9, §10.4)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#7-andres-stub-contrato-negativo-sin-mecanismo-de-resolucion-4-106" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Andrés stub: contrato negativo sin mecanismo de resolución (§4, §10.6)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#8-dashboard-de-consulta-especificacion-incompleta-7-eslabon-3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. Dashboard de consulta: especificación incompleta (§7, Eslabón 3)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#respuestas-a-las-preguntas-del-10" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        RESPUESTAS A LAS PREGUNTAS DEL §10
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="RESPUESTAS A LAS PREGUNTAS DEL §10">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-a-vs-b-formato-de-salida-del-adapter-ratificado-con-condicion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. A vs B (formato de salida del adapter): Ratificado con condición
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-forma-del-oro-oro-como-ledger-con-benchmark-obligatorio" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Forma del oro: oro-como-ledger con benchmark obligatorio
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-centinela-numerico-1-con-excepciones-documentadas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Centinela numérico: -1 con excepciones documentadas
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-rotacionfollow-engine-vigila-directorio-con-inotify" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Rotación/follow: engine vigila directorio con inotify
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5-wazuh-correlation_v2-de-20-columnas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Wazuh: correlation_v2 de 20 columnas
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#6-andres-eliminar-stub-hasta-que-haya-datos-reales" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Andrés: eliminar stub hasta que haya datos reales
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#verificaciones-pendientes-obligatorias-8" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        VERIFICACIONES PENDIENTES OBLIGATORIAS (§8)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#conclusion-del-consejo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CONCLUSIÓN DEL CONSEJO
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="consejo-de-sabios-revision-adversarial-plan-day-196">CONSEJO DE SABIOS — REVISIÓN ADVERSARIAL PLAN DAY 196</h1>
+<p><strong>Estado:</strong> Borrador bajo escrutinio<br />
+<strong>Postura:</strong> Adversarial (no se ratifica sin responder objeciones)<br />
+<strong>Fecha escrutinio:</strong> 2026-06-27</p>
+<hr />
+<h2 id="objeciones-principales-al-plan">OBJECIONES PRINCIPALES AL PLAN</h2>
+<h3 id="1-falsa-dicotomia-patron-conocido-vs-greenfield-7-eslabon-1">1. <strong>Falsa dicotomía "patrón conocido" vs "greenfield" (§7, Eslabón 1)</strong></h3>
+<p>El plan afirma que el medallón de correlación es <em>greenfield</em> pero reutiliza <em>patrones</em> del pipeline RAG-127. Esto es una contradicción operativa:</p>
+<ul>
+<li><strong>RAG-127:</strong> firma Ed25519, CSV de 127 columnas, sin <code>community_id</code>, sin zonas bronce/plata/oro.</li>
+<li><strong>Correlation_v1:</strong> firma HMAC-SHA256, CSV de 19 columnas, <code>community_id</code> es la clave de join, requiere zonas LZ.</li>
+</ul>
+<p><strong>Pregunta adversarial:</strong> ¿Qué código concreto del RAG-127 es <em>realmente</em> reutilizable sin reescritura sustancial? Si la respuesta es "solo el esqueleto <code>validate_roundtrip</code>", entonces no es reutilizar patrones, es copiar la <em>idea</em> de un test. Eso no reduce el esfuerzo de implementación en un orden de magnitud como sugiere el tono del plan.</p>
+<p><strong>Exigencia:</strong> Lista explícita de funciones/clases del RAG-127 que se importarán <em>tal cual</em> vs las que se reescribirán. Sin esto, el Eslabón 1 es una estimación de esfuerzo inflada por optimismo.</p>
+<hr />
+<h3 id="2-oro-como-ledger-costo-de-rendimiento-no-cuantificado-102">2. <strong>Oro-como-ledger: costo de rendimiento no cuantificado (§10.2)</strong></h3>
+<p>El plan favorece "oro-como-ledger + join en Kuzu" citando Via Appia y reproducibilidad. Correcto en principio, pero:</p>
+<ul>
+<li>Kuzu hace join por <code>community_id</code> al materializar el grafo.</li>
+<li>Si hay 10M de filas en oro (aRGus + Suricata + Zeek), cada una con su <code>community_id</code>, Kuzu debe:<ol>
+<li>Parsear parquet.</li>
+<li>Crear/actualizar nodos <code>:NetworkFlow</code> por <code>community_id</code>.</li>
+<li>Crear aristas <code>:Detection</code> desde cada sensor.</li>
+<li>Resolver duplicados (mismo flujo visto por múltiples sensores).</li>
+</ol>
+</li>
+</ul>
+<p><strong>Pregunta adversarial:</strong> ¿Cuál es el throughput esperado de ingesta en Kuzu? Si el circuito debe procesar 100K eventos/segundo (escenario realista para Suricata+Zeek en red enterprise), ¿Kuzu aguanta el join en tiempo real, o se convierte en un batch nocturno?</p>
+<p><strong>Exigencia:</strong> Benchmark de ingesta Kuzu con dataset sintético de 1M filas con 500K <code>community_id</code> únicos. Si el throughput es &lt;10K eventos/seg, el diseño "oro-como-ledger" obliga a arquitecturar un buffer intermedio (Kafka/Redis) que el plan no menciona.</p>
+<hr />
+<h3 id="3-centinela-1-ambiguedad-en-edge-cases-5-103">3. <strong>Centinela -1: ambigüedad en edge cases (§5, §10.3)</strong></h3>
+<p>El plan propone <code>-1</code> para numéricas ausentes, argumentando que <code>0</code> es ambiguo. Pero <code>-1</code> también lo es:</p>
+<ul>
+<li><code>flow_start_sec = -1</code>: ¿timestamp negativo? ¿error de parsing?</li>
+<li><code>src_port = -1</code>: ¿puerto no aplica (ICMP) o error?</li>
+<li><code>ml_detector_score = -1</code>: ¿score negativo válido (modelo que permite negativos) o ausente?</li>
+</ul>
+<p><strong>Pregunta adversarial:</strong> ¿El reader C++ (<code>correlation_reader.parse_and_verify</code>) distingue entre <code>-1</code> como centinela y <code>-1</code> como valor legítimo? Si no, el centinela envenena el espacio de valores.</p>
+<p><strong>Exigencia:</strong> Especificar qué campos <em>nunca</em> pueden ser <code>-1</code> legítimamente (ej: <code>src_port</code> en TCP/UDP siempre ≥0) y cuáles <em>sí</em> (ej: <code>ml_detector_score</code> si el modelo produce negativos). Para los segundos, el centinela debe ser otro valor (ej: <code>NaN</code> en float, o un bitmask en int).</p>
+<hr />
+<h3 id="4-wazuh-decision-de-esquema-diferida-sin-plan-de-contingencia-4-105">4. <strong>Wazuh: decisión de esquema diferida sin plan de contingencia (§4, §10.5)</strong></h3>
+<p>El plan identifica que Wazuh no cabe en <code>correlation_v1</code> (sin <code>host_key</code>) y propone dos opciones:
+- (a) Extender a <code>correlation_v2</code> (rompe sellado de 19 columnas).
+- (b) Contrato host-domain aparte con sink propio.</p>
+<p>Pero no evalúa el costo de (b): dos esquemas paralelos, dos pipelines de ingesta, dos conjuntos de tests, dos documentos de contrato. Esto es deuda arquitectónica, no solución.</p>
+<p><strong>Pregunta adversarial:</strong> ¿Por qué no extender <code>correlation_v1</code> a 20 columnas (añadir <code>host_key</code> como col 19, HMAC recalculado sobre 0-18)? El "sellado de 19 columnas" es una convención, no una ley física. Romperla ahora (con un solo motor host-domain) es más barato que mantener dos esquemas para siempre.</p>
+<p><strong>Exigencia:</strong> Análisis de costo-beneficio: (a) <code>correlation_v2</code> de 20 columnas vs (b) contrato host-domain separado. Incluir: esfuerzo de implementación, esfuerzo de mantenimiento a 12 meses, riesgo de desync entre esquemas.</p>
+<hr />
+<h3 id="5-zmq-pubsub-riesgos-de-slow-joiner-y-backpressure-no-mitigados-71-9">5. <strong>ZMQ PUB/SUB: riesgos de slow-joiner y backpressure no mitigados (§7.1, §9)</strong></h3>
+<p>El plan cita la regla slow-joiner (PUB <code>bind()</code> antes que SUB <code>connect()</code>) pero no aborda:</p>
+<ul>
+<li><strong>Message loss en slow-joiner:</strong> Si el SUB se conecta tarde, pierde los primeros mensajes. ¿Cómo se garantiza at-least-once (§3.1)?</li>
+<li><strong>Backpressure:</strong> Si el engine consume más lento de lo que los adapters producen, el buffer de ZMQ crece sin límite. ¿Hay HWM (high-water mark)? ¿Qué pasa cuando se satura?</li>
+<li><strong>Reconexión:</strong> Si el engine cae y se reinicia, ¿los adapters reenvían eventos pendientes, o se pierden?</li>
+</ul>
+<p><strong>Pregunta adversarial:</strong> El plan dice "transporte interno SIEMPRE ZeroMQ PUB/SUB con regla slow-joiner" pero no especifica cómo se resuelve at-least-once en un transporte que <em>por diseño</em> puede perder mensajes. ¿Hay un mecanismo de ack/retry, o se asume que la pérdida es aceptable?</p>
+<p><strong>Exigencia:</strong> Especificar: (a) HWM en PUB y SUB; (b) estrategia de reconexión (¿replay desde checkpoint?); (c) qué pasa si se pierde un evento (¿se detecta por gap en <code>native_event_id</code>? ¿se alerta?).</p>
+<hr />
+<h3 id="6-rotacion-de-ficheros-soluciones-propuestas-tienen-trade-offs-ocultos-9-104">6. <strong>Rotación de ficheros: soluciones propuestas tienen trade-offs ocultos (§9, §10.4)</strong></h3>
+<p>El plan identifica el problema (writer rota diario, engine sigue un fichero) y propone dos opciones:
+- (a) Engine vigila directorio (sigue el fichero más nuevo).
+- (b) Lanzador recalcula path datado.</p>
+<p>Pero no evalúa:
+- <strong>(a) Race condition:</strong> Si el writer está escribiendo en <code>2026-06-27.csv</code> y el engine lo lee, ¿qué pasa si a medianoche el writer rota a <code>2026-06-28.csv</code>? ¿El engine pierde los últimos eventos del día anterior, o los lee dos veces?
+- <strong>(b) Acoplamiento:</strong> El lanzador debe conocer la lógica de rotación del writer. Si el writer cambia a rotación horaria, el lanzador debe actualizarse.</p>
+<p><strong>Pregunta adversarial:</strong> ¿Por qué no usar un mecanismo estándar como <code>inotify</code> (Linux) o <code>ReadDirectoryChangesW</code> (Windows) para que el engine detecte nuevos ficheros sin polling? O mejor: ¿por qué no eliminar la rotación diaria y usar un único fichero con append, truncado por tamaño (logrotate)?</p>
+<p><strong>Exigencia:</strong> Evaluar tres opciones: (a) engine vigila directorio con <code>inotify</code>; (b) lanzador recalcula path; (c) fichero único con rotación por tamaño. Incluir: complejidad de implementación, riesgo de pérdida de eventos, acoplamiento entre componentes.</p>
+<hr />
+<h3 id="7-andres-stub-contrato-negativo-sin-mecanismo-de-resolucion-4-106">7. <strong>Andrés stub: contrato negativo sin mecanismo de resolución (§4, §10.6)</strong></h3>
+<p>El plan mantiene a Andrés como stub con "contrato negativo" (5 incógnitas pendientes). Pero no especifica:
+- ¿Quién es responsable de resolver las incógnitas?
+- ¿Hay un deadline para resolverlas, o el stub puede permanecer indefinidamente?
+- ¿Qué mecanismo asegura que, cuando Andrés tenga datos reales, el stub se reemplace con un adapter real?</p>
+<p><strong>Pregunta adversarial:</strong> Un stub con "contrato negativo" es deuda técnica que se olvida. ¿Qué garantía hay de que no se convierta en un "TODO: resolver Andrés" que permanece en el código por 2 años?</p>
+<p><strong>Exigencia:</strong> Asignar ownership (¿equipo de Andrés? ¿equipo de plataforma?), deadline (¿Q3 2026?), y mecanismo de tracking (¿ticket en Jira? ¿issue en GitHub?). Si no hay ownership ni deadline, el stub debe eliminarse del plan hasta que haya datos reales.</p>
+<hr />
+<h3 id="8-dashboard-de-consulta-especificacion-incompleta-7-eslabon-3">8. <strong>Dashboard de consulta: especificación incompleta (§7, Eslabón 3)</strong></h3>
+<p>El plan menciona "Cypher primero; NL-only admin después" pero no especifica:
+- ¿Qué tecnología? (Neo4j Browser, custom web app, CLI?)
+- ¿Qué SLA de consulta? (¿&lt;1s para queries simples? ¿&lt;10s para joins complejos?)
+- ¿Quién construye el dashboard? (¿equipo de plataforma? ¿equipo de producto?)
+- ¿Qué queries debe soportar? (¿listar flujos por community_id? ¿buscar amenazas por IP? ¿retro-hunt histórico?)</p>
+<p><strong>Pregunta adversarial:</strong> Un dashboard sin especificación es un scope creep garantizado. ¿Cómo se mide el éxito del Eslabón 3 si no hay criterios de aceptación?</p>
+<p><strong>Exigencia:</strong> Especificar: (a) tecnología (recomendación: Neo4j Browser para MVP, custom app después); (b) 5 queries críticas que debe soportar el MVP; (c) SLA de consulta (p95 &lt; 2s); (d) ownership (equipo de plataforma).</p>
+<hr />
+<h2 id="respuestas-a-las-preguntas-del-10">RESPUESTAS A LAS PREGUNTAS DEL §10</h2>
+<h3 id="1-a-vs-b-formato-de-salida-del-adapter-ratificado-con-condicion">1. <strong>A vs B (formato de salida del adapter): Ratificado con condición</strong></h3>
+<p><strong>Decisión:</strong> B (cada motor escribe <code>correlation_v1</code> a bronce).<br />
+<strong>Condición:</strong> El plan debe especificar cómo se garantiza que todos los adapters producen <code>correlation_v1</code> compatible. ¿Hay un test de conformidad (contract test) que valide que un adapter nuevo produce filas válidas? Si no, el "contrato" es solo documentación, no verificación.</p>
+<p><strong>Exigencia:</strong> Implementar <code>adapter-conformance-test</code> que: (a) genera 100 eventos sintéticos; (b) los pasa por el adapter; (c) valida que la salida es <code>correlation_v1</code> válido (19 columnas, HMAC correcto, centinelas correctos). Sin este test, no se puede afirmar que el contrato se respeta.</p>
+<hr />
+<h3 id="2-forma-del-oro-oro-como-ledger-con-benchmark-obligatorio">2. <strong>Forma del oro: oro-como-ledger con benchmark obligatorio</strong></h3>
+<p><strong>Decisión:</strong> Oro-como-ledger + join en Kuzu.<br />
+<strong>Condición:</strong> Benchmark de ingesta Kuzu (ver objeción 2). Si el throughput es &lt;10K eventos/seg, el diseño debe revisarse para incluir un buffer intermedio.</p>
+<hr />
+<h3 id="3-centinela-numerico-1-con-excepciones-documentadas">3. <strong>Centinela numérico: -1 con excepciones documentadas</strong></h3>
+<p><strong>Decisión:</strong> <code>-1</code> para numéricas ausentes, <strong>excepto</strong>:
+- <code>ml_detector_score</code> / <code>fast_detector_score</code> / <code>overall_threat_score</code>: si el modelo produce negativos, el centinela es <code>NaN</code> (float) o un valor fuera de rango (ej: <code>-9999.0</code>).
+- <code>flow_start_sec</code> / <code>flow_start_nano</code>: si el timestamp puede ser negativo (edge case), el centinela es <code>0</code> (asumiendo que <code>0</code> no es un timestamp válido en este contexto).</p>
+<p><strong>Exigencia:</strong> Documentar en el contrato <code>correlation_v1</code> qué campos permiten valores negativos legítimos y cuál es su centinela.</p>
+<hr />
+<h3 id="4-rotacionfollow-engine-vigila-directorio-con-inotify">4. <strong>Rotación/follow: engine vigila directorio con inotify</strong></h3>
+<p><strong>Decisión:</strong> Engine vigila directorio con <code>inotify</code> (Linux) para detectar nuevos ficheros.<br />
+<strong>Razón:</strong> Elimina el acoplamiento con el lanzador y evita race conditions (el engine solo lee ficheros que el writer ha cerrado).</p>
+<p><strong>Exigencia:</strong> Implementar <code>inotify</code> con filtro <code>IN_CLOSE_WRITE</code> (solo notifica cuando el writer cierra el fichero, no cuando lo abre). Fallback a polling (1s) si <code>inotify</code> no está disponible.</p>
+<hr />
+<h3 id="5-wazuh-correlation_v2-de-20-columnas">5. <strong>Wazuh: correlation_v2 de 20 columnas</strong></h3>
+<p><strong>Decisión:</strong> Extender <code>correlation_v1</code> a 20 columnas (añadir <code>host_key</code> como col 19, HMAC recalculado sobre 0-18).<br />
+<strong>Razón:</strong> Más barato mantener un esquema de 20 columnas que dos esquemas paralelos. El "sellado de 19 columnas" es una convención, no una ley.</p>
+<p><strong>Exigencia:</strong> Implementar migración: (a) writer produce <code>correlation_v2</code> (20 columnas); (b) reader acepta tanto v1 (19 cols) como v2 (20 cols) por <code>schema_version</code> (col 0); (c) HMAC se recalcula sobre 0-18 en v2.</p>
+<hr />
+<h3 id="6-andres-eliminar-stub-hasta-que-haya-datos-reales">6. <strong>Andrés: eliminar stub hasta que haya datos reales</strong></h3>
+<p><strong>Decisión:</strong> Eliminar a Andrés del plan hasta que haya repo/datos.<br />
+<strong>Razón:</strong> Un stub sin ownership ni deadline es deuda técnica que se olvida. Cuando Andrés tenga datos reales, se re-introduce en el plan con contrato definido.</p>
+<p><strong>Exigencia:</strong> Cerrar el ticket de Andrés. Cuando el equipo de Andrés tenga datos reales, abre un nuevo ticket con: (a) naturaleza del motor; (b) transporte; (c) presencia de <code>community_id</code>; (d) clave de join; (e) staleness SLO.</p>
+<hr />
+<h2 id="verificaciones-pendientes-obligatorias-8">VERIFICACIONES PENDIENTES OBLIGATORIAS (§8)</h2>
+<p>Antes de implementar cualquier eslabón, el plan debe resolver:</p>
+<ol>
+<li>
+<p><strong>[POR VERIFICAR] §8.1:</strong> ¿El converter RAG-127 está en uso en producción?<br />
+<strong>Acción:</strong> Ejecutar <code>ps aux | grep generate_parquet</code> y revisar logs de cron/systemd. Si está en uso, el Eslabón 1 debe coordinarse con el equipo de RAG para no romperlo.</p>
+</li>
+<li>
+<p><strong>[POR VERIFICAR] §8.2:</strong> ¿Writer y reader resuelven al mismo path?<br />
+<strong>Acción:</strong> Ejecutar los comandos <code>grep</code> propuestos y validar que <code>bronze_root</code> en JSON coincide con <code>--bronze</code> en el engine. Si no, el Eslabón 0 debe incluir un test de integración que falle si los paths no coinciden.</p>
+</li>
+<li>
+<p><strong>[POR VERIFICAR] §8.3:</strong> ¿De qué lee Kuzu hoy?<br />
+<strong>Acción:</strong> Revisar <code>correlation-engine/src/main.cpp</code> para confirmar que no hay una segunda ruta de ingesta. Si la hay, el Eslabón 2 debe re-apuntar ambas rutas al medallón.</p>
+</li>
+</ol>
+<hr />
+<h2 id="conclusion-del-consejo">CONCLUSIÓN DEL CONSEJO</h2>
+<p><strong>Estado del plan:</strong> <strong>NO RATIFICADO</strong> — requiere responder las 8 objeciones principales y las 6 exigencias de las preguntas del §10.</p>
+<p><strong>Próximos pasos:</strong>
+1. Resolver las 3 verificaciones pendientes (§8).
+2. Responder las 8 objeciones con evidencia (benchmarks, análisis de costo-beneficio, especificaciones).
+3. Re-someter al Consejo con las respuestas incorporadas.</p>
+<p><strong>Advertencia:</strong> El plan tiene buena estructura y separación de responsabilidades, pero subestima la complejidad de:
+- Implementar un medallón LZ desde cero (no es "reutilizar patrones").
+- Hacer join en Kuzu a alto throughput (requiere benchmark).
+- Migrar de FS-drop a ZMQ PUB/SUB sin perder eventos (requiere mecanismo de ack/retry).</p>
+<p>Sin resolver estos puntos, el "circuito verde" será verde en el papel, pero rojo en producción.</p>
+<hr />
+<p><strong>Firmado:</strong><br />
+<em>Consejo de Sabios — División de Escrutinio Adversarial</em><br />
+<em>2026-06-27</em></p>
+<p>FDO</p>
+<p>QWEN</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.top", "search.highlight"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

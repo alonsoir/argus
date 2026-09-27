@@ -1,0 +1,1193 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source embedded-ML NDR for hospitals and schools">
+      
+      
+        <meta name="author" content="Alonso Isidoro Roman">
+      
+      
+        <link rel="canonical" href="https://alonsoir.github.io/argus/council/BRIEF%20%E2%80%94%20CONSEJO%20DE%20SABIOS%20%E2%80%94%20DAY%20185/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>BRIEF — CONSEJO DE SABIOS — DAY 185 - ML Defender (aRGus NDR)</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#brief-consejo-de-sabios-day-185" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-header__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ML Defender (aRGus NDR)
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              BRIEF — CONSEJO DE SABIOS — DAY 185
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../README.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/BACKLOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Backlog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Security Model
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-tabs__link">
+          
+  
+  
+  ADRs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/contracts/Protobuf contracts.md" class="md-tabs__link">
+          
+  
+  
+  Contracts
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-nav__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ML Defender (aRGus NDR)
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../README.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/BACKLOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADRs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ADRs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013 Seed Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-021-deployment-topology-seed-families.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-021 Topology SSOT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-022-threat-model-opcion2-descartada.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-022 Threat Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Protobuf contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protobuf
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/JSON contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JSON
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Rag security commands.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#extraccion-de-libcorrelation_v1-capa-de-serializacion-bronce" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Extracción de libcorrelation_v1 (capa de serialización bronce)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#como-leer-este-brief" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cómo leer este brief
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#0-contexto-minimo-para-quien-entra-fresco" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        0. Contexto mínimo (para quien entra fresco)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1-el-problema-y-la-decision-de-diseno" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. El problema y la decisión de diseño
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-las-seis-decisiones-congeladas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Las seis decisiones congeladas
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-lo-construido-y-probado-b1b3-retrospectivo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Lo construido y PROBADO (B1–B3) — retrospectivo
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-el-plan-de-b4-prospectivo-aun-no-ejecutado" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. El plan de B4 — prospectivo (aún NO ejecutado)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-los-cinco-frentes-de-duda-atacad-aqui" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Los cinco frentes de duda — ATACAD AQUÍ
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5. Los cinco frentes de duda — ATACAD AQUÍ">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#frente-1-basta-un-golden-de-27-vectores-como-red-permanente" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Frente 1 — ¿Basta un golden de 27 vectores como red PERMANENTE?
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#frente-2-locale-inmunidad-probada-o-asuncion-no-verificada" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Frente 2 — Locale: ¿inmunidad probada o asunción no verificada?
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#frente-3-d-d-diferido-legitimo-o-aplazamiento-indefinido" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Frente 3 — D-D diferido: ¿legítimo o aplazamiento indefinido?
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#frente-4-debt-bronze-embedded-newline-001" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Frente 4 — DEBT-BRONZE-EMBEDDED-NEWLINE-001
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#frente-5-el-claim-central-honesto" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Frente 5 — El claim central: ¿honesto?
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-lo-que-cada-modelo-debe-responder" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Lo que cada modelo debe responder
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-lo-que-no-aporta-senal-no-malgasteis-aqui" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Lo que NO aporta señal (no malgastéis aquí)
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="brief-consejo-de-sabios-day-185">BRIEF — CONSEJO DE SABIOS — DAY 185</h1>
+<h2 id="extraccion-de-libcorrelation_v1-capa-de-serializacion-bronce">Extracción de <code>libcorrelation_v1</code> (capa de serialización bronce)</h2>
+<hr />
+<h2 id="como-leer-este-brief">Cómo leer este brief</h2>
+<p>Esto es <strong>peer review adversarial</strong>. Vuestro trabajo no es validar ni aplaudir: es
+encontrar el agujero. El brief presenta lo que se construyó <strong>y</strong> los cinco frentes
+donde el autor (Alonso, con Claude) desconfía de su propio trabajo. Atacad esos
+frentes con saña. Si veis un sexto que no he listado, mejor todavía.</p>
+<p>Principios del proyecto que aplican como criterio: <strong>medir, no votar</strong>; <strong>Via Appia
+Quality</strong> (construir para durar décadas, piedra a piedra); <strong>honestidad científica</strong>
+(el claim se publica salga como salga; la precisión del claim <em>es</em> el producto).</p>
+<hr />
+<h2 id="0-contexto-minimo-para-quien-entra-fresco">0. Contexto mínimo (para quien entra fresco)</h2>
+<p>aRGus NDR es un sistema open-source de detección y respuesta de red (C++20), para
+hospitales, ayuntamientos y organizaciones pequeñas. Su eje científico: <em>¿pueden
+modelos ensemble aprender de la experiencia acumulada de nodos distribuidos?</em>,
+validado con un split MITRE disjunto. Todo lo de estos días es <strong>"suelo que protege
+la medición"</strong>, no production-readiness.</p>
+<p>El <strong>contrato bronce <code>correlation_v1</code></strong> es una fila CSV de 19 columnas (0–17 datos,
+18 = HMAC-SHA256 sobre 0–17) que alimenta el grafo Kuzu. Hoy lo produce solo aRGus.
+Mañana lo producirán adaptadores de Suricata, Zeek, Wazuh y uno de un colaborador
+("Andrés"). Todos deben escribir <strong>los mismos bytes</strong> para el mismo dato lógico, o el
+grafo recibe dialectos incompatibles del "mismo" contrato.</p>
+<hr />
+<h2 id="1-el-problema-y-la-decision-de-diseno">1. El problema y la decisión de diseño</h2>
+<p>La serialización del contrato vivía <strong>soldada</strong> dentro de <code>ml-detector</code> (función
+<code>build_row</code>, que lee un <code>NetworkSecurityEvent</code> de protobuf y emite la fila CSV).
+Problema: para que el futuro injector adversarial y los adaptadores produzcan bronce
+<strong>byte-fiel al de producción</strong>, necesitan <em>la misma</em> serialización. Si cada uno
+reimplementa, divergen, y cualquier medición de pérdida en el grafo mide una
+serialización distinta a la real. Eso envenena el claim en la raíz.</p>
+<p><strong>Decisión: corte en TRES capas, con un struct como frontera.</strong></p>
+<pre><code>[protobuf -&gt; Row]   to_row()       EXCLUSIVO de ml-detector (solo él habla protobuf)
+[Row -&gt; bytes]      serialize()    LIB COMPARTIDA (libcorrelation_v1) = notario único
+[bytes -&gt; disco]    CorrelationWriter   ml-detector (rotación, fichero, reloj)
+</code></pre>
+<p><code>build_row</code> escondía dos responsabilidades fundidas: el <strong>mapeo protobuf→campos</strong>
+(exclusivo, se queda) y la <strong>serialización campos→bytes</strong> (común, se extrae a la lib).
+La struct <code>CorrelationV1Row</code> es la <em>lingua franca</em>: los cinco productores la rellenan
+a su manera y la pasan por el <strong>mismo</strong> <code>serialize</code>, que es el único que decide los
+bytes. La extracción la justifican dos consumidores reales (ml-detector + injector),
+no el adaptador hipotético.</p>
+<hr />
+<h2 id="2-las-seis-decisiones-congeladas">2. Las seis decisiones congeladas</h2>
+<ul>
+<li><strong>D-A</strong> — <code>serialize</code>/<code>validate</code> devuelven <strong>error tipado</strong> (<code>[[nodiscard]]</code> sobre
+  el tipo), nunca excepción ni línea silenciosa. El fallo de validez no se puede
+  descartar bajo <code>-Werror</code>. (Mismo espíritu que <code>FlushResult</code> del DAY 184.)</li>
+<li><strong>D-B</strong> — La propiedad "toda fila válida está en la imagen del event-path" <strong>no se
+  prueba</strong> (espacio intratable): se <strong>acota</strong> por vectores adversariales enumerados.
+  El claim honesto es "rechaza las clases conocidas", no "caracteriza la imagen".</li>
+<li><strong>D-C</strong> — <code>schema_version</code> y <code>source_sensor</code> son <strong>campos del Row</strong>, no constantes.
+  aRGus los fija a <code>"1"</code>/<code>"argus"</code>; Suricata fijará <code>"suricata"</code>. La lib no los conoce.</li>
+<li><strong>D-D</strong> — El símbolo de col 17 llega ya resuelto como string. El <strong>guard de
+  "símbolo de enum legal"</strong> se DIFIERE a un commit aparte (ver Frente 3).</li>
+<li><strong>D-E</strong> — <code>serialize</code> hace <code>imbue(std::locale::classic())</code> en cada stream. El
+  <code>build_row</code> viejo NO lo hacía: formateaba con el locale global del proceso. (Frente 2.)</li>
+<li><strong>D-F</strong> — <code>community_id</code> vacío = <strong>SKIP</strong> (filtrado legítimo, no pérdida), gestionado
+  por <code>to_row</code>. La lib nunca ve esas filas; si una llega, <code>validate</code> la rechaza.</li>
+</ul>
+<hr />
+<h2 id="3-lo-construido-y-probado-b1b3-retrospectivo">3. Lo construido y PROBADO (B1–B3) — retrospectivo</h2>
+<p>Se siguió un plan Via Appia "por adición": nunca destruir el oráculo hasta tener su
+huella congelada. Cuatro piedras; las tres primeras están <strong>hechas y verdes</strong>:</p>
+<p><strong>B1 — <code>to_row</code> por adición.</strong> Se añadió <code>to_correlation_v1_row(event) -&gt;
+{Ok(row) | Skip | Error}</code> como función libre en ml-detector, SIN tocar <code>build_row</code>.
+Conviven el oráculo (<code>build_row</code>) y su réplica (<code>to_row</code> + <code>serialize</code>), lado a lado.
+<em>Prueba:</em> ml-detector compila limpio bajo <code>-Werror</code>.</p>
+<p><strong>B2 — captura del golden.</strong> Una herramienta (<code>capture_golden</code>) escribe 27 vectores
+deterministas con el <code>CorrelationWriter</code> REAL (path del oráculo, nunca <code>serialize</code>),
+lee los bytes exactos del CSV y los congela a <code>correlation_v1_golden.tsv</code>. Vectores:
+3 realistas (heredados de un test existente) + 24 rincón (comas, comillas, <code>\n</code>/<code>\r</code>/
+<code>\t</code> embebidos, NaN, Inf, negativos, alta precisión, UTF-8, vacíos, puertos/timestamps
+extremos, los 7 enums de <code>DetectorSource</code>, un enum desconocido, y el <code>community_id</code>
+vacío que dispara SKIP). Resultado: <code>WRITTEN=26 SKIPPED=1 mismatches=0</code>.</p>
+<p><strong>B3 — test de oráculo.</strong> Por cada vector: <code>serialize(to_row(event))</code> debe ser
+byte-idéntico (a) al golden congelado <strong>y</strong> (b) a <code>write_record</code> EN VIVO. Vectores
+SKIPPED: <code>to_row</code> debe devolver <code>Skip</code> exacto. En divergencia, diagnóstico por byte
+(offset, byte esperado vs obtenido, columna, contexto). <em>Resultado: verde, 27/27.</em></p>
+<p><strong>Qué prueba esto, con precisión:</strong> que la serialización extraída produce <strong>los mismos
+bytes</strong> que el oráculo original, sobre 27 casos incluidos los rincones peligrosos,
+<strong>bajo locale classic</strong> (ver Frente 2). NO prueba production-readiness ni cobertura
+exhaustiva del espacio de entradas.</p>
+<hr />
+<h2 id="4-el-plan-de-b4-prospectivo-aun-no-ejecutado">4. El plan de B4 — prospectivo (aún NO ejecutado)</h2>
+<p>B4 es el rewire: <code>write_record</code> deja de llamar a su <code>build_row</code>/<code>compute_hmac</code> internos
+y pasa a <code>to_row(event)</code> → si <code>Ok</code>, <code>serialize(row, hmac_key)</code> → escribe la línea. Se
+<strong>borran</strong> <code>build_row</code> y <code>compute_hmac</code> de <code>CorrelationWriter</code> (su lógica ya vive en
+la lib). Se hará como commit separado, con la cabeza fresca.</p>
+<p><strong>Cambio de naturaleza del test en B4 (sin ambages):</strong> hoy B3 compara <code>serialize</code>
+contra <code>write_record</code>, y <code>write_record</code> usa <code>build_row</code> (el oráculo). Tras el rewire,
+<code>write_record</code> <em>será</em> <code>serialize</code> por dentro. Por tanto "comparar serialize contra
+write_record en vivo" pasará a ser <strong>comparar serialize consigo mismo: no prueba nada</strong>
+(es tautológico). La única red que <strong>sobrevive con fuerza</strong> es la comparación contra el
+<strong>golden</strong>, que se capturó del <code>build_row</code> viejo y por eso sigue probando que el
+<code>write_record</code> nuevo emite los bytes del oráculo original. Esto es exactamente por qué
+el golden tuvo que congelarse ANTES de B4.</p>
+<hr />
+<h2 id="5-los-cinco-frentes-de-duda-atacad-aqui">5. Los cinco frentes de duda — ATACAD AQUÍ</h2>
+<h3 id="frente-1-basta-un-golden-de-27-vectores-como-red-permanente">Frente 1 — ¿Basta un golden de 27 vectores como red PERMANENTE?</h3>
+<p>Tras B4 desaparece el guard en vivo (se vuelve tautológico) y el golden de 27 casos
+queda como <strong>única</strong> red permanente de byte-identidad. La lib tiene además su propio
+test de propiedad (determinismo, inmunidad a locale, confinamiento), pero la
+byte-identidad-con-el-oráculo descansa solo en esos 27 vectores enumerados (D-B:
+acotado, no probado).
+<strong>Riesgo:</strong> un caso no enumerado donde <code>serialize</code> diverja del oráculo y nadie lo vea
+porque <code>build_row</code> ya no existe para comparar.</p>
+<h3 id="frente-2-locale-inmunidad-probada-o-asuncion-no-verificada">Frente 2 — Locale: ¿inmunidad probada o asunción no verificada?</h3>
+<p>El contrato bronce <strong>debe ser locale-invariante por diseño</strong>: <code>0.910000</code> debe
+escribirse igual en Badajoz, Tokio o São Paulo, porque si el formato numérico depende
+del locale del nodo, dos sensores del mismo despliegue producen bronce incompatible.
+<code>serialize</code> fuerza <code>classic</code> (D-E) precisamente para esto. PERO:
+- El golden se capturó <strong>forzando classic</strong>, porque el autor corre bajo <code>es_ES</code>. Sin
+  ese pin, el <code>build_row</code> viejo <em>en ese mismo entorno</em> habría escrito millares y coma
+  decimal.
+- <strong>No se ha verificado bajo qué locale arranca el daemon en producción.</strong> Si arranca
+  bajo <code>es_ES</code> (u otro con coma decimal), el bronce viejo está corrupto <strong>ahora mismo</strong>,
+  y el D-E no es una mejora sino la corrección de un bug activo.
+- El test de la lib prueba inmunidad ante <strong>un</strong> locale hostil (<code>es_ES</code>). No hay matriz.</p>
+<p><strong>El reencuadre correcto:</strong> la meta no es "soportar todos los locales", es <strong>ser
+inmune a todos ellos</strong>. La pregunta es de <em>comprobación</em>, no de soporte.</p>
+<h3 id="frente-3-d-d-diferido-legitimo-o-aplazamiento-indefinido">Frente 3 — D-D diferido: ¿legítimo o aplazamiento indefinido?</h3>
+<p>El guard de "símbolo de enum desconocido en col 17" se difirió a un commit aparte.
+<strong>Defensa del autor:</strong> es <strong>endurecimiento de contrato, no corrección de bug</strong>. El
+<code>write_record</code> actual YA emite <code>""</code> para un enum desconocido (lleva así desde siempre),
+y el refactor lo <strong>preserva byte a byte</strong> (está en el golden, vector <code>rincon_16</code>).
+Diferir D-D no introduce ninguna regresión; solo pospone hacer <em>más estricto</em> algo que
+hoy es permisivo. Por eso el autor sostiene que <strong>no debe bloquear el merge</strong>.
+<strong>Lo que el autor espera que le impongáis como condición:</strong> que D-D quede como DEBT
+explícito con criterio de cierre, no como "ya lo haré".</p>
+<h3 id="frente-4-debt-bronze-embedded-newline-001">Frente 4 — <code>DEBT-BRONZE-EMBEDDED-NEWLINE-001</code></h3>
+<p>El vector con <code>\n</code> embebido en un campo string reveló que <code>serialize</code> (y el oráculo) lo
+entrecomillan pero mantienen el <code>\n</code> literal → la "línea" bronce ocupa <strong>dos líneas
+físicas</strong>. El reader downstream (<code>parse_and_verify</code>, basado en <code>getline</code>)
+probablemente parta ese registro y el HMAC no valide. Es una debilidad del <strong>formato</strong>,
+no del refactor (el golden lo captura bien leyendo el fichero entero).
+<strong>Pregunta:</strong> ¿bloqueante, o post-FEDER?</p>
+<h3 id="frente-5-el-claim-central-honesto">Frente 5 — El claim central: ¿honesto?</h3>
+<p>Claim propuesto: <em>"Refactor de la capa de serialización a una librería compartida,
+probado byte-idéntico contra un golden congelado y contra el oráculo en vivo, sobre 27
+vectores incluidos los rincones del serializador, bajo locale classic, con el guard de
+enum desconocido (D-D) diferido a commit aparte sin regresión."</em>
+<strong>Pregunta:</strong> ¿es ese el claim honesto, o se concede más de lo probado? ¿Falta alguna
+salvedad?</p>
+<hr />
+<h2 id="6-lo-que-cada-modelo-debe-responder">6. Lo que cada modelo debe responder</h2>
+<p>Para cada frente (1–5), una respuesta concreta y accionable:</p>
+<ol>
+<li><strong>F1:</strong> ¿Es suficiente el golden de 27 vectores como red permanente, o exigís algo
+   más (p.ej. fuzzing de structs aleatorios serializados y comparados contra una
+   referencia)? Si exigís fuzzing, ¿contra qué oráculo, si <code>build_row</code> ya no existe?</li>
+<li><strong>F2:</strong> ¿Una matriz de locales hostiles (es_ES, de_DE, ar_SA, ja_JP…) como gate, o
+   basta el caso es_ES actual? ¿Y la verificación del locale de producción debe ser
+   condición de merge, sí o no?</li>
+<li><strong>F3:</strong> ¿Diferir D-D desbloquea el merge legítimamente? ¿Qué criterio de cierre
+   exigís para el DEBT?</li>
+<li><strong>F4:</strong> ¿<code>DEBT-BRONZE-EMBEDDED-NEWLINE-001</code> bloquea, o post-FEDER? Justificad.</li>
+<li><strong>F5:</strong> Reescribid el claim si lo veis sobre-concedido. Señalad la salvedad que falte.</li>
+</ol>
+<p>Y una transversal: <strong>¿el plan de B4 (sección 4) es seguro y suficiente, o hay un riesgo
+que no se ha visto?</strong></p>
+<hr />
+<h2 id="7-lo-que-no-aporta-senal-no-malgasteis-aqui">7. Lo que NO aporta señal (no malgastéis aquí)</h2>
+<ul>
+<li>Sugerir que NO se difiera D-D "por si acaso" sin un argumento de regresión concreto.</li>
+<li>Pedir production-readiness: esto es "suelo que protege la medición", no producto.</li>
+<li>Reabrir el corte en tres capas: está decidido y probado.</li>
+<li>Elogiar la cobertura de vectores sin señalar el caso que falta.</li>
+</ul>
+<hr />
+<p><em>Metodología: brief → 8 respuestas (Claude, Grok, ChatGPT, DeepSeek, Qwen, Gemini,
+Kimi, Mistral) → síntesis (señal vs ruido) → arbitraje de Alonso. El riesgo de este
+trabajo no es construir mal, es etiquetar mal lo que se mide.</em></p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.top", "search.highlight"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>
