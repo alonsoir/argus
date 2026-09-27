@@ -651,6 +651,33 @@ int main(int argc, char** argv) {
             if (falert.good()) batch_config.alerting_json = nlohmann::json::parse(falert);
         } catch (...) {}
         processor.set_irp_config(config.irp);  // ADR-042
+
+    // ── Recidivism config (RECIDIVISM-D276) ──────────────────────────────────
+    // Misma logica que la conversion de batch_config de arriba: el JSON
+    // se parsea a tipos planos (RecidivismConfigNew) y aqui se convierte
+    // al tipo "real" que usa BatchProcessor (RecidivismConfig), con los
+    // tipos de chrono/uint32_t que compute_penalty_timeout necesita.
+    RecidivismConfig recidivism_config;
+    recidivism_config.enabled = config.recidivism.enabled;
+    // DAY277-NEVER-PERMANENT: un negativo en el JSON pasaba por static_cast a
+    // ~4.29e9 y tumbaba el 'ipset restore'. Ahora negativo -> 0 -> saneado con
+    // ERROR visible en set_recidivism_config().
+    recidivism_config.strike_durations_sec.clear();
+    for (int d : config.recidivism.strike_durations_sec) {
+        recidivism_config.strike_durations_sec.push_back(d < 0 ? 0u : static_cast<uint32_t>(d));
+    }
+    recidivism_config.max_penalty_after_strikes =
+        config.recidivism.max_penalty_after_strikes < 0 ? 0u
+            : static_cast<uint32_t>(config.recidivism.max_penalty_after_strikes);
+    recidivism_config.max_penalty_sec =
+        config.recidivism.max_penalty_sec < 0 ? 0u
+            : static_cast<uint32_t>(config.recidivism.max_penalty_sec);
+    recidivism_config.quiet_period_reset =
+        std::chrono::seconds(config.recidivism.quiet_period_reset_sec);
+    recidivism_config.max_tracked_ips =
+        static_cast<size_t>(config.recidivism.max_tracked_ips);
+    recidivism_config.overflow_log_path = config.recidivism.overflow_log_path;
+    processor.set_recidivism_config(recidivism_config);  // RECIDIVISM-D276
         FIREWALL_LOG_INFO("Batch processor started successfully",
             "irp_auto_isolate", config.irp.auto_isolate,
             "irp_threshold",    config.irp.threat_score_threshold,

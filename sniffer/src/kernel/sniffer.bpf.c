@@ -32,6 +32,9 @@ struct __sk_buff;
 #define BPF_MAP_TYPE_ARRAY 2
 #define BPF_MAP_TYPE_HASH 1
 #define BPF_ANY 0
+/* [DDOS-KAGG-D273:DEFS] agregador DDoS en-kernel */
+#define BPF_NOEXIST 1
+#define BPF_MAP_TYPE_LRU_HASH 9
 
 // TCP flags
 #define TCP_FLAG_FIN 0x01
@@ -141,12 +144,53 @@ struct {
 } events SEC(".maps");
 
 // Statistics
+/* [RING-LOSS-D275:MAP] Claves de stats. Identidad medida en userspace:
+ *   ddos_victims(suma) = stats[STAT_EVENTS] + stats[STAT_RESERVE_FAIL]
+ *                        + stats[STAT_FILTER_DISCARD]
+ * STAT_EVENTS (0) conserva su significado y posicion historicos. */
+#define STAT_EVENTS          0
+#define STAT_RESERVE_FAIL    1
+#define STAT_FILTER_DISCARD  2
+#define STAT_MAX             3
+
 struct {
     __uint(type, BPF_MAP_TYPE_ARRAY);
-    __uint(max_entries, 1);
+    __uint(max_entries, STAT_MAX);
     __type(key, __u32);
     __type(value, __u64);
 } stats SEC(".maps");
+
+/* [RING-LOSS-D275:HELPER] Incremento atomico de stats[key]. En un ARRAY la
+ * clave siempre existe (key < max_entries); el NULL solo satisface al verificador. */
+static __always_inline void stat_inc(__u32 key)
+{
+    __u64 *c = bpf_map_lookup_elem(&stats, &key);
+    if (c)
+        __sync_fetch_and_add(c, 1);
+}
+
+/* [DDOS-KAGG-D273:MAP] Agregador DDoS en-kernel: contadores MONOTONOS por victima.
+ * Clave = dst_ip + protocolo. Userspace lee cada T s; delta = ventana tumbling.
+ * dst_ip en orden numerico (a.b.c.d = a<<24|b<<16|c<<8|d), IDENTICO a
+ * event->dst_ip: userspace debe interpretarlo igual que ya interpreta ese campo
+ * (ver DEBT-SNIFFER-IP-BYTE-ORDER-001).
+ * proto es __u32 (no __u8) a proposito: sin padding en la clave, el verificador
+ * exige que todos los bytes de la clave en pila esten inicializados.
+ * LRU: el desalojo de una victima fria es benigno (no esta bajo flood). */
+struct ddos_key {
+    __u32 dst_ip;
+    __u32 proto;
+};
+struct ddos_val {
+    __u64 pkts;
+    __u64 bytes;
+};
+struct {
+    __uint(type, BPF_MAP_TYPE_LRU_HASH);
+    __uint(max_entries, 65536);
+    __type(key, struct ddos_key);
+    __type(value, struct ddos_val);
+} ddos_victims SEC(".maps");
 
 // 🔥 FILTER LOGIC: Decide if port should be captured
 // Returns: 1 = capture, 0 = drop
@@ -220,9 +264,36 @@ int xdp_sniffer_enhanced(struct xdp_md *ctx) {
     if ((ip[0] >> 4) != 4)
         return XDP_PASS;
 
+    /* [DDOS-KAGG-D273:COUNT] Conteo por victima ANTES del reserve: independiente del ring,
+     * asi no hereda la perdida que queremos medir. Cuenta todo IPv4 de una
+     * interfaz activa, incluidos puertos que should_capture_port() descartaria
+     * mas abajo (el filtro por puerto es del camino ring, no de este). */
+    {
+        struct ddos_key dk = {
+            .dst_ip = ((__u32)ip[16] << 24) | ((__u32)ip[17] << 16) |
+                      ((__u32)ip[18] << 8)  |  (__u32)ip[19],
+            .proto  = ip[9],
+        };
+        __u64 wlen = (__u64)(data_end - data);
+        struct ddos_val *dv = bpf_map_lookup_elem(&ddos_victims, &dk);
+        if (!dv) {
+            /* Primera vez que se ve la victima. NOEXIST + re-lookup: si otra CPU
+             * inserto a la vez, el update falla con EEXIST y el re-lookup coge
+             * la entrada ganadora; no se pierde ningun conteo. */
+            struct ddos_val nv = { .pkts = 0, .bytes = 0 };
+            bpf_map_update_elem(&ddos_victims, &dk, &nv, BPF_NOEXIST);
+            dv = bpf_map_lookup_elem(&ddos_victims, &dk);
+        }
+        if (dv) {
+            __sync_fetch_and_add(&dv->pkts, 1);
+            __sync_fetch_and_add(&dv->bytes, wlen);
+        }
+    }
+
     // Reserve ring buffer space
     struct simple_event *event = bpf_ringbuf_reserve(&events, sizeof(*event), 0);
     if (!event) {
+        stat_inc(STAT_RESERVE_FAIL); /* [RING-LOSS-D275:RESERVE] */
         return XDP_PASS;
     }
 
@@ -252,6 +323,7 @@ int xdp_sniffer_enhanced(struct xdp_md *ctx) {
         // ============ TCP ============
         if (l4_start + 4 > data_end) {
             bpf_ringbuf_discard(event, 0);
+            stat_inc(STAT_FILTER_DISCARD); /* [RING-LOSS-D275:DISCARD] */
             return XDP_PASS;
         }
 
@@ -264,12 +336,14 @@ int xdp_sniffer_enhanced(struct xdp_md *ctx) {
         // 🔥 APPLY FILTER - Check destination port
         if (!should_capture_port(event->dst_port)) {
             bpf_ringbuf_discard(event, 0);
+            stat_inc(STAT_FILTER_DISCARD); /* [RING-LOSS-D275:DISCARD] */
             return XDP_PASS;
         }
 
         // 🔥 APPLY FILTER - Check source port
         if (!should_capture_port(event->src_port)) {
             bpf_ringbuf_discard(event, 0);
+            stat_inc(STAT_FILTER_DISCARD); /* [RING-LOSS-D275:DISCARD] */
             return XDP_PASS;
         }
 
@@ -283,6 +357,7 @@ int xdp_sniffer_enhanced(struct xdp_md *ctx) {
         // ============ UDP ============
         if (l4_start + 4 > data_end) {
             bpf_ringbuf_discard(event, 0);
+            stat_inc(STAT_FILTER_DISCARD); /* [RING-LOSS-D275:DISCARD] */
             return XDP_PASS;
         }
 
@@ -295,12 +370,14 @@ int xdp_sniffer_enhanced(struct xdp_md *ctx) {
         // 🔥 APPLY FILTER - Check destination port
         if (!should_capture_port(event->dst_port)) {
             bpf_ringbuf_discard(event, 0);
+            stat_inc(STAT_FILTER_DISCARD); /* [RING-LOSS-D275:DISCARD] */
             return XDP_PASS;
         }
 
         // 🔥 APPLY FILTER - Check source port
         if (!should_capture_port(event->src_port)) {
             bpf_ringbuf_discard(event, 0);
+            stat_inc(STAT_FILTER_DISCARD); /* [RING-LOSS-D275:DISCARD] */
             return XDP_PASS;
         }
 

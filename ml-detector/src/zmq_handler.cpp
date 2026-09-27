@@ -3,6 +3,7 @@
 #include <filesystem>
 #include <reason_codes.hpp>
 #include "zmq_handler.hpp"
+#include "l2_gate.hpp"     // DEBUG DAY271
 #include "rag_logger.hpp"
 #include "contract_validator.h"
 #include <spdlog/sinks/stdout_color_sinks.h>
@@ -437,6 +438,17 @@ void ZMQHandler::process_event(const std::string& message) {
                       protobuf::DetectorSource_Name(event.authoritative_source()),
                       score_divergence);
 
+        // [DDOS-VWIN-D279:ML-LOG] senal agregada por victima (kernel). SOLO observacion:
+        // no entra en ninguna cabeza ni en final_score (DAY279, paso 1 de la opcion a).
+        if (event.has_victim_window()) {
+            const auto& vw = event.victim_window();
+            logger_->info("[VICTIM-WINDOW] event={}, victim={}, proto={}, d_pkts={}, d_bytes={}, window_ms={}, seq={}, age_ms={}",
+                          event.event_id(), vw.victim_ip(), vw.protocol(), vw.d_pkts(), vw.d_bytes(),
+                          vw.window_ms(), vw.window_seq(), vw.snapshot_age_ms());
+        } else {
+            logger_->info("[VICTIM-WINDOW] event={}, absent", event.event_id());
+        }
+
         event.set_final_classification(
             final_score >= config_.scoring.malicious_threshold ? "MALICIOUS" : "BENIGN"
         );
@@ -546,7 +558,7 @@ void ZMQHandler::process_event(const std::string& message) {
         }
 
         // Level 2 & 3: Specialized detectors (si Level 1 detectó ATTACK)
-        if (label_l1 == 1 && confidence_l1 >= config_.ml.thresholds.level1_attack) {
+        if (l2_gate_open(force_all_heads_, label_l1, confidence_l1, config_.ml.thresholds.level1_attack)) {
             event.set_threat_category("ATTACK");
 
             {
@@ -571,8 +583,8 @@ void ZMQHandler::process_event(const std::string& message) {
                             if (ddos_features_vec.size() != 9) {
                                 throw std::runtime_error("Invalid DDoS feature count");
                             }
-                            logger_->debug("   DDoS Features: syn_ack={:.3f}, entropy={:.3f}, amp={:.3f}",
-                                          ddos_features_vec[0], ddos_features_vec[4], ddos_features_vec[5]);
+                            logger_->debug("   DDoS Features: syn_ack={:.3f}, entropy={:.3f}, amp={:.3f}, disp={:.3f}, symmetry={:.3f}, protocol={:.3f}, completion={:.3f}, escalation={:.3f}, saturation={:.3f}",
+                                          ddos_features_vec[0], ddos_features_vec[4], ddos_features_vec[5], ddos_features_vec[2], ddos_features_vec[1], ddos_features_vec[3], ddos_features_vec[6], ddos_features_vec[7], ddos_features_vec[8]);
                         } catch (const std::exception& e) {
                             logger_->error("❌ DDoS feature extraction failed: {}", e.what());
                             std::lock_guard<std::mutex> lock(stats_mutex_);
@@ -593,10 +605,10 @@ void ZMQHandler::process_event(const std::string& message) {
                         };
 
                         auto ddos_result = ddos_detector_->predict(ddos_features);
-                        logger_->debug("🤖 DDoS: class={} ({}), conf={:.4f}",
+                        logger_->debug("🤖 DDoS: class={} ({}), conf={:.4f}, ddos_prob={:.4f}",
                                       ddos_result.class_id,
                                       (ddos_result.class_id == 0 ? "NORMAL" : "DDOS"),
-                                      ddos_result.probability);
+                                      ddos_result.probability, ddos_result.ddos_prob);
 
                         auto* level2_ddos_pred = ml_analysis->add_level2_specialized_predictions();
                         level2_ddos_pred->set_model_name("ddos_detector_embedded_cpp20");

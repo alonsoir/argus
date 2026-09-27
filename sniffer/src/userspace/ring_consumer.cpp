@@ -924,6 +924,9 @@ void RingBufferConsumer::populate_protobuf_event(const SimpleEvent& event,
     time_window->set_window_type(protobuf::TimeWindow::SLIDING);
     time_window->set_sequence_number(event.timestamp);
 
+    // [DDOS-VWIN-D279:STAMP-MAIN] ventana por victima (kernel) -> evento
+    stamp_victim_window(proto_event, event);
+
     // Distributed node info
     protobuf::DistributedNode* node = proto_event.mutable_capturing_node();
     node->set_node_id(config_.node_id);
@@ -1214,6 +1217,26 @@ void RingBufferConsumer::ransomware_processor_loop() {
     std::cout << "[INFO] Ransomware processor thread stopped" << std::endl;
 }
 
+// [DDOS-VWIN-D279:STAMP-DEF] Estampa en el evento la ventana por victima contada en el
+// kernel (mapa ddos_victims). Sin tablero o sin snapshot publicado -> el evento sale SIN
+// victim_window (= lector apagado). Con snapshot y victima ausente -> d_pkts = 0.
+void RingBufferConsumer::stamp_victim_window(protobuf::NetworkSecurityEvent& ev,
+                                             const SimpleEvent& e) const {
+    if (!victim_board_) return;
+    const uint32_t dst = static_cast<uint32_t>(e.dst_ip);
+    const uint32_t proto = static_cast<uint32_t>(e.protocol);
+    const ::sniffer::DdosVictimLookup r = victim_board_->lookup(dst, proto);
+    if (!r.have_snapshot) return;
+    auto* vw = ev.mutable_victim_window();
+    vw->set_victim_ip(::sniffer::DdosKernelAggregator::ip_to_string(dst));
+    vw->set_protocol(proto);
+    vw->set_d_pkts(r.d_pkts);
+    vw->set_d_bytes(r.d_bytes);
+    vw->set_window_ms(r.window_ms);
+    vw->set_window_seq(r.seq);
+    vw->set_snapshot_age_ms(r.age_ms);
+}
+
 void RingBufferConsumer::send_fast_alert(const SimpleEvent& event) {
     auto start_time = std::chrono::steady_clock::now();
 
@@ -1226,6 +1249,7 @@ void RingBufferConsumer::send_fast_alert(const SimpleEvent& event) {
         ts->set_nanos(event.timestamp % 1'000'000'000ULL);
 
         alert.set_originating_node_id(config_.node_id);
+        stamp_victim_window(alert, event);  // [DDOS-VWIN-D279:STAMP-FAST]
 
         auto* net_features = alert.mutable_network_features();
 

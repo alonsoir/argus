@@ -72,6 +72,11 @@ struct IPSetConfig {
 };
 
 /// Single IP entry with optional metadata
+/// DAY277-NEVER-PERMANENT: techo del timeout por entrada, MEDIDO en la VM
+/// (ipset v7.17): 'timeout 2147484' -> "out of range 0-2147483". Un valor
+/// mayor NO se recorta: ipset lo rechaza y tumba el 'restore' entero.
+inline constexpr uint32_t kIpsetMaxTimeoutSec = 2147483;
+
 struct IPSetEntry {
     std::string ip;                       ///< IP address (e.g., "1.2.3.4" or "1.2.3.0/24")
     std::optional<uint32_t> timeout;      ///< Override default timeout

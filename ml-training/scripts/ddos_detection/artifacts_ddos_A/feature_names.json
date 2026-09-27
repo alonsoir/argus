@@ -1,0 +1,11 @@
+[
+  "Total Length of Fwd Packets",
+  "Total Length of Bwd Packets",
+  "Fwd Packet Length Max",
+  "Bwd Packet Length Max",
+  "Bwd Packet Length Mean",
+  "Packet Length Mean",
+  "Avg Fwd Segment Size",
+  "Subflow Fwd Bytes",
+  "Subflow Bwd Bytes"
+]

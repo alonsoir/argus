@@ -1011,3 +1011,71 @@ target_include_directories(test_ip_format PRIVATE
 )
 add_test(NAME test_ip_format COMMAND test_ip_format)
 message(STATUS "🧪 Unit Test: test_ip_format configured (DAY 229 - DEBT-SNIFFER-IP-BYTE-ORDER-001)")
+
+# ============================================================================
+# DDOS-KAGG-D273:CMAKE  Agregador DDoS en-kernel: lector userspace (DAY 273)
+# Parte pura (compute_delta, ip_to_string): ctest, sin root ni kernel.
+# El modo --bpf (BPF_PROG_TEST_RUN contra sniffer.bpf.o) requiere root: lo lanza
+# el target sniffer-ddos-agg-bpf-test del Makefile raiz.
+# Solo Variant A (eBPF): la Variant B (libpcap) no tiene libbpf.
+# ============================================================================
+if(NOT USE_LIBPCAP)
+  add_executable(test_ddos_kernel_agg
+          tests/test_ddos_kernel_agg.cpp
+  )
+  target_include_directories(test_ddos_kernel_agg PRIVATE
+          ${CMAKE_SOURCE_DIR}/include
+          ${LIBBPF_INCLUDE_DIRS}
+  )
+  if(LIBBPF_LIBRARY_DIRS)
+    target_link_directories(test_ddos_kernel_agg PRIVATE ${LIBBPF_LIBRARY_DIRS})
+  endif()
+  target_link_libraries(test_ddos_kernel_agg PRIVATE
+          ${LIBBPF_LIBRARIES}
+  )
+  add_test(NAME test_ddos_kernel_agg COMMAND test_ddos_kernel_agg)
+  message(STATUS "🧪 Unit Test: test_ddos_kernel_agg configured (DAY 273 - agregador DDoS en-kernel, parte pura)")
+endif()
+
+# ============================================================================
+# DDOS-KREAD-D274:CMAKE  Hilo lector del agregador DDoS en-kernel (DAY 274)
+# Test sin kernel ni root: formato del CSV (funciones puras) y ciclo de vida del
+# hilo (start/stop, parada inmediata, cadencia) con fd = -1.
+# Solo Variant A (eBPF): la Variant B (libpcap) no tiene libbpf.
+# ============================================================================
+if(NOT USE_LIBPCAP)
+  find_package(Threads REQUIRED)
+  add_executable(test_ddos_kernel_reader
+          tests/test_ddos_kernel_reader.cpp
+  )
+  target_include_directories(test_ddos_kernel_reader PRIVATE
+          ${CMAKE_SOURCE_DIR}/include
+          ${LIBBPF_INCLUDE_DIRS}
+  )
+  if(LIBBPF_LIBRARY_DIRS)
+    target_link_directories(test_ddos_kernel_reader PRIVATE ${LIBBPF_LIBRARY_DIRS})
+  endif()
+  target_link_libraries(test_ddos_kernel_reader PRIVATE
+          ${LIBBPF_LIBRARIES}
+          Threads::Threads
+  )
+  add_test(NAME test_ddos_kernel_reader COMMAND test_ddos_kernel_reader)
+  message(STATUS "Unit Test: test_ddos_kernel_reader configured (DAY 274 - hilo lector DDoS + CSV, sin kernel)")
+
+  add_executable(test_ddos_victim_board
+          tests/test_ddos_victim_board.cpp
+  )
+  target_include_directories(test_ddos_victim_board PRIVATE
+          ${CMAKE_SOURCE_DIR}/include
+          ${LIBBPF_INCLUDE_DIRS}
+  )
+  if(LIBBPF_LIBRARY_DIRS)
+    target_link_directories(test_ddos_victim_board PRIVATE ${LIBBPF_LIBRARY_DIRS})
+  endif()
+  target_link_libraries(test_ddos_victim_board PRIVATE
+          ${LIBBPF_LIBRARIES}
+          Threads::Threads
+  )
+  add_test(NAME test_ddos_victim_board COMMAND test_ddos_victim_board)
+  message(STATUS "Unit Test: test_ddos_victim_board configured (DAY 279 - tablero de ventanas por victima) [DDOS-VWIN-D279:CMAKE-TEST]")
+endif()

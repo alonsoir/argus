@@ -38,7 +38,41 @@
 #include <atomic>
 #include <functional>
 
+#include <optional>  // DAY277-NEVER-PERMANENT
+
 namespace mldefender::firewall {
+
+//===----------------------------------------------------------------------===//
+// Recidivism escalation (RECIDIVISM-D276)
+//===----------------------------------------------------------------------===//
+
+/// Estado de reincidencia por IP
+struct StrikeState {
+    uint32_t strikes{0};
+    std::chrono::steady_clock::time_point last_seen;
+};
+
+/// Configuracion de escalado de castigo por reincidencia. Vive en firewall,
+/// no en los detectores: firewall es la unica fuente de verdad del ipset.
+struct RecidivismConfig {
+    bool enabled{true};
+    /// Duracion en segundos por nivel de reincidencia (indice 0 = 1a vez)
+    std::vector<uint32_t> strike_durations_sec{60, 300, 3600, 86400, 604800};
+    /// A partir de este numero de reincidencias se aplica max_penalty_sec.
+    /// NUNCA bloqueo permanente (DAY277-NEVER-PERMANENT): las IPs de botnets
+    /// suelen ser victimas (equipos comprometidos, CGNAT compartido). El drop
+    /// permanente es una accion manual del admin, fuera de este camino.
+    uint32_t max_penalty_after_strikes{6};
+    /// Castigo maximo en segundos. Rango valido [1, kIpsetMaxTimeoutSec].
+    uint32_t max_penalty_sec{2073600};  // 24 dias
+    /// Si ha pasado mas de esto sin verla, se resetea el contador de esa IP
+    std::chrono::seconds quiet_period_reset{std::chrono::hours(72)};
+    /// Cota de memoria: IPs distintas trackeadas como maximo
+    size_t max_tracked_ips{100000};
+    /// Fichero donde se vuelca strike_states_ antes de resetear por overflow.
+    /// Si no se puede escribir, NO se resetea (no se pierde evidencia).
+    std::string overflow_log_path{"/vagrant/logs/lab/firewall_strike_overflow.log"};
+};
 
 //===----------------------------------------------------------------------===//
 // Configuration
@@ -213,6 +247,20 @@ public:
     bool should_auto_isolate(const protobuf::Detection& detection) const;
     void check_auto_isolate(const protobuf::Detection& detection);
 
+    /// RECIDIVISM-D276 + DAY277-NEVER-PERMANENT: valida y sanea la config
+    /// (ningun timeout puede ser 0 = permanente ni superar kIpsetMaxTimeoutSec;
+    /// escalera vacia -> escalera por defecto). Loguea cada correccion. Toma mutex_.
+    void set_recidivism_config(const RecidivismConfig& cfg);
+    /// RECIDIVISM-D276: publico a proposito -- testeable sin IPSetWrapper real ni
+    /// kernel, igual que should_auto_isolate. Calcula el timeout a aplicar a
+    /// esta IP y actualiza su contador de reincidencia.
+    /// DAY277-NEVER-PERMANENT: nullopt = reincidencia deshabilitada (se aplica
+    /// el timeout por defecto del set, comportamiento pre-D276). Con valor,
+    /// SIEMPRE en [1, max_penalty_sec]. Nunca 0.
+    /// Requiere mutex_ tomado (lo llama flush_internal); los tests unitarios
+    /// lo llaman sin concurrencia.
+    std::optional<uint32_t> compute_penalty_timeout(const std::string& ip);
+
     //===------------------------------------------------------------------===//
     // Metrics and Monitoring
     //===------------------------------------------------------------------===//
@@ -252,10 +300,16 @@ private:
     IPSetWrapper& ipset_;                    ///< IPSet wrapper
     BatchProcessorConfig config_;            ///< Configuration
     IrpConfig            irp_config_;         ///< ADR-042 auto-isolate config
+    RecidivismConfig recidivism_config_;                          ///< RECIDIVISM-D276
+    std::unordered_map<std::string, StrikeState> strike_states_;  ///< RECIDIVISM-D276, guardado por mutex_
     BatchProcessorMetrics metrics_;          ///< Performance metrics
 
     // Pending IPs accumulator
     std::unordered_set<std::string> pending_ips_;  ///< IPs waiting to flush
+    /// DAY277-H6: penalty calculada UNA vez por IP pendiente; los reintentos de un
+    /// flush fallido la reutilizan (no suman strikes). Se vacia con pending_ips_.
+    /// Guardado por mutex_.
+    std::unordered_map<std::string, std::optional<uint32_t>> pending_penalty_;
     std::chrono::steady_clock::time_point last_flush_;  ///< Last flush timestamp
 
     // Thread safety
@@ -285,6 +339,12 @@ private:
 
     /// Trigger backpressure callback if needed
     void check_backpressure();
+
+    /// RECIDIVISM-D276: strike_states_ ha superado max_tracked_ips. Vuelca TODO
+    /// su contenido a recidivism_config_.overflow_log_path. Solo si el
+    /// volcado tiene exito se vacia strike_states_ -- si falla, se deja
+    /// crecer en memoria antes que perder evidencia en silencio.
+    void dump_and_reset_strike_states();
 };
 
 } // namespace mldefender::firewall

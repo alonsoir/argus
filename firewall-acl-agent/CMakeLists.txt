@@ -340,6 +340,7 @@ if(BUILD_TESTS)
             tests/unit/test_parse_autonomy_cidr_injection.cpp   # ← DAY190 CWE-78
             tests/unit/test_comment_validator.cpp
             tests/unit/test_safe_exec.cpp
+            tests/unit/test_batch_processor_recidivism.cpp   # ← RECIDIVISM-D276
             tests/test_globals_stub.cpp
     )
 
@@ -437,6 +438,23 @@ add_test(NAME test_autonomy_e2e COMMAND test_autonomy_e2e)
     )
     add_test(NAME test_ipset_injection_integration COMMAND test_ipset_injection_integration)
     set_tests_properties(test_ipset_injection_integration PROPERTIES LABELS "e2e;root")
+
+    # test_recidivism_e2e — RECIDIVISM-D276 (INTEGRACION, requiere root+ipset -> VM, no make test normal)
+    add_executable(test_recidivism_e2e
+        tests/test_recidivism_e2e.cpp
+        tests/test_globals_stub.cpp   # ← HOTFIX-E2E-GLOBALS-001: g_logger/g_system_state
+    )
+    target_include_directories(test_recidivism_e2e PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/include
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/core
+    )
+    target_link_libraries(test_recidivism_e2e PRIVATE
+        firewall_core
+        GTest::gtest
+        GTest::gtest_main
+    )
+    add_test(NAME test_recidivism_e2e COMMAND test_recidivism_e2e)
+    set_tests_properties(test_recidivism_e2e PROPERTIES LABELS "e2e;root")
 
     # H-2 DAY189: ipset SET_NAME injection (INTEGRACION, root+ipset -> VM)
     add_executable(test_ipset_setname_injection_integration

@@ -229,6 +229,9 @@
   },
   "kernel_space": {
     "ebpf_program": "sniffer.bpf.o",
+    "ddos_kernel_agg_enabled": true,
+    "ddos_kernel_agg_interval_ms": 1000,
+    "ddos_kernel_agg_csv_path": "/vagrant/logs/lab/ddos_windows.csv",
     "xdp_mode": "skb",
     "ring_buffer_size": 1048576,
     "max_flows_in_kernel": 500000,

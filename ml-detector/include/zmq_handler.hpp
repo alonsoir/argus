@@ -71,6 +71,8 @@ public:
     void reset_stats();
     // ADR-012 PHASE 2d — plugin_loader setter (Consejo DAY 111)
     void set_plugin_loader(ml_defender::PluginLoader* pl) { plugin_loader_ = pl; }
+    // DEBUG DAY271 -- fuerza las cabezas L2 sin veto de level1 (medicion grieta B)
+    void set_force_all_heads(bool v) { force_all_heads_ = v; }
 
     void start_memory_monitoring();
     void stop_memory_monitoring();
@@ -125,6 +127,8 @@ private:
     uint64_t events_processed_total_{0};
     // ADR-012 PHASE 2d — plugin_loader (Consejo DAY 111)
     ml_defender::PluginLoader* plugin_loader_ = nullptr;
+    // DEBUG DAY271 -- default false: un pipeline-start normal NUNCA abre la compuerta
+    bool force_all_heads_ = false;
     std::chrono::system_clock::time_point start_time_;
 
     // Day 66: CsvEventWriter standalone (activo aunque RAG Logger falle)

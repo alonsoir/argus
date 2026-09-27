@@ -9,6 +9,7 @@
 #include "fast_detector.hpp"
 #include "ransomware_feature_processor.hpp"
 #include "ml_defender_features.hpp"
+#include "ddos_victim_board.hpp"  // [DDOS-VWIN-D279:RC-INC]
 #include "payload_analyzer.hpp"
 // ML Defender embedded detectors
 #include "ml_defender/ddos_detector.hpp"
@@ -131,6 +132,12 @@ public:
     void set_plugin_loader(ml_defender::PluginLoader* pl) { plugin_loader_ = pl; }
 #endif
 
+    // [DDOS-VWIN-D279:RC-SETTER] tablero de ventanas por victima (agregador en-kernel).
+    // Llamar ANTES de start(): el puntero se fija una vez y despues solo se lee.
+    void set_victim_board(std::shared_ptr<::sniffer::DdosVictimBoard> board) {
+        victim_board_ = std::move(board);
+    }
+
 private:
     // CONSTANTS - Processing statistics
     static constexpr double EMA_SMOOTHING_FACTOR = 0.9;  // Exponential Moving Average weight
@@ -188,6 +195,7 @@ private:
     // Configuration
     SnifferConfig config_;
     FastDetectorConfig fast_detector_config_;
+    std::shared_ptr<::sniffer::DdosVictimBoard> victim_board_;  // [DDOS-VWIN-D279:RC-MEMBER]
 #ifdef PLUGIN_LOADER_ENABLED
 #endif
 #ifdef PLUGIN_LOADER_ENABLED
@@ -258,6 +266,8 @@ private:
     // Ransomware-specific methods
     void ransomware_processor_loop();
     void send_fast_alert(const SimpleEvent& event);
+    // [DDOS-VWIN-D279:RC-STAMP-DECL]
+    void stamp_victim_window(protobuf::NetworkSecurityEvent& ev, const SimpleEvent& e) const;
     void send_ransomware_features(const protobuf::RansomwareFeatures& features);
     bool initialize_ransomware_detection();
     void shutdown_ransomware_detection();

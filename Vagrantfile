@@ -908,6 +908,57 @@ BASHRC_EOF
     NTP_SYNC
 
     # ════════════════════════════════════════════════════════════════════════
+    # Provisioning: resolver DNS BENIGNO del lab (LAB-DNS-D280)
+    # ════════════════════════════════════════════════════════════════════════
+    # unbound en 192.168.100.1:53 (misma víctima que el flood CICDDoS2019) con
+    # zona local estática lab.argus (h1..h20 → 192.168.100.201..220). Respuestas
+    # deterministas, sin depender de internet. Uso: medir el FP de la señal
+    # DDoS del kernel con UDP legítimo de alta tasa (dnsperf desde el client).
+    # NO toca la resolución del propio defender (/etc/resolv.conf intacto).
+    # Verifica POR INVOCACIÓN (dig), no por test -f.
+    defender.vm.provision "shell", name: "lab-dns-resolver", inline: <<-'LAB_DNS_RESOLVER'
+      set -e
+      export DEBIAN_FRONTEND=noninteractive
+      echo "🧪 LAB-DNS-D280 — unbound en 192.168.100.1:53 (zona lab.argus)"
+      RESOLV_SHA_BEFORE=$(sha256sum /etc/resolv.conf | awk '{print $1}')
+
+      apt-get update -qq
+      apt-get install -y unbound
+      systemctl disable --now unbound-resolvconf.service 2>/dev/null || true
+
+      CONF=/etc/unbound/unbound.conf.d/argus-lab.conf
+      {
+        printf '%s\n' '# LAB-DNS-D280 — generado por el Vagrantfile; no editar a mano'
+        printf '%s\n' 'server:'
+        printf '%s\n' '    interface: 127.0.0.1'
+        printf '%s\n' '    interface: 192.168.100.1'
+        printf '%s\n' '    ip-freebind: yes'
+        printf '%s\n' '    access-control: 127.0.0.0/8 allow'
+        printf '%s\n' '    access-control: 192.168.100.0/24 allow'
+        printf '%s\n' '    num-threads: 1'
+        printf '%s\n' '    local-zone: "lab.argus." static'
+        for i in $(seq 1 20); do
+          printf '    local-data: "h%d.lab.argus. 60 IN A 192.168.100.%d"\n' "$i" "$((200 + i))"
+        done
+      } > "$CONF"
+
+      unbound-checkconf
+      systemctl enable unbound
+      systemctl restart unbound
+      sleep 1
+
+      echo "── verificando (por invocación) ──"
+      GOT_LAN=$(dig @192.168.100.1 h1.lab.argus A +short +time=2 +tries=1)
+      GOT_LO=$(dig @127.0.0.1 h20.lab.argus A +short +time=2 +tries=1)
+      [ "$GOT_LAN" = "192.168.100.201" ] || { echo "❌ dig @192.168.100.1 h1 -> '$GOT_LAN'"; exit 1; }
+      [ "$GOT_LO" = "192.168.100.220" ]  || { echo "❌ dig @127.0.0.1 h20 -> '$GOT_LO'"; exit 1; }
+      RESOLV_SHA_AFTER=$(sha256sum /etc/resolv.conf | awk '{print $1}')
+      [ "$RESOLV_SHA_BEFORE" = "$RESOLV_SHA_AFTER" ] || { echo "❌ /etc/resolv.conf cambió al instalar unbound"; exit 1; }
+      ss -ulnp | grep -E '192\.168\.100\.1:53 ' >/dev/null || { echo "❌ unbound no escucha en 192.168.100.1:53"; exit 1; }
+      echo "✅ LAB-DNS-D280 resolver OK (h1 -> $GOT_LAN, h20 -> $GOT_LO, resolv.conf intacto)"
+    LAB_DNS_RESOLVER
+
+    # ════════════════════════════════════════════════════════════════════════
     # Provisioning: Cron restart every 72h (memory leak mitigation)
     # ════════════════════════════════════════════════════════════════════════
     defender.vm.provision "shell", name: "configure-cron-restart", run: "once", inline: <<-CRON
@@ -1121,10 +1172,12 @@ BASHRC_EOF
           # NO set -e (regla de provisioning): un repo externo caído no debe tumbar el up
           echo "=== ML CLIENT — Traffic Generator + MITRE Attack Tools ==="
           apt-get update -qq || true
+          # LAB-DNS-D280: dnsperf (carga DNS benigna) va AQUÍ y no en un bloque aparte:
+          # este apt corre antes del cambio de ruta a 192.168.100.1, que deja al client sin internet.
           apt-get install -y --no-install-recommends \
           curl wget iproute2 net-tools dnsutils \
           tcpdump tcpreplay netcat-openbsd \
-          iputils-ping procps chrony \
+          iputils-ping procps chrony dnsperf \
           nmap hydra sqlmap \
           python3 python3-pip git \
           || { echo "FATAL: herramientas base no instaladas"; exit 1; }

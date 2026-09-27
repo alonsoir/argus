@@ -124,7 +124,8 @@ CMAKE_FLAGS_ASAN := -DCMAKE_BUILD_TYPE=RelWithDebInfo \
 # Default profile (can be overridden: make PROFILE=tsan all)
 PROFILE ?= debug
 CMAKE_FLAGS := $(CMAKE_FLAGS_$(shell echo $(PROFILE) | tr a-z A-Z))
-
+VERBOSE ?=
+FORCE_ALL_HEADS ?=
 # ============================================================================
 # COMPONENT BUILD DIRECTORIES (Profile-specific)
 # ============================================================================
@@ -659,11 +660,7 @@ sniffer: proto etcd-client-build plugin-loader-build
 	@echo "✅ Sniffer built ($(PROFILE))"
 
 ml-detector-start:
-	@echo "🚀 Starting ML Detector (Tricapa Persistente)..."
-	@vagrant ssh -c "tmux kill-session -t ml-detector 2>/dev/null || true"
-	@vagrant ssh -c "tmux new-session -d -s ml-detector 'mkdir -p /vagrant/logs/lab && cd /vagrant/ml-detector/build-debug && export LD_LIBRARY_PATH=/usr/local/lib:$$LD_LIBRARY_PATH && sudo env LD_LIBRARY_PATH=/usr/local/lib ./ml-detector >> /vagrant/logs/lab/ml-detector.log 2>&1'"
-	@sleep 3
-
+	@vagrant ssh -c "tmux new-session -d -s ml-detector 'mkdir -p /vagrant/logs/lab && cd $(ML_DETECTOR_BUILD_DIR) && export LD_LIBRARY_PATH=/usr/local/lib:$$LD_LIBRARY_PATH && sudo env LD_LIBRARY_PATH=/usr/local/lib ./ml-detector $(if $(VERBOSE),--verbose,) $(if $(FORCE_ALL_HEADS),--force-all-heads,) >> /vagrant/logs/lab/ml-detector.log 2>&1'"
 ml-detector: proto etcd-client-build plugin-loader-build correlation-v1-build
 	@echo ""
 	@echo "╔════════════════════════════════════════════════════════════╗"
@@ -722,10 +719,7 @@ FIREWALL_BIN := ./firewall-acl-agent
 FIREWALL_CFG := /etc/ml-defender/firewall-acl-agent/firewall.json
 
 firewall-start:
-	@echo "🚀 Starting Firewall ACL (SUDO + TMUX)..."
-	@vagrant ssh -c "tmux kill-session -t firewall 2>/dev/null || true"
-	@vagrant ssh -c "tmux new-session -d -s firewall 'mkdir -p /vagrant/logs/lab && cd $(FIREWALL_DIR)/build-debug && sudo env LD_LIBRARY_PATH=/usr/local/lib $(FIREWALL_BIN) -c $(FIREWALL_CFG) >> /vagrant/logs/lab/firewall-agent.log 2>&1'"
-	@sleep 2
+		@vagrant ssh -c "tmux new-session -d -s firewall 'mkdir -p /vagrant/logs/lab && cd $(FIREWALL_BUILD_DIR) && sudo env LD_LIBRARY_PATH=/usr/local/lib $(FIREWALL_BIN) -c $(FIREWALL_CFG) >> /vagrant/logs/lab/firewall-agent.log 2>&1'"
 
 firewall: proto seed-client-build etcd-client-build plugin-loader-build
 	@echo ""
@@ -897,7 +891,7 @@ pipeline-start: test-provision-1 etcd-server-start
 	@sleep 5
 	@$(MAKE) rag-ingester-start
 	@sleep 3
-	@$(MAKE) ml-detector-start
+	@$(MAKE) ml-detector-start VERBOSE=$(VERBOSE) FORCE_ALL_HEADS=$(FORCE_ALL_HEADS)
 	@$(MAKE) firewall-start
 	@sleep 2
 	@$(MAKE) sniffer-start
@@ -1192,6 +1186,38 @@ test-libs:
 	@$(MAKE) host-domain-v1-test
 	@echo "Testing plugin-integ-test..."
 	@$(MAKE) plugin-integ-test
+
+# ============================================================================
+# DDOS-KAGG-D273:MAKE  Agregador DDoS en-kernel (DAY 273)
+#   sniffer-ddos-agg-test      parte pura (ctest, sin root). La corre tambien test-components.
+#   sniffer-ddos-agg-bpf-test  BPF_PROG_TEST_RUN contra el sniffer.bpf.o real:
+#                              requiere root y kernel con BPF; NO entra en test-all.
+# ============================================================================
+.PHONY: sniffer-ddos-agg-test sniffer-ddos-agg-bpf-test
+
+sniffer-ddos-agg-test:
+	@echo "🧪 test_ddos_kernel_agg (parte pura, sin root)..."
+	@vagrant ssh -c "cd $(SNIFFER_BUILD_DIR) && cmake . > /dev/null && cmake --build . --target test_ddos_kernel_agg && ctest -R test_ddos_kernel_agg --output-on-failure"
+
+sniffer-ddos-agg-bpf-test:
+	@echo "🧪 test_ddos_kernel_agg --bpf (requiere root y kernel con BPF)..."
+	@vagrant ssh -c "cd $(SNIFFER_BUILD_DIR) && cmake . > /dev/null && cmake --build . --target bpf_program && cmake --build . --target test_ddos_kernel_agg && sudo ./test_ddos_kernel_agg --bpf ./sniffer.bpf.o"
+
+# ============================================================================
+# DDOS-KREAD-D274:MAKE  Test del hilo lector DDoS (DAY 274): sin root, sin kernel.
+# Registrado con add_test en sniffer/CMakeLists.txt: entra en cualquier ctest general.
+# ============================================================================
+.PHONY: sniffer-ddos-reader-test
+
+sniffer-ddos-reader-test:
+	@echo "🧪 test_ddos_kernel_reader (hilo + CSV, sin root ni kernel)..."
+	@vagrant ssh -c "cd $(SNIFFER_BUILD_DIR) && cmake . > /dev/null && cmake --build . --target test_ddos_kernel_reader && ctest -R test_ddos_kernel_reader --output-on-failure"
+
+.PHONY: sniffer-ddos-board-test
+# [DDOS-VWIN-D279:MAKE-TEST] tablero de ventanas por victima (snapshot + lookup, sin root ni kernel)
+sniffer-ddos-board-test:
+	@echo "🧪 test_ddos_victim_board (snapshot + lookup, sin root ni kernel)..."
+	@vagrant ssh -c "cd $(SNIFFER_BUILD_DIR) && cmake . > /dev/null && cmake --build . --target test_ddos_victim_board && ctest -R test_ddos_victim_board --output-on-failure"
 
 test-components: correlation-engine-test
 	@echo ""
@@ -3161,7 +3187,7 @@ wazuh-adapter-rebuild: wazuh-adapter-clean wazuh-adapter-build
 # DEBT-HOST-DOMAIN-EMECAS-INTEGRATION-001 (mitad build+unit).
 .PHONY: host-engine-build host-engine-test host-engine-clean host-engine-rebuild dataset-export dataset-export-b
 .PHONY: dataset-export-c dataset-export-all ctu-start fetch-neris bias-report fetch-neris-labels neris-pcap-5tuples
-.PHONY: bias-denominator-true autopsy-67
+.PHONY: bias-denominator-true autopsy-67 ddos-gate-start
 
 host-engine-build:
 	@echo "╔════════════════════════════════════════════════════════════╗"
@@ -3192,6 +3218,9 @@ dataset-export-all: dataset-export-c dataset-export dataset-export-b
 
 ctu-start:  ## 2o traffic driver: replay Neris (CTU-13 sc.1) -> grafo cross-sensor (requiere pipeline-start + pcap)
 	@bash scripts/ctu_start.sh
+
+ddos-gate-start:  ## Mide la compuerta level1->level2 con un flood DDoS real (requiere pipeline-start VERBOSE=1)
+	@bash scripts/ddos_gate_start.sh
 
 fetch-neris:  ## descarga+verifica el pcap Neris (~56MB) a datasets/ctu13/ si falta
 	@vagrant ssh client -c "bash /vagrant/scripts/fetch_neris.sh"

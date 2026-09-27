@@ -1,0 +1,40 @@
+{
+  "seed": 42,
+  "sep_min": 0.6,
+  "features": [
+    "Total Length of Fwd Packets",
+    "Total Length of Bwd Packets",
+    "Fwd Packet Length Max",
+    "Bwd Packet Length Max",
+    "Bwd Packet Length Mean",
+    "Packet Length Mean",
+    "Avg Fwd Segment Size",
+    "Subflow Fwd Bytes",
+    "Subflow Bwd Bytes"
+  ],
+  "n_features": 9,
+  "summary_sha": "ec9da371b816",
+  "train_rows": 2617202,
+  "test_rows": 1176482,
+  "recall_per_attack": {
+    "LDAP": 0.9999016786727932,
+    "MSSQL": 0.9999417700248725,
+    "NetBIOS": 0.9998867922279885,
+    "Portmap": 0.9973451216610522,
+    "Syn": 0.5766485312242887,
+    "UDP": 0.9999240396863424,
+    "UDPLag": 0.9253731343283582
+  },
+  "fp_benign_cic": 0.08779074870534538,
+  "median_impute": {
+    "Total Length of Fwd Packets": 1438.0,
+    "Total Length of Bwd Packets": 0.0,
+    "Fwd Packet Length Max": 516.0,
+    "Bwd Packet Length Max": 0.0,
+    "Bwd Packet Length Mean": 0.0,
+    "Packet Length Mean": 516.0,
+    "Avg Fwd Segment Size": 516.0,
+    "Subflow Fwd Bytes": 1438.0,
+    "Subflow Bwd Bytes": 0.0
+  }
+}

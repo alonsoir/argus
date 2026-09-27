@@ -170,6 +170,10 @@ CaptureConfig ConfigManager::parse_capture(const Json::Value& capture_json) {
 KernelSpaceConfig ConfigManager::parse_kernel_space(const Json::Value& kernel_json) {
     KernelSpaceConfig kernel;
     kernel.ebpf_program = kernel_json.get("ebpf_program", "sniffer.bpf.o").asString();
+    // [DDOS-KREAD-D274:CFG-MGR-CPP] lector del agregador DDoS en-kernel (DAY274)
+    kernel.ddos_kernel_agg_enabled = kernel_json.get("ddos_kernel_agg_enabled", false).asBool();
+    kernel.ddos_kernel_agg_interval_ms = kernel_json.get("ddos_kernel_agg_interval_ms", 1000).asInt();
+    kernel.ddos_kernel_agg_csv_path = kernel_json.get("ddos_kernel_agg_csv_path", "").asString();
     kernel.xdp_mode = kernel_json.get("xdp_mode", "native").asString();
     kernel.ring_buffer_size = kernel_json.get("ring_buffer_size", 1048576).asUInt64();
     kernel.max_flows_in_kernel = kernel_json.get("max_flows_in_kernel", 100000).asUInt64();

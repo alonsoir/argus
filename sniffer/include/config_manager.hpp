@@ -89,6 +89,10 @@ struct CaptureConfig {
 // Kernel space configuration
 struct KernelSpaceConfig {
     std::string ebpf_program;
+    // [DDOS-KREAD-D274:CFG-MGR-HPP] lector del agregador DDoS en-kernel (DAY274)
+    bool ddos_kernel_agg_enabled = false;
+    int ddos_kernel_agg_interval_ms = 1000;
+    std::string ddos_kernel_agg_csv_path;
     std::string xdp_mode;
     size_t ring_buffer_size;
     size_t max_flows_in_kernel;

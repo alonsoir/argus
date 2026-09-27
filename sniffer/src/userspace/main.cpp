@@ -11,6 +11,7 @@
 #include "fast_detector_config.hpp"
 #include "zmq_pool_manager.hpp"
 #include "ebpf_loader.hpp"
+#include "ddos_kernel_reader.hpp"  // [DDOS-KREAD-D274:MAIN-INC]
 #include "ring_consumer.hpp"
 #include "thread_manager.hpp"
 #include "bpf_map_manager.h"
@@ -180,6 +181,9 @@ StrictSnifferConfig g_config;
 
 // Punteros a componentes principales
 sniffer::EbpfLoader* ebpf_loader_ptr = nullptr;
+sniffer::DdosKernelReader* ddos_reader_ptr = nullptr;  // [DDOS-KREAD-D274:MAIN-PTR]
+// [DDOS-VWIN-D279:MAIN-BOARD] tablero compartido lector->consumer (vive mientras alguno lo tenga)
+std::shared_ptr<sniffer::DdosVictimBoard> g_ddos_victim_board = std::make_shared<sniffer::DdosVictimBoard>();
 sniffer::RingBufferConsumer* ring_consumer_ptr = nullptr;
 std::shared_ptr<sniffer::ThreadManager> thread_manager = nullptr;
 
@@ -720,6 +724,7 @@ if (encryption_seed.empty()) {
 
         ring_consumer_ptr = new sniffer::RingBufferConsumer(sniffer_config, fast_detector_config, encryption_seed);
         auto& ring_consumer = *ring_consumer_ptr;
+        ring_consumer.set_victim_board(g_ddos_victim_board);  // [DDOS-VWIN-D279:MAIN-RC]
 
         // Configure stats interval from monitoring config
         ring_consumer.set_stats_interval(g_config.monitoring.stats_interval_seconds);
@@ -753,6 +758,29 @@ if (encryption_seed.empty()) {
         std::cout << "\n🚀 Sniffer running with hybrid filtering enabled" << std::endl;
         std::cout << "   Press Ctrl+C to stop\n" << std::endl;
 
+        // [DDOS-KREAD-D274:MAIN-START] Lector del agregador DDoS en-kernel (opcional, DAY274).
+        // Es una capa de MEDICION: un fallo aqui nunca tumba el sniffer.
+        if (g_config.kernel_space.ddos_kernel_agg_enabled) {
+            const int ddos_fd = ebpf_loader_ptr ? ebpf_loader_ptr->get_ddos_victims_fd() : -1;
+            if (ddos_fd < 0) {
+                std::cerr << "[WARNING] ddos_kernel_agg_enabled=true pero el mapa ddos_victims no esta "
+                             "disponible (objeto eBPF anterior al parche); lector DDoS desactivado"
+                          << std::endl;
+            } else {  // [DDOS-VWIN-D279:MAIN-CSV-OPTIONAL] sin ruta CSV el lector sigue publicando al tablero
+                ddos_reader_ptr = new sniffer::DdosKernelReader(
+                    ddos_fd, ebpf_loader_ptr->get_ddos_victims_max_entries(),
+                    g_config.kernel_space.ddos_kernel_agg_interval_ms,
+                    g_config.kernel_space.ddos_kernel_agg_csv_path);
+                ddos_reader_ptr->set_board(g_ddos_victim_board);  // [DDOS-VWIN-D279:MAIN-READER]
+                if (!ddos_reader_ptr->start()) {
+                    std::cerr << "[WARNING] no se pudo arrancar el lector DDoS; sigo sin el"
+                              << std::endl;
+                    delete ddos_reader_ptr;
+                    ddos_reader_ptr = nullptr;
+                }
+            }
+        }
+
         while (g_running) {
             std::this_thread::sleep_for(std::chrono::seconds(1));
         }
@@ -762,6 +790,14 @@ if (encryption_seed.empty()) {
         // ============================================================================
 
         std::cout << "\n[Cleanup] Stopping components..." << std::endl;
+
+        // [DDOS-KREAD-D274:MAIN-STOP] Parar el lector DDoS ANTES de liberar el loader:
+        // el fd del mapa ddos_victims se cierra con el (leerlo despues = fd invalido/reutilizado).
+        if (ddos_reader_ptr) {
+            ddos_reader_ptr->stop();
+            delete ddos_reader_ptr;
+            ddos_reader_ptr = nullptr;
+        }
 
         // Stop RingBufferConsumer first
         if (ring_consumer_ptr) {
@@ -792,6 +828,12 @@ if (encryption_seed.empty()) {
         std::cerr << "\n❌ FATAL ERROR: " << e.what() << "\n";
 
         // Emergency cleanup
+        // [DDOS-KREAD-D274:MAIN-EMERG] mismo orden que en el cleanup normal: lector antes que el loader
+        if (ddos_reader_ptr) {
+            ddos_reader_ptr->stop();
+            delete ddos_reader_ptr;
+            ddos_reader_ptr = nullptr;
+        }
         if (ring_consumer_ptr) {
             delete ring_consumer_ptr;
             ring_consumer_ptr = nullptr;

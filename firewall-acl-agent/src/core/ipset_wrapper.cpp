@@ -293,7 +293,19 @@ IPSetResult<void> IPSetWrapper::add_batch(
         restore_input << "add " << set_name << " " << entry.ip;
 
         if (entry.timeout) {
-            restore_input << " timeout " << *entry.timeout;
+            // DAY277-NEVER-PERMANENT: 'timeout 0' = PERMANENTE en ipset, y un
+            // valor > kIpsetMaxTimeoutSec tumba el 'restore' entero. Cinturon:
+            // ningun camino automatico deja una IP bloqueada para siempre.
+            // El drop permanente es una accion MANUAL del admin, por otro camino.
+            uint32_t t = *entry.timeout;
+            if (t == 0 || t > kIpsetMaxTimeoutSec) {
+                std::cerr << "[WARN][ipset_wrapper] add_batch: timeout fuera de [1, "
+                          << kIpsetMaxTimeoutSec << "] (nunca permanente) ip=" << entry.ip
+                          << " requested=" << *entry.timeout
+                          << " applied=" << kIpsetMaxTimeoutSec << std::endl;
+                t = kIpsetMaxTimeoutSec;
+            }
+            restore_input << " timeout " << t;
         }
 
         if (entry.comment) {
@@ -337,10 +349,16 @@ IPSetResult<void> IPSetWrapper::add_batch(
     // Execute ipset restore (SINGLE SYSCALL for entire batch)
     if (m_dry_run) {
         std::cout << "[DRY-RUN] Would execute: " << kIpsetBin
-                  << " restore < " << tmpfile << std::endl;
+                  << " restore -exist < " << tmpfile << std::endl;
         return IPSetResult<void>();
     }
-    int ret = safe_exec_with_file_in({kIpsetBin, "restore"}, tmpfile);
+    // HOTFIX-IPSET-ADD-EXIST-001: sin -exist, ipset restore rechaza
+    // el add de una IP que ya es miembro del set (p.ej. reincidencia:
+    // la misma IP vuelve a aparecer antes de que expire su timeout
+    // previo). Con -exist, el add sobre un elemento existente
+    // ACTUALIZA su timeout/comment en vez de fallar. delete_batch()
+    // ya usaba -exist; add_batch() se equipara aqui.
+    int ret = safe_exec_with_file_in({kIpsetBin, "restore", "-exist"}, tmpfile);
     std::remove(tmpfile);
     if (ret != 0) {
         return IPSetResult<void>(IPSetError{
