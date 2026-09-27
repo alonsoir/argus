@@ -149,8 +149,11 @@ void test_cadence() {
 
 void test_start_failures_and_restart() {
     {
+        // [DDOS-VWIN-D279:CSV-OPTIONAL] (e2cac4b0): sin ruta arranca SIN CSV;
+        // el CSV es salida de laboratorio, no condicion de la senal.
         DdosKernelReader r(-1, 65536, 100, "");
-        CHECK(!r.start());  // sin ruta: no arranca
+        CHECK(r.start());
+        r.stop();  // para limpio sin fichero abierto
     }
     {
         DdosKernelReader r(-1, 65536, 100, "/nonexistent_dir_ddos_reader/x.csv");
