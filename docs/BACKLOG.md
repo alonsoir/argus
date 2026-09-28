@@ -6427,3 +6427,36 @@ Artefactos: `scripts/d281_hpp_thr.sh`, `d281_esc_bins.sh`, `d281_esc_bins_flow.s
   vacía; `e2cac4b0` (DAY279, `[DDOS-VWIN-D279:CSV-OPTIONAL]`) hizo el CSV opcional a propósito y no
   actualizó el test. Corregido el test (patcher `patch_kreader_test_csv_optional_d281.py`).
   Lección: `e2cac4b0` cambió el comportamiento sin pasar el `ctest` del sniffer.
+
+## DAY282 — rama feat/ddos-head-contract
+
+Hecho:
+- Paso 1 (observabilidad) CERRADO: `[HEAD-SCORES]` por evento, nivel info, con src/dst, clase:puntuacion de las
+  4 cabezas (`na` = no evaluada), gate, l1, fast, cat. Validado 1:1 con `[DUAL-SCORE]` en 3 corridas.
+  Herramienta: `scripts/d282_head_scores.sh LOG [FILTRO|!FILTRO]`.
+- DEBT-ML-DETECTOR-L3-THRESHOLDS-NOT-LOADED-001 — CERRADA. `level3_web` y `level3_internal` nunca se leian del
+  JSON (UB; medido level3_web = 0 en arranque DAY281). Ahora get_required + inicializadores + logs de arranque
+  corregidos. Efecto medido: subida TCP legitima 50 KB/s ⇒ 100 % SUSPICIOUS_INTERNAL (1422/1422).
+
+Deuda nueva:
+- DEBT-ML-DETECTOR-DECISION-BEFORE-HEADS-001 (P0 para la fusion): final_score/final_decision, clasificacion,
+  bronce y CSV se producen ANTES de evaluar las cabezas L2/L3; las cabezas no pueden influir.
+- DEBT-ML-DETECTOR-TRAFFIC-SCORE-SEMANTICS-001 (medida): traffic guarda la confianza de la clase predicha, no
+  P(INTERNAL) (p<0.5 = 0 en todas las corridas). No comparable con las demas cabezas.
+- DEBT-ML-DETECTOR-FORCE-GATE-SETS-ATTACK-001: con FORCE_ALL_HEADS, threat_category = "ATTACK" aunque L1 = 0;
+  el flag de diagnostico altera el evento que sale por ZMQ.
+- DEBT-ML-DETECTOR-THREAT-CATEGORY-LAST-WINS-001: DDOS → RANSOMWARE → SUSPICIOUS_INTERNAL se pisan en orden.
+- DEBT-ML-INTERNAL-HEAD-NONREPRODUCIBLE-001: misma subida, internal class0 (corrida 1) vs class1 (corridas 2-3).
+  Extractor sin estado (medido) ⇒ la entrada difiere. Hipotesis: asignacion forward/backward del flujo
+  (rasgo [7] exfiltracion). Rasgos [1] y [2] constantes.
+- DEBT-DDOS-HEAD-DNS-UNANSWERED-FP-001: 80 FP DDOS en ambiente = DNS sin respuesta del client a 8.8.8.8 y 1.1.1.1
+  (40+40). Hipotesis: duracion ≈ 0 ⇒ bytes/s enorme. Matiza "DNS 0 FP" de DAY281 (condicion distinta).
+- DEBT-DDOS-DUAL-SERVE-DEFINITIONS-001 — AMPLIADA: son TRES definiciones (train, ml-detector, sniffer), ver
+  docs/ddos-head-contract-inventory.md.
+- DEBT-SNIFFER-DUPLICATE-INFERENCE-001: el sniffer ejecuta las 4 cabezas por evento (mismo modelo, otra entrada)
+  y el ml-detector pisa su resultado. Coste en hot path sin medir.
+- DEBT-SNIFFER-TRAFFIC-CONTEXT-CONSTANT-001 (deducida, sin medir): `traffic_context = probability >= 0.5` con
+  probability = confianza de la clase predicha ⇒ siempre INTERNAL.
+- DEBT-CSV-THREAT-CATEGORY-FROM-SNIFFER-001 (hipotesis): la col 9 del CSV lleva la categoria del sniffer.
+- DEBT-REPO-BAK-FILES-TRACKED-001: `sniffer/src/userspace/ml_defender_features.cpp.bak.day79` trackeado; ensucia
+  git grep. Retirar en commit de limpieza aparte.
