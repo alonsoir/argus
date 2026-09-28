@@ -137,12 +137,12 @@ struct DetectorConfig {
         std::string models_base_dir;
         
         struct {
-            float level1_attack;
-            float level2_ddos;
-            float level2_ransomware;
-            float level3_anomaly;
-            float level3_web;
-            float level3_internal;
+            float level1_attack{};
+            float level2_ddos{};
+            float level2_ransomware{};
+            float level3_anomaly{};
+            float level3_web{};
+            float level3_internal{};
         } thresholds;
         
         struct ModelConfig {
