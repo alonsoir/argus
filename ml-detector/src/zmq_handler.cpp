@@ -558,7 +558,11 @@ void ZMQHandler::process_event(const std::string& message) {
         }
 
         // Level 2 & 3: Specialized detectors (si Level 1 detectó ATTACK)
-        if (l2_gate_open(force_all_heads_, label_l1, confidence_l1, config_.ml.thresholds.level1_attack)) {
+        // [HEAD-SCORES-D282] clase:puntuacion por cabeza; -1 = no evaluada
+        int hs_ddos_c = -1, hs_ransom_c = -1, hs_traffic_c = -1, hs_internal_c = -1;
+        double hs_ddos_p = 0.0, hs_ransom_p = 0.0, hs_traffic_p = 0.0, hs_internal_p = 0.0;
+        const bool hs_gate = l2_gate_open(force_all_heads_, label_l1, confidence_l1, config_.ml.thresholds.level1_attack);
+        if (hs_gate) {
             event.set_threat_category("ATTACK");
 
             {
@@ -605,6 +609,7 @@ void ZMQHandler::process_event(const std::string& message) {
                         };
 
                         auto ddos_result = ddos_detector_->predict(ddos_features);
+                        hs_ddos_c = static_cast<int>(ddos_result.class_id); hs_ddos_p = ddos_result.ddos_prob;
                         logger_->debug("🤖 DDoS: class={} ({}), conf={:.4f}, ddos_prob={:.4f}",
                                       ddos_result.class_id,
                                       (ddos_result.class_id == 0 ? "NORMAL" : "DDOS"),
@@ -674,6 +679,7 @@ void ZMQHandler::process_event(const std::string& message) {
                         };
 
                         auto ransomware_result = ransomware_detector_->predict(ransomware_features);
+                        hs_ransom_c = static_cast<int>(ransomware_result.class_id); hs_ransom_p = ransomware_result.ransomware_prob;
                         logger_->debug("🤖 Ransomware: class={} ({}), conf={:.4f}",
                                       ransomware_result.class_id,
                                       (ransomware_result.class_id == 0 ? "BENIGN" : "RANSOMWARE"),
@@ -742,6 +748,7 @@ void ZMQHandler::process_event(const std::string& message) {
                         };
 
                         auto traffic_result = traffic_detector_->predict(traffic_features);
+                        hs_traffic_c = static_cast<int>(traffic_result.class_id); hs_traffic_p = traffic_result.probability;
                         logger_->debug("🤖 Traffic: class={} ({}), conf={:.4f}",
                                       traffic_result.class_id,
                                       (traffic_result.class_id == 0 ? "INTERNET" : "INTERNAL"),
@@ -789,6 +796,7 @@ void ZMQHandler::process_event(const std::string& message) {
                                 };
 
                                 auto internal_result = internal_detector_->predict(internal_features);
+                                hs_internal_c = static_cast<int>(internal_result.class_id); hs_internal_p = internal_result.suspicious_prob;
                                 logger_->debug("🤖 Internal: class={} ({}), conf={:.4f}",
                                               internal_result.class_id,
                                               (internal_result.class_id == 0 ? "BENIGN" : "SUSPICIOUS"),
@@ -831,6 +839,20 @@ void ZMQHandler::process_event(const std::string& message) {
             event.set_threat_category("NORMAL");
         }
 
+        {
+            auto hs_fmt = [](int c, double p) -> std::string {
+                if (c < 0) return std::string("na");
+                char b[32]; std::snprintf(b, sizeof(b), "%d:%.4f", c, p); return std::string(b);
+            };
+            logger_->info("[HEAD-SCORES] event={}, src={}:{}, dst={}:{}, gate={}, l1={}:{:.4f}, fast={:.4f}, ddos={}, ransom={}, traffic={}, internal={}, cat={}",
+                          event.event_id(),
+                  event.network_features().source_ip(), event.network_features().source_port(),
+                  event.network_features().destination_ip(), event.network_features().destination_port(),
+                  hs_gate ? 1 : 0, label_l1, confidence_l1, fast_score,
+                          hs_fmt(hs_ddos_c, hs_ddos_p), hs_fmt(hs_ransom_c, hs_ransom_p),
+                          hs_fmt(hs_traffic_c, hs_traffic_p), hs_fmt(hs_internal_c, hs_internal_p),
+                          event.threat_category());
+        }
         // ADR-012 PHASE 2d — invoke plugins post-inferencia (Consejo DAY 111)
         if (plugin_loader_ != nullptr) {
             std::string serialized = event.SerializeAsString();
