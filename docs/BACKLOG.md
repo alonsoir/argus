@@ -6460,3 +6460,70 @@ Deuda nueva:
 - DEBT-CSV-THREAT-CATEGORY-FROM-SNIFFER-001 (hipotesis): la col 9 del CSV lleva la categoria del sniffer.
 - DEBT-REPO-BAK-FILES-TRACKED-001: `sniffer/src/userspace/ml_defender_features.cpp.bak.day79` trackeado; ensucia
   git grep. Retirar en commit de limpieza aparte.
+
+## DAY283 — D2: coste de la inferencia en el sniffer (medido en production)
+
+### Medido
+
+- **Instrumentación nueva (solo observación)** en `run_ml_detection` del sniffer, cada 10 s en
+  `/vagrant/logs/lab/sniffer.log`: `[ML-TIME]` (llamadas, suma ns, máx, histograma log2) y `[ML-PHASE]`
+  (extract | ddos | ransom | traffic | internal | post). Bucket b = [2^b, 2^(b+1)) ns.
+  Script: `scripts/d283_phase_delta.sh ANTES DESPUES` (delta entre dos líneas `[ML-PHASE]`).
+- **Debug frente a production** (ambiente, coste total por llamada): Debug `-O0`: mediana 65–131 µs,
+  p99 0,5–1 ms, media 136 µs. Production `-O3 -flto`: mediana 33–65 µs, p99 262–524 µs, media 48 µs.
+  Predicción (5–15× más rápido) REFUTADA: solo ~2×.
+- **Desglose por fase, production** (media por llamada):
+
+  | Fase | Ambiente | Subida TCP 50 KB/s |
+    |---|---|---|
+  | extract | 0,13 µs (0,3 %) | 0,33 µs |
+  | ddos | 6,0 µs (mediana 2–4 µs) | 12,8 µs |
+  | ransom | 24,1 µs (47 %, cola ~4 ms) | 30,6 µs |
+  | traffic | 7,0 µs | 16,4 µs |
+  | internal | 7,0 µs | 17,5 µs |
+  | post | 6,6 µs | 17,5 µs |
+  | total | 51 µs | 95 µs |
+
+  Predicción "la extracción domina" REFUTADA: `extract` es copiar del proto, ~100 ns. Bajo la subida,
+  todas las fases (incluidas extract y post) se encarecen ~2× a la vez ⇒ máquina entera cargada
+  (mononúcleo emulado en portátil), no una cabeza concreta. Medianas en el mismo bucket o adyacente.
+- **Carga 2 (CICDDoS2019, 12 000 pkts a 100 pps) — delta INVÁLIDO**: la foto de "después" se tomó a los
+  ~40 s de un replay de 120 s. Protocolo corregido: tomar la foto de después cuando `calls` vuelva al
+  goteo del ambiente.
+- **Hallazgo principal: caudal del consumidor del ring.** `calls` ≈ `Paquetes procesados` (15 849 vs
+  15 840) ⇒ una inferencia por evento del ring. El flood entró entero (~12 300 llamadas) pero el sniffer
+  lo drenó a **~40–90 eventos/s**, 3–4 min después de acabar el replay. A ~50–95 µs por llamada, el ML es
+  **< 1 %** del presupuesto por evento (~10–25 ms). El cuello NO es la inferencia.
+- **Conclusión D2:** inferir DDoS en el sniffer es asumible por coste (~6–13 µs). La decisión
+  infiere/solo calcula es de diseño, no de rendimiento. El coste de CALCULAR los rasgos
+  (`populate_protobuf_event`) sigue sin medir.
+
+### Deuda nueva
+
+- **DEBT-SNIFFER-CONSUMER-THROUGHPUT-001 (candidata a P0).** El consumidor del ring no pasa de ~40–90
+  eventos/s en production; a 100 pps acumula cola (probablemente en el propio ring, antes de
+  `handle_event`: procesados y llamadas avanzan juntos; confirmar con la progresión completa). Explica la
+  pérdida del 86 % a 1000 pps (DAY270) y el retraso. La hipótesis "es artefacto de Debug" queda
+  debilitada: en production el consumidor sigue por debajo de 100/s. Siguiente: cronometrar el camino
+  completo por evento (`process_raw_event` ya cronometra en 525–637 → `total_processing_time_us`: mirar
+  primero), serialización, ZMQ, logging por evento, timeouts del sondeo.
+- **DEBT-SNIFFER-UNTRUSTED-HEADS-IN-HOT-PATH-001.** Las cabezas ransomware, traffic e internal, todavía no
+  validadas, corren por evento en serie dentro de `run_ml_detection` del sniffer. Suman ~75 % del coste
+  de inferencia (ransomware 47 %, cola hasta ~4 ms) y cada evento DDoS paga su latencia. No se
+  desactivan: sería irreal. Medido en mononúcleo emulado en portátil con otros procesos; revisar con
+  multinúcleo y al abordar cada cabeza.
+- **DEBT-BUILD-PRODUCTION-PROFILE-ROT-001.** El perfil production llevaba tiempo sin compilarse; rompía por
+  `-Werror=unused-parameter` bajo `NDEBUG` en `correlation_v1_golden_vectors.hpp:40` (arreglado DAY283).
+  EMECAS no ejercita production: valorar un build production en el gate. Build completo production ≈ 1 h.
+- **DEBT-TESTS-ASSERT-VACUOUS-UNDER-NDEBUG-001.** Los tests que comprueban con `assert` pasan en vacío en
+  production. Primer caso medido y arreglado (`assert_golden_state_legal` → `fprintf` + `abort`). Censar
+  el resto (`git grep -c 'assert(' -- '*/tests/*'`).
+- **DEBT-SNIFFER-EVENTS-SENT-STUCK-25000-001.** `Paquetes enviados` clavado en 25 000 exactos y por encima
+  de `Paquetes procesados`. Número redondo inmóvil: ¿tope o contador de otra cosa? Sin investigar.
+- **DEBT-SNIFFER-ML-TIME-STAT-001 (menor).** `Avg ML detection time` acumula µs truncados (error del
+  30–50 % a 2–3 µs) y solo se imprime al parar. Sustituido en la práctica por `[ML-TIME]`.
+
+### Resuelto de las comprobaciones baratas
+
+- `traffic_context` del sniffer no está fijo: vale INTERNAL si `traffic_pred.probability >= 0.5`. La
+  hipótesis pasa a "la cabeza traffic siempre da ≥ 0.5" (medible con `[HEAD-SCORES]`).
