@@ -1,4 +1,5 @@
 // sniffer/src/userspace/ring_consumer.cpp
+#include <sstream>
 #include "compression_handler.hpp"
 #include <crypto_transport/contexts.hpp>
 #include "ring_consumer.hpp"
@@ -1579,14 +1580,19 @@ void RingBufferConsumer::run_ml_detection(protobuf::NetworkSecurityEvent& proto_
     auto ransomware_features = extract_ransomware_features(proto_event);
     auto traffic_features = extract_traffic_features(proto_event);
     auto internal_features = extract_internal_features(proto_event);
+    auto mlt_t1 = std::chrono::high_resolution_clock::now();  // DAY283 ML-PHASE
 
     // ========================================================================
     // PHASE 2: Model Inference (Thread-local, <100μs per detector)
     // ========================================================================
     auto ddos_pred = ddos_detector_.predict(ddos_features);
+    auto mlt_t2 = std::chrono::high_resolution_clock::now();  // DAY283 ML-PHASE
     auto ransomware_pred = ransomware_detector_.predict(ransomware_features);
+    auto mlt_t3 = std::chrono::high_resolution_clock::now();  // DAY283 ML-PHASE
     auto traffic_pred = traffic_detector_.predict(traffic_features);
+    auto mlt_t4 = std::chrono::high_resolution_clock::now();  // DAY283 ML-PHASE
     auto internal_pred = internal_detector_.predict(internal_features);
+    auto mlt_t5 = std::chrono::high_resolution_clock::now();  // DAY283 ML-PHASE
 
     // ========================================================================
     // PHASE 3: Threshold Application & Classification
@@ -1655,6 +1661,87 @@ void RingBufferConsumer::run_ml_detection(protobuf::NetworkSecurityEvent& proto_
     auto end = std::chrono::high_resolution_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
     stats_.ml_detection_time_us += duration.count();
+
+    // DAY283 D2 — [ML-PHASE] (solo observacion): extract | ddos | ransom | traffic | internal | post
+    {
+        static std::atomic<uint64_t> mph_calls{0};
+        static std::atomic<uint64_t> mph_sum[6];
+        static std::atomic<uint64_t> mph_hist[6][40];
+        static std::atomic<int64_t>  mph_last_print_ns{0};
+        static const char* const mph_names[6] =
+            {"extract", "ddos", "ransom", "traffic", "internal", "post"};
+        const std::chrono::high_resolution_clock::time_point mph_t[7] =
+            {start, mlt_t1, mlt_t2, mlt_t3, mlt_t4, mlt_t5, end};
+
+        mph_calls.fetch_add(1, std::memory_order_relaxed);
+        for (int k = 0; k < 6; ++k) {
+            const uint64_t ns = static_cast<uint64_t>(
+                std::chrono::duration_cast<std::chrono::nanoseconds>(mph_t[k + 1] - mph_t[k]).count());
+            mph_sum[k].fetch_add(ns, std::memory_order_relaxed);
+            int b = 0; uint64_t v = ns;
+            while (v > 1 && b < 39) { v >>= 1; ++b; }
+            mph_hist[k][b].fetch_add(1, std::memory_order_relaxed);
+        }
+
+        const int64_t now_ns = std::chrono::duration_cast<std::chrono::nanoseconds>(
+            std::chrono::steady_clock::now().time_since_epoch()).count();
+        int64_t last = mph_last_print_ns.load(std::memory_order_relaxed);
+        if (now_ns - last >= 10000000000LL &&
+            mph_last_print_ns.compare_exchange_strong(last, now_ns)) {
+            std::ostringstream os;
+            os << "[ML-PHASE] calls=" << mph_calls.load();
+            for (int k = 0; k < 6; ++k) {
+                os << " " << mph_names[k] << "=" << mph_sum[k].load() << "|";
+                bool first = true;
+                for (int i = 0; i < 40; ++i) {
+                    const uint64_t c = mph_hist[k][i].load(std::memory_order_relaxed);
+                    if (c == 0) continue;
+                    os << (first ? "" : ",") << i << ":" << c;
+                    first = false;
+                }
+            }
+            std::cout << os.str() << std::endl;
+        }
+    }
+
+    // DAY283 D2 — [ML-TIME] (solo observacion): llamadas, ns, max, histograma log2
+    {
+        static std::atomic<uint64_t> mlt_calls{0};
+        static std::atomic<uint64_t> mlt_sum_ns{0};
+        static std::atomic<uint64_t> mlt_max_ns{0};
+        static std::atomic<uint64_t> mlt_hist[40];
+        static std::atomic<int64_t>  mlt_last_print_ns{0};
+
+        const uint64_t ns = static_cast<uint64_t>(
+            std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count());
+        mlt_calls.fetch_add(1, std::memory_order_relaxed);
+        mlt_sum_ns.fetch_add(ns, std::memory_order_relaxed);
+        uint64_t prev_max = mlt_max_ns.load(std::memory_order_relaxed);
+        while (ns > prev_max &&
+               !mlt_max_ns.compare_exchange_weak(prev_max, ns, std::memory_order_relaxed)) {}
+        int b = 0; uint64_t v = ns;
+        while (v > 1 && b < 39) { v >>= 1; ++b; }
+        mlt_hist[b].fetch_add(1, std::memory_order_relaxed);
+
+        const int64_t now_ns = std::chrono::duration_cast<std::chrono::nanoseconds>(
+            std::chrono::steady_clock::now().time_since_epoch()).count();
+        int64_t last = mlt_last_print_ns.load(std::memory_order_relaxed);
+        if (now_ns - last >= 10000000000LL &&
+            mlt_last_print_ns.compare_exchange_strong(last, now_ns)) {
+            std::ostringstream os;
+            os << "[ML-TIME] calls=" << mlt_calls.load()
+               << " sum_ns=" << mlt_sum_ns.load()
+               << " max_ns=" << mlt_max_ns.load() << " hist=";
+            bool first = true;
+            for (int i = 0; i < 40; ++i) {
+                const uint64_t c = mlt_hist[i].load(std::memory_order_relaxed);
+                if (c == 0) continue;
+                os << (first ? "" : ",") << i << ":" << c;
+                first = false;
+            }
+            std::cout << os.str() << std::endl;
+        }
+    }
 
     // Optional: Log detections if verbosity enabled
     if (g_verbosity >= FeatureLogger::VerbosityLevel::GROUPED) {
