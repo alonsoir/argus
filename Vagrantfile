@@ -45,7 +45,7 @@
 #   autostart: true  → Client VM starts automatically
 #
 # ══════════════════════════════════════════════════════════════════════════════
-
+require_relative "vagrant_port_check_fix"
 # ══════════════════════════════════════════════════════════════════════════════
 # ADAPTER_TOOLCHAIN — toolchain C++ para compilar los <sensor>-adapter DENTRO
 # de cada VM de sensor. DEBT-VM-SENSOR-NO-TOOLCHAIN-001.
