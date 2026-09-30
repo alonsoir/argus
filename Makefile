@@ -612,16 +612,19 @@ define CHECK_SNIFFER_MUTEX
 	  fi"
 endef
 
+# DAY284 — ruta del log del sniffer; override p.ej. SNIFFER_LOG=/tmp/argus-lab/sniffer.log
+SNIFFER_LOG ?= /vagrant/logs/lab/sniffer.log
+
 # ── sniffer-start — Variant A (eBPF) ─────────────────────────────────────────
 sniffer-start:
 	@echo "🚀 Starting Sniffer Variant A (eBPF/XDP) [$(PROFILE)]..."
 	$(CHECK_SNIFFER_MUTEX)
 	@vagrant ssh defender -c "tmux kill-session -t sniffer 2>/dev/null || true"
 	@vagrant ssh defender -c "tmux new-session -d -s sniffer \
-	  'mkdir -p /vagrant/logs/lab && \
+	  'mkdir -p $(dir $(SNIFFER_LOG)) && \
 	   cd $(SNIFFER_BUILD_DIR) && \
 	   sudo env LD_LIBRARY_PATH=/usr/local/lib ./sniffer -c /vagrant/sniffer/config/sniffer.json \
-	   >> /vagrant/logs/lab/sniffer.log 2>&1'"
+	   >> $(SNIFFER_LOG) 2>&1'"
 	@sleep 4
 
 # ── sniffer-libpcap-start — Variant B (libpcap) ──────────────────────────────
