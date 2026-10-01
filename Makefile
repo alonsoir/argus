@@ -662,8 +662,11 @@ sniffer: proto etcd-client-build plugin-loader-build
 	@echo ""
 	@echo "✅ Sniffer built ($(PROFILE))"
 
+# DAY284 — ruta del log del ml-detector; override p.ej. ML_DETECTOR_LOG=/tmp/argus-lab/ml-detector.log
+ML_DETECTOR_LOG ?= /vagrant/logs/lab/ml-detector.log
+
 ml-detector-start:
-	@vagrant ssh -c "tmux new-session -d -s ml-detector 'mkdir -p /vagrant/logs/lab && cd $(ML_DETECTOR_BUILD_DIR) && export LD_LIBRARY_PATH=/usr/local/lib:$$LD_LIBRARY_PATH && sudo env LD_LIBRARY_PATH=/usr/local/lib ./ml-detector $(if $(VERBOSE),--verbose,) $(if $(FORCE_ALL_HEADS),--force-all-heads,) >> /vagrant/logs/lab/ml-detector.log 2>&1'"
+	@vagrant ssh -c "tmux new-session -d -s ml-detector 'mkdir -p $(dir $(ML_DETECTOR_LOG)) && cd $(ML_DETECTOR_BUILD_DIR) && export LD_LIBRARY_PATH=/usr/local/lib:$$LD_LIBRARY_PATH && sudo env LD_LIBRARY_PATH=/usr/local/lib ./ml-detector $(if $(VERBOSE),--verbose,) $(if $(FORCE_ALL_HEADS),--force-all-heads,) >> $(ML_DETECTOR_LOG) 2>&1'"
 ml-detector: proto etcd-client-build plugin-loader-build correlation-v1-build
 	@echo ""
 	@echo "╔════════════════════════════════════════════════════════════╗"
