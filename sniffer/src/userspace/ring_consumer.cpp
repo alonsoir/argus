@@ -717,8 +717,10 @@ bool RingBufferConsumer::send_protobuf_message(const std::vector<uint8_t>& seria
             if (compressed_size > 0) {
                 compressed.resize(sizeof(uint32_t) + compressed_size);
                 to_encrypt = std::move(compressed);
-                std::cout << "[CRYPTO] 📦 Compressed: " << orig_size
-                          << " → " << to_encrypt.size() << " bytes" << std::endl;
+                if (g_verbosity >= FeatureLogger::VerbosityLevel::DETAILED) {  // DAY284: log por evento fuera del camino caliente
+                    std::cout << "[CRYPTO] 📦 Compressed: " << orig_size
+                              << " → " << to_encrypt.size() << " bytes" << std::endl;
+                }
             } else {
                 to_encrypt = serialized_data;
                 std::cerr << "[CRYPTO] ⚠️  LZ4 falló — enviando sin comprimir" << std::endl;
@@ -727,8 +729,10 @@ bool RingBufferConsumer::send_protobuf_message(const std::vector<uint8_t>& seria
 
         // Step 2: Cifrar con CryptoTransport
         auto encrypted = tx_->encrypt(to_encrypt);
-        std::cout << "[CRYPTO] 🔒 Encrypted: " << to_encrypt.size()
-                  << " → " << encrypted.size() << " bytes" << std::endl;
+        if (g_verbosity >= FeatureLogger::VerbosityLevel::DETAILED) {  // DAY284: log por evento fuera del camino caliente
+            std::cout << "[CRYPTO] 🔒 Encrypted: " << to_encrypt.size()
+                      << " → " << encrypted.size() << " bytes" << std::endl;
+        }
 
         // Step 3: Send encrypted
         zmq::message_t message(encrypted.size());
@@ -893,10 +897,12 @@ void RingBufferConsumer::populate_protobuf_event(const SimpleEvent& event,
         // else -> community_id queda "" (default): ICMP/no-IP, diferido
     // Dual-NIC deployment metadata (Phase 1, Day 7)
     // [DEBUG] Dual-NIC values from eBPF
-    std::cout << "[DUAL-NIC] ifindex=" << event.source_ifindex
-              << " mode=" << (int)event.interface_mode
-              << " wan=" << (int)event.is_wan_facing
-              << " iface=" << event.source_interface << std::endl;
+    if (g_verbosity >= FeatureLogger::VerbosityLevel::DETAILED) {  // DAY284: log por evento fuera del camino caliente
+        std::cout << "[DUAL-NIC] ifindex=" << event.source_ifindex
+                  << " mode=" << (int)event.interface_mode
+                  << " wan=" << (int)event.is_wan_facing
+                  << " iface=" << event.source_interface << std::endl;
+    }
     features->set_interface_mode(event.interface_mode);
     features->set_is_wan_facing(event.is_wan_facing);
     features->set_source_ifindex(event.source_ifindex);
@@ -1322,11 +1328,13 @@ void RingBufferConsumer::send_fast_alert(const SimpleEvent& event) {
 
             stats_.ransomware_fast_alerts++;
 
-            std::cout << "[FAST ALERT] Ransomware heuristic: "
-                      << "src=" << src_ip_str << ":" << event.src_port
-                      << " dst=" << dst_ip_str << ":" << event.dst_port
-                      << " (ExtIPs=" << snapshot.external_ips_10s
-                      << ", SMB=" << snapshot.smb_conns << ")" << std::endl;
+            if (g_verbosity >= FeatureLogger::VerbosityLevel::BASIC) {  // DAY284: log por evento fuera del camino caliente
+                std::cout << "[FAST ALERT] Ransomware heuristic: "
+                          << "src=" << src_ip_str << ":" << event.src_port
+                          << " dst=" << dst_ip_str << ":" << event.dst_port
+                          << " (ExtIPs=" << snapshot.external_ips_10s
+                          << ", SMB=" << snapshot.smb_conns << ")" << std::endl;
+            }
         }
 
     } catch (const std::exception& e) {
