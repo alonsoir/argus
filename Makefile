@@ -892,8 +892,6 @@ pipeline-start: test-provision-1 etcd-server-start
 	@sleep 4
 	@$(MAKE) rag-start
 	@sleep 5
-	@$(MAKE) rag-ingester-start
-	@sleep 3
 	@$(MAKE) ml-detector-start VERBOSE=$(VERBOSE) FORCE_ALL_HEADS=$(FORCE_ALL_HEADS)
 	@$(MAKE) firewall-start
 	@sleep 2
@@ -909,8 +907,6 @@ pipeline-start-x86-libpcap: test-provision-1 etcd-server-start
 	@sleep 4
 	@$(MAKE) rag-start
 	@sleep 5
-	@$(MAKE) rag-ingester-start
-	@sleep 3
 	@$(MAKE) ml-detector-start
 	@$(MAKE) firewall-start
 	@sleep 2
@@ -933,7 +929,6 @@ pipeline-status:
 	@echo "╚════════════════════════════════════════════════════════════╝"
 	@vagrant ssh -c "( tmux has-session -t etcd-server 2>/dev/null || pgrep -x etcd-server >/dev/null 2>&1 ) && echo '  ✅ etcd-server:   RUNNING' || echo '  ❌ etcd-server:   STOPPED'"
 	@vagrant ssh -c "( tmux has-session -t rag-security 2>/dev/null || pgrep -x rag-security >/dev/null 2>&1 ) && echo '  ✅ rag-security:  RUNNING' || echo '  ❌ rag-security:  STOPPED'"
-	@vagrant ssh -c "( tmux has-session -t rag-ingester 2>/dev/null || pgrep -x rag-ingester >/dev/null 2>&1 ) && echo '  ✅ rag-ingester:  RUNNING' || echo '  ❌ rag-ingester:  STOPPED'"
 	@vagrant ssh -c "( tmux has-session -t ml-detector 2>/dev/null || pgrep -x ml-detector >/dev/null 2>&1 ) && echo '  ✅ ml-detector:   RUNNING' || echo '  ❌ ml-detector:   STOPPED'"
 	@vagrant ssh -c " \
 	  EBPF=0; PCAP=0; \
