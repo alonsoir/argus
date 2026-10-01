@@ -6527,3 +6527,121 @@ Deuda nueva:
 
 - `traffic_context` del sniffer no está fijo: vale INTERNAL si `traffic_pred.probability >= 0.5`. La
   hipótesis pasa a "la cabeza traffic siempre da ≥ 0.5" (medible con `[HEAD-SCORES]`).
+
+## DAY284 — Caudal del sniffer, descartes ZMQ y fast alerts en el ml-detector (MEDIDO)
+
+Rama `feat/ddos-head-contract`. Perfil production, `FORCE_ALL_HEADS=1`. Carga: CICDDoS2019
+`_0125_50k_lab.pcap`, `tcpreplay --pps=100 --limit=12000` desde el client por `eth1`.
+
+### 0. Infraestructura: Vagrant no arrancaba (CERRADO)
+
+- Síntoma: `ForwardPortCollision` en el 5571 con el puerto libre (lsof/nc vacíos) y las cinco VMs
+  `aborted` tras la caída del host del 2026-09-29.
+- Causa medida: la actualización de macOS (15.8.1, 2026-09-30) cambió el connect no bloqueante
+  rechazado: el socket queda escribible con el error en SO_ERROR. `Socket.tcp(connect_timeout:)` de
+  Ruby 3.3.8 (embebido en Vagrant 2.4.9) devuelve un socket muerto y `is_port_open?` da TODOS los
+  puertos por ocupados. Control: `TCPSocket.new` = ECONNREFUSED, `Socket.tcp` con timeout = "abierto",
+  Python = ECONNREFUSED. Refs: hashicorp/vagrant#13845, PR #13842, Ruby Bug #22223.
+- Descartados por medida: arriendos `fp-leases` (vacío), VMs fantasma, Bitdefender (su protección web
+  es solo un complemento de navegador), Little Snitch (sin cambios desde el 4-sep).
+- Arreglo: `vagrant_port_check_fix.rb` cargado desde el Vagrantfile; se activa solo si un sondeo
+  detecta el falso positivo (comprueba SO_ERROR + `remote_address`, que da EINVAL en socket muerto).
+- **DEBT-VAGRANT-PORT-CHECK-MACOS-001**: quitar el parche cuando Vagrant publique el arreglo (el
+  sondeo dejará de imprimir `[argus] port-check fix ACTIVO`).
+
+### 1. Corrección de DAY283: el defender NO es mononúcleo
+
+`ksoftirqd/0..5`, `nproc`=6, ml-detector al 408 % bajo carga. Las conclusiones de DAY283 que
+suponían un solo núcleo deben releerse con esto.
+
+### 2. DEBT-SNIFFER-CONSUMER-THROUGHPUT-001 — causa medida y arreglada (CERRADA)
+
+DAY283 decía "el consumidor del ring saca ~40–90 ev/s". FALSO como límite del consumidor.
+
+- `Paquetes procesados` (hilo del ring, `handle_event` L517) sigue la llegada a ~100/s: el ring va al día.
+  El ML corre en otro hilo (`feature_processor_loop` → `process_event_features` → L841).
+- Sin tráfico entrante la etapa del ML drena a 100–140/s; el hundimiento a ~35–40/s ocurre SOLO
+  mientras llega tráfico.
+- Muestreo de pilas (24 muestras con gdb durante la llegada): el hilo ZMQ pasa 18/24 en `write()` de
+  líneas `[CRYPTO]` con flush; el procesador 11/24 esperando `_IO_stdfile_1_lock`; el ring 10/24 en
+  log de `[FAST ALERT]`. Tres hilos serializados en `std::cout` sobre vboxsf (`/vagrant`, ~467 µs/write).
+- Segundo factor: `TimeWindowAggregator::get_window_stats` (8/24 muestras del procesador, rellena
+  `unordered_set` por la ventana, se llama varias veces por evento). A 100 pps cabe en el margen.
+- A/B (mismo replay):
+  | Config | ev/s en llegada | Cola tras replay |
+  |---|---|---|
+  | log en /vagrant, antes del arreglo | ~40 | ~110 s |
+  | log en /tmp (SNIFFER_LOG) | ~100 | < 10 s |
+  | log en /vagrant, con arreglo | **~101** | **< 10 s** |
+- Arreglo: 4 logs por evento tras `g_verbosity` (mecanismo existente, defecto NONE): `[CRYPTO]
+  Compressed` y `Encrypted` (DETAILED), `[DUAL-NIC]` (DETAILED), `[FAST ALERT]` (BASIC).
+- Hipótesis refutadas por medida (no reintentar): despertares perdidos en `wait_for` (todos los push
+  llevan notify), afinidad/cuota de CPU (`Cpus_allowed_list` 0-5 por hilo, `cpu.max`=max, afinidad
+  desactivada en el perfil `dual_nic`), log como causa en ambiente (descartado mal con datos de
+  ambiente; bajo carga es lo dominante).
+
+### 3. Descartes ZMQ sniffer → ml-detector (MEDIDO, pendiente de código)
+
+- `send_protobuf_message` envía con `zmq::send_flags::dontwait` (L746). Con la cola llena el mensaje
+  se DESCARTA al instante con una línea `[ERROR] ZMQ send falló!` por mensaje.
+- `send_timeout_ms: 250` de `sniffer.json` es **configuración muerta**: no hay `sndtimeo` en el código.
+- Colchón: `sndhwm` 10000 (sniffer) + `rcvhwm` **1000** (ml-detector).
+- Corrida 4: 2030 descartes concentrados en ~20 s al final del replay (≈ todo lo que llegó en esa
+  ventana). Eran las 2030 de las 2410 líneas del log (las "0,19 líneas/evento" restantes).
+  Corrida 5 (log del ml-detector en local): 554, también al final.
+- `Paquetes enviados` ≈ 2 × `calls` (cada evento del flood lleva su fast alert). El "25 000 clavado"
+  de DAY283 es muy probablemente esto mismo: ml-detector saturado → todos los send fallan.
+- **DEBT-SNIFFER-ZMQ-SILENT-DROP**. Decisión de Alonso: la saturación debe verse SIEMPRE, por defecto
+  y sin verbose, como resumen periódico `[ZMQ-DROP] descartados=N en los últimos 10 s` (sustituye a la
+  línea por mensaje, que además escribe en vboxsf justo cuando el sistema va peor).
+- Decisión de Alonso (diseño): la relación sniffer↔ml-detector de cada despliegue (1:1, 1:N, N:N,
+  distribuido) se dimensiona por medición y se acepta así; el código deja la saturación visible para
+  que el admin ajuste. Contrapresión ml-detector→sniffer y modelo numérico de dimensionado: backlog,
+  después de las cabezas.
+
+### 4. ml-detector: más lento que la llegada y la mitad de su trabajo es inútil (MEDIDO)
+
+- Escribe ≥ 3 líneas por evento (`[VICTIM-WINDOW]`, `[HEAD-SCORES]`, `[DUAL-SCORE]`) en
+  `/vagrant/logs/lab/ml-detector.log` (701 963 líneas). A/B con `ML_DETECTOR_LOG` en local: ayuda, pero
+  NO basta (P16 refutada: siguen 554 descartes).
+- Tarda ~6,5 min en procesar lo que el replay entrega en 120 s (30–83 `[HEAD-SCORES]`/s); cuando el
+  sniffer deja de producir llega a ~320/s durante 10 s.
+- **52 % de sus inferencias son fast alerts**: 13 611 de 26 182 `[HEAD-SCORES]` con `event=fast-alert-…`.
+  Ids únicos (no hay duplicados). Cada fast alert pasa por TODAS las cabezas sobre un vector
+  vacío/constante (puntuaciones idénticas alerta tras alerta: `l1=0:0.9563, ddos=0:0.4717, …`).
+- Código: el sniffer marca la alerta solo por el prefijo del id (`"fast-alert-" + timestamp`,
+  ring_consumer L1252). `ml-detector/src` no contiene "fast-alert": no hay desvío; todo mensaje sigue
+  level1 → cabezas → `[DUAL-SCORE]` (zmq_handler.cpp ~L417–436).
+- Con `FORCE_ALL_HEADS=1` el desperdicio es máximo; sin él, level1 (BENIGN) frenaría el nivel 2.
+- Conecta con la decisión DAY281 punto 4 (fast alert fuera de las cabezas de flujo, como entrada
+  propia a la fusión). Ahora con beneficio medido: ~mitad de la carga del ml-detector bajo flood.
+- Hallazgo lateral (fuera de foco): la heurística rápida de RANSOMWARE se dispara con el flood DDoS
+  casi en cada paquete (`ExtIPs=1–2, SMB=0`, `fast=0.75`). Mal calibrada para este tráfico.
+- Sospecha pendiente: competencia por CPU del host (el sniffer bajó a 35–110 ev/s en la corrida 5,
+  cuando el ml-detector corría más). A/B diseñado: `vagrant halt suricata zeek` y repetir.
+
+### 5. Decisiones de Alonso sobre logs
+
+- `[ZMQ-DROP]`: siempre visible, por defecto.
+- `[VICTIM-WINDOW]`, `[HEAD-SCORES]`, `[DUAL-SCORE]`: tras el `--verbose` existente del ml-detector.
+- Defecto de producción = log mínimo; verbose solo cuando hace falta. Futuro (backlog, tras las
+  cabezas): activar verbose en caliente y de forma autónoma (etcd como canal; Falco/Wazuh vigilando)
+  avisando al admin. Requiere el mecanismo de cambios en caliente, que aún no existe.
+
+### 6. Otros cambios
+
+- rag-ingester (deprecado) fuera de `pipeline-start`, `pipeline-start-x86-libpcap` y `pipeline-status`.
+  Build, seeds, tests, `pipeline-stop` y el componente, intactos.
+- `SNIFFER_LOG` y `ML_DETECTOR_LOG` en el Makefile (defecto = ruta actual) para A/B de logs.
+- Herramientas en `scripts/`: `d284_sampler.sh` (acepta `LOG=`; tolera log truncado),
+  `d284_calls_rate.sh`, `d284_cpu_drain.sh`, `d284_cpu_summary.sh`, `d284_pmp.sh`,
+  `d284_pmp_summary.sh`, `d284_drain_probe.sh` y los patchers `d284_patch_*.py`.
+
+### 7. Notas sin investigar
+
+- `tcpreplay` en el client tarda 146–326 s para 120 s de envío (probable: lee el pcap de 25 MB desde
+  vboxsf). No afecta al defender. Usar siempre el reloj del defender.
+- La columna "Paquetes procesados" mostró `0` unos 30 s y volvió a su valor: otro bloque de
+  estadísticas con la misma etiqueta.
+- `top -H` atribuyó 50 % al TID del hilo main, que dormía en las 24 muestras de gdb.
+- `rag-ingester` gastaba 87 % de un núcleo en ambiente (ya fuera del arranque).
