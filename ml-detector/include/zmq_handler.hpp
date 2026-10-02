@@ -43,6 +43,10 @@ public:
         uint64_t events_processed = 0;
         uint64_t events_sent = 0;
         uint64_t attacks_detected = 0;
+        uint64_t send_failures = 0;          // [SUMMARY-D285] descartes hacia el firewall
+        uint64_t detections_ddos = 0;        // [SUMMARY-D285]
+        uint64_t detections_ransomware = 0;  // [SUMMARY-D285]
+        uint64_t detections_internal = 0;    // [SUMMARY-D285]
         uint64_t deserialization_errors = 0;
         uint64_t feature_extraction_errors = 0;
         uint64_t inference_errors = 0;

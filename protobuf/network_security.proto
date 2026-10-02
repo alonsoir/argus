@@ -631,6 +631,8 @@ message NetworkSecurityEvent {
   DetectionProvenance provenance = 35;  // Complete detection provenance trail
   // [DDOS-VWIN-D279:PROTO-FIELD] ventana por victima del kernel (DAY279, opcion a)
   VictimWindow victim_window = 36;
+  // [EVENT-KIND-D285] FLOW (0) | FAST_ALERT | RANSOMWARE_WINDOW
+  EventKind event_kind = 37;
 }
 
 // =====================================================================
@@ -730,6 +732,15 @@ enum DetectionType {
 // =====================================================================
 // 🎯 DUAL-SCORE DECISION SYSTEM - DAY 13 (December 2025)
 // =====================================================================
+
+// [EVENT-KIND-D285] Tipo de mensaje que emite el sniffer. Solo FLOW trae rasgos de flujo;
+// el resto llega con centinelas y no pasa por level1 ni por las cabezas del ml-detector.
+// FLOW = 0 a proposito: un productor que no lo rellene sigue el camino de siempre.
+enum EventKind {
+    EVENT_KIND_FLOW = 0;
+    EVENT_KIND_FAST_ALERT = 1;          // send_fast_alert (heuristica ransomware, capa 1)
+    EVENT_KIND_RANSOMWARE_WINDOW = 2;   // send_ransomware_features (agregado de ventana)
+}
 
 enum DetectorSource {
     DETECTOR_SOURCE_UNKNOWN = 0;

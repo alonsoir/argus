@@ -692,6 +692,7 @@ PROTOBUF_CONSTEXPR NetworkSecurityEvent::NetworkSecurityEvent(
   , /*decltype(_impl_.fast_detector_score_)*/0
   , /*decltype(_impl_.ml_detector_score_)*/0
   , /*decltype(_impl_.fast_detector_triggered_)*/false
+  , /*decltype(_impl_.event_kind_)*/0
   , /*decltype(_impl_._cached_size_)*/{}} {}
 struct NetworkSecurityEventDefaultTypeInternal {
   PROTOBUF_CONSTEXPR NetworkSecurityEventDefaultTypeInternal()
@@ -853,7 +854,7 @@ struct DetectionBatchDefaultTypeInternal {
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 DetectionBatchDefaultTypeInternal _DetectionBatch_default_instance_;
 }  // namespace protobuf
 static ::_pb::Metadata file_level_metadata_network_5fsecurity_2eproto[38];
-static const ::_pb::EnumDescriptor* file_level_enum_descriptors_network_5fsecurity_2eproto[10];
+static const ::_pb::EnumDescriptor* file_level_enum_descriptors_network_5fsecurity_2eproto[11];
 static constexpr ::_pb::ServiceDescriptor const** file_level_service_descriptors_network_5fsecurity_2eproto = nullptr;
 
 const uint32_t TableStruct_network_5fsecurity_2eproto::offsets[] PROTOBUF_SECTION_VARIABLE(protodesc_cold) = {
@@ -1405,6 +1406,7 @@ const uint32_t TableStruct_network_5fsecurity_2eproto::offsets[] PROTOBUF_SECTIO
   PROTOBUF_FIELD_OFFSET(::protobuf::NetworkSecurityEvent, _impl_.decision_metadata_),
   PROTOBUF_FIELD_OFFSET(::protobuf::NetworkSecurityEvent, _impl_.provenance_),
   PROTOBUF_FIELD_OFFSET(::protobuf::NetworkSecurityEvent, _impl_.victim_window_),
+  PROTOBUF_FIELD_OFFSET(::protobuf::NetworkSecurityEvent, _impl_.event_kind_),
   ~0u,  // no _has_bits_
   PROTOBUF_FIELD_OFFSET(::protobuf::EventBatch, _internal_metadata_),
   ~0u,  // no _extensions_
@@ -1548,14 +1550,14 @@ static const ::_pbi::MigrationSchema schemas[] PROTOBUF_SECTION_VARIABLE(protode
   { 489, -1, -1, sizeof(::protobuf::VictimWindow)},
   { 502, 510, -1, sizeof(::protobuf::NetworkSecurityEvent_CustomMetadataEntry_DoNotUse)},
   { 512, -1, -1, sizeof(::protobuf::NetworkSecurityEvent)},
-  { 548, -1, -1, sizeof(::protobuf::EventBatch)},
-  { 560, 568, -1, sizeof(::protobuf::SystemConfiguration_ThreatScoreThresholdsEntry_DoNotUse)},
-  { 570, 578, -1, sizeof(::protobuf::SystemConfiguration_NodeRoleAssignmentsEntry_DoNotUse)},
-  { 580, -1, -1, sizeof(::protobuf::SystemConfiguration)},
-  { 598, -1, -1, sizeof(::protobuf::RansomwareFeatures)},
-  { 624, -1, -1, sizeof(::protobuf::DecisionMetadata)},
-  { 637, -1, -1, sizeof(::protobuf::Detection)},
-  { 650, -1, -1, sizeof(::protobuf::DetectionBatch)},
+  { 549, -1, -1, sizeof(::protobuf::EventBatch)},
+  { 561, 569, -1, sizeof(::protobuf::SystemConfiguration_ThreatScoreThresholdsEntry_DoNotUse)},
+  { 571, 579, -1, sizeof(::protobuf::SystemConfiguration_NodeRoleAssignmentsEntry_DoNotUse)},
+  { 581, -1, -1, sizeof(::protobuf::SystemConfiguration)},
+  { 599, -1, -1, sizeof(::protobuf::RansomwareFeatures)},
+  { 625, -1, -1, sizeof(::protobuf::DecisionMetadata)},
+  { 638, -1, -1, sizeof(::protobuf::Detection)},
+  { 651, -1, -1, sizeof(::protobuf::DetectionBatch)},
 };
 
 static const ::_pb::Message* const file_default_instances[] = {
@@ -1905,7 +1907,7 @@ const char descriptor_table_protodef_network_5fsecurity_2eproto[] PROTOBUF_SECTI
   "\030\001 \001(\t\022\020\n\010protocol\030\002 \001(\r\022\016\n\006d_pkts\030\003 \001(\004"
   "\022\017\n\007d_bytes\030\004 \001(\004\022\021\n\twindow_ms\030\005 \001(\004\022\022\n\n"
   "window_seq\030\006 \001(\004\022\027\n\017snapshot_age_ms\030\007 \001("
-  "\004\"\375\t\n\024NetworkSecurityEvent\022\020\n\010event_id\030\001"
+  "\004\"\246\n\n\024NetworkSecurityEvent\022\020\n\010event_id\030\001"
   " \001(\t\0223\n\017event_timestamp\030\002 \001(\0132\032.google.p"
   "rotobuf.Timestamp\022\033\n\023originating_node_id"
   "\030\003 \001(\t\0223\n\020network_features\030\004 \001(\0132\031.proto"
@@ -1935,74 +1937,78 @@ const char descriptor_table_protodef_network_5fsecurity_2eproto[] PROTOBUF_SECTI
   "ision_metadata\030\" \001(\0132\032.protobuf.Decision"
   "Metadata\0221\n\nprovenance\030# \001(\0132\035.protobuf."
   "DetectionProvenance\022-\n\rvictim_window\030$ \001"
-  "(\0132\026.protobuf.VictimWindow\0325\n\023CustomMeta"
-  "dataEntry\022\013\n\003key\030\001 \001(\t\022\r\n\005value\030\002 \001(\t:\0028"
-  "\001\"\325\002\n\nEventBatch\022.\n\006events\030\001 \003(\0132\036.proto"
-  "buf.NetworkSecurityEvent\022\020\n\010batch_id\030\002 \001"
-  "(\004\0224\n\020batch_created_at\030\003 \001(\0132\032.google.pr"
-  "otobuf.Timestamp\022\022\n\nbatch_size\030\004 \001(\r\022<\n\017"
-  "processing_mode\030\005 \001(\0162#.protobuf.EventBa"
-  "tch.ProcessingMode\022\031\n\021batch_source_node\030"
-  "\006 \001(\t\"b\n\016ProcessingMode\022\r\n\tREAL_TIME\020\000\022\022"
-  "\n\016NEAR_REAL_TIME\020\001\022\024\n\020BATCH_PROCESSING\020\002"
-  "\022\027\n\023HISTORICAL_ANALYSIS\020\003\"\223\005\n\023SystemConf"
-  "iguration\022\031\n\021enabled_ml_models\030\001 \003(\t\022Y\n\027"
-  "threat_score_thresholds\030\002 \003(\01328.protobuf"
-  ".SystemConfiguration.ThreatScoreThreshol"
-  "dsEntry\0223\n\020time_window_size\030\003 \001(\0132\031.goog"
-  "le.protobuf.Duration\022\035\n\025max_events_per_w"
-  "indow\030\004 \001(\r\0220\n\rcluster_nodes\030\005 \003(\0132\031.pro"
-  "tobuf.DistributedNode\022U\n\025node_role_assig"
-  "nments\030\006 \003(\01326.protobuf.SystemConfigurat"
-  "ion.NodeRoleAssignmentsEntry\022\032\n\022encrypti"
-  "on_enabled\030\007 \001(\010\022\033\n\023compression_enabled\030"
-  "\010 \001(\010\022\034\n\024encryption_algorithm\030\t \001(\t\022\034\n\024r"
-  "ag_analysis_enabled\030\n \001(\010\022\032\n\022rag_model_e"
-  "ndpoint\030\013 \001(\t\022\036\n\026knowledge_base_sources\030"
-  "\014 \003(\t\032<\n\032ThreatScoreThresholdsEntry\022\013\n\003k"
-  "ey\030\001 \001(\t\022\r\n\005value\030\002 \001(\001:\0028\001\032:\n\030NodeRoleA"
-  "ssignmentsEntry\022\013\n\003key\030\001 \001(\t\022\r\n\005value\030\002 "
-  "\001(\t:\0028\001\"\247\005\n\022RansomwareFeatures\022\031\n\021dns_qu"
-  "ery_entropy\030\001 \001(\002\022\034\n\024new_external_ips_30"
-  "s\030\002 \001(\005\022\036\n\026dns_query_rate_per_min\030\003 \001(\002\022"
-  " \n\030failed_dns_queries_ratio\030\004 \001(\002\022\"\n\032tls"
-  "_self_signed_cert_count\030\005 \001(\005\022$\n\034non_sta"
-  "ndard_port_http_count\030\006 \001(\005\022 \n\030smb_conne"
-  "ction_diversity\030\007 \001(\005\022\035\n\025rdp_failed_auth"
-  "_count\030\010 \001(\005\022$\n\034new_internal_connections"
-  "_30s\030\t \001(\005\022\037\n\027port_scan_pattern_score\030\n "
-  "\001(\002\022!\n\031upload_download_ratio_30s\030\013 \001(\002\022\037"
-  "\n\027burst_connections_count\030\014 \001(\005\022\037\n\027uniqu"
-  "e_destinations_30s\030\r \001(\005\022#\n\033large_upload"
-  "_sessions_count\030\016 \001(\005\022\037\n\027nocturnal_activ"
-  "ity_flag\030\017 \001(\010\022\036\n\026connection_rate_stddev"
-  "\030\020 \001(\002\022 \n\030protocol_diversity_score\030\021 \001(\002"
-  "\022!\n\031avg_flow_duration_seconds\030\022 \001(\002\022\025\n\rt"
-  "cp_rst_ratio\030\023 \001(\002\022\035\n\025syn_without_ack_ra"
-  "tio\030\024 \001(\002\"\357\001\n\020DecisionMetadata\022\030\n\020score_"
-  "divergence\030\001 \001(\001\022\031\n\021divergence_reason\030\002 "
-  "\001(\t\022\035\n\025requires_rag_analysis\030\003 \001(\010\022\036\n\026in"
-  "vestigation_priority\030\004 \001(\t\022\025\n\ranomaly_fl"
-  "ags\030\005 \003(\t\022\030\n\020confidence_level\030\006 \001(\001\0226\n\022d"
-  "ecision_timestamp\030\007 \001(\0132\032.google.protobu"
-  "f.Timestamp\"\250\001\n\tDetection\022\016\n\006src_ip\030\001 \001("
-  "\t\022%\n\004type\030\002 \001(\0162\027.protobuf.DetectionType"
-  "\022\022\n\nconfidence\030\003 \001(\002\022\021\n\ttimestamp\030\004 \001(\004\022"
-  "\023\n\013description\030\005 \001(\t\022\016\n\006action\030\006 \001(\t\022\030\n\020"
-  "duration_seconds\030\007 \001(\r\"\200\001\n\016DetectionBatc"
-  "h\022\'\n\ndetections\030\001 \003(\0132\023.protobuf.Detecti"
-  "on\022\020\n\010batch_id\030\002 \001(\004\0223\n\017batch_timestamp\030"
-  "\003 \001(\0132\032.google.protobuf.Timestamp*\225\001\n\rDe"
-  "tectionType\022\025\n\021DETECTION_UNKNOWN\020\000\022\022\n\016DE"
-  "TECTION_DDOS\020\001\022\030\n\024DETECTION_RANSOMWARE\020\002"
-  "\022 \n\034DETECTION_SUSPICIOUS_TRAFFIC\020\003\022\035\n\031DE"
-  "TECTION_INTERNAL_THREAT\020\004*\354\001\n\016DetectorSo"
-  "urce\022\033\n\027DETECTOR_SOURCE_UNKNOWN\020\000\022\035\n\031DET"
-  "ECTOR_SOURCE_FAST_ONLY\020\001\022\033\n\027DETECTOR_SOU"
-  "RCE_ML_ONLY\020\002\022!\n\035DETECTOR_SOURCE_FAST_PR"
-  "IORITY\020\003\022\037\n\033DETECTOR_SOURCE_ML_PRIORITY\020"
-  "\004\022\035\n\031DETECTOR_SOURCE_CONSENSUS\020\005\022\036\n\032DETE"
-  "CTOR_SOURCE_DIVERGENCE\020\006b\006proto3"
+  "(\0132\026.protobuf.VictimWindow\022\'\n\nevent_kind"
+  "\030% \001(\0162\023.protobuf.EventKind\0325\n\023CustomMet"
+  "adataEntry\022\013\n\003key\030\001 \001(\t\022\r\n\005value\030\002 \001(\t:\002"
+  "8\001\"\325\002\n\nEventBatch\022.\n\006events\030\001 \003(\0132\036.prot"
+  "obuf.NetworkSecurityEvent\022\020\n\010batch_id\030\002 "
+  "\001(\004\0224\n\020batch_created_at\030\003 \001(\0132\032.google.p"
+  "rotobuf.Timestamp\022\022\n\nbatch_size\030\004 \001(\r\022<\n"
+  "\017processing_mode\030\005 \001(\0162#.protobuf.EventB"
+  "atch.ProcessingMode\022\031\n\021batch_source_node"
+  "\030\006 \001(\t\"b\n\016ProcessingMode\022\r\n\tREAL_TIME\020\000\022"
+  "\022\n\016NEAR_REAL_TIME\020\001\022\024\n\020BATCH_PROCESSING\020"
+  "\002\022\027\n\023HISTORICAL_ANALYSIS\020\003\"\223\005\n\023SystemCon"
+  "figuration\022\031\n\021enabled_ml_models\030\001 \003(\t\022Y\n"
+  "\027threat_score_thresholds\030\002 \003(\01328.protobu"
+  "f.SystemConfiguration.ThreatScoreThresho"
+  "ldsEntry\0223\n\020time_window_size\030\003 \001(\0132\031.goo"
+  "gle.protobuf.Duration\022\035\n\025max_events_per_"
+  "window\030\004 \001(\r\0220\n\rcluster_nodes\030\005 \003(\0132\031.pr"
+  "otobuf.DistributedNode\022U\n\025node_role_assi"
+  "gnments\030\006 \003(\01326.protobuf.SystemConfigura"
+  "tion.NodeRoleAssignmentsEntry\022\032\n\022encrypt"
+  "ion_enabled\030\007 \001(\010\022\033\n\023compression_enabled"
+  "\030\010 \001(\010\022\034\n\024encryption_algorithm\030\t \001(\t\022\034\n\024"
+  "rag_analysis_enabled\030\n \001(\010\022\032\n\022rag_model_"
+  "endpoint\030\013 \001(\t\022\036\n\026knowledge_base_sources"
+  "\030\014 \003(\t\032<\n\032ThreatScoreThresholdsEntry\022\013\n\003"
+  "key\030\001 \001(\t\022\r\n\005value\030\002 \001(\001:\0028\001\032:\n\030NodeRole"
+  "AssignmentsEntry\022\013\n\003key\030\001 \001(\t\022\r\n\005value\030\002"
+  " \001(\t:\0028\001\"\247\005\n\022RansomwareFeatures\022\031\n\021dns_q"
+  "uery_entropy\030\001 \001(\002\022\034\n\024new_external_ips_3"
+  "0s\030\002 \001(\005\022\036\n\026dns_query_rate_per_min\030\003 \001(\002"
+  "\022 \n\030failed_dns_queries_ratio\030\004 \001(\002\022\"\n\032tl"
+  "s_self_signed_cert_count\030\005 \001(\005\022$\n\034non_st"
+  "andard_port_http_count\030\006 \001(\005\022 \n\030smb_conn"
+  "ection_diversity\030\007 \001(\005\022\035\n\025rdp_failed_aut"
+  "h_count\030\010 \001(\005\022$\n\034new_internal_connection"
+  "s_30s\030\t \001(\005\022\037\n\027port_scan_pattern_score\030\n"
+  " \001(\002\022!\n\031upload_download_ratio_30s\030\013 \001(\002\022"
+  "\037\n\027burst_connections_count\030\014 \001(\005\022\037\n\027uniq"
+  "ue_destinations_30s\030\r \001(\005\022#\n\033large_uploa"
+  "d_sessions_count\030\016 \001(\005\022\037\n\027nocturnal_acti"
+  "vity_flag\030\017 \001(\010\022\036\n\026connection_rate_stdde"
+  "v\030\020 \001(\002\022 \n\030protocol_diversity_score\030\021 \001("
+  "\002\022!\n\031avg_flow_duration_seconds\030\022 \001(\002\022\025\n\r"
+  "tcp_rst_ratio\030\023 \001(\002\022\035\n\025syn_without_ack_r"
+  "atio\030\024 \001(\002\"\357\001\n\020DecisionMetadata\022\030\n\020score"
+  "_divergence\030\001 \001(\001\022\031\n\021divergence_reason\030\002"
+  " \001(\t\022\035\n\025requires_rag_analysis\030\003 \001(\010\022\036\n\026i"
+  "nvestigation_priority\030\004 \001(\t\022\025\n\ranomaly_f"
+  "lags\030\005 \003(\t\022\030\n\020confidence_level\030\006 \001(\001\0226\n\022"
+  "decision_timestamp\030\007 \001(\0132\032.google.protob"
+  "uf.Timestamp\"\250\001\n\tDetection\022\016\n\006src_ip\030\001 \001"
+  "(\t\022%\n\004type\030\002 \001(\0162\027.protobuf.DetectionTyp"
+  "e\022\022\n\nconfidence\030\003 \001(\002\022\021\n\ttimestamp\030\004 \001(\004"
+  "\022\023\n\013description\030\005 \001(\t\022\016\n\006action\030\006 \001(\t\022\030\n"
+  "\020duration_seconds\030\007 \001(\r\"\200\001\n\016DetectionBat"
+  "ch\022\'\n\ndetections\030\001 \003(\0132\023.protobuf.Detect"
+  "ion\022\020\n\010batch_id\030\002 \001(\004\0223\n\017batch_timestamp"
+  "\030\003 \001(\0132\032.google.protobuf.Timestamp*\225\001\n\rD"
+  "etectionType\022\025\n\021DETECTION_UNKNOWN\020\000\022\022\n\016D"
+  "ETECTION_DDOS\020\001\022\030\n\024DETECTION_RANSOMWARE\020"
+  "\002\022 \n\034DETECTION_SUSPICIOUS_TRAFFIC\020\003\022\035\n\031D"
+  "ETECTION_INTERNAL_THREAT\020\004*]\n\tEventKind\022"
+  "\023\n\017EVENT_KIND_FLOW\020\000\022\031\n\025EVENT_KIND_FAST_"
+  "ALERT\020\001\022 \n\034EVENT_KIND_RANSOMWARE_WINDOW\020"
+  "\002*\354\001\n\016DetectorSource\022\033\n\027DETECTOR_SOURCE_"
+  "UNKNOWN\020\000\022\035\n\031DETECTOR_SOURCE_FAST_ONLY\020\001"
+  "\022\033\n\027DETECTOR_SOURCE_ML_ONLY\020\002\022!\n\035DETECTO"
+  "R_SOURCE_FAST_PRIORITY\020\003\022\037\n\033DETECTOR_SOU"
+  "RCE_ML_PRIORITY\020\004\022\035\n\031DETECTOR_SOURCE_CON"
+  "SENSUS\020\005\022\036\n\032DETECTOR_SOURCE_DIVERGENCE\020\006"
+  "b\006proto3"
   ;
 static const ::_pbi::DescriptorTable* const descriptor_table_network_5fsecurity_2eproto_deps[2] = {
   &::descriptor_table_google_2fprotobuf_2fduration_2eproto,
@@ -2010,7 +2016,7 @@ static const ::_pbi::DescriptorTable* const descriptor_table_network_5fsecurity_
 };
 static ::_pbi::once_flag descriptor_table_network_5fsecurity_2eproto_once;
 const ::_pbi::DescriptorTable descriptor_table_network_5fsecurity_2eproto = {
-    false, false, 16112, descriptor_table_protodef_network_5fsecurity_2eproto,
+    false, false, 16248, descriptor_table_protodef_network_5fsecurity_2eproto,
     "network_security.proto",
     &descriptor_table_network_5fsecurity_2eproto_once, descriptor_table_network_5fsecurity_2eproto_deps, 2, 38,
     schemas, file_default_instances, TableStruct_network_5fsecurity_2eproto::offsets,
@@ -2269,9 +2275,24 @@ bool DetectionType_IsValid(int value) {
   }
 }
 
-const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor* DetectorSource_descriptor() {
+const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor* EventKind_descriptor() {
   ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&descriptor_table_network_5fsecurity_2eproto);
   return file_level_enum_descriptors_network_5fsecurity_2eproto[9];
+}
+bool EventKind_IsValid(int value) {
+  switch (value) {
+    case 0:
+    case 1:
+    case 2:
+      return true;
+    default:
+      return false;
+  }
+}
+
+const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor* DetectorSource_descriptor() {
+  ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&descriptor_table_network_5fsecurity_2eproto);
+  return file_level_enum_descriptors_network_5fsecurity_2eproto[10];
 }
 bool DetectorSource_IsValid(int value) {
   switch (value) {
@@ -16861,6 +16882,7 @@ NetworkSecurityEvent::NetworkSecurityEvent(const NetworkSecurityEvent& from)
     , decltype(_impl_.fast_detector_score_){}
     , decltype(_impl_.ml_detector_score_){}
     , decltype(_impl_.fast_detector_triggered_){}
+    , decltype(_impl_.event_kind_){}
     , /*decltype(_impl_._cached_size_)*/{}};
 
   _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
@@ -16966,8 +16988,8 @@ NetworkSecurityEvent::NetworkSecurityEvent(const NetworkSecurityEvent& from)
     _this->_impl_.victim_window_ = new ::protobuf::VictimWindow(*from._impl_.victim_window_);
   }
   ::memcpy(&_impl_.overall_threat_score_, &from._impl_.overall_threat_score_,
-    static_cast<size_t>(reinterpret_cast<char*>(&_impl_.fast_detector_triggered_) -
-    reinterpret_cast<char*>(&_impl_.overall_threat_score_)) + sizeof(_impl_.fast_detector_triggered_));
+    static_cast<size_t>(reinterpret_cast<char*>(&_impl_.event_kind_) -
+    reinterpret_cast<char*>(&_impl_.overall_threat_score_)) + sizeof(_impl_.event_kind_));
   // @@protoc_insertion_point(copy_constructor:protobuf.NetworkSecurityEvent)
 }
 
@@ -17006,6 +17028,7 @@ inline void NetworkSecurityEvent::SharedCtor(
     , decltype(_impl_.fast_detector_score_){0}
     , decltype(_impl_.ml_detector_score_){0}
     , decltype(_impl_.fast_detector_triggered_){false}
+    , decltype(_impl_.event_kind_){0}
     , /*decltype(_impl_._cached_size_)*/{}
   };
   _impl_.event_id_.InitDefault();
@@ -17156,8 +17179,8 @@ void NetworkSecurityEvent::Clear() {
   }
   _impl_.victim_window_ = nullptr;
   ::memset(&_impl_.overall_threat_score_, 0, static_cast<size_t>(
-      reinterpret_cast<char*>(&_impl_.fast_detector_triggered_) -
-      reinterpret_cast<char*>(&_impl_.overall_threat_score_)) + sizeof(_impl_.fast_detector_triggered_));
+      reinterpret_cast<char*>(&_impl_.event_kind_) -
+      reinterpret_cast<char*>(&_impl_.overall_threat_score_)) + sizeof(_impl_.event_kind_));
   _internal_metadata_.Clear<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
 }
 
@@ -17445,6 +17468,15 @@ const char* NetworkSecurityEvent::_InternalParse(const char* ptr, ::_pbi::ParseC
         if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 34)) {
           ptr = ctx->ParseMessage(_internal_mutable_victim_window(), ptr);
           CHK_(ptr);
+        } else
+          goto handle_unusual;
+        continue;
+      // .protobuf.EventKind event_kind = 37;
+      case 37:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 40)) {
+          uint64_t val = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
+          CHK_(ptr);
+          _internal_set_event_kind(static_cast<::protobuf::EventKind>(val));
         } else
           goto handle_unusual;
         continue;
@@ -17748,6 +17780,13 @@ uint8_t* NetworkSecurityEvent::_InternalSerialize(
         _Internal::victim_window(this).GetCachedSize(), target, stream);
   }
 
+  // .protobuf.EventKind event_kind = 37;
+  if (this->_internal_event_kind() != 0) {
+    target = stream->EnsureSpace(target);
+    target = ::_pbi::WireFormatLite::WriteEnumToArray(
+      37, this->_internal_event_kind(), target);
+  }
+
   if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
     target = ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
         _internal_metadata_.unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(::PROTOBUF_NAMESPACE_ID::UnknownFieldSet::default_instance), target, stream);
@@ -17981,6 +18020,12 @@ size_t NetworkSecurityEvent::ByteSizeLong() const {
     total_size += 2 + 1;
   }
 
+  // .protobuf.EventKind event_kind = 37;
+  if (this->_internal_event_kind() != 0) {
+    total_size += 2 +
+      ::_pbi::WireFormatLite::EnumSize(this->_internal_event_kind());
+  }
+
   return MaybeComputeUnknownFieldsSize(total_size, &_impl_._cached_size_);
 }
 
@@ -18105,6 +18150,9 @@ void NetworkSecurityEvent::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, c
   if (from._internal_fast_detector_triggered() != 0) {
     _this->_internal_set_fast_detector_triggered(from._internal_fast_detector_triggered());
   }
+  if (from._internal_event_kind() != 0) {
+    _this->_internal_set_event_kind(from._internal_event_kind());
+  }
   _this->_internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
 }
 
@@ -18161,8 +18209,8 @@ void NetworkSecurityEvent::InternalSwap(NetworkSecurityEvent* other) {
       &other->_impl_.fast_detector_reason_, rhs_arena
   );
   ::PROTOBUF_NAMESPACE_ID::internal::memswap<
-      PROTOBUF_FIELD_OFFSET(NetworkSecurityEvent, _impl_.fast_detector_triggered_)
-      + sizeof(NetworkSecurityEvent::_impl_.fast_detector_triggered_)
+      PROTOBUF_FIELD_OFFSET(NetworkSecurityEvent, _impl_.event_kind_)
+      + sizeof(NetworkSecurityEvent::_impl_.event_kind_)
       - PROTOBUF_FIELD_OFFSET(NetworkSecurityEvent, _impl_.event_timestamp_)>(
           reinterpret_cast<char*>(&_impl_.event_timestamp_),
           reinterpret_cast<char*>(&other->_impl_.event_timestamp_));

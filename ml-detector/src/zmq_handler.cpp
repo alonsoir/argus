@@ -240,6 +240,13 @@ void ZMQHandler::run() {
     logger_->info("📥 ZMQ Handler loop started");
 
     auto stats_interval = std::chrono::seconds(config_.monitoring.stats_interval_seconds);
+    // [SUMMARY-D285] resumenes siempre visibles cada 10 s (intervalo fijo, independiente de stats_interval)
+    constexpr auto kSummaryInterval = std::chrono::seconds(10);
+    auto summary_last = std::chrono::steady_clock::now();
+    Stats summary_prev = get_stats();
+    auto summary_delta = [](uint64_t cur, uint64_t prev) -> uint64_t {
+        return cur >= prev ? cur - prev : cur;  // reset_stats(): sin desbordar
+    };
 
     while (running_.load()) {
         try {
@@ -307,6 +314,26 @@ void ZMQHandler::run() {
                 last_stats_report_ = now;
             }
 
+            // [SUMMARY-D285] solo se imprime si hay algo que contar
+            if (now - summary_last >= kSummaryInterval) {
+                const auto s = get_stats();
+                const auto secs = std::chrono::duration_cast<std::chrono::seconds>(now - summary_last).count();
+                const uint64_t d_drop = summary_delta(s.send_failures, summary_prev.send_failures);
+                const uint64_t d_ddos = summary_delta(s.detections_ddos, summary_prev.detections_ddos);
+                const uint64_t d_rw   = summary_delta(s.detections_ransomware, summary_prev.detections_ransomware);
+                const uint64_t d_int  = summary_delta(s.detections_internal, summary_prev.detections_internal);
+                if (d_drop > 0) {
+                    logger_->warn("[ZMQ-DROP-OUT] descartados={} en los últimos {} s (total={})",
+                                  d_drop, secs, s.send_failures);
+                }
+                if (d_ddos + d_rw + d_int > 0) {
+                    logger_->warn("[DETECCIONES] ddos={} ransomware={} internal={} en los últimos {} s",
+                                  d_ddos, d_rw, d_int, secs);
+                }
+                summary_prev = s;
+                summary_last = now;
+            }
+
         } catch (const zmq::error_t& e) {
             if (e.num() == ETERM) break;
             logger_->error("ZMQ error: {}", e.what());
@@ -357,9 +384,13 @@ void ZMQHandler::process_event(const std::string& message) {
         logger_->debug("🎯 Fast Detector: score={:.4f}, triggered={}, reason={}",
                        fast_score, fast_triggered, fast_reason);
 
+        // [EVENT-KIND-D285] Solo los eventos de flujo traen rasgos; fast alert y ventana
+        // ransomware llegan con centinelas y no pasan por level1 ni por las cabezas.
+        const bool is_flow_event = (event.event_kind() == protobuf::EVENT_KIND_FLOW);
+
         // Level 1: General Attack Detection (ONNX)
         std::vector<float> features_l1;
-        try {
+        if (is_flow_event) try {  // [EVENT-KIND-D285] level1 solo sobre flujo
             features_l1 = extractor_->extract_level1_features(event);
             if (!extractor_->validate_features(features_l1)) {
                 logger_->error("Feature validation failed for event {}", event.event_id());
@@ -377,7 +408,7 @@ void ZMQHandler::process_event(const std::string& message) {
         int64_t label_l1      = -1;
         float confidence_l1   = 0.0f;
 
-        try {
+        if (is_flow_event) try {  // [EVENT-KIND-D285]
             auto [pred_label, pred_confidence] = level1_model_->predict(features_l1);
             label_l1      = pred_label;
             confidence_l1 = pred_confidence;
@@ -394,18 +425,22 @@ void ZMQHandler::process_event(const std::string& message) {
 
         // Enrich with Level 1
         auto* ml_analysis  = event.mutable_ml_analysis();
-        auto* level1_pred  = ml_analysis->mutable_level1_general_detection();
-        level1_pred->set_model_name("level1_attack_detector");
-        level1_pred->set_model_version("1.0.0");
-        level1_pred->set_model_type(protobuf::ModelPrediction::RANDOM_FOREST_GENERAL);
-        level1_pred->set_prediction_class(label_l1 == 0 ? "BENIGN" : "ATTACK");
-        level1_pred->set_confidence_score(confidence_l1);
+        if (is_flow_event) {  // [EVENT-KIND-D285] sin level1, sin enriquecer
+            auto* level1_pred  = ml_analysis->mutable_level1_general_detection();
+            level1_pred->set_model_name("level1_attack_detector");
+            level1_pred->set_model_version("1.0.0");
+            level1_pred->set_model_type(protobuf::ModelPrediction::RANDOM_FOREST_GENERAL);
+            level1_pred->set_prediction_class(label_l1 == 0 ? "BENIGN" : "ATTACK");
+            level1_pred->set_confidence_score(confidence_l1);
 
-        ml_analysis->set_attack_detected_level1(label_l1 == 1);
-        ml_analysis->set_level1_confidence(confidence_l1);
+            ml_analysis->set_attack_detected_level1(label_l1 == 1);
+            ml_analysis->set_level1_confidence(confidence_l1);
+        }
 
         // Dual-Score Architecture
-        double ml_score    = label_l1 == 1 ? confidence_l1 : (1.0 - confidence_l1);
+        // [EVENT-KIND-D285] sin rasgos de flujo el ML no se evalua: 0 (no 1 - 0 = 1)
+        double ml_score    = !is_flow_event ? 0.0
+                           : (label_l1 == 1 ? confidence_l1 : (1.0 - confidence_l1));
         event.set_ml_detector_score(ml_score);
 
         double final_score = std::max(fast_score, ml_score);
@@ -413,9 +448,11 @@ void ZMQHandler::process_event(const std::string& message) {
 
         double score_divergence = std::abs(fast_score - ml_score);
 
-        if (score_divergence > config_.scoring.divergence_warn_threshold) {
+        if (!is_flow_event) {  // [EVENT-KIND-D285] sin ML que comparar: autoridad del fast
+            event.set_authoritative_source(protobuf::DETECTOR_SOURCE_FAST_ONLY);
+        } else if (score_divergence > config_.scoring.divergence_warn_threshold) {
             event.set_authoritative_source(protobuf::DETECTOR_SOURCE_DIVERGENCE);
-            logger_->warn("⚠️  Score divergence: fast={:.4f}, ml={:.4f}, diff={:.4f}",
+            logger_->debug("⚠️  Score divergence: fast={:.4f}, ml={:.4f}, diff={:.4f}",  // [LOG-VERBOSE-D285]
                           fast_score, ml_score, score_divergence);
         } else if (fast_triggered && ml_score > 0.5) {
             event.set_authoritative_source(protobuf::DETECTOR_SOURCE_CONSENSUS);
@@ -433,7 +470,7 @@ void ZMQHandler::process_event(const std::string& message) {
         );
         metadata->set_confidence_level(std::min(fast_score, ml_score));
 
-        logger_->info("[DUAL-SCORE] event={}, fast={:.4f}, ml={:.4f}, final={:.4f}, source={}, div={:.4f}",
+        logger_->debug("[DUAL-SCORE] event={}, fast={:.4f}, ml={:.4f}, final={:.4f}, source={}, div={:.4f}",  // [LOG-VERBOSE-D285]
                       event.event_id(), fast_score, ml_score, final_score,
                       protobuf::DetectorSource_Name(event.authoritative_source()),
                       score_divergence);
@@ -442,11 +479,11 @@ void ZMQHandler::process_event(const std::string& message) {
         // no entra en ninguna cabeza ni en final_score (DAY279, paso 1 de la opcion a).
         if (event.has_victim_window()) {
             const auto& vw = event.victim_window();
-            logger_->info("[VICTIM-WINDOW] event={}, victim={}, proto={}, d_pkts={}, d_bytes={}, window_ms={}, seq={}, age_ms={}",
+            logger_->debug("[VICTIM-WINDOW] event={}, victim={}, proto={}, d_pkts={}, d_bytes={}, window_ms={}, seq={}, age_ms={}",  // [LOG-VERBOSE-D285]
                           event.event_id(), vw.victim_ip(), vw.protocol(), vw.d_pkts(), vw.d_bytes(),
                           vw.window_ms(), vw.window_seq(), vw.snapshot_age_ms());
         } else {
-            logger_->info("[VICTIM-WINDOW] event={}, absent", event.event_id());
+            logger_->debug("[VICTIM-WINDOW] event={}, absent", event.event_id());  // [LOG-VERBOSE-D285]
         }
 
         event.set_final_classification(
@@ -461,20 +498,22 @@ void ZMQHandler::process_event(const std::string& message) {
             logger_->debug("📊 Provenance: Sniffer verdict exists, adding ML verdict");
         }
 
-        auto* rf_verdict = provenance->add_verdicts();
-        rf_verdict->set_engine_name("random-forest-level1");
-        rf_verdict->set_classification(label_l1 == 0 ? "Benign" : "Attack");
-        rf_verdict->set_confidence(confidence_l1);
-        rf_verdict->set_reason_code(
-            label_l1 == 1
-                ? ml_defender::to_string(ml_defender::ReasonCode::STAT_ANOMALY)
-                : ml_defender::to_string(ml_defender::ReasonCode::UNKNOWN)
-        );
-        rf_verdict->set_timestamp_ns(
-            static_cast<uint64_t>(std::chrono::duration_cast<std::chrono::nanoseconds>(
-                std::chrono::system_clock::now().time_since_epoch()
-            ).count())
-        );
+        if (is_flow_event) {  // [EVENT-KIND-D285] sin level1, sin veredicto RF
+            auto* rf_verdict = provenance->add_verdicts();
+            rf_verdict->set_engine_name("random-forest-level1");
+            rf_verdict->set_classification(label_l1 == 0 ? "Benign" : "Attack");
+            rf_verdict->set_confidence(confidence_l1);
+            rf_verdict->set_reason_code(
+                label_l1 == 1
+                    ? ml_defender::to_string(ml_defender::ReasonCode::STAT_ANOMALY)
+                    : ml_defender::to_string(ml_defender::ReasonCode::UNKNOWN)
+            );
+            rf_verdict->set_timestamp_ns(
+                static_cast<uint64_t>(std::chrono::duration_cast<std::chrono::nanoseconds>(
+                    std::chrono::system_clock::now().time_since_epoch()
+                ).count())
+            );
+        }
 
         float discrepancy = 0.0f;
         if (sniffer_verdict_exists) {
@@ -561,7 +600,9 @@ void ZMQHandler::process_event(const std::string& message) {
         // [HEAD-SCORES-D282] clase:puntuacion por cabeza; -1 = no evaluada
         int hs_ddos_c = -1, hs_ransom_c = -1, hs_traffic_c = -1, hs_internal_c = -1;
         double hs_ddos_p = 0.0, hs_ransom_p = 0.0, hs_traffic_p = 0.0, hs_internal_p = 0.0;
-        const bool hs_gate = l2_gate_open(force_all_heads_, label_l1, confidence_l1, config_.ml.thresholds.level1_attack);
+        // [EVENT-KIND-D285] sin rasgos de flujo la compuerta nunca abre, ni con FORCE_ALL_HEADS
+        const bool hs_gate = is_flow_event &&
+                             l2_gate_open(force_all_heads_, label_l1, confidence_l1, config_.ml.thresholds.level1_attack);
         if (hs_gate) {
             event.set_threat_category("ATTACK");
 
@@ -627,7 +668,8 @@ void ZMQHandler::process_event(const std::string& message) {
                         if (ddos_result.is_ddos(config_.ml.thresholds.level2_ddos)) {
                             event.set_threat_category("DDOS");
                             ml_analysis->set_final_threat_classification("DDOS");
-                            logger_->warn("🔴 DDoS ATTACK: event={}, L1={:.2f}%, L2={:.2f}%",
+                            { std::lock_guard<std::mutex> lock(stats_mutex_); stats_.detections_ddos++; }  // [SUMMARY-D285]
+                            logger_->debug("🔴 DDoS ATTACK: event={}, L1={:.2f}%, L2={:.2f}%",  // [LOG-VERBOSE-D285]
                                          event.event_id(), confidence_l1 * 100, ddos_result.ddos_prob * 100);
                         }
                     }
@@ -697,7 +739,8 @@ void ZMQHandler::process_event(const std::string& message) {
                         if (ransomware_result.is_ransomware(config_.ml.thresholds.level2_ransomware)) {
                             event.set_threat_category("RANSOMWARE");
                             ml_analysis->set_final_threat_classification("RANSOMWARE");
-                            logger_->warn("🔴 RANSOMWARE ATTACK: event={}, L1={:.2f}%, L2={:.2f}%, entropy={:.3f}",
+                            { std::lock_guard<std::mutex> lock(stats_mutex_); stats_.detections_ransomware++; }  // [SUMMARY-D285]
+                            logger_->debug("🔴 RANSOMWARE ATTACK: event={}, L1={:.2f}%, L2={:.2f}%, entropy={:.3f}",  // [LOG-VERBOSE-D285]
                                          event.event_id(), confidence_l1 * 100,
                                          ransomware_result.ransomware_prob * 100,
                                          ransomware_features_vec[1]);
@@ -813,7 +856,8 @@ void ZMQHandler::process_event(const std::string& message) {
                                 if (internal_result.is_suspicious(config_.ml.thresholds.level3_internal)) {
                                     event.set_threat_category("SUSPICIOUS_INTERNAL");
                                     ml_analysis->set_final_threat_classification("SUSPICIOUS_INTERNAL");
-                                    logger_->warn("🔴 SUSPICIOUS INTERNAL ACTIVITY: event={}, "
+                                    { std::lock_guard<std::mutex> lock(stats_mutex_); stats_.detections_internal++; }  // [SUMMARY-D285]
+                                    logger_->debug("🔴 SUSPICIOUS INTERNAL ACTIVITY: event={}, "  // [LOG-VERBOSE-D285]
                                                  "lateral_movement={:.3f}, exfiltration={:.3f}, conf={:.2f}%",
                                                  event.event_id(),
                                                  internal_features_vec[5],
@@ -835,16 +879,16 @@ void ZMQHandler::process_event(const std::string& message) {
                 }
             }
 
-        } else {
+        } else if (is_flow_event) {  // [EVENT-KIND-D285] fast alert / ventana: conserva la categoria del sniffer
             event.set_threat_category("NORMAL");
         }
 
-        {
+        if (logger_->should_log(spdlog::level::debug)) {  // [LOG-VERBOSE-D285] sin coste si no hay verbose
             auto hs_fmt = [](int c, double p) -> std::string {
                 if (c < 0) return std::string("na");
                 char b[32]; std::snprintf(b, sizeof(b), "%d:%.4f", c, p); return std::string(b);
             };
-            logger_->info("[HEAD-SCORES] event={}, src={}:{}, dst={}:{}, gate={}, l1={}:{:.4f}, fast={:.4f}, ddos={}, ransom={}, traffic={}, internal={}, cat={}",
+            logger_->debug("[HEAD-SCORES] event={}, src={}:{}, dst={}:{}, gate={}, l1={}:{:.4f}, fast={:.4f}, ddos={}, ransom={}, traffic={}, internal={}, cat={}",  // [LOG-VERBOSE-D285]
                           event.event_id(),
                   event.network_features().source_ip(), event.network_features().source_port(),
                   event.network_features().destination_ip(), event.network_features().destination_port(),
@@ -895,7 +939,7 @@ void ZMQHandler::process_event(const std::string& message) {
         }
 
         if (label_l1 == 1) {
-            logger_->info("🚨 ATTACK: event={}, L1_conf={:.2f}%, processing={:.2f}ms",
+            logger_->debug("🚨 ATTACK: event={}, L1_conf={:.2f}%, processing={:.2f}ms",  // [LOG-VERBOSE-D285]
                          event.event_id(), confidence_l1 * 100, duration_ms);
         } else {
             logger_->debug("✅ BENIGN: event={}, confidence={:.2f}%, processing={:.2f}ms",
@@ -959,7 +1003,9 @@ void ZMQHandler::send_enriched_event(const protobuf::NetworkSecurityEvent& event
             logger_->debug("📤 Event sent: id={}, encrypted_size={} bytes",
                           event.event_id(), encrypted.size());
         } else {
-            logger_->warn("Failed to send event {} (queue full?)", event.event_id());
+            std::lock_guard<std::mutex> lock(stats_mutex_);
+            stats_.send_failures++;  // [SUMMARY-D285] resumido cada 10 s en run()
+            logger_->debug("Failed to send event {} (queue full?)", event.event_id());
         }
 
     } catch (const zmq::error_t& e) {

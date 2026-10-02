@@ -466,6 +466,32 @@ inline bool DetectionType_Parse(
   return ::PROTOBUF_NAMESPACE_ID::internal::ParseNamedEnum<DetectionType>(
     DetectionType_descriptor(), name, value);
 }
+enum EventKind : int {
+  EVENT_KIND_FLOW = 0,
+  EVENT_KIND_FAST_ALERT = 1,
+  EVENT_KIND_RANSOMWARE_WINDOW = 2,
+  EventKind_INT_MIN_SENTINEL_DO_NOT_USE_ = std::numeric_limits<int32_t>::min(),
+  EventKind_INT_MAX_SENTINEL_DO_NOT_USE_ = std::numeric_limits<int32_t>::max()
+};
+bool EventKind_IsValid(int value);
+constexpr EventKind EventKind_MIN = EVENT_KIND_FLOW;
+constexpr EventKind EventKind_MAX = EVENT_KIND_RANSOMWARE_WINDOW;
+constexpr int EventKind_ARRAYSIZE = EventKind_MAX + 1;
+
+const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor* EventKind_descriptor();
+template<typename T>
+inline const std::string& EventKind_Name(T enum_t_value) {
+  static_assert(::std::is_same<T, EventKind>::value ||
+    ::std::is_integral<T>::value,
+    "Incorrect type passed to function EventKind_Name.");
+  return ::PROTOBUF_NAMESPACE_ID::internal::NameOfEnum(
+    EventKind_descriptor(), enum_t_value);
+}
+inline bool EventKind_Parse(
+    ::PROTOBUF_NAMESPACE_ID::ConstStringParam name, EventKind* value) {
+  return ::PROTOBUF_NAMESPACE_ID::internal::ParseNamedEnum<EventKind>(
+    EventKind_descriptor(), name, value);
+}
 enum DetectorSource : int {
   DETECTOR_SOURCE_UNKNOWN = 0,
   DETECTOR_SOURCE_FAST_ONLY = 1,
@@ -8151,6 +8177,7 @@ class NetworkSecurityEvent final :
     kFastDetectorScoreFieldNumber = 29,
     kMlDetectorScoreFieldNumber = 30,
     kFastDetectorTriggeredFieldNumber = 32,
+    kEventKindFieldNumber = 37,
   };
   // repeated .protobuf.ModelPrediction additional_model_predictions = 8;
   int additional_model_predictions_size() const;
@@ -8617,6 +8644,15 @@ class NetworkSecurityEvent final :
   void _internal_set_fast_detector_triggered(bool value);
   public:
 
+  // .protobuf.EventKind event_kind = 37;
+  void clear_event_kind();
+  ::protobuf::EventKind event_kind() const;
+  void set_event_kind(::protobuf::EventKind value);
+  private:
+  ::protobuf::EventKind _internal_event_kind() const;
+  void _internal_set_event_kind(::protobuf::EventKind value);
+  public:
+
   // @@protoc_insertion_point(class_scope:protobuf.NetworkSecurityEvent)
  private:
   class _Internal;
@@ -8659,6 +8695,7 @@ class NetworkSecurityEvent final :
     double fast_detector_score_;
     double ml_detector_score_;
     bool fast_detector_triggered_;
+    int event_kind_;
     mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
   };
   union { Impl_ _impl_; };
@@ -23130,6 +23167,26 @@ inline void NetworkSecurityEvent::set_allocated_victim_window(::protobuf::Victim
   // @@protoc_insertion_point(field_set_allocated:protobuf.NetworkSecurityEvent.victim_window)
 }
 
+// .protobuf.EventKind event_kind = 37;
+inline void NetworkSecurityEvent::clear_event_kind() {
+  _impl_.event_kind_ = 0;
+}
+inline ::protobuf::EventKind NetworkSecurityEvent::_internal_event_kind() const {
+  return static_cast< ::protobuf::EventKind >(_impl_.event_kind_);
+}
+inline ::protobuf::EventKind NetworkSecurityEvent::event_kind() const {
+  // @@protoc_insertion_point(field_get:protobuf.NetworkSecurityEvent.event_kind)
+  return _internal_event_kind();
+}
+inline void NetworkSecurityEvent::_internal_set_event_kind(::protobuf::EventKind value) {
+  
+  _impl_.event_kind_ = value;
+}
+inline void NetworkSecurityEvent::set_event_kind(::protobuf::EventKind value) {
+  _internal_set_event_kind(value);
+  // @@protoc_insertion_point(field_set:protobuf.NetworkSecurityEvent.event_kind)
+}
+
 // -------------------------------------------------------------------
 
 // EventBatch
@@ -25129,6 +25186,11 @@ template <> struct is_proto_enum< ::protobuf::DetectionType> : ::std::true_type 
 template <>
 inline const EnumDescriptor* GetEnumDescriptor< ::protobuf::DetectionType>() {
   return ::protobuf::DetectionType_descriptor();
+}
+template <> struct is_proto_enum< ::protobuf::EventKind> : ::std::true_type {};
+template <>
+inline const EnumDescriptor* GetEnumDescriptor< ::protobuf::EventKind>() {
+  return ::protobuf::EventKind_descriptor();
 }
 template <> struct is_proto_enum< ::protobuf::DetectorSource> : ::std::true_type {};
 template <>

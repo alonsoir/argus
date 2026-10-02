@@ -450,7 +450,25 @@ void RingBufferConsumer::feature_processor_loop() {
 
 void RingBufferConsumer::zmq_sender_loop() {
     std::cout << "[INFO] ZMQ sender thread started" << std::endl;
+    // [ZMQ-DROP-D285] resumen periodico de descartes, siempre visible (sin verbose)
+    constexpr auto kDropReportInterval = std::chrono::seconds(10);
+    auto drop_last_report = std::chrono::steady_clock::now();
+    uint64_t drop_last_total = stats_.zmq_send_failures.load();
     while (!should_stop_) {
+        {  // [ZMQ-DROP-D285]
+            const auto now = std::chrono::steady_clock::now();
+            if (now - drop_last_report >= kDropReportInterval) {
+                const uint64_t total = stats_.zmq_send_failures.load();
+                if (total > drop_last_total) {
+                    std::cerr << "[ZMQ-DROP] descartados=" << (total - drop_last_total)
+                              << " en los últimos "
+                              << std::chrono::duration_cast<std::chrono::seconds>(now - drop_last_report).count()
+                              << " s (total=" << total << ")" << std::endl;
+                }
+                drop_last_total = total;
+                drop_last_report = now;
+            }
+        }
         std::vector<uint8_t> data;
 
         {
@@ -749,7 +767,7 @@ bool RingBufferConsumer::send_protobuf_message(const std::vector<uint8_t>& seria
             stats_.events_sent++;
             return true;
         } else {
-            std::cerr << "[ERROR] ZMQ send falló!" << std::endl;
+            // [ZMQ-DROP-D285] sin log por mensaje: lo resume zmq_sender_loop cada 10 s
             stats_.zmq_send_failures++;
             return false;
         }
@@ -862,6 +880,7 @@ void RingBufferConsumer::populate_protobuf_event(const SimpleEvent& event,
 
     // Populate basic fields
     proto_event.set_event_id(event_id);
+    proto_event.set_event_kind(protobuf::EVENT_KIND_FLOW);  // [EVENT-KIND-D285]
     proto_event.set_originating_node_id(config_.node_id);
     proto_event.set_correlation_id(event_id);
     proto_event.set_schema_version(31);
@@ -1250,6 +1269,7 @@ void RingBufferConsumer::send_fast_alert(const SimpleEvent& event) {
     try {
         protobuf::NetworkSecurityEvent alert;
         alert.set_event_id("fast-alert-" + std::to_string(event.timestamp));
+        alert.set_event_kind(protobuf::EVENT_KIND_FAST_ALERT);  // [EVENT-KIND-D285]
 
         auto* ts = alert.mutable_event_timestamp();
         ts->set_seconds(event.timestamp / 1'000'000'000ULL);
@@ -1355,6 +1375,7 @@ void RingBufferConsumer::send_ransomware_features(const protobuf::RansomwareFeat
         uint64_t now_ns = std::chrono::duration_cast<std::chrono::nanoseconds>(
             std::chrono::system_clock::now().time_since_epoch()).count();
         event.set_event_id("ransomware-features-" + std::to_string(now_ns));
+        event.set_event_kind(protobuf::EVENT_KIND_RANSOMWARE_WINDOW);  // [EVENT-KIND-D285]
 
         auto* ts = event.mutable_event_timestamp();
         ts->set_seconds(now_ns / 1'000'000'000ULL);
