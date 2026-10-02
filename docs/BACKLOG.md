@@ -6645,3 +6645,117 @@ DAY283 decía "el consumidor del ring saca ~40–90 ev/s". FALSO como límite de
   estadísticas con la misma etiqueta.
 - `top -H` atribuyó 50 % al TID del hilo main, que dormía en las 24 muestras de gdb.
 - `rag-ingester` gastaba 87 % de un núcleo en ambiente (ya fuera del arranque).
+
+---
+
+## 🆕 Entradas DAY285 (2026-10-02) — rama `feat/ddos-head-contract`
+
+Commits: `829267e4` (EventKind + [ZMQ-DROP] + logs a debug + resúmenes) y el commit
+`perf(ml-detector)` (rag_logger y csv_writer fuera del camino caliente, guarda de plugins).
+Patchers en `scripts/d285_patch_*.py` (atómicos, idempotentes, `--check`).
+
+### 1. Medidas del día (mismo replay: `_0125_50k_lab.pcap`, 12 000 pkts a 100 pps, `FORCE_ALL_HEADS=1`, build production)
+
+| Corrida | Cambio | ml-detector termina tras el inicio | Pico ml-detector | Descartes sniffer→ml-detector |
+|---|---|---|---|---|
+| DAY284 (base) | — | 6,5 min | — | 554 |
+| A | EventKind + logs por evento a debug | ~5 min | ~111 msg/s | 0 |
+| A' | + rag_logger/csv_writer apagados + guarda de plugins | **~2,4 min (drena <20 s tras el replay de 127 s)** | **~192 msg/s** | 0 |
+
+- El sniffer procesa al ritmo de llegada (~100 ev/s) en las dos corridas: el arreglo DAY284 se sostiene.
+- En A, el sniffer había enviado 22 969 mensajes cuando el ml-detector solo había recibido ~10 000:
+  ~13 000 mensajes esperaron en los búferes ZMQ (mucho más que `rcvhwm` 1000). 0 descartes NO significaba
+  "el ml-detector aguanta" (hipótesis refutada).
+- Desvío de fast alerts medido en A: 10 092 de 23 212 mensajes (44 %) no abrieron la compuerta
+  (`attacks` = aperturas = eventos de flujo con FORCE_ALL_HEADS ≈ paquetes procesados por el sniffer).
+- `[ZMQ-DROP-OUT]` (ml-detector→firewall): 0 en A'.
+
+### 2. CERRADAS
+
+- **Fast alert y ventana ransomware fuera de level1 y de las cabezas** (decisión DAY281 punto 4).
+  Nuevo `enum EventKind { FLOW = 0; FAST_ALERT = 1; RANSOMWARE_WINDOW = 2; }`, campo
+  `NetworkSecurityEvent.event_kind = 37`. Los tres productores del sniffer lo fijan
+  (`populate_protobuf_event`, `send_fast_alert`, `send_ransomware_features`). En el ml-detector,
+  `is_flow_event` decide: si no es FLOW no corre level1, `ml_score = 0` (evita `1 - 0 = 1.0`),
+  `final_score = fast` (decisión aguas abajo idéntica a la de antes), `authoritative_source = FAST_ONLY`,
+  sin `rf_verdict`, la compuerta no abre ni con FORCE_ALL_HEADS y se conserva la `threat_category`
+  del sniffer. `FLOW = 0` protege a inyectores y tests que no rellenen el campo.
+  Descartado reutilizar `authoritative_source` como marca de entrada (campo de salida sobrescrito por el
+  ml-detector; convención implícita, mismo error de fondo que DAY255).
+- **DEBT-SNIFFER-ZMQ-SILENT-DROP**: el `[ERROR] ZMQ send falló!` por mensaje se sustituye por
+  `[ZMQ-DROP] descartados=N en los últimos X s (total=M)` cada 10 s desde `zmq_sender_loop`,
+  siempre visible, solo si N > 0. `zmq_send_failures` también cuenta fallos de cifrado (raros).
+- **Logs por evento del ml-detector a debug** (`--verbose` existente = nivel debug):
+  `[DUAL-SCORE]`, `[VICTIM-WINDOW]`, `[HEAD-SCORES]` (además envuelto en `should_log(debug)`),
+  `Score divergence`, `DDoS ATTACK`, `RANSOMWARE ATTACK`, `SUSPICIOUS INTERNAL`, `🚨 ATTACK`,
+  `Failed to send event`. Motivo extra: `logger.cpp:37` hace `flush_on(warn)` → cada warn por evento
+  era un volcado síncrono. Resúmenes siempre visibles (warn, cada 10 s, solo si hay algo):
+  `[ZMQ-DROP-OUT] descartados=N …` y `[DETECCIONES] ddos=N ransomware=M internal=K …`
+  (contadores nuevos en `ZMQHandler::Stats`).
+- **DEBT-ML-DETECTOR-LAG-UNDER-LOAD-001 — CERRADA para 100 pps.** Causa dominante medida:
+  `rag_logger_` creaba DOS ficheros cifrados por evento (`event_<id>.pb.enc` + `.json.enc`) sobre
+  vboxsf para todo evento con score ≥ 0,70 (todas las fast alerts, 0,75): **25 014 ficheros / 98 MB
+  solo el 2026-10-02**, directorios diarios desde 2025-12-11. La inferencia (~6 µs, DAY283) nunca fue
+  el coste. Arreglo: `rag_logger.enabled=false` y `csv_writer.enabled=false` en
+  `ml_detector_config.json` (interruptores nuevos, opcionales, por defecto true); invocación de
+  plugins solo si `loaded_count() > 0` (con `plugins.enabled: []` se serializaba el evento entero
+  por mensaje para 0 plugins). Verificado: 0 artefactos nuevos durante A' (26 572 → 26 572).
+  Dimensionado a más pps: sigue en backlog (decisión DAY284).
+
+### 3. Hallazgos que explican el arreglo (configuración muerta, otra vez)
+
+- La sección `rag_logger` de `ml_detector_config.json` no la leía nadie (`save_*_artifacts: false`
+  daba falsa tranquilidad). El RAG Logger se crea desde `../config/rag_logger_config.json`. Reducida a
+  `enabled` + comentario.
+- `create_rag_logger_from_config` lee claves en la raíz del JSON, pero `rag_logger_config.json` las
+  anida en `thresholds`/`performance` → siempre valores por defecto del código (artefactos activos).
+- `csv_writer_` se creaba siempre que hubiera clave HMAC (sin interruptor). Su único consumidor era
+  `make parquet-convert` (`scripts/parquet/generate_parquet.py`, Parquet antiguo de
+  DEBT-PARQUET-SCHEMA-001, 2026-05-12, anterior al circuito bronce→oro). Ningún proceso vivo dependía
+  del `.jsonl` ni del CSV de rasgos (verificado: `argus-network-isolate` y `rag/start.sh` solo
+  escriben sus propios logs).
+- `plugin_loader_` es un objeto en la pila de `main()`; su dirección se pasaba siempre → nunca nulo.
+
+### 4. Descartado
+
+- **Punto 5 del prompt (A/B `vagrant halt suricata zeek`)**: decisión de Alonso. En modo no distribuido
+  el resto de componentes forma parte del entorno real; no es contención espuria.
+
+### 5. Deudas nuevas (backlog; NO son trabajo inmediato — el foco es arreglar las cabezas)
+
+- **DEBT-RAG-LOGGER-FACTORY-NESTED-CONFIG-001 (P3)**: la factoría ignora las secciones anidadas de
+  `rag_logger_config.json`; además el log de arranque dice "encrypted artifacts enabled" fijo. Solo
+  importa si el RAG Logger vuelve a encenderse.
+- **DEBT-TEST-PARQUET-LEFTOVER-LOGS-001 (P2, decidir antes del merge a main)**: `test-parquet` está en
+  `test-all` (EMECAS+++) y pasa gracias a CSV de corridas antiguas que sobreviven en `/vagrant`
+  (carpeta del host). En un clon limpio fallaría. Opciones: sacarlo de `test-all` (prueba un camino
+  retirado) o darle fixtures propios.
+- **DEBT-RAG-ARTIFACTS-ACCUMULATED-001 (decisión de Alonso)**: meses de artefactos en
+  `/vagrant/logs/rag/artifacts/` (~26 000 ficheros/día en días de replay). No se ha borrado nada.
+- **DEBT-ML-DETECTOR-DUPLICATE-FILE-SINK-001 (P3)**: cada línea de log se escribe dos veces
+  (stdout → `ml-detector.log` y file sink rotativo → `detector.log`).
+- **DEBT-CORRELATION-WRITER-VBOXSF-001 (P3, medir antes)**: el bronce (imprescindible) se escribe por
+  evento sobre vboxsf; si pesa, cambiar dónde escribe, no quitarlo.
+- **DEBT-ZMQ-QUEUE-DEPTH-INVISIBLE-001 (P3)**: con búferes grandes la cola entre sniffer y ml-detector
+  (13 000 mensajes en A) no se ve en ningún log; `[ZMQ-DROP]` solo ve descartes, no retraso.
+- **DESIGN-PLUGIN-HOT-LOAD-ETCD (diseño, Alonso)**: carga de plugins nuevos asíncrona, disparada por
+  notificación de etcd (etcd local ← maestro). Exige tocar etcd-server; el maestro quizá no existe.
+- **Observación para el trabajo de la cabeza DDoS**: con solo ambiente tras el replay, la cabeza marca
+  ~4 detecciones cada 10–40 s (`[DETECCIONES]`). Medir su tasa de falsos positivos sobre benigno.
+
+### 6. Medido también (contexto para la fusión)
+
+- Bajo el flood, level1 etiqueta BENIGN tanto los flujos (`l1=0:0.9168`) como las fast alerts
+  (`l1=0:0.9563`) → `attack_detected_level1=false` → el firewall (que decide por level1,
+  DEBT-FIREWALL-GATES-ON-LEVEL1-001, P0) **no actúa ante el flood**. La cabeza DDoS sí marca el flujo
+  (`ddos=1:0.8833`, `cat=DDOS`) y ese veredicto no llega a nada.
+- Hoy `final_score = max(fast_ransomware, level1)`: ninguna de las dos señales es fiable; la cabeza DDoS
+  no entra. Decisión de Alonso: `final_decision` solo con las señales arregladas (al principio, solo
+  la cabeza DDoS); cada cabeza entra a medida que se arregle.
+
+### 7. Errores propios del día (para el registro de falsas evidencias)
+
+- Predicción "drena ≤ 3,5 min" refutada en A: supuse que el coste estaba en la inferencia.
+- Hipótesis "0 descartes ⇒ el cuello está en el sniffer" refutada: eran búferes ZMQ grandes.
+- Protocolo con muestreo cada 30 s sobre un `📊 Stats` de 60 s: dos lecturas iguales dentro del mismo
+  minuto parecían "drenado".
