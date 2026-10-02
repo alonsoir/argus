@@ -120,7 +120,9 @@ ZMQHandler::ZMQHandler(
     // Day 66: CsvEventWriter — standalone, NO depende del RAG Logger
     // Política: CSV activo siempre que haya HMAC key, independientemente del RAG
     // =========================================================================
-    if (!hmac_key_hex_.empty()) {
+    if (!config_.csv_writer.enabled) {  // [WRITERS-D285]
+        logger_->info("CsvEventWriter desactivado por configuracion (csv_writer.enabled=false)");
+    } else if (!hmac_key_hex_.empty()) {
         try {
             std::string csv_dir = config_.csv_writer.base_dir;
             std::filesystem::create_directories(csv_dir);
@@ -168,7 +170,9 @@ ZMQHandler::ZMQHandler(
     // =========================================================================
     // RAG Logger — opcional, su fallo no afecta al CSV
     // =========================================================================
-    try {
+    if (!config_.rag_logger.enabled) {  // [WRITERS-D285]
+        logger_->info("RAG Logger desactivado por configuracion (rag_logger.enabled=false)");
+    } else try {
         rag_logger_ = ml_defender::create_rag_logger_from_config(
             "../config/rag_logger_config.json",
             logger_
@@ -898,7 +902,7 @@ void ZMQHandler::process_event(const std::string& message) {
                           event.threat_category());
         }
         // ADR-012 PHASE 2d — invoke plugins post-inferencia (Consejo DAY 111)
-        if (plugin_loader_ != nullptr) {
+        if (plugin_loader_ != nullptr && plugin_loader_->loaded_count() > 0) {  // [WRITERS-D285] sin plugins: sin serializar
             std::string serialized = event.SerializeAsString();
             MessageContext ctx{};
             ctx.payload     = reinterpret_cast<const uint8_t*>(serialized.data());

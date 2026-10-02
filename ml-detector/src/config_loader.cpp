@@ -457,6 +457,14 @@ DetectorConfig ConfigLoader::load() {
         config.csv_writer.base_dir = get_required<std::string>(csv, "base_dir", "csv_writer");
         config.csv_writer.min_score_threshold = get_required<float>(csv, "min_score_threshold", "csv_writer");
         config.csv_writer.max_events_per_file = get_required<int>(csv, "max_events_per_file", "csv_writer");
+        // [WRITERS-D285] interruptor opcional (por defecto true: otras configs no cambian)
+        config.csv_writer.enabled = csv.value("enabled", true);
+    }
+
+    // [WRITERS-D285] RAG Logger: solo 'enabled'; el resto de su config vive en rag_logger_config.json
+    {
+        config.rag_logger.enabled = json_.contains("rag_logger")
+            ? json_["rag_logger"].value("enabled", true) : true;
     }
 
     // ========================================

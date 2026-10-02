@@ -304,10 +304,16 @@ struct DetectorConfig {
 
     // CSV Writer
     struct {
+        bool enabled = true;  // [WRITERS-D285] opcional en el JSON
         std::string base_dir;
         float min_score_threshold;
         int max_events_per_file;
     } csv_writer;
+
+    // [WRITERS-D285] RAG Logger: solo el interruptor; el resto vive en rag_logger_config.json
+    struct {
+        bool enabled = true;
+    } rag_logger;
 
     // Correlation Writer (bronce correlation_v1) — DAY 201/203
     // DEBT-CONFIG-BRONZE-HARDCODE-001 + DEBT-CIRCUIT-BRONZE-ROTATION-FOLLOW-001

@@ -401,19 +401,12 @@
     "cache_line_size": 64
   },
   "rag_logger": {
-    "enabled": true,
-    "base_dir": "/vagrant/logs/rag",
-    "log_all_events": false,
-    "log_detections_only": true,
-    "min_score_threshold": 0.5,
-    "buffer_size": 100,
-    "flush_interval_seconds": 1,
-    "include_artifacts": true,
-    "artifact_format": "protobuf",
-    "save_protobuf_artifacts": false,
-    "save_json_artifacts": false
+    "_comment": "[WRITERS-D285] Solo se lee enabled; el resto de la config vive en ml-detector/config/rag_logger_config.json. Desactivado: el grafo cubre lo que hacia y generaba 2 artefactos cifrados por evento sobre vboxsf.",
+    "enabled": false
   },
   "csv_writer": {
+    "_comment": "[WRITERS-D285] Desactivado: su unico consumidor era make parquet-convert (Parquet antiguo, DEBT-PARQUET-SCHEMA-001).",
+    "enabled": false,
     "base_dir": "/vagrant/logs/ml-detector/events",
     "min_score_threshold": 0.5,
     "max_events_per_file": 10000
