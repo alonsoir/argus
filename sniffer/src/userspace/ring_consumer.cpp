@@ -1274,6 +1274,7 @@ void RingBufferConsumer::stamp_victim_window(protobuf::NetworkSecurityEvent& ev,
     if (r.window_ms > 0) {  // [DDOS-V2-D286] victim_pps; la ventana de arranque deja el centinela
         ev.mutable_network_features()->mutable_ddos_embedded()->set_victim_pps(
             ::argus::ddos::victim_pps(r.d_pkts, r.window_ms));
+        ev.mutable_network_features()->mutable_ddos_embedded()->set_victim_rate_ratio(r.rate_ratio);  // [DDOS-H2-D286]
     }
 }
 

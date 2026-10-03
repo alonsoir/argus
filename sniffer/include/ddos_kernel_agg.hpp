@@ -56,6 +56,13 @@ struct DdosWindow {
     uint32_t evicted = 0;         // estaban en la lectura anterior y ya no estan
 };
 
+// [DDOS-WMS-D286] definicion unica de la duracion de ventana (lector, CSV y tablero)
+// Duracion de la ventana en ms, redondeada al mas cercano. 0 = baseline (o reloj inconsistente).
+inline uint64_t ddos_window_ms(const DdosWindow& w) {
+    if (w.t_start_ns == 0 || w.t_end_ns <= w.t_start_ns) return 0;
+    return (w.t_end_ns - w.t_start_ns + 500000ull) / 1000000ull;
+}
+
 class DdosKernelAggregator {
 public:
     using Snapshot = std::unordered_map<uint64_t, DdosVictimVal>;

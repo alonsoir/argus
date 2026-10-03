@@ -37,4 +37,40 @@ static_assert(reflection_signature(17, 8080, 40000) == 0.0f, "puerto no reflejab
 static_assert(victim_pps(100, 1000) == 100.0f, "100 pkts en 1 s");
 static_assert(victim_pps(50, 500) == 100.0f, "50 pkts en 0,5 s");
 
+// [DDOS-H2-D286] H2: escalada por victima = pps_ventana / max(EWMA previa, suelo).
+// Medida offline DAY286 (v4, opcion B) sobre ddos_windows.csv: dos alfas para que un
+// ataque no envenene la linea base sin dejar falsos positivos permanentes.
+inline constexpr double kVictimEwmaAlpha = 0.1;                      // por ventana
+inline constexpr double kVictimEwmaAlphaAnom = kVictimEwmaAlpha / 60.0;  // clave caliente y anomala
+inline constexpr double kVictimRatioHot = 5.0;                       // K
+inline constexpr uint64_t kVictimWarmWindows = 30;                   // W: ventanas vistas
+inline constexpr double kVictimPpsFloor = 10.0;                      // suelo, pps
+inline constexpr uint64_t kVictimEvictWindows = 3600;                // 1 h sin aparecer -> se olvida
+
+struct VictimEwmaState {
+    double ewma = 0.0;
+    uint64_t last_seq = 0;
+    uint64_t seen = 0;  // ventanas en que la victima aparecio (delta > 0)
+};
+
+// Un paso por ventana en que la victima aparece. Las ventanas sin trafico entre medias
+// cuentan como 0 (decaen con alpha). Devuelve el ratio de ESTA ventana contra la EWMA previa.
+inline double victim_ewma_step(VictimEwmaState& s, uint64_t seq, double pps) noexcept {
+    double prior = 0.0;
+    if (s.seen > 0) {
+        const uint64_t gap = (seq > s.last_seq) ? (seq - s.last_seq) : 1;
+        if (gap <= kVictimEvictWindows) {
+            prior = s.ewma;
+            for (uint64_t i = 1; i < gap; ++i) prior *= (1.0 - kVictimEwmaAlpha);
+        }
+    }
+    const double ratio = pps / (prior > kVictimPpsFloor ? prior : kVictimPpsFloor);
+    const bool hot = s.seen >= kVictimWarmWindows && ratio >= kVictimRatioHot;
+    const double a = hot ? kVictimEwmaAlphaAnom : kVictimEwmaAlpha;
+    s.ewma = (1.0 - a) * prior + a * pps;
+    s.last_seq = seq;
+    s.seen += 1;
+    return ratio;
+}
+
 }  // namespace argus::ddos

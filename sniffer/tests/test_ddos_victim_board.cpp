@@ -5,6 +5,7 @@
 #include "ddos_victim_board.hpp"
 
 #include <atomic>
+#include <cmath>  // [DDOS-H2-D286]
 #include <cstdio>
 #include <thread>
 
@@ -134,6 +135,35 @@ int main() {
     }
     // 10. La IP que se estampara en el evento: mismo formateo que el CSV del lector
     CHECK(DdosKernelAggregator::ip_to_string(GW) == "192.168.100.1");
+
+    // 11. [DDOS-H2-D286] H2: escalada por victima (EWMA dos alfas, opcion B)
+    {
+        auto win1s = [](uint64_t i, uint64_t pkts, uint32_t ip) {
+            DdosWindow w = make_window(i * 1'000'000'000ULL, (i + 1) * 1'000'000'000ULL);
+            if (pkts) w.victims.push_back({ip, 17u, pkts, pkts * 482});
+            return w;
+        };
+        // 11a. victima fria: ratio = pps / suelo = 100 / 10
+        DdosVictimBoard h;
+        h.publish_window(1, win1s(1, 100, GW));
+        CHECK(std::fabs(h.lookup(GW, UDP).rate_ratio - 10.0f) < 1e-4f);
+        // 11b. victima ausente en la ventana -> 0
+        CHECK(h.lookup(DNS, UDP).rate_ratio == 0.0f);
+        // 11c. 40 ventanas a 20 pps (EWMA 19,70, caliente) y ataque a 100 pps -> 5,075;
+        //      la ventana siguiente sigue > 5 porque aprende con alpha/60 (con alpha seria 3,6)
+        DdosVictimBoard k;
+        for (uint64_t i = 1; i <= 40; ++i) k.publish_window(i, win1s(i, 20, GW));
+        k.publish_window(41, win1s(41, 100, GW));
+        const float r1 = k.lookup(GW, UDP).rate_ratio;
+        k.publish_window(42, win1s(42, 100, GW));
+        const float r2 = k.lookup(GW, UDP).rate_ratio;
+        CHECK(r1 > 5.0f && r1 < 5.2f);
+        CHECK(r2 > 5.0f);
+        // 11d. 100 ventanas sin trafico: la EWMA decae a ~0 -> ratio = 100 / suelo
+        k.publish_window(143, win1s(143, 100, GW));
+        CHECK(std::fabs(k.lookup(GW, UDP).rate_ratio - 10.0f) < 0.01f);
+        std::printf("H2: 11c r1=%.4f r2=%.4f\n", static_cast<double>(r1), static_cast<double>(r2));
+    }
 
     if (g_fail) {
         std::fprintf(stderr, "test_ddos_victim_board: %d/%d FALLOS\n", g_fail, g_checks);
