@@ -6759,3 +6759,75 @@ Patchers en `scripts/d285_patch_*.py` (atómicos, idempotentes, `--check`).
 - Hipótesis "0 descartes ⇒ el cuello está en el sniffer" refutada: eran búferes ZMQ grandes.
 - Protocolo con muestreo cada 30 s sobre un `📊 Stats` de 60 s: dos lecturas iguales dentro del mismo
   minuto parecían "drenado".
+
+## DAY286 — D1: contrato DDoS v2 en el sniffer (rama `feat/ddos-head-contract`)
+
+### Hecho (medido)
+
+- **Contrato DDoS v2: 8 rasgos, solo tráfico entrante, calculados UNA vez en el sniffer** (`ddos_embedded`):
+  `syn_ack_ratio` (1), `mean_packet_size` (11), `reflection_signature` (12), `packet_size_entropy` (5),
+  `flow_packet_count` (13), `flow_completion_rate` (7), `victim_rate_ratio` (14), `victim_pps` (15).
+  Fuera del vector (campos conservados en el proto con comentario, no `[deprecated]` por `-Werror`):
+  `packet_symmetry` (2) y `traffic_amplification_factor` (6) — la captura no ve la vuelta;
+  `source_ip_dispersion` (3) — hasta tener un pcap multi-origen; `protocol_anomaly_score` (4) → 12;
+  `traffic_escalation_rate` (9) → 14; `resource_saturation_score` (10) → 15. Geo (8) ya estaba fuera.
+- Centinelas `MISSING_FEATURE_SENTINEL` para 11–15 en `init_embedded_sentinels` (sin dato ≠ 0).
+- `sniffer/include/ddos_contract_v2.hpp`: funciones puras (`reflection_signature`, `victim_pps`,
+  `victim_ewma_step`) con `static_assert`. Puertos reflejables: 17, 19, 53, 69, 111, 123, 137, 138, 161,
+  389, 1434, 1900, 3702, 5683, 11211; destino ≥ 1024.
+- Línea de observación `[DDOS-V2]` en el ml-detector (debug). El ml-detector sigue comiendo su extractor viejo.
+- **Verificación E2E** (commit `d9901d67`): reflexión de prueba 20/20 `refl=1`, 442 B; flood CICDDoS2019
+  482 B, 100 pps, entropía 0; subida TCP legítima 1090 B, 50 pps, entropía 0,9, completion 0,5.
+- **H2 medida offline** sobre `ddos_windows.csv` (12 días, 77 episodios, scripts `d286_h2_*`):
+  - EWMA simple: los floods repetidos a la misma víctima envenenan la línea base (ep2/ep4 arrancan en 2–7).
+  - Congelar desde línea base vacía dispara FP en claves nuevas (Neris): ventanas ≥ 10 de 135 a 752.
+  - Congelar solo claves calientes (W = 30) recupera el ambiente (67) y mantiene el arranque (64/77).
+  - **Elegida la opción B** (Alonso: evitar SIEMPRE falsos positivos permanentes): α = 0,1; α/60 si la clave
+    está caliente (≥ 30 ventanas vistas) y ratio ≥ 5; suelo 10 pps; desalojo a 3600 ventanas sin aparecer.
+    Un flood sostenido > ~2 min deja de "escalar" (ratio cruza 5 hacia la ventana ~125); el nivel lo
+    sigue marcando `victim_pps`. Víctima fría (sin historia): solo marca el arranque (10 → ~1 en ~20 ventanas).
+- **Campo 14 implementado** en `DdosVictimBoard::publish_window` (escritor único, una vez por ventana).
+  Test caso 11 (`test_ddos_victim_board`, 36 checks): fría = 10; ausente = 0; caliente 5,075 → 5,041 (con α
+  normal sería 3,6); decaimiento tras hueco = 10. **Equivalencia offline ↔ implementación: 0 discrepancias
+  en 3485 eventos (max_diff 0,0005).**
+- **Definición única de la duración de ventana**: `ddos_window_ms()` movida a `ddos_kernel_agg.hpp`
+  (redondeo al ms) y usada por el tablero, que antes truncaba (−1 ms en 74/152 ventanas frente al CSV;
+  causaba 1169 discrepancias de hasta 0,008). Tras el arreglo: 119/119 ventanas iguales.
+
+### Correcciones de días anteriores
+
+- **DAY270 — "el flood son flujos de 1 paquete": FALSO.** Salía de la línea `Packets: N fwd` del
+  ml-detector, que vale 1 en el 100 % de los eventos (13 109/13 109), incluida una subida cuyo flujo tiene
+  1502 paquetes. `flow_packet_count` real del flood: p50 49, p90 161, máx 200. El hallazgo del veto de
+  level1 (medido con la compuerta) sigue en pie; la explicación "unidad de flujo de 1 paquete", no.
+- **DAY282 (inventario)** — "el sniffer tiene por flujo lo necesario para symmetry y amplification": los
+  rasgos de vuelta valen 0 siempre (ver DEBT-SNIFFER-FLOW-UNIDIRECTIONAL-001).
+- **M1 (DAY286)**: en tráfico que termina en el propio defender la captura solo ve la entrada (subida de
+  1500 paquetes: 0 eventos con origen `192.168.100.1:9999`). En tráfico entre otras máquinas sí se ven los
+  dos sentidos.
+
+### Deuda nueva
+
+- **DEBT-SNIFFER-FLOW-UNIDIRECTIONAL-001** (P0 para level1 y las otras cabezas; NO bloquea DDoS). `FlowKey`
+  = 5-tupla del paquete sin normalizar (`ring_consumer.cpp:557` y `:828`), `ShardedFlowManager` busca exacto
+  ⇒ cada sentido es un flujo propio y `dpkts`/`dbytes`/`bwd_*` = 0 siempre. Evidencia en ejecución: Wazuh
+  `.10:45661 ↔ .12:1514` visto como dos flujos con `0 bwd`. Arreglo: clave canónica + 5-tupla del iniciador
+  en `FlowStatistics` + captura de ambos sentidos. Se atiende al trabajar las otras cabezas (Alonso),
+  modificando el proto entonces si hace falta.
+- **DEBT-ML-DETECTOR-PACKET-COUNT-PER-EVENT-001**: `Packets:` del ml-detector y probablemente los rasgos de
+  recuento de level1 (`Subflow Fwd Packets = 1` junto a `ACK Flag Count = 66`) son por evento, no por flujo.
+- **DEBT-SNIFFER-FLOW-PACKET-CAP-200** (sin investigar): `flow_packet_count` máx exacto 200 en el flood.
+  Afecta al dataset.
+- **DEBT-FAST-ALERT-DDOS-SENTINELS-001** (menor): las fast alerts llevan todos los rasgos DDoS a centinela
+  (incluidos 14 y 15) aunque llevan `victim_window`. Revisar al meter la fast alert en la fusión.
+- **DEBT-MAKE-RAG-DEPRECATED-001** (Alonso): quitar `rag-ingester` y `rag-security` de `pipeline-build`, y
+  `rag-security` de `pipeline-start`, cuando sea seguro (comprobar antes dependencias y EMECAS).
+- **DEBT-BUILD-PRODUCTION-O0-COMPONENT-001** (sin investigar): un componente se configura con `-g -O0`
+  dentro de `pipeline-build PROFILE=production`.
+- **DEBT-REPO-SFM-COPIES-TRACKED-001**: `sniffer/src/flow/sharded_flow_manager{.cpp.original,_original,_fix1,_fix2,_fix3}.cpp`
+  trackeados (ensucian `git grep`).
+- **DEBT-REPO-PYCACHE-TRACKED-001**: `protobuf/__pycache__/*.pyc` trackeado.
+- Notas: con `VERBOSE=1` el drenado de 12 000 paquetes tarda ~9 min (~40 líneas/evento sobre vboxsf) →
+  recoger datasets sin VERBOSE. Los eventos `ransomware-features-*` (cada 30 s) no llevan `victim_window`
+  (`absent`): correcto. Homónimo en el proto: `syn_ack_ratio` del mensaje ransomware (L94) es ACK/SYN.
+- **Límite honesto (paper)**: el HTTP flood (capa 7) no lo ve ningún rasgo de flujo; solo en parte `victim_pps`.
