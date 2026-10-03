@@ -26,15 +26,21 @@ import "google/protobuf/duration.proto";
 // 🛡️ LEVEL 2 - DDoS Detection Features (10 features)
 message DDoSFeatures {
     float syn_ack_ratio = 1;
-    float packet_symmetry = 2;
-    float source_ip_dispersion = 3;
-    float protocol_anomaly_score = 4;
+    float packet_symmetry = 2;  // FUERA DEL VECTOR DAY286: la captura no ve el trafico de vuelta
+    float source_ip_dispersion = 3;  // FUERA DEL VECTOR DAY286: hasta pcap multi-origen (H1)
+    float protocol_anomaly_score = 4;  // FUERA DEL VECTOR DAY286: ver 12
     float packet_size_entropy = 5;
-    float traffic_amplification_factor = 6;
+    float traffic_amplification_factor = 6;  // FUERA DEL VECTOR DAY286: la captura no ve el trafico de vuelta
     float flow_completion_rate = 7;
     float geographical_concentration = 8;
-    float traffic_escalation_rate = 9;
-    float resource_saturation_score = 10;
+    float traffic_escalation_rate = 9;  // FUERA DEL VECTOR DAY286: ver 14
+    float resource_saturation_score = 10;  // FUERA DEL VECTOR DAY286: ver 15
+    // DAY286 contrato DDoS v2 (8 rasgos, solo trafico entrante; calculado una vez en el sniffer)
+    float mean_packet_size = 11;  // media de all_lengths del flujo, bytes
+    float reflection_signature = 12;  // UDP desde puerto de servicio conocido a puerto alto. Sustituye a 4
+    float flow_packet_count = 13;  // paquetes del flujo (contexto de packet_size_entropy)
+    float victim_rate_ratio = 14;  // pps victima / max(EWMA previa, suelo). Sustituye a 9
+    float victim_pps = 15;  // d_pkts/window_ms de la ventana del kernel (dst_ip, proto). Sustituye a 10
 }
 
 // 🔐 LEVEL 2 - Ransomware Detection Features (10 features)

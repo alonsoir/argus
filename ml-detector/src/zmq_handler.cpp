@@ -901,6 +901,16 @@ void ZMQHandler::process_event(const std::string& message) {
                           hs_fmt(hs_traffic_c, hs_traffic_p), hs_fmt(hs_internal_c, hs_internal_p),
                           event.threat_category());
         }
+        if (logger_->should_log(spdlog::level::debug)) {  // [DDOS-V2-D286] contrato v2 tal como llega del sniffer (observacion)
+            const auto& dv = event.network_features().ddos_embedded();
+            logger_->debug("[DDOS-V2] event={}, src={}:{}, dst={}:{}, syn_ack={:.3f}, mean_size={:.1f}, refl={:.0f}, entropy={:.3f}, pkts={:.0f}, completion={:.2f}, vratio={:.3f}, vpps={:.1f}",
+                           event.event_id(),
+                           event.network_features().source_ip(), event.network_features().source_port(),
+                           event.network_features().destination_ip(), event.network_features().destination_port(),
+                           dv.syn_ack_ratio(), dv.mean_packet_size(), dv.reflection_signature(),
+                           dv.packet_size_entropy(), dv.flow_packet_count(), dv.flow_completion_rate(),
+                           dv.victim_rate_ratio(), dv.victim_pps());
+        }
         // ADR-012 PHASE 2d — invoke plugins post-inferencia (Consejo DAY 111)
         if (plugin_loader_ != nullptr && plugin_loader_->loaded_count() > 0) {  // [WRITERS-D285] sin plugins: sin serializar
             std::string serialized = event.SerializeAsString();

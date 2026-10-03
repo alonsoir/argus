@@ -34,6 +34,9 @@ void MLDefenderExtractor::extract_ddos_features(
     ddos->set_geographical_concentration(extract_ddos_geographical_concentration(flow));
     ddos->set_traffic_escalation_rate(extract_ddos_traffic_escalation_rate(flow));
     ddos->set_resource_saturation_score(extract_ddos_resource_saturation_score(flow));
+    // [DDOS-V2-D286] contrato v2 (8 rasgos, solo trafico entrante)
+    ddos->set_mean_packet_size(calculate_mean(flow.all_lengths));
+    ddos->set_flow_packet_count(static_cast<float>(flow.get_total_packets()));
 }
 
 float MLDefenderExtractor::extract_ddos_syn_ack_ratio(const FlowStatistics& flow) const {

@@ -4,6 +4,7 @@
 #include <crypto_transport/contexts.hpp>
 #include "ring_consumer.hpp"
 #include "fast_detector.hpp"
+#include "ddos_contract_v2.hpp"  // [DDOS-V2-D286]
 #include <reason_codes.hpp>
 // ADR-013 PHASE 2 — DAY 98
 #include <lz4.h>
@@ -41,6 +42,12 @@ static void init_embedded_sentinels(protobuf::NetworkFeatures* net) {
     ddos->set_geographical_concentration(MISSING_FEATURE_SENTINEL);
     ddos->set_traffic_escalation_rate(MISSING_FEATURE_SENTINEL);
     ddos->set_resource_saturation_score(MISSING_FEATURE_SENTINEL);
+    // [DDOS-V2-D286] centinelas del contrato v2
+    ddos->set_mean_packet_size(MISSING_FEATURE_SENTINEL);
+    ddos->set_reflection_signature(MISSING_FEATURE_SENTINEL);
+    ddos->set_flow_packet_count(MISSING_FEATURE_SENTINEL);
+    ddos->set_victim_rate_ratio(MISSING_FEATURE_SENTINEL);
+    ddos->set_victim_pps(MISSING_FEATURE_SENTINEL);
     auto* ransom = net->mutable_ransomware_embedded();
     ransom->set_io_intensity(MISSING_FEATURE_SENTINEL);
     ransom->set_entropy(MISSING_FEATURE_SENTINEL);
@@ -842,6 +849,9 @@ void RingBufferConsumer::populate_protobuf_event(const SimpleEvent& event,
     		ml_extractor_.set_aggregator(ransomware_processor_->get_aggregator());
 		}
 		ml_extractor_.populate_ml_defender_features(flow_stats, proto_event);
+		// [DDOS-V2-D286] reflection_signature: depende de la tupla del paquete, no de FlowStatistics
+		proto_event.mutable_network_features()->mutable_ddos_embedded()->set_reflection_signature(
+		    ::argus::ddos::reflection_signature(event.protocol, event.src_port, event.dst_port));
 
         // Optional: Log feature extraction if verbosity enabled
         if (g_verbosity >= FeatureLogger::VerbosityLevel::GROUPED) {
@@ -1261,6 +1271,10 @@ void RingBufferConsumer::stamp_victim_window(protobuf::NetworkSecurityEvent& ev,
     vw->set_window_ms(r.window_ms);
     vw->set_window_seq(r.seq);
     vw->set_snapshot_age_ms(r.age_ms);
+    if (r.window_ms > 0) {  // [DDOS-V2-D286] victim_pps; la ventana de arranque deja el centinela
+        ev.mutable_network_features()->mutable_ddos_embedded()->set_victim_pps(
+            ::argus::ddos::victim_pps(r.d_pkts, r.window_ms));
+    }
 }
 
 void RingBufferConsumer::send_fast_alert(const SimpleEvent& event) {

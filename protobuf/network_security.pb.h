@@ -655,6 +655,11 @@ class DDoSFeatures final :
     kGeographicalConcentrationFieldNumber = 8,
     kTrafficEscalationRateFieldNumber = 9,
     kResourceSaturationScoreFieldNumber = 10,
+    kMeanPacketSizeFieldNumber = 11,
+    kReflectionSignatureFieldNumber = 12,
+    kFlowPacketCountFieldNumber = 13,
+    kVictimRateRatioFieldNumber = 14,
+    kVictimPpsFieldNumber = 15,
   };
   // float syn_ack_ratio = 1;
   void clear_syn_ack_ratio();
@@ -746,6 +751,51 @@ class DDoSFeatures final :
   void _internal_set_resource_saturation_score(float value);
   public:
 
+  // float mean_packet_size = 11;
+  void clear_mean_packet_size();
+  float mean_packet_size() const;
+  void set_mean_packet_size(float value);
+  private:
+  float _internal_mean_packet_size() const;
+  void _internal_set_mean_packet_size(float value);
+  public:
+
+  // float reflection_signature = 12;
+  void clear_reflection_signature();
+  float reflection_signature() const;
+  void set_reflection_signature(float value);
+  private:
+  float _internal_reflection_signature() const;
+  void _internal_set_reflection_signature(float value);
+  public:
+
+  // float flow_packet_count = 13;
+  void clear_flow_packet_count();
+  float flow_packet_count() const;
+  void set_flow_packet_count(float value);
+  private:
+  float _internal_flow_packet_count() const;
+  void _internal_set_flow_packet_count(float value);
+  public:
+
+  // float victim_rate_ratio = 14;
+  void clear_victim_rate_ratio();
+  float victim_rate_ratio() const;
+  void set_victim_rate_ratio(float value);
+  private:
+  float _internal_victim_rate_ratio() const;
+  void _internal_set_victim_rate_ratio(float value);
+  public:
+
+  // float victim_pps = 15;
+  void clear_victim_pps();
+  float victim_pps() const;
+  void set_victim_pps(float value);
+  private:
+  float _internal_victim_pps() const;
+  void _internal_set_victim_pps(float value);
+  public:
+
   // @@protoc_insertion_point(class_scope:protobuf.DDoSFeatures)
  private:
   class _Internal;
@@ -764,6 +814,11 @@ class DDoSFeatures final :
     float geographical_concentration_;
     float traffic_escalation_rate_;
     float resource_saturation_score_;
+    float mean_packet_size_;
+    float reflection_signature_;
+    float flow_packet_count_;
+    float victim_rate_ratio_;
+    float victim_pps_;
     mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
   };
   union { Impl_ _impl_; };
@@ -10600,6 +10655,106 @@ inline void DDoSFeatures::_internal_set_resource_saturation_score(float value) {
 inline void DDoSFeatures::set_resource_saturation_score(float value) {
   _internal_set_resource_saturation_score(value);
   // @@protoc_insertion_point(field_set:protobuf.DDoSFeatures.resource_saturation_score)
+}
+
+// float mean_packet_size = 11;
+inline void DDoSFeatures::clear_mean_packet_size() {
+  _impl_.mean_packet_size_ = 0;
+}
+inline float DDoSFeatures::_internal_mean_packet_size() const {
+  return _impl_.mean_packet_size_;
+}
+inline float DDoSFeatures::mean_packet_size() const {
+  // @@protoc_insertion_point(field_get:protobuf.DDoSFeatures.mean_packet_size)
+  return _internal_mean_packet_size();
+}
+inline void DDoSFeatures::_internal_set_mean_packet_size(float value) {
+  
+  _impl_.mean_packet_size_ = value;
+}
+inline void DDoSFeatures::set_mean_packet_size(float value) {
+  _internal_set_mean_packet_size(value);
+  // @@protoc_insertion_point(field_set:protobuf.DDoSFeatures.mean_packet_size)
+}
+
+// float reflection_signature = 12;
+inline void DDoSFeatures::clear_reflection_signature() {
+  _impl_.reflection_signature_ = 0;
+}
+inline float DDoSFeatures::_internal_reflection_signature() const {
+  return _impl_.reflection_signature_;
+}
+inline float DDoSFeatures::reflection_signature() const {
+  // @@protoc_insertion_point(field_get:protobuf.DDoSFeatures.reflection_signature)
+  return _internal_reflection_signature();
+}
+inline void DDoSFeatures::_internal_set_reflection_signature(float value) {
+  
+  _impl_.reflection_signature_ = value;
+}
+inline void DDoSFeatures::set_reflection_signature(float value) {
+  _internal_set_reflection_signature(value);
+  // @@protoc_insertion_point(field_set:protobuf.DDoSFeatures.reflection_signature)
+}
+
+// float flow_packet_count = 13;
+inline void DDoSFeatures::clear_flow_packet_count() {
+  _impl_.flow_packet_count_ = 0;
+}
+inline float DDoSFeatures::_internal_flow_packet_count() const {
+  return _impl_.flow_packet_count_;
+}
+inline float DDoSFeatures::flow_packet_count() const {
+  // @@protoc_insertion_point(field_get:protobuf.DDoSFeatures.flow_packet_count)
+  return _internal_flow_packet_count();
+}
+inline void DDoSFeatures::_internal_set_flow_packet_count(float value) {
+  
+  _impl_.flow_packet_count_ = value;
+}
+inline void DDoSFeatures::set_flow_packet_count(float value) {
+  _internal_set_flow_packet_count(value);
+  // @@protoc_insertion_point(field_set:protobuf.DDoSFeatures.flow_packet_count)
+}
+
+// float victim_rate_ratio = 14;
+inline void DDoSFeatures::clear_victim_rate_ratio() {
+  _impl_.victim_rate_ratio_ = 0;
+}
+inline float DDoSFeatures::_internal_victim_rate_ratio() const {
+  return _impl_.victim_rate_ratio_;
+}
+inline float DDoSFeatures::victim_rate_ratio() const {
+  // @@protoc_insertion_point(field_get:protobuf.DDoSFeatures.victim_rate_ratio)
+  return _internal_victim_rate_ratio();
+}
+inline void DDoSFeatures::_internal_set_victim_rate_ratio(float value) {
+  
+  _impl_.victim_rate_ratio_ = value;
+}
+inline void DDoSFeatures::set_victim_rate_ratio(float value) {
+  _internal_set_victim_rate_ratio(value);
+  // @@protoc_insertion_point(field_set:protobuf.DDoSFeatures.victim_rate_ratio)
+}
+
+// float victim_pps = 15;
+inline void DDoSFeatures::clear_victim_pps() {
+  _impl_.victim_pps_ = 0;
+}
+inline float DDoSFeatures::_internal_victim_pps() const {
+  return _impl_.victim_pps_;
+}
+inline float DDoSFeatures::victim_pps() const {
+  // @@protoc_insertion_point(field_get:protobuf.DDoSFeatures.victim_pps)
+  return _internal_victim_pps();
+}
+inline void DDoSFeatures::_internal_set_victim_pps(float value) {
+  
+  _impl_.victim_pps_ = value;
+}
+inline void DDoSFeatures::set_victim_pps(float value) {
+  _internal_set_victim_pps(value);
+  // @@protoc_insertion_point(field_set:protobuf.DDoSFeatures.victim_pps)
 }
 
 // -------------------------------------------------------------------
