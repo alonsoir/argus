@@ -121,6 +121,9 @@ static int packet_callback(void* ctx, void* data, size_t size) {
     size_t ip_hdr_len = static_cast<size_t>(iph->ip_hl) * 4;
     // H-3 hardening: ip_hl < 5 (header IP < 20B) es malformado; no calcular offset con el.
     if (ip_hdr_len < sizeof(struct ip)) return 0;
+    // [IP-FRAG-D287] Fragmento no-primero (offset != 0): no lleva cabecera L4. No se emite
+    // evento, mismo criterio que el XDP (antes se leian bytes de la carga como puertos).
+    if ((ntohs(iph->ip_off) & IP_OFFMASK) != 0) return 0;
     size_t transport_offset = sizeof(struct ether_header) + ip_hdr_len;
 
     if (iph->ip_p == IPPROTO_TCP &&
