@@ -6831,3 +6831,64 @@ Patchers en `scripts/d285_patch_*.py` (atómicos, idempotentes, `--check`).
   recoger datasets sin VERBOSE. Los eventos `ransomware-features-*` (cada 30 s) no llevan `victim_window`
   (`absent`): correcto. Homónimo en el proto: `syn_ack_ratio` del mensaje ransomware (L94) es ACK/SYN.
 - **Límite honesto (paper)**: el HTTP flood (capa 7) no lo ve ningún rasgo de flujo; solo en parte `victim_pps`.
+
+# BACKLOG — sección DAY287
+
+Formato: ID / estado / descripción medida / qué desbloquea.
+
+## CERRADAS en DAY287
+
+### DEBT-SNIFFER-IP-FRAGMENT — CERRADA (commit c60c25ba)
+El sniffer no trataba los fragmentos IPv4 no-primeros: parseaba bytes de la carga como puertos
+TCP/UDP y generaba flujos fantasma. Medido en el bloque B de CICDDoS2019 (UDP ~4 KB fragmentado,
+5000 tramas): de 4990 filas UDP, 3144 (63 %) eran basura.
+Arreglo:
+- Kernel (`sniffer/src/kernel/sniffer.bpf.c`): offset de fragmento (`(ip[6] & 0x1F) << 8 | ip[7]`)
+  != 0 → se cuenta en `ddos_victims` (antes del reserve) pero no se parsean puertos ni se envía al
+  ring. Contador nuevo `STAT_FRAG_SKIPPED` (stats[3]); `STAT_MAX` 3 → 4. Identidad de contabilidad
+  ahora: `suma(ddos_victims) = stats[0] + stats[1] + stats[2] + stats[3]`.
+- Variant B (`sniffer/src/userspace/main_libpcap.cpp`): `(ntohs(iph->ip_off) & IP_OFFMASK) != 0`
+  → `return 0` (no emite evento), mismo criterio que el XDP.
+- `snap_delta.py`: lee stats[3] y lo incluye en la identidad.
+  Verificado: bloque B pasa de 4990 a 1770 filas reales; stats[3]=3224; victim_pps 82,5 → 97,9.
+
+### Punto 2 del plan (dataset por el mismo código) — CERRADO (commit c7293346 + DAY287)
+Escritor de dataset DDoS v2 de laboratorio en el ml-detector (ver prompt de continuidad 1.1).
+Cinco familias de ataque recogidas y etiquetadas por construcción + benigno del lab.
+
+## ABIERTAS nuevas de DAY287
+
+### DEBT-STOP-FLUSHES-TAIL — nueva, P3
+`make pipeline-stop` mata el ml-detector sin correr destructores. Consecuencia medida: el bronce
+`correlation_v1` pierde las últimas filas de su búfer (24 en una corrida de 5000) y deja el último
+segmento en `.tmp` sin el rename atómico. El escritor de dataset v2 ya mitigó su lado con flush por
+fila. No bloquea DDoS. Arreglo futuro: handler de señal que haga flush+finalize en los writers, o un
+`pipeline-stop` graceful.
+
+### DEBT-DATASET-NTP-OVERSAMPLE — nueva, para el punto 3
+La corrida NTP generó 696877 filas (64504 flujos reales). Al consolidar el dataset hay que
+submuestrear por familia o NTP aplastará al resto. No es un bug: son muchas observaciones por flujo a
+lo largo del tiempo (el sniffer emite una fila por paquete).
+
+### DEBT-NPING-NO-FIXED-COUNT — nueva, para el punto 3
+`nping` 0.7.93 no respeta `-c N` (envía hasta Ctrl-C) y no varía el puerto origen en una ejecución.
+Para corridas reproducibles de tamaño fijo, generar los ataques como pcap (como el SYN flood) y
+reproducir con `tcpreplay --limit N`. Pendiente: `gen_reflection.py` análogo a `gen_syn_flood.py`.
+
+### Realismo de CICDDoS2019 (anotación para el paper, no es deuda de código)
+- Solo está el día de entrenamiento (01-12); falta el día de test (11-03). Solo 2 familias de ataque
+  disponibles (UDP 440 y UDP frag), ambas volumétricas. No hay SYN, UDP-lag ni reflexión con puerto
+  real en lo descargado.
+- El tráfico de ataque de CIC no lleva el puerto de servicio como origen → `reflection_signature`
+  nunca se dispara con CIC. Las reflexiones reales (NTP/DNS) sí. Esto justifica generar ataques en el
+  lab para cubrir lo que CIC no trae.
+
+## HEREDADAS que siguen abiertas (contexto)
+- DEBT-FIREWALL-GATES-ON-LEVEL1-001 (P0): el firewall debe obedecer `final_decision`, no level1.
+  Va después de cerrar la cabeza DDoS.
+- DEBT-SNIFFER-FLOW-UNIDIRECTIONAL-001: la clave de flujo sin normalizar parte cada sentido en dos
+  flujos (bwd=0). Backlog; no bloquea DDoS.
+- DEBT-SNIFFER-FLOW-PACKET-CAP-200: tope de 200 paquetes por flujo. No afecta a las familias de hoy
+  (flujos cortos), pero hay que tenerlo presente para floods de flujo largo.
+- Pérdida del ring a 1000 pps (DAY270/274): el consumer pierde ~86 % de un flood a 1000 pps. El
+  contador del kernel no pierde. Dimensionado sniffer↔ml-detector: backlog, tras las cabezas.
