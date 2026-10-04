@@ -322,6 +322,12 @@ struct DetectorConfig {
         int rotation_seconds;
     } correlation_writer;
 
+    // [DDOS-DATASET-D287] dataset DDoS v2 de laboratorio (CSV plano); apagado por defecto
+    struct {
+        bool enabled = false;
+        std::string base_dir;
+    } ddos_dataset_writer;
+
     // Scoring thresholds (dual-score architecture)
     struct {
         float divergence_warn_threshold;   // score_divergence > X → DIVERGENCE source

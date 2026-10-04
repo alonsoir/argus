@@ -415,6 +415,11 @@
     "base_dir": "/vagrant/logs/correlation",
     "rotation_seconds": 30
   },
+  "ddos_dataset_writer": {
+    "_comment": "[DDOS-DATASET-D287] Dataset DDoS v2 de laboratorio (CSV plano, un fichero por arranque). Integridad: sha256 en el manifiesto del entrenamiento.",
+    "enabled": false,
+    "base_dir": "/vagrant/logs/lab/ddos_dataset"
+  },
   "scoring": {
     "divergence_warn_threshold": 0.3,
     "divergence_high_threshold": 0.4,

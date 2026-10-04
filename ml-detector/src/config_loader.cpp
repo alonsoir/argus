@@ -477,6 +477,13 @@ DetectorConfig ConfigLoader::load() {
         config.correlation_writer.rotation_seconds = get_required<int>(corr, "rotation_seconds", "correlation_writer");
     }
 
+    // [DDOS-DATASET-D287] opcional: sin bloque en el JSON queda apagado
+    if (json_.contains("ddos_dataset_writer")) {
+        const auto& dd = json_["ddos_dataset_writer"];
+        config.ddos_dataset_writer.enabled  = dd.value("enabled", false);
+        config.ddos_dataset_writer.base_dir = dd.value("base_dir", std::string("/vagrant/logs/lab/ddos_dataset"));
+    }
+
     // ========================================
     // Scoring thresholds (Day 66)
     // ========================================

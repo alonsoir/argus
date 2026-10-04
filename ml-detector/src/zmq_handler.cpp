@@ -167,6 +167,17 @@ ZMQHandler::ZMQHandler(
         }
     }
 
+    // [DDOS-DATASET-D287] dataset DDoS v2 de laboratorio; no depende de la clave HMAC
+    if (config_.ddos_dataset_writer.enabled) {
+        try {
+            ddos_dataset_writer_ = std::make_unique<ml_defender::DdosDatasetWriter>(config_.ddos_dataset_writer.base_dir);
+            logger_->info("✅ DdosDatasetWriter initialized ({})", ddos_dataset_writer_->path());
+        } catch (const std::exception& e) {
+            logger_->error("❌ Failed to initialize DdosDatasetWriter: {}", e.what());
+            ddos_dataset_writer_.reset();
+        }
+    }
+
     // =========================================================================
     // RAG Logger — opcional, su fallo no afecta al CSV
     // =========================================================================
@@ -900,6 +911,9 @@ void ZMQHandler::process_event(const std::string& message) {
                           hs_fmt(hs_ddos_c, hs_ddos_p), hs_fmt(hs_ransom_c, hs_ransom_p),
                           hs_fmt(hs_traffic_c, hs_traffic_p), hs_fmt(hs_internal_c, hs_internal_p),
                           event.threat_category());
+        }
+        if (ddos_dataset_writer_) {  // [DDOS-DATASET-D287] cada evento una vez, sin depender de VERBOSE
+            ddos_dataset_writer_->write(event, hs_ddos_c, hs_ddos_p);
         }
         if (logger_->should_log(spdlog::level::debug)) {  // [DDOS-V2-D286] contrato v2 tal como llega del sniffer (observacion)
             const auto& dv = event.network_features().ddos_embedded();
