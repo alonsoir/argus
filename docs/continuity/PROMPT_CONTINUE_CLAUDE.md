@@ -137,3 +137,38 @@ principio solo DDoS). Luego, actualización del paper.
      cambia filas por flujo y momento de cada foto; cablear antes reabriría el skew train/serve de
      DAY255.
    - NO se cambia: cablear el modelo (pasos 4-5) y el anillo vuelve al BACKLOG.
+
+### 4.1 Primer punto de la consolidación: benigno con reflection_signature=1
+Antes de entrenar, contar las filas de AMBIENTE (no .50→.1, kind=0, con rasgos) con
+`reflection_signature = 1` (respuestas DNS/NTP legítimas que recibe el propio defender).
+Predicción a escribir antes de medir. Si hay suficientes, sirven de benigno con refl=1. Si no hay,
+el modelo aprenderá "refl=1 ⇒ ataque" y hay que generar respuestas DNS/NTP legítimas (pcap del lado
+entrante) ANTES de dar el entrenamiento por bueno.
+
+### 4.2 Rendimiento del consumidor del anillo (requisito para validar a tasas reales)
+Pista medida DAY288: a 100 pps el sniffer consume ~1 núcleo (hasta 112 %) ≈ 10 ms de CPU por
+paquete; un ringbuf eBPF soporta millones de eventos/s. Hipótesis: el cuello es el trabajo por
+evento del consumidor (protobuf + >100 rasgos + ddos_embedded + ZMQ, una vez por paquete), no el
+anillo.
+- Paso 0 (medida barata): contador de `bpf_ringbuf_reserve` fallidos en el mapa `stats` (hoy no
+  instrumentado) + `perf record -g` del sniffer durante una corrida a 100 pps.
+- Palancas (por impacto esperado): (1) emitir por flujo y no por paquete (al nacer, cada N
+  paquetes o T ms, al cerrar; = DEBT-ML-DETECTOR-EVENT-PER-PACKET-001 desde el sniffer);
+  (2) contadores por flujo en el kernel, como ddos_victims; (3) consumidor desacoplado: hilo que
+  vacía el anillo a cola sin bloqueos + hilos de construcción + envío por lotes; (4) degradación
+  con muestreo bajo presión, contadores del kernel exactos y aviso en log; (5) XDP nativo frente a
+  genérico (depende del hardware).
+- Orden: paso 0 → palanca 1 → solo si no basta, 2 y 3. Cuándo: ver §4.4.
+
+### 4.3 Hoja de ruta de familias DDoS (después del primer entrenamiento)
+- Volumétricas L3/L4 (floods UDP/SYN/ACK/RST/ICMP, reflexiones, multi-origen, pulsos): un solo
+  modelo, preferiblemente multiclase. Generadores de pcap ampliables; el sniffer solo ve el
+  entrante, así que un pcap del lado cliente (incluida una avalancha legítima de miles de clientes)
+  es realista para él.
+- Otra unidad de observación ⇒ otras cabezas, no la DDoS: ataques lentos (estado de conexión),
+  repartidos entre muchas víctimas (agregar por /24), capa de aplicación (peticiones).
+- Predicción para el primer entrenamiento: con un modelo binario único, recall alto y parejo en las
+  5 familias volumétricas. Si una queda claramente por debajo o el multiclase la confunde con el
+  benigno, es evidencia para separarla.
+- Muro: tasas >100 pps bloqueadas por el consumidor del anillo (§4.2). Un bosque no extrapola: por
+  encima de 100 pps el comportamiento del modelo está sin definir.

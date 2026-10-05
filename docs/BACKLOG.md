@@ -6936,4 +6936,14 @@ reproducir con `tcpreplay --limit N`. Pendiente: `gen_reflection.py` análogo a 
 - Firma del bloque A de CICDDoS2019: `flow_pkts` medio ≈ 51 (66 flujos en 3000 tramas), no "~2".
 - Bloque B: `mean_size` ≈ 1457,6 sobre el tramo inicial del pcap.
 - Hipótesis "tope de ~200 paquetes por flujo" REFUTADA (benign_2: flow_pkts hasta 603; benign_20:
-  hasta 2948).
+  hasta 2948).- **DEBT-SNIFFER-RING-CONSUMER-THROUGHPUT** — A 100 pps el sniffer consume ~1 núcleo (~10 ms de CPU
+  por paquete); por encima de ~100 pps el ring pierde eventos (DAY270/274). Requisito para validar
+  la cabeza DDoS a tasas reales. Paso 0: contador de `reserve` fallidos + `perf record` del sniffer
+  a 100 pps. Palancas: eventos por flujo y no por paquete, contadores por flujo en el kernel,
+  consumidor desacoplado con envío por lotes, muestreo bajo presión, XDP nativo. Orden acordado:
+  después del primer entrenamiento y ANTES de cablear (prompt DAY289 §4.4).
+- **Dataset: benigno con reflection_signature=1** — Comprobar en la consolidación si el ambiente
+  trae respuestas DNS/NTP legítimas; si no, generarlas antes de dar el entrenamiento por bueno.
+- **Cobertura del dataset DDoS** — Faltan: tasas reales (>100 pps), avalancha legítima, UDP
+  legítimo de volumen, multi-origen, floods ACK/RST/ICMP, pulsos. Ataques lentos, repartidos y de
+  capa de aplicación van a cabezas propias (otra unidad de observación).
