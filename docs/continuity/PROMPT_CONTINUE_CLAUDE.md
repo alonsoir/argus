@@ -126,3 +126,14 @@ principio solo DDoS). Luego, actualización del paper.
 - Receptor/emisor TCP benigno: `scripts/d281_tcp_sink.py`, `scripts/d281_tcp_upload.py`.
 - Evidencia (NO trackear): `/vagrant/logs/lab/day288/` (runs*.tsv, medida_*, vmstat_*, top_*,
   tcpreplay_*, sink.txt) y `/vagrant/logs/lab/ddos_dataset/`.
+### 4.4 ORDEN ACORDADO (Alonso, cierre DAY288)
+1. DAY289: consolidar + PRIMER entrenamiento (pregunta: ¿separa el contrato v2 las familias donde el
+   bosque viejo fallaba?). Vale con cualquier modelo de emisión.
+2. Justo después: paso 0 del anillo (§4.2): contador de `reserve` fallidos + `perf` del sniffer a
+   100 pps. Sin tocar comportamiento.
+3. Decidir con esos datos si se cambia la emisión (por flujo en vez de por paquete):
+   - SI se cambia: regenerar las 19 corridas con el mismo protocolo (pcaps reproducibles +
+     scripts day288_*, ~2 h mecánicas) y reentrenar ANTES de cablear. Motivo: cambiar la emisión
+     cambia filas por flujo y momento de cada foto; cablear antes reabriría el skew train/serve de
+     DAY255.
+   - NO se cambia: cablear el modelo (pasos 4-5) y el anillo vuelve al BACKLOG.
