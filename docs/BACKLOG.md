@@ -6892,3 +6892,48 @@ reproducir con `tcpreplay --limit N`. Pendiente: `gen_reflection.py` análogo a 
   (flujos cortos), pero hay que tenerlo presente para floods de flujo largo.
 - Pérdida del ring a 1000 pps (DAY270/274): el consumer pierde ~86 % de un flood a 1000 pps. El
   contador del kernel no pierde. Dimensionado sniffer↔ml-detector: backlog, tras las cabezas.
+
+## DAY288 — dataset DDoS v2 (corridas reproducibles)
+
+### Cerradas
+- **nping para el dataset** (abierta DAY287) → CERRADA. Sustituido por pcaps generados
+  (`scripts/dataset_lab/gen_syn_flood.py`, `gen_reflection.py`, seed 42, sha256 verificado) y
+  `tcpreplay --limit`.
+- **Sobremuestreo NTP** (abierta DAY287) → CERRADA. Las corridas nping no entran en el dataset; cada
+  corrida nueva tiene 3000 paquetes fijos.
+
+### Nuevas
+- **DEBT-SNIFFER-FLOW-STATE-MISSING** — En la corrida nping NTP de DAY287 (86251 flujos), 2833
+  eventos `kind=0` salieron con los rasgos de flujo a centinela y los de víctima vivos, concentrados
+  en un episodio transitorio (deciles 6–7, 0 en el 8). Ante una reflexión masiva real la cabeza
+  recibiría centinelas. Reproducir con un pcap de reflexión de muchos flujos y medir la causa
+  (¿tope de la tabla de flujos?). Mientras tanto, la consolidación excluye `syn_ack_ratio <= -9000`.
+- **DEBT-LAB-VM-STALL** — Episodios de parón en el defender: sondeos del lector de hasta 16 s y
+  paquetes entregados en ráfaga (434 en 981 ms durante una corrida a 30 pps). Causa sin medir (VM
+  casi ociosa; `st` de VirtualBox no fiable). Mitigado con compuerta de estabilidad + QA por corrida
+  y vmstat/top en cada corrida.
+- **DEBT-ML-DETECTOR-CPU-PER-EVENT** — A 100 pps UDP (~200 ev/s, FORCE_ALL_HEADS): ml-detector
+  ~320 % CPU (~16 ms/evento), sniffer hasta ~110 %, firewall-acl-agent 30–50 % sin bloquear nada.
+  Entra en el dimensionado por modo de despliegue (decisión DAY284).
+- **DEBT-VICTIM-EWMA-COLD-KEY** — Con clave de víctima fría (<30 ventanas vistas) el EWMA usa α
+  rápido y un ataque sostenido se normaliza: el ratio cae a ~1 en ~10–20 ventanas. Punto ciego ante
+  ataques a víctimas/protocolos sin historia.
+- **DEBT-VICTIM-EWMA-HOT-LEGIT** (medido, acotado) — Clave caliente + carga legítima nueva y alta:
+  `victim_rate_ratio` ≥5 durante ≈134 ventanas (≈2,2 min) y luego se autocorrige; independiente de
+  la carga si la línea base previa ≪ carga. No es permanente. Decidir si 2,2 min es aceptable cuando
+  el firewall obedezca a la fusión.
+- **victim_rate_ratio redundante bajo el suelo** — Si la línea base está por debajo de 10 pps, el
+  ratio es `victim_pps/10` exacto (medido en SYN caliente). Vigilar en las importancias.
+- **Fast alert dependiente de historia y familia** — ~1 por flujo nuevo en reflexión UDP; SYN: 2–5
+  (frío) frente a 80 (caliente). Tenerlo en cuenta al diseñar su peso en la fusión (punto 4).
+- **DEBT-DATASET-CLOCKS** — `ts_ns` del dataset es reloj monotónico y `ts_ms` de
+  `ddos_windows.csv` es epoch: no se alinean directamente. Añadir una columna de epoch al escritor o
+  un reloj común.
+- **QA de corridas a baja tasa** — La banda de pps [0,5R, 1,5R] no sirve a 2 pps (se cuelan ventanas
+  de ambiente). Para benignos de baja tasa, aceptar por `max_window_ms` ≤ 1500.
+
+### Correcciones a notas anteriores
+- Firma del bloque A de CICDDoS2019: `flow_pkts` medio ≈ 51 (66 flujos en 3000 tramas), no "~2".
+- Bloque B: `mean_size` ≈ 1457,6 sobre el tramo inicial del pcap.
+- Hipótesis "tope de ~200 paquetes por flujo" REFUTADA (benign_2: flow_pkts hasta 603; benign_20:
+  hasta 2948).
