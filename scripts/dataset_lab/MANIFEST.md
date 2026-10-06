@@ -21,3 +21,17 @@ Limitación (paper): toda la reflexión viene de un único origen (.50); en la r
 de miles de reflectores. No afecta al contrato v2 (source_ip_dispersion fuera del vector).
 NTP y DNS comparten semilla y por tanto la secuencia de puertos destino; cada corrida va
 en su propio arranque del pipeline.
+
+## DAY289 — contraste benigno de reflexión (respuestas DNS/NTP legítimas hacia .1)
+
+Mismo origen (.50) y topología que el ataque, para que solo cambien tamaño y tasa:
+
+    python3 /vagrant/scripts/dataset_lab/gen_benign_dns_ntp.py small 5000 /vagrant/datasets/lab/benign_dns_ntp_small_5k_lab.pcap
+    python3 /vagrant/scripts/dataset_lab/gen_benign_dns_ntp.py large 5000 /vagrant/datasets/lab/benign_dns_large_5k_lab.pcap
+
+| pcap | paquetes | trama | firma | sha256 |
+|------|----------|-------|-------|--------|
+| benign_dns_ntp_small_5k_lab.pcap | 5000 | 80–250 B (media 151,9) | 80 % UDP sport 53 + 20 % sport 123 (90 B) -> dport aleatorio | dbf6adebf1d4e0d4c1750a94815b75a5086ad39db5dc75557eae21a9bf79b365 |
+| benign_dns_large_5k_lab.pcap | 5000 | 1200–1442 B (media 1320,7) | UDP sport 53 (DNSSEC/TXT legítimos) -> dport aleatorio | be45b9e75743a974b708c026dbca2bec0361f71969d2b62d246976bda5f861f3 |
+
+Regenerados a /tmp DAY289: sha256 idéntico en los dos.

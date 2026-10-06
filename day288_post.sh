@@ -5,6 +5,7 @@
 set -eu
 export LC_ALL=C
 FAM=${1:?familia}; R=${2:?tasa}; P=${3:?proto}
+REG=${REG:-runs}  # DAY289: registro (runs | contraste)
 TAG=${FAM}_${R}
 D=/vagrant/logs/lab/day288
 W=/vagrant/logs/lab/ddos_windows.csv
@@ -23,9 +24,9 @@ read A B < <(tail -n +"$((M+1))" "$W" | awk -F',' -v P="$P" -v R="$R" '
 PREV=$(awk -F',' -v a="$T0" -v b="$A" -v P="$P" 'NR>1 && ($4=="192.168.100.1" || $4=="3232261121" || $4=="23374016") && $5==P && $2/1000>=a && $2/1000<b {n++} END{print n+0}' "$W")
 echo "arranque=$(date -u -d @"$T0" +%T) ataque_desde=$(date -u -d @"$A" +%T) ataque_hasta=$(date -u -d @"$B" +%T) ventanas_previas=$PREV $( [ "$PREV" -lt 30 ] && echo FRIO || echo CALIENTE )"
 case "$QA" in
-  *ACEPTADA) if [ "$PREV" -lt 30 ]; then printf '%s\t%s\t%s\t%s\n' "$FAM" "$R" "$F" "$PREV" >> "$D/runs.tsv"
-             else printf '%s\t%s\t%s\t%s\n' "$FAM" "$R" "$F" "$PREV" >> "$D/runs_caliente.tsv"; fi ;;
-  *)         printf '%s\t%s\t%s\t%s\tRECHAZADA\n' "$FAM" "$R" "$F" "$PREV" >> "$D/runs_descartadas.tsv" ;;
+  *ACEPTADA) if [ "$PREV" -lt 30 ]; then printf '%s\t%s\t%s\t%s\n' "$FAM" "$R" "$F" "$PREV" >> "$D/${REG}.tsv"
+             else printf '%s\t%s\t%s\t%s\n' "$FAM" "$R" "$F" "$PREV" >> "$D/${REG}_caliente.tsv"; fi ;;
+  *)         printf '%s\t%s\t%s\t%s\tRECHAZADA\n' "$FAM" "$R" "$F" "$PREV" >> "$D/${REG}_descartadas.tsv" ;;
 esac
 awk 'NR>2 && ($17+0>=20 || $13+$14>=80 || $16+0>=20) {n++; if (a=="") a=$19; b=$19}
      END {printf "segundos_con_carga_vmstat=%d primero=%s ultimo=%s\n", n+0, a, b}' "$D/vmstat_${TAG}.txt"
