@@ -6947,3 +6947,69 @@ reproducir con `tcpreplay --limit N`. Pendiente: `gen_reflection.py` análogo a 
 - **Cobertura del dataset DDoS** — Faltan: tasas reales (>100 pps), avalancha legítima, UDP
   legítimo de volumen, multi-origen, floods ACK/RST/ICMP, pulsos. Ataques lentos, repartidos y de
   capa de aplicación van a cabezas propias (otra unidad de observación).
+
+## 🆕 Entradas DAY 289
+
+### DEBT-SNIFFER-WINDOW-AGG-INCREMENTAL-001
+**Severidad:** 🟡 P1 (rendimiento) — **Estado:** ABIERTO DAY289
+`TimeWindowAggregator::get_window_stats` recorre todo `events_` e inserta IPs y puertos en
+`unordered_set` locales: O(eventos en ventana) por llamada. Tras [WINSTATS-CACHE-D289] se llama una
+vez por evento, pero con el búfer al tope (10 000) sigue siendo el mayor coste en espacio de usuario a
+1000 pps. Propuesta: agregador incremental (contadores por IP/puerto con alta y caducidad), O(1) por
+evento. Estimación DAY289: ~2× (~600 ev/s). Medir con `day289_anillo_medir.sh`.
+
+### DEBT-ML-DETECTOR-EVENT-PER-PACKET-001 (actualización DAY289)
+Pasa a EN CURSO como emisión por flujo desde el sniffer (palanca 1 de §4.2). Medido DAY289: techo del
+consumidor ~305 ev/s tras la caché de ventana; un flood realista no cabe emitiendo por paquete.
+
+### DEBT-SOURCE-IP-DISPERSION-KEYED-001
+**Severidad:** 🟢 P2 — **Estado:** ABIERTO DAY289 (decisión de Alonso: se sigue calculando)
+Hoy cuenta IPs distintas (origen y destino) de TODO el tráfico de 30 s, sin víctima ni dirección. Lo
+leen la columna 78 de `csv_event_writer` y, vía extractor propio del ml-detector, el bosque viejo.
+Redefinir con clave al trabajar cada cabeza: abanico de entrada por víctima (DDoS distribuido; posible
+HyperLogLog por víctima en eBPF) y abanico de salida por origen (escaneo, lateral, ransomware).
+
+### DEBT-SNIFFER-TOLOWER-PER-EVENT-001
+**Severidad:** 🟢 P2 — **Estado:** ABIERTO DAY289
+`tolower` ~4 % del perfil a 100 y 1000 pps en un hilo del sniffer distinto del consumidor: trabajo de
+cadenas por evento. Localizar el llamador y quitarlo del camino caliente.
+
+### DEBT-VAGRANT-PERF-TOOL-001
+**Severidad:** 🟢 P3 — **Estado:** ABIERTO DAY289
+`linux-perf` instalado a mano en el defender. Si se queda como herramienta de medida, al
+Vagrantfile. Notas: en perf 6.1 la clave por hilo es `--sort pid`; las pilas DWARF no se resuelven
+(revisar símbolos de depuración o frame pointers en el perfil de medida).
+
+### DEBT-DATASET-LAB-GENERATORS-SHARED-001
+**Severidad:** 🟢 P3 — **Estado:** ABIERTO DAY289
+`gen_reflection.py` lee argv al importarse; `gen_benign_dns_ntp.py` copia sus funciones. Extraer un
+módulo común sin alterar los sha256 de los pcaps ya publicados en el MANIFEST.
+
+### DEBT-REPO-BAK-FILES-TRACKED-001
+**Severidad:** 🟢 P3 — **Estado:** ABIERTO DAY289
+`sniffer/src/userspace/ml_defender_features.cpp.bak.day79` está trackeado y aparece en los `git grep`.
+Retirarlo del árbol (queda en la historia).
+
+### DEBT-SENSOR-LAN-INGRESS-NO-RESPONSES-001
+**Severidad:** 🟡 P1 (diseño) — **Estado:** ABIERTO DAY289
+Medido: el XDP de ingreso en la cara LAN ve las consultas salientes de los clientes pero nunca sus
+respuestas (entran por la WAN). Una reflexión real contra la LAN también llegaría por la WAN.
+Distinguir respuesta no solicitada de legítima exige ver las consultas: sensor en ambas caras o
+correlación con el sentido contrario. Afecta al diseño de reflection_signature.
+
+### DEBT-DISTRIBUTED-SHARDING-BY-VICTIM-001
+**Severidad:** 🟢 P2 (diseño, producción) — **Estado:** ABIERTO DAY289
+Reparto sniffer → N ml-detector: por clave de víctima (IP destino) para que cada instancia vea el
+estado completo de sus víctimas; un reparto aleatorio rompe los rasgos agregados. El dimensionado real
+(cuántas instancias por instalación) exige hardware y carga distribuida reales, x86 y ARM.
+
+### DEBT-DDOS-RATE-THRESHOLD-PER-DEPLOYMENT-001
+**Severidad:** 🟡 P1 (diseño, abierto) — **Estado:** ABIERTO DAY289, SIN DECIDIR
+Medido: reentrenando con contraste, para la reflexión UDP el modelo se reduce a un umbral absoluto de
+victim_pps (salto 20→25 pps idéntico en todas las familias), fijado por las tasas del dataset. Opción a
+valorar: el modelo aprende forma y salto relativo (régimen caliente) y el umbral absoluto es un
+parámetro medido por despliegue (criterio DAY284).
+
+### NOTA DAY289 — corrección al prompt DAY288
+`STAT_RESERVE_FAIL` (stats[1]) existe desde DAY275 [RING-LOSS-D275:RESERVE]; el prompt DAY288 lo daba
+por no instrumentado.
