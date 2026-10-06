@@ -66,9 +66,7 @@ float MLDefenderExtractor::extract_ddos_packet_symmetry(const FlowStatistics& fl
 
 float MLDefenderExtractor::extract_ddos_source_ip_dispersion(const FlowStatistics& /*flow*/) const {
     if (!aggregator_) return MISSING_FEATURE_SENTINEL;
-    auto now = TimeWindowAggregator::get_current_time_ns();
-    auto start = now - 30'000'000'000ULL;
-    auto stats = aggregator_->get_window_stats(start, now);
+    auto stats = window_stats_30s();  // [WINSTATS-CACHE-D289]
     if (stats.event_count == 0) return 0.0f;
     return std::min(
         std::log2f(static_cast<float>(stats.unique_ips_count) + 1.0f) /
@@ -373,9 +371,7 @@ float MLDefenderExtractor::extract_traffic_packet_rate(const FlowStatistics& flo
 
 float MLDefenderExtractor::extract_traffic_connection_rate(const FlowStatistics& /*flow*/) const {
     if (!aggregator_) return MISSING_FEATURE_SENTINEL;
-    auto now = TimeWindowAggregator::get_current_time_ns();
-    auto start = now - 30'000'000'000ULL;
-    auto stats = aggregator_->get_window_stats(start, now);
+    auto stats = window_stats_30s();  // [WINSTATS-CACHE-D289]
     // connections per second en ventana de 30s, normalizado a [0,1] (saturación en 100 conn/s)
     float rate = static_cast<float>(stats.event_count) / 30.0f;
     return std::min(rate / 100.0f, 1.0f);
@@ -409,9 +405,7 @@ float MLDefenderExtractor::extract_traffic_avg_packet_size(const FlowStatistics&
 
 float MLDefenderExtractor::extract_traffic_port_entropy(const FlowStatistics& /*flow*/) const {
     if (!aggregator_) return MISSING_FEATURE_SENTINEL;
-    auto now = TimeWindowAggregator::get_current_time_ns();
-    auto start = now - 30'000'000'000ULL;
-    auto stats = aggregator_->get_window_stats(start, now);
+    auto stats = window_stats_30s();  // [WINSTATS-CACHE-D289]
     if (stats.event_count == 0) return 0.0f;
     return std::min(
         std::log2f(static_cast<float>(stats.unique_ports_count) + 1.0f) /
@@ -431,9 +425,7 @@ float MLDefenderExtractor::extract_traffic_flow_duration_std(const FlowStatistic
 
 float MLDefenderExtractor::extract_traffic_src_ip_entropy(const FlowStatistics& /*flow*/) const {
     if (!aggregator_) return MISSING_FEATURE_SENTINEL;
-    auto now = TimeWindowAggregator::get_current_time_ns();
-    auto start = now - 30'000'000'000ULL;
-    auto stats = aggregator_->get_window_stats(start, now);
+    auto stats = window_stats_30s();  // [WINSTATS-CACHE-D289]
     if (stats.event_count == 0) return 0.0f;
     // Shannon aproximado: log2(unique_ips) / log2(event_count)
     return std::min(
@@ -444,9 +436,7 @@ float MLDefenderExtractor::extract_traffic_src_ip_entropy(const FlowStatistics& 
 
 float MLDefenderExtractor::extract_traffic_dst_ip_concentration(const FlowStatistics& /*flow*/) const {
     if (!aggregator_) return MISSING_FEATURE_SENTINEL;
-    auto now = TimeWindowAggregator::get_current_time_ns();
-    auto start = now - 30'000'000'000ULL;
-    auto stats = aggregator_->get_window_stats(start, now);
+    auto stats = window_stats_30s();  // [WINSTATS-CACHE-D289]
     if (stats.event_count == 0) return 0.0f;
     // Alta concentración = pocas IPs destino únicas (DDoS a un target)
     return 1.0f - std::min(
@@ -496,18 +486,14 @@ void MLDefenderExtractor::extract_internal_features(
 
 float MLDefenderExtractor::extract_internal_connection_rate(const FlowStatistics& /*flow*/) const {
     if (!aggregator_) return MISSING_FEATURE_SENTINEL;
-    auto now = TimeWindowAggregator::get_current_time_ns();
-    auto start = now - 30'000'000'000ULL;
-    auto stats = aggregator_->get_window_stats(start, now);
+    auto stats = window_stats_30s();  // [WINSTATS-CACHE-D289]
     float rate = static_cast<float>(stats.event_count) / 30.0f;
     return std::min(rate / 100.0f, 1.0f);
 }
 
 float MLDefenderExtractor::extract_internal_service_port_consistency(const FlowStatistics& /*flow*/) const {
     if (!aggregator_) return MISSING_FEATURE_SENTINEL;
-    auto now = TimeWindowAggregator::get_current_time_ns();
-    auto start = now - 30'000'000'000ULL;
-    auto stats = aggregator_->get_window_stats(start, now);
+    auto stats = window_stats_30s();  // [WINSTATS-CACHE-D289]
     if (stats.event_count == 0) return 0.0f;
     // Alta consistencia = pocas variaciones de puerto (comportamiento normal)
     return 1.0f - std::min(
@@ -550,9 +536,7 @@ float MLDefenderExtractor::extract_internal_connection_duration_std(const FlowSt
 
 float MLDefenderExtractor::extract_internal_lateral_movement_score(const FlowStatistics& /*flow*/) const {
     if (!aggregator_) return MISSING_FEATURE_SENTINEL;
-    auto now = TimeWindowAggregator::get_current_time_ns();
-    auto start = now - 30'000'000'000ULL;
-    auto stats = aggregator_->get_window_stats(start, now);
+    auto stats = window_stats_30s();  // [WINSTATS-CACHE-D289]
     if (stats.event_count == 0) return 0.0f;
     // Muchas IPs únicas contactadas = posible lateral movement
     return std::min(
@@ -563,9 +547,7 @@ float MLDefenderExtractor::extract_internal_lateral_movement_score(const FlowSta
 
 float MLDefenderExtractor::extract_internal_service_discovery_patterns(const FlowStatistics& /*flow*/) const {
     if (!aggregator_) return MISSING_FEATURE_SENTINEL;
-    auto now = TimeWindowAggregator::get_current_time_ns();
-    auto start = now - 30'000'000'000ULL;
-    auto stats = aggregator_->get_window_stats(start, now);
+    auto stats = window_stats_30s();  // [WINSTATS-CACHE-D289]
     if (stats.event_count == 0) return 0.0f;
     // Muchos puertos únicos por evento = patrón de port scanning
     return std::min(
@@ -718,9 +700,34 @@ float MLDefenderExtractor::calculate_iat_coefficient_of_variation(const std::vec
     // DAY 46 COMPLETION: Now extracts ALL 142 fields from FlowStatistics
     // ============================================================================
 
+// [WINSTATS-CACHE-D289] WindowStats de los últimos 30 s, una vez por evento dentro de populate.
+WindowStats MLDefenderExtractor::window_stats_30s() const {
+    if (window_cache_active_ && window_cache_valid_) return window_cache_;
+    const auto now = TimeWindowAggregator::get_current_time_ns();
+    WindowStats ws = aggregator_->get_window_stats(now - 30'000'000'000ULL, now);
+    if (window_cache_active_) {
+        window_cache_ = ws;
+        window_cache_valid_ = true;
+    }
+    return ws;
+}
+
+namespace {
+// [WINSTATS-CACHE-D289] Activa la caché durante un populate y la apaga al salir (también ante excepción).
+struct WindowCacheScope {
+    bool& active;
+    bool& valid;
+    WindowCacheScope(bool& a, bool& v) : active(a), valid(v) { active = true; valid = false; }
+    ~WindowCacheScope() { active = false; valid = false; }
+    WindowCacheScope(const WindowCacheScope&) = delete;
+    WindowCacheScope& operator=(const WindowCacheScope&) = delete;
+};
+}  // namespace
+
 void MLDefenderExtractor::populate_ml_defender_features(
         const FlowStatistics& flow,
         ::protobuf::NetworkSecurityEvent& proto_event) const {
+    WindowCacheScope cache_scope(window_cache_active_, window_cache_valid_);  // [WINSTATS-CACHE-D289]
 
     // Get network_features submessage
     auto* net_features = proto_event.mutable_network_features();

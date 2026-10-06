@@ -101,6 +101,14 @@ public:
         ::protobuf::NetworkSecurityEvent& proto_event) const;
 
 private:
+    // [WINSTATS-CACHE-D289] Una sola pasada por la ventana de 30 s por evento: los 9 extractores
+    // de ventana comparten el WindowStats calculado al entrar en populate_ml_defender_features.
+    // Fuera de populate (llamadas sueltas a los extract_* públicos) no hay caché: se calcula como antes.
+    WindowStats window_stats_30s() const;
+    mutable WindowStats window_cache_{};
+    mutable bool window_cache_active_ = false;
+    mutable bool window_cache_valid_ = false;
+
     // ========================================================================
     // DDOS FEATURE EXTRACTORS (10 features)
     // ========================================================================
