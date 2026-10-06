@@ -114,3 +114,20 @@ Comprobar con `git log --oneline -5 origin/feat/ddos-head-contract`.
 Evidencia (NO trackear): `/vagrant/logs/lab/day289/` (consolidado, modelos .joblib + sha256,
 predicciones, anillo/) y `/vagrant/logs/lab/day288/contraste*.tsv`.
 EOF
+## 5. Decisiones de Alonso al cierre de DAY289
+- Criterio de cierre del PR `feat/ddos-head-contract`: cabeza DDoS reentrenada (dataset caliente,
+  emisión por flujo) y conectada al firewall por `final_decision` con lista explícita de señales
+  habilitadas = SOLO la cabeza ML DDoS. Las demás cabezas siguen calculando y registrando (DAY283),
+  pero no deciden; entran según se arreglen. Volver a medir de extremo a extremo → PR → merge.
+- **Fast alert FUERA** de la decisión del firewall: desactivada, necesita su propio trabajo antes.
+- Etiqueta al mergear: **`pre-release-ddos-only-0.0.3`**.
+- Sin prisa y sin recortar criterios. Puertas que no se negocian: test de paridad Python/C++ (mismas
+  filas → mismas predicciones) antes de cablear; generador del `.hpp` con umbrales CRUDOS (el modelo
+  v2 va SIN scaler: a un bosque no le aporta nada y fue el origen del skew de DAY281); cero bloqueos
+  en corridas benignas en la medida de extremo a extremo.
+- Aclaración: "dejar una familia fuera" es una prueba de evaluación (las 5 familias SÍ se entrenan).
+  SYN 0 % ⇒ hoy el modelo solo reconoce familias vistas. Repetir la prueba tras el régimen caliente:
+  si SYN sube sin haberlo visto, el modelo aprende algo de comportamiento. Familias nuevas (ACK, RST,
+  ICMP, pulsos, multi-origen) = generador + 3 corridas cada una; pendientes de §4.3.
+- Tamaño del bosque (4 700–7 300 nodos frente a 612): medir latencia y tamaño frente a acierto
+  (`min_samples_leaf` / profundidad) con la misma batería antes de fijar el `.hpp`.
