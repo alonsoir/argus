@@ -759,6 +759,33 @@ target_link_libraries(test_ring_consumer_protobuf
 
 message(STATUS "🧪 Unit Test: test_ring_consumer_protobuf configured (Day 46 - 40 features)")
 
+# [DDOS-SNAP-D290] Foto DDoS v2 incremental == extraccion de lote de produccion, bit a bit
+add_executable(test_ddos_flow_snap
+        tests/test_ddos_flow_snap.cpp
+        src/flow/sharded_flow_manager.cpp
+        src/userspace/flow_manager.cpp
+        src/userspace/time_window_manager.cpp
+        src/userspace/time_window_aggregator.cpp
+        src/userspace/ml_defender_features.cpp
+        src/userspace/flow_tracker.cpp
+        src/userspace/dns_analyzer.cpp
+        src/userspace/ip_whitelist.cpp
+        ${PROTO_SOURCES}
+)
+target_include_directories(test_ddos_flow_snap PRIVATE
+        ${CMAKE_SOURCE_DIR}/include
+        ${CMAKE_SOURCE_DIR}/include/flow
+        ${CMAKE_SOURCE_DIR}/src
+        ${CMAKE_BINARY_DIR}/proto
+        ${ML_DEFENDER_DIR}/include
+)
+target_link_libraries(test_ddos_flow_snap
+        Threads::Threads
+        ${Protobuf_LIBRARIES}
+)
+add_test(NAME test_ddos_flow_snap COMMAND test_ddos_flow_snap)
+message(STATUS "🧪 Unit Test: test_ddos_flow_snap configured (DAY 290 - foto DDoS v2 incremental) [DDOS-SNAP-D290]")
+
 # ============================================================================
 # PROTO3 EMBEDDED SERIALIZATION TEST — DAY 75 regression
 # Validates: all-zero float submessage trap + sentinel fix for send_ransomware_features

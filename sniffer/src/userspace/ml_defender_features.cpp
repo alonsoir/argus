@@ -618,6 +618,42 @@ float MLDefenderExtractor::calculate_entropy(const std::vector<uint32_t>& data) 
     return entropy;
 }
 
+// [DDOS-SNAP-D290] Igual que calculate_entropy pero sobre el histograma incremental del flujo:
+// mismo std::map (orden ascendente), mismo total y la misma acumulacion en float -> mismo
+// resultado bit a bit si hist son las frecuencias de all_lengths y total == all_lengths.size().
+float MLDefenderExtractor::calculate_entropy_from_hist(const std::map<uint32_t, uint32_t>& hist,
+                                                       uint64_t total_count) const {
+    if (total_count == 0) return 0.0f;
+
+    float entropy = 0.0f;
+    float total = static_cast<float>(total_count);
+
+    for (const auto& [value, count] : hist) {
+        (void)value;
+        float probability = static_cast<float>(count) / total;
+        if (probability > 0.0f) {
+            entropy -= probability * std::log2(probability);
+        }
+    }
+
+    return entropy;
+}
+
+// [DDOS-SNAP-D290] Foto de los rasgos DDoS v2 de flujo. Se llama en el hilo del anillo DENTRO del
+// lock del shard (with_flow_stats): sin recorrer vectores; O(k), k = longitudes distintas.
+DdosFlowSnap MLDefenderExtractor::ddos_v2_flow_snapshot(const FlowStatistics& flow) const {
+    DdosFlowSnap s;
+    const uint64_t n = flow.get_total_packets();
+    s.valid = true;
+    s.syn_ack_ratio = extract_ddos_syn_ack_ratio(flow);
+    s.flow_completion_rate = extract_ddos_flow_completion_rate(flow);
+    s.flow_packet_count = static_cast<float>(n);
+    s.mean_packet_size = (n == 0) ? 0.0f
+        : static_cast<float>(flow.sum_all_lengths) / static_cast<float>(n);
+    s.packet_size_entropy = calculate_entropy_from_hist(flow.len_hist, n);
+    return s;
+}
+
 float MLDefenderExtractor::calculate_std_dev(const std::vector<uint32_t>& data) const {
     if (data.size() < 2) return 0.0f;
 

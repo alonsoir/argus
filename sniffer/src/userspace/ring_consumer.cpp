@@ -434,7 +434,7 @@ void RingBufferConsumer::ring_consumer_loop(int consumer_id) {
 void RingBufferConsumer::feature_processor_loop() {
     std::cout << "[INFO] Feature processor thread started" << std::endl;
     while (!should_stop_) {
-        SimpleEvent event;
+        QueuedEvent event;  // [DDOS-SNAP-D290]
 
         {
             std::unique_lock<std::mutex> lock(processing_queue_mutex_);
@@ -570,6 +570,20 @@ void RingBufferConsumer::process_raw_event(const SimpleEvent& event, [[maybe_unu
     auto& flow_manager = sniffer::flow::ShardedFlowManager::instance();
     flow_manager.add_packet(flow_key, event);
 
+    // [DDOS-SNAP-D290] Foto de los rasgos DDoS v2 en el instante del paquete, en este hilo:
+    // flujo (dentro del lock del shard, sin copiar) y ventana por victima del kernel.
+    DdosFlowSnap ddos_snap{};
+    flow_manager.with_flow_stats(flow_key, [&](const auto& fs) {
+        ddos_snap = ml_extractor_.ddos_v2_flow_snapshot(fs);
+    });
+    bool snap_have_victim = false;
+    ::sniffer::DdosVictimLookup snap_victim{};
+    if (victim_board_) {
+        snap_victim = victim_board_->lookup(static_cast<uint32_t>(event.dst_ip),
+                                            static_cast<uint32_t>(event.protocol));
+        snap_have_victim = true;
+    }
+
     // ===== Layer 1.5: Payload Analysis (thread-local, ~1-150 μs) =====
     // Only analyze if payload is present
     // [PAYLOAD-VERBOSE-D290] solo con verbosidad BASIC+: el resultado solo lo consume el log de abajo
@@ -658,7 +672,7 @@ void RingBufferConsumer::process_raw_event(const SimpleEvent& event, [[maybe_unu
     }
 
     // Add to batch for efficient processing
-    add_to_batch(event);
+    add_to_batch(QueuedEvent{event, ddos_snap, snap_have_victim, snap_victim});  // [DDOS-SNAP-D290]
 
     // Update processing time statistics
     auto end_time = std::chrono::steady_clock::now();
@@ -666,11 +680,12 @@ void RingBufferConsumer::process_raw_event(const SimpleEvent& event, [[maybe_unu
     update_processing_time(duration);
 }
 
-void RingBufferConsumer::process_event_features(const SimpleEvent& event) {
+void RingBufferConsumer::process_event_features(const QueuedEvent& queued) {  // [DDOS-SNAP-D290]
+    const SimpleEvent& event = queued.event;
     try {
         // Create protobuf message
         protobuf::NetworkSecurityEvent proto_event;
-        populate_protobuf_event(event, proto_event, 0);
+        populate_protobuf_event(event, proto_event, 0, &queued);  // [DDOS-SNAP-D290]
 
         // Log features if verbosity is enabled
         if (g_verbosity != FeatureLogger::VerbosityLevel::NONE) {
@@ -702,7 +717,7 @@ void RingBufferConsumer::process_event_features(const SimpleEvent& event) {
     }
 }
 
-void RingBufferConsumer::send_event_batch(const std::vector<SimpleEvent>& events) {
+void RingBufferConsumer::send_event_batch(const std::vector<QueuedEvent>& events) {  // [DDOS-SNAP-D290]
     for (const auto& event : events) {
         // Submit to feature processing queue
         {
@@ -791,7 +806,7 @@ bool RingBufferConsumer::send_protobuf_message(const std::vector<uint8_t>& seria
     }
 }
 
-void RingBufferConsumer::add_to_batch(const SimpleEvent& event) {
+void RingBufferConsumer::add_to_batch(const QueuedEvent& event) {  // [DDOS-SNAP-D290]
     std::lock_guard<std::mutex> lock(batch_mutex_);
 
     if (!current_batch_) {
@@ -821,7 +836,8 @@ void RingBufferConsumer::flush_current_batch() {
 
 void RingBufferConsumer::populate_protobuf_event(const SimpleEvent& event,
                                                  protobuf::NetworkSecurityEvent& proto_event,
-                                                 int buffer_index) const {
+                                                 int buffer_index,
+                                                 const QueuedEvent* queued) const {  // [DDOS-SNAP-D290]
     // ============================================================================
     // DAY 77: NaN-first — orden correcto: NaN -> populate(reales) -> run_ml_detection
     init_embedded_sentinels(proto_event.mutable_network_features());
@@ -871,6 +887,28 @@ void RingBufferConsumer::populate_protobuf_event(const SimpleEvent& event,
 	// ============================================================================
     // ML DEFENDER: Embedded Detectors Inference (Phase 1, Day 4)
     // ============================================================================
+    // [DDOS-SNAP-D290] Rasgos DDoS v2 de flujo desde la foto del hilo del anillo (instante del
+    // paquete), nunca desde la copia tomada con retraso en este hilo. Foto invalida -> centinela.
+    if (queued) {
+        auto* dd = proto_event.mutable_network_features()->mutable_ddos_embedded();
+        if (queued->flow.valid) {
+            dd->set_syn_ack_ratio(queued->flow.syn_ack_ratio);
+            dd->set_flow_completion_rate(queued->flow.flow_completion_rate);
+            dd->set_flow_packet_count(queued->flow.flow_packet_count);
+            dd->set_mean_packet_size(queued->flow.mean_packet_size);
+            dd->set_packet_size_entropy(queued->flow.packet_size_entropy);
+        } else {
+            dd->set_syn_ack_ratio(MISSING_FEATURE_SENTINEL);
+            dd->set_flow_completion_rate(MISSING_FEATURE_SENTINEL);
+            dd->set_flow_packet_count(MISSING_FEATURE_SENTINEL);
+            dd->set_mean_packet_size(MISSING_FEATURE_SENTINEL);
+            dd->set_packet_size_entropy(MISSING_FEATURE_SENTINEL);
+            if (ddos_snap_invalid_.fetch_add(1, std::memory_order_relaxed) == 0) {
+                std::cerr << "[DDOS-SNAP] WARNING: foto DDoS sin flujo en la tabla; se escriben "
+                             "centinelas (aviso unico, se siguen contando)" << std::endl;
+            }
+        }
+    }
     const_cast<RingBufferConsumer*>(this)->run_ml_detection(proto_event);
     // ============================================================================
     // END ML DEFENDER Integration
@@ -962,7 +1000,11 @@ void RingBufferConsumer::populate_protobuf_event(const SimpleEvent& event,
     time_window->set_sequence_number(event.timestamp);
 
     // [DDOS-VWIN-D279:STAMP-MAIN] ventana por victima (kernel) -> evento
-    stamp_victim_window(proto_event, event);
+    if (queued) {  // [DDOS-SNAP-D290] la consulta se hizo en el hilo del anillo (foto)
+        if (queued->have_victim) stamp_victim_window_from(proto_event, event, queued->victim);
+    } else {
+        stamp_victim_window(proto_event, event);
+    }
 
     // Distributed node info
     protobuf::DistributedNode* node = proto_event.mutable_capturing_node();
@@ -1260,9 +1302,17 @@ void RingBufferConsumer::ransomware_processor_loop() {
 void RingBufferConsumer::stamp_victim_window(protobuf::NetworkSecurityEvent& ev,
                                              const SimpleEvent& e) const {
     if (!victim_board_) return;
+    stamp_victim_window_from(ev, e, victim_board_->lookup(static_cast<uint32_t>(e.dst_ip),
+                                                          static_cast<uint32_t>(e.protocol)));
+}
+
+// [DDOS-SNAP-D290] Estampa una consulta ya hecha: el camino normal la toma en el hilo del anillo,
+// en el instante del paquete (foto), y la trae en el QueuedEvent.
+void RingBufferConsumer::stamp_victim_window_from(protobuf::NetworkSecurityEvent& ev,
+                                                  const SimpleEvent& e,
+                                                  const ::sniffer::DdosVictimLookup& r) const {
     const uint32_t dst = static_cast<uint32_t>(e.dst_ip);
     const uint32_t proto = static_cast<uint32_t>(e.protocol);
-    const ::sniffer::DdosVictimLookup r = victim_board_->lookup(dst, proto);
     if (!r.have_snapshot) return;
     auto* vw = ev.mutable_victim_window();
     vw->set_victim_ip(::sniffer::DdosKernelAggregator::ip_to_string(dst));

@@ -140,6 +140,8 @@ std::optional<FlowStatistics> ShardedFlowManager::get_flow_stats_copy(const Flow
         
         // Copy header lengths
         copy.fwd_header_lengths = it->second.stats.fwd_header_lengths;
+        copy.sum_all_lengths = it->second.stats.sum_all_lengths;  // [DDOS-SNAP-D290]
+        copy.len_hist = it->second.stats.len_hist;
         copy.bwd_header_lengths = it->second.stats.bwd_header_lengths;
         
         // time_windows will be created by FlowStatistics() constructor

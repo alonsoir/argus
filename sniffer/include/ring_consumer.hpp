@@ -90,8 +90,17 @@ struct RingConsumerStatsSnapshot {
     uint64_t ml_detection_time_us;
 };
 
+// [DDOS-SNAP-D290] Lo que viaja del hilo del anillo al hilo de rasgos: el paquete y la foto de
+// sus rasgos DDoS v2 (flujo + ventana por victima) tomada en el instante del paquete.
+struct QueuedEvent {
+    SimpleEvent event{};
+    DdosFlowSnap flow{};
+    bool have_victim = false;  // false: tablero de victimas apagado
+    ::sniffer::DdosVictimLookup victim{};
+};
+
 struct EventBatch {
-    std::vector<SimpleEvent> events;
+    std::vector<QueuedEvent> events;  // [DDOS-SNAP-D290]
     size_t max_size;
 
     explicit EventBatch(size_t size) : max_size(size) {
@@ -160,17 +169,18 @@ private:
     // Event processing
     static int handle_event(void* ctx, void* data, size_t data_sz);
     void process_raw_event(const SimpleEvent& event, int consumer_id);
-    void process_event_features(const SimpleEvent& event);
+    void process_event_features(const QueuedEvent& queued);  // [DDOS-SNAP-D290]
 
     // Batching
-    void add_to_batch(const SimpleEvent& event);
+    void add_to_batch(const QueuedEvent& event);  // [DDOS-SNAP-D290]
     void flush_current_batch();
-    void send_event_batch(const std::vector<SimpleEvent>& events);
+    void send_event_batch(const std::vector<QueuedEvent>& events);  // [DDOS-SNAP-D290]
 
     // Protobuf
     void populate_protobuf_event(const SimpleEvent& event,
                                 protobuf::NetworkSecurityEvent& proto_event,
-                                int buffer_index) const;
+                                int buffer_index,
+                                const QueuedEvent* queued = nullptr) const;  // [DDOS-SNAP-D290]
     std::string protocol_to_string(uint8_t protocol) const;
 
     // ZMQ
@@ -222,7 +232,8 @@ private:
     thread_local static ml_defender::InternalDetector internal_detector_;
 
     // Queues
-    std::queue<SimpleEvent> processing_queue_;
+    std::queue<QueuedEvent> processing_queue_;  // [DDOS-SNAP-D290]
+    mutable std::atomic<uint64_t> ddos_snap_invalid_{0};  // [DDOS-SNAP-D290] fotos sin flujo
     std::mutex processing_queue_mutex_;
     std::condition_variable processing_queue_cv_;
 
@@ -268,6 +279,8 @@ private:
     void send_fast_alert(const SimpleEvent& event);
     // [DDOS-VWIN-D279:RC-STAMP-DECL]
     void stamp_victim_window(protobuf::NetworkSecurityEvent& ev, const SimpleEvent& e) const;
+    void stamp_victim_window_from(protobuf::NetworkSecurityEvent& ev, const SimpleEvent& e,
+                                  const ::sniffer::DdosVictimLookup& r) const;  // [DDOS-SNAP-D290]
     void send_ransomware_features(const protobuf::RansomwareFeatures& features);
     bool initialize_ransomware_detection();
     void shutdown_ransomware_detection();
