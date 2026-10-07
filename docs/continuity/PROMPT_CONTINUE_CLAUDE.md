@@ -1,133 +1,124 @@
-cat > docs/continuity/PROMPT_CONTINUE_CLAUDE.md <<'EOF'
-# Prompt de continuidad — aRGus NDR, DAY289 → DAY290
+# Prompt de continuidad — aRGus NDR, DAY290 → DAY291
 
-Reglas de trabajo (sin cambios): medir, no votar; predicción escrita antes de medir; comandos
-separados o cada salida a su fichero; nunca `grep -rn` desde la raíz (usar `git grep` o el fichero
-concreto); los scripts/patchers los ejecuta Alonso en su VM; scripts como bloque `cat > f <<'EOF'`;
-si algo no da lo esperado, parar; `LC_ALL=C` en todo script con aritmética en awk; en scripts con
-`set -e` NO usar `pipefail` junto a `| head`. Tras un cambio, compilar TODO el pipeline
-(`make pipeline-build PROFILE=production`). Dar comandos EXACTOS y COMPLETOS, uno a uno, en orden,
-diciendo dónde se ejecuta cada uno (Mac / defender / client), sin nada que sustituir a mano.
-Patchers atómicos e idempotentes con `--check` / `--apply` y marca en el código.
+Reglas de trabajo (sin cambios): medir, no votar; predicción escrita antes de medir; si algo no da lo
+esperado, PARAR. Comandos separados o cada salida a su fichero; nunca `grep -rn` desde la raíz (`git grep`
+o el fichero concreto); scripts como bloque `cat > f <<'EOF'`; `LC_ALL=C` en todo awk con aritmética;
+`set -e` sin `pipefail` junto a `| head`. Comandos EXACTOS y COMPLETOS, en orden, diciendo dónde va cada
+uno (Mac / defender / client). Patchers atómicos, todo-o-nada, con `--check` / `--apply` y marca.
+Configuración: el JSON es la ley (campo obligatorio ausente, mal formado o fuera de rango ⇒ el proceso NO
+arranca y dice campo, formato y límites; nada hardcodeado; defaults del código solo contra basura).
 
-**Foco único: la cabeza DDoS.** Orden (DAY281): (1) observabilidad ✅, (2) contrato v2 ✅,
-(3) reentrenar y medir [primer entrenamiento HECHO DAY289, PROVISIONAL; falta regenerar dataset],
-(4) fast-alert como entrada propia a la fusión, (5) fusión + firewall por `final_decision`
-(DEBT-FIREWALL-GATES-ON-LEVEL1-001, P0).
+**NUEVO DAY290 — compilar y probar con el MISMO perfil:** `make pipeline-build PROFILE=production` y
+`make test-components PROFILE=production`. `PROFILE ?= debug` en el Makefile: sin `PROFILE`, los tests
+corren sobre `build-debug` (binario viejo) y el "100 % passed" no prueba nada.
 
-Operativa: targets del Makefile en el **Mac**; scripts en el **defender** desde `/vagrant`;
-tráfico en el **client** (`eth1`, .50 → defender .1). Logs `/vagrant/logs/lab/{sniffer,ml-detector}.log`
-(rotar SIEMPRE con `sudo truncate -s 0`). Escritor de dataset: `python3 /vagrant/day289_dataset_writer.py
-on|off|estado` (quedó APAGADO). `day288_post.sh` acepta `REG=contraste` (por defecto `runs`).
+**Foco único: la cabeza DDoS.** Orden: (1) observabilidad ✅, (2) contrato v2 ✅, (3) reentrenar y medir
+[provisional DAY289; falta regenerar dataset en régimen CALIENTE], (4) fast-alert como entrada propia
+(FUERA del firewall en este PR), (5) fusión + firewall por `final_decision` solo con la cabeza DDoS.
+
+Operativa: targets del Makefile en el **Mac**; scripts en el **defender** desde `/vagrant`; tráfico en el
+**client** (`eth1`, .50 → defender .1). Logs `/vagrant/logs/lab/{sniffer,ml-detector}.log` (rotar con
+`sudo truncate -s 0`). Escritor de dataset: `python3 /vagrant/day289_dataset_writer.py on|off|estado`
+(APAGADO). Arranque de medida: `make pipeline-start PROFILE=production FORCE_ALL_HEADS=1` +
+`/vagrant/day288_esperar_estable.sh`. Medidas en segundo plano + `wait` en la misma terminal.
 
 ## 0. Estado de git
-Rama `feat/ddos-head-contract`, NO mergeada. DAY289: commit `perf(sniffer) [WINSTATS-CACHE-D289]`,
-commit de herramientas DAY289 y commit de docs (este prompt, BACKLOG DAY289, paper_notes_day289.md).
-Comprobar con `git log --oneline -5 origin/feat/ddos-head-contract`.
+Rama `feat/ddos-head-contract`, NO mergeada. DAY290 (pusheado):
+- `3d48cec0` perf(sniffer) análisis de carga solo con verbosidad BASIC+ [PAYLOAD-VERBOSE-D290]
+- `54ff0006` feat(sniffer) foto determinista DDoS v2 en el hilo del anillo [DDOS-SNAP-D290]
+- `5fb103f8` tools(day290) paquetes por flujo, perf por hilo, RSS
+- + commit de docs de cierre DAY290 (este prompt, BACKLOG DAY290, paper_notes_day290.md)
+Comprobar: `git log --oneline -6 origin/feat/ddos-head-contract`.
 
-## 1. Lo que DAY289 dejó MEDIDO
+## 1. Lo que DAY290 dejó MEDIDO
 
-### 1.1 Benigno con reflection_signature=1 (§4.1)
-- Ambiente con rasgos: 10133 filas; con refl=1: **0**. El sniffer (XDP de ingreso en eth2, cara LAN)
-  ve las CONSULTAS del client (.50 → 1.1.1.1:53, 8.8.8.8:53, NTP :123) pero NUNCA las respuestas:
-  entran por la WAN (eth1) y salen por eth2 como egreso. Estructural, no falta de corridas.
+### 1.1 Camino real del sniffer (corrige DAY289)
+hilo anillo: handle_event → process_raw_event: fast alert · `add_packet` (FlowStatistics) · [análisis de
+carga, ahora solo BASIC+] · plugins ×2 (DUPLICADO, `PLUGIN_LOADER_ENABLED` activo) · ransomware
+`process_packet` (alimenta el agregador de ventana) · **foto DDoS v2 (nuevo)** · `add_to_batch`.
+hilo rasgos: cola SIN LÍMITE → `populate_protobuf_event` (copia de FlowStatistics + pasada de ventana) →
+**`run_ml_detection` (inferencia embebida EN EL SNIFFER)** → serializa → cola SIN LÍMITE → hilos ZMQ.
 
-### 1.2 Consolidación (`day289_consolidar.sh`, solo lectura)
-- 19 corridas de `runs.tsv` → `logs/lab/day289/consolidado.csv`: 39165 ataque / 19399 benigno
-  (9266 benigno de corrida + 10133 ambiente). Supervivencia 100 %. Línea base DAY288 reproducida al
-  decimal. Bosque viejo: **48,6 % FP sobre el ambiente**. Manifiesto sha256 completo.
+### 1.2 Unidad de emisión — filas por flujo (consolidado DAY289, `day290_paquetes_por_flujo.sh`)
+| familia | filas | flujos | % flujos de 1 fila | reducción si 1 emisión/flujo |
+|---|---|---|---|---|
+| syn | 9000 | 9000 | 100 | 0 % |
+| dns / ntp | 9000 | 8823 | 98,1 | 2 % |
+| udpA | 8997 | 198 | 0 | 97,8 % |
+| udpB | 3168 | 1581 | 0 (exactamente 2 filas/flujo, sin explicar) | 50 % |
+| benigno :9000 | 9266 | 4 | 0 | 100 % |
+| ambiente | 10133 | 4222 | 76,8 | 58 % |
+⇒ en 3 de 5 familias emitir por flujo no reduce nada (floods de 1 paquete por flujo).
+**Decisión: emisión POR PAQUETE en este PR** (revoca DAY289).
 
-### 1.3 Primer entrenamiento PROVISIONAL (`day289_entrenar.py`)
-- RF por defecto, random_state=42, sin scaler; pesos por celda (familia, tasa) dentro de cada clase,
-  clases iguales; split temporal 70/30 por (fichero, familia). Modelo sha `4bf3f6ec…` (4728 nodos, prof. 16).
-- Test: recall 100 %, FP 0 % (viejo: 18,8 % / 71,1 %). Caliente: syn 99,3 %, benignhot 0 %.
-- Dejar una familia fuera: **syn 0 %**, udpA 95,7 %, udpB 99,8 %, ntp/dns 100 %.
-  ⇒ separa por FIRMA, no por agregado.
-- Importancias por impureza y por permutación discrepan (rasgos redundantes): no sirven para decidir
-  qué rasgo quitar. Hace falta quitar columnas o permutar por grupos.
+### 1.3 El cuello del anillo (perf `1000c` + `/proc`)
+- Hilo de rasgos: pasada O(ventana) de `window_stats_30s` (2 `unordered_set`) bajo el mutex del
+  `TimeWindowAggregator`. El hilo del anillo se BLOQUEA en `add_event` esperando ese mutex (4,2 %).
+- `/proc/PID/task/*/stat` a 1000 pps (60 s, 30 s de tráfico): rasgos 75,9 % de un núcleo (≈100 % durante
+  el tráfico), anillo 4,6 %, ZMQ 3,0 + 3,4 %, hilo principal 0,0 %.
+- Las 9 llamadas a la ventana: 1 DDoS (`source_ip_dispersion`, FUERA del vector v2), 4 traffic, 4 internal.
+  El vector DDoS v2 NO usa el agregador compartido (que es del procesador de ransomware).
+- `top -H -p PID` del script DAY289 atribuye al hilo principal 41–67 % que NO existe (kernel: 0,0 %).
+  `--sort tid` falla en perf 6.1 (usar `pid`). Los `perf_hilos_*` no valen.
 
-### 1.4 Contraste benigno de reflexión (`gen_benign_dns_ntp.py`, MANIFEST actualizado)
-- bdns_small (DNS 80–250 B + NTP 90 B) 10 pps; bdns_large (DNS 1200–1442 B) 5/10/20 pps. Origen .50,
-  un flujo por respuesta. Registradas en `logs/lab/day288/contraste.tsv` (4 FRÍAS, ACEPTADAS).
-- Modelo provisional SIN reentrenar: bdns_small **73,7 % FP** (prob ~0,56, fuera de distribución);
-  bdns_large **100 % FP** a 5/10/20 pps, sonda de victim_pps plana. Bosque viejo: 0 % en las cuatro.
-- En frío, victim_rate_ratio benigno 20 pps = 1,17 ≈ ataque 30 pps = 1,18.
+### 1.4 Techo del anillo (`day289_anillo_medir.sh`, ntp, `--loop=3 --limit=30000`)
+| corrida | binario | RESERVE_FAIL |
+|---|---|---|
+| 1000b | antes de la caché | 82,7 % |
+| 1000c | caché D289 | 69,0 % |
+| 1000d | A + C | 43,3 % |
+| 1000e | A + C (mismo binario) | 28,7 % |
+| 100c / 100d | — | 0 % / 0 % |
+⇒ **15 puntos entre dos corridas idénticas**: cerca de la saturación, una corrida no basta para atribuir
+causas. A 100 pps (tasas del dataset) cero pérdidas, dos veces. El techo real se mide en hardware real.
 
-### 1.5 Reentreno-medida con contraste (`day289_reentrenar_contraste.py`, modelo sha `f65719e9…`)
-- A: todo 100 %/0 %; victim_pps primera por permutación (0,22); victim_rate_ratio 0,0001.
-- **Sonda: en TODAS las familias UDP con puerto de servicio la decisión salta en victim_pps 20→25**,
-  sin importar tamaño ni familia. B (20 pps fuera de train): 90,6 % FP, frontera 10–15. C (5 pps fuera):
-  0,2 %. ⇒ para reflexión el modelo es un UMBRAL ABSOLUTO de pps fijado por las tasas del dataset.
-  No es detector de comportamiento. Etiquetado como frontera de laboratorio.
+### 1.5 Memoria (`day290_rss_medir.sh`)
+syn 5000 flujos: +11,1 MB (~2,2 kB/flujo); ntp ~9800: +16,9 MB (~1,7 kB/flujo); el RSS no baja.
+Tabla acotada por LRU (16 shards × 10 000 = 160 000 flujos) ⇒ techo ~270–350 MB. `cleanup_expired_flows`
+NO se llama nunca (timeout 120 s letra muerta) y es cuadrático (`list::remove`). Vectores de
+FlowStatistics crecen sin límite en flujos largos; `get_flow_stats_copy` los copia en cada evento.
 
-### 1.6 Rendimiento del consumidor del anillo (`day289_anillo_medir.sh`)
-- CORRECCIÓN al prompt DAY288: `STAT_RESERVE_FAIL` (stats[1]) EXISTE desde DAY275; no hizo falta
-  instrumentar. Invariante: ddos_victims(suma) = EVENTS + RESERVE_FAIL + FILTER_DISCARD + FRAG_SKIPPED.
-- `perf` instalado A MANO en el defender (`linux-perf`); en perf 6.1 la clave por hilo es `pid`.
-  Pilas DWARF sin resolver (atribución por hilo + símbolo + lectura de código).
-- Medir con la medida EN SEGUNDO PLANO (ventana 90 s) y tcpreplay después: la sincronía manual falló
-  una vez (anillo_1000 inválida, conservada como evidencia).
-- Causa medida: `get_window_stats` (O(eventos en ventana), 4 inserts en unordered_set locales,
-  malloc/free) llamado 9 veces por evento desde `MLDefenderExtractor::populate_ml_defender_features`
-  (ring_consumer.cpp:851 → ml_defender_features.cpp), los 9 con la MISMA ventana de 30 s.
-- Arreglo [WINSTATS-CACHE-D289] (una pasada por evento, caché solo dentro de populate):
-  | | antes | después |
-  |---|---|---|
-  | techo consumidor | ~175 ev/s | **~305 ev/s** |
-  | RESERVE_FAIL 1000 pps | 82,7 % | **69,0 %** |
-  | RESERVE_FAIL 100 pps | 0 | 0 |
-- Lo que queda: la pasada única sigue siendo O(10 000) con el búfer al tope. Agregador incremental
-  estimado ~2× (~600 ev/s): al BACKLOG. Por encima manda el coste fijo por evento ⇒ un flood realista
-  no cabe en un consumidor que emite por paquete.
+### 1.6 Foto determinista DDoS v2 [DDOS-SNAP-D290]
+Problema medido: los rasgos se fotografiaban en el hilo de rasgos, DETRÁS de una cola sin límite ⇒ con
+carga, `flow_packet_count` y `victim_*` incluían paquetes posteriores al evento (skew dependiente de la
+carga). Ahora: foto en el hilo del anillo tras `add_packet` (`with_flow_stats`, sin copiar): syn_ack_ratio,
+flow_completion_rate, flow_packet_count, mean_packet_size (suma incremental), packet_size_entropy
+(histograma `std::map` incremental, E1) + consulta de víctima. Viaja en `QueuedEvent`; `populate`
+sobrescribe antes de `run_ml_detection`; foto inválida ⇒ centinela + aviso único `[DDOS-SNAP]`.
+`test_ddos_flow_snap`: **2135 comparaciones, 0 fallos, igualdad bit a bit** con `extract_ddos_features`.
+En corridas: 0 avisos `[DDOS-SNAP]`.
 
-## 2. Decisiones de Alonso DAY289
-- Primer entrenamiento PROVISIONAL aunque faltara benigno con refl=1. No se cablea.
-- `source_ip_dispersion` se sigue calculando (barato); redefinir con clave al BACKLOG.
-- **Próxima regeneración del dataset: ataque SOBRE línea base benigna sostenida contra la misma
-  víctima (clave caliente)**, no régimen frío. Opción abierta, sin decidir: modelo que aprende forma y
-  salto relativo + umbral absoluto de tasa como parámetro medido por despliegue.
-- **Se cambia la emisión a POR FLUJO (palanca 1) ANTES de regenerar**; una sola regeneración cubre
-  emisión nueva + régimen caliente. Después, reentrenar y cablear.
-- Cuantificar cuántas instancias protegen una instalación exige hardware y carga distribuida reales;
-  los números de Vagrant no responden a eso.
+## 2. Decisiones de Alonso DAY290
+- Cada cabeza con su propio agregador/mutex SOLO si los datos lo demuestran; compartir es optimización
+  prematura hasta que cada cabeza esté arreglada.
+- Foto en el instante del paquete (no "leer más tarde"); entropía E1 (bit a bit).
+- Emisión por paquete en este PR; emisión por víctima + agregador + techo en hardware real → BACKLOG.
+- Configuración de la tabla de flujos (timeout, LRU, barrido) + auditoría de JSON (`_doc` con rango,
+  formato y límites) → PR PROPIO justo después de la cabeza DDoS.
+- (ii): reiniciar el sniffer antes de CADA corrida de regeneración (tabla de flujos vacía). Al llegar la
+  expiración, repetir la batería y comprobar que las predicciones no cambian.
+- Config inválida o ausente ⇒ el proceso no arranca (principio general).
 
-## 3. Siguiente (DAY290): emisión por flujo — diseñar antes de escribir
-1. Medir el camino actual por evento en `ring_consumer.cpp`: dónde se lee el anillo, dónde se actualiza
-   FlowStatistics, dónde se llama `populate_protobuf_event`, la fast alert (event_kind=1) y el envío ZMQ.
-2. Diseño con predicción por decisión: puntos de emisión (nacimiento, cada N paquetes o T ms, cierre o
-   timeout); qué sigue siendo por paquete (actualizar FlowStatistics, alimentar el agregador, fast alert
-   en el sniffer); qué pasa a ser por emisión (rasgos, protobuf, ZMQ). Valores N/T los decide Alonso.
-3. Efectos a prever y medir: filas por flujo en el escritor de dataset; momento de la foto de
-   flow_packet_count y de victim_*; carga del ml-detector; ZMQ-DROP.
-4. Patcher atómico, compilación completa, `make test-components` (mirar el texto: el gate está
-   enmascarado con `|| echo`), y repetir `anillo_100` / `anillo_1000` con el mismo protocolo.
-5. Después: protocolo de corridas en régimen CALIENTE (línea base benigna sostenida → ataque encima),
-   familias ntp/dns/syn/udpA/udpB, contrastes bdns_small/bdns_large + los pendientes (ráfaga legítima
-   de conexiones TCP cortas; UDP benigno hacia .1), tasas más altas si el techo lo permite.
-6. Reentrenar con la misma batería: test, dejar una familia fuera, tasa reservada, sonda de victim_pps,
-   caliente, contraste. Solo entonces cablear (pasos 4–5).
+## 3. Siguiente (DAY291): regenerar el dataset en régimen CALIENTE
+Aceptado (4 puntos):
+1. Línea base con la MISMA clave de víctima `{dst .1, proto}`: UDP (`bdns_small`) para familias UDP;
+   TCP benigno a :9000 para SYN.
+2. 90 s de línea base antes del ataque (EWMA caliente ≥30 ventanas); la línea base sigue durante el ataque.
+3. Etiqueta por construcción: línea base con origen **.51** (`tcprewrite` en el client; DAY270), ataque
+   desde .50. ABIERTO a resolver primero: el TCP :9000 es tráfico vivo, no pcap ⇒ alias `.51` en eth1 del
+   client o pcap TCP benigno. Verificar que el kernel cuenta .51 y .50 en la misma clave.
+4. Línea base 10 pps; ataques 30/60/100 pps; reinicio del sniffer por corrida.
+**Piloto ANTES de la batería, con predicción:** ntp 30 pps sobre línea base 10 pps ⇒ `victim_rate_ratio`
+del ataque ≈ 3–4 (régimen frío daba ≈1,2). Si sale ≈1, PARAR y revisar la EWMA caliente.
+Después: familias ntp/dns/syn/udpA/udpB + contrastes bdns_small/bdns_large + pendientes (ráfaga TCP corta
+legítima; UDP benigno hacia .1). Reentrenar con la batería: test, familia fuera (¿sube SYN?), tasa
+reservada, sonda de victim_pps, caliente, contraste.
+Puertas (no se negocian): paridad Python/C++; `.hpp` con umbrales CRUDOS (sin scaler); tamaño del bosque
+medido (latencia/tamaño vs acierto); cero bloqueos en corridas benignas E2E. Luego cablear firewall por
+`final_decision` (solo DDoS), medir E2E, PR, merge, etiqueta `pre-release-ddos-only-0.0.3`.
 
-## 4. Herramientas DAY289 (raíz, commiteadas)
-`day289_refl_ambiente.sh`, `day289_consolidar.sh`, `day289_entrenar.py`, `day289_eval_contraste.py`,
-`day289_reentrenar_contraste.py`, `day289_dataset_writer.py`, `day289_patch_post_reg.py`,
-`day289_anillo_medir.sh`, `day289_patch_winstats_cache.py`; `scripts/dataset_lab/gen_benign_dns_ntp.py`.
-Evidencia (NO trackear): `/vagrant/logs/lab/day289/` (consolidado, modelos .joblib + sha256,
-predicciones, anillo/) y `/vagrant/logs/lab/day288/contraste*.tsv`.
-EOF
-## 5. Decisiones de Alonso al cierre de DAY289
-- Criterio de cierre del PR `feat/ddos-head-contract`: cabeza DDoS reentrenada (dataset caliente,
-  emisión por flujo) y conectada al firewall por `final_decision` con lista explícita de señales
-  habilitadas = SOLO la cabeza ML DDoS. Las demás cabezas siguen calculando y registrando (DAY283),
-  pero no deciden; entran según se arreglen. Volver a medir de extremo a extremo → PR → merge.
-- **Fast alert FUERA** de la decisión del firewall: desactivada, necesita su propio trabajo antes.
-- Etiqueta al mergear: **`pre-release-ddos-only-0.0.3`**.
-- Sin prisa y sin recortar criterios. Puertas que no se negocian: test de paridad Python/C++ (mismas
-  filas → mismas predicciones) antes de cablear; generador del `.hpp` con umbrales CRUDOS (el modelo
-  v2 va SIN scaler: a un bosque no le aporta nada y fue el origen del skew de DAY281); cero bloqueos
-  en corridas benignas en la medida de extremo a extremo.
-- Aclaración: "dejar una familia fuera" es una prueba de evaluación (las 5 familias SÍ se entrenan).
-  SYN 0 % ⇒ hoy el modelo solo reconoce familias vistas. Repetir la prueba tras el régimen caliente:
-  si SYN sube sin haberlo visto, el modelo aprende algo de comportamiento. Familias nuevas (ACK, RST,
-  ICMP, pulsos, multi-origen) = generador + 3 corridas cada una; pendientes de §4.3.
-- Tamaño del bosque (4 700–7 300 nodos frente a 612): medir latencia y tamaño frente a acierto
-  (`min_samples_leaf` / profundidad) con la misma batería antes de fijar el `.hpp`.
+## 4. Herramientas DAY290 (raíz, commiteadas)
+`day290_patch_payload_verbose.py`, `day290_patch_ddos_snap.py`, `day290_paquetes_por_flujo.sh`,
+`day290_perf_por_hilo.sh`, `day290_rss_medir.sh`. Sin commitear aún: `day290_cpu_hilos.sh` (árbitro de CPU
+por hilo vía /proc; sustituye al `top` del script DAY289). Evidencia (NO trackear): `/vagrant/logs/lab/day290/`
+y `logs/lab/day289/anillo/*d*`, `*e*`.

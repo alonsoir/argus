@@ -7013,3 +7013,50 @@ parámetro medido por despliegue (criterio DAY284).
 ### NOTA DAY289 — corrección al prompt DAY288
 `STAT_RESERVE_FAIL` (stats[1]) existe desde DAY275 [RING-LOSS-D275:RESERVE]; el prompt DAY288 lo daba
 por no instrumentado.
+
+## DAY290 — hallazgos laterales (medidos; fuera del PR de la cabeza DDoS salvo indicación)
+
+**PR propio inmediatamente después de la cabeza DDoS (decisión de Alonso):**
+- DEBT-SNIFFER-FLOW-EXPIRY-001: `ShardedFlowManager::cleanup_expired_flows` no se llama nunca (timeout
+  120 s letra muerta) y es O(n²) (`lru_queue->remove` sobre std::list con `lru_pos` disponible). Barrido
+  desde la cola de la LRU en O(caducados), periódico, con lock por shard corto. El timeout es parámetro del
+  contrato de rasgos (reinicia `flow_packet_count`): al entrar, repetir la batería DDoS.
+- DEBT-SNIFFER-FLOWTABLE-CONFIG-001: `shard_count=16`, `max_flows_per_shard=10000`, `flow_timeout_ns`
+  hardcodeados en ring_consumer.cpp:142-145 → sniffer.json con validación estricta (ausente o inválido ⇒
+  no arranca).
+- DEBT-CONFIG-JSON-AUDIT-001: todos los JSON de componentes con `_doc` (rango, formato, límites) y lectura
+  estricta; límites inferidos con pruebas.
+
+**Memoria / robustez:**
+- DEBT-SNIFFER-FLOWSTATS-UNBOUNDED-001: 6–8 vectores por flujo crecen sin límite en flujos largos.
+  Medido: 1,7–2,2 kB por flujo de 1 paquete; techo con LRU llena ~270–350 MB. Bajo flood la LRU expulsa
+  el estado de flujos legítimos (borrado de historia).
+- DEBT-SNIFFER-STATS-COPY-001: `get_flow_stats_copy` copia todos los vectores en cada evento (O(n) oculto).
+- DEBT-SNIFFER-UNBOUNDED-QUEUES-001: `processing_queue_` y `send_queue_` son std::queue sin límite: sin
+  contrapresión y sin visibilidad (ZMQ-DROP solo cuenta el envío final).
+
+**Agregador / otras cabezas (con datos de esas cabezas, por el principio "agregador propio si lo piden los datos"):**
+- DEBT-AGG-SHARED-RANSOMWARE-001: traffic (4) e internal (4) + `source_ip_dispersion` leen el
+  TimeWindowAggregator del procesador de ransomware; su pasada O(10 000) bajo mutex bloquea al hilo del anillo.
+- DEBT-AGG-WINDOWSTATS-MIXED-001: `get_window_stats` mezcla src y dst en `unique_ips` y `unique_ports`.
+- DEBT-AGG-CAP-RATE-SKEW-001: deque con tope 10 000 y expulsión solo por tamaño ⇒ a 1000 pps la ventana
+  "de 30 s" cubre ~10 s: rasgo dependiente de la tasa.
+- Emisión por víctima (contrato v3) junto con el agregador incremental.
+
+**Higiene:**
+- DEBT-SNIFFER-PLUGIN-DOUBLE-001: bloque de plugins duplicado en process_raw_event con
+  PLUGIN_LOADER_ENABLED activo (doble invocación, doble cuenta de descartes).
+- DEBT-SNIFFER-PAYLOAD-UNUSED-001: análisis de carga sin consumidor (hoy solo con verbosidad BASIC+):
+  cablearlo al protobuf o retirarlo.
+- Ficheros muertos trackeados: `ml_defender_features.cpp.bak.day79`, `sharded_flow_manager_fix*.{hpp,cpp}`,
+  `.original`.
+- DEBT-GATE-PROFILE-MISMATCH-001: `pipeline-build PROFILE=production` + `test-components` sin PROFILE
+  ⇒ tests sobre build-debug sin avisar. Hacer que el gate falle o avise si el perfil no coincide.
+
+**Medida:**
+- day289_anillo_medir.sh: la línea `top -H` es inválida para el hilo principal (41–67 % fantasma; kernel
+  0,0 %) y `--sort tid` falla en perf 6.1. Sustituir por `day290_cpu_hilos.sh` (/proc) y `--sort pid`.
+- Caracterizar el techo del anillo en HARDWARE REAL con ≥3 corridas por tasa y dispersión (en la VM, a
+  1000 pps: 43 % y 29 % con el mismo binario).
+- udpB: exactamente 2 filas por flujo (máx. 4) sin explicar. dns/ntp: conteos idénticos (misma secuencia
+  de puertos del generador).
