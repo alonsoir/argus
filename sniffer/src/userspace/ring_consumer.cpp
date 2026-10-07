@@ -572,7 +572,8 @@ void RingBufferConsumer::process_raw_event(const SimpleEvent& event, [[maybe_unu
 
     // ===== Layer 1.5: Payload Analysis (thread-local, ~1-150 μs) =====
     // Only analyze if payload is present
-    if (event.payload_len > 0) {
+    // [PAYLOAD-VERBOSE-D290] solo con verbosidad BASIC+: el resultado solo lo consume el log de abajo
+    if (event.payload_len > 0 && g_verbosity >= FeatureLogger::VerbosityLevel::BASIC) {
         auto payload_features = payload_analyzer_.analyze(event.payload, event.payload_len);
 
         // Check for high-risk indicators
