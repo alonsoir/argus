@@ -35,3 +35,17 @@ Mismo origen (.50) y topología que el ataque, para que solo cambien tamaño y t
 | benign_dns_large_5k_lab.pcap | 5000 | 1200–1442 B (media 1320,7) | UDP sport 53 (DNSSEC/TXT legítimos) -> dport aleatorio | be45b9e75743a974b708c026dbca2bec0361f71969d2b62d246976bda5f861f3 |
 
 Regenerados a /tmp DAY289: sha256 idéntico en los dos.
+
+## DAY291 — línea base caliente desde .51 (derivado, regenerable)
+
+Derivado de `benign_dns_ntp_small_5k_lab.pcap` reescribiendo SOLO la IP de origen (MACs intactas),
+en el client, para etiquetar la línea base por construcción (.51) frente al ataque (.50):
+
+    tcprewrite --infile=/vagrant/datasets/lab/benign_dns_ntp_small_5k_lab.pcap --outfile=/vagrant/datasets/lab/benign_dns_ntp_small_5k_lab_src51.pcap --srcipmap=192.168.100.50/32:192.168.100.51/32 --fixcsum
+
+| pcap | paquetes | origen | sha256 |
+|------|----------|--------|--------|
+| benign_dns_ntp_small_5k_lab_src51.pcap | 5000 | 192.168.100.51 | 1ae61b36009e7cac694389cb5fd8b2d7376087bb2444e9ba9bc265310e61dd56 |
+
+Requiere el alias `sudo ip addr add 192.168.100.51/24 dev eth1` en el client (no persiste al reiniciar la VM).
+La línea base TCP desde .51 es tráfico vivo: `scripts/d281_tcp_upload.py HOST PORT KB_S SEG 192.168.100.51`.
