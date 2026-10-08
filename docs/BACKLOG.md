@@ -7060,3 +7060,45 @@ por no instrumentado.
   1000 pps: 43 % y 29 % con el mismo binario).
 - udpB: exactamente 2 filas por flujo (máx. 4) sin explicar. dns/ntp: conteos idénticos (misma secuencia
   de puertos del generador).
+
+## DAY291 — hallazgos laterales y deuda (fuera del PR de la cabeza DDoS salvo indicación)
+
+**PR de configuración (justo después de la cabeza DDoS):**
+- DEBT-CONFIG-POLICY-001: aplicar a TODOS los componentes la política DAY291 (ausente / tipo erróneo /
+  fuera de rango ⇒ defecto validado + `[CONFIG-DEFAULT]`, el proceso arranca). Hoy `config_manager.cpp`
+  del sniffer toma defectos en SILENCIO (`kernel_json.get(campo, defecto)`) y no valida nada.
+- DEBT-CONFIG-REMINDER-001: recordatorio periódico al admin mientras haya campos con defecto aplicado.
+- DEBT-CONFIG-CHECK-001: `--check-config` local (validar el JSON antes de desplegar, sin arrancar).
+- DEBT-CONFIG-JSON-AUDIT-001 (ya existente): `_doc_*` con tipo, rango, defecto y significado en todos los JSON.
+
+**Enterprise (producción distribuida, lejos):**
+- `--check-config` distribuido vía etcd-clients, lanzable desde un LLM maestro, con el estado de cada instalación.
+- LLM maestro que lee los logs de cada despliegue, detecta `[CONFIG-DEFAULT]`, avisa al admin y propone el
+  valor documentado como óptimo; si el admin no responde en un plazo prudencial, lo corrige él dejando
+  constancia (fecha, hora, motivo). El rango documentado es el LÍMITE DURO para cualquier actor automático;
+  todo cambio auditado y reversible.
+- Pruebas automáticas recorriendo valores exóticos DENTRO del rango para encontrar los valores medidos
+  óptimos por hardware de cada instalación.
+- Cambio de configuración en caliente (local y distribuido): aún no existe.
+
+**EWMA por víctima / cabeza DDoS:**
+- DEBT-TOOLS-H2-EQUIV-001: `scripts/d286_h2_equiv.py` lleva la fórmula SIN histéresis; retirarlo o
+  actualizarlo (hoy lo sustituye `scripts/d291_paridad.py`).
+- DEBT-DDOS-COLD-VICTIM-001: una víctima atacada en frío (< 30 ventanas vistas) no entra en bajo_presion y
+  el ataque se absorbe como antes. La condición de clave caliente se queda (sin ella el ambiente da 10×
+  episodios); medir y diseñar una entrada específica para claves frías.
+- DEBT-DDOS-PULSE-001: ataques en pulsos (ráfagas cortas repetidas): medir entrada/salida de bajo_presion
+  por pulso con la histéresis.
+- DEBT-DDOS-AMBIENT-CLEAN-001: el "ambiente" de `ddos_windows.csv` mezcla destinos de replays viejos
+  (Neris/CTU); capturar ambiente limpio para medir el coste real en falsos positivos.
+- DESIGN-REFLECTION-UNSOLICITED: la señal clásica de reflexión es "respuesta sin pregunta previa"; en la
+  topología actual el sensor no ve las consultas salientes emparejadas. Respuestas DNS legítimas grandes
+  (DNSSEC/TXT) y reflexión son indistinguibles paquete a paquete.
+- DESIGN-FIREWALL-REFLECTORS: en reflexión, las IP de origen son reflectores (servidores inocentes);
+  decidir qué se bloquea en el paso 5 (fusión + firewall).
+
+**Laboratorio:**
+- DEBT-SNIFFER-READER-STARTUP-001: tras un reinicio inmediato del pipeline, el lector tardó ~2 min en
+  publicar la primera ventana (`sondeos_30s=0`); la compuerta de estabilidad esperó. Sin medir la causa.
+- DEBT-LAB-ALIAS51-001: el alias 192.168.100.51 del client no persiste; provisionarlo en el Vagrantfile
+  (y el receptor TCP) para que las corridas en caliente sean reproducibles.
