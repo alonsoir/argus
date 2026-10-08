@@ -33,3 +33,18 @@ controlados por el atacante: los paquetes).
 - Valorar fuzzing de los parsers del sniffer como siguiente paso.
 - Relacionado (futuro): registro de evidencia con limitaciones explícitas
   en las alertas de aRGus (idea tomada del modelo de evidencia de REA).
+
+## Fase 2 — integración asíncrona en Jenkins (tras la primera pasada manual)
+- Job de build: al final archiva binarios release (fingerprint) y dispara
+  `argus-rea-audit` con wait:false / propagate:false. REA nunca bloquea el build.
+- Job `argus-rea-audit` (independiente): Copy Artifact del build concreto ->
+  `rea inspect-binary-layout` por binario (con --filter-output) ->
+  `rea compare` contra la línea base de la última release buena.
+- Reacción escalonada: sin cambios = archivar; cambios informativos = UNSTABLE
+  + diff como artefacto; regresión de seguridad (mitigación perdida, símbolos
+  de debug) = rojo + aviso/issue.
+- Cada informe atado al SHA-256 del binario auditado.
+- REA con versión fijada (`rea-agents@X.Y.Z`), nunca @latest. Requiere Node 22+
+  y pwntools en el agente Jenkins (Linux x64).
+- Vault: el job de auditoría NO accede a las claves de cifrado de aRGus. Como
+  mucho, un token de GitHub para abrir issues, con política de Vault propia.
