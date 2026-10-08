@@ -150,7 +150,7 @@ int main() {
         // 11b. victima ausente en la ventana -> 0
         CHECK(h.lookup(DNS, UDP).rate_ratio == 0.0f);
         // 11c. 40 ventanas a 20 pps (EWMA 19,70, caliente) y ataque a 100 pps -> 5,075;
-        //      la ventana siguiente sigue > 5 porque aprende con alpha/60 (con alpha seria 3,6)
+        //      la ventana siguiente sigue > 5 porque entra en bajo_presion (alfa lento) [DDOS-HYST-D291]
         DdosVictimBoard k;
         for (uint64_t i = 1; i <= 40; ++i) k.publish_window(i, win1s(i, 20, GW));
         k.publish_window(41, win1s(41, 100, GW));
@@ -163,6 +163,62 @@ int main() {
         k.publish_window(143, win1s(143, 100, GW));
         CHECK(std::fabs(k.lookup(GW, UDP).rate_ratio - 10.0f) < 0.01f);
         std::printf("H2: 11c r1=%.4f r2=%.4f\n", static_cast<double>(r1), static_cast<double>(r2));
+    }
+
+    // 12. [DDOS-HYST-D291] histeresis de la EWMA por victima (defectos: k_in 3, k_out 1,5, tau 3600 s)
+    {
+        auto win1s = [](uint64_t i, uint64_t pkts, uint32_t ip) {
+            DdosWindow w = make_window(i * 1'000'000'000ULL, (i + 1) * 1'000'000'000ULL);
+            if (pkts) w.victims.push_back({ip, 17u, pkts, pkts * 482});
+            return w;
+        };
+        // 12a. piloto DAY291: base 10 pps (40 ventanas), ventana parcial a 48 y ataque de 60 pps
+        //      (70 en la victima) con una ventana de jitter a 69: el ratio se SOSTIENE > 6 los
+        //      90 s (sin histeresis colapsaba a ~1 en 20 s)
+        DdosVictimBoard e;
+        for (uint64_t i = 1; i <= 40; ++i) e.publish_window(i, win1s(i, 10, GW));
+        e.publish_window(41, win1s(41, 48, GW));
+        const float r_ent = e.lookup(GW, UDP).rate_ratio;
+        float r_min = 1e9f;
+        for (uint64_t i = 42; i <= 130; ++i) {
+            e.publish_window(i, win1s(i, (i == 45) ? 69 : 70, GW));
+            const float r = e.lookup(GW, UDP).rate_ratio;
+            if (r < r_min) r_min = r;
+        }
+        CHECK(std::fabs(r_ent - 4.8f) < 1e-3f);
+        CHECK(r_min > 6.0f);
+        // 12b. el ataque cae a la base: sale (ratio < 1,5) y una subida sostenida de 2x se absorbe
+        //      con alfa normal; si siguiera en bajo_presion el ratio quedaria ~1,75
+        e.publish_window(131, win1s(131, 10, GW));
+        const float r_sal = e.lookup(GW, UDP).rate_ratio;
+        for (uint64_t i = 132; i <= 161; ++i) e.publish_window(i, win1s(i, 20, GW));
+        const float r_2x = e.lookup(GW, UDP).rate_ratio;
+        CHECK(r_sal < 1.5f);
+        CHECK(r_2x < 1.1f);
+        // 12c. clave fria (< 30 ventanas vistas) NO entra: 60 pps se absorben como antes
+        DdosVictimBoard c;
+        for (uint64_t i = 1; i <= 10; ++i) c.publish_window(i, win1s(i, 10, DNS));
+        for (uint64_t i = 11; i <= 30; ++i) c.publish_window(i, win1s(i, 60, DNS));
+        const float r_fria = c.lookup(DNS, UDP).rate_ratio;
+        CHECK(r_fria < 1.2f);
+        // 12d. validacion de parametros: defectos validos; reglas cruzadas y rangos
+        ::argus::ddos::VictimEwmaParams p;
+        CHECK(::argus::ddos::victim_ewma_params_ok(p));
+        p.k_out = 3.0;
+        CHECK(!::argus::ddos::victim_ewma_params_ok(p));
+        p = {};
+        p.tau_s = 30.0;
+        CHECK(!::argus::ddos::victim_ewma_params_ok(p));
+        p = {};
+        p.alpha = 0.01;
+        p.tau_s = 60.0;
+        CHECK(!::argus::ddos::victim_ewma_params_ok(p));
+        p = {};
+        p.alpha = 0.0;
+        CHECK(!::argus::ddos::victim_ewma_params_ok(p));
+        std::printf("HYST: 12a r_ent=%.4f r_min=%.4f 12b r_sal=%.4f r_2x=%.4f 12c r_fria=%.4f\n",
+                    static_cast<double>(r_ent), static_cast<double>(r_min), static_cast<double>(r_sal),
+                    static_cast<double>(r_2x), static_cast<double>(r_fria));
     }
 
     if (g_fail) {

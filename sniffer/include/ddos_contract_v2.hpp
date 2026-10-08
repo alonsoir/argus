@@ -38,35 +38,71 @@ static_assert(victim_pps(100, 1000) == 100.0f, "100 pkts en 1 s");
 static_assert(victim_pps(50, 500) == 100.0f, "50 pkts en 0,5 s");
 
 // [DDOS-H2-D286] H2: escalada por victima = pps_ventana / max(EWMA previa, suelo).
-// Medida offline DAY286 (v4, opcion B) sobre ddos_windows.csv: dos alfas para que un
-// ataque no envenene la linea base sin dejar falsos positivos permanentes.
-inline constexpr double kVictimEwmaAlpha = 0.1;                      // por ventana
-inline constexpr double kVictimEwmaAlphaAnom = kVictimEwmaAlpha / 60.0;  // clave caliente y anomala
-inline constexpr double kVictimRatioHot = 5.0;                       // K
-inline constexpr uint64_t kVictimWarmWindows = 30;                   // W: ventanas vistas
-inline constexpr double kVictimPpsFloor = 10.0;                      // suelo, pps
-inline constexpr uint64_t kVictimEvictWindows = 3600;                // 1 h sin aparecer -> se olvida
+// [DDOS-HYST-D291] Histeresis: estado bajo_presion por victima. Entra con ratio >= k_in
+// (solo clave caliente), sale con ratio < k_out; dentro, la EWMA aprende con alfa lento =
+// (intervalo/1000)/tau_s (tiempo de absorcion). Medido DAY291: sin histeresis un flood de 7x
+// desaparecia en ~5 s por UNA ventana de jitter (ratio 4,95 < 5). Offline (18 dias, 83
+// arranques): k_in=3, k_out=1,5, tau=3600 s sostienen 30 y 60 pps los 90 s y cuestan 33
+// episodios de ambiente (max 10 s). Los valores vivos vienen de sniffer.json; estos son los
+// DEFECTOS validados, que se usan con aviso [CONFIG-DEFAULT] si el JSON falta o es invalido.
+struct VictimEwmaParams {
+    double alpha = 0.1;             // por ventana, fuera de bajo_presion
+    double tau_s = 3600.0;          // tiempo de absorcion dentro de bajo_presion (s)
+    double k_in = 3.0;              // entra con ratio >= k_in
+    double k_out = 1.5;             // sale con ratio < k_out
+    uint64_t warm_windows = 30;     // ventanas vistas para poder entrar (clave caliente)
+    double floor_pps = 10.0;        // suelo del denominador
+    uint64_t evict_windows = 3600;  // ventanas sin aparecer -> la clave se olvida
+    double interval_ms = 1000.0;    // ventana nominal del lector (ddos_kernel_agg_interval_ms)
+    double alpha_slow() const noexcept { return (interval_ms / 1000.0) / tau_s; }
+};
+
+// Rangos aceptados (inclusive). Documentados tambien en sniffer.json.
+inline constexpr double kVictimEwmaAlphaMin = 0.001, kVictimEwmaAlphaMax = 1.0;
+inline constexpr double kVictimEwmaTauMin = 60.0, kVictimEwmaTauMax = 86400.0;
+inline constexpr double kVictimEwmaKInMin = 1.1, kVictimEwmaKInMax = 100.0;
+inline constexpr double kVictimEwmaKOutMin = 1.0, kVictimEwmaKOutMax = 99.0;
+inline constexpr double kVictimEwmaWarmMin = 0.0, kVictimEwmaWarmMax = 3600.0;
+inline constexpr double kVictimEwmaFloorMin = 0.1, kVictimEwmaFloorMax = 1.0e6;
+inline constexpr double kVictimEwmaEvictMin = 60.0, kVictimEwmaEvictMax = 86400.0;
+
+inline bool victim_ewma_in_range(double x, double lo, double hi) noexcept { return x >= lo && x <= hi; }
+
+// Validacion completa: rangos + reglas cruzadas (k_out < k_in; alfa lento < alfa).
+inline bool victim_ewma_params_ok(const VictimEwmaParams& p) noexcept {
+    return victim_ewma_in_range(p.alpha, kVictimEwmaAlphaMin, kVictimEwmaAlphaMax) &&
+           victim_ewma_in_range(p.tau_s, kVictimEwmaTauMin, kVictimEwmaTauMax) &&
+           victim_ewma_in_range(p.k_in, kVictimEwmaKInMin, kVictimEwmaKInMax) &&
+           victim_ewma_in_range(p.k_out, kVictimEwmaKOutMin, kVictimEwmaKOutMax) &&
+           victim_ewma_in_range(static_cast<double>(p.warm_windows), kVictimEwmaWarmMin, kVictimEwmaWarmMax) &&
+           victim_ewma_in_range(p.floor_pps, kVictimEwmaFloorMin, kVictimEwmaFloorMax) &&
+           victim_ewma_in_range(static_cast<double>(p.evict_windows), kVictimEwmaEvictMin, kVictimEwmaEvictMax) &&
+           p.interval_ms > 0.0 && p.k_out < p.k_in && p.alpha_slow() < p.alpha;
+}
 
 struct VictimEwmaState {
     double ewma = 0.0;
     uint64_t last_seq = 0;
-    uint64_t seen = 0;  // ventanas en que la victima aparecio (delta > 0)
+    uint64_t seen = 0;          // ventanas en que la victima aparecio (delta > 0)
+    bool bajo_presion = false;  // [DDOS-HYST-D291]
 };
 
 // Un paso por ventana en que la victima aparece. Las ventanas sin trafico entre medias
 // cuentan como 0 (decaen con alpha). Devuelve el ratio de ESTA ventana contra la EWMA previa.
-inline double victim_ewma_step(VictimEwmaState& s, uint64_t seq, double pps) noexcept {
+// Si la clave reaparece tras mas de evict_windows, empieza de cero (igual que el arnes offline).
+inline double victim_ewma_step(VictimEwmaState& s, uint64_t seq, double pps,
+                               const VictimEwmaParams& p) noexcept {
+    if (s.seen > 0 && seq > s.last_seq && seq - s.last_seq > p.evict_windows) s = VictimEwmaState{};
     double prior = 0.0;
     if (s.seen > 0) {
         const uint64_t gap = (seq > s.last_seq) ? (seq - s.last_seq) : 1;
-        if (gap <= kVictimEvictWindows) {
-            prior = s.ewma;
-            for (uint64_t i = 1; i < gap; ++i) prior *= (1.0 - kVictimEwmaAlpha);
-        }
+        prior = s.ewma;
+        for (uint64_t i = 1; i < gap; ++i) prior *= (1.0 - p.alpha);
     }
-    const double ratio = pps / (prior > kVictimPpsFloor ? prior : kVictimPpsFloor);
-    const bool hot = s.seen >= kVictimWarmWindows && ratio >= kVictimRatioHot;
-    const double a = hot ? kVictimEwmaAlphaAnom : kVictimEwmaAlpha;
+    const double ratio = pps / (prior > p.floor_pps ? prior : p.floor_pps);
+    if (!s.bajo_presion && s.seen >= p.warm_windows && ratio >= p.k_in) s.bajo_presion = true;
+    else if (s.bajo_presion && ratio < p.k_out) s.bajo_presion = false;
+    const double a = s.bajo_presion ? p.alpha_slow() : p.alpha;
     s.ewma = (1.0 - a) * prior + a * pps;
     s.last_seq = seq;
     s.seen += 1;

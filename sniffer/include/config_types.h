@@ -18,6 +18,7 @@
 
 // JSON parsing
 #include <json/json.h>
+#include "ddos_contract_v2.hpp"  // [DDOS-HYST-D291]
 
 // ============================================================================
 // MACROS DE VALIDACIÓN ESTRICTA JSON
@@ -154,6 +155,7 @@ struct StrictSnifferConfig {
         bool ddos_kernel_agg_enabled = false;
         int ddos_kernel_agg_interval_ms = 1000;
         std::string ddos_kernel_agg_csv_path;
+        ::argus::ddos::VictimEwmaParams ddos_victim_ewma{};  // [DDOS-HYST-D291]
         std::string xdp_mode;
         int ring_buffer_size;
         int max_flows_in_kernel;

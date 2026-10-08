@@ -79,7 +79,7 @@ public:
             float ratio = 0.0f;  // [DDOS-H2-D286] solo con ventana de duracion > 0
             if (s->window_ms > 0) {
                 const double pps = static_cast<double>(v.d_pkts) * 1000.0 / static_cast<double>(s->window_ms);
-                ratio = static_cast<float>(::argus::ddos::victim_ewma_step(ewma_[key], seq, pps));
+                ratio = static_cast<float>(::argus::ddos::victim_ewma_step(ewma_[key], seq, pps, ewma_params_));
             }
             s->by_key[key] = DdosVictimCounts{v.d_pkts, v.d_bytes, ratio};
         }
@@ -112,6 +112,11 @@ public:
 
     uint64_t published() const { return published_.load(std::memory_order_relaxed); }
 
+    // [DDOS-HYST-D291] parametros de la EWMA por victima (de sniffer.json, ya validados).
+    // Llamar ANTES de arrancar el lector: publish_window (escritor unico) es quien los lee.
+    void set_ewma_params(const ::argus::ddos::VictimEwmaParams& p) { ewma_params_ = p; }
+    const ::argus::ddos::VictimEwmaParams& ewma_params() const { return ewma_params_; }
+
 private:
     mutable std::mutex m_;
     std::shared_ptr<const DdosVictimSnapshot> snap_;
@@ -119,9 +124,10 @@ private:
     // [DDOS-H2-D286] estado de la EWMA por victima. SOLO lo toca el hilo que llama a
     // publish_window (el lector del kernel, escritor unico): sin cerrojo propio.
     std::unordered_map<uint64_t, ::argus::ddos::VictimEwmaState> ewma_;
+    ::argus::ddos::VictimEwmaParams ewma_params_{};  // [DDOS-HYST-D291]
     void evict_stale_ewma(uint64_t seq) {
         for (auto it = ewma_.begin(); it != ewma_.end();) {
-            if (seq > it->second.last_seq + ::argus::ddos::kVictimEvictWindows) it = ewma_.erase(it);
+            if (seq > it->second.last_seq + ewma_params_.evict_windows) it = ewma_.erase(it);
             else ++it;
         }
     }
