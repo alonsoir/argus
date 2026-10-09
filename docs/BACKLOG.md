@@ -7102,3 +7102,33 @@ por no instrumentado.
   publicar la primera ventana (`sondeos_30s=0`); la compuerta de estabilidad esperó. Sin medir la causa.
 - DEBT-LAB-ALIAS51-001: el alias 192.168.100.51 del client no persiste; provisionarlo en el Vagrantfile
   (y el receptor TCP) para que las corridas en caliente sean reproducibles.
+
+## DAY292 — batería caliente, reentrenamiento y deuda destapada
+
+**Dataset de la cabeza DDoS (para iterar, ver docs/ml-heads/consejo_day292.md):**
+- DEBT-DDOS-DATASET-SIGNATURE-001: los generadores producen tamaños FIJOS por familia (ntp 482, dns 1442, syn 54) ⇒ el modelo
+  aprende firmas, no comportamiento (familia fuera: sin ntp ~0 %). Tamaños aleatorios y benigno que solape tamaños de ataque.
+  Medido: una respuesta DNS legítima de 1442 B marcada como ataque (modelo A).
+- DEBT-DDOS-DATASET-TCP-BENIGN-001: TCP benigno solo en las corridas SYN ⇒ "sin syn" marca ~99 % del inocente TCP.
+  Base mixta UDP+TCP en todas las corridas.
+- DEBT-DDOS-DATASET-BASE-VOLUME-001: base siempre 10 pps ⇒ victim_rate_ratio y victim_pps colineales; el modelo B eligió un
+  umbral absoluto de ~30-40 pps fijado por las tasas del lab. Bases de 10/50/200 pps.
+- DEBT-DDOS-COLD-VICTIM-001 (ampliada): con el modelo relativo, víctima sin historia (< 30 ventanas) ⇒ recall 0-13 % en frío.
+  Opción: regla de respaldo solo mientras la clave está fría.
+
+**Detección:**
+- DEBT-DDOS-ONSET-LATENCY-001: la foto de víctima es de la ventana de 1 s anterior ⇒ latencia de detección 0,5-1,5 s y filas
+  de arranque indistinguibles (D4 las saca del entrenamiento). Opción: estimación de ventana parcial o ventanas sub-segundo.
+- DEBT-DDOS-ENTRY-PHASE-001: el ratio durante el ataque varía hasta ~17 % según la fase de entrada (ventana parcial < K_in
+  absorbida con α rápido). En la práctica K_in=3 deja fuera 3× y deja entrar 4×.
+- DEBT-FIREWALL-PACKET-DECISION-001: el modelo decide por paquete; antes de cablear el firewall, política k-de-n o por
+  víctima para no bloquear por un FP aislado (paso 5).
+
+**Lab / herramientas:**
+- CERRADA DAY292: day292_post.sh registraba antes de medir (registro huérfano si la medida fallaba). Ahora mide primero.
+- day292_base_medir.py no filtraba dst .1 (conclusión errónea "el TCP de ambiente no comparte clave"; corregida).
+- Identificar ambiente_victima (~90 filas/corrida de otros orígenes hacia .1: quién y qué protocolo) y las 105 filas de
+  centinela del ambiente.
+- Piloto TCP: 1433/1500 segmentos (hipótesis Nagle en atasco de la VM); no se repitió en la batería (2103-2104 por corrida).
+- El CSV del escritor incluye event_kind=2 (EVENT_KIND_RANSOMWARE_WINDOW); las medidas filtran kind=0.
+- Fast alerts: 0 en las corridas SYN calientes (frío: 2-4). Para el paso 4.
