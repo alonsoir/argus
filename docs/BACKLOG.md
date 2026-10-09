@@ -7132,3 +7132,24 @@ por no instrumentado.
 - Piloto TCP: 1433/1500 segmentos (hipótesis Nagle en atasco de la VM); no se repitió en la batería (2103-2104 por corrida).
 - El CSV del escritor incluye event_kind=2 (EVENT_KIND_RANSOMWARE_WINDOW); las medidas filtran kind=0.
 - Fast alerts: 0 en las corridas SYN calientes (frío: 2-4). Para el paso 4.
+
+## DAY292 — tras el Consejo (síntesis en docs/ml-heads/consejo_day292_sintesis.md)
+- DEBT-DDOS-COLD-SUSTAINED-001: medir si un ataque sostenido a víctima fría se detecta alguna vez (hipótesis: la EWMA lo
+  absorbe con α rápido antes de llegar a 30 ventanas). Bloque 1d sobre las corridas frías de DAY288; después fase D de la v3.
+- DEBT-FIREWALL-PER-VICTIM-001: la mitigación (drop temporal) es por VÍCTIMA, no por origen (en reflexión el origen es un
+  reflector). El firewall-acl-agent bloquea hoy por IP de origen con reincidencia (RECIDIVISM-D276): rediseñar en su PR.
+- DEBT-DDOS-STATS-SEEDS-001: repetir los entrenamientos con varias semillas y varios splits por corrida; intervalos.
+- DEBT-DDOS-RATES-UNSEEN-001: tasas no vistas por interpolación (45/75/150) en la batería v3.
+- DEBT-DDOS-LONG-ATTACK-001: ataque largo (horas) bajo τ=3600 s y segundo ataque posterior (pregunta de DeepSeek; refutada
+  solo para 90 s).
+- DEBT-LAB-RING-CEILING-001: el techo del consumidor (~305 ev/s) limita las bases de la v3 a ~250 pps totales.
+- DEBT-LAB-BATTERY-RUNNER-001: ejecutor desatendido de baterías desde el Mac.
+- El PR feat/ddos-head-contract cierra con el firewall en SOMBRA (registra final_decision y lo que habría bloqueado).
+- DEBT-DDOS-EWMA-WARMUP-FREEZE-001 (GLM): congelar la EWMA en el suelo hasta que la clave tenga 30 ventanas; simular offline
+  sobre ventanas frías; si se cumple la predicción (frío 60/100 ~90-100 %), parámetro en sniffer.json con defecto validado.
+- DEBT-DDOS-COLD-RECAPTURE-001: re-capturar el frío con el binario actual (posterior a DAY290/291).
+- DEBT-DDOS-FACTORIZED-001: modelo factorizado (estado de presión + clasificador condicional) frente al plano.
+- DEBT-DDOS-SLOW-RAMP-001: rampas lentas (ratio ≈ 1+1/(αT)) invisibles por diseño: medir en v3 o declarar fuera de alcance.
+- DEBT-DDOS-SRC-NEWNESS-001: rasgo victim_src_newness (contrato v2.1); requiere pcaps multi-origen.
+- DEBT-FIREWALL-SATURATION-BREAKER-001: disyuntor de saturación (> 20 % marcado > 10 s ⇒ alarma + solo modo suave).
+- DEBT-DDOS-BENIGN-BULK-001: benigno bulk (pocos flujos, muchos paquetes, minutos) y ataque de flujo largo en la v3.

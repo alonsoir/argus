@@ -71,3 +71,30 @@ Plan: construir la cabeza tal como se ha trabajado y presentar al Consejo lo con
 3. Puertas (no se negocian): paridad Python/C++; tamaño/latencia del bosque frente a acierto; cero bloqueos en corridas
    benignas E2E. Política del firewall: no bloquear por un paquete aislado (k de n o por víctima) — decidir con el Consejo.
 4. Cablear firewall por `final_decision` (solo DDoS), medir E2E, PR, merge, etiqueta `pre-release-ddos-only-0.0.3`.
+
+## v2 — tras el Consejo (MANDA sobre las secciones 3 y 4 de arriba)
+Síntesis y decisiones D5-D9: docs/ml-heads/consejo_day292_sintesis.md. Propuesta de batería: docs/ml-heads/bateria_v3_propuesta.md.
+- D5 forma del modelo decidida por medida (bloque 1b); partida = B sin victim_pps. D6 el modelo no bloquea con la clave fría.
+- D7 orden: bloque 1 → bloque 2 → bloque 3. D8 el PR cierra con el firewall en SOMBRA. D9 arranque fuera del entrenamiento,
+  dentro del test; latencia caliente y fría por separado. No se adopta nada que contradiga lo ya medido.
+
+### Siguiente (DAY293) — bloque 1, offline, sin tocar el lab (datos: logs/lab/day292/consolidado_caliente.csv, sha f3d6b261…)
+a. Intervalos: A, B y B-sinpps con varias semillas y varios splits POR CORRIDA (no por fila).
+b. Forma: árbol único profundidad 2-4, regla explícita (ratio > K y firma; K barrido en validación), bosque 10-100 árboles ×
+   profundidad 4-14; mismas particiones; recall fuera del arranque, recall@t, FP, familia fuera, nodos. Ganador = el más simple
+   que pase las puertas.
+c. Simulación offline de la política del firewall sobre las 19 corridas: estado de la víctima + k de n + ventanas consecutivas,
+   mitigación por VÍCTIMA; métricas FP_block_event, time_to_block, recall@t; barrido de parámetros en validación.
+d. Víctima fría: recorrer en el tiempo las corridas frías de DAY288 (logs/lab/day289/consolidado.csv y sus CSV) con el modelo
+   relativo; ¿se detecta alguna vez un ataque sostenido? Predicción escrita antes.
+Después: bloque 2 (cablear el ganador en sombra: .hpp con umbrales crudos en el orden exacto de FEATS, paridad Python/C++ del
+modelo, tamaño/latencia, E2E con 0 eventos de bloqueo; el cableado se actualizará al añadir cabezas) y cerrar la propuesta v3
+para llevarla sola al Consejo.
+
+### Añadido tras GLM (adenda en consejo_day292_sintesis.md)
+- 1b además: AUC por rasgo (stump, ninguno > 0,9), modelo FACTORIZADO (presión + clasificador condicional) frente al plano,
+  sonda de encapsulación (+4/+24/+78 B en mean_packet_size).
+- 1c además: disyuntor de saturación y tier duro por par origen→víctima solo como evaluación (la mitigación sigue POR VÍCTIMA).
+- 1d: PRIMERO simular offline "EWMA congelada hasta 30 ventanas" (d291_histeresis_offline.py sobre ventanas frías),
+  predicción GLM: recall frío 60/100 ~90-100 %. Después re-capturar frío con el binario actual (ntp y syn a 60/100 + subida
+  legítima en clave joven para el coste de congelar).
