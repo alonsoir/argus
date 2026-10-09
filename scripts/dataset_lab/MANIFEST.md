@@ -5,6 +5,7 @@ Los pcaps NO se trackean (`datasets/` está en .gitignore). Se regeneran byte a 
 comandos, ejecutados en el defender:
 
     python3 /vagrant/scripts/dataset_lab/gen_syn_flood.py 5000 /vagrant/datasets/lab/syn_flood_5k_lab.pcap
+    python3 /vagrant/scripts/dataset_lab/gen_syn_flood.py 10000 /vagrant/datasets/lab/syn_flood_10k_lab.pcap   # DAY292: batería caliente (90 s a 100 pps)
     python3 /vagrant/scripts/dataset_lab/gen_reflection.py 10000 123 440 /vagrant/datasets/lab/ntp_reflex_10k_lab.pcap
     python3 /vagrant/scripts/dataset_lab/gen_reflection.py 10000 53 1400 /vagrant/datasets/lab/dns_reflex_10k_lab.pcap
 
@@ -14,6 +15,7 @@ Topología: 192.168.100.50 (client eth1, 08:00:27:07:8c:2f) -> 192.168.100.1 (de
 | pcap | paquetes | trama | firma | sha256 |
 |------|----------|-------|-------|--------|
 | syn_flood_5k_lab.pcap | 5000 | 54 B | TCP SYN, sport 49152+i (uno por paquete) -> dport 80 | 41b489e395678bcbac8269967381f359faaf70d3b69ee7fda4b745ce7bf7904d |
+| syn_flood_10k_lab.pcap | 10000 | 54 B | igual que 5k; sus primeros 5000 paquetes son byte a byte el de 5k (misma semilla) | 65b590c76eb1484759616295cc65be46894621bc391d3649fb093d5150f4cd47 |
 | ntp_reflex_10k_lab.pcap | 10000 | 482 B | UDP sport 123 -> dport aleatorio 1024-65535 | 3b2b5f63fce2dbc8ebd71ea1ce20f482c655f38536ca12e2c0b418ac3b3cef5d |
 | dns_reflex_10k_lab.pcap | 10000 | 1442 B | UDP sport 53 -> dport aleatorio 1024-65535, sin fragmentar | 0caae6eb418b3676e04c8d69bd428015da61877f5e8364aff43e45799ad5646e |
 
