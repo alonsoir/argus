@@ -719,7 +719,8 @@ int main(int argc, char** argv) {
         zmq_config.ddos_shadow = config.ddos_shadow;
         std::cout << "[SOMBRA-DDOS] política por víctima " << (config.ddos_shadow.enabled ? "ACTIVA" : "DESACTIVADA")
                   << ": m=" << config.ddos_shadow.m << " k=" << config.ddos_shadow.k << " n=" << config.ddos_shadow.n
-                  << " hold_s=" << config.ddos_shadow.hold_s << " (solo registra, no bloquea)" << std::endl;
+                  << " hold_s=" << config.ddos_shadow.hold_s << " resumen_s=" << config.ddos_shadow.resumen_s
+                  << " (solo registra, no bloquea)" << std::endl;  // [DDOS-SHADOW-OBS-D293]
 
         // Transport configuration (compression)
         if (config.transport.compression.enabled) {

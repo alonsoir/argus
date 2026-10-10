@@ -109,3 +109,19 @@ con filas bajo presión, arranque del atacante fuera). Política del firewall po
   en el orden exacto de FLUJO; paridad Python/C++ del modelo con precisión completa; determinismo; tamaño/latencia del bosque.
 - Firewall en SOMBRA: registra final_decision y lo que habría bloqueado POR VÍCTIMA con m/k/n/hold del JSON; no bloquea.
 - E2E con 0 eventos de bloqueo en corridas benignas; después, PR, merge y etiqueta pre-release-ddos-only-0.0.3.
+
+## v4 — DAY293 cierre: bloque 2 casi cerrado (manda sobre la v3)
+Hecho y pusheado: cabeza ddos_v2 factorizada en C++ (paridad 127930/127930), cableada en el ml-detector (cada evento de flujo,
+sin compuerta de level1; final_decision y overall_threat_score = solo ddos_v2); firewall en SOMBRA (dry_run true, compuerta por
+final_decision, DdosShadowPolicy por víctima, resumen periódico [SOMBRA-DDOS], sin bloqueo por origen).
+MEDIDO EN VIVO (ntp 60 + base .51): ml-detector bajo_presion=700 ataque=600 por 10 s (atacante 100 %, inocente 0 %); 0 en benigno;
+firewall recibió 5335 DROP solo del atacante. La sombra NO abrió INICIO por los dos relojes de event_timestamp
+(DEBT-EVENT-TIMESTAMP-TIMEBASE-001); corregido con el patcher [DDOS-SHADOW-RELOJ-D293] (solo eventos de flujo), compilado,
+PENDIENTE DE VERIFICAR EN VIVO.
+### Siguiente (DAY294)
+1. Repetir E2E ntp 60 (truncate -> pipeline-start -> esperar_estable -> client -> 60 s -> pipeline-stop) y:
+   grep -n 'SOMBRA-DDOS' /vagrant/logs/lab/firewall-agent.log | grep -v 'resumen:'
+   Predicción: 1 INICIO ~3-4 s tras el primer DROP, 1 FIN ~30 s tras el último, origenes solo 192.168.100.50 (~5335).
+2. Si cumple: una corrida benigna más larga (0 INICIO), documentar el bloque 2, cerrar PR feat/ddos-head-contract, EMECAS+++,
+   merge y etiqueta pre-release-ddos-only-0.0.3.
+3. Llevar al Consejo: bloque1_day293.md + propuesta v3 + preguntas (etapa 2 por comportamiento, valores por defecto, disyuntor).

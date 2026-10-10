@@ -180,6 +180,7 @@ FirewallAgentConfig ConfigLoader::load_from_file(const std::string& config_path,
             d.n = get_int("n", 5, 1, 60);
             d.k = get_int("k", d.n < 3 ? d.n : 3, 1, d.n);
             d.hold_s = get_int("hold_s", 30, 1, 3600);
+            d.resumen_s = get_int("resumen_s", 10, 1, 3600);  // [DDOS-SHADOW-OBS-D293]
         }
         config.ddos_shadow = d;
     }

@@ -7170,3 +7170,17 @@ por no instrumentado.
   bloqueo falsos con mitigación por víctima; la política (D14) no está validada frente a FP sin ellas.
 - DEBT-CONFIG-DEFAULTS-PRODUCTION-001: los valores por defecto de todos los JSON son de laboratorio; un despliegue real exige un
   juego optimizado, documentado y consensuado con el personal profesional de la instalación.
+
+## DAY293 — bloque 2 (cableado en sombra)
+- DEBT-EVENT-TIMESTAMP-TIMEBASE-001 (MEDIDO en el E2E): event_timestamp lleva DOS bases de tiempo. Eventos de flujo:
+  segundos desde el arranque de la VM (monotónico, ~33900 s). Otros eventos (cada ~30 s, probablemente ventana ransomware):
+  epoch (~1,79e9 s). Mezclarlos congeló el reloj de la sombra del firewall (corregido: solo eventos de flujo). Revisar todo
+  lo que ordene o una por tiempo de evento: bronce correlation_v1 (flow_start_sec), oro, grafo. PR propio.
+- DEBT-PIPELINE-START-ALIVE-001: make pipeline-start no detecta un pipeline vivo (falla con "duplicate session" a mitad y
+  deja corriendo los binarios viejos). Debe avisar o parar antes de compilar/arrancar.
+- DEBT-FIREWALL-CONFIG-SILENT-DEFAULTS-001: get_optional del firewall aplica defectos en silencio y convierte tipos sin
+  avisar (cubierto por el parser común de arranque, DEBT-CONFIG-CHECK-001).
+- DEBT-FIREWALL-RATELIMIT-RULE-001: en modo real el firewall instala un límite de conexiones TCP nuevas (100/60 s -> DROP)
+  independiente de las cabezas; revisar en el PR de la mitigación por víctima.
+- DEBT-DDOS-V2-MODEL-ID-001: kModelName/kModelVersion de ddos_v2 escritos a mano en ddos_v2_head.hpp; que los emita el exportador.
+- Registro para el paper: hasta DAY293 el firewall del lab corría con dry_run=false y bloqueaba IPs de ORIGEN por level1.

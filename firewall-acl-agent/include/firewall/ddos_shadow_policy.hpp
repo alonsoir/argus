@@ -26,6 +26,7 @@ struct DdosShadowParams {
     int k = 3;
     int n = 5;
     int hold_s = 30;
+    int resumen_s = 10;  // [DDOS-SHADOW-OBS-D293] segundos entre resúmenes (reloj de pared)
 };
 
 struct DdosShadowRecord {
