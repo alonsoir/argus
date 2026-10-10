@@ -715,6 +715,12 @@ int main(int argc, char** argv) {
         // ✅ Day 61: CSV batch logger output directory
         zmq_config.log_directory = config.csv_batch_logger.output_dir;
 
+        // [DDOS-SHADOW-D293] política por víctima en sombra (solo registra)
+        zmq_config.ddos_shadow = config.ddos_shadow;
+        std::cout << "[SOMBRA-DDOS] política por víctima " << (config.ddos_shadow.enabled ? "ACTIVA" : "DESACTIVADA")
+                  << ": m=" << config.ddos_shadow.m << " k=" << config.ddos_shadow.k << " n=" << config.ddos_shadow.n
+                  << " hold_s=" << config.ddos_shadow.hold_s << " (solo registra, no bloquea)" << std::endl;
+
         // Transport configuration (compression)
         if (config.transport.compression.enabled) {
             zmq_config.compression_enabled = true;

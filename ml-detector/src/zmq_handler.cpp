@@ -467,6 +467,7 @@ void ZMQHandler::process_event(const std::string& message) {
         // sin compuerta de level1 (sin veto, DAY272). Etapa 1: victim_rate_ratio >= k_ratio; etapa 2: bosque sobre los
         // 6 rasgos de flujo de ddos_embedded (contrato v2). Decide final_decision (más abajo).
         bool ddos_v2_attack = false;
+        double ddos_v2_score = 0.0;  // [DDOS-SHADOW-D293] p1 de ddos_v2 si pasa la etapa 1; 0 si no
         if (is_flow_event && config_.ml.ddos_v2.enabled && event.has_network_features() &&
             event.network_features().has_ddos_embedded()) {
             const auto& dv2 = event.network_features().ddos_embedded();
@@ -475,6 +476,7 @@ void ZMQHandler::process_event(const std::string& message) {
                                                   dv2.flow_completion_rate(), dv2.victim_rate_ratio()};
             const auto r2 = ml_defender::ddos_v2::evaluate(in2, config_.ml.ddos_v2.k_ratio);
             ddos_v2_attack = (r2.clase == 1);
+            ddos_v2_score = r2.stage1 ? r2.p1 : 0.0;  // [DDOS-SHADOW-D293]
             auto* p2 = ml_analysis->add_level2_specialized_predictions();
             p2->set_model_name(ml_defender::ddos_v2::kModelName);
             p2->set_model_version(ml_defender::ddos_v2::kModelVersion);
@@ -499,7 +501,9 @@ void ZMQHandler::process_event(const std::string& message) {
         event.set_ml_detector_score(ml_score);
 
         double final_score = std::max(fast_score, ml_score);
-        event.set_overall_threat_score(final_score);
+        // [DDOS-SHADOW-D293] opción (b): overall_threat_score = p1 de ddos_v2, coherente con final_decision. La puntuación
+        // dual sigue en final_score solo para usos internos (umbral RAG, log, veredicto MALICIOUS/BENIGN).
+        event.set_overall_threat_score(ddos_v2_score);
 
         double score_divergence = std::abs(fast_score - ml_score);
 

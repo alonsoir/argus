@@ -154,6 +154,35 @@ FirewallAgentConfig ConfigLoader::load_from_file(const std::string& config_path,
     }
     // ADR-042: cargar IRP config desde isolate.json (path fijo producción)
     config.irp = parse_irp("/etc/ml-defender/firewall-acl-agent/isolate.json");
+
+    // [DDOS-SHADOW-D293] política por víctima en sombra. El JSON manda; campo ausente o inválido -> defecto validado,
+    // aviso [CONFIG-DEFAULT] con campo, formato y límites, y el agente arranca igual. Validación explícita (sin get_optional).
+    {
+        ::mldefender::firewall::DdosShadowParams d;
+        const Json::Value s = root.isMember("ddos_shadow") ? root["ddos_shadow"] : Json::Value(Json::nullValue);
+        if (!s.isObject()) {
+            std::cerr << "[CONFIG-DEFAULT] ddos_shadow ausente o no es un objeto: enabled=true m=5 k=3 n=5 hold_s=30\n";
+        } else {
+            auto get_int = [&s](const char* name, int def, int lo, int hi) -> int {
+                if (s.isMember(name) && s[name].isInt() && s[name].asInt() >= lo && s[name].asInt() <= hi) {
+                    return s[name].asInt();
+                }
+                std::cerr << "[CONFIG-DEFAULT] ddos_shadow." << name << " ausente, no entero o fuera de rango (entero en ["
+                          << lo << ", " << hi << "]): se usa " << def << "\n";
+                return def;
+            };
+            if (s.isMember("enabled") && s["enabled"].isBool()) {
+                d.enabled = s["enabled"].asBool();
+            } else {
+                std::cerr << "[CONFIG-DEFAULT] ddos_shadow.enabled ausente o no booleano (formato true|false): se usa true\n";
+            }
+            d.m = get_int("m", 5, 1, 1000);
+            d.n = get_int("n", 5, 1, 60);
+            d.k = get_int("k", d.n < 3 ? d.n : 3, 1, d.n);
+            d.hold_s = get_int("hold_s", 30, 1, 3600);
+        }
+        config.ddos_shadow = d;
+    }
     
     if (root.isMember("validation")) {
         config.validation = parse_validation(root["validation"]);

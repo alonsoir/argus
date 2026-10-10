@@ -405,6 +405,16 @@ if(BUILD_TESTS)
     )
     add_test(NAME test_ip_cidr_validator COMMAND test_ip_cidr_validator)
 
+    # test_ddos_shadow_policy — DAY293, política por víctima en sombra (header-only, propio CHECK) [DDOS-SHADOW-D293]
+    add_executable(test_ddos_shadow_policy
+            tests/unit/test_ddos_shadow_policy.cpp
+    )
+    target_include_directories(test_ddos_shadow_policy
+            PRIVATE
+            ${CMAKE_CURRENT_SOURCE_DIR}/include
+    )
+    add_test(NAME test_ddos_shadow_policy COMMAND test_ddos_shadow_policy)
+
 # ── Test A: Autonomy E2E DAY 156 ─────────────────────────────────────────────
 add_executable(test_autonomy_e2e
     tests/test_autonomy_e2e.cpp

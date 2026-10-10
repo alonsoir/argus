@@ -8,6 +8,7 @@
 #include <vector>
 #include <chrono>
 #include <json/json.h>
+#include "firewall/ddos_shadow_policy.hpp"  // [DDOS-SHADOW-D293]
 
 namespace mldefender::firewall {
 
@@ -207,6 +208,7 @@ struct FirewallAgentConfig {
     CsvBatchLoggerConfig csv_batch_logger;  // ✅ Day 59
     IrpConfig irp;                           // ADR-042 auto-isolate
     AutonomyConfig autonomy;   // DAY 155 — DEBT-FIREWALL-DENY-SELECTIVE-001
+    DdosShadowParams ddos_shadow;  // [DDOS-SHADOW-D293] política por víctima en sombra
 
 
     bool is_valid() const { return true; }

@@ -11,10 +11,18 @@
     "role": "pipeline_endpoint"
   },
   "operation": {
-    "dry_run": false,
+    "dry_run": true,
     "simulate_block": true,
     "validation_strictness": "high",
     "max_processing_delay_ms": 10
+  },
+  "ddos_shadow": {
+    "_doc": "[DDOS-SHADOW-D293] Política por víctima {dst_ip, proto} en SOMBRA (docs/ml-heads/bloque1_day293.md): solo registra [SOMBRA-DDOS] INICIO/FIN, no bloquea. Ventanas de 1 s por marca de tiempo del evento. enabled: true|false (defecto true). m: entero en [1, 1000], eventos DROP mínimos para que una ventana sea positiva (defecto 5). n: entero en [1, 60], ventanas de la cola (defecto 5). k: entero en [1, n], positivas en la cola para INICIO (defecto 3). hold_s: entero en [1, 3600], segundos sin positiva para FIN (defecto 30). Campo ausente o inválido: defecto con [CONFIG-DEFAULT] y el agente arranca igual. Valores de LABORATORIO (validados solo en latencia; frente a FP pendientes de la batería v3).",
+    "enabled": true,
+    "m": 5,
+    "k": 3,
+    "n": 5,
+    "hold_s": 30
   },
   "_comment_transport": "NEW FOR DAY 23: Decryption + Decompression of incoming data from ml-detector",
   "transport": {
