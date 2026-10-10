@@ -7153,3 +7153,20 @@ por no instrumentado.
 - DEBT-DDOS-SRC-NEWNESS-001: rasgo victim_src_newness (contrato v2.1); requiere pcaps multi-origen.
 - DEBT-FIREWALL-SATURATION-BREAKER-001: disyuntor de saturación (> 20 % marcado > 10 s ⇒ alarma + solo modo suave).
 - DEBT-DDOS-BENIGN-BULK-001: benigno bulk (pocos flujos, muchos paquetes, minutos) y ataque de flujo largo en la v3.
+
+## DAY293 — bloque 1 offline (docs/ml-heads/bloque1_day293.md)
+- DEBT-DDOS-EWMA-WARMUP-FREEZE-001: CERRADA, medida y no adoptada (1d; D10).
+- DEBT-DDOS-COLD-SUSTAINED-001: CERRADA con resultado: con la pizarra actual, un ataque constante sobre una víctima sin historia
+  es invisible para el estado de presión (0/15 corridas frías). Va al paper como límite.
+- DEBT-DDOS-BOARD-SNAPSHOT-001: foto de la pizarra por víctima al parar y recarga al arrancar; firmada y cifrada con clave en
+  Vault aprovisionada en `make provision-crypto`; antigüedad máxima y ruta en sniffer.json con defecto validado; sin rotación
+  por ahora (D11). PR propio, después de la cabeza DDoS.
+- DEBT-DDOS-COLD-ADMIN-RULE-001: regla fría declarada por el admin en el JSON, fuera del modelo (D12).
+- DEBT-DDOS-STAGE2-BEHAVIOUR-001: rasgos de comportamiento por origen para la etapa 2 (cuota del origen en los pps de la víctima,
+  novedad del origen): contrato v2.1. La etapa 2 actual separa por firmas de tamaño del lab (1b).
+- DEBT-DDOS-ENCAPS-001: el factorizado es frágil ante encapsulación (+78 B ⇒ FP inocente durante 24 %): aumento de datos en v3.
+- DEBT-DDOS-SATURATION-BREAKER-001: redefinir el disyuntor de saturación (tal como se propuso salta en todo ataque real).
+- DEBT-DDOS-V3-BENIGN-SURGE-001: la v3 debe incluir subidas benignas ≥ 4× sin ataque: único origen posible de eventos de
+  bloqueo falsos con mitigación por víctima; la política (D14) no está validada frente a FP sin ellas.
+- DEBT-CONFIG-DEFAULTS-PRODUCTION-001: los valores por defecto de todos los JSON son de laboratorio; un despliegue real exige un
+  juego optimizado, documentado y consensuado con el personal profesional de la instalación.

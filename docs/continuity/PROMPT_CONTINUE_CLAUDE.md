@@ -98,3 +98,14 @@ para llevarla sola al Consejo.
 - 1d: PRIMERO simular offline "EWMA congelada hasta 30 ventanas" (d291_histeresis_offline.py sobre ventanas frías),
   predicción GLM: recall frío 60/100 ~90-100 %. Después re-capturar frío con el binario actual (ntp y syn a 60/100 + subida
   legítima en clave joven para el coste de congelar).
+
+## v3 — DAY293: bloque 1 CERRADO (manda sobre la v2)
+Resumen, decisiones D10-D14 y preguntas para el Consejo: docs/ml-heads/bloque1_day293.md. Scripts: scripts/d293_*.py.
+Modelo: FACTORIZADO (etapa 1 victim_rate_ratio >= K=3 global; etapa 2 RandomForest sobre los 6 rasgos de flujo, entrenado solo
+con filas bajo presión, arranque del atacante fuera). Política del firewall por víctima en sombra: m=5, k/n=3/5, hold=30 s
+(defectos de laboratorio, en el JSON del firewall).
+### Siguiente — bloque 2: cablear en sombra
+- Etapa 1 en el ml-detector: K en su JSON (defecto validado + aviso). Etapa 2: .hpp generado con umbrales CRUDOS (sin MinMax)
+  en el orden exacto de FLUJO; paridad Python/C++ del modelo con precisión completa; determinismo; tamaño/latencia del bosque.
+- Firewall en SOMBRA: registra final_decision y lo que habría bloqueado POR VÍCTIMA con m/k/n/hold del JSON; no bloquea.
+- E2E con 0 eventos de bloqueo en corridas benignas; después, PR, merge y etiqueta pre-release-ddos-only-0.0.3.
