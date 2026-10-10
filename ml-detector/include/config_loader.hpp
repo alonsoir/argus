@@ -144,6 +144,12 @@ struct DetectorConfig {
             float level3_web{};
             float level3_internal{};
         } thresholds;
+
+        // [DDOS-V2-D293] cabeza DDoS v2 factorizada: etapa 1 = victim_rate_ratio >= k_ratio
+        struct {
+            bool enabled = true;
+            double k_ratio = 3.0;
+        } ddos_v2;
         
         struct ModelConfig {
             bool enabled;

@@ -1,3 +1,4 @@
+#include "ml_defender/ddos_v2_head.hpp"  // [DDOS-V2-D293]
 #include "csv_event_writer.hpp"
 #include <crypto_transport/contexts.hpp>
 #include <filesystem>
@@ -64,6 +65,10 @@ ZMQHandler::ZMQHandler(
     // Log detector status
     logger_->info("📊 ML Detectors loaded:");
     logger_->info("   Level 1: General Attack (ONNX)");
+    logger_->info("[DDOS-V2] cabeza factorizada {}: modelo {} ({}), {} árboles, {} rasgos de flujo, k_ratio={}",  // [DDOS-V2-D293]
+                  config_.ml.ddos_v2.enabled ? "ACTIVA" : "DESACTIVADA", ml_defender::ddos_v2::kModelName,
+                  ml_defender::ddos_v2::kModelVersion, ml_defender::ddos_v2::kNumTrees,
+                  ml_defender::ddos_v2::kNumFeatures, config_.ml.ddos_v2.k_ratio);
     if (ddos_detector_) {
         logger_->info("   Level 2: DDoS ({} trees, {} features)",
                      ddos_detector_->num_trees(), ddos_detector_->num_features());
@@ -337,6 +342,8 @@ void ZMQHandler::run() {
                 const uint64_t d_ddos = summary_delta(s.detections_ddos, summary_prev.detections_ddos);
                 const uint64_t d_rw   = summary_delta(s.detections_ransomware, summary_prev.detections_ransomware);
                 const uint64_t d_int  = summary_delta(s.detections_internal, summary_prev.detections_internal);
+                const uint64_t d_v2p  = summary_delta(s.ddos_v2_presion, summary_prev.ddos_v2_presion);  // [DDOS-V2-D293]
+                const uint64_t d_v2a  = summary_delta(s.ddos_v2_ataque, summary_prev.ddos_v2_ataque);
                 if (d_drop > 0) {
                     logger_->warn("[ZMQ-DROP-OUT] descartados={} en los últimos {} s (total={})",
                                   d_drop, secs, s.send_failures);
@@ -344,6 +351,10 @@ void ZMQHandler::run() {
                 if (d_ddos + d_rw + d_int > 0) {
                     logger_->warn("[DETECCIONES] ddos={} ransomware={} internal={} en los últimos {} s",
                                   d_ddos, d_rw, d_int, secs);
+                }
+                if (d_v2p > 0) {  // [DDOS-V2-D293]
+                    logger_->warn("[DDOS-V2] bajo_presion={} ataque={} en los últimos {} s (k_ratio={})",
+                                  d_v2p, d_v2a, secs, config_.ml.ddos_v2.k_ratio);
                 }
                 summary_prev = s;
                 summary_last = now;
@@ -452,6 +463,35 @@ void ZMQHandler::process_event(const std::string& message) {
             ml_analysis->set_level1_confidence(confidence_l1);
         }
 
+        // [DDOS-V2-D293] cabeza DDoS v2 factorizada (docs/ml-heads/bloque1_day293.md): corre en TODO evento de flujo,
+        // sin compuerta de level1 (sin veto, DAY272). Etapa 1: victim_rate_ratio >= k_ratio; etapa 2: bosque sobre los
+        // 6 rasgos de flujo de ddos_embedded (contrato v2). Decide final_decision (más abajo).
+        bool ddos_v2_attack = false;
+        if (is_flow_event && config_.ml.ddos_v2.enabled && event.has_network_features() &&
+            event.network_features().has_ddos_embedded()) {
+            const auto& dv2 = event.network_features().ddos_embedded();
+            const ml_defender::ddos_v2::Input in2{dv2.syn_ack_ratio(), dv2.mean_packet_size(), dv2.reflection_signature(),
+                                                  dv2.packet_size_entropy(), dv2.flow_packet_count(),
+                                                  dv2.flow_completion_rate(), dv2.victim_rate_ratio()};
+            const auto r2 = ml_defender::ddos_v2::evaluate(in2, config_.ml.ddos_v2.k_ratio);
+            ddos_v2_attack = (r2.clase == 1);
+            auto* p2 = ml_analysis->add_level2_specialized_predictions();
+            p2->set_model_name(ml_defender::ddos_v2::kModelName);
+            p2->set_model_version(ml_defender::ddos_v2::kModelVersion);
+            p2->set_model_type(protobuf::ModelPrediction::RANDOM_FOREST_DDOS);
+            p2->set_prediction_class(ddos_v2_attack ? "DDOS" : (r2.stage1 ? "NORMAL" : "NO_PRESSURE"));
+            p2->set_confidence_score(static_cast<float>(r2.p1));
+            if (r2.stage1) {
+                std::lock_guard<std::mutex> lock(stats_mutex_);
+                stats_.ddos_v2_presion++;
+                if (ddos_v2_attack) {
+                    stats_.ddos_v2_ataque++;
+                }
+            }
+            logger_->debug("🤖 DDoS-v2: etapa1={} ratio={:.3f} p1={:.4f} clase={} event={}",
+                           r2.stage1, dv2.victim_rate_ratio(), r2.p1, r2.clase, event.event_id());
+        }
+
         // Dual-Score Architecture
         // [EVENT-KIND-D285] sin rasgos de flujo el ML no se evalua: 0 (no 1 - 0 = 1)
         double ml_score    = !is_flow_event ? 0.0
@@ -544,9 +584,9 @@ void ZMQHandler::process_event(const std::string& message) {
                 std::chrono::system_clock::now().time_since_epoch()
             ).count())
         );
-        provenance->set_final_decision(
-            final_score >= config_.scoring.malicious_threshold ? "DROP" : "ALLOW"
-        );
+        // [DDOS-V2-D293] final_decision = SOLO la cabeza DDoS v2 (única certificada; DAY285: las cabezas no arregladas
+        // no cuentan). La puntuación dual (fast + level1) sigue en overall_threat_score, sin decidir.
+        provenance->set_final_decision(ddos_v2_attack ? "DROP" : "ALLOW");
 
         if (score_divergence > config_.scoring.divergence_warn_threshold) {
             provenance->set_discrepancy_reason(

@@ -232,6 +232,34 @@ DetectorConfig ConfigLoader::load() {
         config.ml.thresholds.level3_anomaly = get_required<float>(thresh, "level3_anomaly", "ml.thresholds");
         config.ml.thresholds.level3_web = get_required<float>(thresh, "level3_web", "ml.thresholds");
         config.ml.thresholds.level3_internal = get_required<float>(thresh, "level3_internal", "ml.thresholds");
+
+        // [DDOS-V2-D293] ml.ddos_v2: el JSON manda; si un campo falta o es inválido se aplica el defecto validado,
+        // se avisa con [CONFIG-DEFAULT] (campo, formato y límites) y el ml-detector arranca igual.
+        {
+            constexpr double kDefK = 3.0;
+            constexpr double kMinK = 1.5;
+            constexpr double kMaxK = 50.0;
+            config.ml.ddos_v2.enabled = true;
+            config.ml.ddos_v2.k_ratio = kDefK;
+            if (!ml.contains("ddos_v2") || !ml["ddos_v2"].is_object()) {
+                std::cerr << "[CONFIG-DEFAULT] ml.ddos_v2 ausente o no es un objeto: enabled=true, k_ratio=" << kDefK
+                          << " (número en [" << kMinK << ", " << kMaxK << "])\n";
+            } else {
+                const auto& d2 = ml["ddos_v2"];
+                if (d2.contains("enabled") && d2["enabled"].is_boolean()) {
+                    config.ml.ddos_v2.enabled = d2["enabled"].get<bool>();
+                } else {
+                    std::cerr << "[CONFIG-DEFAULT] ml.ddos_v2.enabled ausente o no booleano (formato true|false): se usa true\n";
+                }
+                if (d2.contains("k_ratio") && d2["k_ratio"].is_number() &&
+                    d2["k_ratio"].get<double>() >= kMinK && d2["k_ratio"].get<double>() <= kMaxK) {
+                    config.ml.ddos_v2.k_ratio = d2["k_ratio"].get<double>();
+                } else {
+                    std::cerr << "[CONFIG-DEFAULT] ml.ddos_v2.k_ratio ausente, no numérico o fuera de rango (número en ["
+                              << kMinK << ", " << kMaxK << "]): se usa " << kDefK << "\n";
+                }
+            }
+        }
         
         // Level 1
         auto& l1 = ml["level1"];

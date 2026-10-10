@@ -152,6 +152,11 @@
       "level3_web": 0.6,
       "level3_internal": 0.65
     },
+    "ddos_v2": {
+      "_doc": "[DDOS-V2-D293] Cabeza DDoS v2 factorizada (docs/ml-heads/bloque1_day293.md). enabled: true|false, defecto true. k_ratio: número en [1.5, 50], defecto 3.0 = umbral de la etapa 1 sobre victim_rate_ratio (alineado con k_in de la histéresis del sniffer). Si un campo falta o es inválido se aplica el defecto con [CONFIG-DEFAULT] y el ml-detector arranca igual. Valores de LABORATORIO: en un despliegue real se consensúan con el personal de la instalación.",
+      "enabled": true,
+      "k_ratio": 3.0
+    },
     "level1": {
       "enabled": true,
       "name": "attack_detector",

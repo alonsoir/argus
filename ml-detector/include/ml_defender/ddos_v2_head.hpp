@@ -12,6 +12,11 @@
 
 namespace ml_defender::ddos_v2 {
 
+// [DDOS-V2-D293] identidad del modelo (consolidado f3d6b261, bloque 1 DAY293). Mantener en sintonía con la cabecera
+// de ddos_v2_forest_inline.hpp al regenerarlo (deuda: que lo emita el exportador).
+inline constexpr const char* kModelName = "ddos_v2_fact_rf";
+inline constexpr const char* kModelVersion = "day293-f3d6b261";
+
 struct Input {
     float syn_ack_ratio;
     float mean_packet_size;
