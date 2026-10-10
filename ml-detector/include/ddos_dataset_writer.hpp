@@ -50,9 +50,9 @@ public:
         const unsigned long long ts_ns =
             static_cast<unsigned long long>(ts.seconds()) * 1000000000ULL +
             static_cast<unsigned long long>(ts.nanos());
-        char buf[1024];
+        char buf[1024];  // [DDOS-V2-D293] rasgos con %.9g: round-trip exacto de float (%.6g redondeaba)
         const int n = std::snprintf(buf, sizeof(buf),
-            "%llu,%s,%s,%s,%u,%u,%u,%d,%.6g,%.6g,%.6g,%.6g,%.6g,%.6g,%.6g,%.6g,%.6f,%d\n",
+            "%llu,%s,%s,%s,%u,%u,%u,%d,%.9g,%.9g,%.9g,%.9g,%.9g,%.9g,%.9g,%.9g,%.6f,%d\n",
             ts_ns, nf.community_id().c_str(), nf.source_ip().c_str(), nf.destination_ip().c_str(),
             static_cast<unsigned>(nf.source_port()), static_cast<unsigned>(nf.destination_port()),
             static_cast<unsigned>(nf.protocol_number()), static_cast<int>(ev.event_kind()),
