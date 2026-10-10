@@ -7184,3 +7184,6 @@ por no instrumentado.
   independiente de las cabezas; revisar en el PR de la mitigación por víctima.
 - DEBT-DDOS-V2-MODEL-ID-001: kModelName/kModelVersion de ddos_v2 escritos a mano en ddos_v2_head.hpp; que los emita el exportador.
 - Registro para el paper: hasta DAY293 el firewall del lab corría con dry_run=false y bloqueaba IPs de ORIGEN por level1.
+- DEBT-LAB-VM-NTP-001: sincronizar por NTP (chrony) los relojes de las VMs del Vagrantfile (defender, client, sensores).
+  Medido DAY293: el client va ~14 s por detrás del defender. No causa el fallo de la sombra (todo lo marca el defender),
+  pero complica cruzar logs entre VMs. Hacerlo en el aprovisionamiento (Vagrantfile / provision.sh), no a mano.

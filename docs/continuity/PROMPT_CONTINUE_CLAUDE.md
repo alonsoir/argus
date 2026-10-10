@@ -125,3 +125,5 @@ PENDIENTE DE VERIFICAR EN VIVO.
 2. Si cumple: una corrida benigna más larga (0 INICIO), documentar el bloque 2, cerrar PR feat/ddos-head-contract, EMECAS+++,
    merge y etiqueta pre-release-ddos-only-0.0.3.
 3. Llevar al Consejo: bloque1_day293.md + propuesta v3 + preguntas (etapa 2 por comportamiento, valores por defecto, disyuntor).
+0. (antes del E2E) NTP en las VMs del lab (DEBT-LAB-VM-NTP-001): chrony en defender y client vía aprovisionamiento; comprobar
+   el desfase con `date +%s.%N` en ambas antes y después.
