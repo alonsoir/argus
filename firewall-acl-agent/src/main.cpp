@@ -564,7 +564,13 @@ int main(int argc, char** argv) {
                 "set_name", ipset_cfg.set_name,
                 "status", exists ? "EXISTS" : "MISSING");
 
-            if (!exists) {
+            if (!exists && config.operation.dry_run) {  // [FW-DRYRUN-VERIF-D294] en dry_run no se crean: no es fallo
+                FIREWALL_LOG_INFO("IPSet verification skipped (dry-run: ipset not created)",
+                    "logical_name", name,
+                    "set_name", ipset_cfg.set_name);
+                std::cout << "[DRY-RUN] verificación de ipset omitida (no se crea en dry_run): "
+                          << ipset_cfg.set_name << std::endl;
+            } else if (!exists) {
                 FIREWALL_LOG_CRASH("IPSet verification failed",
                     "logical_name", name,
                     "set_name", ipset_cfg.set_name);

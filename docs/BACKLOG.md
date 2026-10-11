@@ -7198,3 +7198,14 @@ por no instrumentado.
   Aplicable sin reaprovisionar todo: vagrant provision defender --provision-with ntp-sync; vagrant provision client --provision-with client-ntp.
 - Nota: Vagrantfile:182 `iptables -t nat -A POSTROUTING -o eth1 -j MASQUERADE` es regla muerta (eth1 = 192.168.56.20 host-only,
   sin Internet; 0 paquetes). El client sin Internet es diseño del lab (comentario de client-setup). No se toca.
+- [FW-DRYRUN-VERIF-D294] ARREGLADO: con dry_run=true el firewall no crea los ipsets pero la verificación del Day 52
+  (main.cpp) exigía que existieran -> [FATAL] y moría al arrancar en un kernel limpio (tras rearrancar la VM). Ahora en
+  dry_run la verificación se omite con aviso [DRY-RUN]; en modo real, mismo FATAL. Ayer no se vio porque los ipsets
+  seguían en el kernel de corridas con dry_run=false.
+- DEBT-PIPELINE-START-COMPONENT-DOWN-001: make pipeline-start termina "bien" aunque un componente quede STOPPED
+  (medido DAY294: firewall muerto, solo se veía en el estado final). Debe fallar o avisar en claro. Misma familia que
+  DEBT-PIPELINE-START-ALIVE-001.
+- E2E DAY294 de la sombra DDoS (ntp 60 + base .51, VMs sincronizadas por NTP): 1 INICIO (2 s de reloj de eventos tras el
+  primer DROP), 1 FIN (29,3 s tras el último DROP, hold=30), origenes solo 192.168.100.50:5357, 0 del inocente .51,
+  p1_min 0,96. Último DROP en el defender 05:01:11,05 UTC frente a fin_ataque del client 05:01:11. Evidencia en
+  logs/lab/day294/ (sin trackear).
