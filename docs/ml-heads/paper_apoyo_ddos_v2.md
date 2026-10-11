@@ -29,7 +29,7 @@ solo bajo presión) detecta en vivo sin castigar al tráfico benigno concurrente
 
 ## 3. Resultados citables (en vivo, DAY294)
 
-- Latencia: primer DROP ~1,3 s tras el inicio del ataque; INICIO 2 s después (k=3 ventanas); FIN 29,3 s tras el último DROP.
+- Latencia: primer DROP 0,8-1,8 s tras el inicio del ataque; INICIO 2 s después (k=3 ventanas); FIN 29,3 s tras el último DROP.
 - Especificidad con inocente concurrente hacia la misma víctima: 0 de sus eventos marcados; 5357 DROP, todos del atacante.
 - Benigno fuera de distribución que activa la etapa 1 (dnsperf real 30 y 100 q/s, TCP 50 KB/s): 2 positivos en ~18000
   filas bajo presión (~0,01 %), absorbidos por k=3/5; 0 INICIO.

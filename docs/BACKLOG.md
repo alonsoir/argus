@@ -7222,3 +7222,16 @@ por no instrumentado.
 - DEBT-PARQUET-VALIDATOR-FIRST-ROW-001: validate_roundtrip.py solo comprueba timestamp_utc_ns de la PRIMERA fila de
   cada fichero; esconde filas monotónicas en el resto y solo destapa el problema cuando un fichero empieza por una.
   Debe comprobar todas las filas (o contar y fallar con el recuento por fichero).
+
+## DAY294 — tras el Consejo (decisiones D15-D22 en docs/ml-heads/consejo_day294_sintesis.md)
+- fix/event-timestamp-timebase (EN CURSO): DEBT-EVENT-TIMESTAMP-TIMEBASE-001 por D16 (monotónico + ancla + CLOCK_STEP
+  + boot_id/node_id/seq), D17 (retraso enq/deq, eventos por tipo; cierra DEBT-SHADOW-EVENT-CLOCK-LAG-001 y
+  DEBT-FIREWALL-NONFLOW-EVENTS-001 si se explican), DEBT-PARQUET-VALIDATOR-FIRST-ROW-001, y D15 como aceptación.
+- DEBT-DDOS-V2-AUDIT-TWIN-001 (A2): corrida gemelo .61; reformular "0 del inocente" como discriminación por tipo de tráfico.
+- DEBT-DDOS-V2-ACCOUNTING-001 (A1): 5357 DROP frente a un máximo de 5292-5352 posibles; ¿duplicados?
+- DEBT-DDOS-V2-LONG-ATTACK-001 (A5): ¿la EWMA absorbe un ataque largo y la sombra da FIN en mitad?
+- DEBT-DDOS-V2-WARM-BASELINE-001 (A6): solo medido con víctima en el suelo de 10 pps.
+- Rama de medidas y modelo (después): D18 batería v3 con ejes, D19 rasgos por origen, D21 disyuntor, D20 mitigación
+  real (tras familia fuera > 60 %). D22 calibración con cliente, en paralelo.
+- Semana del 2026-10-12: PR propio de limpieza de scripts de la raíz (inventario, git grep de referencias, git mv a
+  scripts/lab/ o scripts/archive/, EMECAS+++) y README.md actualizado.

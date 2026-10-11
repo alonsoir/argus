@@ -16,7 +16,7 @@ Rama `feat/ddos-head-contract`. Continúa `bloque1_day293.md`.
 - Paridad Python/C++ del modelo: 127930/127930.
 - DAY293, ntp 60 + base .51 en vivo: atacante 100 %, inocente 0 %; 0 en benigno.
 - DAY294, E2E de la sombra (VMs sincronizadas por NTP): 1 INICIO (2 s de reloj de eventos tras el primer DROP; el primer
-  DROP llega ~1,3 s tras el inicio del ataque), 1 FIN (29,3 s tras el último DROP), origenes solo 192.168.100.50:5357,
+  DROP llega 0,8-1,8 s tras el inicio del ataque), 1 FIN (29,3 s tras el último DROP), origenes solo 192.168.100.50:5357,
   0 del inocente .51 concurrente, p1_min 0,96.
 - DAY294, corrida benigna que presiona la etapa 1 con tráfico nunca visto en entrenamiento (base .51 450 s + dnsperf real
   contra unbound a 30 y 100 q/s + subida TCP legítima 50 KB/s): 0 INICIO. Etapa 2: 2 positivos aislados en ~18000 filas
