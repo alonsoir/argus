@@ -881,6 +881,21 @@ BASHRC_EOF
     defender.vm.provision "shell", name: "ntp-sync", run: "always", inline: <<-NTP_SYNC
       echo "⏱️  NTP sync check (ADR-046 P0)..."
 
+      # [ARGUS-LAB-NTP-D294] el defender sirve la hora a la red interna (el client no tiene salida a Internet)
+      # y salta el reloj siempre que el desfase pase de 1 s (suspensiones del portátil). Idempotente.
+      CHRONY_CONF=/etc/chrony/chrony.conf
+      CHRONY_CAMBIO=0
+      if grep -q '^makestep 1 3$' "$CHRONY_CONF"; then
+        sed -i 's/^makestep 1 3$/makestep 1 -1/' "$CHRONY_CONF"; CHRONY_CAMBIO=1
+      fi
+      if ! grep -q '^allow 192.168.100.0/24' "$CHRONY_CONF"; then
+        echo 'allow 192.168.100.0/24' >> "$CHRONY_CONF"; CHRONY_CAMBIO=1
+      fi
+      if ! grep -q '^local stratum 10' "$CHRONY_CONF"; then
+        echo 'local stratum 10' >> "$CHRONY_CONF"; CHRONY_CAMBIO=1
+      fi
+      if [ "$CHRONY_CAMBIO" = "1" ]; then systemctl restart chrony; sleep 3; echo "⏱️  chrony reconfigurado (servidor de la red interna)"; fi
+
       # Forzar sync inmediato (especialmente útil tras vagrant up en frío)
       chronyc makestep 1.0 3 2>/dev/null || true
       sleep 2
@@ -1209,6 +1224,19 @@ BASHRC_EOF
           echo "   Gateway : 192.168.100.1 (defender eth2)"
           echo "   Tools   : nmap hydra sqlmap tcpreplay atomic-red-team"
         CLIENT
+
+    # [ARGUS-LAB-NTP-D294] el client toma la hora del defender, su pasarela (el client no tiene salida a Internet
+    # tras el cambio de ruta de client-setup). makestep 1 -1: salta el reloj siempre que el desfase pase de 1 s.
+    client.vm.provision "shell", name: "client-ntp", run: "always", inline: <<-'CLIENT_NTP'
+      CHRONY_CONF=/etc/chrony/chrony.conf
+      sed -i 's/^pool /#pool /' "$CHRONY_CONF"
+      sed -i 's/^makestep 1 3$/makestep 1 -1/' "$CHRONY_CONF"
+      grep -q '^server 192.168.100.1 iburst' "$CHRONY_CONF" || echo 'server 192.168.100.1 iburst' >> "$CHRONY_CONF"
+      systemctl restart chrony
+      chronyc waitsync 30 0.1 0 1 || echo "⚠️  client-ntp: sin sincronizar con 192.168.100.1 en 30 s"
+      chronyc tracking | grep -E "Reference ID|System time|Leap status" || true
+      chronyc -n sources || true
+    CLIENT_NTP
 
   end  # End client VM
 

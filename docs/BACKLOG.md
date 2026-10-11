@@ -7187,3 +7187,14 @@ por no instrumentado.
 - DEBT-LAB-VM-NTP-001: sincronizar por NTP (chrony) los relojes de las VMs del Vagrantfile (defender, client, sensores).
   Medido DAY293: el client va ~14 s por detrás del defender. No causa el fallo de la sombra (todo lo marca el defender),
   pero complica cruzar logs entre VMs. Hacerlo en el aprovisionamiento (Vagrantfile / provision.sh), no a mano.
+
+## DAY294 — relojes del lab
+- DEBT-LAB-VM-NTP-001 CERRADA [ARGUS-LAB-NTP-D294]. Rediagnóstico medido: chrony YA estaba aprovisionado en todas las VMs.
+  Causa real: el client no tiene salida a Internet por diseño (ruta por defecto via 192.168.100.1 tras client-setup), pierde
+  sus fuentes NTP (Reach 340 -> 0) y su reloj corre suelto (Residual freq +1619 ppm, ~1,6 ms/s -> los ~14 s de DAY293).
+  Arreglo: el defender sirve la hora a 192.168.100.0/24 (allow + local stratum 10); el client usa server 192.168.100.1
+  (provisioner nuevo client-ntp); makestep 1 -1 en ambas (salto si desfase > 1 s, p. ej. tras suspender el portátil).
+  Medido: client ^* 192.168.100.1, última muestra -1,5 us (+-17 ms); el defender lista a .50 en chronyc clients.
+  Aplicable sin reaprovisionar todo: vagrant provision defender --provision-with ntp-sync; vagrant provision client --provision-with client-ntp.
+- Nota: Vagrantfile:182 `iptables -t nat -A POSTROUTING -o eth1 -j MASQUERADE` es regla muerta (eth1 = 192.168.56.20 host-only,
+  sin Internet; 0 paquetes). El client sin Internet es diseño del lab (comentario de client-setup). No se toca.
