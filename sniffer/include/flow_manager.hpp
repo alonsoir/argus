@@ -6,6 +6,7 @@
 #include "flow_tracker.hpp"
 #include <unordered_map>
 #include <vector>
+#include <map>  // [DDOS-SNAP-D290]
 #include <mutex>
 #include <memory>
 #include <chrono>
@@ -31,6 +32,11 @@ struct FlowStatistics {
     std::vector<uint32_t> fwd_lengths;  // For smean calculation
     std::vector<uint32_t> bwd_lengths;  // For dmean calculation
     std::vector<uint32_t> all_lengths;  // For packet_len_mean/std/var
+    // [DDOS-SNAP-D290] Estadisticos incrementales de all_lengths para la foto DDoS v2:
+    // suma exacta (media identica a calculate_mean) e histograma ordenado (entropia identica a
+    // calculate_entropy, que tambien recorre un std::map por valor ascendente).
+    uint64_t sum_all_lengths = 0;
+    std::map<uint32_t, uint32_t> len_hist;
 
     // ============ INTER-ARRIVAL TIMES ============
     std::vector<uint64_t> packet_timestamps;  // ALL packet timestamps (for flow IAT)
@@ -121,6 +127,8 @@ struct FlowStatistics {
 
         // Overall statistics
         all_lengths.push_back(pkt.packet_len);
+        sum_all_lengths += pkt.packet_len;                    // [DDOS-SNAP-D290]
+        ++len_hist[static_cast<uint32_t>(pkt.packet_len)];
         packet_timestamps.push_back(pkt.timestamp);
 
         // ⭐ FASE 3: Update time windows

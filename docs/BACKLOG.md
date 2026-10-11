@@ -6427,3 +6427,798 @@ Artefactos: `scripts/d281_hpp_thr.sh`, `d281_esc_bins.sh`, `d281_esc_bins_flow.s
   vacía; `e2cac4b0` (DAY279, `[DDOS-VWIN-D279:CSV-OPTIONAL]`) hizo el CSV opcional a propósito y no
   actualizó el test. Corregido el test (patcher `patch_kreader_test_csv_optional_d281.py`).
   Lección: `e2cac4b0` cambió el comportamiento sin pasar el `ctest` del sniffer.
+
+## DAY282 — rama feat/ddos-head-contract
+
+Hecho:
+- Paso 1 (observabilidad) CERRADO: `[HEAD-SCORES]` por evento, nivel info, con src/dst, clase:puntuacion de las
+  4 cabezas (`na` = no evaluada), gate, l1, fast, cat. Validado 1:1 con `[DUAL-SCORE]` en 3 corridas.
+  Herramienta: `scripts/d282_head_scores.sh LOG [FILTRO|!FILTRO]`.
+- DEBT-ML-DETECTOR-L3-THRESHOLDS-NOT-LOADED-001 — CERRADA. `level3_web` y `level3_internal` nunca se leian del
+  JSON (UB; medido level3_web = 0 en arranque DAY281). Ahora get_required + inicializadores + logs de arranque
+  corregidos. Efecto medido: subida TCP legitima 50 KB/s ⇒ 100 % SUSPICIOUS_INTERNAL (1422/1422).
+
+Deuda nueva:
+- DEBT-ML-DETECTOR-DECISION-BEFORE-HEADS-001 (P0 para la fusion): final_score/final_decision, clasificacion,
+  bronce y CSV se producen ANTES de evaluar las cabezas L2/L3; las cabezas no pueden influir.
+- DEBT-ML-DETECTOR-TRAFFIC-SCORE-SEMANTICS-001 (medida): traffic guarda la confianza de la clase predicha, no
+  P(INTERNAL) (p<0.5 = 0 en todas las corridas). No comparable con las demas cabezas.
+- DEBT-ML-DETECTOR-FORCE-GATE-SETS-ATTACK-001: con FORCE_ALL_HEADS, threat_category = "ATTACK" aunque L1 = 0;
+  el flag de diagnostico altera el evento que sale por ZMQ.
+- DEBT-ML-DETECTOR-THREAT-CATEGORY-LAST-WINS-001: DDOS → RANSOMWARE → SUSPICIOUS_INTERNAL se pisan en orden.
+- DEBT-ML-INTERNAL-HEAD-NONREPRODUCIBLE-001: misma subida, internal class0 (corrida 1) vs class1 (corridas 2-3).
+  Extractor sin estado (medido) ⇒ la entrada difiere. Hipotesis: asignacion forward/backward del flujo
+  (rasgo [7] exfiltracion). Rasgos [1] y [2] constantes.
+- DEBT-DDOS-HEAD-DNS-UNANSWERED-FP-001: 80 FP DDOS en ambiente = DNS sin respuesta del client a 8.8.8.8 y 1.1.1.1
+  (40+40). Hipotesis: duracion ≈ 0 ⇒ bytes/s enorme. Matiza "DNS 0 FP" de DAY281 (condicion distinta).
+- DEBT-DDOS-DUAL-SERVE-DEFINITIONS-001 — AMPLIADA: son TRES definiciones (train, ml-detector, sniffer), ver
+  docs/ddos-head-contract-inventory.md.
+- DEBT-SNIFFER-DUPLICATE-INFERENCE-001: el sniffer ejecuta las 4 cabezas por evento (mismo modelo, otra entrada)
+  y el ml-detector pisa su resultado. Coste en hot path sin medir.
+- DEBT-SNIFFER-TRAFFIC-CONTEXT-CONSTANT-001 (deducida, sin medir): `traffic_context = probability >= 0.5` con
+  probability = confianza de la clase predicha ⇒ siempre INTERNAL.
+- DEBT-CSV-THREAT-CATEGORY-FROM-SNIFFER-001 (hipotesis): la col 9 del CSV lleva la categoria del sniffer.
+- DEBT-REPO-BAK-FILES-TRACKED-001: `sniffer/src/userspace/ml_defender_features.cpp.bak.day79` trackeado; ensucia
+  git grep. Retirar en commit de limpieza aparte.
+
+## DAY283 — D2: coste de la inferencia en el sniffer (medido en production)
+
+### Medido
+
+- **Instrumentación nueva (solo observación)** en `run_ml_detection` del sniffer, cada 10 s en
+  `/vagrant/logs/lab/sniffer.log`: `[ML-TIME]` (llamadas, suma ns, máx, histograma log2) y `[ML-PHASE]`
+  (extract | ddos | ransom | traffic | internal | post). Bucket b = [2^b, 2^(b+1)) ns.
+  Script: `scripts/d283_phase_delta.sh ANTES DESPUES` (delta entre dos líneas `[ML-PHASE]`).
+- **Debug frente a production** (ambiente, coste total por llamada): Debug `-O0`: mediana 65–131 µs,
+  p99 0,5–1 ms, media 136 µs. Production `-O3 -flto`: mediana 33–65 µs, p99 262–524 µs, media 48 µs.
+  Predicción (5–15× más rápido) REFUTADA: solo ~2×.
+- **Desglose por fase, production** (media por llamada):
+
+  | Fase | Ambiente | Subida TCP 50 KB/s |
+    |---|---|---|
+  | extract | 0,13 µs (0,3 %) | 0,33 µs |
+  | ddos | 6,0 µs (mediana 2–4 µs) | 12,8 µs |
+  | ransom | 24,1 µs (47 %, cola ~4 ms) | 30,6 µs |
+  | traffic | 7,0 µs | 16,4 µs |
+  | internal | 7,0 µs | 17,5 µs |
+  | post | 6,6 µs | 17,5 µs |
+  | total | 51 µs | 95 µs |
+
+  Predicción "la extracción domina" REFUTADA: `extract` es copiar del proto, ~100 ns. Bajo la subida,
+  todas las fases (incluidas extract y post) se encarecen ~2× a la vez ⇒ máquina entera cargada
+  (mononúcleo emulado en portátil), no una cabeza concreta. Medianas en el mismo bucket o adyacente.
+- **Carga 2 (CICDDoS2019, 12 000 pkts a 100 pps) — delta INVÁLIDO**: la foto de "después" se tomó a los
+  ~40 s de un replay de 120 s. Protocolo corregido: tomar la foto de después cuando `calls` vuelva al
+  goteo del ambiente.
+- **Hallazgo principal: caudal del consumidor del ring.** `calls` ≈ `Paquetes procesados` (15 849 vs
+  15 840) ⇒ una inferencia por evento del ring. El flood entró entero (~12 300 llamadas) pero el sniffer
+  lo drenó a **~40–90 eventos/s**, 3–4 min después de acabar el replay. A ~50–95 µs por llamada, el ML es
+  **< 1 %** del presupuesto por evento (~10–25 ms). El cuello NO es la inferencia.
+- **Conclusión D2:** inferir DDoS en el sniffer es asumible por coste (~6–13 µs). La decisión
+  infiere/solo calcula es de diseño, no de rendimiento. El coste de CALCULAR los rasgos
+  (`populate_protobuf_event`) sigue sin medir.
+
+### Deuda nueva
+
+- **DEBT-SNIFFER-CONSUMER-THROUGHPUT-001 (candidata a P0).** El consumidor del ring no pasa de ~40–90
+  eventos/s en production; a 100 pps acumula cola (probablemente en el propio ring, antes de
+  `handle_event`: procesados y llamadas avanzan juntos; confirmar con la progresión completa). Explica la
+  pérdida del 86 % a 1000 pps (DAY270) y el retraso. La hipótesis "es artefacto de Debug" queda
+  debilitada: en production el consumidor sigue por debajo de 100/s. Siguiente: cronometrar el camino
+  completo por evento (`process_raw_event` ya cronometra en 525–637 → `total_processing_time_us`: mirar
+  primero), serialización, ZMQ, logging por evento, timeouts del sondeo.
+- **DEBT-SNIFFER-UNTRUSTED-HEADS-IN-HOT-PATH-001.** Las cabezas ransomware, traffic e internal, todavía no
+  validadas, corren por evento en serie dentro de `run_ml_detection` del sniffer. Suman ~75 % del coste
+  de inferencia (ransomware 47 %, cola hasta ~4 ms) y cada evento DDoS paga su latencia. No se
+  desactivan: sería irreal. Medido en mononúcleo emulado en portátil con otros procesos; revisar con
+  multinúcleo y al abordar cada cabeza.
+- **DEBT-BUILD-PRODUCTION-PROFILE-ROT-001.** El perfil production llevaba tiempo sin compilarse; rompía por
+  `-Werror=unused-parameter` bajo `NDEBUG` en `correlation_v1_golden_vectors.hpp:40` (arreglado DAY283).
+  EMECAS no ejercita production: valorar un build production en el gate. Build completo production ≈ 1 h.
+- **DEBT-TESTS-ASSERT-VACUOUS-UNDER-NDEBUG-001.** Los tests que comprueban con `assert` pasan en vacío en
+  production. Primer caso medido y arreglado (`assert_golden_state_legal` → `fprintf` + `abort`). Censar
+  el resto (`git grep -c 'assert(' -- '*/tests/*'`).
+- **DEBT-SNIFFER-EVENTS-SENT-STUCK-25000-001.** `Paquetes enviados` clavado en 25 000 exactos y por encima
+  de `Paquetes procesados`. Número redondo inmóvil: ¿tope o contador de otra cosa? Sin investigar.
+- **DEBT-SNIFFER-ML-TIME-STAT-001 (menor).** `Avg ML detection time` acumula µs truncados (error del
+  30–50 % a 2–3 µs) y solo se imprime al parar. Sustituido en la práctica por `[ML-TIME]`.
+
+### Resuelto de las comprobaciones baratas
+
+- `traffic_context` del sniffer no está fijo: vale INTERNAL si `traffic_pred.probability >= 0.5`. La
+  hipótesis pasa a "la cabeza traffic siempre da ≥ 0.5" (medible con `[HEAD-SCORES]`).
+
+## DAY284 — Caudal del sniffer, descartes ZMQ y fast alerts en el ml-detector (MEDIDO)
+
+Rama `feat/ddos-head-contract`. Perfil production, `FORCE_ALL_HEADS=1`. Carga: CICDDoS2019
+`_0125_50k_lab.pcap`, `tcpreplay --pps=100 --limit=12000` desde el client por `eth1`.
+
+### 0. Infraestructura: Vagrant no arrancaba (CERRADO)
+
+- Síntoma: `ForwardPortCollision` en el 5571 con el puerto libre (lsof/nc vacíos) y las cinco VMs
+  `aborted` tras la caída del host del 2026-09-29.
+- Causa medida: la actualización de macOS (15.8.1, 2026-09-30) cambió el connect no bloqueante
+  rechazado: el socket queda escribible con el error en SO_ERROR. `Socket.tcp(connect_timeout:)` de
+  Ruby 3.3.8 (embebido en Vagrant 2.4.9) devuelve un socket muerto y `is_port_open?` da TODOS los
+  puertos por ocupados. Control: `TCPSocket.new` = ECONNREFUSED, `Socket.tcp` con timeout = "abierto",
+  Python = ECONNREFUSED. Refs: hashicorp/vagrant#13845, PR #13842, Ruby Bug #22223.
+- Descartados por medida: arriendos `fp-leases` (vacío), VMs fantasma, Bitdefender (su protección web
+  es solo un complemento de navegador), Little Snitch (sin cambios desde el 4-sep).
+- Arreglo: `vagrant_port_check_fix.rb` cargado desde el Vagrantfile; se activa solo si un sondeo
+  detecta el falso positivo (comprueba SO_ERROR + `remote_address`, que da EINVAL en socket muerto).
+- **DEBT-VAGRANT-PORT-CHECK-MACOS-001**: quitar el parche cuando Vagrant publique el arreglo (el
+  sondeo dejará de imprimir `[argus] port-check fix ACTIVO`).
+
+### 1. Corrección de DAY283: el defender NO es mononúcleo
+
+`ksoftirqd/0..5`, `nproc`=6, ml-detector al 408 % bajo carga. Las conclusiones de DAY283 que
+suponían un solo núcleo deben releerse con esto.
+
+### 2. DEBT-SNIFFER-CONSUMER-THROUGHPUT-001 — causa medida y arreglada (CERRADA)
+
+DAY283 decía "el consumidor del ring saca ~40–90 ev/s". FALSO como límite del consumidor.
+
+- `Paquetes procesados` (hilo del ring, `handle_event` L517) sigue la llegada a ~100/s: el ring va al día.
+  El ML corre en otro hilo (`feature_processor_loop` → `process_event_features` → L841).
+- Sin tráfico entrante la etapa del ML drena a 100–140/s; el hundimiento a ~35–40/s ocurre SOLO
+  mientras llega tráfico.
+- Muestreo de pilas (24 muestras con gdb durante la llegada): el hilo ZMQ pasa 18/24 en `write()` de
+  líneas `[CRYPTO]` con flush; el procesador 11/24 esperando `_IO_stdfile_1_lock`; el ring 10/24 en
+  log de `[FAST ALERT]`. Tres hilos serializados en `std::cout` sobre vboxsf (`/vagrant`, ~467 µs/write).
+- Segundo factor: `TimeWindowAggregator::get_window_stats` (8/24 muestras del procesador, rellena
+  `unordered_set` por la ventana, se llama varias veces por evento). A 100 pps cabe en el margen.
+- A/B (mismo replay):
+  | Config | ev/s en llegada | Cola tras replay |
+  |---|---|---|
+  | log en /vagrant, antes del arreglo | ~40 | ~110 s |
+  | log en /tmp (SNIFFER_LOG) | ~100 | < 10 s |
+  | log en /vagrant, con arreglo | **~101** | **< 10 s** |
+- Arreglo: 4 logs por evento tras `g_verbosity` (mecanismo existente, defecto NONE): `[CRYPTO]
+  Compressed` y `Encrypted` (DETAILED), `[DUAL-NIC]` (DETAILED), `[FAST ALERT]` (BASIC).
+- Hipótesis refutadas por medida (no reintentar): despertares perdidos en `wait_for` (todos los push
+  llevan notify), afinidad/cuota de CPU (`Cpus_allowed_list` 0-5 por hilo, `cpu.max`=max, afinidad
+  desactivada en el perfil `dual_nic`), log como causa en ambiente (descartado mal con datos de
+  ambiente; bajo carga es lo dominante).
+
+### 3. Descartes ZMQ sniffer → ml-detector (MEDIDO, pendiente de código)
+
+- `send_protobuf_message` envía con `zmq::send_flags::dontwait` (L746). Con la cola llena el mensaje
+  se DESCARTA al instante con una línea `[ERROR] ZMQ send falló!` por mensaje.
+- `send_timeout_ms: 250` de `sniffer.json` es **configuración muerta**: no hay `sndtimeo` en el código.
+- Colchón: `sndhwm` 10000 (sniffer) + `rcvhwm` **1000** (ml-detector).
+- Corrida 4: 2030 descartes concentrados en ~20 s al final del replay (≈ todo lo que llegó en esa
+  ventana). Eran las 2030 de las 2410 líneas del log (las "0,19 líneas/evento" restantes).
+  Corrida 5 (log del ml-detector en local): 554, también al final.
+- `Paquetes enviados` ≈ 2 × `calls` (cada evento del flood lleva su fast alert). El "25 000 clavado"
+  de DAY283 es muy probablemente esto mismo: ml-detector saturado → todos los send fallan.
+- **DEBT-SNIFFER-ZMQ-SILENT-DROP**. Decisión de Alonso: la saturación debe verse SIEMPRE, por defecto
+  y sin verbose, como resumen periódico `[ZMQ-DROP] descartados=N en los últimos 10 s` (sustituye a la
+  línea por mensaje, que además escribe en vboxsf justo cuando el sistema va peor).
+- Decisión de Alonso (diseño): la relación sniffer↔ml-detector de cada despliegue (1:1, 1:N, N:N,
+  distribuido) se dimensiona por medición y se acepta así; el código deja la saturación visible para
+  que el admin ajuste. Contrapresión ml-detector→sniffer y modelo numérico de dimensionado: backlog,
+  después de las cabezas.
+
+### 4. ml-detector: más lento que la llegada y la mitad de su trabajo es inútil (MEDIDO)
+
+- Escribe ≥ 3 líneas por evento (`[VICTIM-WINDOW]`, `[HEAD-SCORES]`, `[DUAL-SCORE]`) en
+  `/vagrant/logs/lab/ml-detector.log` (701 963 líneas). A/B con `ML_DETECTOR_LOG` en local: ayuda, pero
+  NO basta (P16 refutada: siguen 554 descartes).
+- Tarda ~6,5 min en procesar lo que el replay entrega en 120 s (30–83 `[HEAD-SCORES]`/s); cuando el
+  sniffer deja de producir llega a ~320/s durante 10 s.
+- **52 % de sus inferencias son fast alerts**: 13 611 de 26 182 `[HEAD-SCORES]` con `event=fast-alert-…`.
+  Ids únicos (no hay duplicados). Cada fast alert pasa por TODAS las cabezas sobre un vector
+  vacío/constante (puntuaciones idénticas alerta tras alerta: `l1=0:0.9563, ddos=0:0.4717, …`).
+- Código: el sniffer marca la alerta solo por el prefijo del id (`"fast-alert-" + timestamp`,
+  ring_consumer L1252). `ml-detector/src` no contiene "fast-alert": no hay desvío; todo mensaje sigue
+  level1 → cabezas → `[DUAL-SCORE]` (zmq_handler.cpp ~L417–436).
+- Con `FORCE_ALL_HEADS=1` el desperdicio es máximo; sin él, level1 (BENIGN) frenaría el nivel 2.
+- Conecta con la decisión DAY281 punto 4 (fast alert fuera de las cabezas de flujo, como entrada
+  propia a la fusión). Ahora con beneficio medido: ~mitad de la carga del ml-detector bajo flood.
+- Hallazgo lateral (fuera de foco): la heurística rápida de RANSOMWARE se dispara con el flood DDoS
+  casi en cada paquete (`ExtIPs=1–2, SMB=0`, `fast=0.75`). Mal calibrada para este tráfico.
+- Sospecha pendiente: competencia por CPU del host (el sniffer bajó a 35–110 ev/s en la corrida 5,
+  cuando el ml-detector corría más). A/B diseñado: `vagrant halt suricata zeek` y repetir.
+
+### 5. Decisiones de Alonso sobre logs
+
+- `[ZMQ-DROP]`: siempre visible, por defecto.
+- `[VICTIM-WINDOW]`, `[HEAD-SCORES]`, `[DUAL-SCORE]`: tras el `--verbose` existente del ml-detector.
+- Defecto de producción = log mínimo; verbose solo cuando hace falta. Futuro (backlog, tras las
+  cabezas): activar verbose en caliente y de forma autónoma (etcd como canal; Falco/Wazuh vigilando)
+  avisando al admin. Requiere el mecanismo de cambios en caliente, que aún no existe.
+
+### 6. Otros cambios
+
+- rag-ingester (deprecado) fuera de `pipeline-start`, `pipeline-start-x86-libpcap` y `pipeline-status`.
+  Build, seeds, tests, `pipeline-stop` y el componente, intactos.
+- `SNIFFER_LOG` y `ML_DETECTOR_LOG` en el Makefile (defecto = ruta actual) para A/B de logs.
+- Herramientas en `scripts/`: `d284_sampler.sh` (acepta `LOG=`; tolera log truncado),
+  `d284_calls_rate.sh`, `d284_cpu_drain.sh`, `d284_cpu_summary.sh`, `d284_pmp.sh`,
+  `d284_pmp_summary.sh`, `d284_drain_probe.sh` y los patchers `d284_patch_*.py`.
+
+### 7. Notas sin investigar
+
+- `tcpreplay` en el client tarda 146–326 s para 120 s de envío (probable: lee el pcap de 25 MB desde
+  vboxsf). No afecta al defender. Usar siempre el reloj del defender.
+- La columna "Paquetes procesados" mostró `0` unos 30 s y volvió a su valor: otro bloque de
+  estadísticas con la misma etiqueta.
+- `top -H` atribuyó 50 % al TID del hilo main, que dormía en las 24 muestras de gdb.
+- `rag-ingester` gastaba 87 % de un núcleo en ambiente (ya fuera del arranque).
+
+---
+
+## 🆕 Entradas DAY285 (2026-10-02) — rama `feat/ddos-head-contract`
+
+Commits: `829267e4` (EventKind + [ZMQ-DROP] + logs a debug + resúmenes) y el commit
+`perf(ml-detector)` (rag_logger y csv_writer fuera del camino caliente, guarda de plugins).
+Patchers en `scripts/d285_patch_*.py` (atómicos, idempotentes, `--check`).
+
+### 1. Medidas del día (mismo replay: `_0125_50k_lab.pcap`, 12 000 pkts a 100 pps, `FORCE_ALL_HEADS=1`, build production)
+
+| Corrida | Cambio | ml-detector termina tras el inicio | Pico ml-detector | Descartes sniffer→ml-detector |
+|---|---|---|---|---|
+| DAY284 (base) | — | 6,5 min | — | 554 |
+| A | EventKind + logs por evento a debug | ~5 min | ~111 msg/s | 0 |
+| A' | + rag_logger/csv_writer apagados + guarda de plugins | **~2,4 min (drena <20 s tras el replay de 127 s)** | **~192 msg/s** | 0 |
+
+- El sniffer procesa al ritmo de llegada (~100 ev/s) en las dos corridas: el arreglo DAY284 se sostiene.
+- En A, el sniffer había enviado 22 969 mensajes cuando el ml-detector solo había recibido ~10 000:
+  ~13 000 mensajes esperaron en los búferes ZMQ (mucho más que `rcvhwm` 1000). 0 descartes NO significaba
+  "el ml-detector aguanta" (hipótesis refutada).
+- Desvío de fast alerts medido en A: 10 092 de 23 212 mensajes (44 %) no abrieron la compuerta
+  (`attacks` = aperturas = eventos de flujo con FORCE_ALL_HEADS ≈ paquetes procesados por el sniffer).
+- `[ZMQ-DROP-OUT]` (ml-detector→firewall): 0 en A'.
+
+### 2. CERRADAS
+
+- **Fast alert y ventana ransomware fuera de level1 y de las cabezas** (decisión DAY281 punto 4).
+  Nuevo `enum EventKind { FLOW = 0; FAST_ALERT = 1; RANSOMWARE_WINDOW = 2; }`, campo
+  `NetworkSecurityEvent.event_kind = 37`. Los tres productores del sniffer lo fijan
+  (`populate_protobuf_event`, `send_fast_alert`, `send_ransomware_features`). En el ml-detector,
+  `is_flow_event` decide: si no es FLOW no corre level1, `ml_score = 0` (evita `1 - 0 = 1.0`),
+  `final_score = fast` (decisión aguas abajo idéntica a la de antes), `authoritative_source = FAST_ONLY`,
+  sin `rf_verdict`, la compuerta no abre ni con FORCE_ALL_HEADS y se conserva la `threat_category`
+  del sniffer. `FLOW = 0` protege a inyectores y tests que no rellenen el campo.
+  Descartado reutilizar `authoritative_source` como marca de entrada (campo de salida sobrescrito por el
+  ml-detector; convención implícita, mismo error de fondo que DAY255).
+- **DEBT-SNIFFER-ZMQ-SILENT-DROP**: el `[ERROR] ZMQ send falló!` por mensaje se sustituye por
+  `[ZMQ-DROP] descartados=N en los últimos X s (total=M)` cada 10 s desde `zmq_sender_loop`,
+  siempre visible, solo si N > 0. `zmq_send_failures` también cuenta fallos de cifrado (raros).
+- **Logs por evento del ml-detector a debug** (`--verbose` existente = nivel debug):
+  `[DUAL-SCORE]`, `[VICTIM-WINDOW]`, `[HEAD-SCORES]` (además envuelto en `should_log(debug)`),
+  `Score divergence`, `DDoS ATTACK`, `RANSOMWARE ATTACK`, `SUSPICIOUS INTERNAL`, `🚨 ATTACK`,
+  `Failed to send event`. Motivo extra: `logger.cpp:37` hace `flush_on(warn)` → cada warn por evento
+  era un volcado síncrono. Resúmenes siempre visibles (warn, cada 10 s, solo si hay algo):
+  `[ZMQ-DROP-OUT] descartados=N …` y `[DETECCIONES] ddos=N ransomware=M internal=K …`
+  (contadores nuevos en `ZMQHandler::Stats`).
+- **DEBT-ML-DETECTOR-LAG-UNDER-LOAD-001 — CERRADA para 100 pps.** Causa dominante medida:
+  `rag_logger_` creaba DOS ficheros cifrados por evento (`event_<id>.pb.enc` + `.json.enc`) sobre
+  vboxsf para todo evento con score ≥ 0,70 (todas las fast alerts, 0,75): **25 014 ficheros / 98 MB
+  solo el 2026-10-02**, directorios diarios desde 2025-12-11. La inferencia (~6 µs, DAY283) nunca fue
+  el coste. Arreglo: `rag_logger.enabled=false` y `csv_writer.enabled=false` en
+  `ml_detector_config.json` (interruptores nuevos, opcionales, por defecto true); invocación de
+  plugins solo si `loaded_count() > 0` (con `plugins.enabled: []` se serializaba el evento entero
+  por mensaje para 0 plugins). Verificado: 0 artefactos nuevos durante A' (26 572 → 26 572).
+  Dimensionado a más pps: sigue en backlog (decisión DAY284).
+
+### 3. Hallazgos que explican el arreglo (configuración muerta, otra vez)
+
+- La sección `rag_logger` de `ml_detector_config.json` no la leía nadie (`save_*_artifacts: false`
+  daba falsa tranquilidad). El RAG Logger se crea desde `../config/rag_logger_config.json`. Reducida a
+  `enabled` + comentario.
+- `create_rag_logger_from_config` lee claves en la raíz del JSON, pero `rag_logger_config.json` las
+  anida en `thresholds`/`performance` → siempre valores por defecto del código (artefactos activos).
+- `csv_writer_` se creaba siempre que hubiera clave HMAC (sin interruptor). Su único consumidor era
+  `make parquet-convert` (`scripts/parquet/generate_parquet.py`, Parquet antiguo de
+  DEBT-PARQUET-SCHEMA-001, 2026-05-12, anterior al circuito bronce→oro). Ningún proceso vivo dependía
+  del `.jsonl` ni del CSV de rasgos (verificado: `argus-network-isolate` y `rag/start.sh` solo
+  escriben sus propios logs).
+- `plugin_loader_` es un objeto en la pila de `main()`; su dirección se pasaba siempre → nunca nulo.
+
+### 4. Descartado
+
+- **Punto 5 del prompt (A/B `vagrant halt suricata zeek`)**: decisión de Alonso. En modo no distribuido
+  el resto de componentes forma parte del entorno real; no es contención espuria.
+
+### 5. Deudas nuevas (backlog; NO son trabajo inmediato — el foco es arreglar las cabezas)
+
+- **DEBT-RAG-LOGGER-FACTORY-NESTED-CONFIG-001 (P3)**: la factoría ignora las secciones anidadas de
+  `rag_logger_config.json`; además el log de arranque dice "encrypted artifacts enabled" fijo. Solo
+  importa si el RAG Logger vuelve a encenderse.
+- **DEBT-TEST-PARQUET-LEFTOVER-LOGS-001 (P2, decidir antes del merge a main)**: `test-parquet` está en
+  `test-all` (EMECAS+++) y pasa gracias a CSV de corridas antiguas que sobreviven en `/vagrant`
+  (carpeta del host). En un clon limpio fallaría. Opciones: sacarlo de `test-all` (prueba un camino
+  retirado) o darle fixtures propios.
+- **DEBT-RAG-ARTIFACTS-ACCUMULATED-001 (decisión de Alonso)**: meses de artefactos en
+  `/vagrant/logs/rag/artifacts/` (~26 000 ficheros/día en días de replay). No se ha borrado nada.
+- **DEBT-ML-DETECTOR-DUPLICATE-FILE-SINK-001 (P3)**: cada línea de log se escribe dos veces
+  (stdout → `ml-detector.log` y file sink rotativo → `detector.log`).
+- **DEBT-CORRELATION-WRITER-VBOXSF-001 (P3, medir antes)**: el bronce (imprescindible) se escribe por
+  evento sobre vboxsf; si pesa, cambiar dónde escribe, no quitarlo.
+- **DEBT-ZMQ-QUEUE-DEPTH-INVISIBLE-001 (P3)**: con búferes grandes la cola entre sniffer y ml-detector
+  (13 000 mensajes en A) no se ve en ningún log; `[ZMQ-DROP]` solo ve descartes, no retraso.
+- **DESIGN-PLUGIN-HOT-LOAD-ETCD (diseño, Alonso)**: carga de plugins nuevos asíncrona, disparada por
+  notificación de etcd (etcd local ← maestro). Exige tocar etcd-server; el maestro quizá no existe.
+- **Observación para el trabajo de la cabeza DDoS**: con solo ambiente tras el replay, la cabeza marca
+  ~4 detecciones cada 10–40 s (`[DETECCIONES]`). Medir su tasa de falsos positivos sobre benigno.
+
+### 6. Medido también (contexto para la fusión)
+
+- Bajo el flood, level1 etiqueta BENIGN tanto los flujos (`l1=0:0.9168`) como las fast alerts
+  (`l1=0:0.9563`) → `attack_detected_level1=false` → el firewall (que decide por level1,
+  DEBT-FIREWALL-GATES-ON-LEVEL1-001, P0) **no actúa ante el flood**. La cabeza DDoS sí marca el flujo
+  (`ddos=1:0.8833`, `cat=DDOS`) y ese veredicto no llega a nada.
+- Hoy `final_score = max(fast_ransomware, level1)`: ninguna de las dos señales es fiable; la cabeza DDoS
+  no entra. Decisión de Alonso: `final_decision` solo con las señales arregladas (al principio, solo
+  la cabeza DDoS); cada cabeza entra a medida que se arregle.
+
+### 7. Errores propios del día (para el registro de falsas evidencias)
+
+- Predicción "drena ≤ 3,5 min" refutada en A: supuse que el coste estaba en la inferencia.
+- Hipótesis "0 descartes ⇒ el cuello está en el sniffer" refutada: eran búferes ZMQ grandes.
+- Protocolo con muestreo cada 30 s sobre un `📊 Stats` de 60 s: dos lecturas iguales dentro del mismo
+  minuto parecían "drenado".
+
+## DAY286 — D1: contrato DDoS v2 en el sniffer (rama `feat/ddos-head-contract`)
+
+### Hecho (medido)
+
+- **Contrato DDoS v2: 8 rasgos, solo tráfico entrante, calculados UNA vez en el sniffer** (`ddos_embedded`):
+  `syn_ack_ratio` (1), `mean_packet_size` (11), `reflection_signature` (12), `packet_size_entropy` (5),
+  `flow_packet_count` (13), `flow_completion_rate` (7), `victim_rate_ratio` (14), `victim_pps` (15).
+  Fuera del vector (campos conservados en el proto con comentario, no `[deprecated]` por `-Werror`):
+  `packet_symmetry` (2) y `traffic_amplification_factor` (6) — la captura no ve la vuelta;
+  `source_ip_dispersion` (3) — hasta tener un pcap multi-origen; `protocol_anomaly_score` (4) → 12;
+  `traffic_escalation_rate` (9) → 14; `resource_saturation_score` (10) → 15. Geo (8) ya estaba fuera.
+- Centinelas `MISSING_FEATURE_SENTINEL` para 11–15 en `init_embedded_sentinels` (sin dato ≠ 0).
+- `sniffer/include/ddos_contract_v2.hpp`: funciones puras (`reflection_signature`, `victim_pps`,
+  `victim_ewma_step`) con `static_assert`. Puertos reflejables: 17, 19, 53, 69, 111, 123, 137, 138, 161,
+  389, 1434, 1900, 3702, 5683, 11211; destino ≥ 1024.
+- Línea de observación `[DDOS-V2]` en el ml-detector (debug). El ml-detector sigue comiendo su extractor viejo.
+- **Verificación E2E** (commit `d9901d67`): reflexión de prueba 20/20 `refl=1`, 442 B; flood CICDDoS2019
+  482 B, 100 pps, entropía 0; subida TCP legítima 1090 B, 50 pps, entropía 0,9, completion 0,5.
+- **H2 medida offline** sobre `ddos_windows.csv` (12 días, 77 episodios, scripts `d286_h2_*`):
+  - EWMA simple: los floods repetidos a la misma víctima envenenan la línea base (ep2/ep4 arrancan en 2–7).
+  - Congelar desde línea base vacía dispara FP en claves nuevas (Neris): ventanas ≥ 10 de 135 a 752.
+  - Congelar solo claves calientes (W = 30) recupera el ambiente (67) y mantiene el arranque (64/77).
+  - **Elegida la opción B** (Alonso: evitar SIEMPRE falsos positivos permanentes): α = 0,1; α/60 si la clave
+    está caliente (≥ 30 ventanas vistas) y ratio ≥ 5; suelo 10 pps; desalojo a 3600 ventanas sin aparecer.
+    Un flood sostenido > ~2 min deja de "escalar" (ratio cruza 5 hacia la ventana ~125); el nivel lo
+    sigue marcando `victim_pps`. Víctima fría (sin historia): solo marca el arranque (10 → ~1 en ~20 ventanas).
+- **Campo 14 implementado** en `DdosVictimBoard::publish_window` (escritor único, una vez por ventana).
+  Test caso 11 (`test_ddos_victim_board`, 36 checks): fría = 10; ausente = 0; caliente 5,075 → 5,041 (con α
+  normal sería 3,6); decaimiento tras hueco = 10. **Equivalencia offline ↔ implementación: 0 discrepancias
+  en 3485 eventos (max_diff 0,0005).**
+- **Definición única de la duración de ventana**: `ddos_window_ms()` movida a `ddos_kernel_agg.hpp`
+  (redondeo al ms) y usada por el tablero, que antes truncaba (−1 ms en 74/152 ventanas frente al CSV;
+  causaba 1169 discrepancias de hasta 0,008). Tras el arreglo: 119/119 ventanas iguales.
+
+### Correcciones de días anteriores
+
+- **DAY270 — "el flood son flujos de 1 paquete": FALSO.** Salía de la línea `Packets: N fwd` del
+  ml-detector, que vale 1 en el 100 % de los eventos (13 109/13 109), incluida una subida cuyo flujo tiene
+  1502 paquetes. `flow_packet_count` real del flood: p50 49, p90 161, máx 200. El hallazgo del veto de
+  level1 (medido con la compuerta) sigue en pie; la explicación "unidad de flujo de 1 paquete", no.
+- **DAY282 (inventario)** — "el sniffer tiene por flujo lo necesario para symmetry y amplification": los
+  rasgos de vuelta valen 0 siempre (ver DEBT-SNIFFER-FLOW-UNIDIRECTIONAL-001).
+- **M1 (DAY286)**: en tráfico que termina en el propio defender la captura solo ve la entrada (subida de
+  1500 paquetes: 0 eventos con origen `192.168.100.1:9999`). En tráfico entre otras máquinas sí se ven los
+  dos sentidos.
+
+### Deuda nueva
+
+- **DEBT-SNIFFER-FLOW-UNIDIRECTIONAL-001** (P0 para level1 y las otras cabezas; NO bloquea DDoS). `FlowKey`
+  = 5-tupla del paquete sin normalizar (`ring_consumer.cpp:557` y `:828`), `ShardedFlowManager` busca exacto
+  ⇒ cada sentido es un flujo propio y `dpkts`/`dbytes`/`bwd_*` = 0 siempre. Evidencia en ejecución: Wazuh
+  `.10:45661 ↔ .12:1514` visto como dos flujos con `0 bwd`. Arreglo: clave canónica + 5-tupla del iniciador
+  en `FlowStatistics` + captura de ambos sentidos. Se atiende al trabajar las otras cabezas (Alonso),
+  modificando el proto entonces si hace falta.
+- **DEBT-ML-DETECTOR-PACKET-COUNT-PER-EVENT-001**: `Packets:` del ml-detector y probablemente los rasgos de
+  recuento de level1 (`Subflow Fwd Packets = 1` junto a `ACK Flag Count = 66`) son por evento, no por flujo.
+- **DEBT-SNIFFER-FLOW-PACKET-CAP-200** (sin investigar): `flow_packet_count` máx exacto 200 en el flood.
+  Afecta al dataset.
+- **DEBT-FAST-ALERT-DDOS-SENTINELS-001** (menor): las fast alerts llevan todos los rasgos DDoS a centinela
+  (incluidos 14 y 15) aunque llevan `victim_window`. Revisar al meter la fast alert en la fusión.
+- **DEBT-MAKE-RAG-DEPRECATED-001** (Alonso): quitar `rag-ingester` y `rag-security` de `pipeline-build`, y
+  `rag-security` de `pipeline-start`, cuando sea seguro (comprobar antes dependencias y EMECAS).
+- **DEBT-BUILD-PRODUCTION-O0-COMPONENT-001** (sin investigar): un componente se configura con `-g -O0`
+  dentro de `pipeline-build PROFILE=production`.
+- **DEBT-REPO-SFM-COPIES-TRACKED-001**: `sniffer/src/flow/sharded_flow_manager{.cpp.original,_original,_fix1,_fix2,_fix3}.cpp`
+  trackeados (ensucian `git grep`).
+- **DEBT-REPO-PYCACHE-TRACKED-001**: `protobuf/__pycache__/*.pyc` trackeado.
+- Notas: con `VERBOSE=1` el drenado de 12 000 paquetes tarda ~9 min (~40 líneas/evento sobre vboxsf) →
+  recoger datasets sin VERBOSE. Los eventos `ransomware-features-*` (cada 30 s) no llevan `victim_window`
+  (`absent`): correcto. Homónimo en el proto: `syn_ack_ratio` del mensaje ransomware (L94) es ACK/SYN.
+- **Límite honesto (paper)**: el HTTP flood (capa 7) no lo ve ningún rasgo de flujo; solo en parte `victim_pps`.
+
+# BACKLOG — sección DAY287
+
+Formato: ID / estado / descripción medida / qué desbloquea.
+
+## CERRADAS en DAY287
+
+### DEBT-SNIFFER-IP-FRAGMENT — CERRADA (commit c60c25ba)
+El sniffer no trataba los fragmentos IPv4 no-primeros: parseaba bytes de la carga como puertos
+TCP/UDP y generaba flujos fantasma. Medido en el bloque B de CICDDoS2019 (UDP ~4 KB fragmentado,
+5000 tramas): de 4990 filas UDP, 3144 (63 %) eran basura.
+Arreglo:
+- Kernel (`sniffer/src/kernel/sniffer.bpf.c`): offset de fragmento (`(ip[6] & 0x1F) << 8 | ip[7]`)
+  != 0 → se cuenta en `ddos_victims` (antes del reserve) pero no se parsean puertos ni se envía al
+  ring. Contador nuevo `STAT_FRAG_SKIPPED` (stats[3]); `STAT_MAX` 3 → 4. Identidad de contabilidad
+  ahora: `suma(ddos_victims) = stats[0] + stats[1] + stats[2] + stats[3]`.
+- Variant B (`sniffer/src/userspace/main_libpcap.cpp`): `(ntohs(iph->ip_off) & IP_OFFMASK) != 0`
+  → `return 0` (no emite evento), mismo criterio que el XDP.
+- `snap_delta.py`: lee stats[3] y lo incluye en la identidad.
+  Verificado: bloque B pasa de 4990 a 1770 filas reales; stats[3]=3224; victim_pps 82,5 → 97,9.
+
+### Punto 2 del plan (dataset por el mismo código) — CERRADO (commit c7293346 + DAY287)
+Escritor de dataset DDoS v2 de laboratorio en el ml-detector (ver prompt de continuidad 1.1).
+Cinco familias de ataque recogidas y etiquetadas por construcción + benigno del lab.
+
+## ABIERTAS nuevas de DAY287
+
+### DEBT-STOP-FLUSHES-TAIL — nueva, P3
+`make pipeline-stop` mata el ml-detector sin correr destructores. Consecuencia medida: el bronce
+`correlation_v1` pierde las últimas filas de su búfer (24 en una corrida de 5000) y deja el último
+segmento en `.tmp` sin el rename atómico. El escritor de dataset v2 ya mitigó su lado con flush por
+fila. No bloquea DDoS. Arreglo futuro: handler de señal que haga flush+finalize en los writers, o un
+`pipeline-stop` graceful.
+
+### DEBT-DATASET-NTP-OVERSAMPLE — nueva, para el punto 3
+La corrida NTP generó 696877 filas (64504 flujos reales). Al consolidar el dataset hay que
+submuestrear por familia o NTP aplastará al resto. No es un bug: son muchas observaciones por flujo a
+lo largo del tiempo (el sniffer emite una fila por paquete).
+
+### DEBT-NPING-NO-FIXED-COUNT — nueva, para el punto 3
+`nping` 0.7.93 no respeta `-c N` (envía hasta Ctrl-C) y no varía el puerto origen en una ejecución.
+Para corridas reproducibles de tamaño fijo, generar los ataques como pcap (como el SYN flood) y
+reproducir con `tcpreplay --limit N`. Pendiente: `gen_reflection.py` análogo a `gen_syn_flood.py`.
+
+### Realismo de CICDDoS2019 (anotación para el paper, no es deuda de código)
+- Solo está el día de entrenamiento (01-12); falta el día de test (11-03). Solo 2 familias de ataque
+  disponibles (UDP 440 y UDP frag), ambas volumétricas. No hay SYN, UDP-lag ni reflexión con puerto
+  real en lo descargado.
+- El tráfico de ataque de CIC no lleva el puerto de servicio como origen → `reflection_signature`
+  nunca se dispara con CIC. Las reflexiones reales (NTP/DNS) sí. Esto justifica generar ataques en el
+  lab para cubrir lo que CIC no trae.
+
+## HEREDADAS que siguen abiertas (contexto)
+- DEBT-FIREWALL-GATES-ON-LEVEL1-001 (P0): el firewall debe obedecer `final_decision`, no level1.
+  Va después de cerrar la cabeza DDoS.
+- DEBT-SNIFFER-FLOW-UNIDIRECTIONAL-001: la clave de flujo sin normalizar parte cada sentido en dos
+  flujos (bwd=0). Backlog; no bloquea DDoS.
+- DEBT-SNIFFER-FLOW-PACKET-CAP-200: tope de 200 paquetes por flujo. No afecta a las familias de hoy
+  (flujos cortos), pero hay que tenerlo presente para floods de flujo largo.
+- Pérdida del ring a 1000 pps (DAY270/274): el consumer pierde ~86 % de un flood a 1000 pps. El
+  contador del kernel no pierde. Dimensionado sniffer↔ml-detector: backlog, tras las cabezas.
+
+## DAY288 — dataset DDoS v2 (corridas reproducibles)
+
+### Cerradas
+- **nping para el dataset** (abierta DAY287) → CERRADA. Sustituido por pcaps generados
+  (`scripts/dataset_lab/gen_syn_flood.py`, `gen_reflection.py`, seed 42, sha256 verificado) y
+  `tcpreplay --limit`.
+- **Sobremuestreo NTP** (abierta DAY287) → CERRADA. Las corridas nping no entran en el dataset; cada
+  corrida nueva tiene 3000 paquetes fijos.
+
+### Nuevas
+- **DEBT-SNIFFER-FLOW-STATE-MISSING** — En la corrida nping NTP de DAY287 (86251 flujos), 2833
+  eventos `kind=0` salieron con los rasgos de flujo a centinela y los de víctima vivos, concentrados
+  en un episodio transitorio (deciles 6–7, 0 en el 8). Ante una reflexión masiva real la cabeza
+  recibiría centinelas. Reproducir con un pcap de reflexión de muchos flujos y medir la causa
+  (¿tope de la tabla de flujos?). Mientras tanto, la consolidación excluye `syn_ack_ratio <= -9000`.
+- **DEBT-LAB-VM-STALL** — Episodios de parón en el defender: sondeos del lector de hasta 16 s y
+  paquetes entregados en ráfaga (434 en 981 ms durante una corrida a 30 pps). Causa sin medir (VM
+  casi ociosa; `st` de VirtualBox no fiable). Mitigado con compuerta de estabilidad + QA por corrida
+  y vmstat/top en cada corrida.
+- **DEBT-ML-DETECTOR-CPU-PER-EVENT** — A 100 pps UDP (~200 ev/s, FORCE_ALL_HEADS): ml-detector
+  ~320 % CPU (~16 ms/evento), sniffer hasta ~110 %, firewall-acl-agent 30–50 % sin bloquear nada.
+  Entra en el dimensionado por modo de despliegue (decisión DAY284).
+- **DEBT-VICTIM-EWMA-COLD-KEY** — Con clave de víctima fría (<30 ventanas vistas) el EWMA usa α
+  rápido y un ataque sostenido se normaliza: el ratio cae a ~1 en ~10–20 ventanas. Punto ciego ante
+  ataques a víctimas/protocolos sin historia.
+- **DEBT-VICTIM-EWMA-HOT-LEGIT** (medido, acotado) — Clave caliente + carga legítima nueva y alta:
+  `victim_rate_ratio` ≥5 durante ≈134 ventanas (≈2,2 min) y luego se autocorrige; independiente de
+  la carga si la línea base previa ≪ carga. No es permanente. Decidir si 2,2 min es aceptable cuando
+  el firewall obedezca a la fusión.
+- **victim_rate_ratio redundante bajo el suelo** — Si la línea base está por debajo de 10 pps, el
+  ratio es `victim_pps/10` exacto (medido en SYN caliente). Vigilar en las importancias.
+- **Fast alert dependiente de historia y familia** — ~1 por flujo nuevo en reflexión UDP; SYN: 2–5
+  (frío) frente a 80 (caliente). Tenerlo en cuenta al diseñar su peso en la fusión (punto 4).
+- **DEBT-DATASET-CLOCKS** — `ts_ns` del dataset es reloj monotónico y `ts_ms` de
+  `ddos_windows.csv` es epoch: no se alinean directamente. Añadir una columna de epoch al escritor o
+  un reloj común.
+- **QA de corridas a baja tasa** — La banda de pps [0,5R, 1,5R] no sirve a 2 pps (se cuelan ventanas
+  de ambiente). Para benignos de baja tasa, aceptar por `max_window_ms` ≤ 1500.
+
+### Correcciones a notas anteriores
+- Firma del bloque A de CICDDoS2019: `flow_pkts` medio ≈ 51 (66 flujos en 3000 tramas), no "~2".
+- Bloque B: `mean_size` ≈ 1457,6 sobre el tramo inicial del pcap.
+- Hipótesis "tope de ~200 paquetes por flujo" REFUTADA (benign_2: flow_pkts hasta 603; benign_20:
+  hasta 2948).- **DEBT-SNIFFER-RING-CONSUMER-THROUGHPUT** — A 100 pps el sniffer consume ~1 núcleo (~10 ms de CPU
+  por paquete); por encima de ~100 pps el ring pierde eventos (DAY270/274). Requisito para validar
+  la cabeza DDoS a tasas reales. Paso 0: contador de `reserve` fallidos + `perf record` del sniffer
+  a 100 pps. Palancas: eventos por flujo y no por paquete, contadores por flujo en el kernel,
+  consumidor desacoplado con envío por lotes, muestreo bajo presión, XDP nativo. Orden acordado:
+  después del primer entrenamiento y ANTES de cablear (prompt DAY289 §4.4).
+- **Dataset: benigno con reflection_signature=1** — Comprobar en la consolidación si el ambiente
+  trae respuestas DNS/NTP legítimas; si no, generarlas antes de dar el entrenamiento por bueno.
+- **Cobertura del dataset DDoS** — Faltan: tasas reales (>100 pps), avalancha legítima, UDP
+  legítimo de volumen, multi-origen, floods ACK/RST/ICMP, pulsos. Ataques lentos, repartidos y de
+  capa de aplicación van a cabezas propias (otra unidad de observación).
+
+## 🆕 Entradas DAY 289
+
+### DEBT-SNIFFER-WINDOW-AGG-INCREMENTAL-001
+**Severidad:** 🟡 P1 (rendimiento) — **Estado:** ABIERTO DAY289
+`TimeWindowAggregator::get_window_stats` recorre todo `events_` e inserta IPs y puertos en
+`unordered_set` locales: O(eventos en ventana) por llamada. Tras [WINSTATS-CACHE-D289] se llama una
+vez por evento, pero con el búfer al tope (10 000) sigue siendo el mayor coste en espacio de usuario a
+1000 pps. Propuesta: agregador incremental (contadores por IP/puerto con alta y caducidad), O(1) por
+evento. Estimación DAY289: ~2× (~600 ev/s). Medir con `day289_anillo_medir.sh`.
+
+### DEBT-ML-DETECTOR-EVENT-PER-PACKET-001 (actualización DAY289)
+Pasa a EN CURSO como emisión por flujo desde el sniffer (palanca 1 de §4.2). Medido DAY289: techo del
+consumidor ~305 ev/s tras la caché de ventana; un flood realista no cabe emitiendo por paquete.
+
+### DEBT-SOURCE-IP-DISPERSION-KEYED-001
+**Severidad:** 🟢 P2 — **Estado:** ABIERTO DAY289 (decisión de Alonso: se sigue calculando)
+Hoy cuenta IPs distintas (origen y destino) de TODO el tráfico de 30 s, sin víctima ni dirección. Lo
+leen la columna 78 de `csv_event_writer` y, vía extractor propio del ml-detector, el bosque viejo.
+Redefinir con clave al trabajar cada cabeza: abanico de entrada por víctima (DDoS distribuido; posible
+HyperLogLog por víctima en eBPF) y abanico de salida por origen (escaneo, lateral, ransomware).
+
+### DEBT-SNIFFER-TOLOWER-PER-EVENT-001
+**Severidad:** 🟢 P2 — **Estado:** ABIERTO DAY289
+`tolower` ~4 % del perfil a 100 y 1000 pps en un hilo del sniffer distinto del consumidor: trabajo de
+cadenas por evento. Localizar el llamador y quitarlo del camino caliente.
+
+### DEBT-VAGRANT-PERF-TOOL-001
+**Severidad:** 🟢 P3 — **Estado:** ABIERTO DAY289
+`linux-perf` instalado a mano en el defender. Si se queda como herramienta de medida, al
+Vagrantfile. Notas: en perf 6.1 la clave por hilo es `--sort pid`; las pilas DWARF no se resuelven
+(revisar símbolos de depuración o frame pointers en el perfil de medida).
+
+### DEBT-DATASET-LAB-GENERATORS-SHARED-001
+**Severidad:** 🟢 P3 — **Estado:** ABIERTO DAY289
+`gen_reflection.py` lee argv al importarse; `gen_benign_dns_ntp.py` copia sus funciones. Extraer un
+módulo común sin alterar los sha256 de los pcaps ya publicados en el MANIFEST.
+
+### DEBT-REPO-BAK-FILES-TRACKED-001
+**Severidad:** 🟢 P3 — **Estado:** ABIERTO DAY289
+`sniffer/src/userspace/ml_defender_features.cpp.bak.day79` está trackeado y aparece en los `git grep`.
+Retirarlo del árbol (queda en la historia).
+
+### DEBT-SENSOR-LAN-INGRESS-NO-RESPONSES-001
+**Severidad:** 🟡 P1 (diseño) — **Estado:** ABIERTO DAY289
+Medido: el XDP de ingreso en la cara LAN ve las consultas salientes de los clientes pero nunca sus
+respuestas (entran por la WAN). Una reflexión real contra la LAN también llegaría por la WAN.
+Distinguir respuesta no solicitada de legítima exige ver las consultas: sensor en ambas caras o
+correlación con el sentido contrario. Afecta al diseño de reflection_signature.
+
+### DEBT-DISTRIBUTED-SHARDING-BY-VICTIM-001
+**Severidad:** 🟢 P2 (diseño, producción) — **Estado:** ABIERTO DAY289
+Reparto sniffer → N ml-detector: por clave de víctima (IP destino) para que cada instancia vea el
+estado completo de sus víctimas; un reparto aleatorio rompe los rasgos agregados. El dimensionado real
+(cuántas instancias por instalación) exige hardware y carga distribuida reales, x86 y ARM.
+
+### DEBT-DDOS-RATE-THRESHOLD-PER-DEPLOYMENT-001
+**Severidad:** 🟡 P1 (diseño, abierto) — **Estado:** ABIERTO DAY289, SIN DECIDIR
+Medido: reentrenando con contraste, para la reflexión UDP el modelo se reduce a un umbral absoluto de
+victim_pps (salto 20→25 pps idéntico en todas las familias), fijado por las tasas del dataset. Opción a
+valorar: el modelo aprende forma y salto relativo (régimen caliente) y el umbral absoluto es un
+parámetro medido por despliegue (criterio DAY284).
+
+### NOTA DAY289 — corrección al prompt DAY288
+`STAT_RESERVE_FAIL` (stats[1]) existe desde DAY275 [RING-LOSS-D275:RESERVE]; el prompt DAY288 lo daba
+por no instrumentado.
+
+## DAY290 — hallazgos laterales (medidos; fuera del PR de la cabeza DDoS salvo indicación)
+
+**PR propio inmediatamente después de la cabeza DDoS (decisión de Alonso):**
+- DEBT-SNIFFER-FLOW-EXPIRY-001: `ShardedFlowManager::cleanup_expired_flows` no se llama nunca (timeout
+  120 s letra muerta) y es O(n²) (`lru_queue->remove` sobre std::list con `lru_pos` disponible). Barrido
+  desde la cola de la LRU en O(caducados), periódico, con lock por shard corto. El timeout es parámetro del
+  contrato de rasgos (reinicia `flow_packet_count`): al entrar, repetir la batería DDoS.
+- DEBT-SNIFFER-FLOWTABLE-CONFIG-001: `shard_count=16`, `max_flows_per_shard=10000`, `flow_timeout_ns`
+  hardcodeados en ring_consumer.cpp:142-145 → sniffer.json con validación estricta (ausente o inválido ⇒
+  no arranca).
+- DEBT-CONFIG-JSON-AUDIT-001: todos los JSON de componentes con `_doc` (rango, formato, límites) y lectura
+  estricta; límites inferidos con pruebas.
+
+**Memoria / robustez:**
+- DEBT-SNIFFER-FLOWSTATS-UNBOUNDED-001: 6–8 vectores por flujo crecen sin límite en flujos largos.
+  Medido: 1,7–2,2 kB por flujo de 1 paquete; techo con LRU llena ~270–350 MB. Bajo flood la LRU expulsa
+  el estado de flujos legítimos (borrado de historia).
+- DEBT-SNIFFER-STATS-COPY-001: `get_flow_stats_copy` copia todos los vectores en cada evento (O(n) oculto).
+- DEBT-SNIFFER-UNBOUNDED-QUEUES-001: `processing_queue_` y `send_queue_` son std::queue sin límite: sin
+  contrapresión y sin visibilidad (ZMQ-DROP solo cuenta el envío final).
+
+**Agregador / otras cabezas (con datos de esas cabezas, por el principio "agregador propio si lo piden los datos"):**
+- DEBT-AGG-SHARED-RANSOMWARE-001: traffic (4) e internal (4) + `source_ip_dispersion` leen el
+  TimeWindowAggregator del procesador de ransomware; su pasada O(10 000) bajo mutex bloquea al hilo del anillo.
+- DEBT-AGG-WINDOWSTATS-MIXED-001: `get_window_stats` mezcla src y dst en `unique_ips` y `unique_ports`.
+- DEBT-AGG-CAP-RATE-SKEW-001: deque con tope 10 000 y expulsión solo por tamaño ⇒ a 1000 pps la ventana
+  "de 30 s" cubre ~10 s: rasgo dependiente de la tasa.
+- Emisión por víctima (contrato v3) junto con el agregador incremental.
+
+**Higiene:**
+- DEBT-SNIFFER-PLUGIN-DOUBLE-001: bloque de plugins duplicado en process_raw_event con
+  PLUGIN_LOADER_ENABLED activo (doble invocación, doble cuenta de descartes).
+- DEBT-SNIFFER-PAYLOAD-UNUSED-001: análisis de carga sin consumidor (hoy solo con verbosidad BASIC+):
+  cablearlo al protobuf o retirarlo.
+- Ficheros muertos trackeados: `ml_defender_features.cpp.bak.day79`, `sharded_flow_manager_fix*.{hpp,cpp}`,
+  `.original`.
+- DEBT-GATE-PROFILE-MISMATCH-001: `pipeline-build PROFILE=production` + `test-components` sin PROFILE
+  ⇒ tests sobre build-debug sin avisar. Hacer que el gate falle o avise si el perfil no coincide.
+
+**Medida:**
+- day289_anillo_medir.sh: la línea `top -H` es inválida para el hilo principal (41–67 % fantasma; kernel
+  0,0 %) y `--sort tid` falla en perf 6.1. Sustituir por `day290_cpu_hilos.sh` (/proc) y `--sort pid`.
+- Caracterizar el techo del anillo en HARDWARE REAL con ≥3 corridas por tasa y dispersión (en la VM, a
+  1000 pps: 43 % y 29 % con el mismo binario).
+- udpB: exactamente 2 filas por flujo (máx. 4) sin explicar. dns/ntp: conteos idénticos (misma secuencia
+  de puertos del generador).
+
+## DAY291 — hallazgos laterales y deuda (fuera del PR de la cabeza DDoS salvo indicación)
+
+**PR de configuración (justo después de la cabeza DDoS):**
+- DEBT-CONFIG-POLICY-001: aplicar a TODOS los componentes la política DAY291 (ausente / tipo erróneo /
+  fuera de rango ⇒ defecto validado + `[CONFIG-DEFAULT]`, el proceso arranca). Hoy `config_manager.cpp`
+  del sniffer toma defectos en SILENCIO (`kernel_json.get(campo, defecto)`) y no valida nada.
+- DEBT-CONFIG-REMINDER-001: recordatorio periódico al admin mientras haya campos con defecto aplicado.
+- DEBT-CONFIG-CHECK-001: `--check-config` local (validar el JSON antes de desplegar, sin arrancar).
+- DEBT-CONFIG-JSON-AUDIT-001 (ya existente): `_doc_*` con tipo, rango, defecto y significado en todos los JSON.
+
+**Enterprise (producción distribuida, lejos):**
+- `--check-config` distribuido vía etcd-clients, lanzable desde un LLM maestro, con el estado de cada instalación.
+- LLM maestro que lee los logs de cada despliegue, detecta `[CONFIG-DEFAULT]`, avisa al admin y propone el
+  valor documentado como óptimo; si el admin no responde en un plazo prudencial, lo corrige él dejando
+  constancia (fecha, hora, motivo). El rango documentado es el LÍMITE DURO para cualquier actor automático;
+  todo cambio auditado y reversible.
+- Pruebas automáticas recorriendo valores exóticos DENTRO del rango para encontrar los valores medidos
+  óptimos por hardware de cada instalación.
+- Cambio de configuración en caliente (local y distribuido): aún no existe.
+
+**EWMA por víctima / cabeza DDoS:**
+- DEBT-TOOLS-H2-EQUIV-001: `scripts/d286_h2_equiv.py` lleva la fórmula SIN histéresis; retirarlo o
+  actualizarlo (hoy lo sustituye `scripts/d291_paridad.py`).
+- DEBT-DDOS-COLD-VICTIM-001: una víctima atacada en frío (< 30 ventanas vistas) no entra en bajo_presion y
+  el ataque se absorbe como antes. La condición de clave caliente se queda (sin ella el ambiente da 10×
+  episodios); medir y diseñar una entrada específica para claves frías.
+- DEBT-DDOS-PULSE-001: ataques en pulsos (ráfagas cortas repetidas): medir entrada/salida de bajo_presion
+  por pulso con la histéresis.
+- DEBT-DDOS-AMBIENT-CLEAN-001: el "ambiente" de `ddos_windows.csv` mezcla destinos de replays viejos
+  (Neris/CTU); capturar ambiente limpio para medir el coste real en falsos positivos.
+- DESIGN-REFLECTION-UNSOLICITED: la señal clásica de reflexión es "respuesta sin pregunta previa"; en la
+  topología actual el sensor no ve las consultas salientes emparejadas. Respuestas DNS legítimas grandes
+  (DNSSEC/TXT) y reflexión son indistinguibles paquete a paquete.
+- DESIGN-FIREWALL-REFLECTORS: en reflexión, las IP de origen son reflectores (servidores inocentes);
+  decidir qué se bloquea en el paso 5 (fusión + firewall).
+
+**Laboratorio:**
+- DEBT-SNIFFER-READER-STARTUP-001: tras un reinicio inmediato del pipeline, el lector tardó ~2 min en
+  publicar la primera ventana (`sondeos_30s=0`); la compuerta de estabilidad esperó. Sin medir la causa.
+- DEBT-LAB-ALIAS51-001: el alias 192.168.100.51 del client no persiste; provisionarlo en el Vagrantfile
+  (y el receptor TCP) para que las corridas en caliente sean reproducibles.
+
+## DAY292 — batería caliente, reentrenamiento y deuda destapada
+
+**Dataset de la cabeza DDoS (para iterar, ver docs/ml-heads/consejo_day292.md):**
+- DEBT-DDOS-DATASET-SIGNATURE-001: los generadores producen tamaños FIJOS por familia (ntp 482, dns 1442, syn 54) ⇒ el modelo
+  aprende firmas, no comportamiento (familia fuera: sin ntp ~0 %). Tamaños aleatorios y benigno que solape tamaños de ataque.
+  Medido: una respuesta DNS legítima de 1442 B marcada como ataque (modelo A).
+- DEBT-DDOS-DATASET-TCP-BENIGN-001: TCP benigno solo en las corridas SYN ⇒ "sin syn" marca ~99 % del inocente TCP.
+  Base mixta UDP+TCP en todas las corridas.
+- DEBT-DDOS-DATASET-BASE-VOLUME-001: base siempre 10 pps ⇒ victim_rate_ratio y victim_pps colineales; el modelo B eligió un
+  umbral absoluto de ~30-40 pps fijado por las tasas del lab. Bases de 10/50/200 pps.
+- DEBT-DDOS-COLD-VICTIM-001 (ampliada): con el modelo relativo, víctima sin historia (< 30 ventanas) ⇒ recall 0-13 % en frío.
+  Opción: regla de respaldo solo mientras la clave está fría.
+
+**Detección:**
+- DEBT-DDOS-ONSET-LATENCY-001: la foto de víctima es de la ventana de 1 s anterior ⇒ latencia de detección 0,5-1,5 s y filas
+  de arranque indistinguibles (D4 las saca del entrenamiento). Opción: estimación de ventana parcial o ventanas sub-segundo.
+- DEBT-DDOS-ENTRY-PHASE-001: el ratio durante el ataque varía hasta ~17 % según la fase de entrada (ventana parcial < K_in
+  absorbida con α rápido). En la práctica K_in=3 deja fuera 3× y deja entrar 4×.
+- DEBT-FIREWALL-PACKET-DECISION-001: el modelo decide por paquete; antes de cablear el firewall, política k-de-n o por
+  víctima para no bloquear por un FP aislado (paso 5).
+
+**Lab / herramientas:**
+- CERRADA DAY292: day292_post.sh registraba antes de medir (registro huérfano si la medida fallaba). Ahora mide primero.
+- day292_base_medir.py no filtraba dst .1 (conclusión errónea "el TCP de ambiente no comparte clave"; corregida).
+- Identificar ambiente_victima (~90 filas/corrida de otros orígenes hacia .1: quién y qué protocolo) y las 105 filas de
+  centinela del ambiente.
+- Piloto TCP: 1433/1500 segmentos (hipótesis Nagle en atasco de la VM); no se repitió en la batería (2103-2104 por corrida).
+- El CSV del escritor incluye event_kind=2 (EVENT_KIND_RANSOMWARE_WINDOW); las medidas filtran kind=0.
+- Fast alerts: 0 en las corridas SYN calientes (frío: 2-4). Para el paso 4.
+
+## DAY292 — tras el Consejo (síntesis en docs/ml-heads/consejo_day292_sintesis.md)
+- DEBT-DDOS-COLD-SUSTAINED-001: medir si un ataque sostenido a víctima fría se detecta alguna vez (hipótesis: la EWMA lo
+  absorbe con α rápido antes de llegar a 30 ventanas). Bloque 1d sobre las corridas frías de DAY288; después fase D de la v3.
+- DEBT-FIREWALL-PER-VICTIM-001: la mitigación (drop temporal) es por VÍCTIMA, no por origen (en reflexión el origen es un
+  reflector). El firewall-acl-agent bloquea hoy por IP de origen con reincidencia (RECIDIVISM-D276): rediseñar en su PR.
+- DEBT-DDOS-STATS-SEEDS-001: repetir los entrenamientos con varias semillas y varios splits por corrida; intervalos.
+- DEBT-DDOS-RATES-UNSEEN-001: tasas no vistas por interpolación (45/75/150) en la batería v3.
+- DEBT-DDOS-LONG-ATTACK-001: ataque largo (horas) bajo τ=3600 s y segundo ataque posterior (pregunta de DeepSeek; refutada
+  solo para 90 s).
+- DEBT-LAB-RING-CEILING-001: el techo del consumidor (~305 ev/s) limita las bases de la v3 a ~250 pps totales.
+- DEBT-LAB-BATTERY-RUNNER-001: ejecutor desatendido de baterías desde el Mac.
+- El PR feat/ddos-head-contract cierra con el firewall en SOMBRA (registra final_decision y lo que habría bloqueado).
+- DEBT-DDOS-EWMA-WARMUP-FREEZE-001 (GLM): congelar la EWMA en el suelo hasta que la clave tenga 30 ventanas; simular offline
+  sobre ventanas frías; si se cumple la predicción (frío 60/100 ~90-100 %), parámetro en sniffer.json con defecto validado.
+- DEBT-DDOS-COLD-RECAPTURE-001: re-capturar el frío con el binario actual (posterior a DAY290/291).
+- DEBT-DDOS-FACTORIZED-001: modelo factorizado (estado de presión + clasificador condicional) frente al plano.
+- DEBT-DDOS-SLOW-RAMP-001: rampas lentas (ratio ≈ 1+1/(αT)) invisibles por diseño: medir en v3 o declarar fuera de alcance.
+- DEBT-DDOS-SRC-NEWNESS-001: rasgo victim_src_newness (contrato v2.1); requiere pcaps multi-origen.
+- DEBT-FIREWALL-SATURATION-BREAKER-001: disyuntor de saturación (> 20 % marcado > 10 s ⇒ alarma + solo modo suave).
+- DEBT-DDOS-BENIGN-BULK-001: benigno bulk (pocos flujos, muchos paquetes, minutos) y ataque de flujo largo en la v3.
+
+## DAY293 — bloque 1 offline (docs/ml-heads/bloque1_day293.md)
+- DEBT-DDOS-EWMA-WARMUP-FREEZE-001: CERRADA, medida y no adoptada (1d; D10).
+- DEBT-DDOS-COLD-SUSTAINED-001: CERRADA con resultado: con la pizarra actual, un ataque constante sobre una víctima sin historia
+  es invisible para el estado de presión (0/15 corridas frías). Va al paper como límite.
+- DEBT-DDOS-BOARD-SNAPSHOT-001: foto de la pizarra por víctima al parar y recarga al arrancar; firmada y cifrada con clave en
+  Vault aprovisionada en `make provision-crypto`; antigüedad máxima y ruta en sniffer.json con defecto validado; sin rotación
+  por ahora (D11). PR propio, después de la cabeza DDoS.
+- DEBT-DDOS-COLD-ADMIN-RULE-001: regla fría declarada por el admin en el JSON, fuera del modelo (D12).
+- DEBT-DDOS-STAGE2-BEHAVIOUR-001: rasgos de comportamiento por origen para la etapa 2 (cuota del origen en los pps de la víctima,
+  novedad del origen): contrato v2.1. La etapa 2 actual separa por firmas de tamaño del lab (1b).
+- DEBT-DDOS-ENCAPS-001: el factorizado es frágil ante encapsulación (+78 B ⇒ FP inocente durante 24 %): aumento de datos en v3.
+- DEBT-DDOS-SATURATION-BREAKER-001: redefinir el disyuntor de saturación (tal como se propuso salta en todo ataque real).
+- DEBT-DDOS-V3-BENIGN-SURGE-001: la v3 debe incluir subidas benignas ≥ 4× sin ataque: único origen posible de eventos de
+  bloqueo falsos con mitigación por víctima; la política (D14) no está validada frente a FP sin ellas.
+- DEBT-CONFIG-DEFAULTS-PRODUCTION-001: los valores por defecto de todos los JSON son de laboratorio; un despliegue real exige un
+  juego optimizado, documentado y consensuado con el personal profesional de la instalación.
+
+## DAY293 — bloque 2 (cableado en sombra)
+- DEBT-EVENT-TIMESTAMP-TIMEBASE-001 (MEDIDO en el E2E): event_timestamp lleva DOS bases de tiempo. Eventos de flujo:
+  segundos desde el arranque de la VM (monotónico, ~33900 s). Otros eventos (cada ~30 s, probablemente ventana ransomware):
+  epoch (~1,79e9 s). Mezclarlos congeló el reloj de la sombra del firewall (corregido: solo eventos de flujo). Revisar todo
+  lo que ordene o una por tiempo de evento: bronce correlation_v1 (flow_start_sec), oro, grafo. PR propio.
+- DEBT-PIPELINE-START-ALIVE-001: make pipeline-start no detecta un pipeline vivo (falla con "duplicate session" a mitad y
+  deja corriendo los binarios viejos). Debe avisar o parar antes de compilar/arrancar.
+- DEBT-FIREWALL-CONFIG-SILENT-DEFAULTS-001: get_optional del firewall aplica defectos en silencio y convierte tipos sin
+  avisar (cubierto por el parser común de arranque, DEBT-CONFIG-CHECK-001).
+- DEBT-FIREWALL-RATELIMIT-RULE-001: en modo real el firewall instala un límite de conexiones TCP nuevas (100/60 s -> DROP)
+  independiente de las cabezas; revisar en el PR de la mitigación por víctima.
+- DEBT-DDOS-V2-MODEL-ID-001: kModelName/kModelVersion de ddos_v2 escritos a mano en ddos_v2_head.hpp; que los emita el exportador.
+- Registro para el paper: hasta DAY293 el firewall del lab corría con dry_run=false y bloqueaba IPs de ORIGEN por level1.
+- DEBT-LAB-VM-NTP-001: sincronizar por NTP (chrony) los relojes de las VMs del Vagrantfile (defender, client, sensores).
+  Medido DAY293: el client va ~14 s por detrás del defender. No causa el fallo de la sombra (todo lo marca el defender),
+  pero complica cruzar logs entre VMs. Hacerlo en el aprovisionamiento (Vagrantfile / provision.sh), no a mano.
+
+## DAY294 — relojes del lab
+- DEBT-LAB-VM-NTP-001 CERRADA [ARGUS-LAB-NTP-D294]. Rediagnóstico medido: chrony YA estaba aprovisionado en todas las VMs.
+  Causa real: el client no tiene salida a Internet por diseño (ruta por defecto via 192.168.100.1 tras client-setup), pierde
+  sus fuentes NTP (Reach 340 -> 0) y su reloj corre suelto (Residual freq +1619 ppm, ~1,6 ms/s -> los ~14 s de DAY293).
+  Arreglo: el defender sirve la hora a 192.168.100.0/24 (allow + local stratum 10); el client usa server 192.168.100.1
+  (provisioner nuevo client-ntp); makestep 1 -1 en ambas (salto si desfase > 1 s, p. ej. tras suspender el portátil).
+  Medido: client ^* 192.168.100.1, última muestra -1,5 us (+-17 ms); el defender lista a .50 en chronyc clients.
+  Aplicable sin reaprovisionar todo: vagrant provision defender --provision-with ntp-sync; vagrant provision client --provision-with client-ntp.
+- Nota: Vagrantfile:182 `iptables -t nat -A POSTROUTING -o eth1 -j MASQUERADE` es regla muerta (eth1 = 192.168.56.20 host-only,
+  sin Internet; 0 paquetes). El client sin Internet es diseño del lab (comentario de client-setup). No se toca.
+- [FW-DRYRUN-VERIF-D294] ARREGLADO: con dry_run=true el firewall no crea los ipsets pero la verificación del Day 52
+  (main.cpp) exigía que existieran -> [FATAL] y moría al arrancar en un kernel limpio (tras rearrancar la VM). Ahora en
+  dry_run la verificación se omite con aviso [DRY-RUN]; en modo real, mismo FATAL. Ayer no se vio porque los ipsets
+  seguían en el kernel de corridas con dry_run=false.
+- DEBT-PIPELINE-START-COMPONENT-DOWN-001: make pipeline-start termina "bien" aunque un componente quede STOPPED
+  (medido DAY294: firewall muerto, solo se veía en el estado final). Debe fallar o avisar en claro. Misma familia que
+  DEBT-PIPELINE-START-ALIVE-001.
+- E2E DAY294 de la sombra DDoS (ntp 60 + base .51, VMs sincronizadas por NTP): 1 INICIO (2 s de reloj de eventos tras el
+  primer DROP), 1 FIN (29,3 s tras el último DROP, hold=30), origenes solo 192.168.100.50:5357, 0 del inocente .51,
+  p1_min 0,96. Último DROP en el defender 05:01:11,05 UTC frente a fin_ataque del client 05:01:11. Evidencia en
+  logs/lab/day294/ (sin trackear).
+- Corrida benigna DAY294 (day294_benigna_client.sh): 0 INICIO; 2 DROP aislados (dns30, dns100) absorbidos por k=3/5.
+- DEBT-FIREWALL-NONFLOW-EVENTS-001: bajo dnsperf el firewall recibe ~37 eventos/s que no son de flujo (antes ~1 cada 30 s).
+  Identificar el tipo (event_kind) y quién los emite.
+- DEBT-SHADOW-EVENT-CLOCK-LAG-001: durante dns100 el reloj de eventos de flujo de la sombra avanza ~0,55 s por s de
+  pared y recupera después (6315->6351 en un resumen). ¿Retraso de cola (sniffer/ml-detector/ZMQ) o semántica de
+  event_timestamp? Afecta a time_to_block bajo carga. Medir junto a DEBT-EVENT-TIMESTAMP-TIMEBASE-001.
+- EMECAS+++ DAY294 cayó en test-parquet: 2026-10-01.parquet con 36904 de 37283 filas (99 %) con timestamp_utc_ns
+  MONOTÓNICO (884 s - 12567 s desde el arranque), misma familia que DAY281 (2026-09-25.csv) y
+  DEBT-EVENT-TIMESTAMP-TIMEBASE-001. No es regresión de feat/ddos-head-contract (datos del lab de DAY284).
+  CSV y Parquet a logs/lab/quarantine_d294/.
+- DEBT-PARQUET-VALIDATOR-FIRST-ROW-001: validate_roundtrip.py solo comprueba timestamp_utc_ns de la PRIMERA fila de
+  cada fichero; esconde filas monotónicas en el resto y solo destapa el problema cuando un fichero empieza por una.
+  Debe comprobar todas las filas (o contar y fallar con el recuento por fichero).

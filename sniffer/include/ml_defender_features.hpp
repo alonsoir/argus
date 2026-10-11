@@ -12,6 +12,8 @@
 #include "flow_manager.hpp"  // For FlowStatistics definition
 // Tras #include "flow_manager.hpp"
 #include "time_window_aggregator.hpp"
+#include "ddos_flow_snap.hpp"  // [DDOS-SNAP-D290]
+#include <map>
 #include <cstdint>
 #include <vector>
 #include <cmath>
@@ -100,7 +102,20 @@ public:
         const FlowStatistics& flow,
         ::protobuf::NetworkSecurityEvent& proto_event) const;
 
+    // [DDOS-SNAP-D290] Foto O(k) de los 5 rasgos DDoS v2 de flujo (syn_ack_ratio,
+    // flow_completion_rate, flow_packet_count, mean_packet_size, packet_size_entropy) con las
+    // mismas formulas que extract_ddos_features, sobre los estadisticos incrementales del flujo.
+    DdosFlowSnap ddos_v2_flow_snapshot(const FlowStatistics& flow) const;
+
 private:
+    // [WINSTATS-CACHE-D289] Una sola pasada por la ventana de 30 s por evento: los 9 extractores
+    // de ventana comparten el WindowStats calculado al entrar en populate_ml_defender_features.
+    // Fuera de populate (llamadas sueltas a los extract_* públicos) no hay caché: se calcula como antes.
+    WindowStats window_stats_30s() const;
+    mutable WindowStats window_cache_{};
+    mutable bool window_cache_active_ = false;
+    mutable bool window_cache_valid_ = false;
+
     // ========================================================================
     // DDOS FEATURE EXTRACTORS (10 features)
     // ========================================================================
@@ -177,6 +192,8 @@ private:
      * Returns value between 0.0 (no entropy) and log2(unique_values)
      */
     float calculate_entropy(const std::vector<uint32_t>& data) const;
+    float calculate_entropy_from_hist(const std::map<uint32_t, uint32_t>& hist,
+                                      uint64_t total_count) const;  // [DDOS-SNAP-D290]
 
     /**
      * Calculate standard deviation

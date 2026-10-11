@@ -758,6 +758,9 @@ if (encryption_seed.empty()) {
         std::cout << "\n🚀 Sniffer running with hybrid filtering enabled" << std::endl;
         std::cout << "   Press Ctrl+C to stop\n" << std::endl;
 
+        // [DDOS-HYST-D291] parametros de la EWMA por victima, antes de arrancar el lector
+        g_ddos_victim_board->set_ewma_params(g_config.kernel_space.ddos_victim_ewma);
+
         // [DDOS-KREAD-D274:MAIN-START] Lector del agregador DDoS en-kernel (opcional, DAY274).
         // Es una capa de MEDICION: un fallo aqui nunca tumba el sniffer.
         if (g_config.kernel_space.ddos_kernel_agg_enabled) {

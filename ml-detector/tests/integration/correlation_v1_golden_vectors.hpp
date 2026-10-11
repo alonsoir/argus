@@ -16,6 +16,8 @@
 //              Zeek/Wazuh/Andrés.
 #pragma once
 
+#include <cstdio>
+#include <cstdlib>
 #include <cmath>
 #include <cassert>
 #include <limits>
@@ -38,8 +40,12 @@ struct GoldenVector {
 // Estados mutuamente excluyentes: un vector NO puede ser SKIP y REJECT a la vez.
 // SKIP = community_id vacío (D-F, to_row filtra). REJECT = \n/\r (validate Camino A).
 inline void assert_golden_state_legal(const GoldenVector& gv) {
-    assert(!(gv.expect_skip && gv.expect_reject)
-           && "GoldenVector ilegal: expect_skip y expect_reject simultáneos");
+    // DAY283: comprobacion activa sin NDEBUG (en production el assert desaparecia y el test pasaba en vacio)
+    if (gv.expect_skip && gv.expect_reject) {
+        std::fprintf(stderr, "GoldenVector ilegal (%s): expect_skip y expect_reject simultáneos\n",
+                     gv.id.c_str());
+        std::abort();
+    }
 }
 
 // Evento base válido y realista (clon de los valores de test_correlation_roundtrip).

@@ -38,6 +38,8 @@
 #ifndef FIREWALL_ZMQ_SUBSCRIBER_HPP
 #define FIREWALL_ZMQ_SUBSCRIBER_HPP
 
+#include <chrono>  // [DDOS-SHADOW-OBS-D293]
+#include "firewall/ddos_shadow_policy.hpp"  // [DDOS-SHADOW-D293]
 #include "firewall/batch_processor.hpp"
 #include "firewall/logger.hpp"
 #include "firewall/etcd_client.hpp"
@@ -116,6 +118,7 @@ public:
         bool compression_enabled;        ///< Enable LZ4 decompression
         bool encryption_enabled;         ///< Enable ChaCha20 decryption
         std::string crypto_token;        ///< Decryption key (hex)
+        ::mldefender::firewall::DdosShadowParams ddos_shadow;  ///< [DDOS-SHADOW-D293] política por víctima en sombra
 
         /**
          * @brief Default configuration
@@ -344,6 +347,17 @@ private:
     std::unique_ptr<ml_defender::SeedClient>           seed_client_;
     std::unique_ptr<crypto_transport::CryptoTransport> rx_;
     mutable Stats stats_;                ///< Runtime statistics
+    ::mldefender::firewall::DdosShadowPolicy ddos_shadow_{config_.ddos_shadow};  ///< [DDOS-SHADOW-D293]
+    // [DDOS-SHADOW-OBS-D293] observabilidad de la sombra (solo hilo receptor)
+    uint64_t sombra_eventos_ = 0;
+    uint64_t sombra_flujo_ = 0;  // [DDOS-SHADOW-RELOJ-D293]
+    uint64_t sombra_drop_ = 0;
+    uint64_t sombra_allow_ = 0;
+    uint64_t sombra_otro_ = 0;
+    int64_t sombra_ts_min_ = 0;
+    int64_t sombra_ts_max_ = 0;
+    bool sombra_primer_drop_ = false;
+    std::chrono::steady_clock::time_point sombra_ultimo_resumen_{std::chrono::steady_clock::now()};
 
     std::unique_ptr<zmq::context_t> context_;  ///< ZMQ context
     std::unique_ptr<zmq::socket_t> socket_;    ///< ZMQ SUB socket

@@ -167,6 +167,97 @@ CaptureConfig ConfigManager::parse_capture(const Json::Value& capture_json) {
     return capture;
 }
 
+// [DDOS-HYST-D291] Parametros de la EWMA por victima. Politica DAY291 (Alonso): el JSON
+// manda; si un campo falta, no es numerico o esta fuera de rango, se usa el DEFECTO validado
+// (ddos_contract_v2.hpp) y se avisa con [CONFIG-DEFAULT]. El sniffer arranca siempre.
+namespace {
+int ddos_ewma_num(const Json::Value& j, const char* field, double def, double lo, double hi,
+                  bool integral, double& out) {
+    out = def;
+    if (!j.isMember(field)) {
+        std::cerr << "[CONFIG-DEFAULT] kernel_space." << field << " ausente -> defecto=" << def
+                  << " rango=[" << lo << ", " << hi << "]" << std::endl;
+        return 1;
+    }
+    const Json::Value& v = j[field];
+    if (!v.isNumeric()) {
+        std::cerr << "[CONFIG-DEFAULT] kernel_space." << field << " no es numerico -> defecto=" << def
+                  << " rango=[" << lo << ", " << hi << "]" << std::endl;
+        return 1;
+    }
+    const double x = v.asDouble();
+    if (!(x >= lo && x <= hi) || (integral && x != static_cast<double>(static_cast<uint64_t>(x)))) {
+        std::cerr << "[CONFIG-DEFAULT] kernel_space." << field << "=" << x
+                  << " fuera de rango o no entero -> defecto=" << def
+                  << " rango=[" << lo << ", " << hi << "]" << std::endl;
+        return 1;
+    }
+    out = x;
+    return 0;
+}
+
+::argus::ddos::VictimEwmaParams parse_victim_ewma(const Json::Value& k, int interval_ms) {
+    namespace dd = ::argus::ddos;
+    const dd::VictimEwmaParams d{};
+    dd::VictimEwmaParams p{};
+    int n = 0;
+    double x = 0.0;
+    n += ddos_ewma_num(k, "ddos_victim_ewma_alpha", d.alpha, dd::kVictimEwmaAlphaMin, dd::kVictimEwmaAlphaMax, false, x);
+    p.alpha = x;
+    n += ddos_ewma_num(k, "ddos_victim_ewma_tau_s", d.tau_s, dd::kVictimEwmaTauMin, dd::kVictimEwmaTauMax, false, x);
+    p.tau_s = x;
+    n += ddos_ewma_num(k, "ddos_victim_ewma_k_in", d.k_in, dd::kVictimEwmaKInMin, dd::kVictimEwmaKInMax, false, x);
+    p.k_in = x;
+    n += ddos_ewma_num(k, "ddos_victim_ewma_k_out", d.k_out, dd::kVictimEwmaKOutMin, dd::kVictimEwmaKOutMax, false, x);
+    p.k_out = x;
+    n += ddos_ewma_num(k, "ddos_victim_ewma_warm_windows", static_cast<double>(d.warm_windows),
+                       dd::kVictimEwmaWarmMin, dd::kVictimEwmaWarmMax, true, x);
+    p.warm_windows = static_cast<uint64_t>(x);
+    n += ddos_ewma_num(k, "ddos_victim_ewma_floor_pps", d.floor_pps, dd::kVictimEwmaFloorMin, dd::kVictimEwmaFloorMax, false, x);
+    p.floor_pps = x;
+    n += ddos_ewma_num(k, "ddos_victim_ewma_evict_windows", static_cast<double>(d.evict_windows),
+                       dd::kVictimEwmaEvictMin, dd::kVictimEwmaEvictMax, true, x);
+    p.evict_windows = static_cast<uint64_t>(x);
+    if (interval_ms > 0) {
+        p.interval_ms = static_cast<double>(interval_ms);
+    } else {
+        std::cerr << "[CONFIG-DEFAULT] kernel_space.ddos_kernel_agg_interval_ms=" << interval_ms
+                  << " no valido para la EWMA -> " << d.interval_ms << std::endl;
+        ++n;
+    }
+    if (!(p.k_out < p.k_in)) {
+        std::cerr << "[CONFIG-DEFAULT] regla k_out < k_in rota (k_in=" << p.k_in << ", k_out=" << p.k_out
+                  << ") -> defectos k_in=" << d.k_in << " k_out=" << d.k_out << std::endl;
+        p.k_in = d.k_in;
+        p.k_out = d.k_out;
+        ++n;
+    }
+    if (!(p.alpha_slow() < p.alpha)) {
+        std::cerr << "[CONFIG-DEFAULT] regla alfa_lento < alfa rota (alfa=" << p.alpha << ", alfa_lento="
+                  << p.alpha_slow() << ") -> defectos alfa=" << d.alpha << " tau_s=" << d.tau_s << std::endl;
+        p.alpha = d.alpha;
+        p.tau_s = d.tau_s;
+        ++n;
+    }
+    if (!dd::victim_ewma_params_ok(p)) {
+        std::cerr << "[CONFIG-DEFAULT] combinacion de parametros de la EWMA invalida -> todos los defectos" << std::endl;
+        const double iv = p.interval_ms;
+        p = d;
+        p.interval_ms = iv;
+        ++n;
+    }
+    if (n > 0) {
+        std::cerr << "[CONFIG-DEFAULT] " << n
+                  << " ajustes con valor por defecto en la EWMA por victima: revisar sniffer.json" << std::endl;
+    }
+    std::cout << "[DDOS-HYST] ewma alpha=" << p.alpha << " tau_s=" << p.tau_s << " alpha_lento=" << p.alpha_slow()
+              << " k_in=" << p.k_in << " k_out=" << p.k_out << " warm=" << p.warm_windows
+              << " floor_pps=" << p.floor_pps << " evict=" << p.evict_windows
+              << " interval_ms=" << p.interval_ms << std::endl;
+    return p;
+}
+}  // namespace
+
 KernelSpaceConfig ConfigManager::parse_kernel_space(const Json::Value& kernel_json) {
     KernelSpaceConfig kernel;
     kernel.ebpf_program = kernel_json.get("ebpf_program", "sniffer.bpf.o").asString();
@@ -174,6 +265,7 @@ KernelSpaceConfig ConfigManager::parse_kernel_space(const Json::Value& kernel_js
     kernel.ddos_kernel_agg_enabled = kernel_json.get("ddos_kernel_agg_enabled", false).asBool();
     kernel.ddos_kernel_agg_interval_ms = kernel_json.get("ddos_kernel_agg_interval_ms", 1000).asInt();
     kernel.ddos_kernel_agg_csv_path = kernel_json.get("ddos_kernel_agg_csv_path", "").asString();
+    kernel.ddos_victim_ewma = parse_victim_ewma(kernel_json, kernel.ddos_kernel_agg_interval_ms);  // [DDOS-HYST-D291]
     kernel.xdp_mode = kernel_json.get("xdp_mode", "native").asString();
     kernel.ring_buffer_size = kernel_json.get("ring_buffer_size", 1048576).asUInt64();
     kernel.max_flows_in_kernel = kernel_json.get("max_flows_in_kernel", 100000).asUInt64();

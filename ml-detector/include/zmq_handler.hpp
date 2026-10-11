@@ -32,6 +32,7 @@
 // Day 63: CSV Event Writer
 #include "csv_event_writer.hpp"
 #include "correlation_writer.hpp"
+#include "ddos_dataset_writer.hpp"  // [DDOS-DATASET-D287]
 #include "plugin_loader/plugin_loader.hpp"  // ADR-012 PHASE 2d
 
 namespace ml_detector {
@@ -43,6 +44,12 @@ public:
         uint64_t events_processed = 0;
         uint64_t events_sent = 0;
         uint64_t attacks_detected = 0;
+        uint64_t send_failures = 0;          // [SUMMARY-D285] descartes hacia el firewall
+        uint64_t detections_ddos = 0;        // [SUMMARY-D285]
+        uint64_t detections_ransomware = 0;  // [SUMMARY-D285]
+        uint64_t detections_internal = 0;    // [SUMMARY-D285]
+        uint64_t ddos_v2_presion = 0;        // [DDOS-V2-D293] eventos que pasan la etapa 1
+        uint64_t ddos_v2_ataque = 0;         // [DDOS-V2-D293] eventos que la cabeza v2 marca DDoS
         uint64_t deserialization_errors = 0;
         uint64_t feature_extraction_errors = 0;
         uint64_t inference_errors = 0;
@@ -135,6 +142,7 @@ private:
     std::shared_ptr<ml_defender::CsvEventWriter> csv_writer_;
     // DAY 175: CorrelationWriter (zona bronce, contrato correlation_v1)
     std::shared_ptr<ml_defender::CorrelationWriter> correlation_writer_;
+    std::unique_ptr<ml_defender::DdosDatasetWriter> ddos_dataset_writer_;  // [DDOS-DATASET-D287]
 
     // Memory monitoring thread
     std::thread memory_monitor_thread_;

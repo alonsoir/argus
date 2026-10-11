@@ -466,6 +466,32 @@ inline bool DetectionType_Parse(
   return ::PROTOBUF_NAMESPACE_ID::internal::ParseNamedEnum<DetectionType>(
     DetectionType_descriptor(), name, value);
 }
+enum EventKind : int {
+  EVENT_KIND_FLOW = 0,
+  EVENT_KIND_FAST_ALERT = 1,
+  EVENT_KIND_RANSOMWARE_WINDOW = 2,
+  EventKind_INT_MIN_SENTINEL_DO_NOT_USE_ = std::numeric_limits<int32_t>::min(),
+  EventKind_INT_MAX_SENTINEL_DO_NOT_USE_ = std::numeric_limits<int32_t>::max()
+};
+bool EventKind_IsValid(int value);
+constexpr EventKind EventKind_MIN = EVENT_KIND_FLOW;
+constexpr EventKind EventKind_MAX = EVENT_KIND_RANSOMWARE_WINDOW;
+constexpr int EventKind_ARRAYSIZE = EventKind_MAX + 1;
+
+const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor* EventKind_descriptor();
+template<typename T>
+inline const std::string& EventKind_Name(T enum_t_value) {
+  static_assert(::std::is_same<T, EventKind>::value ||
+    ::std::is_integral<T>::value,
+    "Incorrect type passed to function EventKind_Name.");
+  return ::PROTOBUF_NAMESPACE_ID::internal::NameOfEnum(
+    EventKind_descriptor(), enum_t_value);
+}
+inline bool EventKind_Parse(
+    ::PROTOBUF_NAMESPACE_ID::ConstStringParam name, EventKind* value) {
+  return ::PROTOBUF_NAMESPACE_ID::internal::ParseNamedEnum<EventKind>(
+    EventKind_descriptor(), name, value);
+}
 enum DetectorSource : int {
   DETECTOR_SOURCE_UNKNOWN = 0,
   DETECTOR_SOURCE_FAST_ONLY = 1,
@@ -629,6 +655,11 @@ class DDoSFeatures final :
     kGeographicalConcentrationFieldNumber = 8,
     kTrafficEscalationRateFieldNumber = 9,
     kResourceSaturationScoreFieldNumber = 10,
+    kMeanPacketSizeFieldNumber = 11,
+    kReflectionSignatureFieldNumber = 12,
+    kFlowPacketCountFieldNumber = 13,
+    kVictimRateRatioFieldNumber = 14,
+    kVictimPpsFieldNumber = 15,
   };
   // float syn_ack_ratio = 1;
   void clear_syn_ack_ratio();
@@ -720,6 +751,51 @@ class DDoSFeatures final :
   void _internal_set_resource_saturation_score(float value);
   public:
 
+  // float mean_packet_size = 11;
+  void clear_mean_packet_size();
+  float mean_packet_size() const;
+  void set_mean_packet_size(float value);
+  private:
+  float _internal_mean_packet_size() const;
+  void _internal_set_mean_packet_size(float value);
+  public:
+
+  // float reflection_signature = 12;
+  void clear_reflection_signature();
+  float reflection_signature() const;
+  void set_reflection_signature(float value);
+  private:
+  float _internal_reflection_signature() const;
+  void _internal_set_reflection_signature(float value);
+  public:
+
+  // float flow_packet_count = 13;
+  void clear_flow_packet_count();
+  float flow_packet_count() const;
+  void set_flow_packet_count(float value);
+  private:
+  float _internal_flow_packet_count() const;
+  void _internal_set_flow_packet_count(float value);
+  public:
+
+  // float victim_rate_ratio = 14;
+  void clear_victim_rate_ratio();
+  float victim_rate_ratio() const;
+  void set_victim_rate_ratio(float value);
+  private:
+  float _internal_victim_rate_ratio() const;
+  void _internal_set_victim_rate_ratio(float value);
+  public:
+
+  // float victim_pps = 15;
+  void clear_victim_pps();
+  float victim_pps() const;
+  void set_victim_pps(float value);
+  private:
+  float _internal_victim_pps() const;
+  void _internal_set_victim_pps(float value);
+  public:
+
   // @@protoc_insertion_point(class_scope:protobuf.DDoSFeatures)
  private:
   class _Internal;
@@ -738,6 +814,11 @@ class DDoSFeatures final :
     float geographical_concentration_;
     float traffic_escalation_rate_;
     float resource_saturation_score_;
+    float mean_packet_size_;
+    float reflection_signature_;
+    float flow_packet_count_;
+    float victim_rate_ratio_;
+    float victim_pps_;
     mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
   };
   union { Impl_ _impl_; };
@@ -8151,6 +8232,7 @@ class NetworkSecurityEvent final :
     kFastDetectorScoreFieldNumber = 29,
     kMlDetectorScoreFieldNumber = 30,
     kFastDetectorTriggeredFieldNumber = 32,
+    kEventKindFieldNumber = 37,
   };
   // repeated .protobuf.ModelPrediction additional_model_predictions = 8;
   int additional_model_predictions_size() const;
@@ -8617,6 +8699,15 @@ class NetworkSecurityEvent final :
   void _internal_set_fast_detector_triggered(bool value);
   public:
 
+  // .protobuf.EventKind event_kind = 37;
+  void clear_event_kind();
+  ::protobuf::EventKind event_kind() const;
+  void set_event_kind(::protobuf::EventKind value);
+  private:
+  ::protobuf::EventKind _internal_event_kind() const;
+  void _internal_set_event_kind(::protobuf::EventKind value);
+  public:
+
   // @@protoc_insertion_point(class_scope:protobuf.NetworkSecurityEvent)
  private:
   class _Internal;
@@ -8659,6 +8750,7 @@ class NetworkSecurityEvent final :
     double fast_detector_score_;
     double ml_detector_score_;
     bool fast_detector_triggered_;
+    int event_kind_;
     mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
   };
   union { Impl_ _impl_; };
@@ -10563,6 +10655,106 @@ inline void DDoSFeatures::_internal_set_resource_saturation_score(float value) {
 inline void DDoSFeatures::set_resource_saturation_score(float value) {
   _internal_set_resource_saturation_score(value);
   // @@protoc_insertion_point(field_set:protobuf.DDoSFeatures.resource_saturation_score)
+}
+
+// float mean_packet_size = 11;
+inline void DDoSFeatures::clear_mean_packet_size() {
+  _impl_.mean_packet_size_ = 0;
+}
+inline float DDoSFeatures::_internal_mean_packet_size() const {
+  return _impl_.mean_packet_size_;
+}
+inline float DDoSFeatures::mean_packet_size() const {
+  // @@protoc_insertion_point(field_get:protobuf.DDoSFeatures.mean_packet_size)
+  return _internal_mean_packet_size();
+}
+inline void DDoSFeatures::_internal_set_mean_packet_size(float value) {
+  
+  _impl_.mean_packet_size_ = value;
+}
+inline void DDoSFeatures::set_mean_packet_size(float value) {
+  _internal_set_mean_packet_size(value);
+  // @@protoc_insertion_point(field_set:protobuf.DDoSFeatures.mean_packet_size)
+}
+
+// float reflection_signature = 12;
+inline void DDoSFeatures::clear_reflection_signature() {
+  _impl_.reflection_signature_ = 0;
+}
+inline float DDoSFeatures::_internal_reflection_signature() const {
+  return _impl_.reflection_signature_;
+}
+inline float DDoSFeatures::reflection_signature() const {
+  // @@protoc_insertion_point(field_get:protobuf.DDoSFeatures.reflection_signature)
+  return _internal_reflection_signature();
+}
+inline void DDoSFeatures::_internal_set_reflection_signature(float value) {
+  
+  _impl_.reflection_signature_ = value;
+}
+inline void DDoSFeatures::set_reflection_signature(float value) {
+  _internal_set_reflection_signature(value);
+  // @@protoc_insertion_point(field_set:protobuf.DDoSFeatures.reflection_signature)
+}
+
+// float flow_packet_count = 13;
+inline void DDoSFeatures::clear_flow_packet_count() {
+  _impl_.flow_packet_count_ = 0;
+}
+inline float DDoSFeatures::_internal_flow_packet_count() const {
+  return _impl_.flow_packet_count_;
+}
+inline float DDoSFeatures::flow_packet_count() const {
+  // @@protoc_insertion_point(field_get:protobuf.DDoSFeatures.flow_packet_count)
+  return _internal_flow_packet_count();
+}
+inline void DDoSFeatures::_internal_set_flow_packet_count(float value) {
+  
+  _impl_.flow_packet_count_ = value;
+}
+inline void DDoSFeatures::set_flow_packet_count(float value) {
+  _internal_set_flow_packet_count(value);
+  // @@protoc_insertion_point(field_set:protobuf.DDoSFeatures.flow_packet_count)
+}
+
+// float victim_rate_ratio = 14;
+inline void DDoSFeatures::clear_victim_rate_ratio() {
+  _impl_.victim_rate_ratio_ = 0;
+}
+inline float DDoSFeatures::_internal_victim_rate_ratio() const {
+  return _impl_.victim_rate_ratio_;
+}
+inline float DDoSFeatures::victim_rate_ratio() const {
+  // @@protoc_insertion_point(field_get:protobuf.DDoSFeatures.victim_rate_ratio)
+  return _internal_victim_rate_ratio();
+}
+inline void DDoSFeatures::_internal_set_victim_rate_ratio(float value) {
+  
+  _impl_.victim_rate_ratio_ = value;
+}
+inline void DDoSFeatures::set_victim_rate_ratio(float value) {
+  _internal_set_victim_rate_ratio(value);
+  // @@protoc_insertion_point(field_set:protobuf.DDoSFeatures.victim_rate_ratio)
+}
+
+// float victim_pps = 15;
+inline void DDoSFeatures::clear_victim_pps() {
+  _impl_.victim_pps_ = 0;
+}
+inline float DDoSFeatures::_internal_victim_pps() const {
+  return _impl_.victim_pps_;
+}
+inline float DDoSFeatures::victim_pps() const {
+  // @@protoc_insertion_point(field_get:protobuf.DDoSFeatures.victim_pps)
+  return _internal_victim_pps();
+}
+inline void DDoSFeatures::_internal_set_victim_pps(float value) {
+  
+  _impl_.victim_pps_ = value;
+}
+inline void DDoSFeatures::set_victim_pps(float value) {
+  _internal_set_victim_pps(value);
+  // @@protoc_insertion_point(field_set:protobuf.DDoSFeatures.victim_pps)
 }
 
 // -------------------------------------------------------------------
@@ -23130,6 +23322,26 @@ inline void NetworkSecurityEvent::set_allocated_victim_window(::protobuf::Victim
   // @@protoc_insertion_point(field_set_allocated:protobuf.NetworkSecurityEvent.victim_window)
 }
 
+// .protobuf.EventKind event_kind = 37;
+inline void NetworkSecurityEvent::clear_event_kind() {
+  _impl_.event_kind_ = 0;
+}
+inline ::protobuf::EventKind NetworkSecurityEvent::_internal_event_kind() const {
+  return static_cast< ::protobuf::EventKind >(_impl_.event_kind_);
+}
+inline ::protobuf::EventKind NetworkSecurityEvent::event_kind() const {
+  // @@protoc_insertion_point(field_get:protobuf.NetworkSecurityEvent.event_kind)
+  return _internal_event_kind();
+}
+inline void NetworkSecurityEvent::_internal_set_event_kind(::protobuf::EventKind value) {
+  
+  _impl_.event_kind_ = value;
+}
+inline void NetworkSecurityEvent::set_event_kind(::protobuf::EventKind value) {
+  _internal_set_event_kind(value);
+  // @@protoc_insertion_point(field_set:protobuf.NetworkSecurityEvent.event_kind)
+}
+
 // -------------------------------------------------------------------
 
 // EventBatch
@@ -25129,6 +25341,11 @@ template <> struct is_proto_enum< ::protobuf::DetectionType> : ::std::true_type 
 template <>
 inline const EnumDescriptor* GetEnumDescriptor< ::protobuf::DetectionType>() {
   return ::protobuf::DetectionType_descriptor();
+}
+template <> struct is_proto_enum< ::protobuf::EventKind> : ::std::true_type {};
+template <>
+inline const EnumDescriptor* GetEnumDescriptor< ::protobuf::EventKind>() {
+  return ::protobuf::EventKind_descriptor();
 }
 template <> struct is_proto_enum< ::protobuf::DetectorSource> : ::std::true_type {};
 template <>

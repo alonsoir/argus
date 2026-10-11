@@ -230,6 +230,36 @@ DetectorConfig ConfigLoader::load() {
         config.ml.thresholds.level2_ddos = get_required<float>(thresh, "level2_ddos", "ml.thresholds");
         config.ml.thresholds.level2_ransomware = get_required<float>(thresh, "level2_ransomware", "ml.thresholds");
         config.ml.thresholds.level3_anomaly = get_required<float>(thresh, "level3_anomaly", "ml.thresholds");
+        config.ml.thresholds.level3_web = get_required<float>(thresh, "level3_web", "ml.thresholds");
+        config.ml.thresholds.level3_internal = get_required<float>(thresh, "level3_internal", "ml.thresholds");
+
+        // [DDOS-V2-D293] ml.ddos_v2: el JSON manda; si un campo falta o es inválido se aplica el defecto validado,
+        // se avisa con [CONFIG-DEFAULT] (campo, formato y límites) y el ml-detector arranca igual.
+        {
+            constexpr double kDefK = 3.0;
+            constexpr double kMinK = 1.5;
+            constexpr double kMaxK = 50.0;
+            config.ml.ddos_v2.enabled = true;
+            config.ml.ddos_v2.k_ratio = kDefK;
+            if (!ml.contains("ddos_v2") || !ml["ddos_v2"].is_object()) {
+                std::cerr << "[CONFIG-DEFAULT] ml.ddos_v2 ausente o no es un objeto: enabled=true, k_ratio=" << kDefK
+                          << " (número en [" << kMinK << ", " << kMaxK << "])\n";
+            } else {
+                const auto& d2 = ml["ddos_v2"];
+                if (d2.contains("enabled") && d2["enabled"].is_boolean()) {
+                    config.ml.ddos_v2.enabled = d2["enabled"].get<bool>();
+                } else {
+                    std::cerr << "[CONFIG-DEFAULT] ml.ddos_v2.enabled ausente o no booleano (formato true|false): se usa true\n";
+                }
+                if (d2.contains("k_ratio") && d2["k_ratio"].is_number() &&
+                    d2["k_ratio"].get<double>() >= kMinK && d2["k_ratio"].get<double>() <= kMaxK) {
+                    config.ml.ddos_v2.k_ratio = d2["k_ratio"].get<double>();
+                } else {
+                    std::cerr << "[CONFIG-DEFAULT] ml.ddos_v2.k_ratio ausente, no numérico o fuera de rango (número en ["
+                              << kMinK << ", " << kMaxK << "]): se usa " << kDefK << "\n";
+                }
+            }
+        }
         
         // Level 1
         auto& l1 = ml["level1"];
@@ -455,6 +485,14 @@ DetectorConfig ConfigLoader::load() {
         config.csv_writer.base_dir = get_required<std::string>(csv, "base_dir", "csv_writer");
         config.csv_writer.min_score_threshold = get_required<float>(csv, "min_score_threshold", "csv_writer");
         config.csv_writer.max_events_per_file = get_required<int>(csv, "max_events_per_file", "csv_writer");
+        // [WRITERS-D285] interruptor opcional (por defecto true: otras configs no cambian)
+        config.csv_writer.enabled = csv.value("enabled", true);
+    }
+
+    // [WRITERS-D285] RAG Logger: solo 'enabled'; el resto de su config vive en rag_logger_config.json
+    {
+        config.rag_logger.enabled = json_.contains("rag_logger")
+            ? json_["rag_logger"].value("enabled", true) : true;
     }
 
     // ========================================
@@ -465,6 +503,13 @@ DetectorConfig ConfigLoader::load() {
         auto& corr = json_["correlation_writer"];
         config.correlation_writer.base_dir = get_required<std::string>(corr, "base_dir", "correlation_writer");
         config.correlation_writer.rotation_seconds = get_required<int>(corr, "rotation_seconds", "correlation_writer");
+    }
+
+    // [DDOS-DATASET-D287] opcional: sin bloque en el JSON queda apagado
+    if (json_.contains("ddos_dataset_writer")) {
+        const auto& dd = json_["ddos_dataset_writer"];
+        config.ddos_dataset_writer.enabled  = dd.value("enabled", false);
+        config.ddos_dataset_writer.base_dir = dd.value("base_dir", std::string("/vagrant/logs/lab/ddos_dataset"));
     }
 
     // ========================================
@@ -538,7 +583,9 @@ void ConfigLoader::print_config(const DetectorConfig& config, bool verbose) {
         std::cout << "  Level 1 Attack: " << std::fixed << std::setprecision(2) << config.ml.thresholds.level1_attack << "\n";
         std::cout << "  Level 2 DDoS: " << config.ml.thresholds.level2_ddos << "\n";
         std::cout << "  Level 2 Ransomware: " << config.ml.thresholds.level2_ransomware << "\n";
-        std::cout << "  Level 3 Anomaly: " << config.ml.thresholds.level3_anomaly << "\n\n";
+        std::cout << "  Level 3 Anomaly: " << config.ml.thresholds.level3_anomaly << "\n";
+        std::cout << "  Level 3 Web (traffic): " << config.ml.thresholds.level3_web << "\n";
+        std::cout << "  Level 3 Internal: " << config.ml.thresholds.level3_internal << "\n\n";
         
         std::cout << "Performance:\n";
         std::cout << "  Zero Copy: " << (config.performance.enable_zero_copy ? "✅" : "❌") << "\n";

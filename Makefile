@@ -612,16 +612,19 @@ define CHECK_SNIFFER_MUTEX
 	  fi"
 endef
 
+# DAY284 — ruta del log del sniffer; override p.ej. SNIFFER_LOG=/tmp/argus-lab/sniffer.log
+SNIFFER_LOG ?= /vagrant/logs/lab/sniffer.log
+
 # ── sniffer-start — Variant A (eBPF) ─────────────────────────────────────────
 sniffer-start:
 	@echo "🚀 Starting Sniffer Variant A (eBPF/XDP) [$(PROFILE)]..."
 	$(CHECK_SNIFFER_MUTEX)
 	@vagrant ssh defender -c "tmux kill-session -t sniffer 2>/dev/null || true"
 	@vagrant ssh defender -c "tmux new-session -d -s sniffer \
-	  'mkdir -p /vagrant/logs/lab && \
+	  'mkdir -p $(dir $(SNIFFER_LOG)) && \
 	   cd $(SNIFFER_BUILD_DIR) && \
 	   sudo env LD_LIBRARY_PATH=/usr/local/lib ./sniffer -c /vagrant/sniffer/config/sniffer.json \
-	   >> /vagrant/logs/lab/sniffer.log 2>&1'"
+	   >> $(SNIFFER_LOG) 2>&1'"
 	@sleep 4
 
 # ── sniffer-libpcap-start — Variant B (libpcap) ──────────────────────────────
@@ -659,8 +662,11 @@ sniffer: proto etcd-client-build plugin-loader-build
 	@echo ""
 	@echo "✅ Sniffer built ($(PROFILE))"
 
+# DAY284 — ruta del log del ml-detector; override p.ej. ML_DETECTOR_LOG=/tmp/argus-lab/ml-detector.log
+ML_DETECTOR_LOG ?= /vagrant/logs/lab/ml-detector.log
+
 ml-detector-start:
-	@vagrant ssh -c "tmux new-session -d -s ml-detector 'mkdir -p /vagrant/logs/lab && cd $(ML_DETECTOR_BUILD_DIR) && export LD_LIBRARY_PATH=/usr/local/lib:$$LD_LIBRARY_PATH && sudo env LD_LIBRARY_PATH=/usr/local/lib ./ml-detector $(if $(VERBOSE),--verbose,) $(if $(FORCE_ALL_HEADS),--force-all-heads,) >> /vagrant/logs/lab/ml-detector.log 2>&1'"
+	@vagrant ssh -c "tmux new-session -d -s ml-detector 'mkdir -p $(dir $(ML_DETECTOR_LOG)) && cd $(ML_DETECTOR_BUILD_DIR) && export LD_LIBRARY_PATH=/usr/local/lib:$$LD_LIBRARY_PATH && sudo env LD_LIBRARY_PATH=/usr/local/lib ./ml-detector $(if $(VERBOSE),--verbose,) $(if $(FORCE_ALL_HEADS),--force-all-heads,) >> $(ML_DETECTOR_LOG) 2>&1'"
 ml-detector: proto etcd-client-build plugin-loader-build correlation-v1-build
 	@echo ""
 	@echo "╔════════════════════════════════════════════════════════════╗"
@@ -889,8 +895,6 @@ pipeline-start: test-provision-1 etcd-server-start
 	@sleep 4
 	@$(MAKE) rag-start
 	@sleep 5
-	@$(MAKE) rag-ingester-start
-	@sleep 3
 	@$(MAKE) ml-detector-start VERBOSE=$(VERBOSE) FORCE_ALL_HEADS=$(FORCE_ALL_HEADS)
 	@$(MAKE) firewall-start
 	@sleep 2
@@ -906,8 +910,6 @@ pipeline-start-x86-libpcap: test-provision-1 etcd-server-start
 	@sleep 4
 	@$(MAKE) rag-start
 	@sleep 5
-	@$(MAKE) rag-ingester-start
-	@sleep 3
 	@$(MAKE) ml-detector-start
 	@$(MAKE) firewall-start
 	@sleep 2
@@ -930,7 +932,6 @@ pipeline-status:
 	@echo "╚════════════════════════════════════════════════════════════╝"
 	@vagrant ssh -c "( tmux has-session -t etcd-server 2>/dev/null || pgrep -x etcd-server >/dev/null 2>&1 ) && echo '  ✅ etcd-server:   RUNNING' || echo '  ❌ etcd-server:   STOPPED'"
 	@vagrant ssh -c "( tmux has-session -t rag-security 2>/dev/null || pgrep -x rag-security >/dev/null 2>&1 ) && echo '  ✅ rag-security:  RUNNING' || echo '  ❌ rag-security:  STOPPED'"
-	@vagrant ssh -c "( tmux has-session -t rag-ingester 2>/dev/null || pgrep -x rag-ingester >/dev/null 2>&1 ) && echo '  ✅ rag-ingester:  RUNNING' || echo '  ❌ rag-ingester:  STOPPED'"
 	@vagrant ssh -c "( tmux has-session -t ml-detector 2>/dev/null || pgrep -x ml-detector >/dev/null 2>&1 ) && echo '  ✅ ml-detector:   RUNNING' || echo '  ❌ ml-detector:   STOPPED'"
 	@vagrant ssh -c " \
 	  EBPF=0; PCAP=0; \

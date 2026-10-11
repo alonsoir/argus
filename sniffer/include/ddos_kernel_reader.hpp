@@ -58,11 +58,7 @@ inline std::string ddos_csv_header() {
     return "win,ts_ms,window_ms,dst_ip,proto,d_pkts,d_bytes\n";
 }
 
-// Duracion de la ventana en ms, redondeada al mas cercano. 0 = baseline (o reloj inconsistente).
-inline uint64_t ddos_window_ms(const DdosWindow& w) {
-    if (w.t_start_ns == 0 || w.t_end_ns <= w.t_start_ns) return 0;
-    return (w.t_end_ns - w.t_start_ns + 500000ull) / 1000000ull;
-}
+// [DDOS-WMS-D286] ddos_window_ms() vive en ddos_kernel_agg.hpp (definicion unica)
 
 // Filas CSV de una ventana (las victimas ya vienen ordenadas por d_pkts desc).
 inline std::string ddos_csv_rows(uint64_t win, uint64_t ts_ms, const DdosWindow& w,

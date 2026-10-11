@@ -15,6 +15,7 @@
 #pragma once
 
 #include "ddos_kernel_agg.hpp"
+#include "ddos_contract_v2.hpp"  // [DDOS-H2-D286]
 
 #include <atomic>
 #include <chrono>
@@ -28,6 +29,7 @@ namespace sniffer {
 struct DdosVictimCounts {
     uint64_t d_pkts = 0;
     uint64_t d_bytes = 0;
+    float rate_ratio = 0.0f;  // [DDOS-H2-D286] escalada; 0 si ventana degenerada
 };
 
 struct DdosVictimSnapshot {
@@ -44,6 +46,7 @@ struct DdosVictimLookup {
     uint64_t d_pkts = 0;
     uint64_t d_bytes = 0;
     uint64_t age_ms = 0;  // edad del snapshot al consultar
+    float rate_ratio = 0.0f;  // [DDOS-H2-D286]
 };
 
 // Misma clave que el kernel: dst_ip NUMERICO (a<<24|b<<16|c<<8|d) + proto IANA.
@@ -68,12 +71,19 @@ public:
     void publish_window(uint64_t seq, const DdosWindow& w, uint64_t now_ns = ddos_steady_now_ns()) {
         auto s = std::make_shared<DdosVictimSnapshot>();
         s->seq = seq;
-        s->window_ms = (w.t_end_ns > w.t_start_ns) ? (w.t_end_ns - w.t_start_ns) / 1'000'000ULL : 0;
+        s->window_ms = ddos_window_ms(w);  // [DDOS-WMS-D286] definicion unica (redondeo), la misma que el CSV
         s->published_ns = now_ns;
         s->by_key.reserve(w.victims.size());
         for (const auto& v : w.victims) {
-            s->by_key[ddos_victim_key(v.dst_ip, v.proto)] = DdosVictimCounts{v.d_pkts, v.d_bytes};
+            const uint64_t key = ddos_victim_key(v.dst_ip, v.proto);
+            float ratio = 0.0f;  // [DDOS-H2-D286] solo con ventana de duracion > 0
+            if (s->window_ms > 0) {
+                const double pps = static_cast<double>(v.d_pkts) * 1000.0 / static_cast<double>(s->window_ms);
+                ratio = static_cast<float>(::argus::ddos::victim_ewma_step(ewma_[key], seq, pps, ewma_params_));
+            }
+            s->by_key[key] = DdosVictimCounts{v.d_pkts, v.d_bytes, ratio};
         }
+        if (seq % 60 == 0) evict_stale_ewma(seq);  // [DDOS-H2-D286] memoria acotada
         publish(std::move(s));
     }
 
@@ -95,16 +105,32 @@ public:
         if (it != s->by_key.end()) {
             r.d_pkts = it->second.d_pkts;
             r.d_bytes = it->second.d_bytes;
+            r.rate_ratio = it->second.rate_ratio;  // [DDOS-H2-D286]
         }
         return r;
     }
 
     uint64_t published() const { return published_.load(std::memory_order_relaxed); }
 
+    // [DDOS-HYST-D291] parametros de la EWMA por victima (de sniffer.json, ya validados).
+    // Llamar ANTES de arrancar el lector: publish_window (escritor unico) es quien los lee.
+    void set_ewma_params(const ::argus::ddos::VictimEwmaParams& p) { ewma_params_ = p; }
+    const ::argus::ddos::VictimEwmaParams& ewma_params() const { return ewma_params_; }
+
 private:
     mutable std::mutex m_;
     std::shared_ptr<const DdosVictimSnapshot> snap_;
     std::atomic<uint64_t> published_{0};
+    // [DDOS-H2-D286] estado de la EWMA por victima. SOLO lo toca el hilo que llama a
+    // publish_window (el lector del kernel, escritor unico): sin cerrojo propio.
+    std::unordered_map<uint64_t, ::argus::ddos::VictimEwmaState> ewma_;
+    ::argus::ddos::VictimEwmaParams ewma_params_{};  // [DDOS-HYST-D291]
+    void evict_stale_ewma(uint64_t seq) {
+        for (auto it = ewma_.begin(); it != ewma_.end();) {
+            if (seq > it->second.last_seq + ewma_params_.evict_windows) it = ewma_.erase(it);
+            else ++it;
+        }
+    }
 };
 
 }  // namespace sniffer

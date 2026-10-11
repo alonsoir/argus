@@ -347,3 +347,17 @@ if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/unit/test_l2_gate.cpp")
     )
     add_test(NAME test_l2_gate COMMAND test_l2_gate)
 endif()
+# ── test_ddos_v2_parity — DAY293, paridad Python/C++ de la cabeza DDoS v2 factorizada [DDOS-V2-D293] ──
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/unit/test_ddos_v2_parity.cpp")
+    add_executable(test_ddos_v2_parity
+            unit/test_ddos_v2_parity.cpp
+    )
+    target_include_directories(test_ddos_v2_parity PRIVATE
+            ${CMAKE_CURRENT_SOURCE_DIR}/../include
+    )
+    target_compile_features(test_ddos_v2_parity PRIVATE cxx_std_20)
+    target_compile_definitions(test_ddos_v2_parity PRIVATE
+            DDOS_V2_PARITY_CSV="${CMAKE_CURRENT_SOURCE_DIR}/data/ddos_v2_paridad_muestra.csv"
+    )
+    add_test(NAME test_ddos_v2_parity COMMAND test_ddos_v2_parity)
+endif()

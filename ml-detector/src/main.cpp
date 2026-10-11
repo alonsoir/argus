@@ -367,7 +367,7 @@ int main(int argc, char* argv[]) {
             log->info("   Name: {} (Internet vs Internal)", config.ml.level3.web.name);
             log->info("   Type: RandomForest-Embedded (100 trees, 1,014 nodes)");
             log->info("   Features: {} (normalized 0.0-1.0)", config.ml.level3.web.features_count);
-            log->info("   Threshold: {}", config.ml.thresholds.level2_ddos);
+            log->info("   Threshold: {}", config.ml.thresholds.level3_web);
             log->info("   Implementation: Native C++20 (no ONNX)");
 
             traffic_detector = std::make_shared<ml_defender::TrafficDetector>();
@@ -404,7 +404,7 @@ int main(int argc, char* argv[]) {
             log->info("   Name: {} (Benign vs Suspicious)", config.ml.level3.internal.name);
             log->info("   Type: RandomForest-Embedded (100 trees, 940 nodes)");
             log->info("   Features: {} (normalized 0.0-1.0)", config.ml.level3.internal.features_count);
-            log->info("   Threshold: {}", config.ml.thresholds.level3_web);
+            log->info("   Threshold: {}", config.ml.thresholds.level3_internal);
             log->info("   Implementation: Native C++20 (no ONNX)");
             log->info("   Detection: Lateral Movement, Data Exfiltration");
 

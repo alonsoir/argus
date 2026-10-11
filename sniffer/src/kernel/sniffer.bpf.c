@@ -147,11 +147,13 @@ struct {
 /* [RING-LOSS-D275:MAP] Claves de stats. Identidad medida en userspace:
  *   ddos_victims(suma) = stats[STAT_EVENTS] + stats[STAT_RESERVE_FAIL]
  *                        + stats[STAT_FILTER_DISCARD]
+ *                        + stats[STAT_FRAG_SKIPPED]   [IP-FRAG-D287]
  * STAT_EVENTS (0) conserva su significado y posicion historicos. */
 #define STAT_EVENTS          0
 #define STAT_RESERVE_FAIL    1
 #define STAT_FILTER_DISCARD  2
-#define STAT_MAX             3
+#define STAT_FRAG_SKIPPED    3  /* [IP-FRAG-D287] fragmentos no-primeros: contados en ddos_victims, sin ring */
+#define STAT_MAX             4
 
 struct {
     __uint(type, BPF_MAP_TYPE_ARRAY);
@@ -288,6 +290,15 @@ int xdp_sniffer_enhanced(struct xdp_md *ctx) {
             __sync_fetch_and_add(&dv->pkts, 1);
             __sync_fetch_and_add(&dv->bytes, wlen);
         }
+    }
+
+    /* [IP-FRAG-D287] Fragmento IPv4 no-primero (offset != 0): no lleva cabecera L4.
+     * Ya contado arriba en ddos_victims; no se parsean puertos ni se envia al ring
+     * (antes se leian bytes de la carga como puertos -> flujos fantasma). El primer
+     * fragmento (offset 0, MF=1) sigue el camino normal. ip[6..7] dentro de los 20 B ya verificados. */
+    if ((((__u16)(ip[6] & 0x1F) << 8) | ip[7]) != 0) {
+        stat_inc(STAT_FRAG_SKIPPED);
+        return XDP_PASS;
     }
 
     // Reserve ring buffer space

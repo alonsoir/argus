@@ -1,8 +1,10 @@
 // sniffer/src/userspace/ring_consumer.cpp
+#include <sstream>
 #include "compression_handler.hpp"
 #include <crypto_transport/contexts.hpp>
 #include "ring_consumer.hpp"
 #include "fast_detector.hpp"
+#include "ddos_contract_v2.hpp"  // [DDOS-V2-D286]
 #include <reason_codes.hpp>
 // ADR-013 PHASE 2 — DAY 98
 #include <lz4.h>
@@ -40,6 +42,12 @@ static void init_embedded_sentinels(protobuf::NetworkFeatures* net) {
     ddos->set_geographical_concentration(MISSING_FEATURE_SENTINEL);
     ddos->set_traffic_escalation_rate(MISSING_FEATURE_SENTINEL);
     ddos->set_resource_saturation_score(MISSING_FEATURE_SENTINEL);
+    // [DDOS-V2-D286] centinelas del contrato v2
+    ddos->set_mean_packet_size(MISSING_FEATURE_SENTINEL);
+    ddos->set_reflection_signature(MISSING_FEATURE_SENTINEL);
+    ddos->set_flow_packet_count(MISSING_FEATURE_SENTINEL);
+    ddos->set_victim_rate_ratio(MISSING_FEATURE_SENTINEL);
+    ddos->set_victim_pps(MISSING_FEATURE_SENTINEL);
     auto* ransom = net->mutable_ransomware_embedded();
     ransom->set_io_intensity(MISSING_FEATURE_SENTINEL);
     ransom->set_entropy(MISSING_FEATURE_SENTINEL);
@@ -426,7 +434,7 @@ void RingBufferConsumer::ring_consumer_loop(int consumer_id) {
 void RingBufferConsumer::feature_processor_loop() {
     std::cout << "[INFO] Feature processor thread started" << std::endl;
     while (!should_stop_) {
-        SimpleEvent event;
+        QueuedEvent event;  // [DDOS-SNAP-D290]
 
         {
             std::unique_lock<std::mutex> lock(processing_queue_mutex_);
@@ -449,7 +457,25 @@ void RingBufferConsumer::feature_processor_loop() {
 
 void RingBufferConsumer::zmq_sender_loop() {
     std::cout << "[INFO] ZMQ sender thread started" << std::endl;
+    // [ZMQ-DROP-D285] resumen periodico de descartes, siempre visible (sin verbose)
+    constexpr auto kDropReportInterval = std::chrono::seconds(10);
+    auto drop_last_report = std::chrono::steady_clock::now();
+    uint64_t drop_last_total = stats_.zmq_send_failures.load();
     while (!should_stop_) {
+        {  // [ZMQ-DROP-D285]
+            const auto now = std::chrono::steady_clock::now();
+            if (now - drop_last_report >= kDropReportInterval) {
+                const uint64_t total = stats_.zmq_send_failures.load();
+                if (total > drop_last_total) {
+                    std::cerr << "[ZMQ-DROP] descartados=" << (total - drop_last_total)
+                              << " en los últimos "
+                              << std::chrono::duration_cast<std::chrono::seconds>(now - drop_last_report).count()
+                              << " s (total=" << total << ")" << std::endl;
+                }
+                drop_last_total = total;
+                drop_last_report = now;
+            }
+        }
         std::vector<uint8_t> data;
 
         {
@@ -544,9 +570,24 @@ void RingBufferConsumer::process_raw_event(const SimpleEvent& event, [[maybe_unu
     auto& flow_manager = sniffer::flow::ShardedFlowManager::instance();
     flow_manager.add_packet(flow_key, event);
 
+    // [DDOS-SNAP-D290] Foto de los rasgos DDoS v2 en el instante del paquete, en este hilo:
+    // flujo (dentro del lock del shard, sin copiar) y ventana por victima del kernel.
+    DdosFlowSnap ddos_snap{};
+    flow_manager.with_flow_stats(flow_key, [&](const auto& fs) {
+        ddos_snap = ml_extractor_.ddos_v2_flow_snapshot(fs);
+    });
+    bool snap_have_victim = false;
+    ::sniffer::DdosVictimLookup snap_victim{};
+    if (victim_board_) {
+        snap_victim = victim_board_->lookup(static_cast<uint32_t>(event.dst_ip),
+                                            static_cast<uint32_t>(event.protocol));
+        snap_have_victim = true;
+    }
+
     // ===== Layer 1.5: Payload Analysis (thread-local, ~1-150 μs) =====
     // Only analyze if payload is present
-    if (event.payload_len > 0) {
+    // [PAYLOAD-VERBOSE-D290] solo con verbosidad BASIC+: el resultado solo lo consume el log de abajo
+    if (event.payload_len > 0 && g_verbosity >= FeatureLogger::VerbosityLevel::BASIC) {
         auto payload_features = payload_analyzer_.analyze(event.payload, event.payload_len);
 
         // Check for high-risk indicators
@@ -631,7 +672,7 @@ void RingBufferConsumer::process_raw_event(const SimpleEvent& event, [[maybe_unu
     }
 
     // Add to batch for efficient processing
-    add_to_batch(event);
+    add_to_batch(QueuedEvent{event, ddos_snap, snap_have_victim, snap_victim});  // [DDOS-SNAP-D290]
 
     // Update processing time statistics
     auto end_time = std::chrono::steady_clock::now();
@@ -639,11 +680,12 @@ void RingBufferConsumer::process_raw_event(const SimpleEvent& event, [[maybe_unu
     update_processing_time(duration);
 }
 
-void RingBufferConsumer::process_event_features(const SimpleEvent& event) {
+void RingBufferConsumer::process_event_features(const QueuedEvent& queued) {  // [DDOS-SNAP-D290]
+    const SimpleEvent& event = queued.event;
     try {
         // Create protobuf message
         protobuf::NetworkSecurityEvent proto_event;
-        populate_protobuf_event(event, proto_event, 0);
+        populate_protobuf_event(event, proto_event, 0, &queued);  // [DDOS-SNAP-D290]
 
         // Log features if verbosity is enabled
         if (g_verbosity != FeatureLogger::VerbosityLevel::NONE) {
@@ -675,7 +717,7 @@ void RingBufferConsumer::process_event_features(const SimpleEvent& event) {
     }
 }
 
-void RingBufferConsumer::send_event_batch(const std::vector<SimpleEvent>& events) {
+void RingBufferConsumer::send_event_batch(const std::vector<QueuedEvent>& events) {  // [DDOS-SNAP-D290]
     for (const auto& event : events) {
         // Submit to feature processing queue
         {
@@ -716,8 +758,10 @@ bool RingBufferConsumer::send_protobuf_message(const std::vector<uint8_t>& seria
             if (compressed_size > 0) {
                 compressed.resize(sizeof(uint32_t) + compressed_size);
                 to_encrypt = std::move(compressed);
-                std::cout << "[CRYPTO] 📦 Compressed: " << orig_size
-                          << " → " << to_encrypt.size() << " bytes" << std::endl;
+                if (g_verbosity >= FeatureLogger::VerbosityLevel::DETAILED) {  // DAY284: log por evento fuera del camino caliente
+                    std::cout << "[CRYPTO] 📦 Compressed: " << orig_size
+                              << " → " << to_encrypt.size() << " bytes" << std::endl;
+                }
             } else {
                 to_encrypt = serialized_data;
                 std::cerr << "[CRYPTO] ⚠️  LZ4 falló — enviando sin comprimir" << std::endl;
@@ -726,8 +770,10 @@ bool RingBufferConsumer::send_protobuf_message(const std::vector<uint8_t>& seria
 
         // Step 2: Cifrar con CryptoTransport
         auto encrypted = tx_->encrypt(to_encrypt);
-        std::cout << "[CRYPTO] 🔒 Encrypted: " << to_encrypt.size()
-                  << " → " << encrypted.size() << " bytes" << std::endl;
+        if (g_verbosity >= FeatureLogger::VerbosityLevel::DETAILED) {  // DAY284: log por evento fuera del camino caliente
+            std::cout << "[CRYPTO] 🔒 Encrypted: " << to_encrypt.size()
+                      << " → " << encrypted.size() << " bytes" << std::endl;
+        }
 
         // Step 3: Send encrypted
         zmq::message_t message(encrypted.size());
@@ -744,7 +790,7 @@ bool RingBufferConsumer::send_protobuf_message(const std::vector<uint8_t>& seria
             stats_.events_sent++;
             return true;
         } else {
-            std::cerr << "[ERROR] ZMQ send falló!" << std::endl;
+            // [ZMQ-DROP-D285] sin log por mensaje: lo resume zmq_sender_loop cada 10 s
             stats_.zmq_send_failures++;
             return false;
         }
@@ -760,7 +806,7 @@ bool RingBufferConsumer::send_protobuf_message(const std::vector<uint8_t>& seria
     }
 }
 
-void RingBufferConsumer::add_to_batch(const SimpleEvent& event) {
+void RingBufferConsumer::add_to_batch(const QueuedEvent& event) {  // [DDOS-SNAP-D290]
     std::lock_guard<std::mutex> lock(batch_mutex_);
 
     if (!current_batch_) {
@@ -790,7 +836,8 @@ void RingBufferConsumer::flush_current_batch() {
 
 void RingBufferConsumer::populate_protobuf_event(const SimpleEvent& event,
                                                  protobuf::NetworkSecurityEvent& proto_event,
-                                                 int buffer_index) const {
+                                                 int buffer_index,
+                                                 const QueuedEvent* queued) const {  // [DDOS-SNAP-D290]
     // ============================================================================
     // DAY 77: NaN-first — orden correcto: NaN -> populate(reales) -> run_ml_detection
     init_embedded_sentinels(proto_event.mutable_network_features());
@@ -819,6 +866,9 @@ void RingBufferConsumer::populate_protobuf_event(const SimpleEvent& event,
     		ml_extractor_.set_aggregator(ransomware_processor_->get_aggregator());
 		}
 		ml_extractor_.populate_ml_defender_features(flow_stats, proto_event);
+		// [DDOS-V2-D286] reflection_signature: depende de la tupla del paquete, no de FlowStatistics
+		proto_event.mutable_network_features()->mutable_ddos_embedded()->set_reflection_signature(
+		    ::argus::ddos::reflection_signature(event.protocol, event.src_port, event.dst_port));
 
         // Optional: Log feature extraction if verbosity enabled
         if (g_verbosity >= FeatureLogger::VerbosityLevel::GROUPED) {
@@ -837,6 +887,28 @@ void RingBufferConsumer::populate_protobuf_event(const SimpleEvent& event,
 	// ============================================================================
     // ML DEFENDER: Embedded Detectors Inference (Phase 1, Day 4)
     // ============================================================================
+    // [DDOS-SNAP-D290] Rasgos DDoS v2 de flujo desde la foto del hilo del anillo (instante del
+    // paquete), nunca desde la copia tomada con retraso en este hilo. Foto invalida -> centinela.
+    if (queued) {
+        auto* dd = proto_event.mutable_network_features()->mutable_ddos_embedded();
+        if (queued->flow.valid) {
+            dd->set_syn_ack_ratio(queued->flow.syn_ack_ratio);
+            dd->set_flow_completion_rate(queued->flow.flow_completion_rate);
+            dd->set_flow_packet_count(queued->flow.flow_packet_count);
+            dd->set_mean_packet_size(queued->flow.mean_packet_size);
+            dd->set_packet_size_entropy(queued->flow.packet_size_entropy);
+        } else {
+            dd->set_syn_ack_ratio(MISSING_FEATURE_SENTINEL);
+            dd->set_flow_completion_rate(MISSING_FEATURE_SENTINEL);
+            dd->set_flow_packet_count(MISSING_FEATURE_SENTINEL);
+            dd->set_mean_packet_size(MISSING_FEATURE_SENTINEL);
+            dd->set_packet_size_entropy(MISSING_FEATURE_SENTINEL);
+            if (ddos_snap_invalid_.fetch_add(1, std::memory_order_relaxed) == 0) {
+                std::cerr << "[DDOS-SNAP] WARNING: foto DDoS sin flujo en la tabla; se escriben "
+                             "centinelas (aviso unico, se siguen contando)" << std::endl;
+            }
+        }
+    }
     const_cast<RingBufferConsumer*>(this)->run_ml_detection(proto_event);
     // ============================================================================
     // END ML DEFENDER Integration
@@ -857,6 +929,7 @@ void RingBufferConsumer::populate_protobuf_event(const SimpleEvent& event,
 
     // Populate basic fields
     proto_event.set_event_id(event_id);
+    proto_event.set_event_kind(protobuf::EVENT_KIND_FLOW);  // [EVENT-KIND-D285]
     proto_event.set_originating_node_id(config_.node_id);
     proto_event.set_correlation_id(event_id);
     proto_event.set_schema_version(31);
@@ -892,10 +965,12 @@ void RingBufferConsumer::populate_protobuf_event(const SimpleEvent& event,
         // else -> community_id queda "" (default): ICMP/no-IP, diferido
     // Dual-NIC deployment metadata (Phase 1, Day 7)
     // [DEBUG] Dual-NIC values from eBPF
-    std::cout << "[DUAL-NIC] ifindex=" << event.source_ifindex
-              << " mode=" << (int)event.interface_mode
-              << " wan=" << (int)event.is_wan_facing
-              << " iface=" << event.source_interface << std::endl;
+    if (g_verbosity >= FeatureLogger::VerbosityLevel::DETAILED) {  // DAY284: log por evento fuera del camino caliente
+        std::cout << "[DUAL-NIC] ifindex=" << event.source_ifindex
+                  << " mode=" << (int)event.interface_mode
+                  << " wan=" << (int)event.is_wan_facing
+                  << " iface=" << event.source_interface << std::endl;
+    }
     features->set_interface_mode(event.interface_mode);
     features->set_is_wan_facing(event.is_wan_facing);
     features->set_source_ifindex(event.source_ifindex);
@@ -925,7 +1000,11 @@ void RingBufferConsumer::populate_protobuf_event(const SimpleEvent& event,
     time_window->set_sequence_number(event.timestamp);
 
     // [DDOS-VWIN-D279:STAMP-MAIN] ventana por victima (kernel) -> evento
-    stamp_victim_window(proto_event, event);
+    if (queued) {  // [DDOS-SNAP-D290] la consulta se hizo en el hilo del anillo (foto)
+        if (queued->have_victim) stamp_victim_window_from(proto_event, event, queued->victim);
+    } else {
+        stamp_victim_window(proto_event, event);
+    }
 
     // Distributed node info
     protobuf::DistributedNode* node = proto_event.mutable_capturing_node();
@@ -1223,9 +1302,17 @@ void RingBufferConsumer::ransomware_processor_loop() {
 void RingBufferConsumer::stamp_victim_window(protobuf::NetworkSecurityEvent& ev,
                                              const SimpleEvent& e) const {
     if (!victim_board_) return;
+    stamp_victim_window_from(ev, e, victim_board_->lookup(static_cast<uint32_t>(e.dst_ip),
+                                                          static_cast<uint32_t>(e.protocol)));
+}
+
+// [DDOS-SNAP-D290] Estampa una consulta ya hecha: el camino normal la toma en el hilo del anillo,
+// en el instante del paquete (foto), y la trae en el QueuedEvent.
+void RingBufferConsumer::stamp_victim_window_from(protobuf::NetworkSecurityEvent& ev,
+                                                  const SimpleEvent& e,
+                                                  const ::sniffer::DdosVictimLookup& r) const {
     const uint32_t dst = static_cast<uint32_t>(e.dst_ip);
     const uint32_t proto = static_cast<uint32_t>(e.protocol);
-    const ::sniffer::DdosVictimLookup r = victim_board_->lookup(dst, proto);
     if (!r.have_snapshot) return;
     auto* vw = ev.mutable_victim_window();
     vw->set_victim_ip(::sniffer::DdosKernelAggregator::ip_to_string(dst));
@@ -1235,6 +1322,11 @@ void RingBufferConsumer::stamp_victim_window(protobuf::NetworkSecurityEvent& ev,
     vw->set_window_ms(r.window_ms);
     vw->set_window_seq(r.seq);
     vw->set_snapshot_age_ms(r.age_ms);
+    if (r.window_ms > 0) {  // [DDOS-V2-D286] victim_pps; la ventana de arranque deja el centinela
+        ev.mutable_network_features()->mutable_ddos_embedded()->set_victim_pps(
+            ::argus::ddos::victim_pps(r.d_pkts, r.window_ms));
+        ev.mutable_network_features()->mutable_ddos_embedded()->set_victim_rate_ratio(r.rate_ratio);  // [DDOS-H2-D286]
+    }
 }
 
 void RingBufferConsumer::send_fast_alert(const SimpleEvent& event) {
@@ -1243,6 +1335,7 @@ void RingBufferConsumer::send_fast_alert(const SimpleEvent& event) {
     try {
         protobuf::NetworkSecurityEvent alert;
         alert.set_event_id("fast-alert-" + std::to_string(event.timestamp));
+        alert.set_event_kind(protobuf::EVENT_KIND_FAST_ALERT);  // [EVENT-KIND-D285]
 
         auto* ts = alert.mutable_event_timestamp();
         ts->set_seconds(event.timestamp / 1'000'000'000ULL);
@@ -1321,11 +1414,13 @@ void RingBufferConsumer::send_fast_alert(const SimpleEvent& event) {
 
             stats_.ransomware_fast_alerts++;
 
-            std::cout << "[FAST ALERT] Ransomware heuristic: "
-                      << "src=" << src_ip_str << ":" << event.src_port
-                      << " dst=" << dst_ip_str << ":" << event.dst_port
-                      << " (ExtIPs=" << snapshot.external_ips_10s
-                      << ", SMB=" << snapshot.smb_conns << ")" << std::endl;
+            if (g_verbosity >= FeatureLogger::VerbosityLevel::BASIC) {  // DAY284: log por evento fuera del camino caliente
+                std::cout << "[FAST ALERT] Ransomware heuristic: "
+                          << "src=" << src_ip_str << ":" << event.src_port
+                          << " dst=" << dst_ip_str << ":" << event.dst_port
+                          << " (ExtIPs=" << snapshot.external_ips_10s
+                          << ", SMB=" << snapshot.smb_conns << ")" << std::endl;
+            }
         }
 
     } catch (const std::exception& e) {
@@ -1346,6 +1441,7 @@ void RingBufferConsumer::send_ransomware_features(const protobuf::RansomwareFeat
         uint64_t now_ns = std::chrono::duration_cast<std::chrono::nanoseconds>(
             std::chrono::system_clock::now().time_since_epoch()).count();
         event.set_event_id("ransomware-features-" + std::to_string(now_ns));
+        event.set_event_kind(protobuf::EVENT_KIND_RANSOMWARE_WINDOW);  // [EVENT-KIND-D285]
 
         auto* ts = event.mutable_event_timestamp();
         ts->set_seconds(now_ns / 1'000'000'000ULL);
@@ -1579,14 +1675,19 @@ void RingBufferConsumer::run_ml_detection(protobuf::NetworkSecurityEvent& proto_
     auto ransomware_features = extract_ransomware_features(proto_event);
     auto traffic_features = extract_traffic_features(proto_event);
     auto internal_features = extract_internal_features(proto_event);
+    auto mlt_t1 = std::chrono::high_resolution_clock::now();  // DAY283 ML-PHASE
 
     // ========================================================================
     // PHASE 2: Model Inference (Thread-local, <100μs per detector)
     // ========================================================================
     auto ddos_pred = ddos_detector_.predict(ddos_features);
+    auto mlt_t2 = std::chrono::high_resolution_clock::now();  // DAY283 ML-PHASE
     auto ransomware_pred = ransomware_detector_.predict(ransomware_features);
+    auto mlt_t3 = std::chrono::high_resolution_clock::now();  // DAY283 ML-PHASE
     auto traffic_pred = traffic_detector_.predict(traffic_features);
+    auto mlt_t4 = std::chrono::high_resolution_clock::now();  // DAY283 ML-PHASE
     auto internal_pred = internal_detector_.predict(internal_features);
+    auto mlt_t5 = std::chrono::high_resolution_clock::now();  // DAY283 ML-PHASE
 
     // ========================================================================
     // PHASE 3: Threshold Application & Classification
@@ -1655,6 +1756,87 @@ void RingBufferConsumer::run_ml_detection(protobuf::NetworkSecurityEvent& proto_
     auto end = std::chrono::high_resolution_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
     stats_.ml_detection_time_us += duration.count();
+
+    // DAY283 D2 — [ML-PHASE] (solo observacion): extract | ddos | ransom | traffic | internal | post
+    {
+        static std::atomic<uint64_t> mph_calls{0};
+        static std::atomic<uint64_t> mph_sum[6];
+        static std::atomic<uint64_t> mph_hist[6][40];
+        static std::atomic<int64_t>  mph_last_print_ns{0};
+        static const char* const mph_names[6] =
+            {"extract", "ddos", "ransom", "traffic", "internal", "post"};
+        const std::chrono::high_resolution_clock::time_point mph_t[7] =
+            {start, mlt_t1, mlt_t2, mlt_t3, mlt_t4, mlt_t5, end};
+
+        mph_calls.fetch_add(1, std::memory_order_relaxed);
+        for (int k = 0; k < 6; ++k) {
+            const uint64_t ns = static_cast<uint64_t>(
+                std::chrono::duration_cast<std::chrono::nanoseconds>(mph_t[k + 1] - mph_t[k]).count());
+            mph_sum[k].fetch_add(ns, std::memory_order_relaxed);
+            int b = 0; uint64_t v = ns;
+            while (v > 1 && b < 39) { v >>= 1; ++b; }
+            mph_hist[k][b].fetch_add(1, std::memory_order_relaxed);
+        }
+
+        const int64_t now_ns = std::chrono::duration_cast<std::chrono::nanoseconds>(
+            std::chrono::steady_clock::now().time_since_epoch()).count();
+        int64_t last = mph_last_print_ns.load(std::memory_order_relaxed);
+        if (now_ns - last >= 10000000000LL &&
+            mph_last_print_ns.compare_exchange_strong(last, now_ns)) {
+            std::ostringstream os;
+            os << "[ML-PHASE] calls=" << mph_calls.load();
+            for (int k = 0; k < 6; ++k) {
+                os << " " << mph_names[k] << "=" << mph_sum[k].load() << "|";
+                bool first = true;
+                for (int i = 0; i < 40; ++i) {
+                    const uint64_t c = mph_hist[k][i].load(std::memory_order_relaxed);
+                    if (c == 0) continue;
+                    os << (first ? "" : ",") << i << ":" << c;
+                    first = false;
+                }
+            }
+            std::cout << os.str() << std::endl;
+        }
+    }
+
+    // DAY283 D2 — [ML-TIME] (solo observacion): llamadas, ns, max, histograma log2
+    {
+        static std::atomic<uint64_t> mlt_calls{0};
+        static std::atomic<uint64_t> mlt_sum_ns{0};
+        static std::atomic<uint64_t> mlt_max_ns{0};
+        static std::atomic<uint64_t> mlt_hist[40];
+        static std::atomic<int64_t>  mlt_last_print_ns{0};
+
+        const uint64_t ns = static_cast<uint64_t>(
+            std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count());
+        mlt_calls.fetch_add(1, std::memory_order_relaxed);
+        mlt_sum_ns.fetch_add(ns, std::memory_order_relaxed);
+        uint64_t prev_max = mlt_max_ns.load(std::memory_order_relaxed);
+        while (ns > prev_max &&
+               !mlt_max_ns.compare_exchange_weak(prev_max, ns, std::memory_order_relaxed)) {}
+        int b = 0; uint64_t v = ns;
+        while (v > 1 && b < 39) { v >>= 1; ++b; }
+        mlt_hist[b].fetch_add(1, std::memory_order_relaxed);
+
+        const int64_t now_ns = std::chrono::duration_cast<std::chrono::nanoseconds>(
+            std::chrono::steady_clock::now().time_since_epoch()).count();
+        int64_t last = mlt_last_print_ns.load(std::memory_order_relaxed);
+        if (now_ns - last >= 10000000000LL &&
+            mlt_last_print_ns.compare_exchange_strong(last, now_ns)) {
+            std::ostringstream os;
+            os << "[ML-TIME] calls=" << mlt_calls.load()
+               << " sum_ns=" << mlt_sum_ns.load()
+               << " max_ns=" << mlt_max_ns.load() << " hist=";
+            bool first = true;
+            for (int i = 0; i < 40; ++i) {
+                const uint64_t c = mlt_hist[i].load(std::memory_order_relaxed);
+                if (c == 0) continue;
+                os << (first ? "" : ",") << i << ":" << c;
+                first = false;
+            }
+            std::cout << os.str() << std::endl;
+        }
+    }
 
     // Optional: Log detections if verbosity enabled
     if (g_verbosity >= FeatureLogger::VerbosityLevel::GROUPED) {

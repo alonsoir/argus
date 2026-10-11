@@ -6,6 +6,7 @@
 #include <stdexcept>
 #include <unordered_map>
 #include <json/json.h>
+#include "ddos_contract_v2.hpp"  // [DDOS-HYST-D291]
 
 namespace sniffer {
 
@@ -93,6 +94,7 @@ struct KernelSpaceConfig {
     bool ddos_kernel_agg_enabled = false;
     int ddos_kernel_agg_interval_ms = 1000;
     std::string ddos_kernel_agg_csv_path;
+    ::argus::ddos::VictimEwmaParams ddos_victim_ewma{};  // [DDOS-HYST-D291]
     std::string xdp_mode;
     size_t ring_buffer_size;
     size_t max_flows_in_kernel;

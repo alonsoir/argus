@@ -581,10 +581,80 @@ void ZMQSubscriber::handle_message(const void* msg_data, size_t msg_size) {
 
     const auto& ml = event.ml_analysis();
 
-    // Only process if attack was detected at Level 1
-    if (!ml.attack_detected_level1()) {
-        FIREWALL_LOG_DEBUG("No Level 1 attack detected, skipping",
-            "level1_confidence", ml.level1_confidence());
+    // [DDOS-SHADOW-D293] La decisión viene de provenance.final_decision (hoy = SOLO la cabeza DDoS v2, la única
+    // certificada; DAY285: las cabezas no certificadas no cuentan, level1 ya no decide). Este PR va en SOMBRA: los DROP
+    // alimentan la política por víctima, que solo REGISTRA. Todo evento recibido avanza el reloj de la sombra.
+    {
+        const int64_t ts_s = static_cast<int64_t>(event.event_timestamp().seconds());
+        // [DDOS-SHADOW-RELOJ-D293] un solo reloj: el de los eventos de FLUJO (monotónico desde el arranque). Otros
+        // tipos de evento llegan con event_timestamp en epoch (DEBT-EVENT-TIMESTAMP-TIMEBASE-001) y no lo mueven.
+        const bool es_flujo = (event.event_kind() == protobuf::EVENT_KIND_FLOW);
+        {  // [DDOS-SHADOW-OBS-D293] contadores y resumen periódico por reloj de pared, siempre visible (std::cout)
+            const std::string fd = event.has_provenance() ? event.provenance().final_decision() : std::string();
+            if (es_flujo) {  // [DDOS-SHADOW-RELOJ-D293] rango de ts solo de los eventos de flujo
+                if (sombra_flujo_ == 0 || ts_s < sombra_ts_min_) sombra_ts_min_ = ts_s;
+                if (sombra_flujo_ == 0 || ts_s > sombra_ts_max_) sombra_ts_max_ = ts_s;
+                ++sombra_flujo_;
+            }
+            ++sombra_eventos_;
+            if (fd == "DROP") {
+                ++sombra_drop_;
+            } else if (fd == "ALLOW") {
+                ++sombra_allow_;
+            } else {
+                ++sombra_otro_;
+            }
+            const auto ahora = std::chrono::steady_clock::now();
+            if (ahora - sombra_ultimo_resumen_ >= std::chrono::seconds(config_.ddos_shadow.resumen_s)) {
+                std::cout << "[SOMBRA-DDOS] resumen: habilitada=" << (config_.ddos_shadow.enabled ? 1 : 0)
+                          << " eventos=" << sombra_eventos_ << " flujo=" << sombra_flujo_
+                          << " final_decision DROP=" << sombra_drop_
+                          << " ALLOW=" << sombra_allow_ << " otro_o_vacio=" << sombra_otro_
+                          << " ts_evento_min=" << sombra_ts_min_ << " ts_evento_max=" << sombra_ts_max_
+                          << " victimas_activas=" << ddos_shadow_.victims() << std::endl;
+                sombra_eventos_ = 0;
+                sombra_flujo_ = 0;
+                sombra_drop_ = 0;
+                sombra_allow_ = 0;
+                sombra_otro_ = 0;
+                sombra_ultimo_resumen_ = ahora;
+            }
+        }
+        if (config_.ddos_shadow.enabled && es_flujo) {
+            for (const auto& rec : ddos_shadow_.advance(ts_s)) {
+                FIREWALL_LOG_WARN("[SOMBRA-DDOS]", "registro", ::mldefender::firewall::format_ddos_shadow_record(rec));
+                std::cout << "[SOMBRA-DDOS] " << ::mldefender::firewall::format_ddos_shadow_record(rec)
+                          << std::endl;  // [DDOS-SHADOW-OBS-D293]
+            }
+        }
+        const bool drop = event.has_provenance() && event.provenance().final_decision() == "DROP";
+        if (!drop || !config_.ddos_shadow.enabled || !es_flujo) {
+            return;
+        }
+        if (!event.has_network_features()) {
+            FIREWALL_LOG_WARN("[SOMBRA-DDOS] evento DROP sin network_features", "event_id", event.event_id());
+            return;
+        }
+        const auto& nf2 = event.network_features();
+        double p1 = 0.0;
+        std::string modelo;
+        for (const auto& pr : ml.level2_specialized_predictions()) {
+            if (pr.model_name().rfind("ddos_v2", 0) == 0) {
+                p1 = static_cast<double>(pr.confidence_score());
+                modelo = pr.model_name() + "@" + pr.model_version();
+            }
+        }
+        const double ratio = nf2.has_ddos_embedded() ? static_cast<double>(nf2.ddos_embedded().victim_rate_ratio()) : 0.0;
+        ddos_shadow_.add_drop(nf2.destination_ip(), static_cast<uint32_t>(nf2.protocol_number()), ts_s, nf2.source_ip(),
+                              p1, ratio, event.event_id(), modelo);
+        if (!sombra_primer_drop_) {  // [DDOS-SHADOW-OBS-D293]
+            sombra_primer_drop_ = true;
+            std::cout << "[SOMBRA-DDOS] primer DROP recibido: ts_s=" << ts_s << " victima=" << nf2.destination_ip()
+                      << " proto=" << nf2.protocol_number() << " origen=" << nf2.source_ip() << " ratio=" << ratio
+                      << " p1=" << p1 << " modelo=" << modelo << " evento=" << event.event_id() << std::endl;
+        }
+        // [DDOS-SHADOW-D293] en este PR NO se bloquea nada: los pasos 5-8 (bloqueo por IP de origen, ipset, registro
+        // BLOCKED) no se ejecutan. La mitigación real será por víctima (DEBT-FIREWALL-PER-VICTIM-001).
         return;
     }
 

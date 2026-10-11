@@ -564,7 +564,13 @@ int main(int argc, char** argv) {
                 "set_name", ipset_cfg.set_name,
                 "status", exists ? "EXISTS" : "MISSING");
 
-            if (!exists) {
+            if (!exists && config.operation.dry_run) {  // [FW-DRYRUN-VERIF-D294] en dry_run no se crean: no es fallo
+                FIREWALL_LOG_INFO("IPSet verification skipped (dry-run: ipset not created)",
+                    "logical_name", name,
+                    "set_name", ipset_cfg.set_name);
+                std::cout << "[DRY-RUN] verificación de ipset omitida (no se crea en dry_run): "
+                          << ipset_cfg.set_name << std::endl;
+            } else if (!exists) {
                 FIREWALL_LOG_CRASH("IPSet verification failed",
                     "logical_name", name,
                     "set_name", ipset_cfg.set_name);
@@ -714,6 +720,13 @@ int main(int argc, char** argv) {
 
         // ✅ Day 61: CSV batch logger output directory
         zmq_config.log_directory = config.csv_batch_logger.output_dir;
+
+        // [DDOS-SHADOW-D293] política por víctima en sombra (solo registra)
+        zmq_config.ddos_shadow = config.ddos_shadow;
+        std::cout << "[SOMBRA-DDOS] política por víctima " << (config.ddos_shadow.enabled ? "ACTIVA" : "DESACTIVADA")
+                  << ": m=" << config.ddos_shadow.m << " k=" << config.ddos_shadow.k << " n=" << config.ddos_shadow.n
+                  << " hold_s=" << config.ddos_shadow.hold_s << " resumen_s=" << config.ddos_shadow.resumen_s
+                  << " (solo registra, no bloquea)" << std::endl;  // [DDOS-SHADOW-OBS-D293]
 
         // Transport configuration (compression)
         if (config.transport.compression.enabled) {

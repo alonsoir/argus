@@ -137,13 +137,19 @@ struct DetectorConfig {
         std::string models_base_dir;
         
         struct {
-            float level1_attack;
-            float level2_ddos;
-            float level2_ransomware;
-            float level3_anomaly;
-            float level3_web;
-            float level3_internal;
+            float level1_attack{};
+            float level2_ddos{};
+            float level2_ransomware{};
+            float level3_anomaly{};
+            float level3_web{};
+            float level3_internal{};
         } thresholds;
+
+        // [DDOS-V2-D293] cabeza DDoS v2 factorizada: etapa 1 = victim_rate_ratio >= k_ratio
+        struct {
+            bool enabled = true;
+            double k_ratio = 3.0;
+        } ddos_v2;
         
         struct ModelConfig {
             bool enabled;
@@ -304,10 +310,16 @@ struct DetectorConfig {
 
     // CSV Writer
     struct {
+        bool enabled = true;  // [WRITERS-D285] opcional en el JSON
         std::string base_dir;
         float min_score_threshold;
         int max_events_per_file;
     } csv_writer;
+
+    // [WRITERS-D285] RAG Logger: solo el interruptor; el resto vive en rag_logger_config.json
+    struct {
+        bool enabled = true;
+    } rag_logger;
 
     // Correlation Writer (bronce correlation_v1) — DAY 201/203
     // DEBT-CONFIG-BRONZE-HARDCODE-001 + DEBT-CIRCUIT-BRONZE-ROTATION-FOLLOW-001
@@ -315,6 +327,12 @@ struct DetectorConfig {
         std::string base_dir;
         int rotation_seconds;
     } correlation_writer;
+
+    // [DDOS-DATASET-D287] dataset DDoS v2 de laboratorio (CSV plano); apagado por defecto
+    struct {
+        bool enabled = false;
+        std::string base_dir;
+    } ddos_dataset_writer;
 
     // Scoring thresholds (dual-score architecture)
     struct {

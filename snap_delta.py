@@ -116,6 +116,7 @@ def main():
     # [RING-LOSS-D275:STATS] contadores nuevos del kernel (claves 1 y 2)
     stats1 = b["stats"].get(1, 0) - a["stats"].get(1, 0)
     stats2 = b["stats"].get(2, 0) - a["stats"].get(2, 0)
+    stats3 = b["stats"].get(3, 0) - a["stats"].get(3, 0)  # [IP-FRAG-D287] fragmentos no-primeros
     has_ring_counters = (1 in b["stats"]) and (2 in b["stats"]) and (1 in a["stats"]) and (2 in a["stats"])
     deltas = {}
     resets = 0
@@ -139,8 +140,9 @@ def main():
     if has_ring_counters:
         print("  stats[1] reserve fallido (ring): %+d   (ring lleno)" % stats1)
         print("  stats[2] descartes filtro/L4   : %+d   (puertos excluidos, cabecera L4 truncada)" % stats2)
-        print("  B - (A + s1 + s2)              : %+d   (0 = identidad exacta del kernel)"
-              % (sum_p - (stats0 + stats1 + stats2)))
+        print("  stats[3] fragmentos no-primeros: %+d   (sin L4: contados en el mapa, no van al ring)" % stats3)  # [IP-FRAG-D287]
+        print("  B - (A + s1 + s2 + s3)         : %+d   (0 = identidad exacta del kernel)"  # [IP-FRAG-D287]
+              % (sum_p - (stats0 + stats1 + stats2 + stats3)))
         if sum_p:
             print("  llegado al ring (A / B)        : %.1f %%" % (100.0 * stats0 / sum_p))
     else:
