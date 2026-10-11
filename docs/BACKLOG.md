@@ -7215,3 +7215,10 @@ por no instrumentado.
 - DEBT-SHADOW-EVENT-CLOCK-LAG-001: durante dns100 el reloj de eventos de flujo de la sombra avanza ~0,55 s por s de
   pared y recupera después (6315->6351 en un resumen). ¿Retraso de cola (sniffer/ml-detector/ZMQ) o semántica de
   event_timestamp? Afecta a time_to_block bajo carga. Medir junto a DEBT-EVENT-TIMESTAMP-TIMEBASE-001.
+- EMECAS+++ DAY294 cayó en test-parquet: 2026-10-01.parquet con 36904 de 37283 filas (99 %) con timestamp_utc_ns
+  MONOTÓNICO (884 s - 12567 s desde el arranque), misma familia que DAY281 (2026-09-25.csv) y
+  DEBT-EVENT-TIMESTAMP-TIMEBASE-001. No es regresión de feat/ddos-head-contract (datos del lab de DAY284).
+  CSV y Parquet a logs/lab/quarantine_d294/.
+- DEBT-PARQUET-VALIDATOR-FIRST-ROW-001: validate_roundtrip.py solo comprueba timestamp_utc_ns de la PRIMERA fila de
+  cada fichero; esconde filas monotónicas en el resto y solo destapa el problema cuando un fichero empieza por una.
+  Debe comprobar todas las filas (o contar y fallar con el recuento por fichero).
