@@ -7209,3 +7209,9 @@ por no instrumentado.
   primer DROP), 1 FIN (29,3 s tras el último DROP, hold=30), origenes solo 192.168.100.50:5357, 0 del inocente .51,
   p1_min 0,96. Último DROP en el defender 05:01:11,05 UTC frente a fin_ataque del client 05:01:11. Evidencia en
   logs/lab/day294/ (sin trackear).
+- Corrida benigna DAY294 (day294_benigna_client.sh): 0 INICIO; 2 DROP aislados (dns30, dns100) absorbidos por k=3/5.
+- DEBT-FIREWALL-NONFLOW-EVENTS-001: bajo dnsperf el firewall recibe ~37 eventos/s que no son de flujo (antes ~1 cada 30 s).
+  Identificar el tipo (event_kind) y quién los emite.
+- DEBT-SHADOW-EVENT-CLOCK-LAG-001: durante dns100 el reloj de eventos de flujo de la sombra avanza ~0,55 s por s de
+  pared y recupera después (6315->6351 en un resumen). ¿Retraso de cola (sniffer/ml-detector/ZMQ) o semántica de
+  event_timestamp? Afecta a time_to_block bajo carga. Medir junto a DEBT-EVENT-TIMESTAMP-TIMEBASE-001.
