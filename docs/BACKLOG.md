@@ -7235,3 +7235,36 @@ por no instrumentado.
   real (tras familia fuera > 60 %). D22 calibración con cliente, en paralelo.
 - Semana del 2026-10-12: PR propio de limpieza de scripts de la raíz (inventario, git grep de referencias, git mv a
   scripts/lab/ o scripts/archive/, EMECAS+++) y README.md actualizado.
+
+## DAY295 — contrato temporal v1 (rama fix/event-timestamp-timebase; docs/timebase/contrato_temporal_day295.md)
+- DEBT-LAB-CHRONY-NO-AUTOSTEP-001: tras suspender el Mac, chrony del defender detectó 257,6 s y CORRIGIÓ
+  GRADUALMENTE 14 min pese a makestep 1 -1 (el client sí saltó solo, 4 min después de detectarlo). Mitigación: regla del
+  lab + target lab-clock-step (en esta rama). Evidencia: journals de chrony del 2026-10-12.
+- DEBT-SNIFFER-VARIANT-B-TIMEBASE-001: main_libpcap.cpp no estampa time_context y sella event_timestamp con
+  system_clock al EMITIR (no al capturar). Sus eventos llegan al firewall como sin_time_context.
+- DEBT-SYNTHETIC-TOOLS-TIMEBASE-001: synthetic_sniffer_injector y generate_synthetic_events no cumplen el contrato v1
+  (sin time_context). Útiles además como prueba de las 8 causas de anomalía del firewall.
+- DEBT-SNIFFER-CONFIG-TRIPLE-COPY-001: SnifferConfig -> StrictSnifferConfig -> SnifferConfig copiados a mano campo a
+  campo (config_types.cpp, main.cpp:593, ~60 asignaciones). Un eslabón olvidado = defectos en silencio.
+- DEBT-TIMEBASE-COMMON-001: timebase_lite.hpp del firewall duplica read_boot_id y mono_now de sniffer/timebase.hpp;
+  unificar en common/.
+- DEBT-FIREWALL-SHADOW-WINDOW-MS-001: la ventana de la sombra es 1 s fijo (mono_ns / 1e9). Hacerla configurable
+  (window_ms) exige recalibrar m, k/n y hold_windows: rama de calibración.
+- DEBT-TIMEBASE-MULTINODE-001: la v1 supone sniffer y firewall en el mismo nodo (retraso_otro_boot = anomalía). El
+  modo distribuido necesita reloj de la sombra por productor y retraso sin restar relojes de nodos distintos.
+- DEBT-FLOWUID-TIMEBASE-VERIFY-001 (HIPÓTESIS, sin medir): con flow_start_time monotónico, la ventana de flow_uid de
+  aRGus no podía coincidir con la de Suricata/Zeek para el mismo flujo. Verificar en el grafo con bronce nuevo (epoch)
+  y revisar las medidas pasadas que usaran flow_uid o tiempos entre sensores.
+- DEBT-PARQUET-VALIDATOR-FIRST-ROW-001 (sigue abierta): validate_roundtrip.py lee solo la fila [0].
+- DEBT-EVENT-ID-COLLISION-001 (sin cambios, fuera de esta rama): reacuñar con boot_id/seq resolvería la colisión pero
+  empeoraría la reproducibilidad entre replays (consulta al Consejo DAY180, sin síntesis). Diseño propio.
+- DEBT-COUNCIL-DUP-HOOK-001: en 3ad52bac entraron 8 copias idénticas de la plantilla del Consejo (sha 419dc4d1),
+  corregido en 69071d1b; segunda vez tras DAY292. Hook pre-commit que rechace ficheros consejo_* idénticos en el índice.
+- Aviso del escáner de secretos en cada commit: "Unrecognized key in config: paths_ignore".
+- Para el PR de limpieza de la semana: firewall-acl-agent/proto/network_security.pb.h es una copia muerta (CMake usa
+  ${CMAKE_BINARY_DIR}/proto); avisos de graphify en PR #143 sobre day287/288_*.sh (mkdir que falta, división por cero
+  en awk, PIDs no guardados, glob vacío).
+- Los logs de /vagrant/logs/lab/ se acumulan entre arranques (líneas de arranques anteriores al buscar).
+- FUTURO (Alonso): instalación inmutable: sin compiladores, editores ni salida al exterior en el sitio; cambios solo
+  por artefactos firmados con hash autorizado. Avisos [TIMEBASE-ANOMALIA] y [CONFIG-DEFAULT] hacia el admin (colores,
+  Discord, correo) y LLM maestro que actúa tras un tiempo configurable, con override humano (ver DAY291).

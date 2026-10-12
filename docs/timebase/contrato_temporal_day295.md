@@ -95,3 +95,100 @@ C8. Regla del lab: tras suspender el Mac, `make lab-clock-step` (defender y desp
 - Sincronización entre nodos físicos (boot_id y node_id dejan el sitio preparado).
 - DEBT-LAB-CHRONY-NO-AUTOSTEP-001: el defender no saltó en 14 min con `makestep 1 -1`; el client sí (4 min).
   Evidencia: journals de chrony DAY295. Mitigado por C8.
+
+## 7. Anexo DAY295 (tarde): lo implementado y lo que no estaba en el inventario de la mañana
+
+Implementado y verificado E2E (commits 1e285785, ad439698, 82e99666, a8bdb27b, df376a42):
+- Proto: enum ClockState, message TimeContext, NetworkSecurityEvent.time_context = 38 (solo añade campos).
+- Sniffer Variant A: timebase.hpp (lógica pura, test_timebase 33/33); sección "timebase" en sniffer.json con
+  [CONFIG-DEFAULT]; hilo del reloj ([CLOCK-STEP], [CLOCK-SLEW]); stamp_time_context en flujo, fast-alert y ventana
+  ransomware; event_timestamp = mono_ns + ancla en los tres; schema_version 32. Log de arranque:
+  "[TIMEBASE] contrato v1 activos: ..." con los valores que llegan al consumidor.
+- Firewall: sombra DDoS sobre time_context.mono_ns; validación de time_context; retraso sniffer->firewall.
+
+Correcciones al inventario (§1):
+- Faltaban DOS tiempos más del sniffer, ambos monotónicos: NetworkFeatures.flow_start_time (campo 11) y
+  TimeWindow.window_start (ring_consumer.cpp populate_protobuf_event). flow_start_time es el que el ml-detector
+  copia al bronce correlation_v1 (columnas 5-6) -> el bronce de aRGus iba en segundos desde el arranque (~10427)
+  mientras Suricata, Zeek, los tests del bronce, flow_uid y ADR-057 esperan epoch. Arreglado [TIMEBASE-D295:FLOWSTART]:
+  ambos en epoch derivado. Verificado: flow_start_sec 1791786093,530362835 = mono 12865,876550181 + ancla (dif 23 ns).
+  TimeWindow.sequence_number sigue siendo event.timestamp (es un contador, no un instante).
+- csv_writer del ml-detector está APAGADO desde DAY285 (único consumidor: el Parquet antiguo de parquet-convert).
+  La ruta "CSV ml-detector -> Parquet timestamp_utc_ns" no está viva; el borde vivo hacia el grafo es
+  correlation_writer (bronce). El validador de Parquet sigue mirando solo la fila [0] (pendiente).
+- Detection.timestamp (firewall :712): sin consumidores en todo el repo; se queda en segundos epoch.
+- sniffer_send_mono_ns = instante de SERIALIZACIÓN (entrada en send_queue_), no el envío por socket.
+- Cadena de configuración del sniffer: sniffer.json -> ConfigManager (SnifferConfig) -> config_types.cpp copia a
+  g_config (StrictSnifferConfig) -> main.cpp copia campo a campo a un SnifferConfig nuevo -> RingBufferConsumer.
+  Un eslabón olvidado = defectos en silencio; la línea [TIMEBASE] del arranque es la prueba de que llegó.
+
+Decisiones del árbitro (DAY295):
+- La sombra cuenta VENTANAS, no segundos: hold_s -> hold_windows en firewall.json (un JSON antiguo con hold_s avisa
+  y se ignora). 1 ventana = 1 s de CLOCK_MONOTONIC del sniffer (mono_ns / 1e9, entero); es la única constante fija
+  (window_ms configurable exigiría recalibrar m, k/n y hold: BACKLOG).
+- Criterio de aceptación de D16 REFORMULADO: el hold dura exactamente hold_windows ventanas (29-30 s medidos en
+  mono_ns, cuantizado por diseño; explica el FIN a 29,3 s de DAY294) y un salto de +-5 s del reloj de pared en mitad de
+  un ataque no lo cambia.
+- time_context con formato inusual: se registra y se marca para estudio, nunca se usa para procesar el evento ni se
+  castiga a la IP del paquete (no es quien lo rompió: el time_context lo escribe nuestro sniffer y viaja por el ZMQ
+  interno; una anomalía apunta a un fallo nuestro, a un productor sin contrato o a un componente comprometido).
+  8 causas: sin_time_context, version, mono_cero, boot_id, futuro, retraso_otro_boot, retraso_negativo,
+  retraso_absurdo. Detalle [TIMEBASE-ANOMALIA] limitado por causa y periodo (anomalias_detalle_max) + recuento en el
+  resumen [TIMEBASE]; si hubo anomalías, también por stderr.
+- Supuesto de la v1: sniffer y firewall en el MISMO nodo (retraso_otro_boot = anomalía). Multinodo: BACKLOG.
+
+Medido con el pipeline en reposo (DAY295 09:57): retraso sniffer->firewall media 12-26 ms, máximo 22-90 ms por
+periodo de 10 s; 0 anomalías en las 8 causas. Línea base para el 0,55x bajo dns100.
+
+Pendiente en esta rama: lab-clock-step; sellos mld_recv/mld_send del ml-detector (D17, partir el retraso en dos
+tramos); validador de Parquet sobre todas las filas; aceptación (saltos +-5 s, corrección gradual real, D15 A1/A2/A5);
+EMECAS+++, PR, merge.
+EOFcat >> docs/timebase/contrato_temporal_day295.md <<'EOF'
+
+## 7. Anexo DAY295 (tarde): lo implementado y lo que no estaba en el inventario de la mañana
+
+Implementado y verificado E2E (commits 1e285785, ad439698, 82e99666, a8bdb27b, df376a42):
+- Proto: enum ClockState, message TimeContext, NetworkSecurityEvent.time_context = 38 (solo añade campos).
+- Sniffer Variant A: timebase.hpp (lógica pura, test_timebase 33/33); sección "timebase" en sniffer.json con
+  [CONFIG-DEFAULT]; hilo del reloj ([CLOCK-STEP], [CLOCK-SLEW]); stamp_time_context en flujo, fast-alert y ventana
+  ransomware; event_timestamp = mono_ns + ancla en los tres; schema_version 32. Log de arranque:
+  "[TIMEBASE] contrato v1 activos: ..." con los valores que llegan al consumidor.
+- Firewall: sombra DDoS sobre time_context.mono_ns; validación de time_context; retraso sniffer->firewall.
+
+Correcciones al inventario (§1):
+- Faltaban DOS tiempos más del sniffer, ambos monotónicos: NetworkFeatures.flow_start_time (campo 11) y
+  TimeWindow.window_start (ring_consumer.cpp populate_protobuf_event). flow_start_time es el que el ml-detector
+  copia al bronce correlation_v1 (columnas 5-6) -> el bronce de aRGus iba en segundos desde el arranque (~10427)
+  mientras Suricata, Zeek, los tests del bronce, flow_uid y ADR-057 esperan epoch. Arreglado [TIMEBASE-D295:FLOWSTART]:
+  ambos en epoch derivado. Verificado: flow_start_sec 1791786093,530362835 = mono 12865,876550181 + ancla (dif 23 ns).
+  TimeWindow.sequence_number sigue siendo event.timestamp (es un contador, no un instante).
+- csv_writer del ml-detector está APAGADO desde DAY285 (único consumidor: el Parquet antiguo de parquet-convert).
+  La ruta "CSV ml-detector -> Parquet timestamp_utc_ns" no está viva; el borde vivo hacia el grafo es
+  correlation_writer (bronce). El validador de Parquet sigue mirando solo la fila [0] (pendiente).
+- Detection.timestamp (firewall :712): sin consumidores en todo el repo; se queda en segundos epoch.
+- sniffer_send_mono_ns = instante de SERIALIZACIÓN (entrada en send_queue_), no el envío por socket.
+- Cadena de configuración del sniffer: sniffer.json -> ConfigManager (SnifferConfig) -> config_types.cpp copia a
+  g_config (StrictSnifferConfig) -> main.cpp copia campo a campo a un SnifferConfig nuevo -> RingBufferConsumer.
+  Un eslabón olvidado = defectos en silencio; la línea [TIMEBASE] del arranque es la prueba de que llegó.
+
+Decisiones del árbitro (DAY295):
+- La sombra cuenta VENTANAS, no segundos: hold_s -> hold_windows en firewall.json (un JSON antiguo con hold_s avisa
+  y se ignora). 1 ventana = 1 s de CLOCK_MONOTONIC del sniffer (mono_ns / 1e9, entero); es la única constante fija
+  (window_ms configurable exigiría recalibrar m, k/n y hold: BACKLOG).
+- Criterio de aceptación de D16 REFORMULADO: el hold dura exactamente hold_windows ventanas (29-30 s medidos en
+  mono_ns, cuantizado por diseño; explica el FIN a 29,3 s de DAY294) y un salto de +-5 s del reloj de pared en mitad de
+  un ataque no lo cambia.
+- time_context con formato inusual: se registra y se marca para estudio, nunca se usa para procesar el evento ni se
+  castiga a la IP del paquete (no es quien lo rompió: el time_context lo escribe nuestro sniffer y viaja por el ZMQ
+  interno; una anomalía apunta a un fallo nuestro, a un productor sin contrato o a un componente comprometido).
+  8 causas: sin_time_context, version, mono_cero, boot_id, futuro, retraso_otro_boot, retraso_negativo,
+  retraso_absurdo. Detalle [TIMEBASE-ANOMALIA] limitado por causa y periodo (anomalias_detalle_max) + recuento en el
+  resumen [TIMEBASE]; si hubo anomalías, también por stderr.
+- Supuesto de la v1: sniffer y firewall en el MISMO nodo (retraso_otro_boot = anomalía). Multinodo: BACKLOG.
+
+Medido con el pipeline en reposo (DAY295 09:57): retraso sniffer->firewall media 12-26 ms, máximo 22-90 ms por
+periodo de 10 s; 0 anomalías en las 8 causas. Línea base para el 0,55x bajo dns100.
+
+Pendiente en esta rama: lab-clock-step; sellos mld_recv/mld_send del ml-detector (D17, partir el retraso en dos
+tramos); validador de Parquet sobre todas las filas; aceptación (saltos +-5 s, corrección gradual real, D15 A1/A2/A5);
+EMECAS+++, PR, merge.
