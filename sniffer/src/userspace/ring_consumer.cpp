@@ -1053,14 +1053,18 @@ void RingBufferConsumer::populate_protobuf_event(const SimpleEvent& event,
 
     // Flow start time
     google::protobuf::Timestamp* flow_start = features->mutable_flow_start_time();
-    flow_start->set_seconds(event.timestamp / 1000000000ULL);
-    flow_start->set_nanos(event.timestamp % 1000000000ULL);
+    // [TIMEBASE-D295:FLOWSTART] epoch derivado (mono + ancla), como event_timestamp: el bronce
+    // correlation_v1, flow_uid y ADR-057 esperan epoch. mono = epoch - time_context.wall_anchor_ns.
+    const uint64_t fst_epoch_ns = ::argus::timebase::epoch_ns(
+        event.timestamp, tb_anchor_ns_.load(std::memory_order_relaxed));
+    flow_start->set_seconds(static_cast<int64_t>(fst_epoch_ns / 1000000000ULL));
+    flow_start->set_nanos(static_cast<int32_t>(fst_epoch_ns % 1000000000ULL));
 
     // Time window
     protobuf::TimeWindow* time_window = proto_event.mutable_time_window();
     google::protobuf::Timestamp* window_start = time_window->mutable_window_start();
-    window_start->set_seconds(event.timestamp / 1000000000ULL);
-    window_start->set_nanos(event.timestamp % 1000000000ULL);
+    window_start->set_seconds(static_cast<int64_t>(fst_epoch_ns / 1000000000ULL));  // [TIMEBASE-D295:FLOWSTART]
+    window_start->set_nanos(static_cast<int32_t>(fst_epoch_ns % 1000000000ULL));
     time_window->set_window_type(protobuf::TimeWindow::SLIDING);
     time_window->set_sequence_number(event.timestamp);
 
