@@ -3,6 +3,18 @@
 Árbitro humano: Alonso. Regla: medir, no votar. Cada respuesta debe proponer una MEDIDA concreta y una PREDICCIÓN escrita
 (número esperado y qué la refutaría). Las opiniones sin medida asociada se registran pero no deciden.
 
+## Qué os pedimos (en este orden de importancia)
+
+1. **Auditoría adversaria de lo medido.** Buscad dónde está mal medido, dónde la conclusión va más allá del dato y qué
+   confusor no hemos controlado. Ejemplo de lo que buscamos: ¿el 0 del inocente concurrente se debe a que la etapa 2
+   discrimina, o a que su pcap es demasiado distinto del atacante? Para cada fallo: cómo lo mediríais para confirmarlo.
+2. **Propuestas falsables para P1-P6.** No opiniones: qué medir, qué número esperáis y qué lo refutaría.
+3. **Prioridad.** De lo abierto, qué va primero y por qué. Contexto: la siguiente rama ya abierta es la base de tiempo
+   única (P5).
+
+Lo que NO buscamos: votos, elogios, rediseños que contradigan lo ya medido sin traer una medida mejor. En P3 los valores
+para un cliente real se deciden con su personal: pedimos el MÉTODO de calibración, no los números.
+
 Adjuntos (leer en este orden):
 1. `bloque1_day293.md` — análisis offline: intervalos por corrida, formas de modelo, política del firewall, víctima fría.
 2. `bloque2_day294.md` — cableado en sombra y medidas en vivo.

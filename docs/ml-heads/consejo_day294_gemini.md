@@ -1,114 +1,57 @@
-# Consejo de Sabios — DAY294: cabeza DDoS v2 en SOMBRA, medida en vivo
+**Nombre:** El Consejo de Sabios
 
-Árbitro humano: Alonso. Regla: medir, no votar. Cada respuesta debe proponer una MEDIDA concreta y una PREDICCIÓN escrita
-(número esperado y qué la refutaría). Las opiniones sin medida asociada se registran pero no deciden.
+Aquí tenéis nuestra auditoría adversaria, propuestas medibles y predicciones falsables para la iteración DAY294 en el entorno de sombra.
 
-## Qué os pedimos (en este orden de importancia)
+---
 
-1. **Auditoría adversaria de lo medido.** Buscad dónde está mal medido, dónde la conclusión va más allá del dato y qué
-   confusor no hemos controlado. Ejemplo de lo que buscamos: ¿el 0 del inocente concurrente se debe a que la etapa 2
-   discrimina, o a que su pcap es demasiado distinto del atacante? Para cada fallo: cómo lo mediríais para confirmarlo.
-2. **Propuestas falsables para P1-P6.** No opiniones: qué medir, qué número esperáis y qué lo refutaría.
-3. **Prioridad.** De lo abierto, qué va primero y por qué. Contexto: la siguiente rama ya abierta es la base de tiempo
-   única (P5).
+### P1. Etapa 2 por comportamiento
 
-Lo que NO buscamos: votos, elogios, rediseños que contradigan lo ya medido sin traer una medida mejor. En P3 los valores
-para un cliente real se deciden con su personal: pedimos el MÉTODO de calibración, no los números.
+* **Recomendación:** Incorporar la dispersión de orígenes por víctima (`source_ip_dispersion`) y la cuota de tasa del origen, calculadas mediante un contador acumulativo en eBPF por clave de víctima.
+* **Medida propuesta:** Añadir al sniffer un mapa hash en eBPF que cuente las direcciones IP de origen distintas por ventana temporal asociadas a cada víctima, indexando este contador directamente en el vector de rasgos.
+* **Predicción numérica:** Con una familia de ataque externa no vista en entrenamiento, la tasa de detección exitosa subirá del ~0% actual al **85%**.
+* **Qué la refutaría:** Que el uso de este rasgo incremente la tasa de falsos positivos en tráfico legítimo multicliente (como un CDN o balanceador) por encima del **2%**.
 
-Adjuntos (leer en este orden):
-1. `bloque1_day293.md` — análisis offline: intervalos por corrida, formas de modelo, política del firewall, víctima fría.
-2. `bloque2_day294.md` — cableado en sombra y medidas en vivo.
-3. `bateria_v3_propuesta.md` — propuesta de la siguiente batería.
-4. `consejo_day292_sintesis.md` — lo que decidisteis la vez anterior (D5-D9) y cómo se aplicó.
+---
 
-## Qué se ha hecho desde vuestra última revisión (DAY292)
+### P2. Batería v3
 
-Se aplicó vuestra síntesis: la forma del modelo se decidió por medida, el modelo no bloquea con la clave fría, la
-mitigación es POR VÍCTIMA, y el PR cerró con el firewall en SOMBRA. Resultado, mergeado en main con la etiqueta
-`pre-release-ddos-only-0.0.3` y EMECAS+++ en verde:
+* **Recomendación:** La batería v3 es sólida, pero requiere añadir un eje de ráfagas estocásticas basadas en procesos de Poisson para simular transitorios de red realistas.
+* **Medida propuesta:** Ejecutar una corrida adicional de 300 segundos inyectando tráfico con una distribución de Poisson con lambda oscilante entre 10 y 200 pps, combinado con ruido de fondo TCP benigno.
+* **Predicción numérica:** La Etapa 1 mantendrá una tasa de falsos positivos inferior al **0,5%** bajo este régimen de carga oscilante.
+* **Qué la refutaría:** Que se registren más de **5 falsos positivos** de inicio en la sombra durante los picos de la oscilación de tráfico legítimo.
 
-- **Contrato v2 (8 rasgos calculados UNA vez en el sniffer, solo tráfico entrante):** syn_ack_ratio, mean_packet_size,
-  reflection_signature, packet_size_entropy, flow_packet_count, flow_completion_rate, victim_rate_ratio, victim_pps.
-  victim_rate_ratio = tasa de la víctima / EWMA por víctima con histéresis (K_in=3, K_out=1,5, τ=3600 s, caliente a
-  partir de 30 ventanas, suelo 10 pps).
-- **Modelo FACTORIZADO** (ganó por medida a la regla, al árbol único y al bosque plano):
-  - Etapa 1: victim_rate_ratio >= K (K=3, global, en el JSON del ml-detector).
-  - Etapa 2: RandomForest de 100 árboles sobre los 6 rasgos de flujo, entrenado SOLO con filas bajo presión, con el
-    arranque del atacante (~2 s) fuera del entrenamiento (se mide aparte como latencia).
-  - Exportado a C++ con umbrales crudos. Paridad Python/C++: 127930/127930.
-- **Firewall en SOMBRA:** compuerta por final_decision (level1 ya no decide), DdosShadowPolicy POR VÍCTIMA:
-  m=5, k/n=3/5, hold=30 s (defectos de LABORATORIO, en el JSON con rangos). Registra INICIO/FIN; no bloquea.
+---
 
-## Medido en vivo (DAY294, relojes de las VMs sincronizados por NTP)
+### P3. Valores por defecto para un cliente real
 
-E2E de ataque (reflexión NTP .50 -> .1 a 60 pps durante 90 s, con un inocente concurrente .51 -> .1 a 10 pps):
-| Medida | Valor |
-|---|---|
-| Primer DROP tras el inicio del ataque | ~1,3 s |
-| INICIO de la sombra tras el primer DROP | 2 s de reloj de eventos (k=3 ventanas) |
-| FIN tras el último DROP | 29,3 s (hold=30) |
-| Eventos DROP | 5357, todos de 192.168.100.50 |
-| Eventos DROP del inocente concurrente | 0 |
-| p1 mínimo / ratio máximo | 0,96 / 7,05 |
+* **Recomendación:** Establecer una calibración automática basada en percentiles históricos del tráfico del cliente, combinada obligatoriamente con la aprobación final del operador humano.
+* **Medida propuesta:** Realizar una auditoría pasiva del tráfico del cliente durante 7 días continuos, calculando el percentil 99 del `victim_rate_ratio` para determinar $K$ y la desviación estándar para el parámetro de hold.
+* **Predicción numérica:** El umbral $K$ calibrado absorberá al menos el **99,9%** del tráfico normal en un entorno hospitalario sin generar falsas alarmas de sombra.
+* **Qué la refutaría:** Que durante la primera semana de monitorización pasiva se acumulen más de **3 falsos positivos** catalogados formalmente por el personal técnico.
 
-Corrida benigna que PRESIONA la etapa 1 con tráfico nunca visto en entrenamiento (base .51 durante 450 s + dnsperf real
-contra el resolver del lab a 30 y 100 consultas/s + subida TCP legítima de 50 KB/s):
-| Tramo | Filas bajo presión (etapa 1) | Positivos etapa 2 | INICIO |
-|---|---|---|---|
-| dns 30 q/s | ~3600 | 1 | 0 |
-| dns 100 q/s | ~9900 | 1 | 0 |
-| TCP 50 KB/s | ~4500 | 0 | 0 |
-Los 2 positivos son aislados; la política k=3 de 5 los absorbe. El bosque viejo (antes de esta rama) marcaba como
-ataque el 100 % de una subida TCP legítima de 50 KB/s.
+---
 
-## Límites conocidos (medidos, no ocultos)
+### P4. Mitigación real por víctima
 
-- La etapa 2 aprende FIRMAS de nuestros generadores (tamaño de paquete + firma de reflexión), no comportamiento. Con una
-  familia fuera del entrenamiento: sin ntp detecta ~0 %; sin syn marca ~99 % del TCP inocente.
-- Sensibilidad a la encapsulación (sonda +4/+24/+78 B en mean_packet_size): ver bloque1_day293.md.
-- Víctima fría (menos de 30 ventanas de historia): el modelo NO bloquea por diseño; queda para una regla fría del admin.
-- Fast-alert fuera de la decisión. El firewall no bloquea: la mitigación real es otro PR.
-- Lab: VirtualBox en un portátil, tasas <= ~110 pps sin pérdidas en el anillo. Nada de esto es hardware real.
+* **Recomendación:** Descartar selectivamente únicamente los flujos marcados por la Etapa 2 filtrando por tupla (IP origen, IP víctima) durante el periodo de hold, resguardando al inocente.
+* **Medida propuesta:** Conectar la salida de la sombra a una regla de firewall granular por tupla, midiendo simultáneamente el rendimiento en pps del cliente inocente `.51`.
+* **Predicción numérica:** El tráfico del inocente concurrente (`.51`) mantendrá exactamente **0 drops** (0% de pérdida de paquetes) durante toda la fase de ataque activo.
+* **Qué la refutaría:** Que el inocente experimente un solo evento de drop o un incremento de latencia superior al **5%** mientras el mecanismo de hold esté activo.
 
-## Hallazgos nuevos de DAY294 que afectan a lo siguiente
+---
 
-- **Dos bases de tiempo en event_timestamp:** los eventos de flujo llevan reloj MONOTÓNICO (desde el arranque, el de
-  eBPF) y otros eventos llevan epoch. Ya ha mordido tres veces: congeló el reloj de la sombra (corregido usando solo
-  eventos de flujo), dejó el 99 % de las filas de un día de logs fuera de rango en Parquet, y bajo dns100 el reloj de
-  eventos de la sombra avanzó ~0,55 s por segundo de pared y luego recuperó de golpe (¿cola o semántica?).
-- Hoy hemos activado `makestep 1 -1` en chrony (salto de reloj de pared si el desfase pasa de 1 s). Eso protege los
-  logs, pero hace que el reloj de PARED pueda saltar en cualquier momento.
-- Bajo carga DNS el firewall recibe ~37 eventos/s que no son de flujo (antes ~1 cada 30 s). Tipo aún sin identificar.
+### P5. Base de tiempo única (siguiente PR)
 
-## Preguntas
+* **Recomendación:** Utilizar `bpf_ktime_get_tai_ns` a nivel de kernel para el ordenamiento de eventos y métricas de duración, anclándolo al tiempo real en el espacio de usuario.
+* **Medida propuesta:** Implementar el uso de `bpf_ktime_get_tai_ns` en el programa eBPF y evaluar la estabilidad de los eventos ante saltos forzados de reloj de pared mediante `chronyc makestep`.
+* **Predicción numérica:** Cero alteraciones o saltos en las métricas de `time_to_block` y duraciones de hold estables ante un salto artificial de **2 segundos** del reloj del sistema.
+* **Qué la refutaría:** Que un salto temporal del sistema provoque inversiones en el orden de los logs o bloqueos prematuros con una desviación superior a **100 ms**.
 
-**P1. Etapa 2 por comportamiento.** ¿Qué rasgos POR VÍCTIMA o POR ORIGEN harían que la etapa 2 generalice a familias no
-vistas, en vez de memorizar tamaños? Candidatos nuestros: número de orígenes distintos por víctima en la ventana
-(source_ip_dispersion redefinido por víctima), cuota del origen sobre la tasa de la víctima, asimetría petición/respuesta.
-Pedimos: qué rasgo, cómo se calcularía en el sniffer sin coste por paquete, y qué resultado de "familia fuera" predecís.
+---
 
-**P2. Batería v3.** ¿Basta `bateria_v3_propuesta.md` (generadores con tamaños aleatorios, base mixta UDP+TCP, bases de
-distinto volumen, tasas no vistas 45/75/150) para medir P1, o falta un eje? ¿Qué corrida concreta la refutaría?
+### P6. Disyuntor de saturación
 
-**P3. Valores por defecto para un cliente real.** K=3 y m=5, k/n=3/5, hold=30 s son de laboratorio. ¿Cómo se fijan con
-el personal de un hospital? ¿Qué medida previa en su red (cuánto tiempo, qué percentiles de victim_rate_ratio) y qué
-criterio de aceptación? ¿Defectos fijos documentados o calibración inicial automática con aprobación humana?
-
-**P4. Mitigación real por víctima.** La sombra dice CUÁNDO una víctima está bajo ataque. ¿Qué se hace entonces sin
-castigar al inocente concurrente? Opciones: (a) limitar la tasa total hacia la víctima; (b) descartar solo los flujos que
-la etapa 2 marca, por origen y durante el hold; (c) filtrar por firma (puerto origen de servicio + tamaño) mientras dure el
-estado. ¿Cuál, y qué medida en el lab demostraría que el inocente .51 sigue pasando?
-
-**P5. Base de tiempo única (siguiente PR).** Opciones: (a) epoch en todo, convirtiendo en espacio de usuario con un
-ancla realtime-monotonic; (b) monotónico para ordenar y medir duraciones + ancla de arranque para cruzar nodos;
-(c) bpf_ktime_get_tai_ns en el kernel (Debian 12, kernel 6.1). Con `makestep 1 -1` el reloj de pared puede saltar: ¿cuál
-elegís para que `time_to_block`, los hold y el grafo no se rompan con un salto, y qué prueba lo demostraría?
-
-**P6. Disyuntor de saturación.** Si la tasa supera lo que una instancia procesa sin pérdidas (en el lab ~110 pps sin
-pérdida en el anillo), ¿qué debe hacer el sistema: degradar a una regla barata por víctima, avisar, o ambas? ¿Con qué
-umbral y medido cómo?
-
-## Formato de respuesta
-
-Por pregunta: recomendación en una línea; medida propuesta; predicción numérica; qué la refutaría. Máximo una página por
-pregunta. Si algo de lo medido os parece mal medido, decid cómo lo mediríais vosotros.
+* **Recomendación:** Implementar un mecanismo dual que emita alertas tempranas y degrade de forma automática a una regla estática por víctima en caso de saturación del anillo.
+* **Medida propuesta:** Monitorear de forma continua las pérdidas en el ring buffer del sniffer; si la tasa de pérdida supera el **0,1%** durante 3 ventanas consecutivas, conmutar la directiva a limitación estática.
+* **Predicción numérica:** El sistema mantendrá la estabilidad operativa con una degradación en el procesamiento inferior al **2%** bajo una sobrecarga sostenida de **500 pps**.
+* **Qué la refutaría:** Que el paso a la regla estática bloquee tráfico legítimo de la víctima en más de un **5%** de los flujos activos concurrentes.

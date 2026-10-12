@@ -1,114 +1,89 @@
-# Consejo de Sabios — DAY294: cabeza DDoS v2 en SOMBRA, medida en vivo
+# Consejo de Sabios — respuesta a DAY294
 
-Árbitro humano: Alonso. Regla: medir, no votar. Cada respuesta debe proponer una MEDIDA concreta y una PREDICCIÓN escrita
-(número esperado y qué la refutaría). Las opiniones sin medida asociada se registran pero no deciden.
+Firmamos cada bloque; quien firma, responde de la predicción. Somos: **Mireia** (sistemas, relojes, rendimiento), **Bruno** (modelo y estadística), **Yasmin** (tráfico y operadora), **Teo** (despliegue en cliente). Alonso: todo lo de abajo lleva medida, predicción y refutación; lo que no, va marcado como «registrado sin medida».
 
-## Qué os pedimos (en este orden de importancia)
+## 0. Auditoría adversaria de lo medido
 
-1. **Auditoría adversaria de lo medido.** Buscad dónde está mal medido, dónde la conclusión va más allá del dato y qué
-   confusor no hemos controlado. Ejemplo de lo que buscamos: ¿el 0 del inocente concurrente se debe a que la etapa 2
-   discrimina, o a que su pcap es demasiado distinto del atacante? Para cada fallo: cómo lo mediríais para confirmarlo.
-2. **Propuestas falsables para P1-P6.** No opiniones: qué medir, qué número esperáis y qué lo refutaría.
-3. **Prioridad.** De lo abierto, qué va primero y por qué. Contexto: la siguiente rama ya abierta es la base de tiempo
-   única (P5).
+**A1 — La contabilidad de paquetes no cierra (Bruno).** 60 pps × 90 s = 5400; el primer DROP llega a 1,3 s, luego lo máximo «dropeable» es 5400 − 78 ≈ 5322. Reportáis 5357: **35 de más**. Un generador a ~60,4 pps cierra la cuenta exacta (5435 − 78 = 5357); si no, hay eventos duplicados. *Medida:* pcap en .1 con hash de 5-tupla+longitud por paquete, cruzado con eventos DROP, 5 corridas. *Predicción:* si el pcap da 60,0 pps exactos, sobran ≥ 20 eventos en ≥ 4 corridas (duplicación; explicaría también parte de los 37 eventos/s). *Refutación:* cierre a ±2 en las 5 corridas.
 
-Lo que NO buscamos: votos, elogios, rediseños que contradigan lo ya medido sin traer una medida mejor. En P3 los valores
-para un cliente real se deciden con su personal: pedimos el MÉTODO de calibración, no los números.
+**A2 — El «0 inocentes» está confundido con la firma (Yasmin).** Es vuestro ejemplo literal: si el tráfico de .51 no comparte tamaño/puertos con la reflexión NTP, la etapa 2 puede discriminar por firma memorizada. *Medida:* corrida **gemelo**: .61 → .1 con paquetes idénticos en tamaño, protocolo y puertos al atacante, a 10 pps, concurrente con el ataque de 60 pps; variante a 60 pps. *Predicción:* gemelo a 10 pps → ≥ 50 % de filas positivas en etapa 2 (apuesto 60-90 %); gemelo a 60 pps → ≥ 95 %. *Refutación:* ≤ 5 % de positivos en el gemelo de 10 pps, en 10 corridas → la etapa 2 discrimina algo más que la firma (identificad qué rasgo: `flow_packet_count` sería «volumen memorizado», mejor que tamaño, pero aún no comportamiento).
 
-Adjuntos (leer en este orden):
-1. `bloque1_day293.md` — análisis offline: intervalos por corrida, formas de modelo, política del firewall, víctima fría.
-2. `bloque2_day294.md` — cableado en sombra y medidas en vivo.
-3. `bateria_v3_propuesta.md` — propuesta de la siguiente batería.
-4. `consejo_day292_sintesis.md` — lo que decidisteis la vez anterior (D5-D9) y cómo se aplicó.
+**A3 — FIN a 29,3 s con hold=30 (Mireia).** *Mecanismo sospechoso:* si el hold arranca en el **inicio de la ventana** que contiene al último DROP, FIN − último DROP = 30 − (offset dentro de la ventana), media 29,5. Encaja. *Medida:* log de `last_drop_ts`, `fin_ts` e inicio de la última ventana positiva, todo en monotónico, 10 corridas. *Predicción:* distribución 29,0-30,0 con media ≈ 29,5. *Refutación:* 30,0 ± 0,05 estable → el 29,3 era mezcla de relojes al medir.
 
-## Qué se ha hecho desde vuestra última revisión (DAY292)
+**A4 — El 0,55x del reloj de la sombra no está explicado y sesga todo lo medido bajo carga (Mireia).** Si es cola, los «2 s hasta INICIO» y los hold bajo dns100 están medidos con un reloj al 55 %; si no, es generación de timestamps. *Medida:* `enq_ts`/`deq_ts` monotónicos en todos los eventos; lag = deq − enq, histograma por segundo; contador de pérdidas del anillo. *Predicción:* bajo dns100 el lag crece ~0,45 s/s hasta decenas de segundos y se drena al terminar (cola); en reposo, lag p99 < 50 ms. *Refutación:* lag < 100 ms durante todo el dns100 → no es cola: es el timestamp. *Y de paso:* histograma por `type` de los 37 eventos/s. *Predicción:* ≥ 80 % de un solo tipo, escala lineal con flujos nuevos/s (pendiente ~0,3-0,4 por flujo: 37/100 encaja). *Refutación:* plano frente a la carga → temporizador, no ciclo de vida de flujos.
 
-Se aplicó vuestra síntesis: la forma del modelo se decidió por medida, el modelo no bloquea con la clave fría, la
-mitigación es POR VÍCTIMA, y el PR cerró con el firewall en SOMBRA. Resultado, mergeado en main con la etiqueta
-`pre-release-ddos-only-0.0.3` y EMECAS+++ en verde:
+**A5 — ¿El EWMA se congela de verdad durante el ataque? (Bruno).** Con τ=3600 y sin congelación, un ataque sostenido se convierte en baseline: a 70 pps sobre suelo 10, la ratio cae por debajo de 3 hacia el minuto ~15 y la sombra haría FIN en mitad del ataque. *Medida:* ataque de 20 min a 60 pps (barato) con la ratio por ventana registrada. *Predicción:* con la histéresis bien cableada, ratio ≥ 6,9 todo el rato; sin congelar, ratio < 3 hacia t ≈ 900 s. *Refutación:* ratio estable sin congelación aparente → identificad qué mantiene el baseline y documentadlo.
 
-- **Contrato v2 (8 rasgos calculados UNA vez en el sniffer, solo tráfico entrante):** syn_ack_ratio, mean_packet_size,
-  reflection_signature, packet_size_entropy, flow_packet_count, flow_completion_rate, victim_rate_ratio, victim_pps.
-  victim_rate_ratio = tasa de la víctima / EWMA por víctima con histéresis (K_in=3, K_out=1,5, τ=3600 s, caliente a
-  partir de 30 ventanas, suelo 10 pps).
-- **Modelo FACTORIZADO** (ganó por medida a la regla, al árbol único y al bosque plano):
-  - Etapa 1: victim_rate_ratio >= K (K=3, global, en el JSON del ml-detector).
-  - Etapa 2: RandomForest de 100 árboles sobre los 6 rasgos de flujo, entrenado SOLO con filas bajo presión, con el
-    arranque del atacante (~2 s) fuera del entrenamiento (se mide aparte como latencia).
-  - Exportado a C++ con umbrales crudos. Paridad Python/C++: 127930/127930.
-- **Firewall en SOMBRA:** compuerta por final_decision (level1 ya no decide), DdosShadowPolicy POR VÍCTIMA:
-  m=5, k/n=3/5, hold=30 s (defectos de LABORATORIO, en el JSON con rangos). Registra INICIO/FIN; no bloquea.
+**A6 — Todo el lab mide víctimas en el suelo de 10 pps (Teo).** Etapa 1 es relativa: con baseline caliente de 100 pps haría falta un ataque ≥ 300 pps para cruzar K=3 y el anillo muere a ~110. Los «1,3 s» no transfieren como pps absolutos, solo como múltiplo del baseline. *Medida (lo único factible en lab):* víctima caliente a 30 pps (60+ ventanas) + ataque de 80 pps + inocente 10 → ratio 3,0 exacto. *Predicción:* INICIO en ≤ 50 % de corridas (borde). *Refutación:* 10/10 o 0/10 → el borde está más abajo/arriba de lo que el modelo dice.
 
-## Medido en vivo (DAY294, relojes de las VMs sincronizados por NTP)
+## P1 — Etapa 2 por comportamiento (Bruno)
 
-E2E de ataque (reflexión NTP .50 -> .1 a 60 pps durante 90 s, con un inocente concurrente .51 -> .1 a 10 pps):
-| Medida | Valor |
-|---|---|
-| Primer DROP tras el inicio del ataque | ~1,3 s |
-| INICIO de la sombra tras el primer DROP | 2 s de reloj de eventos (k=3 ventanas) |
-| FIN tras el último DROP | 29,3 s (hold=30) |
-| Eventos DROP | 5357, todos de 192.168.100.50 |
-| Eventos DROP del inocente concurrente | 0 |
-| p1 mínimo / ratio máximo | 0,96 / 7,05 |
+**Recomendación:** tres rasgos **por origen**, calculados al cierre de ventana desde la tabla de flujos (cero coste por paquete): `origin_delta_ratio` (pps del origen frente a su propio EWMA por (origen→víctima), suelo 1 pps, τ corto 300-600 s), `share_of_pressure` (delta del origen / suma de deltas positivos de la víctima) y `new_origins_per_victim` (orígenes sin historia previa en la ventana).
 
-Corrida benigna que PRESIONA la etapa 1 con tráfico nunca visto en entrenamiento (base .51 durante 450 s + dnsperf real
-contra el resolver del lab a 30 y 100 consultas/s + subida TCP legítima de 50 KB/s):
-| Tramo | Filas bajo presión (etapa 1) | Positivos etapa 2 | INICIO |
-|---|---|---|---|
-| dns 30 q/s | ~3600 | 1 | 0 |
-| dns 100 q/s | ~9900 | 1 | 0 |
-| TCP 50 KB/s | ~4500 | 0 | 0 |
-Los 2 positivos son aislados; la política k=3 de 5 los absorbe. El bosque viejo (antes de esta rama) marcaba como
-ataque el 100 % de una subida TCP legítima de 50 KB/s.
+**Medida:** ya contáis por flujo; al cierre de ventana, para cada (origen→víctima) activo: pps_o, ewma_o, delta_o = pps_o − ewma_o; los tres números se adjuntan a cada fila de flujo de ese origen. Entrenar con ≥ 2 familias, validar con familia excluida (ICMP o SYN) + subida benigna nunca vista.
 
-## Límites conocidos (medidos, no ocultos)
+**Predicción:** familia excluida: ≥ 70 % de ventanas de ataque marcadas (hoy ~0-1 %), INICIO en ≤ 3 ventanas en ≥ 8/10 corridas; subida TCP benigna: ≤ 5 % de filas positivas y ≤ 2 ventanas consecutivas (absorbida por k/n 3/5).
 
-- La etapa 2 aprende FIRMAS de nuestros generadores (tamaño de paquete + firma de reflexión), no comportamiento. Con una
-  familia fuera del entrenamiento: sin ntp detecta ~0 %; sin syn marca ~99 % del TCP inocente.
-- Sensibilidad a la encapsulación (sonda +4/+24/+78 B en mean_packet_size): ver bloque1_day293.md.
-- Víctima fría (menos de 30 ventanas de historia): el modelo NO bloquea por diseño; queda para una regla fría del admin.
-- Fast-alert fuera de la decisión. El firewall no bloquea: la mitigación real es otro PR.
-- Lab: VirtualBox en un portátil, tasas <= ~110 pps sin pérdidas en el anillo. Nada de esto es hardware real.
+**Refutación:** familia excluida < 40 % de ventanas (no generaliza) o la subida benigna encadena ≥ 3 ventanas (INICIO falso: castiga a quien crece). Registrado: el delta por origen no cubre distribuido spoofeado (cada origen es nuevo); por eso va junto con `new_origins` y por eso P2 necesita el eje distribuido.
 
-## Hallazgos nuevos de DAY294 que afectan a lo siguiente
+## P2 — Batería v3 (Yasmin)
 
-- **Dos bases de tiempo en event_timestamp:** los eventos de flujo llevan reloj MONOTÓNICO (desde el arranque, el de
-  eBPF) y otros eventos llevan epoch. Ya ha mordido tres veces: congeló el reloj de la sombra (corregido usando solo
-  eventos de flujo), dejó el 99 % de las filas de un día de logs fuera de rango en Parquet, y bajo dns100 el reloj de
-  eventos de la sombra avanzó ~0,55 s por segundo de pared y luego recuperó de golpe (¿cola o semántica?).
-- Hoy hemos activado `makestep 1 -1` en chrony (salto de reloj de pared si el desfase pasa de 1 s). Eso protege los
-  logs, pero hace que el reloj de PARED pueda saltar en cualquier momento.
-- Bajo carga DNS el firewall recibe ~37 eventos/s que no son de flujo (antes ~1 cada 30 s). Tipo aún sin identificar.
+**Recomendación:** la v3 mide tamaños y volumen, pero faltan tres ejes y un tramo: **gemelo** (A2), **distribuido** (20 orígenes × 3 pps, sin firma NTP), **borde** (A6) y **saturación separada** del eje detección: 150 pps supera el anillo; instrumentar pérdidas y no mezclar esas métricas con detección.
 
-## Preguntas
+**Medida:** 10 corridas por eje; filas positivas por origen, INICIO/FIN, pérdidas del anillo, lag.
 
-**P1. Etapa 2 por comportamiento.** ¿Qué rasgos POR VÍCTIMA o POR ORIGEN harían que la etapa 2 generalice a familias no
-vistas, en vez de memorizar tamaños? Candidatos nuestros: número de orígenes distintos por víctima en la ventana
-(source_ip_dispersion redefinido por víctima), cuota del origen sobre la tasa de la víctima, asimetría petición/respuesta.
-Pedimos: qué rasgo, cómo se calcularía en el sniffer sin coste por paquete, y qué resultado de "familia fuera" predecís.
+**Predicción:** gemelo 10 pps: ≥ 50 % positivas con el modelo actual; distribuido sin firma: 0/10 INICIO hoy, ≥ 8/10 con `new_origins`; 150 pps: pérdidas del anillo > 0 en < 10 s; borde: INICIO ≤ 50 % de corridas.
 
-**P2. Batería v3.** ¿Basta `bateria_v3_propuesta.md` (generadores con tamaños aleatorios, base mixta UDP+TCP, bases de
-distinto volumen, tasas no vistas 45/75/150) para medir P1, o falta un eje? ¿Qué corrida concreta la refutaría?
+**Refutación (la corrida que la refuta):** si el modelo actual ya da ≥ 8/10 en el distribuido sin firma, mi modelo de «memorización de firma» está mal: identificad el rasgo responsable y protegedlo antes de tocar P1.
 
-**P3. Valores por defecto para un cliente real.** K=3 y m=5, k/n=3/5, hold=30 s son de laboratorio. ¿Cómo se fijan con
-el personal de un hospital? ¿Qué medida previa en su red (cuánto tiempo, qué percentiles de victim_rate_ratio) y qué
-criterio de aceptación? ¿Defectos fijos documentados o calibración inicial automática con aprobación humana?
+## P3 — Valores por defecto en cliente (Teo)
 
-**P4. Mitigación real por víctima.** La sombra dice CUÁNDO una víctima está bajo ataque. ¿Qué se hace entonces sin
-castigar al inocente concurrente? Opciones: (a) limitar la tasa total hacia la víctima; (b) descartar solo los flujos que
-la etapa 2 marca, por origen y durante el hold; (c) filtrar por firma (puerto origen de servicio + tamaño) mientras dure el
-estado. ¿Cuál, y qué medida en el lab demostraría que el inocente .51 sigue pasando?
+**Recomendación:** defectos documentados como arranque + calibración inicial medida con aprobación humana: captura en sombra de **14 días** (dos ciclos semanales) de victim_rate_ratio por víctima; K por víctima = p99.9; aceptación en holdout de 72 h; k/n y hold se negocian con el operativo (minutos de bloqueo falso tolerables por semana), no se miden en su red.
 
-**P5. Base de tiempo única (siguiente PR).** Opciones: (a) epoch en todo, convirtiendo en espacio de usuario con un
-ancla realtime-monotonic; (b) monotónico para ordenar y medir duraciones + ancla de arranque para cruzar nodos;
-(c) bpf_ktime_get_tai_ns en el kernel (Debian 12, kernel 6.1). Con `makestep 1 -1` el reloj de pared puede saltar: ¿cuál
-elegís para que `time_to_block`, los hold y el grafo no se rompan con un salto, y qué prueba lo demostraría?
+**Medida:** p50/p95/p99/p99.9 por víctima, % de víctimas calientes, ventanas bajo presión/día; replay de los 14 días con el K propuesto, cada INICIO adjudicado por humano; coste de revisión humano ≤ 2 h por despliegue.
 
-**P6. Disyuntor de saturación.** Si la tasa supera lo que una instancia procesa sin pérdidas (en el lab ~110 pps sin
-pérdida en el anillo), ¿qué debe hacer el sistema: degradar a una regla barata por víctima, avisar, o ambas? ¿Con qué
-umbral y medido cómo?
+**Predicción:** ≥ 80 % de víctimas calientes con p99.9 ≤ 2,0 y ≤ 1 % de ventanas bajo presión al día; K=3 global resistirá sin ajuste para ≥ 70 % de las víctimas (las víctimas de backups nocturnos fallarán: para eso está el K por víctima).
 
-## Formato de respuesta
+**Refutación:** ≥ 25 % de víctimas con p99.9 > 2,5 → el K global 3 no vale para ese cliente (no refuta el método: exige K por víctima). Criterio de aceptación: 0 INICIO en el holdout de 72 h, ≤ 1 INICIO adjudicado en el replay.
 
-Por pregunta: recomendación en una línea; medida propuesta; predicción numérica; qué la refutaría. Máximo una página por
-pregunta. Si algo de lo medido os parece mal medido, decid cómo lo mediríais vosotros.
+## P4 — Mitigación real por víctima (Yasmin)
+
+**Recomendación:** limitación **jerárquica** durante el estado de la víctima: cupo total ≈ 2× EWMA de la víctima + cupo por origen (máx(c × EWMA del origen, mínimo documentado)); la opción (b) solo como acelerador, nunca decisión única, porque la etapa 2 hoy memoriza firmas (vuestro 99 % de TCP inocente en familia-fuera lo dice). La (c) es la memorización convertida en arma; la (a) sola castiga al inocente proporcionalmente.
+
+**Medida:** PR de mitigación real: ataque 60 pps (.50) + inocente .51 a 10 pps, familia idéntica y gemelo, 90 s; métricas: entrega del inocente (entregado/ofertado), entrega del atacante, latencia INICIO→aplicación, recuperación tras FIN; comparativa con (a) sola.
+
+**Predicción:** jerárquica: inocente ≥ 90 %, atacante ≤ 5 %, recuperación ≤ 2 s; (a) sola: inocente ≤ 35 % (20 pps repartidos 10/70) — ese número descarta (a) como única medida.
+
+**Refutación:** inocente < 80 % o atacante > 15 % con la jerárquica; o memoria por origen > 64 MB con 10 000 orígenes simulados → top-N + bucket por defecto, y medir si el inocente cae al bucket (predigo que no: 10 pps sostenidos rankean alto en top-1024).
+
+## P5 — Base de tiempo única (Mireia) — va primera
+
+**Recomendación:** opción **(b) endurecida**: MONOTÓNICO como única base para ventanas, hold, `time_to_block` y orden del grafo; epoch solo en el borde (Parquet, UI) vía ancla por nodo (arranque + re-anclaje en cada salto detectado) y evento `CLOCK_STEP`. Descartar (c): `bpf_ktime_get_tai_ns` existe en 6.1, pero TAI = realtime − tai_offset, así que **cada makestep salta TAI igual** (solo os salva de leap seconds, no de `makestep 1 -1`).
+
+**Medida:** detector de salto (|Δreal − Δmono| > 10 ms → re-ancla + CLOCK_STEP); suite de inyección: ataque de 90 s con salto de +8 s en t=45 s (`date -s`), FIN medido por observador externo (pcap en otra VM con reloj independiente), % de filas Parquet en rango; contar saltos/día en este VBox.
+
+**Predicción:** con (b): FIN = 30 ± 0,5 s en 20/20 corridas con salto, `time_to_block` cambia < 0,1 s, Parquet 100 %, 1 CLOCK_STEP por salto; con epoch-en-todo: FIN se desvía exactamente el salto (≈ 22 o 38 s) en ≥ 19/20. En VBox espero 0-5 saltos/día en reposo y > 10 bajo carga de CPU.
+
+**Refutación:** una sola corrida con (b) donde FIN se desvíe > 0,5 s o el orden de eventos se rompa → hay epoch filtrado en un temporizador. Nota: el 0,55x no lo arregla P5 (es cola o timestamps: A4); lo arregla el lag de A4 y agregar DROPs por (origen, ventana).
+
+## P6 — Disyuntor de saturación (Mireia)
+
+**Recomendación:** **ambas**: degradar Y avisar, con umbral de **cola** (transfiere entre hardware), no de pps: degradado si lag p99 > 500 ms o pérdidas de anillo > 0 en la ventana; en degradado, etapa 1 + regla barata por víctima (ratio + orígenes nuevos) sostiene la sombra, se suspende la inferencia por flujo, DROPs agregados por (origen, ventana), evento `SATURACION`; salida con lag p99 < 100 ms durante 3 ventanas.
+
+**Medida:** escalera 30/60/80/100/110/150 pps, 120 s por peldaño, con lag y pérdidas instrumentados; más una corrida con degradación forzada (retardo artificial en el consumidor) lanzando un ataque de 60 pps: comprobar INICIO ≤ 5 s por la regla y volumen de eventos plano.
+
+**Predicción:** con eventos por paquete, el cruce de lag p99 > 500 ms está entre 80 y 110 pps (encaja con vuestro ~110 y con dns100); agregando por (origen, ventana) (5357 → ~90 eventos), el cruce baja de la capacidad del anillo: el techo pasa a ser el anillo, no el procesado.
+
+**Refutación:** lag p99 < 100 ms a 110 pps con eventos por paquete → el 0,55x de dns100 no es capacidad y este umbral quedaría calibrado con un confusor; o la regla no da INICIO en la corrida degradada → la regla barata es insuficiente y los rasgos de P1 deben entrar también en ella.
+
+## Prioridad
+
+1. **A1 + A2 hoy mismo** (son corridas, no código): protegen el titular «0 inocentes» y la contabilidad antes de escribir nada encima.
+2. **P5 + instrumentación de A4** (la rama ya abierta): sin reloj y cola creíbles, la v3 mediría ruido; makestep y el 0,55x tocan todos los números por tomar.
+3. **P1 + P2** con los ejes gemelo/distribuido/borde; la escalera de P6 en la misma semana (mismos instrumentos).
+4. **P4 solo cuando familia-fuera ≥ 60 %**: activar mitigación con la etapa 2 actual sería convertir vuestro 99 % de TCP inocente en bloqueos reales.
+5. **P3 en paralelo desde ya** si hay cliente: la captura de 14 días cuesta tiempo de pared, no desarrollo; los números se deciden al final.
+
+Registrado como decisiones propuestas (continuando D5-D9): **D10** = P5-(b) + ancla/CLOCK_STEP + inyección de saltos; **D11** = lag enq/deq en todos los eventos; **D12** = corrida gemelo + cierre de contabilidad; **D13** = rasgos por origen de P1; **D14** = v3 + ejes gemelo/distribuido/borde con saturación separada; **D15** = mitigación jerárquica tras P1; **D16** = captura de 14 días en cliente iniciada en paralelo.
+
+— Mireia, Bruno, Yasmin y Teo.
