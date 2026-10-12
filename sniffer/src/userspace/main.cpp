@@ -593,6 +593,7 @@ int main(int argc, char* argv[]) {
         sniffer::SnifferConfig sniffer_config;
         sniffer_config.node_id = g_config.node_id;
         sniffer_config.cluster_name = g_config.cluster_name;
+        sniffer_config.timebase = g_config.timebase;  // [TIMEBASE-D295]
 
         // Mapear buffers
         sniffer_config.buffers.ring_buffer_entries = g_config.buffers.ring_buffer_entries;

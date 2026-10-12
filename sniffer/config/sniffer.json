@@ -274,6 +274,14 @@
       "map_update_batch_size": 100
     }
   },
+  "timebase": {
+    "_doc": "[TIMEBASE-D295] Contrato temporal v1 (docs/timebase/contrato_temporal_day295.md). Base interna CLOCK_MONOTONIC; event_timestamp = mono_ns + ancla (REALTIME - MONOTONIC). anchor_period_s [0,1-60]: cada cuanto se relee el ancla. step_threshold_s [0,001-10]: cambio del ancla que se registra como [CLOCK-STEP]. slew_window_s [1-300], >= anchor_period_s: ventana para medir MONOTONIC frente a MONOTONIC_RAW. slew_ppm_threshold [1000-500000]: |ppm| por encima = correccion gradual, aviso [CLOCK-SLEW] y clock_state SLEWING. stepped_recent_s [1-3600]: tiempo en clock_state STEPPED tras un salto. Si un campo falta, no es numerico o esta fuera de rango: defecto + [CONFIG-DEFAULT]; el sniffer arranca igual. Valores de LABORATORIO medidos DAY295: base -1876 ppm, correccion gradual +81300 ppm, R-M estable < 0,00001 s en reposo. La linea [TIMEBASE] del log muestra los valores activos.",
+    "anchor_period_s": 1.0,
+    "step_threshold_s": 0.05,
+    "slew_window_s": 10.0,
+    "slew_ppm_threshold": 10000.0,
+    "stepped_recent_s": 60.0
+  },
   "user_space": {
     "flow_table_size": 1000000,
     "time_window_buffer_size": 10000,
