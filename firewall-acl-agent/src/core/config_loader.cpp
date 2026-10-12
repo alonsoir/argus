@@ -161,7 +161,7 @@ FirewallAgentConfig ConfigLoader::load_from_file(const std::string& config_path,
         ::mldefender::firewall::DdosShadowParams d;
         const Json::Value s = root.isMember("ddos_shadow") ? root["ddos_shadow"] : Json::Value(Json::nullValue);
         if (!s.isObject()) {
-            std::cerr << "[CONFIG-DEFAULT] ddos_shadow ausente o no es un objeto: enabled=true m=5 k=3 n=5 hold_s=30\n";
+            std::cerr << "[CONFIG-DEFAULT] ddos_shadow ausente o no es un objeto: enabled=true m=5 k=3 n=5 hold_windows=30\n";
         } else {
             auto get_int = [&s](const char* name, int def, int lo, int hi) -> int {
                 if (s.isMember(name) && s[name].isInt() && s[name].asInt() >= lo && s[name].asInt() <= hi) {
@@ -179,8 +179,14 @@ FirewallAgentConfig ConfigLoader::load_from_file(const std::string& config_path,
             d.m = get_int("m", 5, 1, 1000);
             d.n = get_int("n", 5, 1, 60);
             d.k = get_int("k", d.n < 3 ? d.n : 3, 1, d.n);
-            d.hold_s = get_int("hold_s", 30, 1, 3600);
+            if (s.isMember("hold_s")) {  // [TIMEBASE-D295]
+                std::cerr << "[CONFIG-DEFAULT] ddos_shadow.hold_s esta obsoleto: renombrado a hold_windows "
+                             "(ventanas de 1 s de CLOCK_MONOTONIC del sniffer); se ignora hold_s\n";
+            }
+            d.hold_windows = get_int("hold_windows", 30, 1, 3600);  // [TIMEBASE-D295]
             d.resumen_s = get_int("resumen_s", 10, 1, 3600);  // [DDOS-SHADOW-OBS-D293]
+            d.lag_max_valid_s = get_int("lag_max_valid_s", 600, 1, 86400);  // [TIMEBASE-D295]
+            d.anomalias_detalle_max = get_int("anomalias_detalle_max", 10, 0, 1000);  // [TIMEBASE-D295]
         }
         config.ddos_shadow = d;
     }

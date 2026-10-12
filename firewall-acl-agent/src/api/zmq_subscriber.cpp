@@ -585,10 +585,12 @@ void ZMQSubscriber::handle_message(const void* msg_data, size_t msg_size) {
     // certificada; DAY285: las cabezas no certificadas no cuentan, level1 ya no decide). Este PR va en SOMBRA: los DROP
     // alimentan la política por víctima, que solo REGISTRA. Todo evento recibido avanza el reloj de la sombra.
     {
-        const int64_t ts_s = static_cast<int64_t>(event.event_timestamp().seconds());
-        // [DDOS-SHADOW-RELOJ-D293] un solo reloj: el de los eventos de FLUJO (monotónico desde el arranque). Otros
-        // tipos de evento llegan con event_timestamp en epoch (DEBT-EVENT-TIMESTAMP-TIMEBASE-001) y no lo mueven.
-        const bool es_flujo = (event.event_kind() == protobuf::EVENT_KIND_FLOW);
+        // [TIMEBASE-D295] reloj de la sombra = time_context.mono_ns / 1e9 (segundos enteros de CLOCK_MONOTONIC del
+        // sniffer; 1 ventana = 1 s, inmune a saltos del reloj de pared). Un time_context ausente o anomalo NO entra en
+        // ninguna ventana (ver tb_validar_time_context). Siguen contando solo los eventos de FLUJO (D293).
+        const bool tc_ok = tb_validar_time_context(event);
+        const int64_t ts_s = tc_ok ? static_cast<int64_t>(event.time_context().mono_ns() / 1000000000ULL) : 0;
+        const bool es_flujo = tc_ok && (event.event_kind() == protobuf::EVENT_KIND_FLOW);
         {  // [DDOS-SHADOW-OBS-D293] contadores y resumen periódico por reloj de pared, siempre visible (std::cout)
             const std::string fd = event.has_provenance() ? event.provenance().final_decision() : std::string();
             if (es_flujo) {  // [DDOS-SHADOW-RELOJ-D293] rango de ts solo de los eventos de flujo
@@ -612,6 +614,28 @@ void ZMQSubscriber::handle_message(const void* msg_data, size_t msg_size) {
                           << " ALLOW=" << sombra_allow_ << " otro_o_vacio=" << sombra_otro_
                           << " ts_evento_min=" << sombra_ts_min_ << " ts_evento_max=" << sombra_ts_max_
                           << " victimas_activas=" << ddos_shadow_.victims() << std::endl;
+                {  // [TIMEBASE-D295] retraso sniffer->firewall y anomalias de tiempo del periodo
+                    uint64_t total = 0;
+                    std::ostringstream o;
+                    o << "[TIMEBASE] resumen: retraso_sniffer_fw n=" << tb_lag_n_ << " media_ms="
+                      << (tb_lag_n_ ? tb_lag_suma_ms_ / static_cast<double>(tb_lag_n_) : 0.0)
+                      << " max_ms=" << tb_lag_max_ms_ << " anomalias:";
+                    for (int i = 0; i < kTbCausas; ++i) {
+                        o << " " << kTbCausaNombre[i] << "=" << tb_anom_[i];
+                        total += tb_anom_[i];
+                        tb_anom_[i] = 0;
+                        tb_detalle_[i] = 0;
+                    }
+                    std::cout << o.str() << std::endl;
+                    if (total > 0) {
+                        std::cerr << "[TIMEBASE-ANOMALIA] " << total
+                                  << " eventos con tiempo anomalo en el periodo, fuera de las ventanas: " << o.str()
+                                  << std::endl;
+                    }
+                    tb_lag_n_ = 0;
+                    tb_lag_suma_ms_ = 0.0;
+                    tb_lag_max_ms_ = 0.0;
+                }
                 sombra_eventos_ = 0;
                 sombra_flujo_ = 0;
                 sombra_drop_ = 0;

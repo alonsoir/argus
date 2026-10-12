@@ -1,7 +1,9 @@
 // [DDOS-SHADOW-D293] Política del firewall POR VÍCTIMA en SOMBRA (bloque 1c DAY293, docs/ml-heads/bloque1_day293.md).
 // Réplica exacta de scripts/d293_politica.py: víctima = {dst_ip, proto}; ventanas de 1 s (segundos de la marca de tiempo
 // del EVENTO); ventana positiva si eventos DROP >= m; INICIO cuando hay k positivas en las últimas n ventanas; FIN cuando
-// w - última_positiva >= hold_s (y se vacía la cola). Solo REGISTRA: no toca ipset ni iptables.
+// w - última_positiva >= hold_windows (y se vacía la cola). Solo REGISTRA: no toca ipset ni iptables.
+// [TIMEBASE-D295] desde el contrato temporal v1 la marca es time_context.mono_ns / 1e9 (segundos enteros de
+// CLOCK_MONOTONIC del sniffer): 1 ventana = 1 s y un salto del reloj de pared no mueve las ventanas.
 // Uso: advance(ts) con TODO evento recibido (reloj monótono) y add_drop(...) con cada evento final_decision == "DROP".
 // No es thread-safe: la usa solo el hilo receptor del ZMQSubscriber.
 #pragma once
@@ -25,8 +27,10 @@ struct DdosShadowParams {
     int m = 5;
     int k = 3;
     int n = 5;
-    int hold_s = 30;
+    int hold_windows = 30;  // [TIMEBASE-D295] ventanas (1 ventana = 1 s de CLOCK_MONOTONIC) sin positiva para FIN
     int resumen_s = 10;  // [DDOS-SHADOW-OBS-D293] segundos entre resúmenes (reloj de pared)
+    int lag_max_valid_s = 600;       // [TIMEBASE-D295] retraso sniffer->firewall maximo valido (s)
+    int anomalias_detalle_max = 10;  // [TIMEBASE-D295] anomalias detalladas por causa y periodo de resumen
 };
 
 struct DdosShadowRecord {
@@ -62,7 +66,7 @@ public:
             return out;
         }
         clock_ = now_s;
-        const int64_t limit = static_cast<int64_t>(p_.n) + static_cast<int64_t>(p_.hold_s) + 1;
+        const int64_t limit = static_cast<int64_t>(p_.n) + static_cast<int64_t>(p_.hold_windows) + 1;
         for (auto it = st_.begin(); it != st_.end();) {
             State& s = it->second;
             while (s.next_w < now_s) {
@@ -191,7 +195,7 @@ private:
             s.blocked = true;
             s.start = w;
             out.push_back(make(s, true, w, w));
-        } else if (s.blocked && w - s.last_pos >= p_.hold_s) {
+        } else if (s.blocked && w - s.last_pos >= p_.hold_windows) {
             out.push_back(make(s, false, s.start, w));
             s.blocked = false;
             s.q.clear();

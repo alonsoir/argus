@@ -40,6 +40,7 @@
 
 #include <chrono>  // [DDOS-SHADOW-OBS-D293]
 #include "firewall/ddos_shadow_policy.hpp"  // [DDOS-SHADOW-D293]
+#include "firewall/timebase_lite.hpp"  // [TIMEBASE-D295]
 #include "firewall/batch_processor.hpp"
 #include "firewall/logger.hpp"
 #include "firewall/etcd_client.hpp"
@@ -357,6 +358,78 @@ private:
     int64_t sombra_ts_min_ = 0;
     int64_t sombra_ts_max_ = 0;
     bool sombra_primer_drop_ = false;
+    // [TIMEBASE-D295] validacion de time_context y retraso sniffer->firewall (contrato temporal v1).
+    // Todo evento anomalo queda FUERA de las ventanas: puede ser un fallo nuestro, un productor sin contrato o un
+    // componente comprometido; se registra para estudiarlo, nunca se castiga a la IP del paquete.
+    static constexpr int kTbCausas = 8;
+    static constexpr const char* kTbCausaNombre[kTbCausas] = {
+        "sin_time_context", "version", "mono_cero", "boot_id", "futuro",
+        "retraso_otro_boot", "retraso_negativo", "retraso_absurdo"};
+    std::string tb_boot_id_propio_;
+    uint64_t tb_anom_[kTbCausas] = {};
+    uint64_t tb_detalle_[kTbCausas] = {};
+    uint64_t tb_lag_n_ = 0;
+    double tb_lag_suma_ms_ = 0.0;
+    double tb_lag_max_ms_ = 0.0;
+
+    void tb_detallar(int causa, const ::protobuf::NetworkSecurityEvent& ev, const std::string& valor) {
+        ++tb_anom_[causa];
+        if (tb_detalle_[causa] >= static_cast<uint64_t>(config_.ddos_shadow.anomalias_detalle_max)) return;
+        ++tb_detalle_[causa];
+        const auto& nf = ev.network_features();
+        std::cerr << "[TIMEBASE-ANOMALIA] causa=" << kTbCausaNombre[causa] << " event_id=" << ev.event_id()
+                  << " nodo=" << ev.originating_node_id() << " kind=" << static_cast<int>(ev.event_kind())
+                  << " src=" << nf.source_ip() << " dst=" << nf.destination_ip()
+                  << (valor.empty() ? "" : " ") << valor << std::endl;
+    }
+
+    // Devuelve true si el evento puede entrar en las ventanas; mide el retraso de los validos.
+    bool tb_validar_time_context(const ::protobuf::NetworkSecurityEvent& ev) {
+        namespace tl = ::mldefender::firewall::timebase_lite;
+        if (tb_boot_id_propio_.empty()) tb_boot_id_propio_ = tl::read_boot_id();
+        const uint64_t ahora = tl::mono_now_ns();
+        if (!ev.has_time_context()) {
+            tb_detallar(0, ev, "");
+            return false;
+        }
+        const auto& tc = ev.time_context();
+        if (tc.time_contract_version() != 1) {
+            tb_detallar(1, ev, "version=" + std::to_string(tc.time_contract_version()));
+            return false;
+        }
+        if (tc.mono_ns() == 0) {
+            tb_detallar(2, ev, "");
+            return false;
+        }
+        if (tc.boot_id().size() != 36) {
+            tb_detallar(3, ev, "boot_id='" + tc.boot_id().substr(0, 40) + "'");
+            return false;
+        }
+        if (tc.boot_id() != tb_boot_id_propio_) {
+            tb_detallar(5, ev, "boot_id_evento=" + tc.boot_id() + " boot_id_firewall=" + tb_boot_id_propio_);
+            return false;
+        }
+        if (tc.mono_ns() > ahora) {
+            tb_detallar(4, ev, "mono_ns=" + std::to_string(tc.mono_ns()) + " ahora=" + std::to_string(ahora));
+            return false;
+        }
+        const uint64_t enviado = tc.sniffer_send_mono_ns();
+        if (enviado > ahora) {
+            tb_detallar(6, ev, "sniffer_send_mono_ns=" + std::to_string(enviado) + " ahora=" + std::to_string(ahora));
+            return false;
+        }
+        if (enviado != 0) {
+            const double ms = static_cast<double>(ahora - enviado) / 1e6;
+            if (ms > static_cast<double>(config_.ddos_shadow.lag_max_valid_s) * 1000.0) {
+                tb_detallar(7, ev, "retraso_ms=" + std::to_string(ms));
+                return false;
+            }
+            ++tb_lag_n_;
+            tb_lag_suma_ms_ += ms;
+            if (ms > tb_lag_max_ms_) tb_lag_max_ms_ = ms;
+        }
+        return true;
+    }
     std::chrono::steady_clock::time_point sombra_ultimo_resumen_{std::chrono::steady_clock::now()};
 
     std::unique_ptr<zmq::context_t> context_;  ///< ZMQ context
