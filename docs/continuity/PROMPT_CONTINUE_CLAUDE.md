@@ -37,3 +37,10 @@ Medidas de retraso: `bash /vagrant/scripts/timebase/tramos_identidad.sh N` (ulti
 - DEBT-FLOWUID-TIMEBASE-VERIFY-001; Variant B y herramientas sinteticas al contrato v1.
 - Rama de medidas y modelo (D18, D19, D21, luego D20). D22 cuando haya cliente.
 - Antes de publicar el post de DAY294 en LinkedIn: corregir "~1.3 s" por "~1-2 s".
+- Imagen endurecida y Falco (en algun momento, idealmente en la rama de estandarizacion): verificar el estado REAL antes
+  de afirmar nada en el README. Hay 11 reglas de Falco en vagrant/hardened-{x86,arm64}/scripts/setup-falco.sh (se
+  acordaron 13 en DAY133: ver cuales faltan), 7 perfiles AppArmor en security/apparmor/ y otro juego antiguo de 6 en
+  tools/apparmor/ (¿cual se instala?), targets hardened-full / hardened-redeploy / prod-full-x86 / check-prod-all
+  (incluye check-prod-falco). Ultimo verde conocido: abril 2026 (DAY134). Primero: `make hardened-full` desde VM
+  destruida, con prediccion escrita. Falco detecta pero no responde (no hay capa de respuesta). Despues, la seccion
+  "Runtime hardening" del README (borrador en el chat del DAY296).

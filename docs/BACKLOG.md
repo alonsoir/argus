@@ -7304,3 +7304,10 @@ Deudas nuevas:
 - DEBT-LAB-CHRONY-NO-AUTOSTEP-001 (matizada): en DAY296 chrony salto (+134 s) tras ~2 min; en DAY295 corrigio gradualmente.
 - Disco (decision de Alonso pendiente): Kali 62 GB, tdh-engine 16 GB, VMs experiment-* 11 GB, recrear argus-wazuh (76 GB;
   medir antes el uso interno), logs/rag 11 GB (rag deprecado; ver si rag-security lo lee), zips de CICDDoS2019 10,4 GB.
+- DEBT-HARDENED-REVERIFY-001: volver a pasar `make hardened-full` desde VM destruida (ultimo verde: abril 2026, DAY134;
+  desde entonces cambiaron proto, perfiles de compilacion y contrato temporal) antes de documentar la imagen endurecida.
+- DEBT-APPARMOR-DUPLICATE-PROFILES-001: dos juegos de perfiles AppArmor (security/apparmor/ con 7, tools/apparmor/ con
+  6 de nombre antiguo ml-defender-*). Medir cual instala setup-apparmor.sh y retirar el otro.
+- DEBT-FALCO-RULES-COUNT-001: setup-falco.sh tiene 11 reglas; en DAY133 se acordaron 13 (10 + 3 del Consejo:
+  config tamper, sustitucion de modelos/plugins, AppArmor tamper). Comprobar cuales faltan.
+- Falco detecta pero no responde: capa de respuesta (Falco -> firewall-acl-agent con respuesta por regla), futura.
