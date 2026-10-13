@@ -15,7 +15,7 @@
 
 aRGus NDR is a reproducible pipeline that drives network traffic through **four heterogeneous sensors** and correlates what they see into a queryable graph:
 
-- **aRGus** — an embedded ML classifier (the lens the project controls end to end)
+- **aRGus** — an embedded ML classifier with an eBPF/XDP sensor (the lens the project controls end to end)
 - **Suricata** — signature / rule-based detection
 - **Zeek** — protocol telemetry (observation, not verdict)
 - **Wazuh** — host-based (HIDS) telemetry
@@ -24,15 +24,21 @@ The three network sensors emit a `correlation_v1` contract → medallion **gold*
 
 The sensors are heterogeneous **by design** and complementary, not competitors: one classifies, one detects, one describes, one watches the host. The value of the instrument is characterizing that heterogeneity — the bias of each lens against ground truth — not normalizing it away.
 
+## Defensive by design
+
+aRGus exists to protect hospitals and civilian critical infrastructure. It is **defensive by design**: it observes, classifies and (in the future) blocks traffic on the perimeter it watches. It has no offensive capabilities — no counter-attack, no active scanning of third parties, no "hack-back" — and it never will. This is a statement of the project's purpose, not a restriction added to the license.
+
 ## The honest thesis
 
-This project began as an attempt to build an ML system that classifies network telemetry and acts on it autonomously. It ends as something more useful and less triumphant: **a complete, reproducible forensic record of how a system reporting F1 = 0.9985 on a curated subset was, operationally, carried by a heuristic fast-path with its ML head effectively blind on cross-distribution botnet traffic.**
+This project began as an attempt to build an ML system that classifies network telemetry and acts on it autonomously. The paper ends as something more useful and less triumphant: **a complete, reproducible forensic record of how a system reporting F1 = 0.9985 on a curated subset was, operationally, carried by a heuristic fast-path with its ML head effectively blind on cross-distribution botnet traffic.**
 
 That is an empirical confirmation, with traces, of what Sommer & Paxson argued in 2010 and Arp et al. in 2022. The failure here was **not** "ML for intrusion detection is impossible" — there is modest real signal (in-sample AUC ≈ 0.746) — it was **distribution transfer** (a model trained on CIC-IDS-2017 collapses to ≈ 0.0001 on CTU-13 Neris). Negative results in security ML are systematically under-published; this repository is the audit almost nobody runs, because there is no incentive to run it.
 
 For critical-infrastructure operators, a blind NDR that gives false confidence is worse than none. Saying so with data is the contribution.
 
-## Results, anchored
+**After the paper**, the work continues in the same spirit: the detection heads are being rebuilt **one at a time**, each with a measured contract, lab-generated training data and a written prediction before every measurement. Only a head that passes that bar is allowed to make decisions. Today that is **one head: DDoS** (see *Current state*).
+
+## Results of the paper, anchored
 
 Every number below is behind a `make` target (see *Reproduce the paper*); the exact outputs for the anchored run `20260804-080140` are committed under [`paper-artifacts/`](paper-artifacts/), readable without running anything. The [paper](https://arxiv.org/abs/2604.04952) carries the full treatment; this is the door.
 
@@ -50,6 +56,61 @@ Every number below is behind a `make` target (see *Reproduce the paper*); the ex
 
 - **True denominator** (tshark over the pcap): 14,255 botnet flows. **Lens-observable:** 14,188. The 0.47% gap (67 flows) never reached the replayed wire — verified across both capture stacks and Zeek's raw `conn.log` — a **replay-fidelity limit**, not a detection or pipeline gap.
 - **Provenance limit:** the CTU-13 Neris pcap is from 2011, third-party, captured under unknown conditions. We declare this and do not interpret beyond what tshark and the pipeline measure.
+
+These are the paper's results and they describe the pipeline **as it was in that run**. The sections below describe what has changed since.
+
+## Current state (after the paper)
+
+### DDoS head v2 — in shadow mode (tag `pre-release-ddos-only-0.0.3`)
+
+The DDoS head was rebuilt from scratch and is the **only head trusted to decide** (`final_decision`). The other models are still loaded but do not decide.
+
+- **Two stages.** Stage 1: per-victim rate ratio against its own baseline (`victim_rate_ratio ≥ 3`). Stage 2: a 100-tree Random Forest over 6 flow features, trained only on rows under pressure, exported to C++ with raw thresholds. Python/C++ parity: 127,930 / 127,930.
+- **Trained on lab-generated traffic** (a controlled battery of reflection/flood families at several rates), not on a public dataset.
+- **The firewall runs it in SHADOW mode** (`dry_run`): a per-victim policy (m = 5 DROP per 1 s window, k/n = 3/5 windows to start, 30 windows of hold to end) **records** START/END but **does not block**.
+
+Measured live in the lab (NTP reflection at 60 pps against a host, with an innocent concurrent sender at 10 pps):
+
+| Measure | Value |
+|---|---|
+| First DROP decision after the attack starts | 0.8–1.8 s |
+| Shadow START after the first DROP | 2 windows (k = 3) |
+| Shadow END after the last DROP | exactly 30 windows (also under ±5 s wall-clock jumps) |
+| DROP events | all from the attacker; 0 from the innocent sender |
+| Benign run pressing stage 1 (real `dnsperf` at 30/100 q/s + legitimate 50 KB/s TCP upload) | 0 START; 2 isolated positives in ~18,000 rows, absorbed by k = 3/5 |
+
+Known limits of this head (measured, not hidden):
+
+- **Stage 2 learns the signatures of our traffic generators** (packet size, reflection pattern), not behaviour. With a family left out of training, detection of that family drops to ~0%.
+- **"0 events from the innocent sender" shows that the head discriminates the type of traffic, not the sender.** The real test — a "twin" sending similar traffic from another address — is the next acceptance step.
+- **Cold victim:** with less than 30 windows of history the head does not decide, by design.
+- **The firewall does not block yet.** Real mitigation is a separate piece of work.
+- **Lab only:** VirtualBox VMs on a laptop, rates up to ~110 pps without ring losses. None of this is real hardware.
+
+### Time contract v1 — one time base for the whole pipeline (final acceptance in progress)
+
+A single field used to mix two clock bases (kernel monotonic and wall-clock epoch) depending on the event type. That froze the shadow's clock, corrupted Parquet data and made latencies unmeasurable. The time contract v1 fixes it:
+
+- **One internal base: `CLOCK_MONOTONIC`** for windows, hold and latencies. Wall-clock epoch is derived only at the edges (bronze, logs) through a **per-node anchor** (REALTIME − MONOTONIC).
+- **Clock events are detected and logged:** `[CLOCK-STEP]` (wall-clock jump, re-anchoring) and `[CLOCK-SLEW]` (gradual correction, MONOTONIC vs MONOTONIC_RAW).
+- Every event carries a `time_context` (`boot_id`, producer sequence, anchor, clock state, contract version). Events with anomalous time are **kept out of the decision windows** and logged for study, never punished on the packet's source IP.
+- **Latency is measured per hop** (sniffer → ML detector → firewall) and the parts add up exactly.
+
+Measured in the lab (production build, single node):
+
+| Measure | Value |
+|---|---|
+| Sniffer → firewall latency, at rest | mean 3.3–5.9 ms, max ≤ 11 ms |
+| Same, under a 60 pps attack | mean 2.2–7.6 ms, max ≤ 18.5 ms |
+| ±5 s wall-clock jumps mid-attack | detected (+4.9986 s / −5.0001 s); shadow END unaffected; 0 time anomalies |
+| Controlled clock slew (+5.3%) | detected at 52,994 ppm (expected 53,000); no false step |
+
+The contract is **single-node** (sensor, detector and firewall on the same host). A distributed deployment needs synchronized wall clocks (PTP) and a different design; that is future work.
+
+### Data quality
+
+- The Parquet validator now checks **every row**, not just the first one. Doing so revealed that 89% of the rows of the historical ML-detector Parquet (from 2026-03-08) carried timestamps in the wrong clock base; that data was discarded.
+- **Fast-alerts are excluded from the `correlation_v1` bronze** (`correlation_writer.include_fast_alerts = false`) until they are reliable: they carry no flow start time and fire roughly once per DNS packet.
 
 ## Reproduce the paper
 
@@ -101,11 +162,31 @@ xcode-select --install
 make up && make bootstrap    # first run ~20–30 min: builds llama.cpp, installs FAISS/ONNX/XGBoost/libsodium
 ```
 
+### Running the live lab
+
+The Makefile defaults to a **debug** build (`PROFILE ?= debug`), and `pipeline-start` launches the build of the profile it is given — not the last one compiled. To measure what would be deployed, build, test **and start** with the same profile:
+
+```bash
+make pipeline-build  PROFILE=production
+make test-components PROFILE=production
+make pipeline-stop
+make pipeline-start  PROFILE=production
+```
+
+If the host sleeps (e.g. the laptop is suspended), the VMs freeze and their wall clocks fall behind; chrony may take a couple of minutes to notice. Realign the lab clocks as soon as the host wakes up, before measuring:
+
+```bash
+make lab-clock-step     # chrony makestep on defender, then client; fails if the offset stays ≥ 1 ms
+```
+
+Component configuration lives in each component's JSON (`*/config/*.json`): every field documents its format and limits, and a missing or invalid field falls back to a validated default with a `[CONFIG-DEFAULT]` warning while the component keeps running.
+
 ## Architecture & review
 
 - **Generated documentation** (browsable): https://alonsoir.github.io/argus/
 - **Architecture decisions:** `docs/adr/`
 - **Living contracts** (Protobuf / JSON / RAG): `docs/contracts/`
+- **Time contract v1:** [`docs/timebase/contrato_temporal_day295.md`](docs/timebase/contrato_temporal_day295.md) (Spanish; §8 holds the measurements)
 - **Writing an attack driver:** [`docs/WRITING-A-DRIVER.md`](docs/WRITING-A-DRIVER.md)
 - **Code graph** (Graphify — on-device, Apache-2.0): a graph of the *source code*, distinct from the telemetry graph above. Kept by the author as a maintenance aid; **requires login**: https://app.graphify.com/aironman-labs/
 - The design was reviewed across eight independent models — the *Consejo de Sabios* (Claude, Grok, ChatGPT, DeepSeek, Qwen, Gemini, Kimi, Mistral) — as structured disagreement. The methodology is documented in §6 of the paper.
@@ -114,19 +195,19 @@ make up && make bootstrap    # first run ~20–30 min: builds llama.cpp, install
 
 Honesty as an engineering property, not an afterthought:
 
-- **Research artifact, not production.** The classifier alone (≤ 0.75 at best) cannot autonomously detect or stop DDoS or ransomware. The defensible deliverable is the *pipeline* that leans on multiple sensors to reconstruct what happened after an event on the perimeter it watches.
-- **Deferred hardening**, carried as known-and-deferred (not hidden): productive Vault, key rotation, real fault-injection, secure HMAC transport (HTTPS/Vault).
+- **Research artifact, not production.** Only the DDoS head is trusted to decide, and it runs in shadow mode: nothing is blocked yet. The other heads (ransomware, internal traffic, the original level-1 classifier) are not trusted and do not decide.
+- **Lab, not hardware.** Every live measurement comes from VirtualBox VMs on a laptop. Latencies, clock behaviour and the thresholds in the JSON files are lab-calibrated and must be measured again on real hardware.
+- **Single node.** The time contract assumes sensor, detector and firewall on one host. Distributed deployment (PTP-synchronized clocks) is future work.
+- **Fast-alerts are not reliable** and are excluded from the bronze contract until they are.
+- **Deferred hardening**, carried as known-and-deferred (not hidden): productive Vault, key rotation, real fault-injection, secure HMAC transport (HTTPS/Vault), and a reverse-engineering audit of the shipped binaries.
 - **Replay fidelity:** 0.47% of the offline-true botnet flows do not reach the replayed wire.
 - **Provenance:** the 2011 Neris pcap is third-party, captured under unknown conditions.
 
 ## History
 
-The full day-by-day engineering log (DAY 111–252) lives in [`docs/HITOS.md`](docs/HITOS.md). 
-It records what was understood on each day; many figures there were later refined or corrected (e.g. F1 = 0.9985 was anchored to the 646-flow behavioral subset). 
-It is **not** the current state of the pipeline.
+The day-by-day engineering log lives in [`docs/HITOS.md`](docs/HITOS.md) (DAY 111–252) and, for later days, in [`docs/BACKLOG.md`](docs/BACKLOG.md) and the design documents under `docs/`. They record what was understood on each day; many figures there were later refined or corrected (e.g. F1 = 0.9985 was anchored to the 646-flow behavioral subset). They are **not** a description of the current state of the pipeline — this README is.
 
-There is a docs/continuity/PROMPT_CONTINUE_CLAUDE.md file with the latest update to Claude. Give it to Claude to resume the development, 
-if someday you find something new correlated with Sommer and Paxon.
+[`docs/continuity/PROMPT_CONTINUE_CLAUDE.md`](docs/continuity/PROMPT_CONTINUE_CLAUDE.md) holds the latest working state and plan, written to resume development with Claude. If someday you find something new correlated with Sommer and Paxson, give it to Claude and continue.
 
 ## License
 
