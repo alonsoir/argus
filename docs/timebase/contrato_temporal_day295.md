@@ -192,3 +192,50 @@ periodo de 10 s; 0 anomalías en las 8 causas. Línea base para el 0,55x bajo dn
 Pendiente en esta rama: lab-clock-step; sellos mld_recv/mld_send del ml-detector (D17, partir el retraso en dos
 tramos); validador de Parquet sobre todas las filas; aceptación (saltos +-5 s, corrección gradual real, D15 A1/A2/A5);
 EMECAS+++, PR, merge.
+
+## 8. Anexo DAY296 — medido (rama fix/event-timestamp-timebase)
+
+### 8.1 Perfil del lab
+- El lab ejecutaba binarios de DEBUG (-O0) desde el 2026-10-11: pipeline-start usa build-$(PROFILE) (PROFILE ?= debug), no
+  build-active. Las medidas en reposo del DAY295 (12-26 ms) son de debug. Regla nueva: compilar, probar Y ARRANCAR con
+  PROFILE=production. set-build-profile.sh aceptaba debug|release (build-release no existia); ahora debug|production|tsan|asan.
+
+### 8.2 D17: retraso partido en tramos (mismo nodo, CLOCK_MONOTONIC)
+- ml-detector sella mld_recv_mono_ns (tras el recv, antes de descifrar) y mld_send_mono_ns (antes de serializar), solo si el
+  evento trae time_context. El firewall parte el retraso: sniffer_mld / mld_interno / mld_fw. Causas de anomalia nuevas:
+  8 mld_sin_sello, 9 mld_orden (sniffer_send <= mld_recv <= mld_send <= ahora). Identidad de tramos exacta (<= 0,0001 ms).
+- Hallazgo: el firewall escribia ~25 lineas DEBUG por evento a vboxsf con doble vaciado; logging.level del JSON se leia y no se
+  usaba. Arreglado ([LOG-LEVEL-D296], defecto info). Retraso sniffer->firewall en reposo, production:
+  log debug: media 14-39 ms, max 85 ms (mld_fw 8-25 ms)  ->  log info: media 3,3-5,9 ms, max <= 11 ms (mld_fw 0,3-2,4 ms).
+  Bajo ataque ntp 60 pps: media 2,2-7,6 ms, max <= 18,5 ms. Tramo dominante ahora: sniffer_mld (1,4-4,3 ms).
+
+### 8.3 Saltos de pared de +-5 s en mitad de un ataque (chrony parado)
+- Ataque ntp 60 pps (.50 -> .1) sobre base .51 10 pps; +5 s a los 43 s del ataque; -5 s a los 27,6 s del hold.
+- Sniffer: [CLOCK-STEP] +4,9986 s y -5,0001 s.
+- Sombra: primer DROP ventana 14399 (~1,7 s tras el inicio), INICIO 14401 (k=3), ultimo DROP 14489, FIN 14519 = 14489 + 30
+  (hold_windows exacto, sin efecto del salto de -5 s); 5364 DROP, todos de .50; 0 del inocente; 0 anomalias.
+- Bronce: inicios de flujo del atacante con hueco de 5,015 s (5 s + 1/60 s), es decir sigue al reloj de pared. El hueco
+  aparece 0,20 s despues del salto: anchor_period_s = 1,0, asi que tras un salto hasta 1 s de flujos lleva el ancla vieja.
+- El FIN se emitio 5,6 s de pared despues de su ventana: la sombra decide al llegar eventos y la base acababa justo en la
+  ventana 14519. El reloj de pared no gobierna la exportacion de flujos del sniffer (revisado en el codigo).
+
+### 8.4 Correccion gradual provocada (adjtimex, chrony parado)
+- tick 10030 (el de chrony) -> 10530 durante 90 s de monotonico (85,50 s de RAW): [CLOCK-SLEW] 52993,7 ppm (esperado 53000),
+  sin [CLOCK-STEP]; al restaurar, [CLOCK-SLEW] FIN ppm=2993,71 (la base del tick de chrony). Vuelta: un unico [CLOCK-STEP]
+  -4,27485 s = 90,0346 x (1 - 10030/10530), aplicado por chrony al arrancar. 0 anomalias.
+
+### 8.5 Suspension real del Mac
+- Mac dormido 118 s (pmset); la VM quedo 134 s atrasada. chrony lo detecto ~2 min despues de despertar y SALTO +133,994 s
+  (en DAY295 corrigio gradualmente 14 min: no siempre igual). Durante esos ~2 min la epoca del defender va 134 s atrasada.
+  Regla del lab: make lab-clock-step justo al despertar.
+
+### 8.6 Parquet y bronce
+- validate_roundtrip.py comprobaba solo la fila [0]: 32 ficheros del ml-detector (691461 de 774069 filas, 89 %) llevaban
+  timestamp_utc_ns monotonico desde 2026-03-08. Ahora se comprueban todas las filas; datos borrados. csv_writer esta
+  apagado desde DAY285: ese gate vigila un camino historico. El camino vivo es el bronce correlation_v1.
+- Bronce: 48 % de las filas eran fast-alerts con flow_start = 0 (sin tiempo). Fuera del bronce hasta que sean fiables
+  (correlation_writer.include_fast_alerts = false). Bajo replay DNS hay ~1 fast-alert por paquete.
+
+### 8.7 No verificado
+- Orden por (boot_id, producer_seq): ningun log ni el bronce llevan producer_seq.
+- El salto de -5 s en el bronce (cayo en el hold, solo con la base .51).

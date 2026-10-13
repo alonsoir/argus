@@ -7268,3 +7268,39 @@ por no instrumentado.
 - FUTURO (Alonso): instalación inmutable: sin compiladores, editores ni salida al exterior en el sitio; cambios solo
   por artefactos firmados con hash autorizado. Avisos [TIMEBASE-ANOMALIA] y [CONFIG-DEFAULT] hacia el admin (colores,
   Discord, correo) y LLM maestro que actúa tras un tiempo configurable, con override humano (ver DAY291).
+
+## DAY296 — fix/event-timestamp-timebase (contrato temporal v1, aceptacion parcial)
+Hecho y medido (detalle en docs/timebase/contrato_temporal_day295.md §8):
+- lab-clock-step (Makefile), probado OK y en fallo. D17 tramos sniffer_mld / mld_interno / mld_fw + causas 8 y 9.
+- [LOG-LEVEL-D296] logging.level del firewall conectado (defecto info): retraso medio 14-39 -> 3,3-5,9 ms.
+- [BUILD-PROFILE-D296] set-build-profile.sh con los perfiles del Makefile. Lab: PROFILE=production tambien al arrancar.
+- DEBT-PARQUET-VALIDATOR-FIRST-ROW-001 CERRADA: todas las filas; 32 dias monotonicos borrados (decision de Alonso).
+- [BRONZE-FASTALERT-D296] fast-alerts fuera del bronce hasta que sean fiables (decision de Alonso).
+- Saltos +-5 s en ataque, correccion gradual provocada y suspension real: aceptados (ver §8 del contrato).
+- Disco del Mac: 38 -> 199 GiB libres (RanSMAP, UNSW-NB15, TON_IoT y 9 boxes sin uso; docs/borrados_datasets_day296.md).
+
+Pendiente en esta rama (DAY297): D15 A1 contabilidad, A2 gemelo .61 (10 y 60 pps), A5 ataque largo (primero offline);
+EMECAS+++, PR, merge.
+
+Deudas nuevas:
+- DEBT-LAB-RUNTIME-STANDARD-001 (RAMA PROPIA tras esta, decision de Alonso): una sola forma de fijar perfil, ruta de config y
+  nivel de log en todos los componentes. Incluye: PROFILE vs build-active (DEBT-PROFILE-COHERENCE-001); build-debug escrito a
+  mano en Makefile 712, 1385, 1416, 1517, 1519, 1539; argus-network-isolate compila Debug fijo; config del firewall via enlace
+  en /etc/ml-defender; revisar logging.level en sniffer y ml-detector (hipotesis: tambien escriben DEBUG a vboxsf, tramo
+  sniffer_mld); doble vaciado por linea del logger del firewall; aviso periodico de [CONFIG-DEFAULT]; ficheros .hpp.broken en
+  firewall-acl-agent/include; en el client, /vagrant/*.sh da Permission denied (montaje sin noexec; causa sin medir).
+- DEBT-FW-IPSET-TESTS-SKIPPED-001 (RAMA PROPIA, decision de Alonso): 21 IPSetWrapperTest saltadas en test-components
+  (sospecha: dry_run / ipset). ¿Han corrido alguna vez en el lab?
+- DEBT-TIMEBASE-VALIDATOR-UNITTEST-001: tb_validar_time_context (10 causas) sin pruebas unitarias; solo E2E.
+- DEBT-SHADOW-FIN-EVENT-DRIVEN-001: el FIN de la sombra solo se emite al llegar un evento; en silencio se retrasa sin limite.
+- DEBT-SNIFFER-RANSOM-WINDOW-WALLTS-001: ring_consumer.cpp:1534 sella event_id/event_timestamp de la ventana de ransomware
+  con system_clock al emitir, no con epoca derivada del contrato v1.
+- DEBT-TIMEBASE-ORDER-OBSERVABILITY-001: producer_seq no aparece en ningun log ni en el bronce; el orden no es verificable.
+- DEBT-TIMEBASE-ANCHOR-PERIOD-001: anchor_period_s = 1,0 -> tras un salto, hasta 1 s de flujos con el ancla vieja.
+- DEBT-PARQUET-ML-TIMESTAMP-HISTORIC-001: revisar analisis pasados que usaran timestamp_utc_ns del Parquet del ml-detector
+  (89 % monotonico desde 2026-03-08; datos ya borrados).
+- DEBT-BRONZE-FASTALERT-ZERO-START-001 (mitigada): volver a incluir las fast-alerts cuando sean fiables, con epoca derivada.
+- DEBT-FIREWALL-NONFLOW-EVENTS-001: muy probable que sean fast-alerts (~1 por paquete DNS); confirmar por event_kind.
+- DEBT-LAB-CHRONY-NO-AUTOSTEP-001 (matizada): en DAY296 chrony salto (+134 s) tras ~2 min; en DAY295 corrigio gradualmente.
+- Disco (decision de Alonso pendiente): Kali 62 GB, tdh-engine 16 GB, VMs experiment-* 11 GB, recrear argus-wazuh (76 GB;
+  medir antes el uso interno), logs/rag 11 GB (rag deprecado; ver si rag-security lo lee), zips de CICDDoS2019 10,4 GB.
