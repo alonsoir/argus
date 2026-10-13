@@ -1,17 +1,18 @@
 #!/bin/bash
 # set-build-profile.sh
-# Activa perfil debug o release creando symlinks build-active → build-{profile}
-# Uso: sudo bash set-build-profile.sh debug | release
+# Activa un perfil de build creando symlinks build-active → build-{profile}
+# [BUILD-PROFILE-D296] perfiles = los del Makefile raiz (PROFILE ?= debug): debug | production | tsan | asan
+# Uso: sudo bash set-build-profile.sh debug | production | tsan | asan
 # Desde Mac: vagrant ssh -c "sudo bash /vagrant/etcd-server/config/set-build-profile.sh debug"
 
 set -euo pipefail
 set -o noclobber          # REC-2: prevenir truncado accidental con >
 
 PROFILE="${1:-}"
-if [[ "$PROFILE" != "debug" && "$PROFILE" != "release" ]]; then
-    echo "Uso: $0 debug | release"
-    exit 1
-fi
+case "$PROFILE" in  # [BUILD-PROFILE-D296]
+    debug|production|tsan|asan) ;;
+    *) echo "Uso: $0 debug | production | tsan | asan  (recibido: '${PROFILE}')"; exit 1 ;;
+esac
 
 COMPONENTS=(
     "/vagrant/etcd-server"
