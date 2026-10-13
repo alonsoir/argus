@@ -274,6 +274,7 @@ void ZMQHandler::run() {
             auto result = input_socket_->recv(encrypted_message, zmq::recv_flags::dontwait);
 
             if (result) {
+                mld_recv_mono_ns_ = mld_mono_now_ns();  // [TIMEBASE-D296] D17: antes de descifrar
                 std::string encrypted_data(
                     static_cast<char*>(encrypted_message.data()),
                     encrypted_message.size()
@@ -384,6 +385,12 @@ void ZMQHandler::process_event(const std::string& message) {
             std::lock_guard<std::mutex> lock(stats_mutex_);
             stats_.deserialization_errors++;
             return;
+        }
+
+        // [TIMEBASE-D296] D17: solo si el evento trae time_context; mutable_time_context() sobre un evento sin el
+        // crearia uno vacio con version 0 y el firewall lo clasificaria como 'version' en vez de 'sin_time_context'.
+        if (event.has_time_context()) {
+            event.mutable_time_context()->set_mld_recv_mono_ns(mld_recv_mono_ns_);
         }
 
         logger_->debug("📦 Event received: id={}", event.event_id());
@@ -996,6 +1003,10 @@ void ZMQHandler::process_event(const std::string& message) {
             }
         }
         // Send enriched event
+        // [TIMEBASE-D296] D17: sello de envio justo antes de serializar (serializacion+cifrado+envio -> tramo mld_fw)
+        if (event.has_time_context()) {
+            event.mutable_time_context()->set_mld_send_mono_ns(mld_mono_now_ns());
+        }
         send_enriched_event(event);
 
         // Stats

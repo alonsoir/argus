@@ -361,16 +361,23 @@ private:
     // [TIMEBASE-D295] validacion de time_context y retraso sniffer->firewall (contrato temporal v1).
     // Todo evento anomalo queda FUERA de las ventanas: puede ser un fallo nuestro, un productor sin contrato o un
     // componente comprometido; se registra para estudiarlo, nunca se castiga a la IP del paquete.
-    static constexpr int kTbCausas = 8;
+    static constexpr int kTbCausas = 10;  // [TIMEBASE-D296] +mld_sin_sello, +mld_orden
     static constexpr const char* kTbCausaNombre[kTbCausas] = {
         "sin_time_context", "version", "mono_cero", "boot_id", "futuro",
-        "retraso_otro_boot", "retraso_negativo", "retraso_absurdo"};
+        "retraso_otro_boot", "retraso_negativo", "retraso_absurdo", "mld_sin_sello", "mld_orden"};
     std::string tb_boot_id_propio_;
     uint64_t tb_anom_[kTbCausas] = {};
     uint64_t tb_detalle_[kTbCausas] = {};
     uint64_t tb_lag_n_ = 0;
     double tb_lag_suma_ms_ = 0.0;
     double tb_lag_max_ms_ = 0.0;
+    // [TIMEBASE-D296] D17: retraso partido en tramos (mismo nodo y boot_id, CLOCK_MONOTONIC):
+    // 0 sniffer->mld (red + espera hasta el recv), 1 mld interno (descifrado+parseo+inferencia),
+    // 2 mld->fw (serializacion+cifrado+red+descifrado en el firewall). n = tb_lag_n_.
+    static constexpr int kTbTramos = 3;
+    static constexpr const char* kTbTramoNombre[kTbTramos] = {"sniffer_mld", "mld_interno", "mld_fw"};
+    double tb_tramo_suma_ms_[kTbTramos] = {};
+    double tb_tramo_max_ms_[kTbTramos] = {};
 
     void tb_detallar(int causa, const ::protobuf::NetworkSecurityEvent& ev, const std::string& valor) {
         ++tb_anom_[causa];
@@ -418,6 +425,19 @@ private:
             tb_detallar(6, ev, "sniffer_send_mono_ns=" + std::to_string(enviado) + " ahora=" + std::to_string(ahora));
             return false;
         }
+        // [TIMEBASE-D296] D17: sellos del ml-detector; ausentes o desordenados -> fuera de las ventanas
+        const uint64_t m_rx = tc.mld_recv_mono_ns();
+        const uint64_t m_tx = tc.mld_send_mono_ns();
+        if (m_rx == 0 || m_tx == 0) {
+            tb_detallar(8, ev, "mld_recv_mono_ns=" + std::to_string(m_rx) + " mld_send_mono_ns=" + std::to_string(m_tx));
+            return false;
+        }
+        if ((enviado != 0 && enviado > m_rx) || m_rx > m_tx || m_tx > ahora) {
+            tb_detallar(9, ev, "sniffer_send_mono_ns=" + std::to_string(enviado) + " mld_recv_mono_ns=" +
+                                   std::to_string(m_rx) + " mld_send_mono_ns=" + std::to_string(m_tx) +
+                                   " ahora=" + std::to_string(ahora));
+            return false;
+        }
         if (enviado != 0) {
             const double ms = static_cast<double>(ahora - enviado) / 1e6;
             if (ms > static_cast<double>(config_.ddos_shadow.lag_max_valid_s) * 1000.0) {
@@ -427,6 +447,13 @@ private:
             ++tb_lag_n_;
             tb_lag_suma_ms_ += ms;
             if (ms > tb_lag_max_ms_) tb_lag_max_ms_ = ms;
+            const double tr[kTbTramos] = {static_cast<double>(m_rx - enviado) / 1e6,  // [TIMEBASE-D296]
+                                          static_cast<double>(m_tx - m_rx) / 1e6,
+                                          static_cast<double>(ahora - m_tx) / 1e6};
+            for (int t = 0; t < kTbTramos; ++t) {
+                tb_tramo_suma_ms_[t] += tr[t];
+                if (tr[t] > tb_tramo_max_ms_[t]) tb_tramo_max_ms_[t] = tr[t];
+            }
         }
         return true;
     }

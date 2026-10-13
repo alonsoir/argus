@@ -7,6 +7,7 @@
 #include <thread>
 #include <mutex>
 #include <chrono>
+#include <time.h>  // [TIMEBASE-D296] clock_gettime(CLOCK_MONOTONIC)
 #include <spdlog/spdlog.h>
 
 #include "feature_extractor.hpp"
@@ -123,6 +124,14 @@ private:
 
     // Stats
     mutable std::mutex stats_mutex_;
+    // [TIMEBASE-D296] D17: sello de recepcion (CLOCK_MONOTONIC, mismo reloj que bpf_ktime_get_ns del sniffer) tomado
+    // en run() justo tras el recv, ANTES de descifrar/descomprimir/parsear. Solo lo usa worker_thread_.
+    uint64_t mld_recv_mono_ns_ = 0;
+    static uint64_t mld_mono_now_ns() {
+        timespec ts{};
+        clock_gettime(CLOCK_MONOTONIC, &ts);
+        return static_cast<uint64_t>(ts.tv_sec) * 1000000000ULL + static_cast<uint64_t>(ts.tv_nsec);
+    }
     Stats stats_;
     std::chrono::steady_clock::time_point last_stats_report_;
 

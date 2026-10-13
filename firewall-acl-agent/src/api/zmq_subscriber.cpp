@@ -619,7 +619,15 @@ void ZMQSubscriber::handle_message(const void* msg_data, size_t msg_size) {
                     std::ostringstream o;
                     o << "[TIMEBASE] resumen: retraso_sniffer_fw n=" << tb_lag_n_ << " media_ms="
                       << (tb_lag_n_ ? tb_lag_suma_ms_ / static_cast<double>(tb_lag_n_) : 0.0)
-                      << " max_ms=" << tb_lag_max_ms_ << " anomalias:";
+                      << " max_ms=" << tb_lag_max_ms_;
+                    for (int t = 0; t < kTbTramos; ++t) {  // [TIMEBASE-D296] D17: tramos
+                        o << " " << kTbTramoNombre[t] << "_media_ms="
+                          << (tb_lag_n_ ? tb_tramo_suma_ms_[t] / static_cast<double>(tb_lag_n_) : 0.0)
+                          << " " << kTbTramoNombre[t] << "_max_ms=" << tb_tramo_max_ms_[t];
+                        tb_tramo_suma_ms_[t] = 0.0;
+                        tb_tramo_max_ms_[t] = 0.0;
+                    }
+                    o << " anomalias:";
                     for (int i = 0; i < kTbCausas; ++i) {
                         o << " " << kTbCausaNombre[i] << "=" << tb_anom_[i];
                         total += tb_anom_[i];
