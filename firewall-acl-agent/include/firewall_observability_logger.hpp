@@ -10,6 +10,7 @@
 #include <sstream>
 #include <chrono>
 #include <mutex>
+#include <atomic>  // [LOG-LEVEL-D296]
 #include <iomanip>
 #include <ctime>
 
@@ -42,6 +43,20 @@ public:
         LOG_ERROR,   // Error conditions
         LOG_CRASH    // Critical crashes
     };
+
+    // [LOG-LEVEL-D296] nivel minimo que se escribe; lo fija main.cpp con logging.level del JSON
+    void set_min_level(Level l) { min_level_.store(static_cast<int>(l), std::memory_order_relaxed); }
+    // Texto del JSON -> nivel. Admite: debug|info|batch|ipset|warn|error|crash. Devuelve false si no es valido.
+    static bool parse_level(const std::string& s, Level& out) {
+        if (s == "debug") { out = Level::LOG_DEBUG; return true; }
+        if (s == "info")  { out = Level::LOG_INFO;  return true; }
+        if (s == "batch") { out = Level::LOG_BATCH; return true; }
+        if (s == "ipset") { out = Level::LOG_IPSET; return true; }
+        if (s == "warn")  { out = Level::LOG_WARN;  return true; }
+        if (s == "error") { out = Level::LOG_ERROR; return true; }
+        if (s == "crash") { out = Level::LOG_CRASH; return true; }
+        return false;
+    }
 
     ObservabilityLogger(const std::string& log_path, bool verbose = true)
         : verbose_mode_(verbose) {
@@ -102,6 +117,7 @@ public:
     // Variadic template for key-value pairs
     template<typename... Args>
     void log(Level level, const std::string& message, Args&&... args) {
+        if (static_cast<int>(level) < min_level_.load(std::memory_order_relaxed)) return;  // [LOG-LEVEL-D296]
         std::lock_guard<std::mutex> lock(log_mutex_);
 
         std::ostringstream oss;
@@ -128,6 +144,7 @@ private:
     std::ofstream log_file_;
     std::mutex log_mutex_;
     bool verbose_mode_;
+    std::atomic<int> min_level_{static_cast<int>(Level::LOG_INFO)};  // [LOG-LEVEL-D296] defecto validado: info
 
     // Base case: no more arguments
     void append_kvp(std::ostringstream&) {}

@@ -400,7 +400,10 @@ ValidationConfig ConfigLoader::parse_validation(const Json::Value& json) {
 
 LoggingConfigNew ConfigLoader::parse_logging(const Json::Value& json) {
     LoggingConfigNew config;
-    config.level = get_optional<std::string>(json, "level", "debug");
+    if (!json.isMember("level")) {  // [LOG-LEVEL-D296]
+        std::cerr << "[CONFIG-DEFAULT] logging.level ausente; se usa el defecto validado 'info' (admitidos: debug|info|batch|ipset|warn|error|crash)" << std::endl;
+    }
+    config.level = get_optional<std::string>(json, "level", "info");  // [LOG-LEVEL-D296] defecto validado: info
     config.console = get_optional<bool>(json, "console", true);
     config.syslog = get_optional<bool>(json, "syslog", false);
     config.file = get_optional<std::string>(json, "file", "/vagrant/firewall-acl-agent/build/logs/firewall-agent.log");

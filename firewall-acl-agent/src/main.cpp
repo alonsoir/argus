@@ -357,6 +357,18 @@ int main(int argc, char** argv) {
             std::make_unique<mldefender::firewall::observability::ObservabilityLogger>(
                 log_path, enable_verbose);
 
+        {  // [LOG-LEVEL-D296] logging.level del JSON (debug|info|batch|ipset|warn|error|crash); defecto validado: info
+            using OL = mldefender::firewall::observability::ObservabilityLogger;
+            OL::Level lvl = OL::Level::LOG_INFO;
+            if (!OL::parse_level(config.logging.level, lvl)) {
+                std::cerr << "[CONFIG-DEFAULT] logging.level='" << config.logging.level
+                          << "' no valido (admitidos: debug|info|batch|ipset|warn|error|crash); se usa el defecto validado 'info'" << std::endl;
+                lvl = OL::Level::LOG_INFO;
+            }
+            mldefender::firewall::observability::g_logger->set_min_level(lvl);
+            std::cout << "[INFO] logging.level aplicado=" << OL::level_str(lvl) << " [LOG-LEVEL-D296]" << std::endl;
+        }
+
         FIREWALL_LOG_INFO("════════════════════════════════════════════════════════");
         FIREWALL_LOG_INFO("ML Defender - Firewall ACL Agent v1.0.0 (Day 52)");
         FIREWALL_LOG_INFO("High-Performance Packet DROP Agent");

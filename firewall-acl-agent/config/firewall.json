@@ -145,7 +145,8 @@
     "block_gateway": false
   },
   "logging": {
-    "level": "debug",
+    "_doc": "[LOG-LEVEL-D296] level: debug|info|batch|ipset|warn|error|crash (nivel minimo que se escribe, en orden de gravedad). Defecto validado: info. debug solo lo activa el admin a proposito para diagnosticar en preproduccion o produccion: escribe ~25 lineas por evento (medido DAY296), cada una vaciada a disco. Ausente o invalido: info con [CONFIG-DEFAULT] y el agente arranca igual.",
+    "level": "info",
     "console": true,
     "syslog": false,
     "file": "/vagrant/logs/lab/firewall-agent.log",
