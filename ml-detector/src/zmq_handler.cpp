@@ -164,6 +164,8 @@ ZMQHandler::ZMQHandler(
             corr_cfg.rotation_seconds = config_.correlation_writer.rotation_seconds;
             corr_cfg.hmac_key_hex     = hmac_key_hex_;
             correlation_writer_ = std::make_shared<ml_defender::CorrelationWriter>(corr_cfg, logger_);
+            logger_->info("[BRONZE-FASTALERT-D296] fast-alerts al bronce: {} (correlation_writer.include_fast_alerts)",
+                          config_.correlation_writer.include_fast_alerts ? "SI" : "NO");
             logger_->info("✅ CorrelationWriter initialized (bronce correlation_v1, base_dir={})",
                          corr_cfg.base_dir);
         } catch (const std::exception& e) {
@@ -639,7 +641,9 @@ void ZMQHandler::process_event(const std::string& message) {
 
         // DAY 175: zona bronce correlation_v1 — punto UNICO, ANTES de la bifurcacion rag/no-rag.
         // NO va dentro del if(!rag_logger_ && csv_writer_) (bug de los dos caminos).
-        if (correlation_writer_ && !event.network_features().community_id().empty()) {
+        if (correlation_writer_ && !event.network_features().community_id().empty() &&
+            (event.event_kind() != protobuf::EVENT_KIND_FAST_ALERT ||
+             config_.correlation_writer.include_fast_alerts)) {  // [BRONZE-FASTALERT-D296]
             correlation_writer_->write_record(event);
         }
 

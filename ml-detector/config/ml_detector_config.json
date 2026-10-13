@@ -417,8 +417,10 @@
     "max_events_per_file": 10000
   },
   "correlation_writer": {
+    "_doc": "[BRONZE-FASTALERT-D296] include_fast_alerts: true|false (defecto false). Las fast-alerts (EVENT_KIND_FAST_ALERT) no van al bronce correlation_v1 hasta que sean fiables (decision DAY296): hoy no traen flow_start (0) y eran el 48 % de las filas. Ausente o no booleano: false con [CONFIG-DEFAULT] y el ml-detector arranca igual.",
     "base_dir": "/vagrant/logs/correlation",
-    "rotation_seconds": 30
+    "rotation_seconds": 30,
+    "include_fast_alerts": false
   },
   "ddos_dataset_writer": {
     "_comment": "[DDOS-DATASET-D287] Dataset DDoS v2 de laboratorio (CSV plano, un fichero por arranque). Integridad: sha256 en el manifiesto del entrenamiento.",

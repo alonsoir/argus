@@ -326,6 +326,7 @@ struct DetectorConfig {
     struct {
         std::string base_dir;
         int rotation_seconds;
+        bool include_fast_alerts = false;  // [BRONZE-FASTALERT-D296] fast-alerts al bronce solo cuando sean fiables
     } correlation_writer;
 
     // [DDOS-DATASET-D287] dataset DDoS v2 de laboratorio (CSV plano); apagado por defecto
