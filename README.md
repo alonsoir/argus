@@ -76,18 +76,19 @@ Measured live in the lab (NTP reflection at 60 pps against a host, with an innoc
 | First DROP decision after the attack starts | 0.8–1.8 s |
 | Shadow START after the first DROP | 2 windows (k = 3) |
 | Shadow END after the last DROP | exactly 30 windows (also under ±5 s wall-clock jumps) |
-| DROP events | all from the attacker; 0 from the innocent sender |
+| DROP events | all from the attacker; 0 from the innocent sender (different traffic type: see the twin test below) |
 | Benign run pressing stage 1 (real `dnsperf` at 30/100 q/s + legitimate 50 KB/s TCP upload) | 0 START; 2 isolated positives in ~18,000 rows, absorbed by k = 3/5 |
 
 Known limits of this head (measured, not hidden):
 
 - **Stage 2 learns the signatures of our traffic generators** (packet size, reflection pattern), not behaviour. With a family left out of training, detection of that family drops to ~0%.
-- **"0 events from the innocent sender" shows that the head discriminates the type of traffic, not the sender.** The real test — a "twin" sending similar traffic from another address — is the next acceptance step.
-- **Cold victim:** with less than 30 windows of history the head does not decide, by design.
+- **The head discriminates the type of traffic, not the sender (measured, DAY297).** A "twin" sending the attacker's exact packets from another address is dropped like the attacker: 99.56% of its packets with the twin at 10 pps and 99.17% at 60 pps (attacker: 99.65% / 99.19%). In the same runs, 446 legitimate NTP packets to the same victim from the benign sender got 0 DROP. Per-source features are future work; until then, no per-source blocking.
+- **Cold start (measured, to be fixed):** the 30-window warm-up only gates the sniffer's hysteresis state; stage 1 compares the raw rate ratio, so a cold victim can be decided on. In one run, 32 DROP decisions hit legitimate traffic (a Wazuh agent talking to its manager) in the first second after the pipeline started; the shadow did not open an episode.
+- **Long attacks are absorbed (measured offline against the production function):** the per-victim baseline keeps learning during the attack, so stage 1 stops passing a sustained attack after 15–25 minutes (sooner for weaker attacks) and the shadow would close the episode mid-attack. Real DDoS attacks can last days; the next branch makes stage 1 consume the hysteresis state and freezes the baseline during an episode.
 - **The firewall does not block yet.** Real mitigation is a separate piece of work.
-- **Lab only:** VirtualBox VMs on a laptop, rates up to ~110 pps without ring losses. None of this is real hardware.
+- **Lab only:** VirtualBox VMs on a laptop, rates up to ~110 pps without ring losses; end-to-end accounting at up to 130 pps toward the victim found 0 events lost or duplicated between sniffer and firewall. None of this is real hardware: see [docs/carta_reyes_magos_caceres.md](docs/carta_reyes_magos_caceres.md) for what cannot be measured here.
 
-### Time contract v1 — one time base for the whole pipeline (final acceptance in progress)
+### Time contract v1 — one time base for the whole pipeline (accepted, DAY297)
 
 A single field used to mix two clock bases (kernel monotonic and wall-clock epoch) depending on the event type. That froze the shadow's clock, corrupted Parquet data and made latencies unmeasurable. The time contract v1 fixes it:
 
@@ -104,6 +105,8 @@ Measured in the lab (production build, single node):
 | Same, under a 60 pps attack | mean 2.2–7.6 ms, max ≤ 18.5 ms |
 | ±5 s wall-clock jumps mid-attack | detected (+4.9986 s / −5.0001 s); shadow END unaffected; 0 time anomalies |
 | Controlled clock slew (+5.3%) | detected at 52,994 ppm (expected 53,000); no false step |
+| Producer sequence, sniffer → firewall (3 runs, up to 130 pps) | 0 lost, 0 duplicated in 15,262 / 17,129 / 26,110 events |
+| Delivery order | not guaranteed: up to 12 flow events per run overtaken by the next fast-alert (decision logic unaffected; under study) |
 
 The contract is **single-node** (sensor, detector and firewall on the same host). A distributed deployment needs synchronized wall clocks (PTP) and a different design; that is future work.
 
@@ -196,7 +199,8 @@ Component configuration lives in each component's JSON (`*/config/*.json`): ever
 Honesty as an engineering property, not an afterthought:
 
 - **Research artifact, not production.** Only the DDoS head is trusted to decide, and it runs in shadow mode: nothing is blocked yet. The other heads (ransomware, internal traffic, the original level-1 classifier) are not trusted and do not decide.
-- **Lab, not hardware.** Every live measurement comes from VirtualBox VMs on a laptop. Latencies, clock behaviour and the thresholds in the JSON files are lab-calibrated and must be measured again on real hardware.
+- **Lab, not hardware.** Every live measurement comes from VirtualBox VMs on a laptop. Latencies, clock behaviour and the thresholds in the JSON files are lab-calibrated and must be measured again on real hardware. What cannot be measured without hardware (native XDP drop rate, ring saturation, ransomware detection under a real DDoS, upstream defence of the bandwidth) and the equipment that would unlock it are written down in [docs/carta_reyes_magos_caceres.md](docs/carta_reyes_magos_caceres.md) (in Spanish).
+- **DDoS head, measured limits:** it discriminates traffic type, not sender; it absorbs sustained attacks after 15–25 minutes; it can decide on a cold victim. See "Current state" above.
 - **Single node.** The time contract assumes sensor, detector and firewall on one host. Distributed deployment (PTP-synchronized clocks) is future work.
 - **Fast-alerts are not reliable** and are excluded from the bronze contract until they are.
 - **Deferred hardening**, carried as known-and-deferred (not hidden): productive Vault, key rotation, real fault-injection, secure HMAC transport (HTTPS/Vault), and a reverse-engineering audit of the shipped binaries.

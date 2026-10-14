@@ -7311,3 +7311,27 @@ Deudas nuevas:
 - DEBT-FALCO-RULES-COUNT-001: setup-falco.sh tiene 11 reglas; en DAY133 se acordaron 13 (10 + 3 del Consejo:
   config tamper, sustitucion de modelos/plugins, AppArmor tamper). Comprobar cuales faltan.
 - Falco detecta pero no responde: capa de respuesta (Falco -> firewall-acl-agent con respuesta por regla), futura.
+
+## DAY297 — fix/event-timestamp-timebase (aceptacion D15: A1, A2, A5; contrato temporal, anexo 9)
+Hecho:
+- Contadores de producer_seq en el firewall ([TIMEBASE-SEQ-D297] + detalle [TIMEBASE-SEQ-DET-D297]; test_seq_tracker
+  51/51; campo ddos_shadow.seq_ventana). 0 duplicados y 0 huecos en 15262, 17129 y 26110 eventos.
+- Orquestador de corridas scripts/timebase/lab_corrida.sh (+ ayudante en el defender, contabilidad, cliente del gemelo).
+- A1 aceptada: cable = DROP = sombra al evento; un flujo por paquete. A2 medida: gemelo marcado igual que el atacante
+  (0,9956 / 0,9917); NTP legitimo de la misma victima, 0 DROP. A5 confirmada offline contra la funcion de produccion.
+- Seccion 7 duplicada del contrato temporal eliminada (heredoc mal cerrado en DAY295: una linea basura y el bloque
+  repetido; contenido identico).
+Cerradas por medida:
+- DEBT-DDOS-V2-ACCOUNTING-001 (A1): sin duplicados ni perdidas con el binario actual (DAY294 no reconstruible).
+- DEBT-DDOS-V2-AUDIT-TWIN-001 (A2): "discrimina el tipo de trafico, no el comportamiento del origen".
+- DEBT-TIMEBASE-ORDER-OBSERVABILITY-001 en el firewall (secuencia visible y contada); sigue sin ir al bronce.
+Deudas nuevas o cambiadas:
+- DEBT-DDOS-COLDSTART-ETAPA1-001 (SIGUIENTE RAMA, decision de Alonso): warm_windows no protege la etapa 1; 32 DROP en el
+  primer segundo contra el manager Wazuh (.12 -> .1 TCP). La prueba hay que provocarla (trafico en los primeros segundos).
+- DEBT-DDOS-V2-LONG-ATTACK-001 (CONFIRMADA offline; misma rama que la anterior): FIN de la sombra a los 15,6-24,8 min de
+  un ataque sostenido. Causa comun: la etapa 1 no consume bajo_presion. Corrida en vivo de ~20 min como antes/despues.
+- DEBT-TIMEBASE-SEQ-DELIVERY-ORDER-001 (futuro proximo, decision de Alonso): flujo adelantado por la fast-alert
+  siguiente; 12 casos a 120 pps. Siguiente paso: mld_recv/mld_send en el detalle.
+- DEBT-SNIFFER-EVENT-ID-NOT-UNIQUE-001: event_id = ts_ns + "_" + (src XOR dst); tambien es correlation_id (grafo).
+- DEBT-LAB-ENV-VMS-001: anotar en cada medida que VMs estaban levantadas (DAY297: las cinco; el trafico de Wazuh cambia
+  el reposo y puede disparar el arranque en frio).

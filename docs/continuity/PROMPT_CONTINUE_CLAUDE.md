@@ -1,46 +1,71 @@
-# Prompt de continuidad — aRGus NDR, DAY296 -> DAY297
+# Prompt de continuidad — aRGus NDR, DAY297 -> DAY298
 
 Reglas (sin cambios): medir, no votar; prediccion escrita antes de medir; si algo no da lo esperado, PARAR.
 Comandos EXACTOS y COMPLETOS, en orden, diciendo donde va cada uno (Mac / defender / client). Comandos separados o cada
 salida a su fichero, y con `; cat` del fichero al final. Nunca `grep -rn` desde la raiz (`git grep` o el fichero concreto;
 excluir ':!*.pb.cc' ':!*.pb.h' ':!*_pb2.py'). Scripts como bloque `cat > f <<'EOF'`; `LC_ALL=C` en todo awk con
-aritmetica. Patchers atomicos, todo-o-nada, con `--check` / `--apply` y marca. Compilar, probar Y ARRANCAR con el MISMO
-perfil: `make pipeline-build PROFILE=production`, `make test-components PROFILE=production`,
-`make pipeline-start PROFILE=production` (sin PROFILE arranca DEBUG). Configuracion: el JSON manda; defecto validado +
-`[CONFIG-DEFAULT]`. Antes de pipeline-start: `make pipeline-stop` y comprobar que no hay nada vivo
-(vagrant ssh defender -c "tmux ls; pgrep -a -f 'sniffer|ml-detector|firewall-acl-agent'").
-Relojes: tras suspender el Mac, en el Mac `make lab-clock-step` justo al despertar (chrony puede tardar ~2 min en ver el
-desfase). La VM esta en UTC. En el client, lanzar scripts de /vagrant con `bash script.sh` (Permission denied si no).
-Medidas de retraso: `bash /vagrant/scripts/timebase/tramos_identidad.sh N` (ultimos N resumenes [TIMEBASE]).
+aritmetica. Tras pegar un heredoc, comprobar que la terminal vuelve al prompt y no queda en `heredoc>` (en DAY295 un
+heredoc mal cerrado duplico la seccion 7 del contrato). Patchers atomicos, todo-o-nada, con `--check` / `--apply` y
+marca. Compilar, probar Y ARRANCAR con el MISMO perfil: `make pipeline-build PROFILE=production`,
+`make test-components PROFILE=production`, `make pipeline-start PROFILE=production`. Configuracion: el JSON manda;
+defecto validado + `[CONFIG-DEFAULT]`. Relojes: tras suspender el Mac, `make lab-clock-step` justo al despertar.
+Corridas de lab: `bash scripts/timebase/lab_corrida.sh NOMBRE 'comando del client'` desde el Mac (hace relojes,
+parada, nada vivo, logs a cero, arranque production, ESTABLE, tcpdump en eth2, client, parada y contabilidad; para al
+primer fallo; resultados en logs/lab/day297/NOMBRE/). Anotar en cada medida que VMs estaban levantadas.
 
 ## 0. Estado
-- main = bc73b831 (PR #143), etiqueta pre-release-ddos-only-0.0.3.
-- Rama fix/event-timestamp-timebase. LEER PRIMERO: docs/timebase/contrato_temporal_day295.md (§7 y §8 = DAY296) y
-  docs/ml-heads/consejo_day294_sintesis.md (D15-D22).
-- Hecho DAY296: lab-clock-step; D17 tramos (ml-detector sella mld_recv/mld_send; firewall 3 tramos, causas 8 y 9);
-  logging.level del firewall conectado (retraso medio 3,3-5,9 ms en reposo); perfil production en el lab; validador de
-  Parquet sobre todas las filas; fast-alerts fuera del bronce (correlation_writer.include_fast_alerts=false); aceptados
-  saltos +-5 s en ataque (FIN = ultimo DROP + 30 ventanas exacto), correccion gradual provocada y suspension real.
+- fix/event-timestamp-timebase: EMECAS+++ VERDE en DAY297 (rc=0, sobre 38a77aea); PR y merge a main al cierre de DAY297.
+  Comprobar al empezar: `git log --oneline -3 origin/main` y que no quedan PR abiertos.
+- LEER PRIMERO: docs/timebase/contrato_temporal_day295.md (sec. 9 = DAY297), docs/carta_reyes_magos_caceres.md
+  (que no se puede medir en el lab virtual y que equipo haria falta) y docs/ml-heads/consejo_day294_sintesis.md.
+- Hecho DAY297: contadores de producer_seq en el firewall (0 duplicados y 0 huecos en 15262/17129/26110 eventos);
+  orquestador de corridas; A1 aceptada (cable = DROP = sombra al evento); A2 (gemelo .61 marcado 0,9956 / 0,9917,
+  igual que el atacante; NTP legitimo de .51 0 DROP); A5 confirmada offline contra victim_ewma_step de produccion
+  (la etapa 1 deja de marcar un ataque sostenido a los 15-25 min); seccion 7 duplicada del contrato eliminada.
 
-## 1. DAY297, en orden
-1. D15 A1 contabilidad: tcpdump en .1 frente a eventos DROP durante ntp 60 pps (bash /vagrant/day291_piloto_client.sh 60).
-   DAY294: 5357 DROP; DAY296: 5364 DROP para 5400 paquetes enviados. producer_seq no se ve en logs: decidir si basta
-   event_id o hay que registrarlo.
-2. D15 A2 gemelo .61 a 10 y 60 pps (tcprewrite del pcap; comprobar que el client puede emitir como .61).
-3. D15 A5 ataque largo: PRIMERO offline (¿la EWMA absorbe el ataque y la sombra da FIN a mitad?), luego en vivo si procede.
+## 1. DAY298: rama nueva fix/ddos-etapa1-histeresis (DEBT-DDOS-COLDSTART-ETAPA1-001 + DEBT-DDOS-V2-LONG-ATTACK-001)
+Causa comun medida: la etapa 1 (ddos_v2_head.hpp:39) compara el ratio crudo con K = 3 y nadie consume bajo_presion;
+warm_windows solo condiciona la entrada en el estado (ddos_contract_v2.hpp:103); la EWMA aprende del propio ataque.
+Postura de Alonso: un DDoS puede durar dias, semanas o meses; hay que pararlo de raiz en cuanto se detecta y la
+insistencia debe salir cada vez mas cara; lo mas peligroso es el DDoS como cortina para lateralizar ransomware.
+1. ANTES (medir, con prediccion escrita):
+   a. A5 en vivo, ~20 min de ntp a 60 pps. El pcap tiene 10000 paquetes (166 s a 60 pps): medir primero si --loop
+      (5-tuplas repetidas) cambia flow_packet_count u otros rasgos; si cambia, generar un pcap largo reproducible.
+      Prediccion: FIN de la sombra a ~15,6 min del inicio (base 10) .
+   b. Arranque en frio PROVOCADO: trafico hacia una victima en los primeros segundos tras pipeline-start.
+2. DISENO (doc corto antes de patchers):
+   - La etapa 1 consume el estado de histeresis (llevar bajo_presion en el evento: campo nuevo en el proto -> `make proto`).
+   - EWMA de la victima congelada mientras dure un episodio (no aprender de trafico clasificado como ataque); el episodio
+     acaba cuando el trafico vuelve a la base; aviso periodico al administrador si dura mas de X horas (X en el JSON).
+   - Rangos protegidos en el JSON: DMZ e intranet nunca se banean automaticamente (solo alerta); lista de externos
+     criticos que tampoco (resolvedores, NTP usados, operador, socios).
+3. DESPUES: mismas corridas con el orquestador (A5 en vivo, frio provocado, A1, A2) y comparacion antes/despues.
 4. EMECAS+++, PR, merge.
 
-## 2. Despues de esta rama
-- Rama de estandarizacion (DEBT-LAB-RUNTIME-STANDARD-001): perfil, config y nivel de log iguales en todos los componentes.
-- Rama DEBT-FW-IPSET-TESTS-SKIPPED-001 (21 IPSetWrapperTest saltadas).
-- PR de limpieza de scripts de la raiz + README (incluir firewall-acl-agent/proto/ y avisos de graphify sobre day287/288).
+## 2. Rama siguiente: via rapida en XDP (decision de Alonso: drop inmediato ante un ataque claro, antes de
+clasificacion, firewall y grafo; actuar primero, informar despues)
+- Empezar por "respuestas sin pregunta" (NTP/DNS/memcached/SSDP entrantes sin consulta saliente previa; el defender es
+  el gateway y ve la salida): drop en XDP sin umbral; sin falsos positivos por construccion y no utilizable con
+  origenes falsificados.
+- Volumetrico no reflejado: limitacion de tasa por victima en XDP.
+- Ban por origen con escalada (dias a meses, reutilizando RECIDIVISM-D276) solo con evidencia por origen (D19 o TCP con
+  handshake), fuera de los rangos protegidos; agregacion por subred externa con N origenes confirmados y caducidad.
+- Cada regla cuenta lo que tira, muestrea y manda resumen del episodio aguas abajo (grafo); configuracion en el JSON.
+- Correlacion: DDoS activo + anomalia interna = maxima severidad. Modo degradado (D21) protege primero la deteccion de
+  ransomware.
+- Limite del lab: VirtualBox ejecuta XDP generico -> solo validacion funcional; rendimiento y defensa del ancho de banda
+  (FlowSpec/RTBH aguas arriba) requieren el equipo de la carta.
+
+## 3. Despues
+- DEBT-TIMEBASE-SEQ-DELIVERY-ORDER-001: flujo adelantado por la fast-alert siguiente (12 casos a 120 pps); anadir
+  mld_recv/mld_send a la linea [TIMEBASE-SEQ].
+- DEBT-SNIFFER-EVENT-ID-NOT-UNIQUE-001 (event_id = ts_ns + "_" + src XOR dst; tambien correlation_id).
+- Rama de estandarizacion (DEBT-LAB-RUNTIME-STANDARD-001); rama DEBT-FW-IPSET-TESTS-SKIPPED-001 (21 saltadas).
+- PR de limpieza de scripts de la raiz + README (firewall-acl-agent/proto/ muerta; avisos de graphify day287/288).
 - DEBT-FLOWUID-TIMEBASE-VERIFY-001; Variant B y herramientas sinteticas al contrato v1.
 - Rama de medidas y modelo (D18, D19, D21, luego D20). D22 cuando haya cliente.
+- Imagen endurecida y Falco: verificar el estado REAL antes de afirmar nada (11 reglas frente a 13 acordadas; perfiles
+  AppArmor en security/apparmor/ y tools/apparmor/; ultimo hardened-full verde en abril). Primero `make hardened-full`
+  desde VM destruida, con prediccion escrita.
 - Antes de publicar el post de DAY294 en LinkedIn: corregir "~1.3 s" por "~1-2 s".
-- Imagen endurecida y Falco (en algun momento, idealmente en la rama de estandarizacion): verificar el estado REAL antes
-  de afirmar nada en el README. Hay 11 reglas de Falco en vagrant/hardened-{x86,arm64}/scripts/setup-falco.sh (se
-  acordaron 13 en DAY133: ver cuales faltan), 7 perfiles AppArmor en security/apparmor/ y otro juego antiguo de 6 en
-  tools/apparmor/ (¿cual se instala?), targets hardened-full / hardened-redeploy / prod-full-x86 / check-prod-all
-  (incluye check-prod-falco). Ultimo verde conocido: abril 2026 (DAY134). Primero: `make hardened-full` desde VM
-  destruida, con prediccion escrita. Falco detecta pero no responde (no hay capa de respuesta). Despues, la seccion
-  "Runtime hardening" del README (borrador en el chat del DAY296).
+- Carta de los Reyes Magos de Cáceres: si se envia a Andres, version compartible del documento.
