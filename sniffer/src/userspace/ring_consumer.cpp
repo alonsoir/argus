@@ -238,12 +238,38 @@ bool RingBufferConsumer::start() {
     running_ = true;
     active_consumers_ = 0;
 
+    // [TIMEBASE-D295] Primera lectura SINCRONA antes de lanzar hilos: sin ella los primeros eventos
+    // saldrian con ancla 0 (epoch en 1970). El log muestra los parametros que llegaron al consumidor
+    // (cadena sniffer.json -> ConfigManager -> g_config -> main.cpp -> aqui).
+    {
+        namespace tb = ::argus::timebase;
+        tb::TimebaseParams p = config_.timebase;
+        if (!tb::params_ok(p)) {
+            std::cerr << "[CONFIG-DEFAULT] timebase invalido al llegar al consumidor -> todos los defectos" << std::endl;
+            p = tb::TimebaseParams{};
+        }
+        tb_state_ = tb::TimebaseState(p);
+        const auto r0 = tb::read_clocks();
+        tb_state_.update(r0);
+        tb_anchor_ns_.store(tb_state_.anchor_ns(), std::memory_order_relaxed);
+        tb_clock_state_.store(static_cast<uint8_t>(tb::ClockState::Ok), std::memory_order_relaxed);
+        tb_start_mono_ns_ = r0.mono_ns;
+        tb_boot_id_ = tb::read_boot_id();
+        std::cout << "[TIMEBASE] contrato v" << tb::kContractVersion << " activos: anchor_period_s=" << p.anchor_period_s
+                  << " step_threshold_s=" << p.step_threshold_s << " slew_window_s=" << p.slew_window_s
+                  << " slew_ppm_threshold=" << p.slew_ppm_threshold << " stepped_recent_s=" << p.stepped_recent_s
+                  << " boot_id=" << tb_boot_id_ << " ancla_ns=" << tb_state_.anchor_ns() << std::endl;
+        if (tb_boot_id_.size() != 36) {
+            std::cerr << "[TIMEBASE] AVISO: boot_id no legible; el orden entre arranques no esta garantizado" << std::endl;
+        }
+    }
+
     // Start ring buffer consumer threads
     int consumer_count = config_.threading.ring_consumer_threads;
     consumer_threads_.reserve(consumer_count +
                              config_.threading.feature_processor_threads +
                              config_.threading.zmq_sender_threads +
-                             1);  // +1 for stats thread
+                             2);  // +1 stats, +1 reloj [TIMEBASE-D295]
 
     for (int i = 0; i < consumer_count; ++i) {
         consumer_threads_.emplace_back(&RingBufferConsumer::ring_consumer_loop, this, i);
@@ -266,6 +292,9 @@ bool RingBufferConsumer::start() {
         consumer_threads_.emplace_back(&RingBufferConsumer::ransomware_processor_loop, this);
         std::cout << "[INFO] + 1 ransomware detection thread (30s aggregation)" << std::endl;
     }
+
+    // [TIMEBASE-D295] hilo del reloj (ancla, CLOCK_STEP, CLOCK_SLEW)
+    consumer_threads_.emplace_back(&RingBufferConsumer::timebase_loop, this);
 
     // Start statistics display thread
     consumer_threads_.emplace_back(&RingBufferConsumer::stats_display_loop, this);
@@ -497,6 +526,41 @@ void RingBufferConsumer::zmq_sender_loop() {
     std::cout << "[INFO] ZMQ sender thread stopped" << std::endl;
 }
 
+// [TIMEBASE-D295] Hilo del reloj: cada anchor_period_s relee REALTIME, MONOTONIC y MONOTONIC_RAW;
+// publica el ancla y el estado (atomicos) y avisa de [CLOCK-STEP] y [CLOCK-SLEW]. Duerme en trozos
+// de 100 ms para que la parada no espere un periodo entero.
+void RingBufferConsumer::timebase_loop() {
+    namespace tb = ::argus::timebase;
+    using clk = std::chrono::steady_clock;
+    const auto periodo = std::chrono::duration_cast<clk::duration>(
+        std::chrono::duration<double>(tb_state_.params().anchor_period_s));
+    const double umbral_ppm = tb_state_.params().slew_ppm_threshold;
+    uint64_t saltos = 0;
+    auto proximo = clk::now() + periodo;
+    while (!should_stop_) {
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        const auto ahora = clk::now();
+        if (ahora < proximo) continue;
+        proximo += periodo;
+        if (proximo < ahora) proximo = ahora + periodo;
+        const auto r = tb::read_clocks();
+        const auto ev = tb_state_.update(r);
+        tb_anchor_ns_.store(tb_state_.anchor_ns(), std::memory_order_relaxed);
+        tb_clock_state_.store(static_cast<uint8_t>(tb_state_.state_at(r.mono_ns)), std::memory_order_relaxed);
+        if (ev.stepped) {
+            ++saltos;
+            std::cerr << "[CLOCK-STEP] el reloj de pared salto " << ev.step_delta_s
+                      << " s (REALTIME-MONOTONIC); ancla nueva; saltos desde el arranque=" << saltos << std::endl;
+        }
+        if (ev.slew_measured && tb_state_.slewing()) {
+            std::cerr << "[CLOCK-SLEW] " << (ev.slewing_changed ? "INICIO" : "sigue") << " ppm=" << ev.slew_ppm
+                      << " (umbral " << umbral_ppm << "): las duraciones en MONOTONIC no son fiables" << std::endl;
+        } else if (ev.slew_measured && ev.slewing_changed) {
+            std::cerr << "[CLOCK-SLEW] FIN ppm=" << ev.slew_ppm << std::endl;
+        }
+    }
+}
+
 void RingBufferConsumer::stats_display_loop() {
     std::cout << "[INFO] Statistics display thread started (interval: "
               << stats_interval_seconds_ << "s)" << std::endl;
@@ -686,6 +750,7 @@ void RingBufferConsumer::process_event_features(const QueuedEvent& queued) {  //
         // Create protobuf message
         protobuf::NetworkSecurityEvent proto_event;
         populate_protobuf_event(event, proto_event, 0, &queued);  // [DDOS-SNAP-D290]
+        stamp_time_context(proto_event, event.timestamp);  // [TIMEBASE-D295] flujo: reloj del kernel
 
         // Log features if verbosity is enabled
         if (g_verbosity != FeatureLogger::VerbosityLevel::NONE) {
@@ -932,7 +997,7 @@ void RingBufferConsumer::populate_protobuf_event(const SimpleEvent& event,
     proto_event.set_event_kind(protobuf::EVENT_KIND_FLOW);  // [EVENT-KIND-D285]
     proto_event.set_originating_node_id(config_.node_id);
     proto_event.set_correlation_id(event_id);
-    proto_event.set_schema_version(31);
+    proto_event.set_schema_version(32);  // [TIMEBASE-D295] contrato temporal v1
     proto_event.set_protobuf_version("3.1.0");
 
     // Timestamp
@@ -988,14 +1053,18 @@ void RingBufferConsumer::populate_protobuf_event(const SimpleEvent& event,
 
     // Flow start time
     google::protobuf::Timestamp* flow_start = features->mutable_flow_start_time();
-    flow_start->set_seconds(event.timestamp / 1000000000ULL);
-    flow_start->set_nanos(event.timestamp % 1000000000ULL);
+    // [TIMEBASE-D295:FLOWSTART] epoch derivado (mono + ancla), como event_timestamp: el bronce
+    // correlation_v1, flow_uid y ADR-057 esperan epoch. mono = epoch - time_context.wall_anchor_ns.
+    const uint64_t fst_epoch_ns = ::argus::timebase::epoch_ns(
+        event.timestamp, tb_anchor_ns_.load(std::memory_order_relaxed));
+    flow_start->set_seconds(static_cast<int64_t>(fst_epoch_ns / 1000000000ULL));
+    flow_start->set_nanos(static_cast<int32_t>(fst_epoch_ns % 1000000000ULL));
 
     // Time window
     protobuf::TimeWindow* time_window = proto_event.mutable_time_window();
     google::protobuf::Timestamp* window_start = time_window->mutable_window_start();
-    window_start->set_seconds(event.timestamp / 1000000000ULL);
-    window_start->set_nanos(event.timestamp % 1000000000ULL);
+    window_start->set_seconds(static_cast<int64_t>(fst_epoch_ns / 1000000000ULL));  // [TIMEBASE-D295:FLOWSTART]
+    window_start->set_nanos(static_cast<int32_t>(fst_epoch_ns % 1000000000ULL));
     time_window->set_window_type(protobuf::TimeWindow::SLIDING);
     time_window->set_sequence_number(event.timestamp);
 
@@ -1299,6 +1368,28 @@ void RingBufferConsumer::ransomware_processor_loop() {
 // [DDOS-VWIN-D279:STAMP-DEF] Estampa en el evento la ventana por victima contada en el
 // kernel (mapa ddos_victims). Sin tablero o sin snapshot publicado -> el evento sale SIN
 // victim_window (= lector apagado). Con snapshot y victima ausente -> d_pkts = 0.
+// [TIMEBASE-D295] Contrato temporal v1: estampa TimeContext y event_timestamp (= epoch derivado =
+// mono_ns + ancla) justo antes de serializar. Mismo codigo para flujo, fast-alert y ventana.
+// sniffer_send_mono_ns = instante de serializacion (entrada en send_queue_), no el envio por socket.
+void RingBufferConsumer::stamp_time_context(protobuf::NetworkSecurityEvent& ev, uint64_t mono_ns) {
+    namespace tb = ::argus::timebase;
+    const int64_t ancla = tb_anchor_ns_.load(std::memory_order_relaxed);
+    const uint64_t epoch = tb::epoch_ns(mono_ns, ancla);
+    auto* ts = ev.mutable_event_timestamp();
+    ts->set_seconds(static_cast<int64_t>(epoch / 1000000000ULL));
+    ts->set_nanos(static_cast<int32_t>(epoch % 1000000000ULL));
+    auto* tc = ev.mutable_time_context();
+    tc->set_mono_ns(mono_ns);
+    tc->set_boot_id(tb_boot_id_);
+    tc->set_producer_start_mono_ns(tb_start_mono_ns_);
+    tc->set_producer_seq(tb_seq_.fetch_add(1, std::memory_order_relaxed) + 1);
+    tc->set_wall_anchor_ns(ancla);
+    tc->set_clock_state(static_cast<protobuf::ClockState>(tb_clock_state_.load(std::memory_order_relaxed)));
+    tc->set_time_contract_version(tb::kContractVersion);
+    tc->set_sniffer_send_mono_ns(static_cast<uint64_t>(std::chrono::duration_cast<std::chrono::nanoseconds>(
+        std::chrono::steady_clock::now().time_since_epoch()).count()));
+}
+
 void RingBufferConsumer::stamp_victim_window(protobuf::NetworkSecurityEvent& ev,
                                              const SimpleEvent& e) const {
     if (!victim_board_) return;
@@ -1343,6 +1434,7 @@ void RingBufferConsumer::send_fast_alert(const SimpleEvent& event) {
 
         alert.set_originating_node_id(config_.node_id);
         stamp_victim_window(alert, event);  // [DDOS-VWIN-D279:STAMP-FAST]
+        stamp_time_context(alert, event.timestamp);  // [TIMEBASE-D295] fast-alert: reloj del kernel
 
         auto* net_features = alert.mutable_network_features();
 
@@ -1448,6 +1540,8 @@ void RingBufferConsumer::send_ransomware_features(const protobuf::RansomwareFeat
         ts->set_nanos(now_ns % 1'000'000'000ULL);
 
         event.set_originating_node_id(config_.node_id);
+        stamp_time_context(event, static_cast<uint64_t>(std::chrono::duration_cast<std::chrono::nanoseconds>(
+            std::chrono::steady_clock::now().time_since_epoch()).count()));  // [TIMEBASE-D295] ventana: instante de emision
 
         auto* net_features = event.mutable_network_features();
         auto* ransom_features = net_features->mutable_ransomware();

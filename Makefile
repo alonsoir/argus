@@ -331,6 +331,20 @@ post-up-verify:
 	@vagrant ssh -c "sudo find /etc/ml-defender -name 'seed.bin' | wc -l | tr -d ' ' | grep -q '^6$$' || { echo '❌ seeds missing (esperados 6)'; exit 1; }"
 	@echo "✅ Entorno post-up verificado"
 
+# [LAB-CLOCK-STEP-D296] Alinea los relojes del lab tras suspender el Mac: makestep en defender y DESPUES en client
+# (el client toma la hora del defender). Verifica DENTRO de cada VM con chronyc waitsync: desfase menor que
+# LAB_CLOCK_MAX_OFFSET_S en LAB_CLOCK_WAIT_TRIES intentos de 1 s, o falla con el nombre de la VM.
+# Un solo vagrant ssh por VM (~14 s cada uno); comparar relojes con date por vagrant ssh no sirve.
+LAB_CLOCK_MAX_OFFSET_S ?= 0.001
+LAB_CLOCK_WAIT_TRIES ?= 30
+.PHONY: lab-clock-step
+lab-clock-step:
+	@echo "[LAB-CLOCK-STEP] defender: makestep + waitsync"
+	@vagrant ssh defender -c 'sudo chronyc makestep >/dev/null; chronyc waitsync $(LAB_CLOCK_WAIT_TRIES) $(LAB_CLOCK_MAX_OFFSET_S) 0 1 >/dev/null; rc=$$?; chronyc -n tracking | grep -E "Reference ID|System time"; if [ $$rc -ne 0 ]; then echo "[LAB-CLOCK-STEP] FALLO defender: desfase >= $(LAB_CLOCK_MAX_OFFSET_S) s tras $(LAB_CLOCK_WAIT_TRIES) s"; exit 1; fi; echo "[LAB-CLOCK-STEP] defender OK (< $(LAB_CLOCK_MAX_OFFSET_S) s)"'
+	@echo "[LAB-CLOCK-STEP] client: makestep + waitsync (fuente 192.168.100.1)"
+	@vagrant ssh client -c 'sudo chronyc makestep >/dev/null; chronyc waitsync $(LAB_CLOCK_WAIT_TRIES) $(LAB_CLOCK_MAX_OFFSET_S) 0 1 >/dev/null; rc=$$?; chronyc -n tracking | grep -E "Reference ID|System time"; if ! chronyc -n tracking | grep -qF "(192.168.100.1)"; then echo "[LAB-CLOCK-STEP] FALLO client: su fuente no es el defender 192.168.100.1"; exit 1; fi; if [ $$rc -ne 0 ]; then echo "[LAB-CLOCK-STEP] FALLO client: desfase >= $(LAB_CLOCK_MAX_OFFSET_S) s tras $(LAB_CLOCK_WAIT_TRIES) s"; exit 1; fi; echo "[LAB-CLOCK-STEP] client OK (< $(LAB_CLOCK_MAX_OFFSET_S) s)"'
+	@echo "[LAB-CLOCK-STEP] OK: defender y client alineados"
+
 up-argus:
 	@vagrant up defender client
 

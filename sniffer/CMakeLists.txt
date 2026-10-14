@@ -1105,4 +1105,13 @@ if(NOT USE_LIBPCAP)
   )
   add_test(NAME test_ddos_victim_board COMMAND test_ddos_victim_board)
   message(STATUS "Unit Test: test_ddos_victim_board configured (DAY 279 - tablero de ventanas por victima) [DDOS-VWIN-D279:CMAKE-TEST]")
+
+  add_executable(test_timebase
+          tests/test_timebase.cpp
+  )
+  target_include_directories(test_timebase PRIVATE
+          ${CMAKE_SOURCE_DIR}/include
+  )
+  add_test(NAME test_timebase COMMAND test_timebase)
+  message(STATUS "Unit Test: test_timebase configured (DAY 295 - contrato temporal v1) [TIMEBASE-D295:CMAKE-TEST]")
 endif()

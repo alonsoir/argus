@@ -150,6 +150,9 @@ extern SystemConfiguration_NodeRoleAssignmentsEntry_DoNotUseDefaultTypeInternal 
 class SystemConfiguration_ThreatScoreThresholdsEntry_DoNotUse;
 struct SystemConfiguration_ThreatScoreThresholdsEntry_DoNotUseDefaultTypeInternal;
 extern SystemConfiguration_ThreatScoreThresholdsEntry_DoNotUseDefaultTypeInternal _SystemConfiguration_ThreatScoreThresholdsEntry_DoNotUse_default_instance_;
+class TimeContext;
+struct TimeContextDefaultTypeInternal;
+extern TimeContextDefaultTypeInternal _TimeContext_default_instance_;
 class TimeWindow;
 struct TimeWindowDefaultTypeInternal;
 extern TimeWindowDefaultTypeInternal _TimeWindow_default_instance_;
@@ -200,6 +203,7 @@ template<> ::protobuf::SMBScanFeatures* Arena::CreateMaybeMessage<::protobuf::SM
 template<> ::protobuf::SystemConfiguration* Arena::CreateMaybeMessage<::protobuf::SystemConfiguration>(Arena*);
 template<> ::protobuf::SystemConfiguration_NodeRoleAssignmentsEntry_DoNotUse* Arena::CreateMaybeMessage<::protobuf::SystemConfiguration_NodeRoleAssignmentsEntry_DoNotUse>(Arena*);
 template<> ::protobuf::SystemConfiguration_ThreatScoreThresholdsEntry_DoNotUse* Arena::CreateMaybeMessage<::protobuf::SystemConfiguration_ThreatScoreThresholdsEntry_DoNotUse>(Arena*);
+template<> ::protobuf::TimeContext* Arena::CreateMaybeMessage<::protobuf::TimeContext>(Arena*);
 template<> ::protobuf::TimeWindow* Arena::CreateMaybeMessage<::protobuf::TimeWindow>(Arena*);
 template<> ::protobuf::TrafficFeatures* Arena::CreateMaybeMessage<::protobuf::TrafficFeatures>(Arena*);
 template<> ::protobuf::TricapaMLAnalysis* Arena::CreateMaybeMessage<::protobuf::TricapaMLAnalysis>(Arena*);
@@ -437,6 +441,32 @@ inline bool EventBatch_ProcessingMode_Parse(
     ::PROTOBUF_NAMESPACE_ID::ConstStringParam name, EventBatch_ProcessingMode* value) {
   return ::PROTOBUF_NAMESPACE_ID::internal::ParseNamedEnum<EventBatch_ProcessingMode>(
     EventBatch_ProcessingMode_descriptor(), name, value);
+}
+enum ClockState : int {
+  CLOCK_STATE_OK = 0,
+  CLOCK_STATE_SLEWING = 1,
+  CLOCK_STATE_STEPPED = 2,
+  ClockState_INT_MIN_SENTINEL_DO_NOT_USE_ = std::numeric_limits<int32_t>::min(),
+  ClockState_INT_MAX_SENTINEL_DO_NOT_USE_ = std::numeric_limits<int32_t>::max()
+};
+bool ClockState_IsValid(int value);
+constexpr ClockState ClockState_MIN = CLOCK_STATE_OK;
+constexpr ClockState ClockState_MAX = CLOCK_STATE_STEPPED;
+constexpr int ClockState_ARRAYSIZE = ClockState_MAX + 1;
+
+const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor* ClockState_descriptor();
+template<typename T>
+inline const std::string& ClockState_Name(T enum_t_value) {
+  static_assert(::std::is_same<T, ClockState>::value ||
+    ::std::is_integral<T>::value,
+    "Incorrect type passed to function ClockState_Name.");
+  return ::PROTOBUF_NAMESPACE_ID::internal::NameOfEnum(
+    ClockState_descriptor(), enum_t_value);
+}
+inline bool ClockState_Parse(
+    ::PROTOBUF_NAMESPACE_ID::ConstStringParam name, ClockState* value) {
+  return ::PROTOBUF_NAMESPACE_ID::internal::ParseNamedEnum<ClockState>(
+    ClockState_descriptor(), name, value);
 }
 enum DetectionType : int {
   DETECTION_UNKNOWN = 0,
@@ -8050,6 +8080,258 @@ class VictimWindow final :
 };
 // -------------------------------------------------------------------
 
+class TimeContext final :
+    public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:protobuf.TimeContext) */ {
+ public:
+  inline TimeContext() : TimeContext(nullptr) {}
+  ~TimeContext() override;
+  explicit PROTOBUF_CONSTEXPR TimeContext(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
+
+  TimeContext(const TimeContext& from);
+  TimeContext(TimeContext&& from) noexcept
+    : TimeContext() {
+    *this = ::std::move(from);
+  }
+
+  inline TimeContext& operator=(const TimeContext& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  inline TimeContext& operator=(TimeContext&& from) noexcept {
+    if (this == &from) return *this;
+    if (GetOwningArena() == from.GetOwningArena()
+  #ifdef PROTOBUF_FORCE_COPY_IN_MOVE
+        && GetOwningArena() != nullptr
+  #endif  // !PROTOBUF_FORCE_COPY_IN_MOVE
+    ) {
+      InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* descriptor() {
+    return GetDescriptor();
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* GetDescriptor() {
+    return default_instance().GetMetadata().descriptor;
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
+    return default_instance().GetMetadata().reflection;
+  }
+  static const TimeContext& default_instance() {
+    return *internal_default_instance();
+  }
+  static inline const TimeContext* internal_default_instance() {
+    return reinterpret_cast<const TimeContext*>(
+               &_TimeContext_default_instance_);
+  }
+  static constexpr int kIndexInFileMessages =
+    28;
+
+  friend void swap(TimeContext& a, TimeContext& b) {
+    a.Swap(&b);
+  }
+  inline void Swap(TimeContext* other) {
+    if (other == this) return;
+  #ifdef PROTOBUF_FORCE_COPY_IN_SWAP
+    if (GetOwningArena() != nullptr &&
+        GetOwningArena() == other->GetOwningArena()) {
+   #else  // PROTOBUF_FORCE_COPY_IN_SWAP
+    if (GetOwningArena() == other->GetOwningArena()) {
+  #endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
+      InternalSwap(other);
+    } else {
+      ::PROTOBUF_NAMESPACE_ID::internal::GenericSwap(this, other);
+    }
+  }
+  void UnsafeArenaSwap(TimeContext* other) {
+    if (other == this) return;
+    GOOGLE_DCHECK(GetOwningArena() == other->GetOwningArena());
+    InternalSwap(other);
+  }
+
+  // implements Message ----------------------------------------------
+
+  TimeContext* New(::PROTOBUF_NAMESPACE_ID::Arena* arena = nullptr) const final {
+    return CreateMaybeMessage<TimeContext>(arena);
+  }
+  using ::PROTOBUF_NAMESPACE_ID::Message::CopyFrom;
+  void CopyFrom(const TimeContext& from);
+  using ::PROTOBUF_NAMESPACE_ID::Message::MergeFrom;
+  void MergeFrom( const TimeContext& from) {
+    TimeContext::MergeImpl(*this, from);
+  }
+  private:
+  static void MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg);
+  public:
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
+  bool IsInitialized() const final;
+
+  size_t ByteSizeLong() const final;
+  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
+  uint8_t* _InternalSerialize(
+      uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
+  int GetCachedSize() const final { return _impl_._cached_size_.Get(); }
+
+  private:
+  void SharedCtor(::PROTOBUF_NAMESPACE_ID::Arena* arena, bool is_message_owned);
+  void SharedDtor();
+  void SetCachedSize(int size) const final;
+  void InternalSwap(TimeContext* other);
+
+  private:
+  friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
+  static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
+    return "protobuf.TimeContext";
+  }
+  protected:
+  explicit TimeContext(::PROTOBUF_NAMESPACE_ID::Arena* arena,
+                       bool is_message_owned = false);
+  public:
+
+  static const ClassData _class_data_;
+  const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*GetClassData() const final;
+
+  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  enum : int {
+    kBootIdFieldNumber = 2,
+    kMonoNsFieldNumber = 1,
+    kProducerStartMonoNsFieldNumber = 3,
+    kProducerSeqFieldNumber = 4,
+    kWallAnchorNsFieldNumber = 5,
+    kClockStateFieldNumber = 6,
+    kTimeContractVersionFieldNumber = 7,
+    kSnifferSendMonoNsFieldNumber = 8,
+    kMldRecvMonoNsFieldNumber = 9,
+    kMldSendMonoNsFieldNumber = 10,
+  };
+  // string boot_id = 2;
+  void clear_boot_id();
+  const std::string& boot_id() const;
+  template <typename ArgT0 = const std::string&, typename... ArgT>
+  void set_boot_id(ArgT0&& arg0, ArgT... args);
+  std::string* mutable_boot_id();
+  PROTOBUF_NODISCARD std::string* release_boot_id();
+  void set_allocated_boot_id(std::string* boot_id);
+  private:
+  const std::string& _internal_boot_id() const;
+  inline PROTOBUF_ALWAYS_INLINE void _internal_set_boot_id(const std::string& value);
+  std::string* _internal_mutable_boot_id();
+  public:
+
+  // uint64 mono_ns = 1;
+  void clear_mono_ns();
+  uint64_t mono_ns() const;
+  void set_mono_ns(uint64_t value);
+  private:
+  uint64_t _internal_mono_ns() const;
+  void _internal_set_mono_ns(uint64_t value);
+  public:
+
+  // uint64 producer_start_mono_ns = 3;
+  void clear_producer_start_mono_ns();
+  uint64_t producer_start_mono_ns() const;
+  void set_producer_start_mono_ns(uint64_t value);
+  private:
+  uint64_t _internal_producer_start_mono_ns() const;
+  void _internal_set_producer_start_mono_ns(uint64_t value);
+  public:
+
+  // uint64 producer_seq = 4;
+  void clear_producer_seq();
+  uint64_t producer_seq() const;
+  void set_producer_seq(uint64_t value);
+  private:
+  uint64_t _internal_producer_seq() const;
+  void _internal_set_producer_seq(uint64_t value);
+  public:
+
+  // int64 wall_anchor_ns = 5;
+  void clear_wall_anchor_ns();
+  int64_t wall_anchor_ns() const;
+  void set_wall_anchor_ns(int64_t value);
+  private:
+  int64_t _internal_wall_anchor_ns() const;
+  void _internal_set_wall_anchor_ns(int64_t value);
+  public:
+
+  // .protobuf.ClockState clock_state = 6;
+  void clear_clock_state();
+  ::protobuf::ClockState clock_state() const;
+  void set_clock_state(::protobuf::ClockState value);
+  private:
+  ::protobuf::ClockState _internal_clock_state() const;
+  void _internal_set_clock_state(::protobuf::ClockState value);
+  public:
+
+  // uint32 time_contract_version = 7;
+  void clear_time_contract_version();
+  uint32_t time_contract_version() const;
+  void set_time_contract_version(uint32_t value);
+  private:
+  uint32_t _internal_time_contract_version() const;
+  void _internal_set_time_contract_version(uint32_t value);
+  public:
+
+  // uint64 sniffer_send_mono_ns = 8;
+  void clear_sniffer_send_mono_ns();
+  uint64_t sniffer_send_mono_ns() const;
+  void set_sniffer_send_mono_ns(uint64_t value);
+  private:
+  uint64_t _internal_sniffer_send_mono_ns() const;
+  void _internal_set_sniffer_send_mono_ns(uint64_t value);
+  public:
+
+  // uint64 mld_recv_mono_ns = 9;
+  void clear_mld_recv_mono_ns();
+  uint64_t mld_recv_mono_ns() const;
+  void set_mld_recv_mono_ns(uint64_t value);
+  private:
+  uint64_t _internal_mld_recv_mono_ns() const;
+  void _internal_set_mld_recv_mono_ns(uint64_t value);
+  public:
+
+  // uint64 mld_send_mono_ns = 10;
+  void clear_mld_send_mono_ns();
+  uint64_t mld_send_mono_ns() const;
+  void set_mld_send_mono_ns(uint64_t value);
+  private:
+  uint64_t _internal_mld_send_mono_ns() const;
+  void _internal_set_mld_send_mono_ns(uint64_t value);
+  public:
+
+  // @@protoc_insertion_point(class_scope:protobuf.TimeContext)
+ private:
+  class _Internal;
+
+  template <typename T> friend class ::PROTOBUF_NAMESPACE_ID::Arena::InternalHelper;
+  typedef void InternalArenaConstructable_;
+  typedef void DestructorSkippable_;
+  struct Impl_ {
+    ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr boot_id_;
+    uint64_t mono_ns_;
+    uint64_t producer_start_mono_ns_;
+    uint64_t producer_seq_;
+    int64_t wall_anchor_ns_;
+    int clock_state_;
+    uint32_t time_contract_version_;
+    uint64_t sniffer_send_mono_ns_;
+    uint64_t mld_recv_mono_ns_;
+    uint64_t mld_send_mono_ns_;
+    mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
+  };
+  union { Impl_ _impl_; };
+  friend struct ::TableStruct_network_5fsecurity_2eproto;
+};
+// -------------------------------------------------------------------
+
 class NetworkSecurityEvent_CustomMetadataEntry_DoNotUse : public ::PROTOBUF_NAMESPACE_ID::internal::MapEntry<NetworkSecurityEvent_CustomMetadataEntry_DoNotUse, 
     std::string, std::string,
     ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::TYPE_STRING,
@@ -8126,7 +8408,7 @@ class NetworkSecurityEvent final :
                &_NetworkSecurityEvent_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    29;
+    30;
 
   friend void swap(NetworkSecurityEvent& a, NetworkSecurityEvent& b) {
     a.Swap(&b);
@@ -8226,6 +8508,7 @@ class NetworkSecurityEvent final :
     kDecisionMetadataFieldNumber = 34,
     kProvenanceFieldNumber = 35,
     kVictimWindowFieldNumber = 36,
+    kTimeContextFieldNumber = 38,
     kOverallThreatScoreFieldNumber = 15,
     kSchemaVersionFieldNumber = 25,
     kAuthoritativeSourceFieldNumber = 31,
@@ -8645,6 +8928,24 @@ class NetworkSecurityEvent final :
       ::protobuf::VictimWindow* victim_window);
   ::protobuf::VictimWindow* unsafe_arena_release_victim_window();
 
+  // .protobuf.TimeContext time_context = 38;
+  bool has_time_context() const;
+  private:
+  bool _internal_has_time_context() const;
+  public:
+  void clear_time_context();
+  const ::protobuf::TimeContext& time_context() const;
+  PROTOBUF_NODISCARD ::protobuf::TimeContext* release_time_context();
+  ::protobuf::TimeContext* mutable_time_context();
+  void set_allocated_time_context(::protobuf::TimeContext* time_context);
+  private:
+  const ::protobuf::TimeContext& _internal_time_context() const;
+  ::protobuf::TimeContext* _internal_mutable_time_context();
+  public:
+  void unsafe_arena_set_allocated_time_context(
+      ::protobuf::TimeContext* time_context);
+  ::protobuf::TimeContext* unsafe_arena_release_time_context();
+
   // double overall_threat_score = 15;
   void clear_overall_threat_score();
   double overall_threat_score() const;
@@ -8744,6 +9045,7 @@ class NetworkSecurityEvent final :
     ::protobuf::DecisionMetadata* decision_metadata_;
     ::protobuf::DetectionProvenance* provenance_;
     ::protobuf::VictimWindow* victim_window_;
+    ::protobuf::TimeContext* time_context_;
     double overall_threat_score_;
     uint32_t schema_version_;
     int authoritative_source_;
@@ -8806,7 +9108,7 @@ class EventBatch final :
                &_EventBatch_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    30;
+    31;
 
   friend void swap(EventBatch& a, EventBatch& b) {
     a.Swap(&b);
@@ -9120,7 +9422,7 @@ class SystemConfiguration final :
                &_SystemConfiguration_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    33;
+    34;
 
   friend void swap(SystemConfiguration& a, SystemConfiguration& b) {
     a.Swap(&b);
@@ -9474,7 +9776,7 @@ class RansomwareFeatures final :
                &_RansomwareFeatures_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    34;
+    35;
 
   friend void swap(RansomwareFeatures& a, RansomwareFeatures& b) {
     a.Swap(&b);
@@ -9831,7 +10133,7 @@ class DecisionMetadata final :
                &_DecisionMetadata_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    35;
+    36;
 
   friend void swap(DecisionMetadata& a, DecisionMetadata& b) {
     a.Swap(&b);
@@ -10079,7 +10381,7 @@ class Detection final :
                &_Detection_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    36;
+    37;
 
   friend void swap(Detection& a, Detection& b) {
     a.Swap(&b);
@@ -10308,7 +10610,7 @@ class DetectionBatch final :
                &_DetectionBatch_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    37;
+    38;
 
   friend void swap(DetectionBatch& a, DetectionBatch& b) {
     a.Swap(&b);
@@ -21504,6 +21806,240 @@ inline void VictimWindow::set_snapshot_age_ms(uint64_t value) {
 
 // -------------------------------------------------------------------
 
+// TimeContext
+
+// uint64 mono_ns = 1;
+inline void TimeContext::clear_mono_ns() {
+  _impl_.mono_ns_ = uint64_t{0u};
+}
+inline uint64_t TimeContext::_internal_mono_ns() const {
+  return _impl_.mono_ns_;
+}
+inline uint64_t TimeContext::mono_ns() const {
+  // @@protoc_insertion_point(field_get:protobuf.TimeContext.mono_ns)
+  return _internal_mono_ns();
+}
+inline void TimeContext::_internal_set_mono_ns(uint64_t value) {
+  
+  _impl_.mono_ns_ = value;
+}
+inline void TimeContext::set_mono_ns(uint64_t value) {
+  _internal_set_mono_ns(value);
+  // @@protoc_insertion_point(field_set:protobuf.TimeContext.mono_ns)
+}
+
+// string boot_id = 2;
+inline void TimeContext::clear_boot_id() {
+  _impl_.boot_id_.ClearToEmpty();
+}
+inline const std::string& TimeContext::boot_id() const {
+  // @@protoc_insertion_point(field_get:protobuf.TimeContext.boot_id)
+  return _internal_boot_id();
+}
+template <typename ArgT0, typename... ArgT>
+inline PROTOBUF_ALWAYS_INLINE
+void TimeContext::set_boot_id(ArgT0&& arg0, ArgT... args) {
+ 
+ _impl_.boot_id_.Set(static_cast<ArgT0 &&>(arg0), args..., GetArenaForAllocation());
+  // @@protoc_insertion_point(field_set:protobuf.TimeContext.boot_id)
+}
+inline std::string* TimeContext::mutable_boot_id() {
+  std::string* _s = _internal_mutable_boot_id();
+  // @@protoc_insertion_point(field_mutable:protobuf.TimeContext.boot_id)
+  return _s;
+}
+inline const std::string& TimeContext::_internal_boot_id() const {
+  return _impl_.boot_id_.Get();
+}
+inline void TimeContext::_internal_set_boot_id(const std::string& value) {
+  
+  _impl_.boot_id_.Set(value, GetArenaForAllocation());
+}
+inline std::string* TimeContext::_internal_mutable_boot_id() {
+  
+  return _impl_.boot_id_.Mutable(GetArenaForAllocation());
+}
+inline std::string* TimeContext::release_boot_id() {
+  // @@protoc_insertion_point(field_release:protobuf.TimeContext.boot_id)
+  return _impl_.boot_id_.Release();
+}
+inline void TimeContext::set_allocated_boot_id(std::string* boot_id) {
+  if (boot_id != nullptr) {
+    
+  } else {
+    
+  }
+  _impl_.boot_id_.SetAllocated(boot_id, GetArenaForAllocation());
+#ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  if (_impl_.boot_id_.IsDefault()) {
+    _impl_.boot_id_.Set("", GetArenaForAllocation());
+  }
+#endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  // @@protoc_insertion_point(field_set_allocated:protobuf.TimeContext.boot_id)
+}
+
+// uint64 producer_start_mono_ns = 3;
+inline void TimeContext::clear_producer_start_mono_ns() {
+  _impl_.producer_start_mono_ns_ = uint64_t{0u};
+}
+inline uint64_t TimeContext::_internal_producer_start_mono_ns() const {
+  return _impl_.producer_start_mono_ns_;
+}
+inline uint64_t TimeContext::producer_start_mono_ns() const {
+  // @@protoc_insertion_point(field_get:protobuf.TimeContext.producer_start_mono_ns)
+  return _internal_producer_start_mono_ns();
+}
+inline void TimeContext::_internal_set_producer_start_mono_ns(uint64_t value) {
+  
+  _impl_.producer_start_mono_ns_ = value;
+}
+inline void TimeContext::set_producer_start_mono_ns(uint64_t value) {
+  _internal_set_producer_start_mono_ns(value);
+  // @@protoc_insertion_point(field_set:protobuf.TimeContext.producer_start_mono_ns)
+}
+
+// uint64 producer_seq = 4;
+inline void TimeContext::clear_producer_seq() {
+  _impl_.producer_seq_ = uint64_t{0u};
+}
+inline uint64_t TimeContext::_internal_producer_seq() const {
+  return _impl_.producer_seq_;
+}
+inline uint64_t TimeContext::producer_seq() const {
+  // @@protoc_insertion_point(field_get:protobuf.TimeContext.producer_seq)
+  return _internal_producer_seq();
+}
+inline void TimeContext::_internal_set_producer_seq(uint64_t value) {
+  
+  _impl_.producer_seq_ = value;
+}
+inline void TimeContext::set_producer_seq(uint64_t value) {
+  _internal_set_producer_seq(value);
+  // @@protoc_insertion_point(field_set:protobuf.TimeContext.producer_seq)
+}
+
+// int64 wall_anchor_ns = 5;
+inline void TimeContext::clear_wall_anchor_ns() {
+  _impl_.wall_anchor_ns_ = int64_t{0};
+}
+inline int64_t TimeContext::_internal_wall_anchor_ns() const {
+  return _impl_.wall_anchor_ns_;
+}
+inline int64_t TimeContext::wall_anchor_ns() const {
+  // @@protoc_insertion_point(field_get:protobuf.TimeContext.wall_anchor_ns)
+  return _internal_wall_anchor_ns();
+}
+inline void TimeContext::_internal_set_wall_anchor_ns(int64_t value) {
+  
+  _impl_.wall_anchor_ns_ = value;
+}
+inline void TimeContext::set_wall_anchor_ns(int64_t value) {
+  _internal_set_wall_anchor_ns(value);
+  // @@protoc_insertion_point(field_set:protobuf.TimeContext.wall_anchor_ns)
+}
+
+// .protobuf.ClockState clock_state = 6;
+inline void TimeContext::clear_clock_state() {
+  _impl_.clock_state_ = 0;
+}
+inline ::protobuf::ClockState TimeContext::_internal_clock_state() const {
+  return static_cast< ::protobuf::ClockState >(_impl_.clock_state_);
+}
+inline ::protobuf::ClockState TimeContext::clock_state() const {
+  // @@protoc_insertion_point(field_get:protobuf.TimeContext.clock_state)
+  return _internal_clock_state();
+}
+inline void TimeContext::_internal_set_clock_state(::protobuf::ClockState value) {
+  
+  _impl_.clock_state_ = value;
+}
+inline void TimeContext::set_clock_state(::protobuf::ClockState value) {
+  _internal_set_clock_state(value);
+  // @@protoc_insertion_point(field_set:protobuf.TimeContext.clock_state)
+}
+
+// uint32 time_contract_version = 7;
+inline void TimeContext::clear_time_contract_version() {
+  _impl_.time_contract_version_ = 0u;
+}
+inline uint32_t TimeContext::_internal_time_contract_version() const {
+  return _impl_.time_contract_version_;
+}
+inline uint32_t TimeContext::time_contract_version() const {
+  // @@protoc_insertion_point(field_get:protobuf.TimeContext.time_contract_version)
+  return _internal_time_contract_version();
+}
+inline void TimeContext::_internal_set_time_contract_version(uint32_t value) {
+  
+  _impl_.time_contract_version_ = value;
+}
+inline void TimeContext::set_time_contract_version(uint32_t value) {
+  _internal_set_time_contract_version(value);
+  // @@protoc_insertion_point(field_set:protobuf.TimeContext.time_contract_version)
+}
+
+// uint64 sniffer_send_mono_ns = 8;
+inline void TimeContext::clear_sniffer_send_mono_ns() {
+  _impl_.sniffer_send_mono_ns_ = uint64_t{0u};
+}
+inline uint64_t TimeContext::_internal_sniffer_send_mono_ns() const {
+  return _impl_.sniffer_send_mono_ns_;
+}
+inline uint64_t TimeContext::sniffer_send_mono_ns() const {
+  // @@protoc_insertion_point(field_get:protobuf.TimeContext.sniffer_send_mono_ns)
+  return _internal_sniffer_send_mono_ns();
+}
+inline void TimeContext::_internal_set_sniffer_send_mono_ns(uint64_t value) {
+  
+  _impl_.sniffer_send_mono_ns_ = value;
+}
+inline void TimeContext::set_sniffer_send_mono_ns(uint64_t value) {
+  _internal_set_sniffer_send_mono_ns(value);
+  // @@protoc_insertion_point(field_set:protobuf.TimeContext.sniffer_send_mono_ns)
+}
+
+// uint64 mld_recv_mono_ns = 9;
+inline void TimeContext::clear_mld_recv_mono_ns() {
+  _impl_.mld_recv_mono_ns_ = uint64_t{0u};
+}
+inline uint64_t TimeContext::_internal_mld_recv_mono_ns() const {
+  return _impl_.mld_recv_mono_ns_;
+}
+inline uint64_t TimeContext::mld_recv_mono_ns() const {
+  // @@protoc_insertion_point(field_get:protobuf.TimeContext.mld_recv_mono_ns)
+  return _internal_mld_recv_mono_ns();
+}
+inline void TimeContext::_internal_set_mld_recv_mono_ns(uint64_t value) {
+  
+  _impl_.mld_recv_mono_ns_ = value;
+}
+inline void TimeContext::set_mld_recv_mono_ns(uint64_t value) {
+  _internal_set_mld_recv_mono_ns(value);
+  // @@protoc_insertion_point(field_set:protobuf.TimeContext.mld_recv_mono_ns)
+}
+
+// uint64 mld_send_mono_ns = 10;
+inline void TimeContext::clear_mld_send_mono_ns() {
+  _impl_.mld_send_mono_ns_ = uint64_t{0u};
+}
+inline uint64_t TimeContext::_internal_mld_send_mono_ns() const {
+  return _impl_.mld_send_mono_ns_;
+}
+inline uint64_t TimeContext::mld_send_mono_ns() const {
+  // @@protoc_insertion_point(field_get:protobuf.TimeContext.mld_send_mono_ns)
+  return _internal_mld_send_mono_ns();
+}
+inline void TimeContext::_internal_set_mld_send_mono_ns(uint64_t value) {
+  
+  _impl_.mld_send_mono_ns_ = value;
+}
+inline void TimeContext::set_mld_send_mono_ns(uint64_t value) {
+  _internal_set_mld_send_mono_ns(value);
+  // @@protoc_insertion_point(field_set:protobuf.TimeContext.mld_send_mono_ns)
+}
+
+// -------------------------------------------------------------------
+
 // -------------------------------------------------------------------
 
 // NetworkSecurityEvent
@@ -23340,6 +23876,96 @@ inline void NetworkSecurityEvent::_internal_set_event_kind(::protobuf::EventKind
 inline void NetworkSecurityEvent::set_event_kind(::protobuf::EventKind value) {
   _internal_set_event_kind(value);
   // @@protoc_insertion_point(field_set:protobuf.NetworkSecurityEvent.event_kind)
+}
+
+// .protobuf.TimeContext time_context = 38;
+inline bool NetworkSecurityEvent::_internal_has_time_context() const {
+  return this != internal_default_instance() && _impl_.time_context_ != nullptr;
+}
+inline bool NetworkSecurityEvent::has_time_context() const {
+  return _internal_has_time_context();
+}
+inline void NetworkSecurityEvent::clear_time_context() {
+  if (GetArenaForAllocation() == nullptr && _impl_.time_context_ != nullptr) {
+    delete _impl_.time_context_;
+  }
+  _impl_.time_context_ = nullptr;
+}
+inline const ::protobuf::TimeContext& NetworkSecurityEvent::_internal_time_context() const {
+  const ::protobuf::TimeContext* p = _impl_.time_context_;
+  return p != nullptr ? *p : reinterpret_cast<const ::protobuf::TimeContext&>(
+      ::protobuf::_TimeContext_default_instance_);
+}
+inline const ::protobuf::TimeContext& NetworkSecurityEvent::time_context() const {
+  // @@protoc_insertion_point(field_get:protobuf.NetworkSecurityEvent.time_context)
+  return _internal_time_context();
+}
+inline void NetworkSecurityEvent::unsafe_arena_set_allocated_time_context(
+    ::protobuf::TimeContext* time_context) {
+  if (GetArenaForAllocation() == nullptr) {
+    delete reinterpret_cast<::PROTOBUF_NAMESPACE_ID::MessageLite*>(_impl_.time_context_);
+  }
+  _impl_.time_context_ = time_context;
+  if (time_context) {
+    
+  } else {
+    
+  }
+  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:protobuf.NetworkSecurityEvent.time_context)
+}
+inline ::protobuf::TimeContext* NetworkSecurityEvent::release_time_context() {
+  
+  ::protobuf::TimeContext* temp = _impl_.time_context_;
+  _impl_.time_context_ = nullptr;
+#ifdef PROTOBUF_FORCE_COPY_IN_RELEASE
+  auto* old =  reinterpret_cast<::PROTOBUF_NAMESPACE_ID::MessageLite*>(temp);
+  temp = ::PROTOBUF_NAMESPACE_ID::internal::DuplicateIfNonNull(temp);
+  if (GetArenaForAllocation() == nullptr) { delete old; }
+#else  // PROTOBUF_FORCE_COPY_IN_RELEASE
+  if (GetArenaForAllocation() != nullptr) {
+    temp = ::PROTOBUF_NAMESPACE_ID::internal::DuplicateIfNonNull(temp);
+  }
+#endif  // !PROTOBUF_FORCE_COPY_IN_RELEASE
+  return temp;
+}
+inline ::protobuf::TimeContext* NetworkSecurityEvent::unsafe_arena_release_time_context() {
+  // @@protoc_insertion_point(field_release:protobuf.NetworkSecurityEvent.time_context)
+  
+  ::protobuf::TimeContext* temp = _impl_.time_context_;
+  _impl_.time_context_ = nullptr;
+  return temp;
+}
+inline ::protobuf::TimeContext* NetworkSecurityEvent::_internal_mutable_time_context() {
+  
+  if (_impl_.time_context_ == nullptr) {
+    auto* p = CreateMaybeMessage<::protobuf::TimeContext>(GetArenaForAllocation());
+    _impl_.time_context_ = p;
+  }
+  return _impl_.time_context_;
+}
+inline ::protobuf::TimeContext* NetworkSecurityEvent::mutable_time_context() {
+  ::protobuf::TimeContext* _msg = _internal_mutable_time_context();
+  // @@protoc_insertion_point(field_mutable:protobuf.NetworkSecurityEvent.time_context)
+  return _msg;
+}
+inline void NetworkSecurityEvent::set_allocated_time_context(::protobuf::TimeContext* time_context) {
+  ::PROTOBUF_NAMESPACE_ID::Arena* message_arena = GetArenaForAllocation();
+  if (message_arena == nullptr) {
+    delete _impl_.time_context_;
+  }
+  if (time_context) {
+    ::PROTOBUF_NAMESPACE_ID::Arena* submessage_arena =
+        ::PROTOBUF_NAMESPACE_ID::Arena::InternalGetOwningArena(time_context);
+    if (message_arena != submessage_arena) {
+      time_context = ::PROTOBUF_NAMESPACE_ID::internal::GetOwnedMessage(
+          message_arena, time_context, submessage_arena);
+    }
+    
+  } else {
+    
+  }
+  _impl_.time_context_ = time_context;
+  // @@protoc_insertion_point(field_set_allocated:protobuf.NetworkSecurityEvent.time_context)
 }
 
 // -------------------------------------------------------------------
@@ -25290,6 +25916,8 @@ inline void DetectionBatch::set_allocated_batch_timestamp(::PROTOBUF_NAMESPACE_I
 
 // -------------------------------------------------------------------
 
+// -------------------------------------------------------------------
+
 
 // @@protoc_insertion_point(namespace_scope)
 
@@ -25336,6 +25964,11 @@ template <> struct is_proto_enum< ::protobuf::EventBatch_ProcessingMode> : ::std
 template <>
 inline const EnumDescriptor* GetEnumDescriptor< ::protobuf::EventBatch_ProcessingMode>() {
   return ::protobuf::EventBatch_ProcessingMode_descriptor();
+}
+template <> struct is_proto_enum< ::protobuf::ClockState> : ::std::true_type {};
+template <>
+inline const EnumDescriptor* GetEnumDescriptor< ::protobuf::ClockState>() {
+  return ::protobuf::ClockState_descriptor();
 }
 template <> struct is_proto_enum< ::protobuf::DetectionType> : ::std::true_type {};
 template <>

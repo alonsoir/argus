@@ -414,6 +414,15 @@ if(BUILD_TESTS)
             ${CMAKE_CURRENT_SOURCE_DIR}/include
     )
     add_test(NAME test_ddos_shadow_policy COMMAND test_ddos_shadow_policy)
+    # test_seq_tracker - DAY297, contadores de producer_seq por productor (header-only, propio CHECK) [TIMEBASE-SEQ-D297]
+    add_executable(test_seq_tracker
+            tests/unit/test_seq_tracker.cpp
+    )
+    target_include_directories(test_seq_tracker
+            PRIVATE
+            ${CMAKE_CURRENT_SOURCE_DIR}/include
+    )
+    add_test(NAME test_seq_tracker COMMAND test_seq_tracker)
 
 # ── Test A: Autonomy E2E DAY 156 ─────────────────────────────────────────────
 add_executable(test_autonomy_e2e

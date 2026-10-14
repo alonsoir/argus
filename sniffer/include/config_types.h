@@ -19,6 +19,7 @@
 // JSON parsing
 #include <json/json.h>
 #include "ddos_contract_v2.hpp"  // [DDOS-HYST-D291]
+#include "timebase.hpp"  // [TIMEBASE-D295]
 
 // ============================================================================
 // MACROS DE VALIDACIÓN ESTRICTA JSON
@@ -165,6 +166,8 @@ struct StrictSnifferConfig {
         int max_instructions_per_program;
         int map_update_batch_size;
     } kernel_space;
+
+    ::argus::timebase::TimebaseParams timebase{};  // [TIMEBASE-D295]
 
     // User space - TODOS REQUERIDOS
     struct {

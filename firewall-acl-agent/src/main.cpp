@@ -357,6 +357,18 @@ int main(int argc, char** argv) {
             std::make_unique<mldefender::firewall::observability::ObservabilityLogger>(
                 log_path, enable_verbose);
 
+        {  // [LOG-LEVEL-D296] logging.level del JSON (debug|info|batch|ipset|warn|error|crash); defecto validado: info
+            using OL = mldefender::firewall::observability::ObservabilityLogger;
+            OL::Level lvl = OL::Level::LOG_INFO;
+            if (!OL::parse_level(config.logging.level, lvl)) {
+                std::cerr << "[CONFIG-DEFAULT] logging.level='" << config.logging.level
+                          << "' no valido (admitidos: debug|info|batch|ipset|warn|error|crash); se usa el defecto validado 'info'" << std::endl;
+                lvl = OL::Level::LOG_INFO;
+            }
+            mldefender::firewall::observability::g_logger->set_min_level(lvl);
+            std::cout << "[INFO] logging.level aplicado=" << OL::level_str(lvl) << " [LOG-LEVEL-D296]" << std::endl;
+        }
+
         FIREWALL_LOG_INFO("════════════════════════════════════════════════════════");
         FIREWALL_LOG_INFO("ML Defender - Firewall ACL Agent v1.0.0 (Day 52)");
         FIREWALL_LOG_INFO("High-Performance Packet DROP Agent");
@@ -725,7 +737,10 @@ int main(int argc, char** argv) {
         zmq_config.ddos_shadow = config.ddos_shadow;
         std::cout << "[SOMBRA-DDOS] política por víctima " << (config.ddos_shadow.enabled ? "ACTIVA" : "DESACTIVADA")
                   << ": m=" << config.ddos_shadow.m << " k=" << config.ddos_shadow.k << " n=" << config.ddos_shadow.n
-                  << " hold_s=" << config.ddos_shadow.hold_s << " resumen_s=" << config.ddos_shadow.resumen_s
+                  << " hold_windows=" << config.ddos_shadow.hold_windows << " resumen_s=" << config.ddos_shadow.resumen_s
+                  << " lag_max_valid_s=" << config.ddos_shadow.lag_max_valid_s  // [TIMEBASE-D295]
+                  << " anomalias_detalle_max=" << config.ddos_shadow.anomalias_detalle_max
+                  << " seq_ventana=" << config.ddos_shadow.seq_ventana  // [TIMEBASE-SEQ-D297]
                   << " (solo registra, no bloquea)" << std::endl;  // [DDOS-SHADOW-OBS-D293]
 
         // Transport configuration (compression)

@@ -503,6 +503,14 @@ DetectorConfig ConfigLoader::load() {
         auto& corr = json_["correlation_writer"];
         config.correlation_writer.base_dir = get_required<std::string>(corr, "base_dir", "correlation_writer");
         config.correlation_writer.rotation_seconds = get_required<int>(corr, "rotation_seconds", "correlation_writer");
+        // [BRONZE-FASTALERT-D296] opcional: ausente o no booleano -> false con [CONFIG-DEFAULT]; el ml-detector arranca igual
+        if (corr.contains("include_fast_alerts") && corr["include_fast_alerts"].is_boolean()) {
+            config.correlation_writer.include_fast_alerts = corr["include_fast_alerts"].get<bool>();
+        } else {
+            config.correlation_writer.include_fast_alerts = false;
+            std::cerr << "[CONFIG-DEFAULT] correlation_writer.include_fast_alerts ausente o no booleano "
+                         "(formato true|false): se usa false\n";
+        }
     }
 
     // [DDOS-DATASET-D287] opcional: sin bloque en el JSON queda apagado

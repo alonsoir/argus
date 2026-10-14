@@ -10,6 +10,7 @@
 #include "ransomware_feature_processor.hpp"
 #include "ml_defender_features.hpp"
 #include "ddos_victim_board.hpp"  // [DDOS-VWIN-D279:RC-INC]
+#include "timebase.hpp"  // [TIMEBASE-D295]
 #include "payload_analyzer.hpp"
 // ML Defender embedded detectors
 #include "ml_defender/ddos_detector.hpp"
@@ -164,6 +165,8 @@ private:
     void ring_consumer_loop(int consumer_id);
     void feature_processor_loop();
     void zmq_sender_loop();
+    void timebase_loop();  // [TIMEBASE-D295]
+    void stamp_time_context(protobuf::NetworkSecurityEvent& ev, uint64_t mono_ns);  // [TIMEBASE-D295]
     void stats_display_loop();  // NEW: Thread for periodic stats
 
     // Event processing
@@ -224,6 +227,14 @@ private:
     std::atomic<bool> running_{false};
     std::atomic<bool> should_stop_{false};
     std::atomic<bool> initialized_{false};
+    // [TIMEBASE-D295] contrato temporal v1: el hilo del reloj escribe tb_state_; el resto lee atomicos.
+    // tb_start_mono_ns_ y tb_boot_id_ se fijan en start() antes de lanzar ningun hilo.
+    ::argus::timebase::TimebaseState tb_state_{};
+    std::atomic<int64_t> tb_anchor_ns_{0};
+    std::atomic<uint8_t> tb_clock_state_{0};
+    std::atomic<uint64_t> tb_seq_{0};
+    uint64_t tb_start_mono_ns_{0};
+    std::string tb_boot_id_;
 
     // Layer 3 - ML Defender Embedded Detectors (thread-local, zero-lock)
     thread_local static ml_defender::DDoSDetector ddos_detector_;

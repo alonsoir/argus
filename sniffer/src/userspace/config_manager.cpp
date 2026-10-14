@@ -8,6 +8,67 @@
 
 namespace sniffer {
 
+// [TIMEBASE-D295] Seccion "timebase" del JSON (contrato temporal v1). Mismo criterio que la EWMA
+// (DAY291): el JSON manda; si un campo falta, no es numerico o esta fuera de rango, se usa el
+// DEFECTO validado (timebase.hpp) y se avisa con [CONFIG-DEFAULT]. El sniffer arranca siempre.
+namespace {
+int timebase_num(const Json::Value& j, const char* field, double def, double lo, double hi, double& out) {
+    out = def;
+    if (!j.isMember(field)) {
+        std::cerr << "[CONFIG-DEFAULT] timebase." << field << " ausente -> defecto=" << def
+                  << " rango=[" << lo << ", " << hi << "]" << std::endl;
+        return 1;
+    }
+    const Json::Value& v = j[field];
+    if (!v.isNumeric()) {
+        std::cerr << "[CONFIG-DEFAULT] timebase." << field << " no es numerico -> defecto=" << def
+                  << " rango=[" << lo << ", " << hi << "]" << std::endl;
+        return 1;
+    }
+    const double x = v.asDouble();
+    if (!(x >= lo && x <= hi)) {
+        std::cerr << "[CONFIG-DEFAULT] timebase." << field << "=" << x << " fuera de rango -> defecto=" << def
+                  << " rango=[" << lo << ", " << hi << "]" << std::endl;
+        return 1;
+    }
+    out = x;
+    return 0;
+}
+
+::argus::timebase::TimebaseParams parse_timebase(const Json::Value& tin) {
+    namespace tb = ::argus::timebase;
+    static const Json::Value kVacio(Json::objectValue);
+    const Json::Value& t = tin.isObject() ? tin : kVacio;
+    const tb::TimebaseParams d{};
+    tb::TimebaseParams p{};
+    int n = 0;
+    double x = 0.0;
+    n += timebase_num(t, "anchor_period_s", d.anchor_period_s, tb::kAnchorPeriodMin, tb::kAnchorPeriodMax, x);
+    p.anchor_period_s = x;
+    n += timebase_num(t, "step_threshold_s", d.step_threshold_s, tb::kStepThresholdMin, tb::kStepThresholdMax, x);
+    p.step_threshold_s = x;
+    n += timebase_num(t, "slew_window_s", d.slew_window_s, tb::kSlewWindowMin, tb::kSlewWindowMax, x);
+    p.slew_window_s = x;
+    n += timebase_num(t, "slew_ppm_threshold", d.slew_ppm_threshold, tb::kSlewPpmMin, tb::kSlewPpmMax, x);
+    p.slew_ppm_threshold = x;
+    n += timebase_num(t, "stepped_recent_s", d.stepped_recent_s, tb::kSteppedRecentMin, tb::kSteppedRecentMax, x);
+    p.stepped_recent_s = x;
+    if (!tb::params_ok(p)) {
+        std::cerr << "[CONFIG-DEFAULT] regla slew_window_s >= anchor_period_s rota (anchor_period_s="
+                  << p.anchor_period_s << ", slew_window_s=" << p.slew_window_s << ") -> defectos "
+                  << d.anchor_period_s << " y " << d.slew_window_s << std::endl;
+        p.anchor_period_s = d.anchor_period_s;
+        p.slew_window_s = d.slew_window_s;
+        ++n;
+    }
+    if (n > 0) {
+        std::cerr << "[CONFIG-DEFAULT] " << n << " ajustes con valor por defecto en timebase: revisar sniffer.json"
+                  << std::endl;
+    }
+    return p;
+}
+}  // namespace
+
 std::unique_ptr<SnifferConfig> ConfigManager::load_from_file(const std::string& config_path) {
     if (!std::filesystem::exists(config_path)) {
         fail_fast("Configuration file not found: " + config_path);
@@ -54,6 +115,7 @@ std::unique_ptr<SnifferConfig> ConfigManager::load_from_file(const std::string& 
     config->threading = parse_threading(root.get("threading", Json::Value{}));
     config->capture = parse_capture(root.get("capture", Json::Value{}));
     config->kernel_space = parse_kernel_space(root.get("kernel_space", Json::Value{}));
+    config->timebase = parse_timebase(root.get("timebase", Json::Value{}));  // [TIMEBASE-D295]
     config->user_space = parse_user_space(root.get("user_space", Json::Value{}));
 
     // Parse feature groups

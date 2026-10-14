@@ -7,6 +7,7 @@
 #include <unordered_map>
 #include <json/json.h>
 #include "ddos_contract_v2.hpp"  // [DDOS-HYST-D291]
+#include "timebase.hpp"  // [TIMEBASE-D295]
 
 namespace sniffer {
 
@@ -412,6 +413,7 @@ struct SnifferConfig {
     SecurityConfig security;
     BackpressureConfig backpressure;
     MLDefenderConfig ml_defender;
+    ::argus::timebase::TimebaseParams timebase{};  // [TIMEBASE-D295]
 
     // Validation methods
     bool is_valid() const;

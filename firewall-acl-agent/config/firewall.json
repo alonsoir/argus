@@ -17,13 +17,17 @@
     "max_processing_delay_ms": 10
   },
   "ddos_shadow": {
-    "_doc": "[DDOS-SHADOW-D293] Política por víctima {dst_ip, proto} en SOMBRA (docs/ml-heads/bloque1_day293.md): solo registra [SOMBRA-DDOS] INICIO/FIN, no bloquea. Ventanas de 1 s por marca de tiempo del evento. enabled: true|false (defecto true). m: entero en [1, 1000], eventos DROP mínimos para que una ventana sea positiva (defecto 5). n: entero en [1, 60], ventanas de la cola (defecto 5). k: entero en [1, n], positivas en la cola para INICIO (defecto 3). hold_s: entero en [1, 3600], segundos sin positiva para FIN (defecto 30). resumen_s: entero en [1, 3600], segundos (reloj de pared) entre resúmenes [SOMBRA-DDOS] resumen (defecto 10) [DDOS-SHADOW-OBS-D293]. Campo ausente o inválido: defecto con [CONFIG-DEFAULT] y el agente arranca igual. Valores de LABORATORIO (validados solo en latencia; frente a FP pendientes de la batería v3).",
+    "_doc": "[DDOS-SHADOW-D293] Política por víctima {dst_ip, proto} en SOMBRA (docs/ml-heads/bloque1_day293.md): solo registra [SOMBRA-DDOS] INICIO/FIN, no bloquea. Ventanas de 1 s por time_context.mono_ns del evento (contrato temporal v1, [TIMEBASE-D295]): 1 ventana = 1 s de CLOCK_MONOTONIC del sniffer, inmune a saltos del reloj de pared; un evento con time_context ausente o anomalo no entra en ninguna ventana y se registra como [TIMEBASE-ANOMALIA]. enabled: true|false (defecto true). m: entero en [1, 1000], eventos DROP mínimos para que una ventana sea positiva (defecto 5). n: entero en [1, 60], ventanas de la cola (defecto 5). k: entero en [1, n], positivas en la cola para INICIO (defecto 3). hold_windows: entero en [1, 3600], VENTANAS sin positiva para FIN (defecto 30). resumen_s: entero en [1, 3600], segundos (reloj de pared) entre resúmenes [SOMBRA-DDOS] resumen (defecto 10) [DDOS-SHADOW-OBS-D293]. lag_max_valid_s: entero en [1, 86400], retraso sniffer->firewall (mismo nodo y boot_id) por encima del cual el evento es anomalo y no cuenta (defecto 600). anomalias_detalle_max: entero en [0, 1000], eventos anomalos detallados en el log por causa y periodo de resumen; el resto solo se cuenta (defecto 10). Campo ausente o inválido: defecto con [CONFIG-DEFAULT] y el agente arranca igual. Valores de LABORATORIO (validados solo en latencia; frente a FP pendientes de la batería v3).",
     "enabled": true,
     "m": 5,
     "k": 3,
     "n": 5,
-    "hold_s": 30,
-    "resumen_s": 10
+    "hold_windows": 30,
+    "_doc_seq_ventana": "[TIMEBASE-SEQ-D297] entero en [64, 1048576], defecto 4096. Ventana de reordenacion (en secuencias) del contador de producer_seq por productor (nodo, boot_id, arranque del productor): dentro de ella se distingue un duplicado de un relleno tardio; mas atras el evento cuenta como seq_viejo. Memoria: 1 bit por secuencia y productor. Resultado en la linea [TIMEBASE] secuencia de cada resumen (contadores acumulados desde el arranque). [TIMEBASE-SEQ-DET-D297] Los casos desorden, dup y viejo se detallan en lineas [TIMEBASE-SEQ] (hasta anomalias_detalle_max por periodo de resumen). Campo ausente o invalido: defecto con [CONFIG-DEFAULT] y el agente arranca igual.",
+    "seq_ventana": 4096,
+    "resumen_s": 10,
+    "lag_max_valid_s": 600,
+    "anomalias_detalle_max": 10
   },
   "_comment_transport": "NEW FOR DAY 23: Decryption + Decompression of incoming data from ml-detector",
   "transport": {
@@ -143,7 +147,8 @@
     "block_gateway": false
   },
   "logging": {
-    "level": "debug",
+    "_doc": "[LOG-LEVEL-D296] level: debug|info|batch|ipset|warn|error|crash (nivel minimo que se escribe, en orden de gravedad). Defecto validado: info. debug solo lo activa el admin a proposito para diagnosticar en preproduccion o produccion: escribe ~25 lineas por evento (medido DAY296), cada una vaciada a disco. Ausente o invalido: info con [CONFIG-DEFAULT] y el agente arranca igual.",
+    "level": "info",
     "console": true,
     "syslog": false,
     "file": "/vagrant/logs/lab/firewall-agent.log",

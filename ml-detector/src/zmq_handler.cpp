@@ -164,6 +164,8 @@ ZMQHandler::ZMQHandler(
             corr_cfg.rotation_seconds = config_.correlation_writer.rotation_seconds;
             corr_cfg.hmac_key_hex     = hmac_key_hex_;
             correlation_writer_ = std::make_shared<ml_defender::CorrelationWriter>(corr_cfg, logger_);
+            logger_->info("[BRONZE-FASTALERT-D296] fast-alerts al bronce: {} (correlation_writer.include_fast_alerts)",
+                          config_.correlation_writer.include_fast_alerts ? "SI" : "NO");
             logger_->info("✅ CorrelationWriter initialized (bronce correlation_v1, base_dir={})",
                          corr_cfg.base_dir);
         } catch (const std::exception& e) {
@@ -274,6 +276,7 @@ void ZMQHandler::run() {
             auto result = input_socket_->recv(encrypted_message, zmq::recv_flags::dontwait);
 
             if (result) {
+                mld_recv_mono_ns_ = mld_mono_now_ns();  // [TIMEBASE-D296] D17: antes de descifrar
                 std::string encrypted_data(
                     static_cast<char*>(encrypted_message.data()),
                     encrypted_message.size()
@@ -384,6 +387,12 @@ void ZMQHandler::process_event(const std::string& message) {
             std::lock_guard<std::mutex> lock(stats_mutex_);
             stats_.deserialization_errors++;
             return;
+        }
+
+        // [TIMEBASE-D296] D17: solo si el evento trae time_context; mutable_time_context() sobre un evento sin el
+        // crearia uno vacio con version 0 y el firewall lo clasificaria como 'version' en vez de 'sin_time_context'.
+        if (event.has_time_context()) {
+            event.mutable_time_context()->set_mld_recv_mono_ns(mld_recv_mono_ns_);
         }
 
         logger_->debug("📦 Event received: id={}", event.event_id());
@@ -632,7 +641,9 @@ void ZMQHandler::process_event(const std::string& message) {
 
         // DAY 175: zona bronce correlation_v1 — punto UNICO, ANTES de la bifurcacion rag/no-rag.
         // NO va dentro del if(!rag_logger_ && csv_writer_) (bug de los dos caminos).
-        if (correlation_writer_ && !event.network_features().community_id().empty()) {
+        if (correlation_writer_ && !event.network_features().community_id().empty() &&
+            (event.event_kind() != protobuf::EVENT_KIND_FAST_ALERT ||
+             config_.correlation_writer.include_fast_alerts)) {  // [BRONZE-FASTALERT-D296]
             correlation_writer_->write_record(event);
         }
 
@@ -996,6 +1007,10 @@ void ZMQHandler::process_event(const std::string& message) {
             }
         }
         // Send enriched event
+        // [TIMEBASE-D296] D17: sello de envio justo antes de serializar (serializacion+cifrado+envio -> tramo mld_fw)
+        if (event.has_time_context()) {
+            event.mutable_time_context()->set_mld_send_mono_ns(mld_mono_now_ns());
+        }
         send_enriched_event(event);
 
         // Stats

@@ -7222,3 +7222,116 @@ por no instrumentado.
 - DEBT-PARQUET-VALIDATOR-FIRST-ROW-001: validate_roundtrip.py solo comprueba timestamp_utc_ns de la PRIMERA fila de
   cada fichero; esconde filas monotónicas en el resto y solo destapa el problema cuando un fichero empieza por una.
   Debe comprobar todas las filas (o contar y fallar con el recuento por fichero).
+
+## DAY294 — tras el Consejo (decisiones D15-D22 en docs/ml-heads/consejo_day294_sintesis.md)
+- fix/event-timestamp-timebase (EN CURSO): DEBT-EVENT-TIMESTAMP-TIMEBASE-001 por D16 (monotónico + ancla + CLOCK_STEP
+  + boot_id/node_id/seq), D17 (retraso enq/deq, eventos por tipo; cierra DEBT-SHADOW-EVENT-CLOCK-LAG-001 y
+  DEBT-FIREWALL-NONFLOW-EVENTS-001 si se explican), DEBT-PARQUET-VALIDATOR-FIRST-ROW-001, y D15 como aceptación.
+- DEBT-DDOS-V2-AUDIT-TWIN-001 (A2): corrida gemelo .61; reformular "0 del inocente" como discriminación por tipo de tráfico.
+- DEBT-DDOS-V2-ACCOUNTING-001 (A1): 5357 DROP frente a un máximo de 5292-5352 posibles; ¿duplicados?
+- DEBT-DDOS-V2-LONG-ATTACK-001 (A5): ¿la EWMA absorbe un ataque largo y la sombra da FIN en mitad?
+- DEBT-DDOS-V2-WARM-BASELINE-001 (A6): solo medido con víctima en el suelo de 10 pps.
+- Rama de medidas y modelo (después): D18 batería v3 con ejes, D19 rasgos por origen, D21 disyuntor, D20 mitigación
+  real (tras familia fuera > 60 %). D22 calibración con cliente, en paralelo.
+- Semana del 2026-10-12: PR propio de limpieza de scripts de la raíz (inventario, git grep de referencias, git mv a
+  scripts/lab/ o scripts/archive/, EMECAS+++) y README.md actualizado.
+
+## DAY295 — contrato temporal v1 (rama fix/event-timestamp-timebase; docs/timebase/contrato_temporal_day295.md)
+- DEBT-LAB-CHRONY-NO-AUTOSTEP-001: tras suspender el Mac, chrony del defender detectó 257,6 s y CORRIGIÓ
+  GRADUALMENTE 14 min pese a makestep 1 -1 (el client sí saltó solo, 4 min después de detectarlo). Mitigación: regla del
+  lab + target lab-clock-step (en esta rama). Evidencia: journals de chrony del 2026-10-12.
+- DEBT-SNIFFER-VARIANT-B-TIMEBASE-001: main_libpcap.cpp no estampa time_context y sella event_timestamp con
+  system_clock al EMITIR (no al capturar). Sus eventos llegan al firewall como sin_time_context.
+- DEBT-SYNTHETIC-TOOLS-TIMEBASE-001: synthetic_sniffer_injector y generate_synthetic_events no cumplen el contrato v1
+  (sin time_context). Útiles además como prueba de las 8 causas de anomalía del firewall.
+- DEBT-SNIFFER-CONFIG-TRIPLE-COPY-001: SnifferConfig -> StrictSnifferConfig -> SnifferConfig copiados a mano campo a
+  campo (config_types.cpp, main.cpp:593, ~60 asignaciones). Un eslabón olvidado = defectos en silencio.
+- DEBT-TIMEBASE-COMMON-001: timebase_lite.hpp del firewall duplica read_boot_id y mono_now de sniffer/timebase.hpp;
+  unificar en common/.
+- DEBT-FIREWALL-SHADOW-WINDOW-MS-001: la ventana de la sombra es 1 s fijo (mono_ns / 1e9). Hacerla configurable
+  (window_ms) exige recalibrar m, k/n y hold_windows: rama de calibración.
+- DEBT-TIMEBASE-MULTINODE-001: la v1 supone sniffer y firewall en el mismo nodo (retraso_otro_boot = anomalía). El
+  modo distribuido necesita reloj de la sombra por productor y retraso sin restar relojes de nodos distintos.
+- DEBT-FLOWUID-TIMEBASE-VERIFY-001 (HIPÓTESIS, sin medir): con flow_start_time monotónico, la ventana de flow_uid de
+  aRGus no podía coincidir con la de Suricata/Zeek para el mismo flujo. Verificar en el grafo con bronce nuevo (epoch)
+  y revisar las medidas pasadas que usaran flow_uid o tiempos entre sensores.
+- DEBT-PARQUET-VALIDATOR-FIRST-ROW-001 (sigue abierta): validate_roundtrip.py lee solo la fila [0].
+- DEBT-EVENT-ID-COLLISION-001 (sin cambios, fuera de esta rama): reacuñar con boot_id/seq resolvería la colisión pero
+  empeoraría la reproducibilidad entre replays (consulta al Consejo DAY180, sin síntesis). Diseño propio.
+- DEBT-COUNCIL-DUP-HOOK-001: en 3ad52bac entraron 8 copias idénticas de la plantilla del Consejo (sha 419dc4d1),
+  corregido en 69071d1b; segunda vez tras DAY292. Hook pre-commit que rechace ficheros consejo_* idénticos en el índice.
+- Aviso del escáner de secretos en cada commit: "Unrecognized key in config: paths_ignore".
+- Para el PR de limpieza de la semana: firewall-acl-agent/proto/network_security.pb.h es una copia muerta (CMake usa
+  ${CMAKE_BINARY_DIR}/proto); avisos de graphify en PR #143 sobre day287/288_*.sh (mkdir que falta, división por cero
+  en awk, PIDs no guardados, glob vacío).
+- Los logs de /vagrant/logs/lab/ se acumulan entre arranques (líneas de arranques anteriores al buscar).
+- FUTURO (Alonso): instalación inmutable: sin compiladores, editores ni salida al exterior en el sitio; cambios solo
+  por artefactos firmados con hash autorizado. Avisos [TIMEBASE-ANOMALIA] y [CONFIG-DEFAULT] hacia el admin (colores,
+  Discord, correo) y LLM maestro que actúa tras un tiempo configurable, con override humano (ver DAY291).
+
+## DAY296 — fix/event-timestamp-timebase (contrato temporal v1, aceptacion parcial)
+Hecho y medido (detalle en docs/timebase/contrato_temporal_day295.md §8):
+- lab-clock-step (Makefile), probado OK y en fallo. D17 tramos sniffer_mld / mld_interno / mld_fw + causas 8 y 9.
+- [LOG-LEVEL-D296] logging.level del firewall conectado (defecto info): retraso medio 14-39 -> 3,3-5,9 ms.
+- [BUILD-PROFILE-D296] set-build-profile.sh con los perfiles del Makefile. Lab: PROFILE=production tambien al arrancar.
+- DEBT-PARQUET-VALIDATOR-FIRST-ROW-001 CERRADA: todas las filas; 32 dias monotonicos borrados (decision de Alonso).
+- [BRONZE-FASTALERT-D296] fast-alerts fuera del bronce hasta que sean fiables (decision de Alonso).
+- Saltos +-5 s en ataque, correccion gradual provocada y suspension real: aceptados (ver §8 del contrato).
+- Disco del Mac: 38 -> 199 GiB libres (RanSMAP, UNSW-NB15, TON_IoT y 9 boxes sin uso; docs/borrados_datasets_day296.md).
+
+Pendiente en esta rama (DAY297): D15 A1 contabilidad, A2 gemelo .61 (10 y 60 pps), A5 ataque largo (primero offline);
+EMECAS+++, PR, merge.
+
+Deudas nuevas:
+- DEBT-LAB-RUNTIME-STANDARD-001 (RAMA PROPIA tras esta, decision de Alonso): una sola forma de fijar perfil, ruta de config y
+  nivel de log en todos los componentes. Incluye: PROFILE vs build-active (DEBT-PROFILE-COHERENCE-001); build-debug escrito a
+  mano en Makefile 712, 1385, 1416, 1517, 1519, 1539; argus-network-isolate compila Debug fijo; config del firewall via enlace
+  en /etc/ml-defender; revisar logging.level en sniffer y ml-detector (hipotesis: tambien escriben DEBUG a vboxsf, tramo
+  sniffer_mld); doble vaciado por linea del logger del firewall; aviso periodico de [CONFIG-DEFAULT]; ficheros .hpp.broken en
+  firewall-acl-agent/include; en el client, /vagrant/*.sh da Permission denied (montaje sin noexec; causa sin medir).
+- DEBT-FW-IPSET-TESTS-SKIPPED-001 (RAMA PROPIA, decision de Alonso): 21 IPSetWrapperTest saltadas en test-components
+  (sospecha: dry_run / ipset). ¿Han corrido alguna vez en el lab?
+- DEBT-TIMEBASE-VALIDATOR-UNITTEST-001: tb_validar_time_context (10 causas) sin pruebas unitarias; solo E2E.
+- DEBT-SHADOW-FIN-EVENT-DRIVEN-001: el FIN de la sombra solo se emite al llegar un evento; en silencio se retrasa sin limite.
+- DEBT-SNIFFER-RANSOM-WINDOW-WALLTS-001: ring_consumer.cpp:1534 sella event_id/event_timestamp de la ventana de ransomware
+  con system_clock al emitir, no con epoca derivada del contrato v1.
+- DEBT-TIMEBASE-ORDER-OBSERVABILITY-001: producer_seq no aparece en ningun log ni en el bronce; el orden no es verificable.
+- DEBT-TIMEBASE-ANCHOR-PERIOD-001: anchor_period_s = 1,0 -> tras un salto, hasta 1 s de flujos con el ancla vieja.
+- DEBT-PARQUET-ML-TIMESTAMP-HISTORIC-001: revisar analisis pasados que usaran timestamp_utc_ns del Parquet del ml-detector
+  (89 % monotonico desde 2026-03-08; datos ya borrados).
+- DEBT-BRONZE-FASTALERT-ZERO-START-001 (mitigada): volver a incluir las fast-alerts cuando sean fiables, con epoca derivada.
+- DEBT-FIREWALL-NONFLOW-EVENTS-001: muy probable que sean fast-alerts (~1 por paquete DNS); confirmar por event_kind.
+- DEBT-LAB-CHRONY-NO-AUTOSTEP-001 (matizada): en DAY296 chrony salto (+134 s) tras ~2 min; en DAY295 corrigio gradualmente.
+- Disco (decision de Alonso pendiente): Kali 62 GB, tdh-engine 16 GB, VMs experiment-* 11 GB, recrear argus-wazuh (76 GB;
+  medir antes el uso interno), logs/rag 11 GB (rag deprecado; ver si rag-security lo lee), zips de CICDDoS2019 10,4 GB.
+- DEBT-HARDENED-REVERIFY-001: volver a pasar `make hardened-full` desde VM destruida (ultimo verde: abril 2026, DAY134;
+  desde entonces cambiaron proto, perfiles de compilacion y contrato temporal) antes de documentar la imagen endurecida.
+- DEBT-APPARMOR-DUPLICATE-PROFILES-001: dos juegos de perfiles AppArmor (security/apparmor/ con 7, tools/apparmor/ con
+  6 de nombre antiguo ml-defender-*). Medir cual instala setup-apparmor.sh y retirar el otro.
+- DEBT-FALCO-RULES-COUNT-001: setup-falco.sh tiene 11 reglas; en DAY133 se acordaron 13 (10 + 3 del Consejo:
+  config tamper, sustitucion de modelos/plugins, AppArmor tamper). Comprobar cuales faltan.
+- Falco detecta pero no responde: capa de respuesta (Falco -> firewall-acl-agent con respuesta por regla), futura.
+
+## DAY297 — fix/event-timestamp-timebase (aceptacion D15: A1, A2, A5; contrato temporal, anexo 9)
+Hecho:
+- Contadores de producer_seq en el firewall ([TIMEBASE-SEQ-D297] + detalle [TIMEBASE-SEQ-DET-D297]; test_seq_tracker
+  51/51; campo ddos_shadow.seq_ventana). 0 duplicados y 0 huecos en 15262, 17129 y 26110 eventos.
+- Orquestador de corridas scripts/timebase/lab_corrida.sh (+ ayudante en el defender, contabilidad, cliente del gemelo).
+- A1 aceptada: cable = DROP = sombra al evento; un flujo por paquete. A2 medida: gemelo marcado igual que el atacante
+  (0,9956 / 0,9917); NTP legitimo de la misma victima, 0 DROP. A5 confirmada offline contra la funcion de produccion.
+- Seccion 7 duplicada del contrato temporal eliminada (heredoc mal cerrado en DAY295: una linea basura y el bloque
+  repetido; contenido identico).
+Cerradas por medida:
+- DEBT-DDOS-V2-ACCOUNTING-001 (A1): sin duplicados ni perdidas con el binario actual (DAY294 no reconstruible).
+- DEBT-DDOS-V2-AUDIT-TWIN-001 (A2): "discrimina el tipo de trafico, no el comportamiento del origen".
+- DEBT-TIMEBASE-ORDER-OBSERVABILITY-001 en el firewall (secuencia visible y contada); sigue sin ir al bronce.
+Deudas nuevas o cambiadas:
+- DEBT-DDOS-COLDSTART-ETAPA1-001 (SIGUIENTE RAMA, decision de Alonso): warm_windows no protege la etapa 1; 32 DROP en el
+  primer segundo contra el manager Wazuh (.12 -> .1 TCP). La prueba hay que provocarla (trafico en los primeros segundos).
+- DEBT-DDOS-V2-LONG-ATTACK-001 (CONFIRMADA offline; misma rama que la anterior): FIN de la sombra a los 15,6-24,8 min de
+  un ataque sostenido. Causa comun: la etapa 1 no consume bajo_presion. Corrida en vivo de ~20 min como antes/despues.
+- DEBT-TIMEBASE-SEQ-DELIVERY-ORDER-001 (futuro proximo, decision de Alonso): flujo adelantado por la fast-alert
+  siguiente; 12 casos a 120 pps. Siguiente paso: mld_recv/mld_send en el detalle.
+- DEBT-SNIFFER-EVENT-ID-NOT-UNIQUE-001: event_id = ts_ns + "_" + (src XOR dst); tambien es correlation_id (grafo).
+- DEBT-LAB-ENV-VMS-001: anotar en cada medida que VMs estaban levantadas (DAY297: las cinco; el trafico de Wazuh cambia
+  el reposo y puede disparar el arranque en frio).
