@@ -23,6 +23,8 @@
     "k": 3,
     "n": 5,
     "hold_windows": 30,
+    "_doc_seq_ventana": "[TIMEBASE-SEQ-D297] entero en [64, 1048576], defecto 4096. Ventana de reordenacion (en secuencias) del contador de producer_seq por productor (nodo, boot_id, arranque del productor): dentro de ella se distingue un duplicado de un relleno tardio; mas atras el evento cuenta como seq_viejo. Memoria: 1 bit por secuencia y productor. Resultado en la linea [TIMEBASE] secuencia de cada resumen (contadores acumulados desde el arranque). [TIMEBASE-SEQ-DET-D297] Los casos desorden, dup y viejo se detallan en lineas [TIMEBASE-SEQ] (hasta anomalias_detalle_max por periodo de resumen). Campo ausente o invalido: defecto con [CONFIG-DEFAULT] y el agente arranca igual.",
+    "seq_ventana": 4096,
     "resumen_s": 10,
     "lag_max_valid_s": 600,
     "anomalias_detalle_max": 10

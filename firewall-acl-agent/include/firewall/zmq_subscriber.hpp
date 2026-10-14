@@ -41,6 +41,7 @@
 #include <chrono>  // [DDOS-SHADOW-OBS-D293]
 #include "firewall/ddos_shadow_policy.hpp"  // [DDOS-SHADOW-D293]
 #include "firewall/timebase_lite.hpp"  // [TIMEBASE-D295]
+#include "firewall/seq_tracker.hpp"  // [TIMEBASE-SEQ-D297]
 #include "firewall/batch_processor.hpp"
 #include "firewall/logger.hpp"
 #include "firewall/etcd_client.hpp"
@@ -378,6 +379,9 @@ private:
     static constexpr const char* kTbTramoNombre[kTbTramos] = {"sniffer_mld", "mld_interno", "mld_fw"};
     double tb_tramo_suma_ms_[kTbTramos] = {};
     double tb_tramo_max_ms_[kTbTramos] = {};
+    // [TIMEBASE-SEQ-D297] D15 A1 / D17: duplicados, huecos y desorden por productor (contadores acumulados)
+    ::mldefender::firewall::SeqTracker tb_secuencia_{static_cast<uint64_t>(config_.ddos_shadow.seq_ventana)};
+    uint64_t tb_seq_detalle_ = 0;  // [TIMEBASE-SEQ-DET-D297] detalles [TIMEBASE-SEQ] en el periodo
 
     void tb_detallar(int causa, const ::protobuf::NetworkSecurityEvent& ev, const std::string& valor) {
         ++tb_anom_[causa];
@@ -400,6 +404,24 @@ private:
             return false;
         }
         const auto& tc = ev.time_context();
+        // [TIMEBASE-SEQ-D297] la secuencia se registra ANTES de las demas causas: un evento rechazado por otra
+        // causa no debe aparecer como hueco. Clave = (nodo, boot_id, arranque del productor), como dice el proto.
+        {  // [TIMEBASE-SEQ-DET-D297] desorden/dup/viejo detallados (tope anomalias_detalle_max por periodo)
+            const auto obs = tb_secuencia_.observe(ev.originating_node_id() + "|" + tc.boot_id() + "|" +
+                                                       std::to_string(tc.producer_start_mono_ns()),
+                                                   tc.producer_seq(), tc.mono_ns(),
+                                                   static_cast<uint32_t>(ev.event_kind()));
+            using R = ::mldefender::firewall::SeqResultado;
+            if ((obs.r == R::kDesorden || obs.r == R::kDup || obs.r == R::kViejo) &&
+                tb_seq_detalle_ < static_cast<uint64_t>(config_.ddos_shadow.anomalias_detalle_max)) {
+                ++tb_seq_detalle_;
+                std::cerr << "[TIMEBASE-SEQ] " << ::mldefender::firewall::seq_resultado_nombre(obs.r)
+                          << " seq=" << tc.producer_seq() << " kind=" << static_cast<int>(ev.event_kind())
+                          << " mono_ns=" << tc.mono_ns() << " sniffer_send_mono_ns=" << tc.sniffer_send_mono_ns()
+                          << " max_previo=" << obs.max_previo << " kind_max=" << obs.etiqueta_max
+                          << " mono_max=" << obs.mono_max << " event_id=" << ev.event_id() << std::endl;
+            }
+        }
         if (tc.time_contract_version() != 1) {
             tb_detallar(1, ev, "version=" + std::to_string(tc.time_contract_version()));
             return false;

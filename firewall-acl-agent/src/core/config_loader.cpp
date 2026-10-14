@@ -187,6 +187,7 @@ FirewallAgentConfig ConfigLoader::load_from_file(const std::string& config_path,
             d.resumen_s = get_int("resumen_s", 10, 1, 3600);  // [DDOS-SHADOW-OBS-D293]
             d.lag_max_valid_s = get_int("lag_max_valid_s", 600, 1, 86400);  // [TIMEBASE-D295]
             d.anomalias_detalle_max = get_int("anomalias_detalle_max", 10, 0, 1000);  // [TIMEBASE-D295]
+            d.seq_ventana = get_int("seq_ventana", 4096, 64, 1048576);  // [TIMEBASE-SEQ-D297]
         }
         config.ddos_shadow = d;
     }

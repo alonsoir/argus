@@ -740,6 +740,7 @@ int main(int argc, char** argv) {
                   << " hold_windows=" << config.ddos_shadow.hold_windows << " resumen_s=" << config.ddos_shadow.resumen_s
                   << " lag_max_valid_s=" << config.ddos_shadow.lag_max_valid_s  // [TIMEBASE-D295]
                   << " anomalias_detalle_max=" << config.ddos_shadow.anomalias_detalle_max
+                  << " seq_ventana=" << config.ddos_shadow.seq_ventana  // [TIMEBASE-SEQ-D297]
                   << " (solo registra, no bloquea)" << std::endl;  // [DDOS-SHADOW-OBS-D293]
 
         // Transport configuration (compression)

@@ -635,6 +635,13 @@ void ZMQSubscriber::handle_message(const void* msg_data, size_t msg_size) {
                         tb_detalle_[i] = 0;
                     }
                     std::cout << o.str() << std::endl;
+                    std::cout << "[TIMEBASE] secuencia: " << tb_secuencia_.resumen()
+                              << std::endl;  // [TIMEBASE-SEQ-D297] linea propia: no altera [TIMEBASE] resumen
+                    tb_seq_detalle_ = 0;  // [TIMEBASE-SEQ-DET-D297] tope de detalle por periodo
+                    if (tb_secuencia_.invariante() > 0) {
+                        std::cerr << "[TIMEBASE-ANOMALIA] seq_invariante=" << tb_secuencia_.invariante()
+                                  << " (fallo del contador de secuencia, no de los datos)" << std::endl;
+                    }
                     if (total > 0) {
                         std::cerr << "[TIMEBASE-ANOMALIA] " << total
                                   << " eventos con tiempo anomalo en el periodo, fuera de las ventanas: " << o.str()

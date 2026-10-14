@@ -31,6 +31,7 @@ struct DdosShadowParams {
     int resumen_s = 10;  // [DDOS-SHADOW-OBS-D293] segundos entre resúmenes (reloj de pared)
     int lag_max_valid_s = 600;       // [TIMEBASE-D295] retraso sniffer->firewall maximo valido (s)
     int anomalias_detalle_max = 10;  // [TIMEBASE-D295] anomalias detalladas por causa y periodo de resumen
+    int seq_ventana = 4096;  // [TIMEBASE-SEQ-D297] ventana de reordenacion del contador de producer_seq
 };
 
 struct DdosShadowRecord {
